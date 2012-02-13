@@ -1,0 +1,161 @@
+ZONEH_LEFT      = 0
+ZONEH_RIGHT     = 1
+ZONEH_UP        = 2
+ZONEH_DOWN      = 3
+ZONEH_BG1       = 4
+ZONEH_BG2       = 5
+ZONEH_BG3       = 6
+ZONEH_MUSIC     = 7
+ZONEH_DATA      = 8
+
+MAX_MAP_ROWS    = 128
+MAX_BLOCKS      = 128
+
+        ; Load a level. TODO: add retry/error handling
+        ;
+        ; Parameters: A:Level number
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+LoadLevel:      sta levelNum
+                ldx #F_LEVEL
+                jsr MakeFileName
+                lda #<charInfo                  ;Load char/zoneinfos
+                ldx #>charInfo
+                jsr LoadFile
+                ldy #C_MAP
+                jsr LoadAllocFile               ;Load MAP chunk
+                ldy #C_BLOCKS
+                jsr LoadAllocFile               ;Load BLOCKS chunk
+                lda #<chars                     ;Finally load chars
+                ldx #>chars
+                jsr LoadFile
+                lda #$00                        ;Assume zone 0 after loading
+                sta zoneNum                     ;a new level
+
+        ; Calculate start addresses for each map-row (of current zone) and for each
+        ; block, and set zone multicolors.
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,loader temp vars
+
+InitMap:        lda zoneNum                     ;Map address might have changed
+                jsr FindZoneNum                 ;(dynamic memory), so re-find
+                lda limitU                      ;Startrow of zone
+                ldy mapSizeX                    ;Multiply with map row width
+                ldx #zpSrcLo
+                jsr MulU
+                lda limitL                      ;Add startcolumn of zone
+                jsr Add8
+                jsr Negate16                    ;Negate
+                ldy #zoneLo                  ;Add zone startaddress
+                jsr Add16
+                lda #ZONEH_DATA                 ;Add zone mapdata offset
+                jsr Add8
+                lda fileLo+C_BLOCKS          ;Address of first block
+                sta zpBitsLo
+                lda fileHi+C_BLOCKS
+                sta zpBitsHi
+                ldx #$00                        ;The counter
+IM_Loop:        lda zpSrcHi                     ;Store and increase maprow-
+                sta mapTblHi,x                  ;pointer
+                lda zpSrcLo
+                sta mapTblLo,x
+                clc
+                adc mapSizeX
+                sta zpSrcLo
+                bcc IM_NotOver1
+                inc zpSrcHi
+IM_NotOver1:    lda zpBitsHi                    ;Store and increase block-
+                sta blkTblHi,x                  ;pointer
+                lda zpBitsLo
+                sta blkTblLo,x
+                clc
+                adc #$10
+                sta zpBitsLo
+                bcc IM_NotOver2
+                inc zpBitsHi
+IM_NotOver2:    inx                             ;Do 128 rows for the maptable
+                bpl IM_Loop                     ;& blocktable
+                
+        ; Set zone multicolors for the raster interrupt
+        ;
+        ; Parameters: zone
+        ; Returns: -
+        ; Modifies: A,Y
+
+SetZoneColors:  ldy #ZONEH_BG1                  ;Set zone multicolors
+                lda (zoneLo),y
+                sta Irq1_Bg1+1
+                iny
+                lda (zoneLo),y
+                sta Irq1_Bg2+1
+                iny
+                lda (zoneLo),y
+                sta Irq1_Bg3+1
+                rts
+
+        ; Find the zone indicated by coordinates or number.
+        ;
+        ; Parameters: A zone number (FindZoneNum) or X,Y pos (FindZoneXY)
+        ; Returns: zoneNum, zone
+        ; Modifies: A,X,Y,loader temp vars
+
+FindZoneXY:     stx zpSrcLo
+                sty zpSrcHi
+                lda #$00
+                sta zoneNum
+FZXY_Loop:      jsr FZ_GetZonePtr
+                lda zpSrcLo
+                ldy #ZONEH_LEFT
+                cmp (zoneLo),y
+                bcc FZXY_Next
+                iny
+                cmp (zoneLo),y
+                bcs FZXY_Next
+                iny
+                lda zpSrcHi
+                cmp (zoneLo),y
+                bcc FZXY_Next
+                iny
+                cmp (zoneLo),y
+                bcc FZ_Found
+FZXY_Next:      inc zoneNum
+                lda zoneNum
+                cmp fileNumObjects+C_MAP
+                bcc FZXY_Loop
+                rts
+
+FindZoneNum:    sta zoneNum
+                jsr FZ_GetZonePtr
+
+FZ_Found:       ldy #ZONEH_LEFT
+                lda (zoneLo),y
+                sta limitL
+                iny
+                lda (zoneLo),y
+                sta limitR
+                sec
+                sbc limitL
+                sta mapSizeX
+                iny
+                lda (zoneLo),y
+                sta limitU
+                iny
+                lda (zoneLo),y
+                sta limitD
+                rts
+
+FZ_GetZonePtr:  asl
+                tay
+                lda fileLo+C_MAP
+                sta zpBitsLo
+                lda fileHi+C_MAP
+                sta zpBitsHi
+                lda (zpBitsLo),y
+                sta zoneLo
+                iny
+                lda (zpBitsLo),y
+                sta zoneHi
+                rts

@@ -1,0 +1,3 @@
+editor.spr
+editfont.spr
+editor.pal

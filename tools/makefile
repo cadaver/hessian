@@ -1,0 +1,56 @@
+all: filejoin.exe invert.exe lpack.exe ldepack.exe makedisk.exe pack2.exe pchunk2.exe mchunk.exe leveled.exe spred.exe
+
+clean:
+	del *.exe
+	del *.spr
+	del editor.pal
+	del editor.dat
+	del editdata.c
+
+editor.dat: bmeconv.exe datafile.exe editor.lbm editfont.lbm
+	bmeconv -s -t255 -r254 -h253 editor.lbm editor.spr
+	bmeconv -s -t255 -r254 -h253 editfont.lbm editfont.spr
+	bmeconv -p editor.lbm editor.pal
+	datafile editor.dat filelist.txt
+
+editdata.c: dat2inc.exe editor.dat
+	dat2inc editor.dat editdata.c
+
+bmeconv.exe: bmeconv.c fileio.c
+	gcc bmeconv.c fileio.c -obmeconv.exe
+
+datafile.exe: datafile.c fileio.c
+	gcc datafile.c fileio.c -odatafile.exe
+
+dat2inc.exe: dat2inc.c
+	gcc dat2inc.c -odat2inc.exe
+
+filejoin.exe: filejoin.c
+	gcc filejoin.c -ofilejoin.exe
+
+invert.exe: invert.c
+	gcc invert.c -oinvert.exe
+
+lpack.exe: lpack.c
+	gcc lpack.c -olpack.exe
+
+ldepack.exe: ldepack.c
+	gcc ldepack.c -oldepack.exe
+
+makedisk.exe: makedisk.c
+	gcc makedisk.c -omakedisk.exe
+
+pchunk2.exe: pchunk2.c
+	gcc pchunk2.c -opchunk2.exe
+
+pack2.exe: pack2.c
+	gcc pack2.c -opack2.exe
+
+mchunk.exe: mchunk.c
+	gcc mchunk.c -omchunk.exe
+
+leveled.exe: leveled.c editdata.c
+	gcc leveled.c editdata.c libbme.a -oleveled.exe -lmingw32 -lSDLmain -lSDL
+
+spred.exe: spred.c fileio.c editdata.c
+	gcc spred.c editdata.c fileio.c libbme.a -ospred.exe -lmingw32 -lSDLmain -lSDL

@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hessian", "hessian.vcproj", "{F2F23D2E-AC9B-44F7-8005-DFC30BF18180}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F2F23D2E-AC9B-44F7-8005-DFC30BF18180}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F2F23D2E-AC9B-44F7-8005-DFC30BF18180}.Debug|Win32.Build.0 = Debug|Win32
+		{F2F23D2E-AC9B-44F7-8005-DFC30BF18180}.Release|Win32.ActiveCfg = Release|Win32
+		{F2F23D2E-AC9B-44F7-8005-DFC30BF18180}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

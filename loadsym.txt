@@ -1,0 +1,14 @@
+OpenFile
+GetByte
+CloseFile
+LoadFile
+Savefile
+Change01
+InitLoader
+InitFastLoad
+WaitBottom
+SilenceSID
+FL_MinSprY
+FL_MaxSprY
+fileName
+loaderCodeEnd
