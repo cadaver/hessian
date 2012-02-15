@@ -24,12 +24,12 @@ ACTI_PLAYER     = 0
 ACTI_FIRSTNPC   = 1
 ACTI_LASTNPC    = 6
 ACTI_FIRSTPLRBULLET = 7
-ACTI_LASTPLRBULLET = 10
-ACTI_FIRSTNPCBULLET = 11
-ACTI_LASTNPCBULLET = 14
-ACTI_FIRSTITEM  = 15
-ACTI_LASTITEM   = 19
-ACTI_FIRSTEFFECT = 20
+ACTI_LASTPLRBULLET = 11
+ACTI_FIRSTNPCBULLET = 12
+ACTI_LASTNPCBULLET = 16
+ACTI_FIRSTITEM  = 17
+ACTI_LASTITEM   = 21
+ACTI_FIRSTEFFECT = 22
 ACTI_LASTEFFECT = 23
 
 AL_UPDATEROUTINE = 0
@@ -360,11 +360,12 @@ UpdateActors:
                 lda #$01
                 sta $d020
                 endif
-                ldx #MAX_ACT-1
+                ldx #$00
 UA_Loop:        ldy actT,x
                 bne UA_NotZero
-UA_Next:        dex
-                bpl UA_Loop
+UA_Next:        inx
+                cpx #MAX_ACT
+                bcc UA_Loop
                 if SHOW_ACTOR_RASTERTIME > 0
                 lda #$00
                 sta $d020
@@ -382,8 +383,9 @@ UA_NotZero:     stx actIndex
                 lda (actLo),y
                 sta UA_Jump+2
 UA_Jump:        jsr $1000
-                dex
-                bpl UA_Loop
+                inx
+                cpx #MAX_ACT
+                bcc UA_Loop
                 if SHOW_ACTOR_RASTERTIME > 0
                 lda #$00
                 sta $d020
