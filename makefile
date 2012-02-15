@@ -34,7 +34,7 @@ loader.pak: kernal.s loader.s ldepack.s macros.s memory.s
 	invert ldepack.bin ldepack.bin
 	filejoin ldepack.bin+ldata.pak loader.pak
 
-main.pak: actor.s actordata.s data.s file.s init.s macros.s main.s memory.s raster.s screen.s sound.s sprite.s loader.pak bg/scorescr.chr
+main.pak: actor.s actordata.s data.s file.s init.s macros.s main.s memory.s physics.s player.s raster.s screen.s sound.s sprite.s loader.pak bg/scorescr.chr
 	dasm main.s -omain.bin -smain.tbl -f3
 	pack2 main.bin main.pak
 

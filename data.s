@@ -248,11 +248,12 @@ fileAge:        ds.b MAX_CHUNKFILES,0
 
         ; Actor variables
 
-actType:        ds.b MAX_ACT,0
+actT:           ds.b MAX_ACT,0
 actF1:          ds.b MAX_ACT,0
 actF2:          ds.b MAX_ACT,0
+actFd:          ds.b MAX_ACT,0
 actC:           ds.b MAX_ACT,0
-actDir:         ds.b MAX_ACT,0
+actD:           ds.b MAX_ACT,0
 actXL:          ds.b MAX_ACT,0
 actXH:          ds.b MAX_ACT,0
 actYL:          ds.b MAX_ACT,0
@@ -267,6 +268,7 @@ actGrp:         ds.b MAX_ACT,0
 actSizeH:       ds.b MAX_ACT,0
 actSizeU:       ds.b MAX_ACT,0
 actSizeD:       ds.b MAX_ACT,0
+actTime:        ds.b MAX_ACT,0
 
         ; Playroutine variables
 

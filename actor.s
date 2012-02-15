@@ -21,6 +21,18 @@ FOURSPRITE      = $03
 HUMANOID        = $80
 
 ACTI_PLAYER     = 0
+ACTI_FIRSTNPC   = 1
+ACTI_LASTNPC    = 6
+ACTI_FIRSTPLRBULLET = 7
+ACTI_LASTPLRBULLET = 10
+ACTI_FIRSTNPCBULLET = 11
+ACTI_LASTNPCBULLET = 14
+ACTI_FIRSTITEM  = 15
+ACTI_LASTITEM   = 19
+ACTI_FIRSTEFFECT = 20
+ACTI_LASTEFFECT = 23
+
+AL_UPDATEROUTINE = 0
 
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
@@ -31,7 +43,7 @@ ACTI_PLAYER     = 0
 
 DrawActors:
                 if SHOW_ACTOR_RASTERTIME > 0
-                lda #$02
+                lda #$03
                 sta $d020
                 endif
                 lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
@@ -41,7 +53,7 @@ DrawActors:
                 sta IA_PrevScrollY+1
                 ldx #$00                        ;Reset amount of used sprites
                 stx sprIndex
-DA_Loop:        ldy actType,x
+DA_Loop:        ldy actT,x
                 bne DA_NotZero
 DA_ActorDone:   inx
                 cpx #MAX_ACT
@@ -137,7 +149,7 @@ DA_SameSprFile: ldy #AD_NUMSPRITES              ;Get number of sprites / humanoi
 
 DA_Normal:      sta temp4
                 lda actF1,x
-                ldy actDir,x
+                ldy actD,x
                 bpl DA_NormalRight
                 ldy #AD_LEFTFRADD               ;Add left frame offset if necessary
                 adc (actLo),y
@@ -157,7 +169,7 @@ DA_NormalLoop:  tay
                 bcc DA_NormalLoop
 
 DA_OneSprite:   lda actF1,x                     ;Fast path for onesprite-actors
-                ldy actDir,x
+                ldy actD,x
                 bpl DA_OneSpriteRight
                 ldy #AD_LEFTFRADD               ;Add left frame offset if necessary
                 adc (actLo),y
@@ -172,7 +184,7 @@ DA_LastSprite:  jsr GetAndStoreLastSprite
                 jmp DA_ActorDone
 
 DA_Humanoid:    lda actF2,x
-                ldy actDir,x
+                ldy actD,x
                 bpl DA_HumanRight2
                 ldy #ADH_LEFTFRADD              ;Add left frame offset if necessary
                 adc (actLo),y
@@ -182,7 +194,7 @@ DA_HumanRight2: ldy #ADH_BASEFR2
                 lda humanUpperFrTbl,y           ;Take sprite frame from the frametable
                 sta DA_HumanFrame2+1
                 lda actF1,x
-                ldy actDir,x
+                ldy actD,x
                 bpl DA_HumanRight1
                 ldy #ADH_LEFTFRADD              ;Add left frame offset if necessary
                 adc (actLo),y
@@ -227,7 +239,7 @@ IA_Done2:
 
 InterpolateActors:
                 if SHOW_ACTOR_RASTERTIME > 0
-                lda #$04
+                lda #$02
                 sta $d020
                 endif
                 lda scrollX                     ;Calculate how much the scrolling has changed
@@ -337,6 +349,47 @@ IA_AddOffset:   lda sprX,x                      ;Add offset to sprite coords
                 bmi IA_Done
                 jmp IA_SprLoop
 
+        ; Update actors
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars,actor temp vars
+        
+UpdateActors:
+                if SHOW_ACTOR_RASTERTIME > 0
+                lda #$01
+                sta $d020
+                endif
+                ldx #MAX_ACT-1
+UA_Loop:        ldy actT,x
+                bne UA_NotZero
+UA_Next:        dex
+                bpl UA_Loop
+                if SHOW_ACTOR_RASTERTIME > 0
+                lda #$00
+                sta $d020
+                endif
+                rts
+UA_NotZero:     stx actIndex
+                lda actLogicTblLo-1,y            ;Get actor logic structure address
+                sta actLo
+                lda actLogicTblHi-1,y
+                sta actHi
+                ldy #AL_UPDATEROUTINE
+                lda (actLo),y
+                sta UA_Jump+1
+                iny
+                lda (actLo),y
+                sta UA_Jump+2
+UA_Jump:        jsr $1000
+                dex
+                bpl UA_Loop
+                if SHOW_ACTOR_RASTERTIME > 0
+                lda #$00
+                sta $d020
+                endif                
+                rts
+
         ; Accelerate actor in X-direction, then move
         ;
         ; Parameters: X actor index, A acceleration, Y speed limit
@@ -421,6 +474,23 @@ MAY_Neg:        clc
                 dec actYH,x
 MAY_NegOk:      rts
 
+        ; Process actor's animation delay
+        ;
+        ; Parameters: X actor index, A animation speed-1 (in frames)
+        ; Returns: C=1 delay exceeded, animationdelay reset
+        ; Modifies: A
+
+AnimationDelay: sta AD_Cmp+1
+                lda actFd,x
+AD_Cmp:         cmp #$00
+                bcs AD_Over
+                adc #$01
+                sta actFd,x
+                rts
+AD_Over:        lda #$00
+                sta actFd,x
+                rts
+
         ; Get screen relative char coordinates for actor. To be used for example in scrolling
         ;
         ; Parameters: X actor index
@@ -458,7 +528,186 @@ GetActorCharCoords:
                 asl
                 ora temp8
                 rts
-      
+
+        ; Get char collision info from the actor's position.
+        ; Reduces amount of JSR's needed, if only this info is necessary
+        ;
+        ; Parameters: X actor index
+        ; Returns: A charinfo
+        ; Modifies: A,Y,loader temp vars
+
+GetCharInfoActor:
+                lda actXL,x
+                rol
+                rol
+                rol
+                and #$03
+                sta zpBitsLo
+                lda actYL,x
+                lsr
+                lsr
+                lsr
+                lsr
+                and #$0c
+                sta zpBitsHi
+                ldy actYH,x
+                lda mapTblLo,y
+                sta zpDestLo
+                lda mapTblHi,y
+                sta zpDestHi
+                ldy actXH,x
+                jmp GCI_Common
+                
+        ; Initialize charinfo check location with actor's position
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,loader temp vars
+        
+SetCharInfoPosActor:
+                lda actXH,x
+                sta zpSrcLo
+                lda actYH,x
+                sta zpSrcHi
+                lda actXL,x
+                rol
+                rol
+                rol
+                and #$03
+                sta zpBitsLo
+                lda actYL,x
+                lsr
+                lsr
+                lsr
+                lsr
+                and #$0c
+                sta zpBitsHi
+                lda #$ff
+                sta GCI_NewBlock+1
+                rts
+
+        ; Initialize charinfo check location with arbitrary location
+        ;
+        ; Parameters: temp1-temp2 X position, temp3-temp4 Y position
+        ; Returns: -
+        ; Modifies: A,loader temp vars
+
+SetCharInfoPos: lda temp2
+                sta zpSrcLo
+                lda temp4
+                sta zpSrcHi
+                lda temp1
+                rol
+                rol
+                rol
+                and #$03
+                sta zpBitsLo
+                lda temp3
+                lsr
+                lsr
+                lsr
+                lsr
+                and #$0c
+                sta zpBitsHi
+                lda #$ff
+                sta GCI_NewBlock+1
+                rts
+
+        ; Move charinfo check location horizontally
+        ;
+        ; Parameters: A how many chars (signed)
+        ; Returns: -
+        ; Modifies: A,Y,loader temp vars
+
+MoveCharInfoPosX:
+                clc
+                adc zpBitsLo
+                bmi MCIPX_Neg
+MCIPX_Pos:      cmp #$04
+                bcc MCIPX_Done
+                ldy #$ff
+                sty GCI_NewBlock+1
+MCIPX_PosLoop:  inc zpSrcLo
+                sbc #$04
+                cmp #$04
+                bcs MCIPX_PosLoop
+MCIPX_Done:     sta zpBitsLo
+                rts
+MCIPX_Neg:      ldy #$ff
+                sty GCI_NewBlock+1
+MCIPX_NegLoop:  dec zpSrcLo
+                clc
+                adc #$04
+                bmi MCIPX_NegLoop
+                sta zpBitsLo
+                rts
+
+        ; Move charinfo check location vertically
+        ;
+        ; Parameters: A how many chars (signed)
+        ; Returns: -
+        ; Modifies: A,Y,loader temp vars
+
+MoveCharInfoPosY:
+                asl
+                asl
+                clc
+                adc zpBitsHi
+                bmi MCIPY_Neg
+MCIPY_Pos:      cmp #$10
+                bcc MCIPY_Done
+                ldy #$ff
+                sty GCI_NewBlock+1
+MCIPY_PosLoop:  inc zpSrcHi
+                sbc #$10
+                cmp #$10
+                bcs MCIPY_PosLoop
+MCIPY_Done:     sta zpBitsHi
+                rts
+MCIPY_Neg:      ldy #$ff
+                sty GCI_NewBlock+1
+MCIPY_NegLoop:  dec zpSrcHi
+                clc
+                adc #$10
+                bmi MCIPY_NegLoop
+                sta zpBitsHi
+                rts
+
+        ; Get charinfo bits from the check location
+        ; Parameters: -
+        ; Returns: A charinfo
+        ; Modifies: A,Y,loader temp vars
+
+GetCharInfo:
+GCI_NewBlock:   lda #$00                        ;TODO: this check must be changed if more
+                bpl GCI_BlockReady              ;than 128 blocks are used
+GCI_GetNewBlock:ldy zpSrcHi
+                lda mapTblLo,y
+                sta zpDestLo
+                lda mapTblHi,y
+                sta zpDestHi
+                ldy zpSrcLo
+GCI_Common:     cpy limitL
+                bcc GCI_Outside
+                cpy limitR
+                bcs GCI_Outside
+                lda (zpDestLo),y                ;Get block from map
+GCI_OutsideDone:sta GCI_NewBlock+1
+                tay
+                lda blkTblLo,y
+                sta zpDestLo
+                lda blkTblHi,y
+                sta zpDestHi
+GCI_BlockReady: lda zpBitsLo
+                ora zpBitsHi
+                tay
+                lda (zpDestLo),y                ;Get char from block
+                tay
+                lda charInfo,y                  ;Get charinfo
+                rts
+GCI_Outside:    lda #$00                        ;Outside map block $00 is always returned
+                beq GCI_OutsideDone
+
         ; Check if two actors have collided
         ;
         ; Parameters: X,Y actor numbers
@@ -529,4 +778,75 @@ CAC_YPos:       lsr
                 lda actSizeU,x
                 adc actSizeD,y
                 cmp temp8
+                rts
+                
+        ; Remove actor
+        ; TODO: return to leveldata
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A
+
+RemoveActor:    lda #ACT_NONE
+                sta actT,x
+                rts
+
+        ; Remove all actors
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X
+
+RemoveAllActors:ldx #MAX_ACT-1
+RAA_Loop:       jsr RemoveActor
+                dex
+                bpl RAA_Loop
+                rts
+
+        ; Clear all actors without returning them to leveldata
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X
+
+ClearActors:    ldx #MAX_ACT-1
+CA_Loop:        lda #ACT_NONE
+                sta actT,x
+                dex
+                bpl CA_Loop
+                rts
+
+        ; Get a free actor
+        ;
+        ; Parameters: A first actor index to check (do not pass 0 here), Y last actor index to check
+        ; Returns: C=1 free actor found (returned in Y), C=0 no free actor
+        ; Modifies: A,Y
+
+GetFreeActor:   sta GFA_Cmp+1
+GFA_Loop:       lda actT,y
+                beq GFA_Found
+                dey
+GFA_Cmp:        cpy #$00
+                bcs GFA_Loop
+                rts
+GFA_Found:      sec
+                lda #$00                        ;Reset animation & speed when free actor found
+                sta actF1,y                     ;Todo: reset more as needed
+                sta actF2,y
+                sta actFd,y
+                sta actSX,y
+                sta actSY,y
+                rts
+
+        ; Get flashing color override for actor based on low bit of actor index
+        ;
+        ; Parameters: A actor index
+        ; Returns: A color override value, either $40 or $c0
+        ; Modifies: A
+        
+GetFlashColorOverride:
+                ror
+                ror
+                and #$80
+                ora #$40
                 rts
