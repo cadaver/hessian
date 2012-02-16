@@ -4,31 +4,49 @@
         ; Returns: -
         ; Modifies: A,Y
 
-MovePlayer:     lda joystick
+MovePlayer:     lda #$00                        ;Check intention to move sideways
+                sta actSX,x
+                lda joystick
                 and #JOY_LEFT
                 beq MP_NotLeft
                 lda #$80
                 sta actD,x
                 lda #-4*8
-                jsr MoveActorX
+                sta actSX,x
 MP_NotLeft:     lda joystick
                 and #JOY_RIGHT
                 beq MP_NotRight
                 lda #$00
                 sta actD,x
                 lda #4*8
-                jsr MoveActorX
-MP_NotRight:    lda joystick
+                sta actSX,x
+MP_NotRight:    lda #-3
+                sta temp1
+                ldy #6                          ;Make jump longer by holding joystick up
+                lda actSY,x                     ;(only while still has upward velocity)
+                bpl MP_NoLongJump
+                lda joystick
                 and #JOY_UP
-                beq MP_NotUp
-                lda #-4*8
-                jsr MoveActorY
-MP_NotUp:       lda joystick
-                and #JOY_DOWN
-                beq MP_NotDown
-                lda #4*8
-                jsr MoveActorY
-MP_NotDown:     lda joystick
+                beq MP_NoLongJump
+                ldy #4
+MP_NoLongJump:  tya
+                ldy #5*8
+                jsr MoveWithGravity             ;Actually move & check collisions
+                bpl MP_NoHeadBump
+                lda #$00                        ;If head bumped, reset Y-speed
+                sta actSY,x
+                beq MP_NoNewJump
+MP_NoHeadBump:  and #$01                        ;Check ground hit
+                beq MP_NoNewJump
+MP_OnGround:    lda joystick                    ;If on ground, can initiate a jump
+                and #JOY_UP
+                beq MP_NoNewJump
+                lda prevJoy
+                and #JOY_UP
+                bne MP_NoNewJump
+MP_Jump:        lda #-6*8
+                sta actSY,x
+MP_NoNewJump:   lda joystick
                 and #JOY_FIRE
                 beq MP_NoFire
                 lda prevJoy

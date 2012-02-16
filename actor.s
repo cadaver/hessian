@@ -239,7 +239,7 @@ IA_Done2:
 
 InterpolateActors:
                 if SHOW_ACTOR_RASTERTIME > 0
-                lda #$02
+                lda #$07
                 sta $d020
                 endif
                 lda scrollX                     ;Calculate how much the scrolling has changed
