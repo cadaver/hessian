@@ -20,17 +20,17 @@ MP_NotLeft:     lda joystick
                 sta actD,x
                 lda #4*8
                 sta actSX,x
-MP_NotRight:    lda #-3
+MP_NotRight:    lda #-4
                 sta temp1
-                ldy #6                          ;Make jump longer by holding joystick up
-                lda actSY,x                     ;(only while still has upward velocity)
+                ldy #8                          ;Make jump longer by holding joystick up
+                lda actSY,x                     ;as long as still has upward velocity
                 bpl MP_NoLongJump
                 lda joystick
                 and #JOY_UP
                 beq MP_NoLongJump
                 ldy #4
 MP_NoLongJump:  tya
-                ldy #5*8
+                ldy #6*8
                 jsr MoveWithGravity             ;Actually move & check collisions
                 bpl MP_NoHeadBump
                 lda #$00                        ;If head bumped, reset Y-speed
@@ -46,6 +46,8 @@ MP_OnGround:    lda joystick                    ;If on ground, can initiate a ju
                 bne MP_NoNewJump
 MP_Jump:        lda #-6*8
                 sta actSY,x
+                lda #-1*8                       ;Lift off the ground when initiating jump
+                jsr MoveActorY
 MP_NoNewJump:   lda joystick
                 and #JOY_FIRE
                 beq MP_NoFire
