@@ -84,6 +84,17 @@ unsigned char *actiontext[] = {
   "SCRIPT",
   "SPAWN"};
 
+unsigned char slopetbl[] = {
+  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,   // Slope 0
+  0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,   // Slope 1
+  0x38,0x30,0x28,0x20,0x18,0x10,0x08,0x00,   // Slope 2
+  0x00,0x08,0x10,0x18,0x20,0x28,0x30,0x38,   // Slope 3
+  0x38,0x38,0x30,0x30,0x28,0x28,0x20,0x20,   // Slope 4
+  0x18,0x18,0x10,0x10,0x08,0x08,0x00,0x00,   // Slope 5
+  0x00,0x00,0x08,0x08,0x10,0x10,0x18,0x18,   // Slope 6
+  0x20,0x20,0x28,0x28,0x30,0x30,0x38,0x38    // Slope 7
+};
+
 unsigned char cwhite[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35};
 unsigned char chl[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,35,35};
 unsigned char cnum[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35};
@@ -1525,6 +1536,11 @@ void char_mainloop(void)
     if (k == KEY_6) chinfo[charnum] ^= 32;
     if (k == KEY_7) chinfo[charnum] ^= 64;
     if (k == KEY_8) chinfo[charnum] ^= 128;
+    if (k == KEY_S)
+    {
+      // Edit slope bits
+      chinfo[charnum] += 32;
+    }
 
     if (k == KEY_M)
     {
@@ -1642,26 +1658,26 @@ void char_mainloop(void)
 
     if (!blockeditmode)
     {
-    if (k == KEY_F5)
-    {
-      editmode = EM_CHARS;
-      break;
-    }
-    if (k == KEY_F6)
-    {
-      editmode = EM_MAP;
-      break;
-    }
-    if (k == KEY_F7)
-    {
-      editmode = EM_ZONE;
-      break;
-    }
-    if (k == KEY_F8)
-    {
-      editmode = EM_LEVEL;
-      break;
-    }
+      if (k == KEY_F5)
+      {
+        editmode = EM_CHARS;
+        break;
+      }
+      if (k == KEY_F6)
+      {
+        editmode = EM_MAP;
+        break;
+      }
+      if (k == KEY_F7)
+      {
+        editmode = EM_ZONE;
+        break;
+      }
+      if (k == KEY_F8)
+      {
+        editmode = EM_LEVEL;
+        break;
+      }
     }
    
     if (k == KEY_F1) loadchars();
@@ -1686,6 +1702,17 @@ void char_mainloop(void)
     {
       drawimage();
       if (flash < 16) gfx_drawsprite((charnum&31)*8+32, 128+(charnum/32)*8, 0x00000022);
+      if (chinfo[charnum] & 1)
+      {
+        int x;
+        int slopeindex = (chinfo[charnum] >> 5) << 3;
+        for (x = 0; x < 8; x++)
+        {
+          int slopey = slopetbl[slopeindex+x]/8;
+          gfx_line(48+x,slopey,48+x,7, 2);
+          gfx_plot(48+x,slopey,1);
+        }
+      }
     }
 
     gfx_drawsprite(mousex, mousey, 0x00000021);
