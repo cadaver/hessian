@@ -46,6 +46,7 @@ MP_OnGround:    lda joystick                    ;If on ground, can initiate a ju
                 bne MP_NoNewJump
 MP_Jump:        lda #-6*8
                 sta actSY,x
+                jsr MoveActorY                  ;Initial liftoff
 MP_NoNewJump:   lda joystick
                 and #JOY_FIRE
                 beq MP_NoFire

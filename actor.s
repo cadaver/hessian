@@ -544,10 +544,11 @@ GetCharInfo:    lda actYL,x
                 and #$03
                 sta zpBitsHi
                 ldy actYH,x
-GCI_Common:     lda mapTblLo,y
-                sta zpDestLo
-                lda mapTblHi,y
+GCI_Common:     lda mapTblHi,y
+                beq GCI_Outside2
                 sta zpDestHi
+                lda mapTblLo,y
+                sta zpDestLo
                 lda actXL,x
                 rol
                 rol
@@ -565,7 +566,7 @@ GCI_OutsideDone:tay
                 sta zpDestLo
                 lda blkTblHi,y
                 sta zpDestHi
-GCI_BlockReady: lda zpBitsHi
+                lda zpBitsHi
                 asl
                 asl
                 ora zpBitsLo
@@ -575,6 +576,7 @@ GCI_BlockReady: lda zpBitsHi
                 lda charInfo,y                  ;Get charinfo
                 rts
 GCI_Outside:    lda #$00                        ;Outside map block $00 is always returned
+GCI_Outside2:   sta zpBitsLo
                 beq GCI_OutsideDone
 
         ; Get char collision info from the actor's position with Y offset

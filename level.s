@@ -49,19 +49,27 @@ InitMap:        lda zoneNum                     ;Map address might have changed
                 lda limitL                      ;Add startcolumn of zone
                 jsr Add8
                 jsr Negate16                    ;Negate
-                ldy #zoneLo                  ;Add zone startaddress
+                ldy #zoneLo                     ;Add zone startaddress
                 jsr Add16
                 lda #ZONEH_DATA                 ;Add zone mapdata offset
                 jsr Add8
-                lda fileLo+C_BLOCKS          ;Address of first block
+                lda fileLo+C_BLOCKS             ;Address of first block
                 sta zpBitsLo
                 lda fileHi+C_BLOCKS
                 sta zpBitsHi
                 ldx #$00                        ;The counter
-IM_Loop:        lda zpSrcHi                     ;Store and increase maprow-
-                sta mapTblHi,x                  ;pointer
+IM_Loop:        cpx limitU                      ;Check if outside zone vertically
+                bcc IM_MapRowOutside
+                cpx limitD
+                bcs IM_MapRowOutside
                 lda zpSrcLo
                 sta mapTblLo,x
+                lda zpSrcHi
+                bne IM_MapRowDone
+IM_MapRowOutside:
+                lda #$00                        ;Store zero address in that case
+IM_MapRowDone:  sta mapTblHi,x
+                lda zpSrcLo
                 clc
                 adc mapSizeX
                 sta zpSrcLo
