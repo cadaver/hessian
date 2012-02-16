@@ -87,6 +87,10 @@ ShowTextScreen: jsr WaitBottom
         ; Modifies: A,X,Y
 
 ScrollLogic:
+                if REDUCE_CONTROL_LATENCY > 0   ;In control latency reduction mode, wait already here
+SL_Wait:        lda newFrame                    ;until sprite IRQ is done with the current sprites
+                bmi SL_Wait
+                endif
                 if SHOW_SCROLL_RASTERTIME > 0
                 lda #$0e
                 sta $d020

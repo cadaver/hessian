@@ -3,6 +3,7 @@ SHOW_SPRITE_RASTERTIME = 1
 SHOW_SPRITEIRQ_RASTERTIME = 0
 SHOW_SCROLL_RASTERTIME = 0
 SHOW_MUSIC_RASTERTIME = 0
+REDUCE_CONTROL_LATENCY = 0
 
 SCRCENTER_X     = 19
 SCRCENTER_Y     = 13
@@ -20,7 +21,7 @@ Start:          jmp InitAll
 
                 include raster.s
 
-        ; Test mainloop, will be removed
+        ; Test initialization code, will be removed
 
 Main:           lda #0
                 jsr LoadLevel
@@ -29,13 +30,11 @@ Main:           lda #0
                 jsr SetMapPos
                 jsr RedrawScreen
                 jsr UpdateFrame
-
                 lda #0
                 jsr LoadMusic
                 lda #0
                 jsr InitMusic
-
-                lda #6
+CreatePlayer:   lda #6
                 sta actXH
                 lda #$80
                 sta actXL
@@ -48,12 +47,14 @@ MainLoop:       jsr ScrollLogic
                 jsr DrawActors
                 jsr ScrollPlayer
                 jsr UpdateFrame
-                jsr GetControls
+
                 jsr ScrollLogic
+                jsr GetControls
                 jsr UpdateActors
                 jsr InterpolateActors
                 jsr ScrollPlayer
                 jsr UpdateFrame
+
                 jmp MainLoop
 
         ; Include rest of the code & data

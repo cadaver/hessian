@@ -8,7 +8,7 @@ MoveProjectile: lda actSX,x
                 jsr MoveActorX
                 lda actSY,x
                 jsr MoveActorY
-                jmp GetCharInfoActor
+                jmp GetCharInfo
 
         ; Move actor with gravity and ground/wall collisions. Does not modify horizontal velocity
         ; Note: unlike MW1-4, solid walls with ground on top should have the obstacle-bit set
@@ -23,7 +23,7 @@ MoveProjectile: lda actSX,x
 MoveWithGravity:jsr AccMoveActorY               ;First do Y-move
                 lda actSY,x                     ;Going up or down?
                 bmi MWG_GoingUp
-MWG_GoingDown:  jsr GetCharInfoActor            ;Get charinfo at actor pos
+MWG_GoingDown:  jsr GetCharInfo                 ;Get charinfo at actor pos
                 and #CI_GROUND                  ;Hit ground? Todo: slope and stairs checks
                 beq MWG_InAir
 MWG_OnGround:   lda actYL,x                     ;Align actor Y-coord on the ground
@@ -38,10 +38,8 @@ MWG_OnGround:   lda actYL,x                     ;Align actor Y-coord on the grou
                 lda actSX,x
                 beq MWG_OnGroundDone
                 jsr MoveActorX
-                jsr SetCharInfoPosActor
-                lda #-1                         ;Check for wall collision one char up
-                jsr MoveCharInfoPosY
-                jsr GetCharInfo
+                lda #-1
+                jsr GetCharInfoOffset           ;Check for wall collision one char up
                 and #CI_OBSTACLE
                 beq MWG_OnGroundDone
                 lda temp3                       ;Hit wall, restore previous position
@@ -64,7 +62,7 @@ MWG_InAirReturnValue:
                 lda actSX,x
                 beq MWG_InAirDone
 MWG_InAirRight: jsr MoveActorX
-                jsr GetCharInfoActor
+                jsr GetCharInfo
                 and #CI_OBSTACLE
                 beq MWG_InAirDone
                 lda temp3                       ;Hit wall, restore previous position
@@ -77,10 +75,8 @@ MWG_InAirRight: jsr MoveActorX
 MWG_InAirDone:  lda temp2                       ;In air, no wall collision
                 rts
 
-MWG_GoingUp:    jsr SetCharInfoPosActor         ;When going up, check ceiling collision
-                lda temp1
-                jsr MoveCharInfoPosY
-                jsr GetCharInfo
+MWG_GoingUp:    lda temp1                       ;Check ceiling collision
+                jsr GetCharInfoOffset
                 and #CI_OBSTACLE
                 beq MWG_InAir
 MWG_CeilingHit: lda #$80
