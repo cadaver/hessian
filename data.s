@@ -210,6 +210,15 @@ N               set -16
 N               set N+16
                 repend
 
+slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
+                dc.b $20,$20,$20,$20,$20,$20,$20,$20    ;Slope 1
+                dc.b $38,$30,$28,$20,$18,$10,$08,$00    ;Slope 2
+                dc.b $00,$08,$10,$18,$20,$28,$30,$38    ;Slope 3
+                dc.b $38,$38,$30,$30,$28,$28,$20,$20    ;Slope 4
+                dc.b $18,$18,$10,$10,$08,$08,$00,$00    ;Slope 5
+                dc.b $00,$00,$08,$08,$10,$10,$18,$18    ;Slope 6
+                dc.b $20,$20,$28,$28,$30,$30,$38,$38    ;Slope 7
+
                 org ((* + $ff) & $ff00)
 
         ; Frequency table
@@ -269,6 +278,7 @@ actSizeH:       ds.b MAX_ACT,0
 actSizeU:       ds.b MAX_ACT,0
 actSizeD:       ds.b MAX_ACT,0
 actTime:        ds.b MAX_ACT,0
+actMoveFlags:   ds.b MAX_ACT,0
 
         ; Playroutine variables
 

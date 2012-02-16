@@ -594,9 +594,10 @@ GetCharInfoOffset:
                 and #$03
                 clc
                 adc zpBitsLo
+                tay
                 and #$03
                 sta zpBitsHi
-                lda zpBitsLo
+                tya
                 bmi GCIO_Neg
 GCIO_Pos:       lsr
                 lsr
@@ -737,6 +738,7 @@ GFA_Found:      sec
                 sta actFd,y
                 sta actSX,y
                 sta actSY,y
+                sta actMoveFlags,y
                 rts
 
         ; Get flashing color override for actor based on low bit of actor index

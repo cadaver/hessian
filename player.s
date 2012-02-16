@@ -32,11 +32,14 @@ MP_NotRight:    lda #-4
 MP_NoLongJump:  tya
                 ldy #6*8
                 jsr MoveWithGravity             ;Actually move & check collisions
-                bpl MP_NoHeadBump
+                lda actMoveFlags,x
+                and #AMF_HITCEILING
+                beq MP_NoHeadBump
                 lda #$00                        ;If head bumped, reset Y-speed
                 sta actSY,x
                 beq MP_NoNewJump
-MP_NoHeadBump:  and #$01                        ;Check ground hit
+MP_NoHeadBump:  lda actMoveFlags,x
+                and #AMF_GROUNDED               ;Check ground hit
                 beq MP_NoNewJump
 MP_OnGround:    lda joystick                    ;If on ground, can initiate a jump
                 and #JOY_UP
@@ -47,6 +50,8 @@ MP_OnGround:    lda joystick                    ;If on ground, can initiate a ju
 MP_Jump:        lda #-6*8
                 sta actSY,x
                 jsr MoveActorY                  ;Initial liftoff
+                lda #$00                        ;Reset grounded flag manually for immediate
+                sta actMoveFlags,x              ;jump physics
 MP_NoNewJump:   lda joystick
                 and #JOY_FIRE
                 beq MP_NoFire
