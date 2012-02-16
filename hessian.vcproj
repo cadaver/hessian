@@ -121,6 +121,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\physics.s"
+				>
+			</File>
+			<File
+				RelativePath=".\player.s"
+				>
+			</File>
+			<File
 				RelativePath=".\raster.s"
 				>
 			</File>
