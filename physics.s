@@ -80,12 +80,12 @@ MWG_NoCeiling:  lda temp2
 
 MWG_CheckLanding:
                 jsr GetCharInfo                 ;Get charinfo at actor pos
-                sta temp1
+                tay
                 lsr                             ;Hit ground?
                 bcc MWG_CheckCharCross          ;If not directly, check also possible char crossing
+                tya
                 ldy #$00
-                lda temp1                       ;Get the slopebits
-                and #$e0
+                and #$e0                        ;Get the slopebits
                 beq MWG_HitGround               ;Optimization for slope0 (most common)
                 sta temp3
                 lda actXL,x
@@ -105,16 +105,16 @@ MWG_CheckCharCross:
                 sec
                 sbc actSY,x
                 bcs MWG_NoLanding
-                lda #-1                         ;Get char above
+MWG_CrossedChar:lda #-1                         ;Get char above
                 jsr GetCharInfoOffset
-                sta temp1
+                tay
                 lsr
                 bcc MWG_NoLanding
                 lda #-8*8                       ;Move the actor 1 char up
                 jsr MoveActorY
+                tya
                 ldy #$00
-                lda temp1                       ;Get slopebits again, optimize for slope0
-                and #$e0
+                and #$e0                        ;Get slopebits again, optimize for slope0
                 beq MWG_HitGround
                 sta temp3
                 lda actXL,x
@@ -136,17 +136,17 @@ MWG_HitGround:  lda #$00
                 rts
 
 MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground under feet (may have
-                sta temp1                       ;crossed a char vertically while on a slope, so may need
+                tay                             ;crossed a char vertically while on a slope, so may need
                 lsr                             ;to adjust position either up or down, or the ground might
                 bcs MWG_FinalizeGround          ;actually have disintegrated)
                 lda #1                          ;Check below
                 jsr GetCharInfoOffset
-                sta temp1
+                tay
                 lsr
                 bcs MWG_FinalizeGroundBelow     ;Todo: allow intention to prefer either up or down
                 lda #-1                         ;direction (for stairs junctions)
                 jsr GetCharInfoOffset
-                sta temp1
+                tay
                 lsr
                 bcs MWG_FinalizeGroundAbove
                 lda temp2                       ;Start falling
@@ -161,8 +161,8 @@ MWG_FinalizeGroundAbove:
                 lda #-8*8
                 jsr MoveActorY
 MWG_FinalizeGround:
-                ldy #$00
-                lda temp1                       ;Get slopebits, optimize for slope0
+                tya
+                ldy #$00                        ;Get slopebits, optimize for slope0
                 and #$e0
                 beq MWG_OnGroundDone
                 sta temp3

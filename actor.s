@@ -418,7 +418,7 @@ AMAX_AccDone:   sta actSX,x
         ;
         ; Parameters: X actor index, A speed
         ; Returns: -
-        ; Modifies: A,Y
+        ; Modifies: A
 
 MoveActorX:     cmp #$80
                 bcs MAX_Neg
@@ -460,7 +460,7 @@ AMAY_AccDone:   sta actSY,x
         ;
         ; Parameters: X actor index, A speed
         ; Returns: -
-        ; Modifies: A,Y
+        ; Modifies: A
 
 MoveActorY:     cmp #$80
                 bcs MAY_Neg
