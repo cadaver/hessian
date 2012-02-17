@@ -49,7 +49,8 @@ MP_OnGround:    lda joystick                    ;If on ground, can initiate a ju
                 bne MP_NoNewJump
 MP_Jump:        lda #-6*8
                 sta actSY,x
-                jsr MoveActorY                  ;Initial liftoff
+                lda #-1*8                       ;Initial liftoff
+                jsr MoveActorY
                 lda #$00                        ;Reset grounded flag manually for immediate
                 sta actMoveFlags,x              ;jump physics
 MP_NoNewJump:   lda joystick

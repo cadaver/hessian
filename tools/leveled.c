@@ -111,6 +111,7 @@ unsigned char ascii;
 int k;
 int blockeditmode = 0;
 unsigned char copychcol;
+unsigned char copychinfo;
 
 int randomeditmode = 0;
 int randomactnum = 0;
@@ -1637,11 +1638,13 @@ void char_mainloop(void)
     {
       memcpy(copybuffer, &chardata[charnum*8],8);
       copychcol = chcol[charnum];
+      copychinfo = chinfo[charnum];
     }
     if (k == KEY_T)
     {
       memcpy(&chardata[charnum*8],copybuffer,8);
       chcol[charnum] = copychcol;
+      chinfo[charnum] = copychinfo;
       updateimage(charnum);
       updateblock(blocknum);
     }
