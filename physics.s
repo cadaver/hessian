@@ -28,7 +28,6 @@ MoveWithGravity:sta temp5
                 lda actMoveFlags,x              ;Only retain the grounded flag
                 and #AMF_GROUNDED
                 sta temp2
-                sta actMoveFlags,x
                 ldy actSX,x                     ;Have X-speed?
                 beq MWG_NoWall
                 lda actXL,x                     ;Store old X-pos in case we hit a wall
@@ -52,11 +51,12 @@ MWG_WallCheckDone:
                 sta actXL,x
                 lda temp4
                 sta actXH,x
-                lda actMoveFlags,x
+                lda temp2
                 ora #AMF_HITWALL
-                sta actMoveFlags,x
+                sta temp2
 MWG_NoWall:     lda temp2                       ;Do in air or grounded movement?
-                beq MWG_InAir
+                lsr
+                bcc MWG_InAir
                 jmp MWG_OnGround
 
 MWG_InAir:      lda temp5
@@ -69,10 +69,14 @@ MWG_CheckCeiling:
                 jsr GetCharInfoOffset
                 and #CI_OBSTACLE
                 beq MWG_NoCeiling
-                lda actMoveFlags,x
+                lda temp2
                 ora #AMF_HITCEILING
                 sta actMoveFlags,x
-MWG_NoCeiling:  rts
+                rts
+MWG_NoLanding:
+MWG_NoCeiling:  lda temp2
+                sta actMoveFlags,x
+                rts
 
 MWG_CheckLanding:
                 jsr GetCharInfo                 ;Get charinfo at actor pos
@@ -83,11 +87,11 @@ MWG_CheckLanding:
                 lda temp1                       ;Get the slopebits
                 and #$e0
                 beq MWG_HitGround               ;Optimization for slope0 (most common)
-                sta temp2
+                sta temp3
                 lda actXL,x
                 lsr
                 and #$1c
-                ora temp2
+                ora temp3
                 lsr
                 lsr
                 tay
@@ -112,11 +116,11 @@ MWG_CheckCharCross:
                 lda temp1                       ;Get slopebits again, optimize for slope0
                 and #$e0
                 beq MWG_HitGround
-                sta temp2
+                sta temp3
                 lda actXL,x
                 lsr
                 and #$1c
-                ora temp2
+                ora temp3
                 lsr
                 lsr
                 tay
@@ -126,10 +130,10 @@ MWG_HitGround:  lda #$00
                 and #$c0
                 ora slopeTbl,y
                 sta actYL,x                     ;Align actor to slope
-                lda actMoveFlags,x
+                lda temp2
                 ora #AMF_GROUNDED|AMF_LANDED
-                sta actMoveFlags,x              ;Set grounded flag
-MWG_NoLanding:  rts
+                sta actMoveFlags,x
+                rts
 
 MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground under feet (may have
                 sta temp1                       ;crossed a char vertically while on a slope, so may need
@@ -145,7 +149,7 @@ MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground
                 sta temp1
                 lsr
                 bcs MWG_FinalizeGroundAbove
-                lda actMoveFlags,x              ;Start falling
+                lda temp2                       ;Start falling
                 and #$ff-AMF_GROUNDED           ;Todo: may give sharper initial acceleration here
                 sta actMoveFlags,x              ;if falling feels too smooth
                 rts
@@ -161,11 +165,11 @@ MWG_FinalizeGround:
                 lda temp1                       ;Get slopebits, optimize for slope0
                 and #$e0
                 beq MWG_OnGroundDone
-                sta temp2
+                sta temp3
                 lda actXL,x
                 lsr
                 and #$1c
-                ora temp2
+                ora temp3
                 lsr
                 lsr
                 tay
@@ -174,5 +178,6 @@ MWG_OnGroundDone:
                 and #$c0
                 ora slopeTbl,y
                 sta actYL,x
-                lda #$01                        ;On ground
+                lda temp2
+                sta actMoveFlags,x
                 rts
