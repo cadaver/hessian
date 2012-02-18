@@ -306,8 +306,11 @@ SL_CSSMapY:     lda #$00
 
 UpdateFrame:    lda #$01                        ;Re-enable raster IRQs if were disabled by the loader
                 sta $d01a
-SSpr_Wait:      lda newFrame                    ;Wait until sprite IRQ is done with the current sprites
-                bmi SSpr_Wait
+UF_Wait:        lda targetFrames                ;Wait for NTSC delay if needed
+                beq UF_Wait
+                lda newFrame                    ;Wait until sprite IRQs are done with the current sprites
+                bmi UF_Wait
+                dec targetFrames
                 if SHOW_SPRITE_RASTERTIME > 0
                 lda #$05
                 sta $d020

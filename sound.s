@@ -93,6 +93,8 @@ PMus_SongTblP1: lda $1000,y
 PMus_InitLoop:  sta ntChnPattPos-1,x
                 dex
                 bne PMus_InitLoop
+                lda #$04                        ;Hack: reset NTSC-delay to avoid systematic
+                sta ntscDelay                   ;hard restart bug at tempo 5
                 jsr PMus_InitChn
                 ldx #$07
                 jsr PMus_InitChn

@@ -139,16 +139,16 @@ MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground
                 tay                             ;crossed a char vertically while on a slope, so may need
                 lsr                             ;to adjust position either up or down, or the ground might
                 bcs MWG_FinalizeGround          ;actually have disintegrated)
-                lda #1                          ;Check below
-                jsr GetCharInfoOffset
-                tay
-                lsr
-                bcs MWG_FinalizeGroundBelow     ;Todo: allow intention to prefer either up or down
-                lda #-1                         ;direction (for stairs junctions)
+                lda #-1                         ;Check first above
                 jsr GetCharInfoOffset
                 tay
                 lsr
                 bcs MWG_FinalizeGroundAbove
+                lda #1                          ;Then below
+                jsr GetCharInfoOffset
+                tay
+                lsr
+                bcs MWG_FinalizeGroundBelow
                 lda temp2                       ;Start falling
                 and #$ff-AMF_GROUNDED           ;Todo: may give sharper initial acceleration here
                 sta actMoveFlags,x              ;if falling feels too smooth

@@ -23,7 +23,9 @@ MAX_CACHESPRITES = 63
                 Var zpDestLo
                 Var zpDestHi
 
-                Var newFrame                    ;Frame update/zeropage variables
+                Var ntscDelay                   ;Frame update/raster IRQ variables
+                Var targetFrames
+                Var newFrame
                 Var irqSaveA
                 Var irqSaveX
                 Var irqSaveY

@@ -20,7 +20,7 @@ Irq1:           cld
                 sty irqSaveY
                 lda #$35
                 sta $01                         ;Ensure IO memory is available
-                lda #$00                        ;Reset newframe flag
+                lda #$00
                 sta newFrame
 Irq1_ScrollX:   lda #$17
                 sta $d016
@@ -312,13 +312,25 @@ Irq4:           cld
                 lda #PANEL_BG3
                 sta $d023
                 dec $d019                       ;Acknowledge raster IRQ
-                lsr newFrame                    ;Mark sprite-IRQs done with the current sprites
+                lsr newFrame                    ;Mark frame update available
                 lda #$1f                        ;Switch screen back on
                 sta $d011
                 if SHOW_MUSIC_RASTERTIME > 0
                 inc $d020
                 endif
+Irq4_NtscDelay: dec ntscDelay                   ;Handle NTSC delay counting
+                bpl Irq4_NoNtscDelay
+                lda #$05
+                sta ntscDelay
+                bne Irq4_SkipFrame
+Irq4_NoNtscDelay:
+                lda targetFrames                ;Maintain a "target frames" counter
+                cmp #$02                        ;which the main program will decrement.
+                bcs Irq4_TargetFramesOk         ;Delay will not be used when the update
+                inc targetFrames                ;is already lagging behind
+Irq4_TargetFramesOk:
                 jsr PlayMusic                   ;Play music/sound effects
+Irq4_SkipFrame:
                 if SHOW_MUSIC_RASTERTIME > 0
                 dec $d020
                 endif
