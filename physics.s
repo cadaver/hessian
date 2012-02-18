@@ -28,13 +28,8 @@ MoveWithGravity:sta temp5
                 lda actMoveFlags,x              ;Only retain the grounded flag
                 and #AMF_GROUNDED
                 sta temp2
-                ldy actSX,x                     ;Have X-speed?
+                lda actSX,x                     ;Have X-speed?
                 beq MWG_NoWall
-                lda actXL,x                     ;Store old X-pos in case we hit a wall
-                sta temp3
-                lda actXH,x
-                sta temp4
-                tya
                 jsr MoveActorX
                 lda temp2                       ;If grounded, check wall 1 char higher
                 bne MWG_GroundedWallCheck
@@ -42,15 +37,15 @@ MWG_InAirWallCheck:
                 jsr GetCharInfo
                 jmp MWG_WallCheckDone
 MWG_GroundedWallCheck:
-                lda #-1
-                jsr GetCharInfoOffset
+                jsr GetCharInfo1Above
 MWG_WallCheckDone:
                 and #CI_OBSTACLE
                 beq MWG_NoWall
-                lda temp3                       ;If hit wall, restore X-pos & set flag
-                sta actXL,x
-                lda temp4
-                sta actXH,x
+                lda actSX,x                     ;If hit wall, restore X-pos & set flag
+                eor #$ff
+                clc
+                adc #$01
+                jsr MoveActorX
                 lda temp2
                 ora #AMF_HITWALL
                 sta temp2
@@ -61,10 +56,11 @@ MWG_NoWall:     lda temp2                       ;Do in air or grounded movement?
 
 MWG_InAir:      lda temp5
                 ldy temp6
-                jsr AccMoveActorY
+                jsr AccActorY
                 lda actSY,x                     ;Check landing or ceiling hit?
                 bpl MWG_CheckLanding
 MWG_CheckCeiling:
+                jsr MoveActorY
                 lda temp1
                 jsr GetCharInfoOffset
                 and #CI_OBSTACLE
@@ -73,16 +69,30 @@ MWG_CheckCeiling:
                 ora #AMF_HITCEILING
                 sta actMoveFlags,x
                 rts
-MWG_NoLanding:
-MWG_NoCeiling:  lda temp2
+MWG_NoCeiling:  lda actSX,x
+                beq MWG_NoLanding               ;If abs. X-speed is higher than abs. Y-speed
+                bmi MWG_XSpeedNeg               ;while going up, there is possibility
+                eor #$ff                        ;of clipping through a slope. Check landing
+                clc                             ;to prevent that
+                adc #$01
+MWG_XSpeedNeg:  cmp actSY,x
+                bcs MWG_NoLanding
+                jsr GetCharInfo
+                and #$e0
+                beq MWG_NoLanding               ;Check that it's an actual diagonal slope
+                sta temp3                       ;and that the X-speed is against the slope
+                eor actSX,x
+                bpl MWG_HitGround2
+MWG_NoLanding:  lda temp2
                 sta actMoveFlags,x
                 rts
 
 MWG_CheckLanding:
+                jsr MoveActorY
                 jsr GetCharInfo                 ;Get charinfo at actor pos
                 tay
                 lsr                             ;Hit ground?
-                bcc MWG_CheckCharCross          ;If not directly, check also possible char crossing
+                bcc MWG_CheckCharCrossY         ;If not directly, check also possible char crossing
                 tya
                 ldy #$00
                 and #$e0                        ;Get the slopebits
@@ -99,14 +109,16 @@ MWG_CheckLanding:
                 and #$3f
                 cmp slopeTbl,y
                 bcs MWG_HitGround
-MWG_CheckCharCross:
+                adc actSY,x                     ;Check if we would hit the slope next frame
+                cmp slopeTbl,y
+                bcs MWG_HitGround
+MWG_CheckCharCrossY:
                 lda actYL,x
                 and #$3f
                 sec
                 sbc actSY,x
                 bcs MWG_NoLanding
-MWG_CrossedChar:lda #-1                         ;Get char above
-                jsr GetCharInfoOffset
+MWG_CrossedChar:jsr GetCharInfo1Above           ;Get char above
                 tay
                 lsr
                 bcc MWG_NoLanding
@@ -117,7 +129,7 @@ MWG_CrossedChar:lda #-1                         ;Get char above
                 and #$e0                        ;Get slopebits again, optimize for slope0
                 beq MWG_HitGround
                 sta temp3
-                lda actXL,x
+MWG_HitGround2: lda actXL,x
                 lsr
                 and #$1c
                 ora temp3
@@ -139,13 +151,11 @@ MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground
                 tay                             ;crossed a char vertically while on a slope, so may need
                 lsr                             ;to adjust position either up or down, or the ground might
                 bcs MWG_FinalizeGround          ;actually have disintegrated)
-                lda #-1                         ;Check first above
-                jsr GetCharInfoOffset
+                jsr GetCharInfo1Above           ;Check first above
                 tay
                 lsr
                 bcs MWG_FinalizeGroundAbove
-                lda #1                          ;Then below
-                jsr GetCharInfoOffset
+                jsr GetCharInfo1Below           ;Then below
                 tay
                 lsr
                 bcs MWG_FinalizeGroundBelow

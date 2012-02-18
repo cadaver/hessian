@@ -4,23 +4,40 @@
         ; Returns: -
         ; Modifies: A,Y
 
-MovePlayer:     lda #$00                        ;Check intention to move sideways
-                sta actSX,x
+MovePlayer:     lda actMoveFlags,x
+                and #AMF_GROUNDED
+                sta temp1
+
                 lda joystick
                 and #JOY_LEFT
                 beq MP_NotLeft
                 lda #$80
                 sta actD,x
-                lda #-4*8
-                sta actSX,x
+                lda #-8
+                ldy temp1
+                bne MP_OnGroundAccL
+                lda #-2
+MP_OnGroundAccL:ldy #-4*8
+                jsr AccActorX
+                jmp MP_NoBraking
 MP_NotLeft:     lda joystick
                 and #JOY_RIGHT
                 beq MP_NotRight
                 lda #$00
                 sta actD,x
-                lda #4*8
-                sta actSX,x
-MP_NotRight:    lda #-4
+                lda #8
+                ldy temp1
+                bne MP_OnGroundAccR
+                lda #2
+MP_OnGroundAccR:ldy #4*8
+                jsr AccActorX
+                jmp MP_NoBraking
+MP_NotRight:    lda actMoveFlags,x
+                and #AMF_GROUNDED
+                beq MP_NoBraking
+                lda #8                          ;When grounded and not moving, brake X-speed
+                jsr BrakeActorX
+MP_NoBraking:   lda #-4
                 sta temp1
                 ldy #8                          ;Make jump longer by holding joystick up
                 lda actSY,x                     ;as long as still has upward velocity
@@ -49,8 +66,8 @@ MP_OnGround:    lda joystick                    ;If on ground, can initiate a ju
                 bne MP_NoNewJump
 MP_Jump:        lda #-6*8
                 sta actSY,x
-                lda #-1*8                       ;Initial liftoff
-                jsr MoveActorY
+                ;lda #-1*8                       ;Initial liftoff
+                ;jsr MoveActorY
                 lda #$00                        ;Reset grounded flag manually for immediate
                 sta actMoveFlags,x              ;jump physics
 MP_NoNewJump:   lda joystick

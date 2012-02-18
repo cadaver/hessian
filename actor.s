@@ -354,7 +354,7 @@ IA_AddOffset:   lda sprX,x                      ;Add offset to sprite coords
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
-        
+
 UpdateActors:
                 if SHOW_ACTOR_RASTERTIME > 0
                 lda #$01
@@ -389,30 +389,8 @@ UA_Jump:        jsr $1000
                 if SHOW_ACTOR_RASTERTIME > 0
                 lda #$00
                 sta $d020
-                endif                
+                endif
                 rts
-
-        ; Accelerate actor in X-direction, then move
-        ;
-        ; Parameters: X actor index, A acceleration, Y speed limit
-        ; Returns: -
-        ; Modifies: A,temp8
-
-AccMoveActorX:  sty temp8
-                clc
-                adc actSX,x
-                bmi AMAX_SpeedNeg
-AMAX_SpeedPos:  bit temp8                       ;If speed positive and limit negative,
-                bmi AMAX_AccDone                ;can't have reached limit yet
-                cmp temp8
-                bcc AMAX_AccDone
-                bcs AMAX_AccLimit
-AMAX_SpeedNeg:  bit temp8                       ;If speed negative and limit positive,
-                bpl AMAX_AccDone                ;can't have reached limit yet
-                cmp temp8
-                bcs AMAX_AccDone
-AMAX_AccLimit:  tya
-AMAX_AccDone:   sta actSX,x
 
         ; Move actor in X-direction
         ;
@@ -434,28 +412,6 @@ MAX_Neg:        clc
                 dec actXH,x
 MAX_NegOk:      rts
 
-        ; Accelerate actor in Y-direction, then move
-        ;
-        ; Parameters: X actor index, A acceleration, Y speed limit
-        ; Returns: -
-        ; Modifies: A,temp8
-
-AccMoveActorY:  sty temp8
-                clc
-                adc actSY,x
-                bmi AMAY_SpeedNeg
-AMAY_SpeedPos:  bit temp8                       ;If speed positive and limit negative,
-                bmi AMAY_AccDone                ;can't have reached limit yet
-                cmp temp8
-                bcc AMAY_AccDone
-                bcs AMAY_AccLimit
-AMAY_SpeedNeg:  bit temp8                       ;If speed negative and limit positive,
-                bpl AMAY_AccDone                ;can't have reached limit yet
-                cmp temp8
-                bcs AMAY_AccDone
-AMAY_AccLimit:  tya
-AMAY_AccDone:   sta actSY,x
-
         ; Move actor in Y-direction
         ;
         ; Parameters: X actor index, A speed
@@ -475,6 +431,99 @@ MAY_Neg:        clc
                 bcs MAY_NegOk
                 dec actYH,x
 MAY_NegOk:      rts
+
+
+        ; Accelerate actor in X-direction
+        ;
+        ; Parameters: X actor index, A acceleration, Y speed limit
+        ; Returns: -
+        ; Modifies: A,temp8
+
+AccActorX:      sty temp8
+                clc
+                adc actSX,x
+                bmi AAX_SpeedNeg
+AAX_SpeedPos:   bit temp8                       ;If speed positive and limit negative,
+                bmi AAX_AccDone                 ;can't have reached limit yet
+                cmp temp8
+                bcc AAX_AccDone
+                bcs AAX_AccLimit
+AAX_SpeedNeg:   bit temp8                       ;If speed negative and limit positive,
+                bpl AAX_AccDone                 ;can't have reached limit yet
+                cmp temp8
+                bcs AAX_AccDone
+AAX_AccLimit:   tya
+AAX_AccDone:    sta actSX,x
+                rts
+
+        ; Accelerate actor in Y-direction
+        ;
+        ; Parameters: X actor index, A acceleration, Y speed limit
+        ; Returns: -
+        ; Modifies: A, temp8
+
+AccActorY:      sty temp8
+                clc
+                adc actSY,x
+                bmi AAY_SpeedNeg
+AAY_SpeedPos:   bit temp8                       ;If speed positive and limit negative,
+                bmi AAY_AccDone                 ;can't have reached limit yet
+                cmp temp8
+                bcc AAY_AccDone
+                bcs AAY_AccLimit
+AAY_SpeedNeg:   bit temp8                       ;If speed negative and limit positive,
+                bpl AAY_AccDone                 ;can't have reached limit yet
+                cmp temp8
+                bcs AAY_AccDone
+AAY_AccLimit:   tya
+AAY_AccDone:    sta actSY,x
+                rts
+
+        ; Brake X-speed of an actor towards zero
+        ;
+        ; Parameters: X Actor index, A deceleration (always positive)
+        ; Returns: -
+        ; Modifies: A, temp8
+
+BrakeActorX:    sta temp8
+                lda actSX,x
+                beq BAct_XDone2
+                bmi BAct_XNeg
+BAct_XPos:      sec
+                sbc temp8
+                bpl BAct_XDone
+                lda #$00
+BAct_XDone:     sta actSX,x
+BAct_XDone2:    rts
+BAct_XNeg:      clc
+                adc temp8
+                bmi BAct_XDone
+                lda #$00
+                sta actSX,x
+                rts
+
+        ; Brake Y-speed of an actor towards zero
+        ;
+        ; Parameters: X Actor index, A deceleration (always positive)
+        ; Returns: -
+        ; Modifies: A, temp8
+
+BrakeActorY:    sta temp8
+                lda actSY,x
+                beq BAct_YDone2
+                bmi BAct_YNeg
+BAct_YPos:      sec
+                sbc temp8
+                bpl BAct_YDone
+                lda #$00
+BAct_YDone:     sta actSY,x
+BAct_YDone2:    rts
+BAct_YNeg:      clc
+                adc temp8
+                bmi BAct_YDone
+                lda #$00
+                sta actSY,x
+                rts
 
         ; Process actor's animation delay
         ;
@@ -538,23 +587,18 @@ GetActorCharCoords:
         ; Modifies: A,Y,loader temp vars
 
 GetCharInfo:    lda actYL,x
-                rol
-                rol
-                rol
-                and #$03
-                sta zpBitsHi
+                and #$c0
+                lsr
+                lsr
+                lsr
+                lsr
+                sta zpBitsLo
                 ldy actYH,x
 GCI_Common:     lda mapTblHi,y
                 beq GCI_Outside2
                 sta zpDestHi
                 lda mapTblLo,y
                 sta zpDestLo
-                lda actXL,x
-                rol
-                rol
-                rol
-                and #$03
-                sta zpBitsLo
                 ldy actXH,x
                 cpy limitL
                 bcc GCI_Outside
@@ -566,9 +610,11 @@ GCI_OutsideDone:tay
                 sta zpDestLo
                 lda blkTblHi,y
                 sta zpDestHi
-                lda zpBitsHi
-                asl
-                asl
+                lda actXL,x
+                rol
+                rol
+                rol
+                and #$03
                 ora zpBitsLo
                 tay
                 lda (zpDestLo),y                ;Get char from block
@@ -578,6 +624,49 @@ GCI_OutsideDone:tay
 GCI_Outside:    lda #$00                        ;Outside map block $00 is always returned
 GCI_Outside2:   sta zpBitsLo
                 beq GCI_OutsideDone
+
+        ; Get char collision info from 1 char above actor's pos (optimized)
+        ;
+        ; Parameters: X actor index
+        ; Returns: A charinfo
+        ; Modifies: A,Y,loader temp vars
+
+GetCharInfo1Above:
+                lda actYL,x
+                and #$c0
+                lsr
+                lsr
+                lsr
+                lsr
+                ldy actYH,x
+                sbc #$04-1                      ;C=0
+                bcs GCI1A_Ok
+                lda #$0c
+                dey
+GCI1A_Ok:       sta zpBitsLo
+                jmp GCI_Common
+
+        ; Get char collision info from 1 char above actor's pos (optimized)
+        ;
+        ; Parameters: X actor index
+        ; Returns: A charinfo
+        ; Modifies: A,Y,loader temp vars
+
+GetCharInfo1Below:
+                lda actYL,x
+                and #$c0
+                lsr
+                lsr
+                lsr
+                lsr
+                ldy actYH,x
+                adc #$04
+                cmp #$10
+                bcc GCI1B_Ok
+                lda #$00
+                iny
+GCI1B_Ok:       sta zpBitsLo
+                jmp GCI_Common
 
         ; Get char collision info from the actor's position with Y offset
         ;
@@ -595,8 +684,10 @@ GetCharInfoOffset:
                 clc
                 adc zpBitsLo
                 tay
-                and #$03
-                sta zpBitsHi
+                asl
+                asl
+                and #$0c
+                sta zpBitsLo
                 tya
                 bmi GCIO_Neg
 GCIO_Pos:       lsr
@@ -657,7 +748,7 @@ CAC_YNeg:       sta temp7
                 adc #$01                        ;C=0
                 sta temp8
                 lda temp7
-                eor #$ff  
+                eor #$ff
                 adc #$00
                 lsr
                 ror temp8
