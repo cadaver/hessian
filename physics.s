@@ -18,7 +18,6 @@ MoveProjectile: lda actSX,x
 
         ; Move actor with gravity and ground/wall collisions. Does not modify horizontal velocity
         ;
-        ;
         ; Parameters: X actor index, A gravity acceleration (should be positive), Y speed limit,
         ;             temp1 vertical char offset (negative) for ceiling check
         ; Returns: actMoveFlags updated

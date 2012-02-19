@@ -486,7 +486,7 @@ UF_WaitPrevFrame:
                 bne UF_WaitNormal
 UF_WaitColorShift:
                 lda $d012                       ;Wait until we are near the scorescreen split
-                cmp #IRQ3_LINE-$40
+                cmp #IRQ3_LINE-$48
                 bcc UF_WaitColorShift
                 cmp #IRQ3_LINE+$20
                 bcs UF_WaitColorShift
