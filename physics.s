@@ -23,13 +23,24 @@ MoveProjectile: lda actSX,x
         ; Returns: actMoveFlags updated
         ; Modifies: A,X,Y,temp regs
 
-MoveWithGravity:sta temp5
-                sty temp6
+MoveWithGravity:sta temp3
                 lda actMoveFlags,x              ;Only retain the grounded flag
                 and #AMF_GROUNDED
                 sta temp2
-                lda actSX,x                     ;Have X-speed?
-                beq MWG_NoWall
+                bne MWG_NoYMove                 ;If not grounded, move in Y-dir first
+                sty temp4
+                lda actSY,x                     ;Add Y-acceleration (simplified version of
+                clc                             ;AccActorY)
+                adc temp3
+                bmi MWG_NoYSpeedLimit           ;If speed still negative, can not have
+                cmp temp4                       ;reached terminal velocity yet
+                bcc MWG_NoYSpeedLimit
+                lda temp4
+MWG_NoYSpeedLimit:
+                sta actSY,x
+                jsr MoveActorY
+MWG_NoYMove:    lda actSX,x                     ;Have X-speed?
+                beq MWG_NoXMove
                 jsr MoveActorX
                 lda temp2                       ;If grounded, check wall 1 char higher
                 bne MWG_GroundedWallCheck
@@ -40,27 +51,37 @@ MWG_GroundedWallCheck:
                 jsr GetCharInfo1Above
 MWG_WallCheckDone:
                 and #CI_OBSTACLE
-                beq MWG_NoWall
-                lda actSX,x                     ;If hit wall, restore X-pos & set flag
-                eor #$ff
+                beq MWG_NoWallHit
+                lda actSX,x                     ;If hit wall, back out & set flag
+                bmi MWG_HitWallLeft
+MWG_HitWallRight:
+                lda actXL,x
+                ora #$3f
+                sec
+                sbc #$40
+                sta actXL,x
+                bcs MWG_HitWallDone
+                dec actXH,x
+                bcc MWG_HitWallDone
+MWG_HitWallLeft:lda actXL,x
+                and #$c0
                 clc
-                adc #$01
-                jsr MoveActorX
-                lda temp2
+                adc #$40
+                sta actXL,x
+                bcc MWG_HitWallDone
+                inc actXH,x
+MWG_HitWallDone:lda temp2
                 ora #AMF_HITWALL
                 sta temp2
-MWG_NoWall:     lda temp2                       ;Do in air or grounded movement?
+MWG_NoWallHit:
+MWG_NoXMove:    lda temp2                       ;Do in air or grounded collision checks?
                 lsr
                 bcc MWG_InAir
                 jmp MWG_OnGround
 
-MWG_InAir:      lda temp5
-                ldy temp6
-                jsr AccActorY
-                lda actSY,x                     ;Check landing or ceiling hit?
+MWG_InAir:      lda actSY,x                     ;Check landing or ceiling hit?
                 bpl MWG_CheckLanding
 MWG_CheckCeiling:
-                jsr MoveActorY
                 lda temp1
                 jsr GetCharInfoOffset
                 and #CI_OBSTACLE
@@ -78,17 +99,20 @@ MWG_NoCeiling:  lda actSX,x
 MWG_XSpeedNeg:  cmp actSY,x
                 bcs MWG_NoLanding
                 jsr GetCharInfo
+                tay
+                lsr
+                bcc MWG_NoLanding
+                tya
                 and #$e0
-                beq MWG_NoLanding               ;Check that it's an actual diagonal slope
-                sta temp3                       ;and that the X-speed is against the slope
-                eor actSX,x
-                bpl MWG_HitGround2
+                sta temp3
+                beq MWG_HitGround2
+                eor actSX,x                     ;If it's a diagonal slope, verify that X-speed
+                bpl MWG_HitGround2              ;is actually against it
 MWG_NoLanding:  lda temp2
                 sta actMoveFlags,x
                 rts
 
 MWG_CheckLanding:
-                jsr MoveActorY
                 jsr GetCharInfo                 ;Get charinfo at actor pos
                 tay
                 lsr                             ;Hit ground?
@@ -110,8 +134,8 @@ MWG_CheckLanding:
                 cmp slopeTbl,y
                 bcs MWG_HitGround
                 adc actSY,x                     ;Check if we would hit the slope next frame
-                cmp slopeTbl,y
-                bcs MWG_HitGround
+                cmp slopeTbl,y                  ;(must land also in that case, because next frame
+                bcs MWG_HitGround               ;we also move in X-dir and possibly clip through)
 MWG_CheckCharCrossY:
                 lda actYL,x
                 and #$3f

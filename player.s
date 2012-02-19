@@ -5,17 +5,14 @@
         ; Modifies: A,Y
 
 MovePlayer:     lda actMoveFlags,x
-                and #AMF_GROUNDED
-                sta temp1
-
-                lda joystick
+                lsr                             ;Grounded bit to C
+                lda joystick                    ;X-acceleration: faster when grounded
                 and #JOY_LEFT
                 beq MP_NotLeft
                 lda #$80
                 sta actD,x
                 lda #-8
-                ldy temp1
-                bne MP_OnGroundAccL
+                bcs MP_OnGroundAccL
                 lda #-2
 MP_OnGroundAccL:ldy #-4*8
                 jsr AccActorX
@@ -26,18 +23,38 @@ MP_NotLeft:     lda joystick
                 lda #$00
                 sta actD,x
                 lda #8
-                ldy temp1
-                bne MP_OnGroundAccR
+                bcs MP_OnGroundAccR
                 lda #2
 MP_OnGroundAccR:ldy #4*8
                 jsr AccActorX
                 jmp MP_NoBraking
-MP_NotRight:    lda actMoveFlags,x
-                and #AMF_GROUNDED
-                beq MP_NoBraking
+MP_NotRight:    bcc MP_NoBraking
                 lda #8                          ;When grounded and not moving, brake X-speed
                 jsr BrakeActorX
-MP_NoBraking:   lda #-4
+MP_NoBraking:   lda actMoveFlags,x
+                and #AMF_HITWALL|AMF_LANDED     ;If hit wall (and did not land simultaneously), reset X-speed
+                cmp #AMF_HITWALL
+                bne MP_NoHitWall
+                lda #$00
+                sta actSX,x
+MP_NoHitWall:   lda actMoveFlags,x
+                lsr                             ;Grounded bit to C
+                and #AMF_HITCEILING/2
+                beq MP_NoHeadBump
+                lda #$00                        ;If head bumped, reset Y-speed
+                sta actSY,x
+MP_NoHeadBump:  bcc MP_NoNewJump
+                lda joystick                    ;If on ground, can initiate a jump
+                and #JOY_UP
+                beq MP_NoNewJump
+                lda prevJoy
+                and #JOY_UP
+                bne MP_NoNewJump
+MP_Jump:        lda #-6*8
+                sta actSY,x
+                lda #$00                        ;Reset grounded flag manually for immediate
+                sta actMoveFlags,x              ;jump physics
+MP_NoNewJump:   lda #-4                         ;Actor height for ceiling check
                 sta temp1
                 ldy #8                          ;Make jump longer by holding joystick up
                 lda actSY,x                     ;as long as still has upward velocity
@@ -49,28 +66,7 @@ MP_NoBraking:   lda #-4
 MP_NoLongJump:  tya
                 ldy #6*8
                 jsr MoveWithGravity             ;Actually move & check collisions
-                lda actMoveFlags,x
-                and #AMF_HITCEILING
-                beq MP_NoHeadBump
-                lda #$00                        ;If head bumped, reset Y-speed
-                sta actSY,x
-                beq MP_NoNewJump
-MP_NoHeadBump:  lda actMoveFlags,x
-                and #AMF_GROUNDED               ;Check ground hit
-                beq MP_NoNewJump
-MP_OnGround:    lda joystick                    ;If on ground, can initiate a jump
-                and #JOY_UP
-                beq MP_NoNewJump
-                lda prevJoy
-                and #JOY_UP
-                bne MP_NoNewJump
-MP_Jump:        lda #-6*8
-                sta actSY,x
-                ;lda #-1*8                       ;Initial liftoff
-                ;jsr MoveActorY
-                lda #$00                        ;Reset grounded flag manually for immediate
-                sta actMoveFlags,x              ;jump physics
-MP_NoNewJump:   lda joystick
+                lda joystick                    ;Shooting
                 and #JOY_FIRE
                 beq MP_NoFire
                 lda prevJoy
