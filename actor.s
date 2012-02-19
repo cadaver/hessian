@@ -47,7 +47,6 @@ DrawActors:
                 sta $d020
                 endif
                 lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
-                lsr
                 sta IA_PrevScrollX+1
                 lda scrollY
                 sta IA_PrevScrollY+1
@@ -87,21 +86,21 @@ DA_GetScreenPos:
                 sta actPrevYL,x
                 sec
 DA_SprSubYL:    sbc #$00
-                sta temp2
+                sta temp3
                 lda actYH,x
                 sta actPrevYH,x
 DA_SprSubYH:    sbc #$00
                 cmp #MAX_ACTY
                 bcs DA_ActorDone
                 tay
-                lda temp2
+                lda temp3
                 lsr
                 lsr
                 lsr
-                ora coordTblYLo,y
-                sta temp2
-                lda coordTblYHi,y
+                ora coordTblLo+1,y
                 sta temp3
+                lda coordTblHi+1,y
+                sta temp4
                 lda actXL,x
                 sta actPrevXL,x
                 sec
@@ -117,9 +116,10 @@ DA_SprSubXH:    sbc #$00
                 lsr
                 lsr
                 lsr
-                lsr
-                ora coordTblX,y
+                ora coordTblLo,y
                 sta temp1
+                lda coordTblHi,y
+                sta temp2
                 ldy #$0f                        ;Get flashing/flicker/color override:
                 lda actC,x                      ;$01-$0f = color override only
                 sta GASS_ColorOr+1              ;$40/$80 = flicker with sprite's own color
@@ -147,25 +147,25 @@ DA_SameSprFile: ldy #AD_NUMSPRITES              ;Get number of sprites / humanoi
                 beq DA_OneSprite
                 bmi DA_Humanoid
 
-DA_Normal:      sta temp4
+DA_Normal:      sta temp5
                 lda actF1,x
                 ldy actD,x
                 bpl DA_NormalRight
                 ldy #AD_LEFTFRADD               ;Add left frame offset if necessary
                 adc (actLo),y
 DA_NormalRight: adc #AD_FRAMES
-                sta temp5                       ;Store framepointer
+                sta temp6                       ;Store framepointer
                 ldx sprIndex
 DA_NormalLoop:  tay
                 lda (actLo),y
-                dec temp4                       ;Decrement actor sprite count
+                dec temp5                       ;Decrement actor sprite count
                 bmi DA_LastSprite               ;If last sprite, no need to add the connect-spot
                 jsr GetAndStoreSprite
                 ldy #AD_NUMFRAMES
-                lda temp5                       ;Advance framepointer
+                lda temp6                       ;Advance framepointer
                 clc
                 adc (actLo),y
-                sta temp5
+                sta temp6
                 bcc DA_NormalLoop
 
 DA_OneSprite:   lda actF1,x                     ;Fast path for onesprite-actors
@@ -243,17 +243,16 @@ InterpolateActors:
                 sta $d020
                 endif
                 lda scrollX                     ;Calculate how much the scrolling has changed
-                lsr
                 sec
 IA_PrevScrollX: sbc #$00
                 bmi IA_ScrollXNeg
-                cmp #$03
+                cmp #$05
                 bcc IA_ScrollXOk
-                sbc #$04
+                sbc #$08
                 bcc IA_ScrollXOk
-IA_ScrollXNeg:  cmp #$fe
+IA_ScrollXNeg:  cmp #$fc
                 bcs IA_ScrollXOk
-                adc #$04
+                adc #$08
 IA_ScrollXOk:   sta IA_ScrollXAdjust+1
                 lda scrollY
                 sec
@@ -291,7 +290,6 @@ IA_NoFlicker:   ldy sprAct,x                    ;Take actor number associated wi
                 lsr
                 lsr
                 lsr
-                lsr
                 bit temp1
                 bpl IA_XMovePos
                 ora #$f0
@@ -301,8 +299,17 @@ IA_ScrollXAdjust:
                 sbc #$00                        ;Add scrolling
                 sta actPrevXL,y
                 clc
-                adc sprX,x
-                sta sprX,x                      ;Add offset to sprite
+                bmi IA_XOffsetNeg
+                adc sprXL,x
+                sta sprXL,x                     ;Add offset to sprite
+                lda #$00
+                beq IA_XOffsetCommon
+IA_XOffsetNeg:  adc sprXL,x
+                sta sprXL,x
+                lda #$ff
+IA_XOffsetCommon:
+                adc sprXH,x
+                sta sprXH,x
                 lda actYL,y                     ;Calculate average movement
                 sec                             ;of actor in Y-direction
                 sbc actPrevYL,y
@@ -329,7 +336,8 @@ IA_ScrollYAdjust:
                 lda #$ff                        ;Replace the Y-coord MSB with a marker
                 sta actPrevYH,y                 ;so we don't repeat this calculation
 IA_Next:        dex
-                bpl IA_SprLoop
+                bmi IA_Done
+                jmp IA_SprLoop
 IA_Done:
                 if SHOW_ACTOR_RASTERTIME > 0
                 lda #$00
@@ -337,10 +345,19 @@ IA_Done:
                 endif
                 rts
 
-IA_AddOffset:   lda sprX,x                      ;Add offset to sprite coords
+IA_AddOffset:   lda actPrevXL,y                 ;Add offset to sprite coords
                 clc
-                adc actPrevXL,y
-                sta sprX,x
+                bmi IA_XOffsetNeg2
+                adc sprXL,x
+                sta sprXL,x
+                lda #$00
+                beq IA_XOffsetCommon2
+IA_XOffsetNeg2: adc sprXL,x
+                sta sprXL,x
+                lda #$ff
+IA_XOffsetCommon2:
+                adc sprXH,x
+                sta sprXH,x
                 lda sprY,x
                 clc
                 adc actPrevYL,y

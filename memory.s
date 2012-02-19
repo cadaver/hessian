@@ -31,6 +31,12 @@ MAX_CACHESPRITES = 63
                 Var irqSaveY
                 Var irqSave01
 
+                Var joystick                    ;Joystick/keyboard variables
+                Var prevJoy
+                Var keyPress
+                Var keyType
+                VarRange keyRowTbl,8
+
                 Var freeMemLo                   ;Memory allocator variables
                 Var freeMemHi
 
@@ -79,25 +85,17 @@ MAX_CACHESPRITES = 63
                 Var temp7
                 Var temp8
 
-                VarRange sprX,MAX_SPR
+                Var ntTemp1                     ;Playroutine
+                Var ntTemp2
+
+                VarRange sprOrder,MAX_SPR+1
                 VarRange sprY,MAX_SPR+1
-                VarRange sprF,MAX_SPR
 
                 CheckVarBase $90
 
                 VarBase $c0
 
-                VarRange sprC,MAX_SPR
-                VarRange sprOrder,MAX_SPR+1
-                
-                Var joystick                    ;Joystick/keyboard variables
-                Var prevJoy
-                Var keyPress
-                Var keyType
-                VarRange keyRowTbl,8
-
-                Var ntTemp1                     ;Playroutine
-                Var ntTemp2
+                VarRange cacheSprInUse,MAX_CACHESPRITES
 
                 CheckVarBase $100
 
@@ -105,11 +103,15 @@ MAX_CACHESPRITES = 63
 
 depackCodeStart = $0100
 
-cacheSprFile    = $0100
+sprXL           = $0100
+sprXH           = $0100+MAX_SPR
+sprF            = $0100+MAX_SPR*2
+sprC            = $0100+MAX_SPR*3
+sprAct          = $0100+MAX_SPR*4
 
-cacheSprFrame   = $0200
+cacheSprFile    = $0200
 
-cacheSprInUse   = $02a7
+cacheSprFrame   = $02a7
 vColBuf         = $02a7+MAX_CACHESPRITES
 
 mainCodeStart   = $0334

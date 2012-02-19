@@ -1,4 +1,4 @@
-MAX_SPRX        = 168
+MAX_SPRX        = 335
 MIN_SPRY        = 34
 MAX_SPRY        = 221
 
@@ -50,11 +50,11 @@ GASS_DoNotAccept:
 
         ; Get and store a sprite. Cache (depack) if not cached yet.
         ;
-        ; Parameters: A frame number, X sprite index, temp1 X coord, temp2-temp3 Y coord, 
+        ; Parameters: A frame number, X sprite index, temp1-temp2 X coord, temp3-temp4 Y coord,
         ;             actIndex actor index, sprFileLo-Hi spritefile
-        ; Returns: X incremented if sprite accepted, temp1-temp3 modified for next sprite
-        ; Modifies: A,Y,temp1-temp3
-        
+        ; Returns: X incremented if sprite accepted, temp1-temp4 modified for next sprite
+        ; Modifies: A,X,Y,temp1-temp4
+
 GetAndStoreSprite:
                 cpx #MAX_SPR
                 bcs GASS_DoNotAccept
@@ -71,69 +71,93 @@ GetAndStoreSprite:
                 sec
                 sbc (frameLo),y
                 iny
-                cmp #MAX_SPRX
+                sta sprXL,x
+                lda temp2
+                sbc #$00
+                sta sprXH,x
+                beq GASS_XNotOutside
+                lda sprXL,x
+                cmp #MAX_SPRX-256
                 bcs GASS_XOutside
-                sta sprX,x
-                clc                             ;Add X-connect spot
-                adc (frameLo),y
+GASS_XNotOutside:
+                lda (frameLo),y                 ;Add X-connect spot
                 iny
+                clc
+                bmi GASS_CSXNeg
+                adc sprXL,x
                 sta temp1
-                lda temp2                       ;Subtract Y-hotspot
+                lda #$00
+                beq GASS_CSXCommon
+GASS_CSXNeg:    adc sprXL,x
+                sta temp1
+                lda #$ff
+GASS_CSXCommon: adc sprXH,x
+                sta temp2
+                lda temp3                       ;Subtract Y-hotspot
                 sec
                 sbc (frameLo),y
                 iny
                 sta sprY,x
-                lda temp3
+                lda temp4
                 sbc #$00
-                sta temp3
+                sta temp4
                 bne GASS_YOutside
                 lda (frameLo),y                 ;Check sign of Y-connect spot
                 clc
                 bmi GASS_CSYNeg
                 adc sprY,x
-                sta temp2
+                sta temp3
                 lda #$00
                 beq GASS_CSYCommon
 GASS_CSYNeg:    adc sprY,x
-                sta temp2
-                lda #$ff
-GASS_CSYCommon: adc temp3
                 sta temp3
+                lda #$ff
+GASS_CSYCommon: adc temp4
+                sta temp4
                 jmp GASS_Accept
 
-GASS_XOutside:  clc                             ;X coord is outside, but must still add the connect-spot
-                adc (frameLo),y
+GASS_XOutside:  lda (frameLo),y                 ;X coord is outside, but must still add the connect-spot
                 iny
+                clc
+                bmi GASS_CSXNeg2
+                adc sprXL,x
                 sta temp1
-                lda temp2                       ;Subtract Y-hotspot
+                lda #$00
+                beq GASS_CSXCommon2
+GASS_CSXNeg2:   adc sprXL,x
+                sta temp1
+                lda #$ff
+GASS_CSXCommon2:adc sprXH,x
+                sta temp2
+                lda temp3                       ;Subtract Y-hotspot
                 sec
                 sbc (frameLo),y
                 iny
                 sta sprY,x
-                lda temp3
+                lda temp4
                 sbc #$00
-                sta temp3
+                sta temp4
 GASS_YOutside:  lda (frameLo),y                 ;Y coord is outside, but must still add the connect-spot
                 clc
                 bmi GASS_CSYNeg2
                 adc sprY,x
-                sta temp2
+                sta temp3
                 lda #$00
                 beq GASS_CSYCommon2
 GASS_CSYNeg2:   adc sprY,x
-                sta temp2
-                lda #$ff
-GASS_CSYCommon2:adc temp3
                 sta temp3
+                lda #$ff
+GASS_CSYCommon2:adc temp4
+                sta temp4
 GASS_DoNotAccept2:
                 rts
 
         ; Get and store a sprite without modifying coords for next sprite
         ;
-        ; Parameters: A frame number, X sprite index, temp1 X coord, temp2-temp3 Y coord,
+        ; Parameters: A frame number, X sprite index, temp1-temp2 X coord, temp3-temp4 Y coord,
         ;             actIndex actor index, sprFileLo-Hi spritefile
         ; Returns: X incremented if sprite accepted
-        ; Modifies: A,Y,temp1-temp3
+        ; Modifies: A,X,Y
 
 GetAndStoreLastSprite:
                 cpx #MAX_SPR
@@ -146,17 +170,23 @@ GetAndStoreLastSprite:
                 iny
                 lda (sprFileLo),y
                 sta frameHi
-                lda temp3                       ;Optimization: check Y high without actually
+                lda temp4                       ;Optimization: check Y high without actually
                 bne GASS_DoNotAccept2           ;subtracting the hotspot from it
                 ldy #SPRH_HOTSPOTX
                 lda temp1                       ;Subtract X-hotspot
                 sec
                 sbc (frameLo),y
-                cmp #MAX_SPRX
-                bcs GASS_DoNotAccept2
-                sta sprX,x
-                ldy #SPRH_HOTSPOTY              ;Subtract Y-hotspot
+                sta sprXL,x
                 lda temp2
+                sbc #$00
+                sta sprXH,x
+                beq GASS_XNotOutside2
+                lda sprXL,x
+                cmp #MAX_SPRX-256
+                bcs GASS_DoNotAccept2
+GASS_XNotOutside2:
+                ldy #SPRH_HOTSPOTY              ;Subtract Y-hotspot
+                lda temp3
                 sec
                 sbc (frameLo),y
                 sta sprY,x
@@ -179,7 +209,7 @@ GASS_ColorOr:   ora #$00
 
         ; Cache (depack) a sprite
 
-GASS_CacheSprite:    
+GASS_CacheSprite:
                 stx zpBitsHi
 GASS_CachePos:  ldx #MAX_CACHESPRITES           ;Continue from where we left off last time
 GASS_Loop:      dex

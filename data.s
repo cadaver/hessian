@@ -181,17 +181,10 @@ d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
                 org nextSliceTbl+$c0
                 dc.b $c0+1,$c0+2,$c0+21
 
-coordTblYLo:
-N               set 0
-                repeat MAX_ACTY
+coordTblLo:
+N               set -32
+                repeat MAX_ACTX
                 dc.b <N
-N               set N+32
-                repend
-
-coordTblYHi:
-N               set 0
-                repeat MAX_ACTY
-                dc.b >N
 N               set N+32
                 repend
 
@@ -203,11 +196,11 @@ kcRowAnd:       dc.b $40,$02,$40,$04,$04,$10,$80,$10,$80,$10
                 org nextSliceTbl+$c0+42
                 dc.b $c0+43,$c0+44,0
 
-coordTblX:
-N               set -16
+coordTblHi:
+N               set -32
                 repeat MAX_ACTX
-                dc.b <N
-N               set N+16
+                dc.b >N
+N               set N+32
                 repend
 
 slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
@@ -240,7 +233,6 @@ ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
                 
         ; Sprite variables
 
-sprAct:         ds.b MAX_SPR,0
 sortSprY:       ds.b MAX_SPR*2,0
 sortSprX:       ds.b MAX_SPR*2,0
 sortSprD010:    ds.b MAX_SPR*2,0

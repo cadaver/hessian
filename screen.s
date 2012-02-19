@@ -252,17 +252,12 @@ SL_XSpeedOk:    cpy #$02
                 bcs SL_ScrAddOk
                 asl scrollCSY
 SL_ScrAddOk:
-SL_CalcSprSub:  lda scrollX
-                and #$01
-                eor #$01
-                sta SSpr_FineScroll1+1           ;Sprite X coord least significant bit
-                sta SSpr_FineScroll2+1
+SL_CalcSprSub:
 SL_CSSBlockX:   lda #$00
                 asl
                 asl
                 asl
                 ora scrollX
-                and #$fe
                 asl
                 asl
                 asl
@@ -373,12 +368,10 @@ SSpr_CopyLoop1: ldx sprOrder,y
                 sta sortSprC,y
                 lda sprF,x
                 sta sortSprF,y
-                lda sprX,x
-                asl
-SSpr_FineScroll1:
-                ora #$00
+                lda sprXL,x
                 sta sortSprX,y
-                bcc SSpr_CopyLoop1MsbLow
+                lda sprXH,x
+                beq SSpr_CopyLoop1MsbLow
                 lda temp3
                 ora sprOrTbl,y
                 sta temp3
@@ -423,16 +416,15 @@ SSpr_CopyLoop2: ldx sprOrder,y
                 sta sortSprC,y
                 lda sprF,x
                 sta sortSprF,y
-                lda sprX,x
-                asl
-SSpr_FineScroll2:
-                ora #$00
+                lda sprXL,x
                 sta sortSprX,y
+                lda sprXH,x
+                beq SSpr_CopyLoop2MsbLow
                 lda sortSprD010-1,y
-                bcc SSpr_CopyLoop2MsbLow
                 ora sprOrTbl,y
                 bne SSpr_CopyLoop2MsbDone
 SSpr_CopyLoop2MsbLow:
+                lda sortSprD010-1,y
                 and sprAndTbl,y
 SSpr_CopyLoop2MsbDone:
                 sta sortSprD010,y

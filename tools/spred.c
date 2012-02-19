@@ -464,8 +464,8 @@ void loadspr(void)
   
             tempheader.slicemask = fread8(handle);
             tempheader.color = fread8(handle);
-            tempheader.hotspotx = fread8(handle) * 2;
-            tempheader.connectspotx = fread8(handle) * 2;
+            tempheader.hotspotx = fread8(handle);
+            tempheader.connectspotx = fread8(handle);
             tempheader.hotspoty = fread8(handle);
             tempheader.connectspoty = fread8(handle);
             tempheader.cacheframe = fread8(handle);
@@ -715,8 +715,8 @@ void savespr(void)
           tempheader.cacheframe = 0;
           fwrite8(handle, tempheader.slicemask);
           fwrite8(handle, tempheader.color);
-          fwrite8(handle, tempheader.hotspotx / 2);
-          fwrite8(handle, tempheader.connectspotx / 2);
+          fwrite8(handle, tempheader.hotspotx);
+          fwrite8(handle, tempheader.connectspotx);
           fwrite8(handle, tempheader.hotspoty);
           fwrite8(handle, tempheader.connectspoty);
           fwrite8(handle, tempheader.cacheframe);

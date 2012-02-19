@@ -2,6 +2,7 @@ AMF_GROUNDED    = 1
 AMF_LANDED      = 2
 AMF_HITWALL     = 4
 AMF_HITCEILING  = 8
+AMF_STARTFALLING = 16
 
         ; Move actor in a straight line and return charinfo from final position
         ;
@@ -184,8 +185,9 @@ MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground
                 lsr
                 bcs MWG_FinalizeGroundBelow
                 lda temp2                       ;Start falling
-                and #$ff-AMF_GROUNDED           ;Todo: may give sharper initial acceleration here
-                sta actMoveFlags,x              ;if falling feels too smooth
+                and #$ff-AMF_GROUNDED
+                ora #AMF_STARTFALLING
+                sta actMoveFlags,x
                 rts
 MWG_FinalizeGroundBelow:
                 lda #8*8

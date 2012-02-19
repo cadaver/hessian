@@ -5,6 +5,7 @@
         ; Modifies: A,Y
 
 MovePlayer:     lda actMoveFlags,x
+                sta temp1
                 lsr                             ;Grounded bit to C
                 lda joystick                    ;X-acceleration: faster when grounded
                 and #JOY_LEFT
@@ -31,13 +32,13 @@ MP_OnGroundAccR:ldy #4*8
 MP_NotRight:    bcc MP_NoBraking
                 lda #8                          ;When grounded and not moving, brake X-speed
                 jsr BrakeActorX
-MP_NoBraking:   lda actMoveFlags,x
+MP_NoBraking:   lda temp1
                 and #AMF_HITWALL|AMF_LANDED     ;If hit wall (and did not land simultaneously), reset X-speed
                 cmp #AMF_HITWALL
                 bne MP_NoHitWall
                 lda #$00
                 sta actSX,x
-MP_NoHitWall:   lda actMoveFlags,x
+MP_NoHitWall:   lda temp1
                 lsr                             ;Grounded bit to C
                 and #AMF_HITCEILING/2
                 beq MP_NoHeadBump
