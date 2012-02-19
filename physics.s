@@ -8,7 +8,7 @@ AMF_STARTFALLING = 16
         ;
         ; Parameters: X actor index
         ; Returns: A charinfo
-        ; Modifies: A,X,Y,temp vars
+        ; Modifies: A,Y,temp vars
 
 MoveProjectile: lda actSX,x
                 jsr MoveActorX
@@ -21,7 +21,7 @@ MoveProjectile: lda actSX,x
         ; Parameters: X actor index, A gravity acceleration (should be positive), Y speed limit,
         ;             temp1 vertical char offset (negative) for ceiling check
         ; Returns: actMoveFlags updated
-        ; Modifies: A,X,Y,temp regs
+        ; Modifies: A,Y,temp vars
 
 MoveWithGravity:sta temp3
                 lda actMoveFlags,x              ;Only retain the grounded flag

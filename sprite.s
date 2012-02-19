@@ -40,7 +40,7 @@ LoadSpriteFile: tya
                 ldx #F_SPRITE
                 jsr MakeFileName
                 jsr LoadAllocFile               ;TODO: check for error
-                jsr InitMap
+                jsr PostLoad
                 ldy temp6                       ;LoadAllocFile puts chunk number to temp6
                 sty sprFileNum                  ;PurgeChunk clears sprFileNum, restore it now
                 lda fileHi,y

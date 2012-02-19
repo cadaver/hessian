@@ -52,8 +52,6 @@ BlankScreen:    jsr WaitBottom
 BS_Common:      ldx #$00
                 stx Irq1_D015+1
                 stx Irq1_MaxSprY+1
-                inx                             ;Re-enable raster interrupts, if were disabled by the loader
-                stx $d01a
                 rts
 
         ; Show text at the game screen and turn off sprites
@@ -85,10 +83,6 @@ ShowTextScreen: jsr WaitBottom
         ; Modifies: A,X,Y
 
 ScrollLogic:
-                if REDUCE_CONTROL_LATENCY > 0   ;In control latency reduction mode, wait already here
-SL_Wait:        lda newFrame                    ;until sprite IRQ is done with the current sprites
-                bmi SL_Wait
-                endif
                 if SHOW_SCROLL_RASTERTIME > 0
                 lda #$0e
                 sta $d020
@@ -297,8 +291,7 @@ SL_CSSMapY:     lda #$00
                     err
                 endif
 
-UpdateFrame:    lda #$01                        ;Re-enable raster IRQs if were disabled by the loader
-                sta $d01a
+UpdateFrame:    
 UF_Wait:        lda targetFrames                ;Wait for NTSC delay if needed
                 beq UF_Wait
                 lda newFrame                    ;Wait until sprite IRQs are done with the current sprites

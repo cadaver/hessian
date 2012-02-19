@@ -77,7 +77,12 @@ KEY_NONE        = $ff
         ; Returns: -
         ; Modifies: A
 
-GetControls:    lda #$ff
+GetControls:    
+                if REDUCE_CONTROL_LATENCY > 0   ;In control latency reduction mode, wait here
+GC_Wait:        lda newFrame                    ;until sprite IRQ is done with the current sprites
+                bmi GC_Wait                     ;to ensure we don't get controls two frames ahead
+                endif
+                lda #$ff
                 sta $dc00
                 lda joystick
                 sta prevJoy

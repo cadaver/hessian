@@ -34,12 +34,15 @@ LoadLevel:      sta levelNum
                 sta zoneNum                     ;a new level
 
         ; Calculate start addresses for each map-row (of current zone) and for each
-        ; block, and set zone multicolors.
+        ; block, and set zone multicolors. Also re-enables raster interrupts if disabled
+        ; by serial device Kernal loading mode.
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,loader temp vars
 
+PostLoad:       lda #$01                        ;Re-enable raster interrupts if disabled
+                sta $d01a                       ;by the loader
 InitMap:        lda zoneNum                     ;Map address might have changed
                 jsr FindZoneNum                 ;(dynamic memory), so re-find
                 lda limitU                      ;Startrow of zone

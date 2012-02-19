@@ -30,7 +30,7 @@ LoadMusic:      ldx #F_MUSIC
                 lda #<musicData
                 ldx #>musicData
                 jsr LoadFile                    ;TODO: check for error
-                jsr InitMap
+                jsr PostLoad
 
         ; Initialize new music data
         ;
