@@ -137,7 +137,10 @@ ISpr_ClearEmptySprite:
                 bpl ISpr_ClearEmptySprite
                 ldx #MAX_CACHESPRITES-1
 ISpr_ClearCacheInUse:
+                lda #$00
                 sta cacheSprInUse,x
+                lda #$ff
+                sta cacheSprFile,x
                 dex
                 bpl ISpr_ClearCacheInUse
 
