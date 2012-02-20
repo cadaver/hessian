@@ -291,7 +291,7 @@ SL_CSSMapY:     lda #$00
                     err
                 endif
 
-UpdateFrame:    
+UpdateFrame:
 UF_Wait:        lda targetFrames                ;Wait for NTSC delay if needed
                 beq UF_Wait
                 lda newFrame                    ;Wait until sprite IRQs are done with the current sprites
@@ -1025,3 +1025,203 @@ RS_NotOver3:    sta temp1
                 dec temp6
                 bne RS_Loop
                 rts
+
+        ; Update block outside the current zone. No need to update on screen, but must find out
+        ; the destination zone first. Note: nonexistent map position causes undefined behaviour
+
+UB_OutsideZone: lda zoneNum                     ;TODO: test this codepath
+                sta UB_RestoreZone+1
+                jsr FindZoneXY
+                lda temp8
+                sec
+                sbc limitU
+                ldy mapSizeX
+                ldx #zpDestLo
+                jsr MulU
+                ldy #zoneLo
+                jsr Add16
+                lda #ZONEH_DATA                 ;Add zone mapdata offset
+                jsr Add8
+                lda temp7
+                sec
+                sbc limitL
+                tay
+                lda (zpDestLo),y
+                clc
+                and temp6
+                adc temp5
+                sta (zpDestLo),y
+UB_RestoreZone: lda #$00
+                jmp FindZoneNum
+
+        ; Animate a block on the map by deltavalue. If on screen, refresh it immediately. 
+        ; Note: call only in between ScrollLogic & UpdateFrame
+        ;
+        ; Parameters: A block deltavalue, X horizontal map coordinate, Y vertical map coordinate
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+UpdateBlockDelta:
+                sta temp5
+                lda #$ff
+                sta temp6
+                bne UB_Common
+
+        ; Update a block on the map. If on screen, refresh it immediately. 
+        ; Note: call only in between ScrollLogic & UpdateFrame
+        ;
+        ; Parameters: A new block, X horizontal map coordinate, Y vertical map coordinate
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+UpdateBlock:    sta temp5
+                lda #$00
+                sta temp6
+UB_Common:      stx temp7
+                sty temp8
+                cpx limitL
+                bcc UB_OutsideZone
+                cpx limitR
+                bcs UB_OutsideZone
+                cpy limitU
+                bcc UB_OutsideZone
+                cpy limitD
+                bcs UB_OutsideZone
+UB_InsideZone:  lda mapTblLo,y
+                sta zpDestLo
+                lda mapTblHi,y
+                sta zpDestHi
+                txa
+                tay
+                lda (zpDestLo),y
+                clc
+                and temp6
+                adc temp5
+                sta (zpDestLo),y
+                tay
+                lda blkTblLo,y
+                sta UB_Lda+1
+                sta UB_Lda2+1
+                lda blkTblHi,y
+                sta UB_Lda+2
+                sta UB_Lda2+2
+                lda temp7                       ;Calculate screen position for update
+                sec
+                sbc SL_CSSMapX+1
+                cmp #11
+                bcs UB_Done
+                asl
+                asl
+                sec
+                sbc SL_CSSBlockX+1
+                sta temp5
+                lda temp8
+                sec
+                sbc SL_CSSMapY+1
+                cmp #7
+                bcs UB_Done
+                asl
+                asl
+                sec
+                sbc SL_CSSBlockY+1
+                sta temp6
+                ldx #$00
+UB_Row:         lda temp6
+                cmp #SCROLLROWS
+                bcs UB_SkipRow
+                stx zpBitBuf
+                ldy #40                         ;Calculate screen address for row
+                ldx #zpDestLo
+                jsr MulU
+                ldx screen
+                lda zpDestHi
+                ora screenBaseTbl,x
+                sta zpDestHi
+                and #$03
+                ora #>colors
+                sta zpBitsHi
+                lda zpDestLo
+                sta zpBitsLo
+                ldy temp5
+                ldx zpBitBuf
+UB_Column:      cpy #39
+                bcs UB_SkipColumn
+UB_Lda:         lda $1000,x                     ;Take char from block
+                sta (zpDestLo),y                ;Store char to screen
+                sta UB_CharNum+1
+UB_CharNum:     lda charColors
+                sta (zpBitsLo),y                ;Store color to color-RAM
+UB_SkipColumn:  iny
+                inx
+                txa
+                and #$03
+                bne UB_Column
+                beq UB_RowDone
+UB_SkipRow:     txa
+                adc #$03                        ;C=1
+                tax
+UB_RowDone:     inc temp6
+                cpx #$10
+                bcc UB_Row
+UB_Done:        lda scrAdd                      ;If scrolling is in the phase of copying the screen
+                beq UB_Done2                    ;must also write the block to the other screen
+                lda scrCounter
+                beq UB_Done2
+                cmp #$04
+                bcs UB_Done2
+                lda temp7                       ;Calculate screen position for update
+                sec
+                sbc mapX
+                cmp #11
+                bcs UB_Done2
+                asl
+                asl
+                sec
+                sbc blockX
+                sta temp5
+                lda temp8
+                sec
+                sbc mapY
+                cmp #7
+                bcs UB_Done2
+                asl
+                asl
+                sec
+                sbc blockY
+                sta temp6
+                ldx #$00
+UB_Row2:        lda temp6
+                cmp #SCROLLROWS
+                bcs UB_SkipRow2
+                stx zpBitBuf
+                ldy #40                         ;Calculate screen address for row
+                ldx #zpDestLo
+                jsr MulU
+                ldx screen
+                lda zpDestHi
+                ora screenBaseTbl,x
+                eor #$04
+                sta zpDestHi
+                lda zpDestLo
+                ldy temp5
+                ldx zpBitBuf
+UB_Column2:     cpy #39
+                bcs UB_SkipColumn2
+UB_Lda2:        lda $1000,x                     ;Take char from block
+                sta (zpDestLo),y                ;Store char to screen
+UB_SkipColumn2: iny
+                inx
+                txa
+                and #$03
+                bne UB_Column2
+                beq UB_RowDone2
+UB_SkipRow2:    txa
+                adc #$03                        ;C=1
+                tax
+UB_RowDone2:    inc temp6
+                cpx #$10
+                bcc UB_Row2
+UB_Done2:       rts
+
+
+
