@@ -35,7 +35,6 @@ MAX_CACHESPRITES = 63
                 Var prevJoy
                 Var keyPress
                 Var keyType
-                VarRange keyRowTbl,8
 
                 Var freeMemLo                   ;Memory allocator variables
                 Var freeMemHi
@@ -85,9 +84,6 @@ MAX_CACHESPRITES = 63
                 Var temp7
                 Var temp8
 
-                Var ntTemp1                     ;Playroutine
-                Var ntTemp2
-
                 VarRange sprOrder,MAX_SPR+1
                 VarRange sprY,MAX_SPR+1
 
@@ -95,19 +91,22 @@ MAX_CACHESPRITES = 63
 
                 VarBase $c0
 
-                VarRange cacheSprInUse,MAX_CACHESPRITES
-
+                VarRange sprXL,MAX_SPR
+                VarRange sprXH,MAX_SPR
+                VarRange keyRowTbl,8
+                Var ntTemp1                     ;Playroutine
+                Var ntTemp2
+                
                 CheckVarBase $100
 
         ; Memory areas and non-zeropage variables
 
 depackCodeStart = $0100
 
-sprXL           = $0100
-sprXH           = $0100+MAX_SPR
-sprF            = $0100+MAX_SPR*2
-sprC            = $0100+MAX_SPR*3
-sprAct          = $0100+MAX_SPR*4
+sprF            = $0100
+sprC            = $0100+MAX_SPR
+sprAct          = $0100+MAX_SPR*2
+cacheSprInUse   = $0100+MAX_SPR*3
 
 cacheSprFile    = $0200
 

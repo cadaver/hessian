@@ -82,13 +82,7 @@ ShowTextScreen: jsr WaitBottom
         ; Returns: -
         ; Modifies: A,X,Y
 
-ScrollLogic:
-                if SHOW_SCROLL_RASTERTIME > 0
-                lda #$0e
-                sta $d020
-                endif
-
-                lda scrAdd                      ;If speed is zero, look out
+ScrollLogic:    lda scrAdd                      ;If speed is zero, look out
                 beq SL_GetNewSpeed              ;for a new speed-setting
                 clc
                 adc scrCounter                  ;Update workcounter
@@ -275,10 +269,6 @@ SL_CSSBlockY:   lda #$00
 SL_CSSMapY:     lda #$00
                 sbc #(>(54*8))
                 sta DA_SprSubYH+1
-                if SHOW_SCROLL_RASTERTIME > 0
-                lda #$00
-                sta $d020
-                endif
                 rts
 
         ; Sort sprites, set new frame to be displayed and perform scrollwork
@@ -292,15 +282,17 @@ SL_CSSMapY:     lda #$00
                 endif
 
 UpdateFrame:
+                if SHOW_FREE_RASTERTIME > 0
+                dec $d020
+                endif
 UF_Wait:        lda targetFrames                ;Wait for NTSC delay if needed
                 beq UF_Wait
                 lda newFrame                    ;Wait until sprite IRQs are done with the current sprites
                 bmi UF_Wait
-                dec targetFrames
-                if SHOW_SPRITE_RASTERTIME > 0
-                lda #$05
-                sta $d020
+                if SHOW_FREE_RASTERTIME > 0
+                inc $d020
                 endif
+                dec targetFrames               
                 lda firstSortSpr                ;Switch sprite doublebuffer side
                 eor #MAX_SPR
                 sta firstSortSpr
@@ -467,9 +459,8 @@ SSpr_FinalEndMark:
                 sta sprIrqLine-1,y
 
 SSpr_AllDone:
-                if SHOW_SPRITE_RASTERTIME > 0
-                lda #$00
-                sta $d020
+                if SHOW_FREE_RASTERTIME > 0
+                dec $d020
                 endif
 UF_WaitPrevFrame:
                 lda newFrame                    ;Now wait until the previous new frame
@@ -491,7 +482,11 @@ UF_WaitNormal:  lda $d011                       ;If no colorshift, just need to 
                 bcs UF_WaitDone
                 cmp #IRQ1_LINE-$05
                 bcs UF_WaitNormal
-UF_WaitDone:    lda scrollX                     ;Copy scrolling and screen number
+UF_WaitDone:    
+                if SHOW_FREE_RASTERTIME > 0
+                inc $d020
+                endif
+                lda scrollX                     ;Copy scrolling and screen number
                 eor #$07
                 ora #$10
                 sta Irq1_ScrollX+1
@@ -526,14 +521,6 @@ UF_NotMoreThan8:tax
 UF_NoSprites:   sta Irq1_MaxSprY+1
                 lda #$80
                 sta newFrame
-                if SHOW_SCROLL_RASTERTIME > 0
-                lda #$0f
-                sta $d020
-                jsr ScrollWork
-                lda #$00
-                sta $d020
-                rts
-                endif
 
 ScrollWork:     lda scrCounter
                 bne SW_NoScreenShift

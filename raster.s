@@ -66,9 +66,6 @@ Irq1_D015:      lda #$00
                 sta $ffff
 Irq1_FirstSortSpr:
                 ldx #$00                        ;Go through the first sprite IRQ immediately
-                if SHOW_SPRITEIRQ_RASTERTIME > 0
-                inc $d020
-                endif
                 jmp Irq2_Spr0
 Irq1_NoSprites: jmp Irq2_AllDone                ;If no sprites, go directly to the panel
 
@@ -181,9 +178,6 @@ Irq2_SprIrqDone:
                 lda sortSprD010,x
                 sta $d010
 Irq2_SprIrqDoneNoD010:
-                if SHOW_SPRITEIRQ_RASTERTIME > 0
-                dec $d020
-                endif
                 sec
                 ldy sprIrqLine,x                ;Get startline of next IRQ
                 beq Irq2_AllDone                ;(0 if was last)
@@ -216,9 +210,6 @@ Irq2:           cld
                 sta $01                         ;Ensure IO memory is available
 Irq2_Direct:
 Irq2_SprIndex:  ldx #$00
-                if SHOW_SPRITEIRQ_RASTERTIME > 0
-                inc $d020
-                endif
 Irq2_SprJump:   jmp Irq2_Spr0
 
 Irq2_AllDone:   lda #IRQ3_LINE
@@ -315,9 +306,6 @@ Irq4:           cld
                 lsr newFrame                    ;Mark frame update available
                 lda #$1f                        ;Switch screen back on
                 sta $d011
-                if SHOW_MUSIC_RASTERTIME > 0
-                inc $d020
-                endif
 Irq4_NtscDelay: dec ntscDelay                   ;Handle NTSC delay counting
                 bpl Irq4_NoNtscDelay
                 lda #$05
@@ -331,9 +319,6 @@ Irq4_NoNtscDelay:
 Irq4_TargetFramesOk:
                 jsr PlayMusic                   ;Play music/sound effects
 Irq4_SkipFrame:
-                if SHOW_MUSIC_RASTERTIME > 0
-                dec $d020
-                endif
                 lda #IRQ1_LINE
                 sta $d012
                 lda #<Irq1

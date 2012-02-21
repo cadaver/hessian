@@ -41,12 +41,7 @@ AL_UPDATEROUTINE = 0
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor ZP temp vars
 
-DrawActors:
-                if SHOW_ACTOR_RASTERTIME > 0
-                lda #$03
-                sta $d020
-                endif
-                lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
+DrawActors:     lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
                 sta IA_PrevScrollX+1
                 lda scrollY
                 sta IA_PrevScrollY+1
@@ -67,14 +62,7 @@ DA_LastSprIndex:cpx #$00
 DA_FillSpritesDone:
                 lda sprIndex
                 sta DA_LastSprIndex+1
-                if SHOW_ACTOR_RASTERTIME > 0
-                jsr AgeSpriteCache
-                lda #$00
-                sta $d020
-                rts
-                else
                 jmp AgeSpriteCache              ;Sprite cache use finished, age the cache now
-                endif
 
 DA_NotZero:     stx actIndex
                 lda actDispTblLo-1,y            ;Get actor display structure address
@@ -224,24 +212,43 @@ DA_HumanFrame2: lda #$00
                 ldx actIndex
                 jmp DA_ActorDone
 
+        ; Update actors
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars,actor temp vars
+
+UpdateActors:   ldx #$00
+UA_Loop:        ldy actT,x
+                bne UA_NotZero
+UA_Next:        inx
+                cpx #MAX_ACT
+                bcc UA_Loop
+                rts
+UA_NotZero:     stx actIndex
+                lda actLogicTblLo-1,y            ;Get actor logic structure address
+                sta actLo
+                lda actLogicTblHi-1,y
+                sta actHi
+                ldy #AL_UPDATEROUTINE
+                lda (actLo),y
+                sta UA_Jump+1
+                iny
+                lda (actLo),y
+                sta UA_Jump+2
+UA_Jump:        jsr $1000
+                inx
+                cpx #MAX_ACT
+                bcc UA_Loop
+IA_Done2:       rts
+
         ; Interpolate actors' movement each second frame
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-IA_Done2:
-                if SHOW_ACTOR_RASTERTIME > 0
-                lda #$00
-                sta $d020
-                endif
-                rts
-
 InterpolateActors:
-                if SHOW_ACTOR_RASTERTIME > 0
-                lda #$07
-                sta $d020
-                endif
                 lda scrollX                     ;Calculate how much the scrolling has changed
                 sec
 IA_PrevScrollX: sbc #$00
@@ -338,12 +345,7 @@ IA_ScrollYAdjust:
 IA_Next:        dex
                 bmi IA_Done
                 jmp IA_SprLoop
-IA_Done:
-                if SHOW_ACTOR_RASTERTIME > 0
-                lda #$00
-                sta $d020
-                endif
-                rts
+IA_Done:        rts
 
 IA_AddOffset:   lda actPrevXL,y                 ;Add offset to sprite coords
                 clc
@@ -365,49 +367,6 @@ IA_XOffsetCommon2:
                 dex
                 bmi IA_Done
                 jmp IA_SprLoop
-
-        ; Update actors
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,temp vars,actor temp vars
-
-UpdateActors:
-                if SHOW_ACTOR_RASTERTIME > 0
-                lda #$01
-                sta $d020
-                endif
-                ldx #$00
-UA_Loop:        ldy actT,x
-                bne UA_NotZero
-UA_Next:        inx
-                cpx #MAX_ACT
-                bcc UA_Loop
-                if SHOW_ACTOR_RASTERTIME > 0
-                lda #$00
-                sta $d020
-                endif
-                rts
-UA_NotZero:     stx actIndex
-                lda actLogicTblLo-1,y            ;Get actor logic structure address
-                sta actLo
-                lda actLogicTblHi-1,y
-                sta actHi
-                ldy #AL_UPDATEROUTINE
-                lda (actLo),y
-                sta UA_Jump+1
-                iny
-                lda (actLo),y
-                sta UA_Jump+2
-UA_Jump:        jsr $1000
-                inx
-                cpx #MAX_ACT
-                bcc UA_Loop
-                if SHOW_ACTOR_RASTERTIME > 0
-                lda #$00
-                sta $d020
-                endif
-                rts
 
         ; Move actor in X-direction
         ;
