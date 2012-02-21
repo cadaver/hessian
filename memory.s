@@ -107,11 +107,8 @@ sprF            = $0100
 sprC            = $0100+MAX_SPR
 sprAct          = $0100+MAX_SPR*2
 cacheSprInUse   = $0100+MAX_SPR*3
-
 cacheSprFile    = $0200
-
 cacheSprFrame   = $02a7
-vColBuf         = $02a7+MAX_CACHESPRITES
 
 mainCodeStart   = $0334
 
@@ -123,7 +120,6 @@ chars           = $e000
 screen1         = $e800
 screen2         = $ec00
 textChars       = $f000
-hColBuf         = colors+39
 sprOrTbl        = screen2+1016-MAX_SPR*4
 sprAndTbl       = screen2+1016-MAX_SPR*2
 loadBuffer      = $f400

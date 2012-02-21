@@ -201,10 +201,19 @@ SL_YZero:       lda #$00
 SL_YDone:       stx SW_ShiftDir+1
                 ldy screen                      ;Update scrollwork jumps now
                 lda screenBaseTbl,y
-                eor #$05
+                eor #$04
+                sta SW_DrawColorsUpLoop+2
+                sta SW_DrawColorsUpLdx2+2
+                sta SW_DrawColorsUpLdx3+2
+                clc
+                adc #$01
                 sta SW_DrawColorsRLoop+2
-                sta SW_DrawColorsRLdy2+2
-                sta SW_DrawColorsRLdy3+2
+                sta SW_DrawColorsRLdx2+2
+                sta SW_DrawColorsRLdx3+2
+                adc #$02
+                sta SW_DrawColorsDownLoop+2
+                sta SW_DrawColorsDownLdx2+2
+                sta SW_DrawColorsDownLdx3+2
                 lda screenJumpTblLo,y
                 sta SW_ScreenJump+1
                 lda screenJumpTblHi,y
@@ -544,7 +553,7 @@ SW_ColorShiftDir:
                 ldx #$00
                 stx temp1
 SW_ColorJump:   jmp SW_NoWork
-
+            
 SW_NoShiftColors:
                 cmp #$02
                 bne SW_NoWork
@@ -613,8 +622,6 @@ N               set SCROLLSPLIT-1
                 sta colors+40+N*40,y
 N               set N-1
                 repend
-                lda vColBuf,y
-                sta colors,y
 SW_ShiftColorsUpTopIny:
                 iny
 SW_ShiftColorsUpTopInx:
@@ -622,9 +629,11 @@ SW_ShiftColorsUpTopInx:
 SW_ShiftColorsUpTopCpx:
                 cpx #$00
                 bne SW_ShiftColorsUpTopLoop
+                jsr SW_DrawColorsUp
                 ldx temp1
                 ldy colorSideTbl-3,x
                 jsr SW_DrawColorsHorizTop
+                ldx temp1
                 ldy colorDestTbl-3,x
                 lda colorSrcTbl-3,x
                 tax
@@ -647,13 +656,26 @@ SW_ShiftColorsUpBottomCpx:
                 ldy colorSideTbl-3,x
 SW_DrawColorsHorizBottom:
                 bmi SW_DrawColorsHorizBottomSkip
+                lda screen
+                bne SW_DrawColorsHorizBottomScreen2
+SW_DrawColorsHorizBottomScreen1:
 N               set SCROLLSPLIT
                 repeat SCROLLROWS-SCROLLSPLIT
-                lda hColBuf+N*40
+                ldx screen1+N*40,y
+                lda charColors,x
                 sta colors+N*40,y
 N               set N+1
                 repend
 SW_DrawColorsHorizBottomSkip:
+                rts
+SW_DrawColorsHorizBottomScreen2:
+N               set SCROLLSPLIT
+                repeat SCROLLROWS-SCROLLSPLIT
+                ldx screen2+N*40,y
+                lda charColors,x
+                sta colors+N*40,y
+N               set N+1
+                repend
                 rts
 
 SW_ShiftColorsHoriz:
@@ -686,6 +708,7 @@ SW_ShiftColorsHorizTopCpx:
                 ldx temp1
                 ldy colorSideTbl-3,x
                 jsr SW_DrawColorsHorizTop
+                ldx temp1
                 ldy colorDestTbl-3,x
                 lda colorSrcTbl-3,x
                 tax
@@ -737,6 +760,7 @@ SW_ShiftColorsDownTopCpx:
                 ldx temp1
                 ldy colorSideTbl-3,x
                 jsr SW_DrawColorsHorizTop
+                ldx temp1
                 ldy colorDestTbl-3,x
                 lda colorSrcTbl-3,x
                 tax
@@ -747,8 +771,6 @@ N               set SCROLLSPLIT
                 sta colors+N*40,y
 N               set N+1
                 repend
-                lda vColBuf,y
-                sta colors+SCROLLROWS*40-40,y
 SW_ShiftColorsDownBottomIny:
                 iny
 SW_ShiftColorsDownBottomInx:
@@ -758,35 +780,84 @@ SW_ShiftColorsDownBottomCpx:
                 bne SW_ShiftColorsDownBottomLoop
                 ldx temp1
                 ldy colorSideTbl-3,x
-                jmp SW_DrawColorsHorizBottom
+                jsr SW_DrawColorsHorizBottom
+                jmp SW_DrawColorsDown
 
 SW_DrawColorsHorizTop:
                 bmi SW_DrawColorsHorizTopSkip
+                lda screen
+                bne SW_DrawColorsHorizTopScreen2
+SW_DrawColorsHorizTopScreen1:
 N               set 0
                 repeat SCROLLSPLIT
-                lda hColBuf+N*40
+                ldx screen1+N*40,y
+                lda charColors,x
                 sta colors+N*40,y
 N               set N+1
                 repend
 SW_DrawColorsHorizTopSkip:
                 rts
+SW_DrawColorsHorizTopScreen2:
+N               set 0
+                repeat SCROLLSPLIT
+                ldx screen2+N*40,y
+                lda charColors,x
+                sta colors+N*40,y
+N               set N+1
+                repend
+                rts
 
 SW_DrawColorsReconstruct:
-                ldx #12                         ;Reconstruct the colors that are lost when
-SW_DrawColorsRLoop:                             ;shifting colors up in two parts
-                ldy screen1+SCROLLSPLIT*40+40,x
-                lda charColors,y
-                sta colors+SCROLLSPLIT*40+40,x
-SW_DrawColorsRLdy2:
-                ldy screen1+SCROLLSPLIT*40+40+13,x
-                lda charColors,y
-                sta colors+SCROLLSPLIT*40+40+13,x
-SW_DrawColorsRLdy3:
-                ldy screen1+SCROLLSPLIT*40+40+26,x
-                lda charColors,y
-                sta colors+SCROLLSPLIT*40+40+26,x
-                dex
+                ldy #12                         ;Reconstruct the colors that are lost when
+SW_DrawColorsRLoop:
+                ldx screen1+SCROLLSPLIT*40+40,y
+                lda charColors,x
+                sta colors+SCROLLSPLIT*40+40,y
+SW_DrawColorsRLdx2:
+                ldx screen1+SCROLLSPLIT*40+40+13,y
+                lda charColors,x
+                sta colors+SCROLLSPLIT*40+40+13,y
+SW_DrawColorsRLdx3:
+                ldx screen1+SCROLLSPLIT*40+40+26,y
+                lda charColors,x
+                sta colors+SCROLLSPLIT*40+40+26,y
+                dey
                 bpl SW_DrawColorsRLoop
+                rts
+
+SW_DrawColorsUp:ldy #12
+SW_DrawColorsUpLoop:
+                ldx screen1,y
+                lda charColors,x
+                sta colors,y
+SW_DrawColorsUpLdx2:
+                ldx screen1+13,y
+                lda charColors,x
+                sta colors+13,y
+SW_DrawColorsUpLdx3:
+                ldx screen1+26,y
+                lda charColors,x
+                sta colors+26,y
+                dey
+                bpl SW_DrawColorsUpLoop
+                rts
+
+SW_DrawColorsDown:
+                ldy #12
+SW_DrawColorsDownLoop:
+                ldx screen1+SCROLLROWS*40-40,y
+                lda charColors,x
+                sta colors+SCROLLROWS*40-40,y
+SW_DrawColorsDownLdx2:
+                ldx screen1+SCROLLROWS*40-40+13,y
+                lda charColors,x
+                sta colors+SCROLLROWS*40-40+13,y
+SW_DrawColorsDownLdx3:
+                ldx screen1+SCROLLROWS*40-40+26,y
+                lda charColors,x
+                sta colors+SCROLLROWS*40-40+26,y
+                dey
+                bpl SW_DrawColorsDownLoop
                 rts
 
         ; New blocks drawing routines
@@ -808,14 +879,8 @@ SWDL_Common:    sta SWDL_Sta+1
                 tax
                 lda screenBaseTbl,x
                 sta SWDL_Sta+2
-                lda #<hColBuf
-                sta SWDL_Sta2+1
-                lda #>hColBuf
-                sta SWDL_Sta2+2
                 lda #SCROLLROWS-1
                 sta temp5
-                lda #<hColBuf
-                sta SWDL_Sta2+1
                 lda blockY
                 asl
                 asl
@@ -830,25 +895,21 @@ SWDL_GetBlock:  sta temp2
                 lda blkTblHi,y
                 sta SWDL_Lda+2
                 ldy temp2
+                clc
 SWDL_Lda:       lda $1000,y
 SWDL_Sta:       sta $1000,x
-                sta SWDL_Lda2+1
-SWDL_Lda2:      lda charColors
-SWDL_Sta2:      sta hColBuf,x
                 dec temp5
                 bmi SWDL_Ready
                 txa
-                clc
                 adc #40
                 tax
                 bcc SWDL_Not2
+                clc
                 inc SWDL_Sta+2
-                inc SWDL_Sta2+2
 SWDL_Not2:      lda blockDownTbl,y
                 tay
                 bpl SWDL_Lda
 SWDL_Block:     lda temp3
-                clc
                 adc mapSizeX
                 sta temp3
                 bcc SWDL_Not3
@@ -896,11 +957,7 @@ SW_DrawUp:      ldx mapY                     ;Draw new blocks to top of
                 sta SWDU_Sta+1
                 lda screenBaseTbl,x
                 sta SWDU_Sta+2
-SWDU_Common:    lda #<vColBuf
-                sta SWDU_Sta2+1
-                lda #>vColBuf
-                sta SWDU_Sta2+2
-SWDU_Common2:   ldx #$00
+SWDU_Common:    ldx #$00
                 ldy mapX
 SWDU_GetBlock:  lda (temp3),y
                 iny
@@ -913,9 +970,6 @@ SWDU_GetBlock:  lda (temp3),y
                 ldy temp2
 SWDU_Lda:       lda $1000,y
 SWDU_Sta:       sta screen1,x
-                sta SWDU_Lda2+1
-SWDU_Lda2:      lda charColors
-SWDU_Sta2:      sta vColBuf,x
                 inx
                 cpx #39
                 bcs SWDU_Ready
@@ -928,7 +982,7 @@ SWDU_Sta2:      sta vColBuf,x
                 jmp SWDU_GetBlock
 SWDU_Ready:     rts
 
-SW_DrawDown:    lda mapY                     ;Draw new blocks to bottom of
+SW_DrawDown:    lda mapY                        ;Draw new blocks to bottom of
                 clc                             ;screen
                 adc #$05
                 tax
@@ -980,21 +1034,15 @@ RedrawScreen:   jsr BlankScreen
                 sta SWDU_Sta+1
                 lda screenBaseTbl,x
                 sta SWDU_Sta+2
-                lda #<colors
-                sta SWDU_Sta2+1
-                lda #>colors
-                sta SWDU_Sta2+2
                 lda #SCROLLROWS
                 sta temp6
-RS_Loop:        jsr SWDU_Common2
+RS_Loop:        jsr SWDU_Common
                 lda SWDU_Sta+1
                 clc
                 adc #40
                 sta SWDU_Sta+1
-                sta SWDU_Sta2+1
                 bcc RS_NotOver1
                 inc SWDU_Sta+2
-                inc SWDU_Sta2+2
 RS_NotOver1:    ldy temp1
                 lda blockDownTbl,y
                 bpl RS_NotOver3
@@ -1011,6 +1059,11 @@ RS_NotOver3:    sta temp1
                 sta temp2
                 dec temp6
                 bne RS_Loop
+                ldy #38                         ;Finally draw the colors
+RS_Colors:      jsr SW_DrawColorsHorizTop
+                jsr SW_DrawColorsHorizBottom
+                dey
+                bpl RS_Colors
                 rts
 
         ; Update block outside the current zone. No need to update on screen, but must find out
