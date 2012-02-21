@@ -1116,13 +1116,10 @@ UB_InsideZone:  lda mapTblLo,y
 UB_Row:         lda temp6
                 cmp #SCROLLROWS
                 bcs UB_SkipRow
-                stx zpBitBuf
-                ldy #40                         ;Calculate screen address for row
-                ldx #zpDestLo
-                jsr MulU
-                ldx screen
+                jsr UB_GetRowOffset
+                ldy screen
                 lda zpDestHi
-                ora screenBaseTbl,x
+                ora screenBaseTbl,y
                 sta zpDestHi
                 and #$03
                 ora #>colors
@@ -1130,13 +1127,12 @@ UB_Row:         lda temp6
                 lda zpDestLo
                 sta zpBitsLo
                 ldy temp5
-                ldx zpBitBuf
 UB_Column:      cpy #39
                 bcs UB_SkipColumn
 UB_Lda:         lda $1000,x                     ;Take char from block
                 sta (zpDestLo),y                ;Store char to screen
-                sta UB_CharNum+1
-UB_CharNum:     lda charColors
+                sta UB_LdaColor+1
+UB_LdaColor:    lda charColors
                 sta (zpBitsLo),y                ;Store color to color-RAM
 UB_SkipColumn:  iny
                 inx
@@ -1156,7 +1152,7 @@ UB_Done:        lda scrAdd                      ;If scrolling is in the phase of
                 beq UB_Done2
                 cmp #$04
                 bcs UB_Done2
-                lda temp7                       ;Calculate screen position for update
+                lda temp7
                 sec
                 sbc mapX
                 cmp #11
@@ -1180,18 +1176,13 @@ UB_Done:        lda scrAdd                      ;If scrolling is in the phase of
 UB_Row2:        lda temp6
                 cmp #SCROLLROWS
                 bcs UB_SkipRow2
-                stx zpBitBuf
-                ldy #40                         ;Calculate screen address for row
-                ldx #zpDestLo
-                jsr MulU
-                ldx screen
+                jsr UB_GetRowOffset
+                ldy screen
                 lda zpDestHi
-                ora screenBaseTbl,x
+                ora screenBaseTbl,y
                 eor #$04
                 sta zpDestHi
-                lda zpDestLo
                 ldy temp5
-                ldx zpBitBuf
 UB_Column2:     cpy #39
                 bcs UB_SkipColumn2
 UB_Lda2:        lda $1000,x                     ;Take char from block
@@ -1210,5 +1201,25 @@ UB_RowDone2:    inc temp6
                 bcc UB_Row2
 UB_Done2:       rts
 
+        ;Subroutine to get screen row start offset with optimized multiply by 40
 
-
+UB_GetRowOffset:
+                ldy #$00
+                sty zpDestHi
+                sta zpBitBuf
+                asl
+                rol zpDestHi
+                asl
+                rol zpDestHi
+                clc
+                adc zpBitBuf
+                bcc UB_NotOver
+                inc zpDestHi
+UB_NotOver:     asl
+                rol zpDestHi
+                asl
+                rol zpDestHi
+                asl
+                rol zpDestHi
+                sta zpDestLo
+                rts
