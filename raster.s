@@ -73,8 +73,8 @@ Irq1_NoSprites: jmp Irq2_AllDone                ;If no sprites, go directly to t
 
 Irq2_SprIrqDone2:
                 jmp Irq2_SprIrqDone
-Irq2_SprIrqDoneNoD0102:
-                jmp Irq2_SprIrqDoneNoD010
+                
+                org ((*+$ff) & $ff00)
 
 Irq2_Spr0:      lda sortSprY,x
                 sta $d00f
@@ -86,13 +86,15 @@ Irq2_Spr0:      lda sortSprY,x
 Irq2_Spr0Frame: sta screen1+$03ff
                 lda sortSprC,x
                 sta $d02e
-                bmi Irq2_SprIrqDoneNoD0102
+                bmi Irq2_SprIrqDone2
                 inx
 
 Irq2_Spr1:      lda sortSprY,x
                 sta $d00d
                 lda sortSprX,x
+                ldy sortSprD010,x
                 sta $d00c
+                sty $d010
                 lda sortSprF,x
 Irq2_Spr1Frame: sta screen1+$03fe
                 lda sortSprC,x
@@ -110,13 +112,15 @@ Irq2_Spr2:      lda sortSprY,x
 Irq2_Spr2Frame: sta screen1+$03fd
                 lda sortSprC,x
                 sta $d02c
-                bmi Irq2_SprIrqDoneNoD0102
+                bmi Irq2_SprIrqDone2
                 inx
 
 Irq2_Spr3:      lda sortSprY,x
                 sta $d009
                 lda sortSprX,x
+                ldy sortSprD010,x
                 sta $d008
+                sty $d010
                 lda sortSprF,x
 Irq2_Spr3Frame: sta screen1+$03fc
                 lda sortSprC,x
@@ -135,13 +139,15 @@ Irq2_Spr4:      lda sortSprY,x
 Irq2_Spr4Frame: sta screen1+$03fb
                 lda sortSprC,x
                 sta $d02a
-                bmi Irq2_SprIrqDoneNoD010
+                bmi Irq2_SprIrqDone
                 inx
 
 Irq2_Spr5:      lda sortSprY,x
                 sta $d005
                 lda sortSprX,x
+                ldy sortSprD010,x
                 sta $d004
+                sty $d010
                 lda sortSprF,x
 Irq2_Spr5Frame: sta screen1+$03fa
                 lda sortSprC,x
@@ -159,13 +165,15 @@ Irq2_Spr6:      lda sortSprY,x
 Irq2_Spr6Frame: sta screen1+$03f9
                 lda sortSprC,x
                 sta $d028
-                bmi Irq2_SprIrqDoneNoD010
+                bmi Irq2_SprIrqDone
                 inx
 
 Irq2_Spr7:      lda sortSprY,x
                 sta $d001
                 lda sortSprX,x
+                ldy sortSprD010,x
                 sta $d000
+                sty $d010
                 lda sortSprF,x
 Irq2_Spr7Frame: sta screen1+$03f8
                 lda sortSprC,x
@@ -175,9 +183,6 @@ Irq2_Spr7Frame: sta screen1+$03f8
 Irq2_ToSpr0:    jmp Irq2_Spr0
 
 Irq2_SprIrqDone:
-                lda sortSprD010,x
-                sta $d010
-Irq2_SprIrqDoneNoD010:
                 sec
                 ldy sprIrqLine,x                ;Get startline of next IRQ
                 beq Irq2_AllDone                ;(0 if was last)
@@ -234,12 +239,6 @@ Irq2_AllDone:   lda #IRQ3_LINE
 Irq2_LatePanel: ldx irqSaveX
                 ldy irqSaveY
                 jmp Irq3_Wait
-
-        ; Make sure sprite jumps fit on one page
-
-                if (Irq2_Spr0 & $ff00) != (Irq2_Spr7 & $ff00)
-                    err
-                endif
 
         ; Raster interrupt 3. Gamescreen / scorepanel split
 
