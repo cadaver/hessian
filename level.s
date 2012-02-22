@@ -56,13 +56,9 @@ InitMap:        lda zoneNum                     ;Map address might have changed
                 jsr Add16
                 lda #ZONEH_DATA                 ;Add zone mapdata offset
                 jsr Add8
-                lda fileLo+C_BLOCKS             ;Address of first block
-                sta zpBitsLo
-                lda fileHi+C_BLOCKS
-                sta zpBitsHi
                 ldx #$00                        ;The counter
-IM_Loop:        cpx limitU                      ;Check if outside zone vertically
-                bcc IM_MapRowOutside
+IM_MapLoop:     cpx limitU                      ;Check if outside zone vertically,
+                bcc IM_MapRowOutside            ;store zero address in that case
                 cpx limitD
                 bcs IM_MapRowOutside
                 lda zpSrcLo
@@ -70,7 +66,7 @@ IM_Loop:        cpx limitU                      ;Check if outside zone verticall
                 lda zpSrcHi
                 bne IM_MapRowDone
 IM_MapRowOutside:
-                lda #$00                        ;Store zero address in that case
+                lda #$00
 IM_MapRowDone:  sta mapTblHi,x
                 lda zpSrcLo
                 clc
@@ -78,18 +74,26 @@ IM_MapRowDone:  sta mapTblHi,x
                 sta zpSrcLo
                 bcc IM_NotOver1
                 inc zpSrcHi
-IM_NotOver1:    lda zpBitsHi                    ;Store and increase block-
+IM_NotOver1:    inx
+                bpl IM_MapLoop
+                lda fileLo+C_BLOCKS             ;Address of first block
+                sta zpSrcLo
+                lda fileHi+C_BLOCKS
+                sta zpSrcHi
+                ldx #$00
+IM_BlockLoop:   lda zpSrcHi                     ;Store and increase block-
                 sta blkTblHi,x                  ;pointer
-                lda zpBitsLo
+                lda zpSrcLo
                 sta blkTblLo,x
                 clc
                 adc #$10
-                sta zpBitsLo
+                sta zpSrcLo
                 bcc IM_NotOver2
-                inc zpBitsHi
-IM_NotOver2:    inx                             ;Do 128 rows for the maptable
-                bpl IM_Loop                     ;& blocktable
-                
+                inc zpSrcHi
+IM_NotOver2:    inx                             
+                cpx #MAX_BLK
+                bcc IM_BlockLoop
+
         ; Set zone multicolors for the raster interrupt
         ;
         ; Parameters: zone

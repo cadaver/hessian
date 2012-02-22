@@ -6,6 +6,7 @@ MAX_SPR         = 24
 MAX_ACT         = 24
 MAX_COMPLEXACT  = 6
 MAX_CACHESPRITES = 63
+MAX_BLK         = 192
 
         ; Zeropage variables
 
@@ -127,6 +128,6 @@ depackBuffer    = $f501
 mapTblLo        = $f400                         ;Map/blocktables need to be always reinitialized
 mapTblHi        = $f480                         ;after loading
 blkTblLo        = $f500
-blkTblHi        = $f580
-musicData       = $f600
+blkTblHi        = $f500+MAX_BLK
+musicData       = $f500+MAX_BLK*2
 
