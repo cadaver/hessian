@@ -83,11 +83,11 @@ PMus_NoSilence: asl
                 adc PMus_InitSongNum+1
                 tay
 PMus_SongTblP0: lda $1000,y
-                sta PMus_TrackLo+1
+                sta ntTrackLo
 PMus_SongTblP1: lda $1000,y
-                sta PMus_TrackHi+1
+                sta ntTrackHi
                 txa
-                sta PMus_FiltPos+1
+                sta ntFiltPos
                 sta $d417
                 ldx #21
 PMus_InitLoop:  sta ntChnPattPos-1,x
@@ -147,7 +147,7 @@ PMus_InitSongNum:
 
           ;Filter execution
 
-PMus_FiltPos:   ldy #$00
+                ldy ntFiltPos
                 beq PMus_FiltDone
 PMus_FiltTimeM1:lda $1000,y
                 bpl PMus_FiltMod
@@ -159,15 +159,15 @@ PMus_SetFilt:   sta $d417
 PMus_FiltJump:    
 PMus_FiltSpdM1a:lda $1000,y
                 bcs PMus_FiltJump2
-PMus_NextFilt:  inc PMus_FiltPos+1
+PMus_NextFilt:  inc ntFiltPos
                 bcc PMus_StoreCutoff
-PMus_FiltJump2: sta PMus_FiltPos+1
+PMus_FiltJump2: sta ntFiltPos
                 bcs PMus_FiltDone
 PMus_FiltMod:   clc
                 dec ntFiltTime
                 bmi PMus_NewFiltMod
                 bne PMus_FiltCutoff
-                inc PMus_FiltPos+1
+                inc ntFiltPos
                 bcc PMus_FiltDone
 PMus_NewFiltMod:sta ntFiltTime
 PMus_FiltCutoff:lda #$00
@@ -198,7 +198,7 @@ PMus_Pattern:   ldy ntChnPattNum,x
 PMus_PattTblLoM1: 
                 lda $1000,y
                 sta ntTemp1
-PMus_PattTblHiM1: 
+PMus_PattTblHiM1:
                 lda $1000,y
                 sta ntTemp2
                 ldy ntChnPattPos,x
@@ -272,22 +272,17 @@ PMus_Reload:    lda ntChnDuration,x
 
          ;Get data from track
 
-PMus_Track:
-PMus_TrackLo:   lda #$00
-                sta ntTemp1
-PMus_TrackHi:   lda #$00
-                sta ntTemp2
-                ldy ntChnSongPos,x
-                lda (ntTemp1),y
+PMus_Track:     ldy ntChnSongPos,x
+                lda (ntTrackLo),y
                 bne PMus_NoSongJump
                 iny
-                lda (ntTemp1),y
+                lda (ntTrackLo),y
                 tay
-                lda (ntTemp1),y
+                lda (ntTrackLo),y
 PMus_NoSongJump:bpl PMus_NoSongTrans
                 sta ntChnTrans,x
                 iny
-                lda (ntTemp1),y
+                lda (ntTrackLo),y
 PMus_NoSongTrans:
                 sta ntChnPattNum,x
                 iny
@@ -331,7 +326,7 @@ PMus_CmdPulseM1:lda $1000,y
 PMus_SkipPulse:   
 PMus_CmdFiltM1: lda $1000,y
                 beq PMus_SkipFilt
-                sta PMus_FiltPos+1
+                sta ntFiltPos
                 lda #$00
                 sta ntFiltTime
 PMus_SkipFilt:  clc

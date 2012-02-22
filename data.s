@@ -307,5 +307,3 @@ ntChnWaveold:   dc.b 0
 
                 dc.b 0,0,0,0,0,0,0
                 dc.b 0,0,0,0,0,0,0
-
-ntFiltTime:     dc.b 0

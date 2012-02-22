@@ -23,6 +23,12 @@ InitControls:   lda #$00
                 sta keyPress
                 sta keyType
 
+        ; Initialize one-time playroutine variables
+        
+                sta $d415                       ;Filter lowbyte
+                sta ntFiltPos
+                sta ntFiltTime
+                        
         ; Initialize video registers and screen memory
 
 InitVideo:      lda $dd00                       ;Set game videobank
@@ -32,7 +38,6 @@ InitVideo:      lda $dd00                       ;Set game videobank
                 sta $d01b                       ;Sprites on top of BG
                 sta $d01d                       ;Sprite X-expand off
                 sta $d017                       ;Sprite Y-expand off
-                sta $d415                       ;Filter lowbyte
                 sta screen
                 lda #$ff                        ;Set all sprites multicolor
                 sta $d01c

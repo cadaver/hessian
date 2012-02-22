@@ -97,7 +97,11 @@ MAX_BLK         = 192
                 VarRange keyRowTbl,8
                 Var ntTemp1                     ;Playroutine
                 Var ntTemp2
-                
+                Var ntTrackLo
+                Var ntTrackHi
+                Var ntFiltPos
+                Var ntFiltTime
+
                 CheckVarBase $100
 
         ; Memory areas and non-zeropage variables
