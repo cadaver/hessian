@@ -78,8 +78,6 @@ IVid_CopyTextChars:
                 sta textChars+$100,x
                 lda textCharsCopy+$200,x
                 sta textChars+$200,x
-                lda textCharsCopy+$300,x
-                sta textChars+$300,x
                 inx
                 bne IVid_CopyTextChars
                 ldx #39
