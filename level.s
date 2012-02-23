@@ -56,42 +56,35 @@ InitMap:        lda zoneNum                     ;Map address might have changed
                 jsr Add16
                 lda #ZONEH_DATA                 ;Add zone mapdata offset
                 jsr Add8
-                ldx #$00                        ;The counter
-IM_MapLoop:     cpx limitU                      ;Check if outside zone vertically,
+                ldy #$00                        ;Row counter
+IM_MapLoop:     cpy limitU                      ;Check if outside zone vertically,
                 bcc IM_MapRowOutside            ;store zero address in that case
-                cpx limitD
+                cpy limitD
                 bcs IM_MapRowOutside
                 lda zpSrcLo
-                sta mapTblLo,x
+                sta mapTblLo,y
                 lda zpSrcHi
                 bne IM_MapRowDone
 IM_MapRowOutside:
                 lda #$00
-IM_MapRowDone:  sta mapTblHi,x
-                lda zpSrcLo
-                clc
-                adc mapSizeX
-                sta zpSrcLo
-                bcc IM_NotOver1
-                inc zpSrcHi
-IM_NotOver1:    inx
+IM_MapRowDone:  sta mapTblHi,y
+                lda mapSizeX
+                jsr Add8
+                iny
                 bpl IM_MapLoop
                 lda fileLo+C_BLOCKS             ;Address of first block
                 sta zpSrcLo
                 lda fileHi+C_BLOCKS
                 sta zpSrcHi
-                ldx #$00
-IM_BlockLoop:   lda zpSrcHi                     ;Store and increase block-
-                sta blkTblHi,x                  ;pointer
-                lda zpSrcLo
-                sta blkTblLo,x
-                clc
-                adc #$10
-                sta zpSrcLo
-                bcc IM_NotOver2
-                inc zpSrcHi
-IM_NotOver2:    inx                             
-                cpx #MAX_BLK
+                ldy #$00
+IM_BlockLoop:   lda zpSrcLo                     ;Store and increase block-
+                sta blkTblLo,y                  ;pointer
+                lda zpSrcHi
+                sta blkTblHi,y
+                lda #$10
+                jsr Add8
+                iny
+                cpy #MAX_BLK
                 bcc IM_BlockLoop
 
         ; Set zone multicolors for the raster interrupt
@@ -114,38 +107,40 @@ SetZoneColors:  ldy #ZONEH_BG1                  ;Set zone multicolors
         ; Find the zone indicated by coordinates or number.
         ;
         ; Parameters: A zone number (FindZoneNum) or X,Y pos (FindZoneXY)
-        ; Returns: zoneNum, zone
+        ; Returns: zoneNum, zoneLo-zoneHi
         ; Modifies: A,X,Y,loader temp vars
 
-FindZoneXY:     stx zpSrcLo
-                sty zpSrcHi
+FindZoneXY:     sty zpBitBuf
                 lda #$00
-                sta zoneNum
-FZXY_Loop:      jsr FZ_GetZonePtr
-                lda zpSrcLo
-                ldy #ZONEH_LEFT
-                cmp (zoneLo),y
+FZXY_Loop:      jsr FindZoneNum
+                cpx limitL
                 bcc FZXY_Next
-                iny
-                cmp (zoneLo),y
+                cpx limitR
                 bcs FZXY_Next
-                iny
-                lda zpSrcHi
-                cmp (zoneLo),y
+                ldy zpBitBuf
+                cpy limitU
                 bcc FZXY_Next
-                iny
-                cmp (zoneLo),y
-                bcc FZ_Found
+                cpy limitD
+                bcc FZXY_Done
 FZXY_Next:      inc zoneNum
                 lda zoneNum
                 cmp fileNumObjects+C_MAP
                 bcc FZXY_Loop
-                rts
+FZXY_Done:      rts
 
 FindZoneNum:    sta zoneNum
-                jsr FZ_GetZonePtr
-
-FZ_Found:       ldy #ZONEH_LEFT
+                asl
+                tay
+                lda fileLo+C_MAP
+                sta zpBitsLo
+                lda fileHi+C_MAP
+                sta zpBitsHi
+                lda (zpBitsLo),y
+                sta zoneLo
+                iny
+                lda (zpBitsLo),y
+                sta zoneHi
+                ldy #ZONEH_LEFT
                 lda (zoneLo),y
                 sta limitL
                 iny
@@ -160,17 +155,4 @@ FZ_Found:       ldy #ZONEH_LEFT
                 iny
                 lda (zoneLo),y
                 sta limitD
-                rts
-
-FZ_GetZonePtr:  asl
-                tay
-                lda fileLo+C_MAP
-                sta zpBitsLo
-                lda fileHi+C_MAP
-                sta zpBitsHi
-                lda (zpBitsLo),y
-                sta zoneLo
-                iny
-                lda (zpBitsLo),y
-                sta zoneHi
                 rts
