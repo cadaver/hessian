@@ -1,3 +1,5 @@
+                org MainEntryPoint
+
         ; Initialize registers/variables at startup. This code is called only once and can be
         ; disposed after that.
         ;
@@ -9,9 +11,9 @@ InitAll:        lda ntscDelay                   ;Check if loader part detected P
                 beq IsNTSC
                 lda #$a5                        ;In PAL mode, disable NTSC delay counting
                 sta Irq4_NtscDelay              ;(replace DEC with LDA)
-IsNTSC:         lda #<InitAll                   ;These routines will be overwritten by dynamically
-                sta freeMemLo                   ;allocated files
-                lda #>InitAll
+IsNTSC:         lda #<fileAreaStart             ;Initialize dynamic memory allocator
+                sta freeMemLo
+                lda #>fileAreaStart
                 sta freeMemHi
                 jsr InitScroll
 

@@ -945,9 +945,9 @@ IL_1MHzCopy:    lda il1MHzStart,y
                 bpl IL_1MHzCopy
 
 IL_Done:        jsr InitFastLoad                ;Init fastloader now if needed
-                lda #>(loaderCodeEnd-1)         ;Mainpart startaddress-1
+                lda #>(MainEntryPoint-1)        ;Mainpart startaddress-1
                 pha
-                lda #<(loaderCodeEnd-1)
+                lda #<(MainEntryPoint-1)
                 pha
                 lda #<loaderCodeEnd
                 ldx #>loaderCodeEnd

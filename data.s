@@ -307,3 +307,7 @@ ntChnWaveold:   dc.b 0
 
                 dc.b 0,0,0,0,0,0,0
                 dc.b 0,0,0,0,0,0,0
+              
+        ; Dynamic memory allocation area begins here
+         
+fileAreaStart:

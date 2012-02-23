@@ -11,11 +11,19 @@ SCRCENTER_Y     = 13
 
                 org loaderCodeEnd
 
-Start:          jmp InitAll
-
         ; Memory alignment of raster interrupt code is critical, so include first
 
                 include raster.s
+                include sound.s
+                include input.s
+                include math.s
+                include file.s
+                include sprite.s
+                include screen.s
+                include level.s
+                include actor.s
+                include physics.s
+                include player.s
 
         ; Test initialization code, will be removed
 
@@ -43,7 +51,6 @@ MainLoop:       jsr ScrollLogic
                 jsr DrawActors
                 jsr ScrollPlayer
                 jsr UpdateFrame
-
                 jsr ScrollLogic
                 jsr GetControls
                 jsr UpdateActors
@@ -51,7 +58,6 @@ MainLoop:       jsr ScrollLogic
                 jsr ScrollPlayer
                 jsr AnimateBlock
                 jsr UpdateFrame
-
                 jmp MainLoop
 
 AnimateBlock:   inc blkAnim
@@ -70,21 +76,9 @@ SkipBlkAnim:    rts
 
 blkAnim:        dc.b 0
 
-        ; Include rest of the code & data
-
-                include sound.s
-                include input.s
-                include math.s
-                include file.s
-                include sprite.s
-                include screen.s
-                include level.s
-                include actor.s
-                include physics.s
-                include player.s
                 include actordata.s
                 include data.s
-        
+
         ; Disposable init part
 
                 include init.s

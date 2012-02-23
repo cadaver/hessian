@@ -116,6 +116,7 @@ cacheSprFile    = $0200
 cacheSprFrame   = $02a7
 
 mainCodeStart   = $0334
+MainEntryPoint  = $4000
 
 fileAreaEnd     = $d000
 spriteCache     = $d000
