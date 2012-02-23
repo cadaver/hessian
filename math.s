@@ -124,18 +124,7 @@ Asr_Neg:        lsr
                 bne Asr_Neg
                 rts
 
-        ; Negate a 8-bit value
-        ;
-        ; Parameters: A number
-        ; Returns: A result
-        ; Modifies: A
-
-Negate:         clc
-                eor #$ff
-                adc #$01
-                rts
-
-        ; Negate 16-bit value
+        ; Negate a 16-bit value
         ;
         ; Parameters: X zeropage base
         ; Returns: zeropage result

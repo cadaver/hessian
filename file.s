@@ -200,7 +200,7 @@ PF_CopyDone:    ldx #freeMemLo                  ;Reduce amount of free memory
                 jsr Sub16
                 lda zpBitsLo                    ;zpSrcLo,Hi = negative size of file
                 eor #$ff
-                adc #$00
+                adc #$00                        ;C=1 here
                 sta zpSrcLo
                 lda zpBitsHi
                 eor #$ff
