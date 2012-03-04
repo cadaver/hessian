@@ -1,6 +1,7 @@
 FR_STAND        = 0
 FR_WALK         = 1
 FR_JUMP         = 9
+FR_DUCK         = 12
 
         ; Player update routine
         ;
@@ -8,7 +9,22 @@ FR_JUMP         = 9
         ; Returns: -
         ; Modifies: A,Y
 
-MovePlayer:     lda actMoveFlags,x
+MovePlayer:     lda actF1,x                     ;If ducking, brake, but allow to change dir
+                cmp #FR_DUCK+1                  ;Todo: when ducking, reduce actor height
+                bcc MP_NotDucking
+                lda joystick
+                and #JOY_LEFT
+                beq MP_DuckNotLeft
+                lda #$80
+                sta actD,x
+                bne MP_DoBrake
+MP_DuckNotLeft: lda joystick
+                and #JOY_RIGHT
+                beq MP_DoBrake
+                lda #$00
+                sta actD,x
+                beq MP_DoBrake
+MP_NotDucking:  lda actMoveFlags,x
                 sta temp1
                 lsr                             ;Grounded bit to C
                 lda joystick                    ;X-acceleration: faster when grounded
@@ -34,7 +50,7 @@ MP_OnGroundAccR:ldy #4*8
                 jsr AccActorX
                 jmp MP_NoBraking
 MP_NotRight:    bcc MP_NoBraking
-                lda #8                          ;When grounded and not moving, brake X-speed
+MP_DoBrake:     lda #8                          ;When grounded and not moving, brake X-speed
                 jsr BrakeActorX
 MP_NoBraking:   lda temp1
                 and #AMF_HITWALL|AMF_LANDED     ;If hit wall (and did not land simultaneously), reset X-speed
@@ -55,7 +71,7 @@ MP_NoHeadBump:  bcc MP_NoNewJump
                 lda prevJoy
                 and #JOY_UP
                 bne MP_NoNewJump
-MP_Jump:        lda #-6*8
+MP_Jump:        lda #-6*8+4
                 sta actSY,x
                 lda #$00                        ;Reset grounded flag manually for immediate
                 sta actMoveFlags,x              ;jump physics
@@ -86,10 +102,42 @@ MP_JumpAnimDown:cmp #2*8
                 iny
 MP_JumpAnimDone:tya
                 bpl MP_AnimDone
-MP_GroundAnim:  lda actMoveFlags,x
+MP_GroundAnim:  lda joystick
+                and #JOY_DOWN
+                beq MP_NoDuck
+MP_InitDuck:    lda actF1,x
+                cmp #FR_DUCK
+                bcs MP_DuckAnim
+                lda #$00
+                sta actFd,x
+                lda #FR_DUCK
+                bne MP_AnimDone
+MP_DuckAnim:    lda #$01
+                jsr AnimationDelay
+                bcc MP_AnimDone2
+                lda actF1,x
+                adc #$00
+                cmp #FR_DUCK+2
+                bcc MP_AnimDone
+                lda #FR_DUCK+1
+                bne MP_AnimDone
+MP_NoDuck:      lda actF1,x
+                cmp #FR_DUCK
+                bcc MP_StandOrWalk
+MP_DuckStandUpAnim:
+                lda #$01
+                jsr AnimationDelay
+                bcc MP_AnimDone2
+                lda actF1,x
+                sbc #$01
+                cmp #FR_DUCK
+                bcc MP_StandAnim
+                bcs MP_AnimDone
+MP_StandOrWalk: lda actMoveFlags,x
                 and #AMF_HITWALL
                 bne MP_StandAnim
-MP_WalkAnim:    lda actSX,x
+MP_WalkAnim:    lda joystick
+                and #JOY_LEFT|JOY_RIGHT
                 beq MP_StandAnim
                 lda #$01
                 jsr AnimationDelay
@@ -111,6 +159,14 @@ MP_AnimDone2:   lda joystick                    ;Shooting
                 lda prevJoy
                 and #JOY_FIRE
                 bne MP_NoFire
+                lda actF1,x                     ;Todo: use sprite hotspots/connectspots to determine
+                sec                             ;bullet spawn point
+                sbc #FR_DUCK-1
+                bcs MP_YModFrOk
+                lda #$00
+MP_YModFrOk:    tay
+                lda BltYModTbl,y
+                sta MP_YMod+1
                 lda #ACTI_FIRSTPLRBULLET
                 ldy #ACTI_LASTPLRBULLET
                 jsr GetFreeActor
@@ -121,7 +177,7 @@ MP_AnimDone2:   lda joystick                    ;Shooting
                 sta actXH,y
                 lda actYL,x
                 sec
-                sbc #$c0
+MP_YMod:        sbc #$00
                 sta actYL,y
                 lda actYH,x
                 sbc #$00
@@ -142,6 +198,8 @@ MP_FireRight:   lda #12*8                        ;Set bullet X-speed
 MP_FireLeft:    lda #-12*8
                 sta actSX,y
 MP_NoFire:      rts
+
+BltYModTbl:     dc.b $c0,$a0,$70
 
         ; Bullet update routine
         ;
