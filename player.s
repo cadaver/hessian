@@ -9,32 +9,21 @@ FR_DUCK         = 12
         ; Returns: -
         ; Modifies: A,Y
 
-MovePlayer:     lda actF1,x                     ;If ducking, brake, but allow to change dir
-                cmp #FR_DUCK+1                  ;Todo: when ducking, reduce actor height
-                bcc MP_NotDucking
-                lda joystick
-                and #JOY_LEFT
-                beq MP_DuckNotLeft
-                lda #$80
-                sta actD,x
-                bne MP_DoBrake
-MP_DuckNotLeft: lda joystick
-                and #JOY_RIGHT
-                beq MP_DoBrake
-                lda #$00
-                sta actD,x
-                beq MP_DoBrake
-MP_NotDucking:  lda actMoveFlags,x
+MovePlayer:     lda actMoveFlags,x
                 sta temp1
-                lsr                             ;Grounded bit to C
-                lda joystick                    ;X-acceleration: faster when grounded
+                lda actF1,x
+                cmp #FR_DUCK+1
+                lda joystick                    ;Check turning / X-acceleration / braking
                 and #JOY_LEFT
                 beq MP_NotLeft
                 lda #$80
                 sta actD,x
+                bcs MP_Brake                    ;If ducking, brake
+                lda temp1
+                lsr                             ;Faster acceleration when on ground
                 lda #-8
                 bcs MP_OnGroundAccL
-                lda #-2
+                lda #-3
 MP_OnGroundAccL:ldy #-4*8
                 jsr AccActorX
                 jmp MP_NoBraking
@@ -43,14 +32,19 @@ MP_NotLeft:     lda joystick
                 beq MP_NotRight
                 lda #$00
                 sta actD,x
+                bcs MP_Brake                    ;If ducking, brake
+                lda temp1
+                lsr                             ;Faster acceleration when on ground
                 lda #8
                 bcs MP_OnGroundAccR
-                lda #2
+                lda #3
 MP_OnGroundAccR:ldy #4*8
                 jsr AccActorX
                 jmp MP_NoBraking
-MP_NotRight:    bcc MP_NoBraking
-MP_DoBrake:     lda #8                          ;When grounded and not moving, brake X-speed
+MP_NotRight:    lda temp1                       ;No braking when jumping
+                lsr
+                bcc MP_NoBraking
+MP_Brake:       lda #8                          ;When grounded and not moving, brake X-speed
                 jsr BrakeActorX
 MP_NoBraking:   lda temp1
                 and #AMF_HITWALL|AMF_LANDED     ;If hit wall (and did not land simultaneously), reset X-speed
