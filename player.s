@@ -199,7 +199,7 @@ MP_FireLeft:    lda #-12*8
                 sta actSX,y
 MP_NoFire:      rts
 
-BltYModTbl:     dc.b $c0,$a0,$70
+BltYModTbl:     dc.b $c0,$a0,$68
 
         ; Bullet update routine
         ;
