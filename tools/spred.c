@@ -213,6 +213,19 @@ void mainloop(void)
         connectspoty[c-1] = connectspoty[c];
       }
     }
+    if (k == KEY_INS)
+    {
+      int c;
+      for (c = 254; c >= sprnum; c--)
+      {
+        memcpy(&spritedata[(c+1)*64], &spritedata[c*64], 64);
+        magx[c+1] = magx[c];
+        hotspotx[c+1] = hotspotx[c];
+        hotspoty[c+1] = hotspoty[c];
+        connectspotx[c+1] = connectspotx[c];
+        connectspoty[c+1] = connectspoty[c];
+      }
+    }
 
     if (k == KEY_B)
     {
@@ -469,7 +482,7 @@ void loadspr(void)
             tempheader.hotspoty = fread8(handle);
             tempheader.connectspoty = fread8(handle);
             tempheader.cacheframe = fread8(handle);
-  
+
             hotspotx[frame] = tempheader.hotspotx;
             hotspoty[frame] = tempheader.hotspoty;
             connectspotx[frame] = tempheader.connectspotx;
@@ -1211,6 +1224,22 @@ void drawgrid(void)
 
   sprintf(textbuffer, "SPRITE %03d", sprnum);
   printtext_color(textbuffer, 0,110,SPR_FONTS,COL_WHITE);
+
+  int slice, slicey;
+  int fullslices = 0;
+  for (slice = 0; slice < 9; slice++)
+  {
+    int slicey;
+    char data = 0;
+    for (slicey = 0; slicey < 7; slicey++)
+    {
+      data |= spritedata[sprnum * 64 + sliceoffset[slice] + slicey * 3];
+    }
+    if (data) fullslices++;
+  }
+  sprintf(textbuffer, "SLICES %d", fullslices);
+  printtext_color(textbuffer, 0,120,SPR_FONTS,COL_WHITE);
+
   v = COL_WHITE;
   if (ccolor == 0) v = COL_HIGHLIGHT;
   printtext_color("BACKGROUND",130,80,SPR_FONTS,v);

@@ -3,9 +3,12 @@ C_BLOCKS        = 1
 C_FIRSTSPR      = 2
 C_FIRSTPURGEABLE = 2
 
+C_COMMON        = C_FIRSTSPR
+C_PLAYER        = C_FIRSTSPR+1
+
 F_SPRITE        = $02
-F_MUSIC         = $03
-F_LEVEL         = $04
+F_MUSIC         = $04
+F_LEVEL         = $05
 
 MAX_CHUNKFILES   = 32
 

@@ -8,11 +8,13 @@ AD_NUMFRAMES    = 3                             ;For incrementing framepointer. 
 AD_FRAMES       = 4
 
 ADH_SPRFILE     = 1
-ADH_LEFTFRADD   = 2
-ADH_BASEFR      = 3                             ;Index to a static 256-byte table for humanoid actor spriteframes
-ADH_SPRFILE2    = 4
-ADH_LEFTFRADD2  = 5                             ;Index to a static 256-byte table for humanoid actor framenumbers
-ADH_BASEFR2     = 6
+ADH_BASEFRAME   = 2
+ADH_BASEINDEX   = 3                             ;Index to a static 256-byte table for humanoid actor spriteframes
+ADH_LEFTFRADD   = 4
+ADH_SPRFILE2    = 5
+ADH_BASEFRAME2  = 6
+ADH_BASEINDEX2  = 7                             ;Index to a static 256-byte table for humanoid actor framenumbers
+ADH_LEFTFRADD2  = 8
 
 ONESPRITE       = $00
 TWOSPRITE       = $01
@@ -174,22 +176,26 @@ DA_LastSprite:  jsr GetAndStoreLastSprite
 DA_Humanoid:    lda actF2,x
                 ldy actD,x
                 bpl DA_HumanRight2
-                ldy #ADH_LEFTFRADD              ;Add left frame offset if necessary
+                ldy #ADH_LEFTFRADD2             ;Add left frame offset if necessary
                 adc (actLo),y
-DA_HumanRight2: ldy #ADH_BASEFR2
+DA_HumanRight2: ldy #ADH_BASEINDEX2
                 adc (actLo),y
                 tay
                 lda humanUpperFrTbl,y           ;Take sprite frame from the frametable
+                ldy #ADH_BASEFRAME2
+                adc (actLo),y
                 sta DA_HumanFrame2+1
                 lda actF1,x
                 ldy actD,x
                 bpl DA_HumanRight1
                 ldy #ADH_LEFTFRADD              ;Add left frame offset if necessary
                 adc (actLo),y
-DA_HumanRight1: ldy #ADH_BASEFR
+DA_HumanRight1: ldy #ADH_BASEINDEX
                 adc (actLo),y
                 tay
                 lda humanLowerFrTbl,y           ;Take sprite frame from the frametable
+                ldy #ADH_BASEFRAME
+                adc (actLo),y
                 ldx sprIndex
                 jsr GetAndStoreSprite
                 ldy #ADH_SPRFILE2               ;Get second part spritefile

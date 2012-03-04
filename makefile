@@ -17,7 +17,7 @@ clean:
 	del 6?
 	del 7?
 
-hessian.d64: boot.prg loader.pak main.pak testmusic.pak testspr.pak testlev.pak
+hessian.d64: boot.prg loader.pak main.pak testmusic.pak testlev.pak common.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -49,5 +49,8 @@ testlev.pak: testlev.s bg/testlev.map bg/testlev.blk bg/testlev.chi bg/testlev.c
 	pack2 bg/testlev.chr testlev4.pak
 	filejoin testlev1.pak+testlev2.pak+testlev3.pak+testlev4.pak testlev.pak
 
-testspr.pak: spr/testspr.spr
-	pchunk2 spr/testspr.spr testspr.pak
+common.pak: spr/common.spr
+	pchunk2 spr/common.spr common.pak
+
+player.pak: spr/player.spr
+	pchunk2 spr/player.spr player.pak

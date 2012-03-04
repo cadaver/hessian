@@ -1,3 +1,7 @@
+FR_STAND        = 0
+FR_WALK         = 1
+FR_JUMP         = 9
+
         ; Player update routine
         ;
         ; Parameters: X actor index
@@ -67,7 +71,41 @@ MP_NoNewJump:   lda #-4                         ;Actor height for ceiling check
 MP_NoLongJump:  tya
                 ldy #6*8
                 jsr MoveWithGravity             ;Actually move & check collisions
-                lda joystick                    ;Shooting
+                lda actMoveFlags,x              ;If not grounded, play jump animation
+                lsr
+                bcs MP_GroundAnim
+MP_JumpAnim:    ldy #FR_JUMP+1
+                lda actSY,x
+                bpl MP_JumpAnimDown
+MP_JumpAnimUp:  cmp #-1*8
+                bcs MP_JumpAnimDone
+                dey
+                bcc MP_JumpAnimDone
+MP_JumpAnimDown:cmp #2*8
+                bcc MP_JumpAnimDone
+                iny
+MP_JumpAnimDone:tya
+                bpl MP_AnimDone
+MP_GroundAnim:  lda actMoveFlags,x
+                and #AMF_HITWALL
+                bne MP_StandAnim
+MP_WalkAnim:    lda actSX,x
+                beq MP_StandAnim
+                lda #$01
+                jsr AnimationDelay
+                bcc MP_AnimDone2
+                lda actF1,x
+                adc #$00
+                cmp #FR_WALK+8
+                bcc MP_AnimDone
+                lda #FR_WALK
+                bcs MP_AnimDone
+MP_StandAnim:   lda #$00
+                sta actFd,x
+                lda #FR_STAND
+MP_AnimDone:    sta actF1,x
+                sta actF2,x
+MP_AnimDone2:   lda joystick                    ;Shooting
                 and #JOY_FIRE
                 beq MP_NoFire
                 lda prevJoy

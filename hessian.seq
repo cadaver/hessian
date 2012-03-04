@@ -1,6 +1,7 @@
 boot.prg HESSIAN
 loader.pak 00
 main.pak 01
-testspr.pak 02
-testmusic.pak 03
-testlev.pak 04
+common.pak 02
+player.pak 03
+testmusic.pak 04
+testlev.pak 05
