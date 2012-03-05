@@ -1205,11 +1205,11 @@ void drawgrid(void)
     if (!magx[sprnum])
     {
       gfx_drawsprite(hotspotx[sprnum]*5, hotspoty[sprnum]*5, 0x00000011+1);
-      gfx_drawsprite(connectspotx[sprnum]*5, connectspoty[sprnum]*5, 0x00000011+10);
+      gfx_drawsprite(connectspotx[sprnum]*5, connectspoty[sprnum]*5, 0x00000011+13);
       gfx_plot(130+hotspotx[sprnum], hotspoty[sprnum], 1);
-      gfx_plot(130+connectspotx[sprnum], connectspoty[sprnum], 10);
+      gfx_plot(130+connectspotx[sprnum], connectspoty[sprnum], 13);
       gfx_plot(131+hotspotx[sprnum], hotspoty[sprnum], 1);
-      gfx_plot(131+connectspotx[sprnum], connectspoty[sprnum], 10);
+      gfx_plot(131+connectspotx[sprnum], connectspoty[sprnum], 13);
     }
     else
     {
