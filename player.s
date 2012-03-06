@@ -17,9 +17,9 @@ MP_ClimbUp:     lda joystick                    ;Check for exiting the ladder
                 and #JOY_LEFT|JOY_RIGHT
                 beq MP_ClimbUpNoJump
                 cmp #JOY_RIGHT
-                lda #8
+                lda #2*8
                 bcs MP_ClimbUpJumpRight
-                lda #-8
+                lda #-2*8
 MP_ClimbUpJumpRight:
                 sta actSX,x
                 sta actD,x
