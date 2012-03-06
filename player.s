@@ -46,34 +46,32 @@ MP_ClimbAnimDown:
                 clc
                 adc actF1,x
                 and #$03                        ;Note: works only as long as FR_CLIMB
-                clc                            ;is divisible by 4
+                clc                             ;is divisible by 4
                 adc #FR_CLIMB
                 sta actF1,x
                 sta actF2,x
                 tya
                 jsr MoveActorY
-                jsr NoInterpolation
-MP_ClimbDone:   lda #$00                        ;Reset X-speed
-                sta actSX,x
+                jmp NoInterpolation
+
+MP_Climbing:    lda joystick
+                lsr
+                bcs MP_ClimbUp
+                lsr
+                bcs MP_ClimbDown
                 lda joystick
                 and #JOY_LEFT|JOY_RIGHT         ;Exit ladder?
-                beq MP_ClimbNoExit
+                beq MP_ClimbDone
                 jsr GetCharInfo                 ;Check ground bit
                 lsr
-                bcc MP_ClimbNoExit
+                bcc MP_ClimbDone
                 lda actYL,x
                 and #$c0
                 sta actYL,x
                 jsr NoInterpolation
                 jmp MP_StandAnim
-MP_ClimbNoExit: rts
+MP_ClimbDone:   rts
 
-MP_Climbing:    lda joystick
-                and #JOY_UP
-                bne MP_ClimbUp
-MP_ClimbNotUp:  lda joystick
-                and #JOY_DOWN
-                beq MP_ClimbDone
 MP_ClimbDown:   jsr GetCharInfo
                 and #CI_CLIMB
                 beq MP_ClimbDone
