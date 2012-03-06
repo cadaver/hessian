@@ -81,7 +81,6 @@ GetAndStoreSprite:
                 bcs GASS_XOutside
 GASS_XNotOutside:
                 lda (frameLo),y                 ;Add X-connect spot
-                iny
                 clc
                 bmi GASS_CSXNeg
                 adc sprXL,x
@@ -93,6 +92,7 @@ GASS_CSXNeg:    adc sprXL,x
                 lda #$ff
 GASS_CSXCommon: adc sprXH,x
                 sta temp2
+                iny
                 lda temp3                       ;Subtract Y-hotspot
                 sec
                 sbc (frameLo),y
@@ -102,7 +102,7 @@ GASS_CSXCommon: adc sprXH,x
                 sbc #$00
                 sta temp4
                 bne GASS_YOutside
-                lda (frameLo),y                 ;Check sign of Y-connect spot
+                lda (frameLo),y                 ;Add Y-connect spot
                 clc
                 bmi GASS_CSYNeg
                 adc sprY,x
@@ -117,7 +117,6 @@ GASS_CSYCommon: adc temp4
                 jmp GASS_Accept
 
 GASS_XOutside:  lda (frameLo),y                 ;X coord is outside, but must still add the connect-spot
-                iny
                 clc
                 bmi GASS_CSXNeg2
                 adc sprXL,x
@@ -129,6 +128,7 @@ GASS_CSXNeg2:   adc sprXL,x
                 lda #$ff
 GASS_CSXCommon2:adc sprXH,x
                 sta temp2
+                iny                
                 lda temp3                       ;Subtract Y-hotspot
                 sec
                 sbc (frameLo),y

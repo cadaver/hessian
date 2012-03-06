@@ -1,7 +1,8 @@
 FR_STAND        = 0
 FR_WALK         = 1
 FR_JUMP         = 9
-FR_DUCK         = 12
+FR_ROLL         = 12
+FR_DUCK         = 18
 
         ; Player update routine
         ;
@@ -11,15 +12,25 @@ FR_DUCK         = 12
 
 MovePlayer:     lda actMoveFlags,x
                 sta temp1
-                lda actF1,x
-                cmp #FR_DUCK+1
+                lda #$00                        ;Roll flag
+                sta temp5
+                lda actF1,x                     ;If rolling, automatically accelerate
+                cmp #FR_ROLL                    ;to facing direction
+                bcc MP_NoRoll
+                cmp #FR_DUCK
+                bcs MP_NoRoll
+                inc temp5
+                lda actD,x
+                bmi MP_AccLeft
+                bpl MP_AccRight
+MP_NoRoll:      cmp #FR_DUCK+1
                 lda joystick                    ;Check turning / X-acceleration / braking
                 and #JOY_LEFT
                 beq MP_NotLeft
                 lda #$80
                 sta actD,x
                 bcs MP_Brake                    ;If ducking, brake
-                lda temp1
+MP_AccLeft:     lda temp1
                 lsr                             ;Faster acceleration when on ground
                 lda #-8
                 bcs MP_OnGroundAccL
@@ -33,7 +44,7 @@ MP_NotLeft:     lda joystick
                 lda #$00
                 sta actD,x
                 bcs MP_Brake                    ;If ducking, brake
-                lda temp1
+MP_AccRight:    lda temp1
                 lsr                             ;Faster acceleration when on ground
                 lda #8
                 bcs MP_OnGroundAccR
@@ -60,12 +71,14 @@ MP_NoHitWall:   lda temp1
                 sta actSY,x
 MP_NoHeadBump:  bcc MP_NoNewJump
                 lda joystick                    ;If on ground, can initiate a jump
-                and #JOY_UP
+                and #JOY_UP                     ;except if in the middle of a roll
                 beq MP_NoNewJump
+                lda temp5
+                bne MP_NoNewJump
                 lda prevJoy
                 and #JOY_UP
                 bne MP_NoNewJump
-MP_Jump:        lda #-6*8+4
+MP_StartJump:   lda #-6*8+4
                 sta actSY,x
                 lda #$00                        ;Reset grounded flag manually for immediate
                 sta actMoveFlags,x              ;jump physics
@@ -81,6 +94,8 @@ MP_NoNewJump:   lda #-4                         ;Actor height for ceiling check
 MP_NoLongJump:  tya
                 ldy #6*8
                 jsr MoveWithGravity             ;Actually move & check collisions
+                lda temp5
+                bne MP_RollAnim
                 lda actMoveFlags,x              ;If not grounded, play jump animation
                 lsr
                 bcs MP_GroundAnim
@@ -95,11 +110,39 @@ MP_JumpAnimDown:cmp #2*8
                 bcc MP_JumpAnimDone
                 iny
 MP_JumpAnimDone:tya
-                bpl MP_AnimDone
+                jmp MP_AnimDone
+MP_RollAnim:    lda #$01
+                jsr AnimationDelay
+                bcc MP_AnimDone2Jump
+                lda actF1,x
+                adc #$00
+                cmp #FR_DUCK                    ;Transition from roll to low duck
+                bcc MP_RollAnimDone
+                lda actMoveFlags,x              ;If rolling and falling, transition
+                lsr                             ;to jump instead
+                bcs MP_RollToDuck
+MP_RollToJump:  lda #FR_JUMP+2
+                bne MP_RollAnimDone
+MP_RollToDuck:  lda #FR_DUCK+1
+MP_RollAnimDone:
+                jmp MP_AnimDone
 MP_GroundAnim:  lda joystick
                 and #JOY_DOWN
                 beq MP_NoDuck
-MP_InitDuck:    lda actF1,x
+MP_NewDuckOrRoll:
+                lda actF1,x
+                cmp #FR_ROLL
+                bcs MP_NoNewRoll
+                lda joystick                    ;To initiate a roll, must push the
+                cmp prevJoy                     ;joystick diagonally while standing
+                beq MP_NoNewRoll                ;or walking
+                and #JOY_LEFT|JOY_RIGHT
+                beq MP_NoNewRoll
+MP_StartRoll:   lda #$00
+                sta actFd,x
+                lda #FR_ROLL
+                bne MP_AnimDone
+MP_NoNewRoll:   lda actF1,x
                 cmp #FR_DUCK
                 bcs MP_DuckAnim
                 lda #$00
@@ -108,6 +151,7 @@ MP_InitDuck:    lda actF1,x
                 bne MP_AnimDone
 MP_DuckAnim:    lda #$01
                 jsr AnimationDelay
+MP_AnimDone2Jump:
                 bcc MP_AnimDone2
                 lda actF1,x
                 adc #$00
@@ -153,7 +197,12 @@ MP_AnimDone2:   lda joystick                    ;Shooting
                 lda prevJoy
                 and #JOY_FIRE
                 bne MP_NoFire
-                lda actF1,x                     ;Todo: use sprite hotspots/connectspots to determine
+                lda actF1,x                     ;Can not shoot while rolling
+                cmp #FR_DUCK
+                bcs MP_FireOk
+                cmp #FR_ROLL
+                bcs MP_NoFire
+MP_FireOk:                                      ;Todo: use sprite hotspots/connectspots to determine
                 sec                             ;bullet spawn point
                 sbc #FR_DUCK-1
                 bcs MP_YModFrOk

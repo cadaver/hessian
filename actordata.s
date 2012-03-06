@@ -15,13 +15,13 @@ actDispTblHi:   dc.b >adPlayer
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_PLAYER                   ;Lower part spritefile number
-                dc.b 6                          ;Lower part base spritenumber
+                dc.b 18                         ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
-                dc.b 14                         ;Lower part left frame add
+                dc.b 20                         ;Lower part left frame add
                 dc.b C_PLAYER                   ;Upper part spritefile number
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable
-                dc.b 14                         ;Upper part left frame add
+                dc.b 20                         ;Upper part left frame add
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -37,13 +37,13 @@ adExplosion:    dc.b ONESPRITE                  ;Number of sprites
 
         ; Human actor lower part framenumbers
 
-humanUpperFrTbl:dc.b 2,0,0,2,2,4,4,2,2,4,2,0,0,0
-                dc.b 3,1,1,3,3,5,5,3,3,5,3,1,1,1
+humanUpperFrTbl:dc.b 2,0,0,2,2,4,4,2,2,4,2,0,6,8,10,12,14,16,0,0
+                dc.b 3,1,1,3,3,5,5,3,3,5,3,1,7,9,11,13,15,17,1,1
 
         ; Human actor upper part framenumbers
 
-humanLowerFrTbl:dc.b 0,2,4,6,8,2,4,6,8,10,12,14,16,18
-                dc.b 1,3,5,7,9,3,5,7,9,11,13,15,17,19
+humanLowerFrTbl:dc.b 0,2,4,6,8,2,4,6,8,10,12,14,20,22,24,26,28,30,16,18
+                dc.b 1,3,5,7,9,3,5,7,9,11,13,15,21,23,25,27,29,31,17,19
 
         ; Actors' logic data pointers
 
