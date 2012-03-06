@@ -374,6 +374,22 @@ IA_XOffsetCommon2:
                 bmi IA_Done
                 jmp IA_SprLoop
 
+        ; Disable actor interpolation for the current position
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modified: A
+        
+NoInterpolation:lda actXL,x
+                sta actPrevXL,x
+                lda actXH,x
+                sta actPrevXH,x
+                lda actYL,x
+                sta actPrevYL,x
+                lda actYH,x
+                sta actPrevYH,x
+                rts
+
         ; Move actor in X-direction
         ;
         ; Parameters: X actor index, A speed

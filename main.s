@@ -56,25 +56,8 @@ MainLoop:       jsr ScrollLogic
                 jsr UpdateActors
                 jsr InterpolateActors
                 jsr ScrollPlayer
-                jsr AnimateBlock
                 jsr UpdateFrame
                 jmp MainLoop
-
-AnimateBlock:   inc blkAnim
-                lda blkAnim
-                and #$07
-                bne SkipBlkAnim
-                lda blkAnim
-                lsr
-                lsr
-                lsr
-                and #$07
-                ldx #8
-                ldy #3
-                jmp UpdateBlock
-SkipBlkAnim:    rts
-
-blkAnim:        dc.b 0
 
                 include actordata.s
                 include data.s

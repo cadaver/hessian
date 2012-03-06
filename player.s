@@ -3,6 +3,7 @@ FR_WALK         = 1
 FR_JUMP         = 9
 FR_ROLL         = 12
 FR_DUCK         = 18
+FR_CLIMB        = 20
 
         ; Player update routine
         ;
@@ -10,10 +11,78 @@ FR_DUCK         = 18
         ; Returns: -
         ; Modifies: A,Y
 
+MP_ClimbUp:     lda joystick                    ;Check for exiting the ladder
+                cmp prevJoy                     ;by jumping
+                beq MP_ClimbUpNoJump
+                and #JOY_LEFT|JOY_RIGHT
+                beq MP_ClimbUpNoJump
+                cmp #JOY_RIGHT
+                lda #8
+                bcs MP_ClimbUpJumpRight
+                lda #-8
+MP_ClimbUpJumpRight:
+                sta actSX,x
+                sta actD,x
+                jmp MP_StartJump
+MP_ClimbUpNoJump:
+                lda actYL,x
+                and #$20
+                bne MP_ClimbUpOk
+                lda #-4
+                jsr GetCharInfoOffset
+                and #CI_CLIMB
+                beq MP_ClimbDone
+MP_ClimbUpOk:   ldy #-4*8
+MP_ClimbCommon: lda #$60                        ;Climbing speed
+                clc
+                adc actFd,x
+                sta actFd,x
+                bcc MP_ClimbDone
+                lda actF1,x
+                adc #$00
+                cmp #FR_CLIMB+4
+                bcc MP_ClimbAnimDone
+                lda #FR_CLIMB
+MP_ClimbAnimDone:
+                sta actF1,x
+                sta actF2,x
+                tya
+                jsr MoveActorY
+                jsr NoInterpolation
+MP_ClimbDone:   lda #$00                        ;Reset X-speed
+                sta actSX,x
+                lda joystick
+                and #JOY_LEFT|JOY_RIGHT         ;Exit ladder?
+                beq MP_ClimbNoExit
+                jsr GetCharInfo                 ;Check ground bit
+                lsr
+                bcc MP_ClimbNoExit
+                lda actYL,x
+                and #$c0
+                sta actYL,x
+                jsr NoInterpolation
+                jmp MP_StandAnim
+MP_ClimbNoExit: rts
+
+MP_Climbing:    lda joystick
+                and #JOY_UP
+                bne MP_ClimbUp
+MP_ClimbNotUp:  lda joystick
+                and #JOY_DOWN
+                beq MP_ClimbDone
+MP_ClimbDown:   jsr GetCharInfo
+                and #CI_CLIMB
+                beq MP_ClimbDone
+                ldy #4*8
+                bne MP_ClimbCommon
+
 MovePlayer:     lda actMoveFlags,x
                 sta temp1
                 lda #$00                        ;Roll flag
                 sta temp5
+                lda actF1,x                     ;Check if climbing
+                cmp #FR_CLIMB
+                bcs MP_Climbing
                 lda actF1,x                     ;If rolling, automatically accelerate
                 cmp #FR_ROLL                    ;to facing direction
                 bcc MP_NoRoll
@@ -75,9 +144,20 @@ MP_NoHeadBump:  bcc MP_NoNewJump
                 beq MP_NoNewJump
                 lda temp5
                 bne MP_NoNewJump
+                lda #-4                         ;Jump or climb?
+                jsr GetCharInfoOffset
+                and #CI_CLIMB
+                beq MP_NoInitClimbUp
+                jmp MP_InitClimb
+MP_NoInitClimbUp:                
                 lda prevJoy
                 and #JOY_UP
                 bne MP_NoNewJump
+                lda #-4                         ;Jump or climb?
+                jsr GetCharInfoOffset
+                and #CI_CLIMB
+                beq MP_StartJump
+                jmp MP_InitClimb
 MP_StartJump:   lda #-6*8+4
                 sta actSY,x
                 lda #$00                        ;Reset grounded flag manually for immediate
@@ -99,6 +179,18 @@ MP_NoLongJump:  tya
                 lda actMoveFlags,x              ;If not grounded, play jump animation
                 lsr
                 bcs MP_GroundAnim
+                lda actSY,x                     ;Check for grabbing a ladder while
+                bpl MP_GrabLadderOk             ;in midair
+                cmp #-2*8                       ;Can not grab while still going up fast
+                bcc MP_JumpAnim
+MP_GrabLadderOk:lda joystick
+                and #JOY_UP
+                beq MP_JumpAnim
+                lda #-4
+                jsr GetCharInfoOffset
+                and #CI_CLIMB
+                beq MP_JumpAnim
+                jmp MP_InitClimb
 MP_JumpAnim:    ldy #FR_JUMP+1
                 lda actSY,x
                 bpl MP_JumpAnimDown
@@ -142,7 +234,12 @@ MP_StartRoll:   lda #$00
                 sta actFd,x
                 lda #FR_ROLL
                 bne MP_AnimDone
-MP_NoNewRoll:   lda actF1,x
+MP_NoNewRoll:   jsr GetCharInfo                 ;Duck or climb?
+                and #CI_CLIMB
+                beq MP_NoInitClimbDown
+                jmp MP_InitClimb
+MP_NoInitClimbDown:
+                lda actF1,x
                 cmp #FR_DUCK
                 bcs MP_DuckAnim
                 lda #$00
@@ -191,58 +288,22 @@ MP_StandAnim:   lda #$00
                 lda #FR_STAND
 MP_AnimDone:    sta actF1,x
                 sta actF2,x
-MP_AnimDone2:   lda joystick                    ;Shooting
-                and #JOY_FIRE
-                beq MP_NoFire
-                lda prevJoy
-                and #JOY_FIRE
-                bne MP_NoFire
-                lda actF1,x                     ;Can not shoot while rolling
-                cmp #FR_DUCK
-                bcs MP_FireOk
-                cmp #FR_ROLL
-                bcs MP_NoFire
-MP_FireOk:                                      ;Todo: use sprite hotspots/connectspots to determine
-                sec                             ;bullet spawn point
-                sbc #FR_DUCK-1
-                bcs MP_YModFrOk
-                lda #$00
-MP_YModFrOk:    tay
-                lda BltYModTbl,y
-                sta MP_YMod+1
-                lda #ACTI_FIRSTPLRBULLET
-                ldy #ACTI_LASTPLRBULLET
-                jsr GetFreeActor
-                bcc MP_NoFire
-                lda actXL,x                     ;Todo: refactor the spawn coord copy into a subroutine
-                sta actXL,y                     ;if used a lot
-                lda actXH,x
-                sta actXH,y
-                lda actYL,x
-                sec
-MP_YMod:        sbc #$00
-                sta actYL,y
-                lda actYH,x
-                sbc #$00
-                sta actYH,y
-                lda #20
-                sta actTime,y
-                lda #ACT_BULLET
-                sta actT,y
-                tya
-                jsr GetFlashColorOverride
-                sta actC,y
-                lda actD,x                       ;Copy direction
-                sta actD,y
-                bmi MP_FireLeft
-MP_FireRight:   lda #12*8                        ;Set bullet X-speed
-                sta actSX,y
-                bne MP_NoFire
-MP_FireLeft:    lda #-12*8
-                sta actSX,y
-MP_NoFire:      rts
+MP_AnimDone2:   rts
 
-BltYModTbl:     dc.b $c0,$a0,$68
+MP_InitClimb:   lda #$80
+                sta actXL,x
+                lda actYL,x
+                and #$c0
+                sta actYL,x
+                lda #FR_CLIMB
+                sta actF1,x
+                sta actF2,x
+                lda #$ff                        ;No movement delay when starting to climb
+                sta actFd,x
+                lda #$00
+                sta actSX,x
+                sta actSY,x
+                jmp NoInterpolation
 
         ; Bullet update routine
         ;
