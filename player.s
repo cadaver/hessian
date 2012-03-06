@@ -132,7 +132,28 @@ MP_NoBraking:   lda temp1
                 and #AMF_HITWALL|AMF_LANDED     ;If hit wall (and did not land simultaneously), reset X-speed
                 cmp #AMF_HITWALL
                 bne MP_NoHitWall
-                lda #$00
+                lda temp1                       ;Check for wallflip (push joystick up & opposite to wall)
+                lsr
+                bcs MP_NoWallFlip
+                lda actSY,x                     ;Must not have started descending yet
+                bpl MP_NoWallFlip
+                lda #JOY_UP|JOY_RIGHT
+                ldy actSX,x
+                beq MP_NoWallFlip
+                bmi MP_WallFlipRight
+                lda #JOY_UP|JOY_LEFT
+MP_WallFlipRight:
+                cmp joystick
+                bne MP_NoWallFlip
+                ldy #4*8
+                cmp #JOY_UP|JOY_RIGHT
+                beq MP_WallFlipRight2
+                ldy #-4*8
+MP_WallFlipRight2:
+                tya
+                sta actSX,x
+                bne MP_StartJump
+MP_NoWallFlip:  lda #$00
                 sta actSX,x
 MP_NoHitWall:   lda temp1
                 lsr                             ;Grounded bit to C
