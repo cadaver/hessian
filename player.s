@@ -38,12 +38,16 @@ MP_ClimbCommon: lda #$60                        ;Climbing speed
                 adc actFd,x
                 sta actFd,x
                 bcc MP_ClimbDone
-                lda actF1,x
-                adc #$00
-                cmp #FR_CLIMB+4
-                bcc MP_ClimbAnimDone
-                lda #FR_CLIMB
-MP_ClimbAnimDone:
+                lda #$01                        ;Run the animation either forward
+                cpy #$80                        ;or backward depending on climbing dir
+                bcc MP_ClimbAnimDown
+                lda #$ff
+MP_ClimbAnimDown:
+                clc
+                adc actF1,x
+                and #$03                        ;Note: works only as long as FR_CLIMB
+                clc                            ;is divisible by 4
+                adc #FR_CLIMB
                 sta actF1,x
                 sta actF2,x
                 tya
@@ -298,7 +302,7 @@ MP_InitClimb:   lda #$80
                 lda #FR_CLIMB
                 sta actF1,x
                 sta actF2,x
-                lda #$ff                        ;No movement delay when starting to climb
+                lda #$80
                 sta actFd,x
                 lda #$00
                 sta actSX,x
