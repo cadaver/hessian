@@ -242,7 +242,9 @@ UA_NotZero:     stx actIndex
                 iny
                 lda (actLo),y
                 sta UA_Jump+2
+                inc $d020
 UA_Jump:        jsr $1000
+                dec $d020
                 inx
                 cpx #MAX_ACT
                 bcc UA_Loop
@@ -584,14 +586,14 @@ GetActorCharCoords:
         ; Returns: A charinfo
         ; Modifies: A,Y,loader temp vars
 
-GetCharInfo:    lda actYL,x
+GetCharInfo:    ldy actYH,x
+GCI_Common2:    lda actYL,x
                 and #$c0
                 lsr
                 lsr
                 lsr
                 lsr
                 sta zpBitsLo
-                ldy actYH,x
 GCI_Common:     lda mapTblHi,y
                 beq GCI_Outside2
                 sta zpDestHi
@@ -666,6 +668,18 @@ GetCharInfo1Below:
 GCI1B_Ok:       sta zpBitsLo
                 jmp GCI_Common
 
+        ; Get char collision info from 4 chars above actor's pos (optimized)
+        ;
+        ; Parameters: X actor index
+        ; Returns: A charinfo
+        ; Modifies: A,Y,loader temp vars
+
+GetCharInfo4Above:
+                ldy actYH,x
+                dey
+                bpl GCI_Common2
+                bpl GCI_Outside
+
         ; Get char collision info from the actor's position with Y offset
         ;
         ; Parameters: X actor index, A signed Y offset in chars
@@ -696,6 +710,7 @@ GCIO_Neg:       lsr
                 ora #$c0
 GCIO_Common:    clc
                 adc actYH,x
+                bmi GCI_Outside
                 tay
                 jmp GCI_Common
 

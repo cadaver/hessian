@@ -11,8 +11,7 @@ FR_CLIMB        = 20
         ; Returns: -
         ; Modifies: A,Y
 
-MP_ClimbUp:     lda #-4
-                jsr GetCharInfoOffset
+MP_ClimbUp:     jsr GetCharInfo4Above
                 sta temp1
                 and #CI_OBSTACLE
                 bne MP_ClimbUpNoJump
@@ -85,8 +84,7 @@ MP_Climbing:    lda joystick
                 lda actYL,x                     ;If half way a char, check also 1 char
                 and #$20                        ;below
                 beq MP_ClimbDone
-                lda #1
-                jsr GetCharInfoOffset
+                jsr GetCharInfo1Below
                 lsr
                 bcc MP_ClimbDone
 MP_ClimbExitBelow:
@@ -194,8 +192,7 @@ MP_NoHeadBump:  bcc MP_NoNewJump
                 beq MP_NoNewJump
                 lda temp5
                 bne MP_NoNewJump
-                lda #-4                         ;Jump or climb?
-                jsr GetCharInfoOffset
+                jsr GetCharInfo4Above           ;Jump or climb?
                 and #CI_CLIMB
                 beq MP_NoInitClimbUp
                 jmp MP_InitClimb
@@ -203,11 +200,6 @@ MP_NoInitClimbUp:
                 lda prevJoy
                 and #JOY_UP
                 bne MP_NoNewJump
-                lda #-4                         ;Jump or climb?
-                jsr GetCharInfoOffset
-                and #CI_CLIMB
-                beq MP_StartJump
-                jmp MP_InitClimb
 MP_StartJump:   lda #-6*8+4
                 sta actSY,x
                 lda #$00                        ;Reset grounded flag manually for immediate
@@ -236,8 +228,7 @@ MP_NoLongJump:  tya
 MP_GrabLadderOk:lda joystick
                 and #JOY_UP
                 beq MP_JumpAnim
-                lda #-4
-                jsr GetCharInfoOffset
+                jsr GetCharInfo4Above
                 and #CI_CLIMB
                 beq MP_JumpAnim
                 jmp MP_InitClimb
