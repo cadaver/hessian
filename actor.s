@@ -242,9 +242,7 @@ UA_NotZero:     stx actIndex
                 iny
                 lda (actLo),y
                 sta UA_Jump+2
-                inc $d020
 UA_Jump:        jsr $1000
-                dec $d020
                 inx
                 cpx #MAX_ACT
                 bcc UA_Loop
