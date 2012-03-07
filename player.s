@@ -70,10 +70,25 @@ MP_Climbing:    lda joystick
                 lda joystick
                 and #JOY_LEFT|JOY_RIGHT         ;Exit ladder?
                 beq MP_ClimbDone
+                lsr                             ;Left bit to direction
+                lsr
+                lsr
+                ror
+                sta actD,x
                 jsr GetCharInfo                 ;Check ground bit
                 lsr
+                bcs MP_ClimbExit
+                lda actYL,x                     ;If half way a char, check also 1 char
+                and #$20                        ;below
+                beq MP_ClimbDone
+                lda #1
+                jsr GetCharInfoOffset
+                lsr
                 bcc MP_ClimbDone
-                lda actYL,x
+MP_ClimbExitBelow:
+                lda #8*8
+                jsr MoveActorY
+MP_ClimbExit:   lda actYL,x
                 and #$c0
                 sta actYL,x
                 jsr NoInterpolation
