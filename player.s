@@ -24,6 +24,10 @@ MP_ClimbUp:     lda #-4
                 jsr GetCharInfo                 ;If in the middle of an obstacle
                 and #CI_OBSTACLE                ;block, can not exit by jump
                 bne MP_ClimbUpNoJump
+                lda #-2
+                jsr GetCharInfoOffset
+                and #CI_OBSTACLE
+                bne MP_ClimbUpNoJump
                 lda joystick
                 cmp #JOY_RIGHT
                 lda #2*8
