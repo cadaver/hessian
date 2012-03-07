@@ -213,14 +213,14 @@ PF_CopyDone:    ldx #freeMemLo                  ;Reduce amount of free memory
 PF_RelocLoop:   cpy zpLenLo                     ;Do not relocate itself
                 beq PF_RelocNext
                 ldx zpLenLo
-                lda fileHi,y                 ;Need relocation?
+                lda fileHi,y                    ;Need relocation?
                 cmp fileHi,x
                 bcc PF_RelocNext
                 bne PF_RelocOk
                 lda fileLo,y
                 cmp fileLo,x
                 bcc PF_RelocNext
-PF_RelocOk:     lda fileLo,y                 ;Relocate the chunk pointer
+PF_RelocOk:     lda fileLo,y                    ;Relocate the chunk pointer
                 clc
                 adc zpSrcLo
                 sta fileLo,y
@@ -237,7 +237,7 @@ PF_RelocNext:   dey
                 bpl PF_RelocLoop
                 ldy zpLenLo
                 lda #$00
-                sta fileHi,y                 ;Mark chunk not in memory
+                sta fileHi,y                    ;Mark chunk not in memory
 POF_NoFiles:    rts
 
         ; Purge the chunk-file that has not been accessed for the longest time
