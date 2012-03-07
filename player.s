@@ -11,11 +11,20 @@ FR_CLIMB        = 20
         ; Returns: -
         ; Modifies: A,Y
 
-MP_ClimbUp:     lda joystick                    ;Check for exiting the ladder
+MP_ClimbUp:     lda #-4
+                jsr GetCharInfoOffset
+                sta temp1
+                and #CI_OBSTACLE
+                bne MP_ClimbUpNoJump
+                lda joystick                    ;Check for exiting the ladder
                 cmp prevJoy                     ;by jumping
                 beq MP_ClimbUpNoJump
                 and #JOY_LEFT|JOY_RIGHT
                 beq MP_ClimbUpNoJump
+                jsr GetCharInfo                 ;If in the middle of an obstacle
+                and #CI_OBSTACLE                ;block, can not exit by jump
+                bne MP_ClimbUpNoJump
+                lda joystick
                 cmp #JOY_RIGHT
                 lda #2*8
                 bcs MP_ClimbUpJumpRight
@@ -28,8 +37,7 @@ MP_ClimbUpNoJump:
                 lda actYL,x
                 and #$20
                 bne MP_ClimbUpOk
-                lda #-4
-                jsr GetCharInfoOffset
+                lda temp1
                 and #CI_CLIMB
                 beq MP_ClimbDone
 MP_ClimbUpOk:   ldy #-4*8
