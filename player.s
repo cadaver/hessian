@@ -105,7 +105,7 @@ MP_AccLeft:     lda temp1
                 lsr                             ;Faster acceleration when on ground
                 lda #-8
                 bcs MP_OnGroundAccL
-                lda #-3
+                lda #-2
 MP_OnGroundAccL:ldy #-4*8
                 jsr AccActorX
                 jmp MP_NoBraking
@@ -119,14 +119,14 @@ MP_AccRight:    lda temp1
                 lsr                             ;Faster acceleration when on ground
                 lda #8
                 bcs MP_OnGroundAccR
-                lda #3
+                lda #2
 MP_OnGroundAccR:ldy #4*8
                 jsr AccActorX
                 jmp MP_NoBraking
 MP_NotRight:    lda temp1                       ;No braking when jumping
                 lsr
                 bcc MP_NoBraking
-MP_Brake:       lda #8                          ;When grounded and not moving, brake X-speed
+MP_Brake:       lda #6                          ;When grounded and not moving, brake X-speed
                 jsr BrakeActorX
 MP_NoBraking:   lda temp1
                 and #AMF_HITWALL|AMF_LANDED     ;If hit wall (and did not land simultaneously), reset X-speed
@@ -197,10 +197,10 @@ MP_NoNewJump:   lda #-4                         ;Actor height for ceiling check
 MP_NoLongJump:  tya
                 ldy #6*8
                 jsr MoveWithGravity             ;Actually move & check collisions
-                lda temp5
-                bne MP_RollAnim
-                lda actMoveFlags,x              ;If not grounded, play jump animation
+                sta temp1                       ;Updated move flags to temp1
                 lsr
+                lda temp5                       ;If rolling, continue roll animation
+                bne MP_RollAnim
                 bcs MP_GroundAnim
                 lda actSY,x                     ;Check for grabbing a ladder while
                 bpl MP_GrabLadderOk             ;in midair
@@ -233,7 +233,7 @@ MP_RollAnim:    lda #$01
                 adc #$00
                 cmp #FR_DUCK                    ;Transition from roll to low duck
                 bcc MP_RollAnimDone
-                lda actMoveFlags,x              ;If rolling and falling, transition
+                lda temp1                       ;If rolling and falling, transition
                 lsr                             ;to jump instead
                 bcs MP_RollToDuck
 MP_RollToJump:  lda #FR_JUMP+2
@@ -291,7 +291,7 @@ MP_DuckStandUpAnim:
                 cmp #FR_DUCK
                 bcc MP_StandAnim
                 bcs MP_AnimDone
-MP_StandOrWalk: lda actMoveFlags,x
+MP_StandOrWalk: lda temp1
                 and #AMF_HITWALL
                 bne MP_StandAnim
 MP_WalkAnim:    lda joystick
