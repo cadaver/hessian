@@ -132,7 +132,7 @@ MP_AccLeft:     lda temp1
                 lsr                             ;Faster acceleration when on ground
                 lda #-8
                 bcs MP_OnGroundAccL
-                lda #-2
+                lda #-3
 MP_OnGroundAccL:ldy #-4*8
                 jsr AccActorX
                 jmp MP_NoBraking
@@ -146,7 +146,7 @@ MP_AccRight:    lda temp1
                 lsr                             ;Faster acceleration when on ground
                 lda #8
                 bcs MP_OnGroundAccR
-                lda #2
+                lda #3
 MP_OnGroundAccR:ldy #4*8
                 jsr AccActorX
                 jmp MP_NoBraking
@@ -172,10 +172,10 @@ MP_NoBraking:   lda temp1
 MP_WallFlipRight:
                 cmp joystick
                 bne MP_NoWallFlip
-                ldy #4*8
+                ldy #2*8
                 cmp #JOY_UP|JOY_RIGHT
                 beq MP_WallFlipRight2
-                ldy #-4*8
+                ldy #-2*8
 MP_WallFlipRight2:
                 tya
                 sta actSX,x
