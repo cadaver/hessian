@@ -24,6 +24,7 @@ SCRCENTER_Y     = 13
                 include actor.s
                 include physics.s
                 include player.s
+                include weapon.s
 
         ; Test initialization code, will be removed
 

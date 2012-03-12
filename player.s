@@ -1,9 +1,10 @@
 FR_STAND        = 0
 FR_WALK         = 1
 FR_JUMP         = 9
-FR_ROLL         = 12
-FR_DUCK         = 18
-FR_CLIMB        = 20
+FR_DUCK         = 12
+FR_CLIMB        = 14
+FR_ROLL         = 18
+FR_ATTACK       = 24
 
         ; Player update routine
         ;
@@ -11,49 +12,66 @@ FR_CLIMB        = 20
         ; Returns: -
         ; Modifies: A,Y
 
-MP_ClimbUp:     jsr GetCharInfo4Above
+MovePlayer:     lda actMoveCtrl,x
+                sta actPrevMoveCtrl,x
+                lda joystick
+                cmp #JOY_FIRE
+                bcs MP_FirePressed
+                sta actMoveCtrl,x
+                lda #$00
+MP_FirePressed: sta actFireCtrl,x
+                jsr MoveHuman
+                jmp AttackHuman
+
+        ; Humanoid character move routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MH_ClimbUp:     jsr GetCharInfo4Above
                 sta temp1
                 and #CI_OBSTACLE
-                bne MP_ClimbUpNoJump
-                lda joystick                    ;Check for exiting the ladder
-                cmp prevJoy                     ;by jumping
-                beq MP_ClimbUpNoJump
+                bne MH_ClimbUpNoJump
+                lda actMoveCtrl,x               ;Check for exiting the ladder
+                cmp actPrevMoveCtrl,x           ;by jumping
+                beq MH_ClimbUpNoJump
                 and #JOY_LEFT|JOY_RIGHT
-                beq MP_ClimbUpNoJump
+                beq MH_ClimbUpNoJump
                 jsr GetCharInfo                 ;If in the middle of an obstacle
                 and #CI_OBSTACLE                ;block, can not exit by jump
-                bne MP_ClimbUpNoJump
+                bne MH_ClimbUpNoJump
                 lda #-2
                 jsr GetCharInfoOffset
                 and #CI_OBSTACLE
-                bne MP_ClimbUpNoJump
-                lda joystick
+                bne MH_ClimbUpNoJump
+                lda actMoveCtrl,x
                 cmp #JOY_RIGHT
                 lda #2*8
-                bcs MP_ClimbUpJumpRight
+                bcs MH_ClimbUpJumpRight
                 lda #-2*8
-MP_ClimbUpJumpRight:
+MH_ClimbUpJumpRight:
                 sta actSX,x
                 sta actD,x
-                jmp MP_StartJump
-MP_ClimbUpNoJump:
+                jmp MH_StartJump
+MH_ClimbUpNoJump:
                 lda actYL,x
                 and #$20
-                bne MP_ClimbUpOk
+                bne MH_ClimbUpOk
                 lda temp1
                 and #CI_CLIMB
-                beq MP_ClimbDone
-MP_ClimbUpOk:   ldy #-4*8
-MP_ClimbCommon: lda #$60                        ;Climbing speed
+                beq MH_ClimbDone
+MH_ClimbUpOk:   ldy #-4*8
+MH_ClimbCommon: lda #$60                        ;Climbing speed
                 clc
                 adc actFd,x
                 sta actFd,x
-                bcc MP_ClimbDone
+                bcc MH_ClimbDone
                 lda #$01                        ;Run the animation either forward
                 cpy #$80                        ;or backward depending on climbing dir
-                bcc MP_ClimbAnimDown
+                bcc MH_ClimbAnimDown
                 lda #$ff
-MP_ClimbAnimDown:
+MH_ClimbAnimDown:
                 clc
                 adc actF1,x
                 and #$03                        ;Note: works only as long as FR_CLIMB
@@ -65,14 +83,34 @@ MP_ClimbAnimDown:
                 jsr MoveActorY
                 jmp NoInterpolation
 
-MP_Climbing:    lda joystick
+MH_ClimbDown:   jsr GetCharInfo
+                and #CI_CLIMB
+                beq MH_ClimbDone
+                ldy #4*8
+                bne MH_ClimbCommon
+
+MH_ClimbDone:   rts
+
+MH_Climbing:    lda actF1,x                     ;Reset frame in case attack ended
+                sta actF2,x
+                lda actFireCtrl,x               ;If left/right attack,
+                and #JOY_LEFT|JOY_RIGHT         ;turn also actor direction
+                beq MH_ClimbNoAttackTurn
+                lsr                             ;Left bit to direction
                 lsr
-                bcs MP_ClimbUp
                 lsr
-                bcs MP_ClimbDown
-                lda joystick
+                ror
+                sta actD,x
+MH_ClimbNoAttackTurn:
+                lda actMoveCtrl,x
+                lsr
+                bcc MH_NoClimbUp
+                jmp MH_ClimbUp
+MH_NoClimbUp:   lsr
+                bcs MH_ClimbDown
+                lda actMoveCtrl,x
                 and #JOY_LEFT|JOY_RIGHT         ;Exit ladder?
-                beq MP_ClimbDone
+                beq MH_ClimbDone
                 lsr                             ;Left bit to direction
                 lsr
                 lsr
@@ -80,258 +118,251 @@ MP_Climbing:    lda joystick
                 sta actD,x
                 jsr GetCharInfo                 ;Check ground bit
                 lsr
-                bcs MP_ClimbExit
+                bcs MH_ClimbExit
                 lda actYL,x                     ;If half way a char, check also 1 char
                 and #$20                        ;below
-                beq MP_ClimbDone
+                beq MH_ClimbDone
                 jsr GetCharInfo1Below
                 lsr
-                bcc MP_ClimbDone
-MP_ClimbExitBelow:
+                bcc MH_ClimbDone
+MH_ClimbExitBelow:
                 lda #8*8
                 jsr MoveActorY
-MP_ClimbExit:   lda actYL,x
+MH_ClimbExit:   lda actYL,x
                 and #$c0
                 sta actYL,x
                 jsr NoInterpolation
-                jmp MP_StandAnim
-MP_ClimbDone:   rts
+                jmp MH_StandAnim
 
-MP_ClimbDown:   jsr GetCharInfo
-                and #CI_CLIMB
-                beq MP_ClimbDone
-                ldy #4*8
-                bne MP_ClimbCommon
-
-MovePlayer:     lda actMoveFlags,x
+MoveHuman:      lda actMoveFlags,x
                 sta temp1
                 lda #$00                        ;Roll flag
                 sta temp5
                 lda actF1,x                     ;Check if climbing
                 cmp #FR_CLIMB
-                bcs MP_Climbing
-                lda actF1,x                     ;If rolling, automatically accelerate
-                cmp #FR_ROLL                    ;to facing direction
-                bcc MP_NoRoll
-                cmp #FR_DUCK
-                bcs MP_NoRoll
+                bcc MH_NoRoll
+                cmp #FR_ROLL                    ;If rolling, automatically accelerate
+                bcc MH_Climbing                 ;to facing direction
                 inc temp5
                 lda actD,x
-                bmi MP_AccLeft
-                bpl MP_AccRight
-MP_NoRoll:      cmp #FR_DUCK+1
-                lda joystick                    ;Check turning / X-acceleration / braking
+                bmi MH_AccLeft
+                bpl MH_AccRight
+MH_NoRoll:      cmp #FR_DUCK+1
+                lda actMoveCtrl,x               ;Check turning / X-acceleration / braking
                 and #JOY_LEFT
-                beq MP_NotLeft
+                beq MH_NotLeft
                 lda #$80
                 sta actD,x
-                bcs MP_Brake                    ;If ducking, brake
-MP_AccLeft:     lda temp1
+                bcs MH_Brake                    ;If ducking, brake
+MH_AccLeft:     lda temp1
                 lsr                             ;Faster acceleration when on ground
                 lda #-8
-                bcs MP_OnGroundAccL
+                bcs MH_OnGroundAccL
                 lda #-3
-MP_OnGroundAccL:ldy #-4*8
+MH_OnGroundAccL:ldy #-4*8
                 jsr AccActorX
-                jmp MP_NoBraking
-MP_NotLeft:     lda joystick
+                jmp MH_NoBraking
+MH_NotLeft:     lda actMoveCtrl,x
                 and #JOY_RIGHT
-                beq MP_NotRight
+                beq MH_NotRight
                 lda #$00
                 sta actD,x
-                bcs MP_Brake                    ;If ducking, brake
-MP_AccRight:    lda temp1
+                bcs MH_Brake                    ;If ducking, brake
+MH_AccRight:    lda temp1
                 lsr                             ;Faster acceleration when on ground
                 lda #8
-                bcs MP_OnGroundAccR
+                bcs MH_OnGroundAccR
                 lda #3
-MP_OnGroundAccR:ldy #4*8
+MH_OnGroundAccR:ldy #4*8
                 jsr AccActorX
-                jmp MP_NoBraking
-MP_NotRight:    lda temp1                       ;No braking when jumping
+                jmp MH_NoBraking
+MH_NotRight:    lda temp1                       ;No braking when jumping
                 lsr
-                bcc MP_NoBraking
-MP_Brake:       lda #6                          ;When grounded and not moving, brake X-speed
+                bcc MH_NoBraking
+MH_Brake:       lda #6                          ;When grounded and not moving, brake X-speed
                 jsr BrakeActorX
-MP_NoBraking:   lda temp1
+MH_NoBraking:   lda temp1
                 and #AMF_HITWALL|AMF_LANDED     ;If hit wall (and did not land simultaneously), reset X-speed
                 cmp #AMF_HITWALL
-                bne MP_NoHitWall
+                bne MH_NoHitWall
                 lda temp1                       ;Check for wallflip (push joystick up & opposite to wall)
                 lsr
-                bcs MP_NoWallFlip
+                bcs MH_NoWallFlip
                 lda actSY,x                     ;Must not have started descending yet
-                bpl MP_NoWallFlip
+                bpl MH_NoWallFlip
                 lda #JOY_UP|JOY_RIGHT
                 ldy actSX,x
-                beq MP_NoWallFlip
-                bmi MP_WallFlipRight
+                beq MH_NoWallFlip
+                bmi MH_WallFlipRight
                 lda #JOY_UP|JOY_LEFT
-MP_WallFlipRight:
-                cmp joystick
-                bne MP_NoWallFlip
+MH_WallFlipRight:
+                cmp actMoveCtrl,x
+                bne MH_NoWallFlip
                 ldy #2*8
                 cmp #JOY_UP|JOY_RIGHT
-                beq MP_WallFlipRight2
+                beq MH_WallFlipRight2
                 ldy #-2*8
-MP_WallFlipRight2:
+MH_WallFlipRight2:
                 tya
                 sta actSX,x
-                bne MP_StartJump
-MP_NoWallFlip:  lda #$00
+                bne MH_StartJump
+MH_NoWallFlip:  lda #$00
                 sta actSX,x
-MP_NoHitWall:   lda temp1
+MH_NoHitWall:   lda temp1
                 lsr                             ;Grounded bit to C
                 and #AMF_HITCEILING/2
-                beq MP_NoHeadBump
+                beq MH_NoHeadBump
                 lda #$00                        ;If head bumped, reset Y-speed
                 sta actSY,x
-MP_NoHeadBump:  bcc MP_NoNewJump
-                lda joystick                    ;If on ground, can initiate a jump
+MH_NoHeadBump:  bcc MH_NoNewJump
+                lda actMoveCtrl,x               ;If on ground, can initiate a jump
                 and #JOY_UP                     ;except if in the middle of a roll
-                beq MP_NoNewJump
+                beq MH_NoNewJump
                 lda temp5
-                bne MP_NoNewJump
+                bne MH_NoNewJump
+                lda actFireCtrl,x               ;When holding fire can not initiate climbing
+                bne MH_NoInitClimbUp
                 jsr GetCharInfo4Above           ;Jump or climb?
                 and #CI_CLIMB
-                beq MP_NoInitClimbUp
-                jmp MP_InitClimb
-MP_NoInitClimbUp:                
-                lda prevJoy
+                beq MH_NoInitClimbUp
+                jmp MH_InitClimb
+MH_NoInitClimbUp:                
+                lda actPrevMoveCtrl,x
                 and #JOY_UP
-                bne MP_NoNewJump
-MP_StartJump:   lda #-6*8+4
+                bne MH_NoNewJump
+MH_StartJump:   lda #-6*8+4
                 sta actSY,x
                 lda #$00                        ;Reset grounded flag manually for immediate
                 sta actMoveFlags,x              ;jump physics
-MP_NoNewJump:   lda #-4                         ;Actor height for ceiling check
+MH_NoNewJump:   lda #-4                         ;Actor height for ceiling check
                 sta temp1
                 ldy #8                          ;Make jump longer by holding joystick up
                 lda actSY,x                     ;as long as still has upward velocity
-                bpl MP_NoLongJump
-                lda joystick
+                bpl MH_NoLongJump
+                lda actMoveCtrl,x
                 and #JOY_UP
-                beq MP_NoLongJump
+                beq MH_NoLongJump
                 ldy #4
-MP_NoLongJump:  tya
+MH_NoLongJump:  tya
                 ldy #6*8
                 jsr MoveWithGravity             ;Actually move & check collisions
                 sta temp1                       ;Updated move flags to temp1
                 lsr
                 lda temp5                       ;If rolling, continue roll animation
-                bne MP_RollAnim
-                bcs MP_GroundAnim
+                bne MH_RollAnim
+                bcs MH_GroundAnim
                 lda actSY,x                     ;Check for grabbing a ladder while
-                bpl MP_GrabLadderOk             ;in midair
+                bpl MH_GrabLadderOk             ;in midair
                 cmp #-2*8                       ;Can not grab while still going up fast
-                bcc MP_JumpAnim
-MP_GrabLadderOk:lda joystick
+                bcc MH_JumpAnim
+MH_GrabLadderOk:lda actMoveCtrl,x
                 and #JOY_UP
-                beq MP_JumpAnim
+                beq MH_JumpAnim
                 jsr GetCharInfo4Above
                 and #CI_CLIMB
-                beq MP_JumpAnim
-                jmp MP_InitClimb
-MP_JumpAnim:    ldy #FR_JUMP+1
+                beq MH_JumpAnim
+                jmp MH_InitClimb
+MH_JumpAnim:    ldy #FR_JUMP+1
                 lda actSY,x
-                bpl MP_JumpAnimDown
-MP_JumpAnimUp:  cmp #-1*8
-                bcs MP_JumpAnimDone
+                bpl MH_JumpAnimDown
+MH_JumpAnimUp:  cmp #-1*8
+                bcs MH_JumpAnimDone
                 dey
-                bcc MP_JumpAnimDone
-MP_JumpAnimDown:cmp #2*8
-                bcc MP_JumpAnimDone
+                bcc MH_JumpAnimDone
+MH_JumpAnimDown:cmp #2*8
+                bcc MH_JumpAnimDone
                 iny
-MP_JumpAnimDone:tya
-                jmp MP_AnimDone
-MP_RollAnim:    lda #$01
+MH_JumpAnimDone:tya
+                jmp MH_AnimDone
+MH_RollAnim:    lda #$01
                 jsr AnimationDelay
-                bcc MP_AnimDone2Jump
+                bcc MH_AnimDone2Jump
                 lda actF1,x
                 adc #$00
-                cmp #FR_DUCK                    ;Transition from roll to low duck
-                bcc MP_RollAnimDone
+                cmp #FR_ROLL+6                  ;Transition from roll to low duck
+                bcc MH_RollAnimDone
                 lda temp1                       ;If rolling and falling, transition
                 lsr                             ;to jump instead
-                bcs MP_RollToDuck
-MP_RollToJump:  lda #FR_JUMP+2
-                bne MP_RollAnimDone
-MP_RollToDuck:  lda #FR_DUCK+1
-MP_RollAnimDone:
-                jmp MP_AnimDone
-MP_GroundAnim:  lda joystick
+                bcs MH_RollToDuck
+MH_RollToJump:  lda #FR_JUMP+2
+                bne MH_RollAnimDone
+MH_RollToDuck:  lda #FR_DUCK+1
+MH_RollAnimDone:jmp MH_AnimDone
+MH_GroundAnim:  lda actMoveCtrl,x
                 and #JOY_DOWN
-                beq MP_NoDuck
-MP_NewDuckOrRoll:
+                beq MH_NoDuck
+MH_NewDuckOrRoll:
                 lda actF1,x
                 cmp #FR_ROLL
-                bcs MP_NoNewRoll
-                lda joystick                    ;To initiate a roll, must push the
-                cmp prevJoy                     ;joystick diagonally while standing
-                beq MP_NoNewRoll                ;or walking
+                bcs MH_NoNewRoll
+                lda actMoveCtrl,x               ;To initiate a roll, must push the
+                cmp actPrevMoveCtrl,x           ;joystick diagonally while standing
+                beq MH_NoNewRoll                ;or walking
                 and #JOY_LEFT|JOY_RIGHT
-                beq MP_NoNewRoll
-MP_StartRoll:   lda #$00
+                beq MH_NoNewRoll
+MH_StartRoll:   lda #$00
                 sta actFd,x
                 lda #FR_ROLL
-                bne MP_AnimDone
-MP_NoNewRoll:   jsr GetCharInfo                 ;Duck or climb?
+                bne MH_AnimDone
+MH_NoNewRoll:   lda actFireCtrl,x               ;When holding fire can not initiate climbing
+                bne MH_NoInitClimbDown
+                jsr GetCharInfo                 ;Duck or climb?
                 and #CI_CLIMB
-                beq MP_NoInitClimbDown
-                jmp MP_InitClimb
-MP_NoInitClimbDown:
+                beq MH_NoInitClimbDown
+                jmp MH_InitClimb
+MH_NoInitClimbDown:
                 lda actF1,x
                 cmp #FR_DUCK
-                bcs MP_DuckAnim
+                bcs MH_DuckAnim
                 lda #$00
                 sta actFd,x
                 lda #FR_DUCK
-                bne MP_AnimDone
-MP_DuckAnim:    lda #$01
+                bne MH_AnimDone
+MH_DuckAnim:    lda #$01
                 jsr AnimationDelay
-MP_AnimDone2Jump:
-                bcc MP_AnimDone2
+MH_AnimDone2Jump:
+                bcc MH_AnimDone2
                 lda actF1,x
                 adc #$00
                 cmp #FR_DUCK+2
-                bcc MP_AnimDone
+                bcc MH_AnimDone
                 lda #FR_DUCK+1
-                bne MP_AnimDone
-MP_NoDuck:      lda actF1,x
+                bne MH_AnimDone
+MH_NoDuck:      lda actF1,x
                 cmp #FR_DUCK
-                bcc MP_StandOrWalk
-MP_DuckStandUpAnim:
+                bcc MH_StandOrWalk
+MH_DuckStandUpAnim:
                 lda #$01
                 jsr AnimationDelay
-                bcc MP_AnimDone2
+                bcc MH_AnimDone2
                 lda actF1,x
                 sbc #$01
                 cmp #FR_DUCK
-                bcc MP_StandAnim
-                bcs MP_AnimDone
-MP_StandOrWalk: lda temp1
+                bcc MH_StandAnim
+                bcs MH_AnimDone
+MH_StandOrWalk: lda temp1
                 and #AMF_HITWALL
-                bne MP_StandAnim
-MP_WalkAnim:    lda joystick
+                bne MH_StandAnim
+MH_WalkAnim:    lda actMoveCtrl,x
                 and #JOY_LEFT|JOY_RIGHT
-                beq MP_StandAnim
+                beq MH_StandAnim
                 lda #$01
                 jsr AnimationDelay
-                bcc MP_AnimDone2
+                bcc MH_AnimDone2
                 lda actF1,x
                 adc #$00
                 cmp #FR_WALK+8
-                bcc MP_AnimDone
+                bcc MH_AnimDone
                 lda #FR_WALK
-                bcs MP_AnimDone
-MP_StandAnim:   lda #$00
+                bcs MH_AnimDone
+MH_StandAnim:   lda #$00
                 sta actFd,x
                 lda #FR_STAND
-MP_AnimDone:    sta actF1,x
+MH_AnimDone:    sta actF1,x
                 sta actF2,x
-MP_AnimDone2:   rts
+MH_AnimDone2:   rts
 
-MP_InitClimb:   lda #$80
+MH_InitClimb:   lda #$80
                 sta actXL,x
                 lda actYL,x
                 and #$c0

@@ -3,7 +3,6 @@ JOY_DOWN        = 2
 JOY_LEFT        = 4
 JOY_RIGHT       = 8
 JOY_FIRE        = 16
-JOY_JUMP        = 32
 
 KEY_DEL         = 0
 KEY_RETURN      = 1

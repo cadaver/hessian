@@ -17,7 +17,7 @@ clean:
 	del 6?
 	del 7?
 
-hessian.d64: boot.prg loader.pak main.pak testmusic.pak testlev.pak common.pak player.pak
+hessian.d64: boot.prg loader.pak main.pak testmusic.pak testlev.pak common.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -34,7 +34,7 @@ loader.pak: kernal.s loader.s ldepack.s macros.s memory.s
 	invert ldepack.bin ldepack.bin
 	filejoin ldepack.bin+ldata.pak loader.pak
 
-main.pak: actor.s actordata.s data.s file.s init.s level.s macros.s main.s memory.s physics.s player.s raster.s screen.s sound.s sprite.s loader.pak bg/scorescr.chr
+main.pak: actor.s actordata.s data.s file.s init.s level.s macros.s main.s memory.s physics.s player.s raster.s screen.s sound.s sprite.s weapon.s loader.pak bg/scorescr.chr
 	dasm main.s -omain.bin -smain.tbl -f3
 	pack2 main.bin main.pak
 
@@ -51,6 +51,9 @@ testlev.pak: testlev.s bg/testlev.map bg/testlev.blk bg/testlev.chi bg/testlev.c
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak
+
+weapon.pak: spr/weapon.spr
+	pchunk2 spr/weapon.spr weapon.pak
 
 player.pak: spr/player.spr
 	pchunk2 spr/player.spr player.pak

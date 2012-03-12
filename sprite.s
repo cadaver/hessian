@@ -221,9 +221,9 @@ GASS_NotOver:   lda cacheSprInUse,x             ;Check if in use
                 bmi GASS_NoOldSprite
                 lda fileHi,y
                 beq GASS_NoOldSprite
-                sta zpSrcLo
-                lda fileLo,y
                 sta zpSrcHi
+                lda fileLo,y
+                sta zpSrcLo
                 ldy cacheSprFrame,x
                 lda (zpSrcLo),y
                 sta zpDestLo

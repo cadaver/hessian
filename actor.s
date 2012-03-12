@@ -173,7 +173,9 @@ DA_LastSprite:  jsr GetAndStoreLastSprite
                 ldx actIndex
                 jmp DA_ActorDone
 
-DA_Humanoid:    lda actF2,x
+DA_Humanoid:    lda actWpnF,x
+                sta DA_HumanWpnF+1
+                lda actF2,x
                 ldy actD,x
                 bpl DA_HumanRight2
                 ldy #ADH_LEFTFRADD2             ;Add left frame offset if necessary
@@ -214,6 +216,16 @@ DA_SprFileLoaded2:
 DA_SameSprFile2:
 DA_HumanFrame2: lda #$00
                 jsr GetAndStoreSprite
+DA_HumanWpnF:   lda #$00
+                bmi DA_HumanNoWeapon
+                ldy #C_WEAPON                   ;Note: weapon sprites must always be loaded
+                sty sprFileNum                  ;into the memory
+                ldy fileLo+C_WEAPON
+                sty sprFileLo
+                ldy fileHi+C_WEAPON
+                sty sprFileHi
+                jsr GetAndStoreLastSprite
+DA_HumanNoWeapon:
                 stx sprIndex
                 ldx actIndex
                 jmp DA_ActorDone
@@ -841,7 +853,14 @@ GFA_Found:      sec
                 sta actSX,y
                 sta actSY,y
                 sta actMoveFlags,y
-                rts
+                cpy #MAX_COMPLEXACT
+                bcs GFA_NotComplex
+                sta actMoveCtrl,y
+                sta actPrevMoveCtrl,y
+                sta actFireCtrl,y
+                lda #$ff
+                sta actWpnF,y
+GFA_NotComplex: rts
 
         ; Get flashing color override for actor based on low bit of actor index
         ;

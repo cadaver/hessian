@@ -173,6 +173,13 @@ InitRaster:     sei
                 sta $d01a
                 cli
 
+        ; Load the always resident sprites
+        
+                ldy #C_COMMON
+                jsr LoadSpriteFile
+                ldy #C_WEAPON
+                jsr LoadSpriteFile
+
         ; Initializations are complete. Start the main program
 
                 jmp Main
@@ -186,7 +193,7 @@ IVid_GPCOk:     tay
                 rts
 
         ; Scorepanel chars
-        
+
 textCharsCopy:  incbin bg/scorescr.chr
 
         ; Initial scorepanel mockup

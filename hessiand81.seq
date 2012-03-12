@@ -8,3 +8,5 @@ write 01 @8:
 write 02 @8:
 write 03 @8:
 write 04 @8:
+write 05 @8:
+write 06 @8:
