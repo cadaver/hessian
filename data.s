@@ -274,7 +274,7 @@ actMoveFlags:   ds.b MAX_ACT,0
 actMoveCtrl:    ds.b MAX_COMPLEXACT,0
 actPrevMoveCtrl:ds.b MAX_COMPLEXACT,0
 actFireCtrl:    ds.b MAX_COMPLEXACT,0
-actWpnF:        ds.b MAX_COMPLEXACT,0
+actWpnF:        ds.b MAX_COMPLEXACT,$ff
 
         ; Playroutine variables
 

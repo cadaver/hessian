@@ -17,24 +17,14 @@ SPRH_CONNECTSPOTY = 5
 SPRH_CACHEFRAME = 6
 SPRH_DATA       = 7
 
-        ; Select a sprite file for access, and load if unloaded. Note: is unrolled in
-        ; DrawActors to avoid JSR
+        ; Load a sprite file
         ;
-        ; Parameters: A sprite file number
-        ; Returns: sprFileLo-Hi spritefile address
+        ; Parameters: Y sprite file number
+        ; Returns: A sprite file address highbyte
         ; Modifies: A,Y,temp6-temp8,loader temp vars
 
-GetSpriteFile:  sta sprFileNum
-                tay
-                lda fileHi,y
-                bne GSF_Loaded
-                jsr LoadSpriteFile
-GSF_Loaded:     sta fileHi
-                lda fileLo,y
-                sta fileLo
-                rts
-
-LoadSpriteFile: tya
+LoadSpriteFile: stx LSF_SaveX+1
+                tya
                 sec
                 sbc #C_FIRSTSPR
                 ldx #F_SPRITE
@@ -44,7 +34,7 @@ LoadSpriteFile: tya
                 ldy temp6                       ;LoadAllocFile puts chunk number to temp6
                 sty sprFileNum                  ;PurgeChunk clears sprFileNum, restore it now
                 lda fileHi,y
-                sta sprFileHi
+LSF_SaveX:      ldx #$00
 GASS_DoNotAccept:
                 rts
 
