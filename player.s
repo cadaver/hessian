@@ -93,15 +93,6 @@ MH_ClimbDone:   rts
 
 MH_Climbing:    lda actF1,x                     ;Reset frame in case attack ended
                 sta actF2,x
-                lda actFireCtrl,x               ;If left/right attack,
-                and #JOY_LEFT|JOY_RIGHT         ;turn also actor direction
-                beq MH_ClimbNoAttackTurn
-                lsr                             ;Left bit to direction
-                lsr
-                lsr
-                ror
-                sta actD,x
-MH_ClimbNoAttackTurn:
                 lda actMoveCtrl,x
                 lsr
                 bcc MH_NoClimbUp
