@@ -9,9 +9,9 @@ AttackHuman:    lda actFireCtrl,x
                 ldy actF1,x
                 cpy #FR_ROLL
                 bcs AH_NoAttack
-                cpy #FR_CLIMB
+                cpy #FR_DUCK
                 bcs AH_TurnOk
-                cpy #FR_STAND                   ;If left/right attack and standing/climbing
+                cpy #FR_STAND                   ;If left/right attack and not walking
                 bne AH_NoTurn                   ;turn also actor direction
 AH_TurnOk:      and #JOY_LEFT|JOY_RIGHT
                 beq AH_NoTurn2

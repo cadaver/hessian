@@ -284,7 +284,7 @@ MH_GroundAnim:  lda actMoveCtrl,x
                 beq MH_NoDuck
 MH_NewDuckOrRoll:
                 lda actF1,x
-                cmp #FR_ROLL
+                cmp #FR_DUCK
                 bcs MH_NoNewRoll
                 lda actMoveCtrl,x               ;To initiate a roll, must push the
                 cmp actPrevMoveCtrl,x           ;joystick diagonally while standing
