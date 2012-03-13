@@ -3,6 +3,8 @@ ACT_PLAYER      = 1
 ACT_BULLET      = 2
 ACT_EXPLOSION   = 3
 
+HP_PLAYER       = 32
+
         ; Actors' display data pointers
 
 actDispTblLo:   dc.b <adPlayer
@@ -56,6 +58,21 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alExplosion
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
+                dc.b HP_PLAYER                  ;Initial health
+                dc.b AMC_JUMP|AMC_DUCK|AMC_CLIMB|AMC_ROLL|AMC_WALLFLIP ;Move caps
+                dc.b 4*8                        ;Max. movement speed
+                dc.b 8                          ;Ground acceleration
+                dc.b 3                          ;In air acceleration
+                dc.b 6                          ;Ground braking deceleration
+                dc.b 1                          ;Move animation delay
+                dc.b -44                        ;Jump speed (negative)
+                dc.b 6*8                        ;Terminal falling speed
+                dc.b 8                          ;Gravity acceleration
+                dc.b 4                          ;Long jump gravity acceleration
+                dc.b -4                         ;Headbump check height
+                dc.b 96                         ;Climbing speed
+                dc.b 2*8                        ;Ladder jump / wallflip speed right
+                dc.b -2*8                       ;Ladder jump / wallflip speed left
 
 alBullet:       dc.w MoveBullet                 ;Update routine
 

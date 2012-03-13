@@ -1,6 +1,18 @@
 MAX_ACTX        = 14
 MAX_ACTY        = 9
 
+ACTI_PLAYER     = 0
+ACTI_FIRSTNPC   = 1
+ACTI_LASTNPC    = 6
+ACTI_FIRSTPLRBULLET = 7
+ACTI_LASTPLRBULLET = 11
+ACTI_FIRSTNPCBULLET = 12
+ACTI_LASTNPCBULLET = 16
+ACTI_FIRSTITEM  = 17
+ACTI_LASTITEM   = 21
+ACTI_FIRSTEFFECT = 22
+ACTI_LASTEFFECT = 23
+
 AD_NUMSPRITES   = 0
 AD_SPRFILE      = 1
 AD_LEFTFRADD    = 2
@@ -22,19 +34,28 @@ THREESPRITE     = $02
 FOURSPRITE      = $03
 HUMANOID        = $80
 
-ACTI_PLAYER     = 0
-ACTI_FIRSTNPC   = 1
-ACTI_LASTNPC    = 6
-ACTI_FIRSTPLRBULLET = 7
-ACTI_LASTPLRBULLET = 11
-ACTI_FIRSTNPCBULLET = 12
-ACTI_LASTNPCBULLET = 16
-ACTI_FIRSTITEM  = 17
-ACTI_LASTITEM   = 21
-ACTI_FIRSTEFFECT = 22
-ACTI_LASTEFFECT = 23
-
 AL_UPDATEROUTINE = 0
+AL_INITIALHP     = 2
+AL_MOVECAPS      = 3
+AL_MOVESPEED     = 4
+AL_GROUNDACCEL   = 5
+AL_INAIRACCEL    = 6
+AL_BRAKING       = 7
+AL_MOVEANIMDELAY = 8
+AL_JUMPSPEED     = 9                            ;Negative
+AL_FALLSPEED     = 10                           ;Terminal falling velocity, positive
+AL_JUMPACCEL     = 11                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 12                           ;Gravity acceleration in longjump
+AL_HEIGHT        = 13                           ;Height for headbump check, negative
+AL_CLIMBSPEED    = 14
+AL_HALFSPEEDRIGHT = 15                          ;Ladder jump / wallflip speed right
+AL_HALFSPEEDLEFT = 16                           ;Ladder jump / wallflip speed left
+
+AMC_JUMP        = 1
+AMC_DUCK        = 2
+AMC_CLIMB       = 4
+AMC_ROLL        = 8
+AMC_WALLFLIP    = 16
 
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
@@ -442,6 +463,24 @@ MAY_Neg:        clc
                 dec actYH,x
 MAY_NegOk:      rts
 
+
+        ; Accelerate actor in X-direction with negative acceleration & speed limit
+        ;
+        ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit
+        ; Returns:
+        ; Modifies: A,temp8
+
+AccActorXNeg:   sta temp8
+                tya
+                eor #$ff
+                tay
+                iny
+                lda actSX,x
+                sec
+                sbc temp8
+                sty temp8
+                bmi AAX_SpeedNeg
+                bpl AAX_SpeedPos
 
         ; Accelerate actor in X-direction
         ;
@@ -873,4 +912,21 @@ GetFlashColorOverride:
                 ror
                 and #$80
                 ora #$40
+                rts
+
+        ; Get actor logic structure values.
+        ;
+        ; Parameters: A,Y logic structure indices
+        ; Returns: A,Y logic structure values
+        ; Modifies: -
+        
+GetActorParametersAY:
+                sty GAP_Index+1
+                tay
+                lda (actLo),y
+                sta GAP_Value+1
+GAP_Index:      ldy #$00
+                lda (actLo),y
+                tay
+GAP_Value:      lda #$00
                 rts
