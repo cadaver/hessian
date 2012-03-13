@@ -19,9 +19,18 @@ MovePlayer:     lda actMoveCtrl,x
                 bcs MP_FirePressed
                 sta actMoveCtrl,x
                 lda #$00
-MP_FirePressed: sta actFireCtrl,x
-                jsr MoveHuman
+                sta actFireCtrl,x
+MP_Common:      jsr MoveHuman
                 jmp AttackHuman
+MP_FirePressed: sta actFireCtrl,x
+                lda actMoveCtrl,x               ;If fire held, and last move
+                and #JOY_DOWN                   ;control has duckings, remove
+                beq MP_Common                   ;left/right move to not cause
+                lda actMoveCtrl,x               ;bugged turning
+                and #255-JOY_LEFT-JOY_RIGHT
+                sta actMoveCtrl,x
+                jmp MP_Common
+
 
         ; Humanoid character move routine
         ;
@@ -271,6 +280,8 @@ MH_NoLongJump:  tya
 MH_GrabLadderOk:lda actMoveCtrl,x
                 and #JOY_UP
                 beq MH_JumpAnim
+                lda actFireCtrl,x               ;If fire is held, do not grab ladder
+                bne MH_JumpAnim
                 lda temp6
                 and #AMC_CLIMB
                 beq MH_JumpAnim
