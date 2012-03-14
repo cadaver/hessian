@@ -387,10 +387,15 @@ MH_StandOrWalk: lda temp1
 MH_WalkAnim:    lda actMoveCtrl,x
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_StandAnim
-                ldy #AL_MOVEANIMDELAY
-                lda (actLo),y
-                jsr AnimationDelay
-                bcc MH_AnimDone2
+                lda actSX,x
+                asl
+                bcc MH_WalkAnimSpeedPos
+                eor #$ff
+                adc #$00
+MH_WalkAnimSpeedPos:
+                adc #$40
+                adc actFd,x
+                sta actFd,x
                 lda actF1,x
                 adc #$00
                 cmp #FR_WALK+8
@@ -406,14 +411,13 @@ MH_AnimDone2:   rts
 
 MH_InitClimb:   lda #$80
                 sta actXL,x
+                sta actFd,x
                 lda actYL,x
                 and #$c0
                 sta actYL,x
                 lda #FR_CLIMB
                 sta actF1,x
                 sta actF2,x
-                lda #$80
-                sta actFd,x
                 lda #$00
                 sta actSX,x
                 sta actSY,x

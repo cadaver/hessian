@@ -45,11 +45,10 @@ AL_FALLACCEL     = 8                           ;Gravity acceleration
 AL_LONGJUMPACCEL = 9                           ;Gravity acceleration in longjump
 AL_BRAKING       = 10
 AL_HEIGHT        = 11                          ;Height for headbump check, negative
-AL_MOVEANIMDELAY = 12
-AL_JUMPSPEED     = 13                          ;Negative
-AL_CLIMBSPEED    = 14
-AL_HALFSPEEDRIGHT = 15                         ;Ladder jump / wallflip speed right
-AL_HALFSPEEDLEFT = 16                          ;Ladder jump / wallflip speed left
+AL_JUMPSPEED     = 12                          ;Negative
+AL_CLIMBSPEED    = 13
+AL_HALFSPEEDRIGHT = 14                         ;Ladder jump / wallflip speed right
+AL_HALFSPEEDLEFT = 15                          ;Ladder jump / wallflip speed left
 
 AMC_JUMP        = 1
 AMC_DUCK        = 2
