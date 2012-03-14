@@ -750,14 +750,11 @@ GetCharInfoOffset:
                 and #$0c
                 sta zpBitsLo
                 tya
-                bmi GCIO_Neg
-GCIO_Pos:       lsr
-                lsr
-                bpl GCIO_Common
-GCIO_Neg:       lsr
-                lsr
-                ora #$c0
-GCIO_Common:    clc
+                cmp #$80
+                ror
+                cmp #$80
+                ror
+                clc
                 adc actYH,x
                 bmi GCI_Outside
                 tay

@@ -107,23 +107,6 @@ DivU_Skip:      rol $00,x
                 bpl DivU_Loop
                 rts
 
-        ; Arithmetic shift right
-        ;
-        ; Parameters: A number. Flags must reflect its value, Y bits to shift
-        ; Returns: A result
-        ; Modifies: A,Y
-
-Asr:            bmi Asr_Neg
-Asr_Pos:        lsr
-                dey
-                bne Asr_Pos
-                rts
-Asr_Neg:        lsr
-                ora #$80
-                dey
-                bne Asr_Neg
-                rts
-
         ; Negate a 16-bit value
         ;
         ; Parameters: X zeropage base
