@@ -36,7 +36,7 @@ MP_FirePressed: sta actFireCtrl,x
         ;
         ; Parameters: X actor index
         ; Returns: -
-        ; Modifies: A,Y
+        ; Modifies: A,Y,temp1-temp8
 
 MH_ClimbUp:     jsr GetCharInfo4Above
                 sta temp1
@@ -141,16 +141,22 @@ MH_ClimbExit:   lda actYL,x
 MoveHuman:      lda actMoveFlags,x
                 sta temp1
                 lda #$00                        ;Roll flag
-                sta temp5
+                sta temp2
                 ldy #AL_MOVECAPS
                 lda (actLo),y
-                sta temp6                       ;Movement capabilities
+                sta temp3                       ;Movement capabilities
+                iny
+                lda (actLo),y
+                sta temp4                       ;Movement speed
+                iny
+                lda (actLo),y
+                sta temp5                       ;Terminal falling speed
                 lda actF1,x                     ;Check if climbing
                 cmp #FR_CLIMB
                 bcc MH_NoRoll
                 cmp #FR_ROLL                    ;If rolling, automatically accelerate
                 bcc MH_Climbing                 ;to facing direction
-                inc temp5
+                inc temp2
                 lda actD,x
                 bmi MH_AccLeft
                 bpl MH_AccRight
@@ -163,11 +169,11 @@ MH_NoRoll:      cmp #FR_DUCK+1
                 bcs MH_Brake                    ;If ducking, brake
 MH_AccLeft:     lda temp1
                 lsr                             ;Faster acceleration when on ground
-                lda #AL_GROUNDACCEL
+                ldy #AL_GROUNDACCEL
                 bcs MH_OnGroundAccL
-                lda #AL_INAIRACCEL
-MH_OnGroundAccL:ldy #AL_MOVESPEED
-                jsr GetActorParametersAY
+                ldy #AL_INAIRACCEL
+MH_OnGroundAccL:lda (actLo),y
+                ldy temp4
                 jsr AccActorXNeg
                 jmp MH_NoBraking
 MH_NotLeft:     lda actMoveCtrl,x
@@ -178,11 +184,11 @@ MH_NotLeft:     lda actMoveCtrl,x
                 bcs MH_Brake                    ;If ducking, brake
 MH_AccRight:    lda temp1
                 lsr                             ;Faster acceleration when on ground
-                lda #AL_GROUNDACCEL
+                ldy #AL_GROUNDACCEL
                 bcs MH_OnGroundAccR
-                lda #AL_INAIRACCEL
-MH_OnGroundAccR:ldy #AL_MOVESPEED
-                jsr GetActorParametersAY
+                ldy #AL_INAIRACCEL
+MH_OnGroundAccR:lda (actLo),y
+                ldy temp4
                 jsr AccActorX
                 jmp MH_NoBraking
 MH_NotRight:    lda temp1                       ;No braking when jumping
@@ -195,7 +201,7 @@ MH_NoBraking:   lda temp1
                 and #AMF_HITWALL|AMF_LANDED     ;If hit wall (and did not land simultaneously), reset X-speed
                 cmp #AMF_HITWALL
                 bne MH_NoHitWall
-                lda temp6
+                lda temp3
                 and #AMC_WALLFLIP
                 beq MH_NoWallFlip
                 lda temp1                       ;Check for wallflip (push joystick up & opposite to wall)
@@ -231,9 +237,9 @@ MH_NoHeadBump:  bcc MH_NoNewJump
                 lda actMoveCtrl,x               ;If on ground, can initiate a jump
                 and #JOY_UP                     ;except if in the middle of a roll
                 beq MH_NoNewJump
-                lda temp5
+                lda temp2
                 bne MH_NoNewJump
-                lda temp6
+                lda temp3
                 and #AMC_CLIMB
                 beq MH_NoInitClimbUp
                 lda actFireCtrl,x               ;When holding fire can not initiate climbing
@@ -243,7 +249,7 @@ MH_NoHeadBump:  bcc MH_NoNewJump
                 beq MH_NoInitClimbUp
                 jmp MH_InitClimb
 MH_NoInitClimbUp:          
-                lda temp6
+                lda temp3
                 and #AMC_JUMP
                 beq MH_NoNewJump
                 lda actPrevMoveCtrl,x
@@ -256,21 +262,20 @@ MH_StartJump:   ldy #AL_JUMPSPEED
                 sta actMoveFlags,x              ;jump physics
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 lda (actLo),y
-                sta temp1
-                ldy #AL_JUMPACCEL               ;Make jump longer by holding joystick up
+                sta temp4
+                ldy #AL_FALLACCEL               ;Make jump longer by holding joystick up
                 lda actSY,x                     ;as long as still has upward velocity
                 bpl MH_NoLongJump
                 lda actMoveCtrl,x
                 and #JOY_UP
                 beq MH_NoLongJump
                 ldy #AL_LONGJUMPACCEL
-MH_NoLongJump:  tya
-                ldy #AL_FALLSPEED
-                jsr GetActorParametersAY
+MH_NoLongJump:  lda (actLo),y
+                ldy temp5
                 jsr MoveWithGravity             ;Actually move & check collisions
                 sta temp1                       ;Updated move flags to temp1
                 lsr
-                lda temp5                       ;If rolling, continue roll animation
+                lda temp2                       ;If rolling, continue roll animation
                 bne MH_RollAnim
                 bcs MH_GroundAnim
                 lda actSY,x                     ;Check for grabbing a ladder while
@@ -282,7 +287,7 @@ MH_GrabLadderOk:lda actMoveCtrl,x
                 beq MH_JumpAnim
                 lda actFireCtrl,x               ;If fire is held, do not grab ladder
                 bne MH_JumpAnim
-                lda temp6
+                lda temp3
                 and #AMC_CLIMB
                 beq MH_JumpAnim
                 jsr GetCharInfo4Above
@@ -322,7 +327,7 @@ MH_NewDuckOrRoll:
                 lda actF1,x
                 cmp #FR_DUCK
                 bcs MH_NoNewRoll
-                lda temp6
+                lda temp3
                 and #AMC_ROLL
                 beq MH_NoNewRoll
                 lda actMoveCtrl,x               ;To initiate a roll, must push the
@@ -334,7 +339,7 @@ MH_StartRoll:   lda #$00
                 sta actFd,x
                 lda #FR_ROLL
                 jmp MH_AnimDone
-MH_NoNewRoll:   lda temp6
+MH_NoNewRoll:   lda temp3
                 and #AMC_CLIMB
                 beq MH_NoInitClimbDown
                 lda actFireCtrl,x               ;When holding fire can not initiate climbing
@@ -344,7 +349,7 @@ MH_NoNewRoll:   lda temp6
                 beq MH_NoInitClimbDown
                 jmp MH_InitClimb
 MH_NoInitClimbDown:
-                lda temp6
+                lda temp3
                 and #AMC_DUCK
                 beq MH_NoDuck
                 lda actF1,x

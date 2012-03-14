@@ -38,18 +38,18 @@ AL_UPDATEROUTINE = 0
 AL_INITIALHP     = 2
 AL_MOVECAPS      = 3
 AL_MOVESPEED     = 4
-AL_GROUNDACCEL   = 5
-AL_INAIRACCEL    = 6
-AL_BRAKING       = 7
-AL_MOVEANIMDELAY = 8
-AL_JUMPSPEED     = 9                            ;Negative
-AL_FALLSPEED     = 10                           ;Terminal falling velocity, positive
-AL_JUMPACCEL     = 11                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 12                           ;Gravity acceleration in longjump
-AL_HEIGHT        = 13                           ;Height for headbump check, negative
+AL_FALLSPEED     = 5                           ;Terminal falling velocity, positive
+AL_GROUNDACCEL   = 6
+AL_INAIRACCEL    = 7
+AL_FALLACCEL     = 8                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 9                           ;Gravity acceleration in longjump
+AL_BRAKING       = 10
+AL_HEIGHT        = 11                          ;Height for headbump check, negative
+AL_MOVEANIMDELAY = 12
+AL_JUMPSPEED     = 13                          ;Negative
 AL_CLIMBSPEED    = 14
-AL_HALFSPEEDRIGHT = 15                          ;Ladder jump / wallflip speed right
-AL_HALFSPEEDLEFT = 16                           ;Ladder jump / wallflip speed left
+AL_HALFSPEEDRIGHT = 15                         ;Ladder jump / wallflip speed right
+AL_HALFSPEEDLEFT = 16                          ;Ladder jump / wallflip speed left
 
 AMC_JUMP        = 1
 AMC_DUCK        = 2
@@ -912,21 +912,4 @@ GetFlashColorOverride:
                 ror
                 and #$80
                 ora #$40
-                rts
-
-        ; Get actor logic structure values.
-        ;
-        ; Parameters: A,Y logic structure indices
-        ; Returns: A,Y logic structure values
-        ; Modifies: -
-        
-GetActorParametersAY:
-                sty GAP_Index+1
-                tay
-                lda (actLo),y
-                sta GAP_Value+1
-GAP_Index:      ldy #$00
-                lda (actLo),y
-                tay
-GAP_Value:      lda #$00
                 rts

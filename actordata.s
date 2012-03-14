@@ -61,15 +61,15 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b HP_PLAYER                  ;Initial health
                 dc.b AMC_JUMP|AMC_DUCK|AMC_CLIMB|AMC_ROLL|AMC_WALLFLIP ;Move caps
                 dc.b 4*8                        ;Max. movement speed
-                dc.b 8                          ;Ground acceleration
-                dc.b 3                          ;In air acceleration
-                dc.b 6                          ;Ground braking deceleration
-                dc.b 1                          ;Move animation delay
-                dc.b -44                        ;Jump speed (negative)
                 dc.b 6*8                        ;Terminal falling speed
+                dc.b 8                          ;Ground movement acceleration
+                dc.b 3                          ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
                 dc.b 4                          ;Long jump gravity acceleration
-                dc.b -4                         ;Headbump check height
+                dc.b 6                          ;Ground deceleration (braking)
+                dc.b -4                         ;Height in chars for headbump check (negative)
+                dc.b 1                          ;Move animation delay
+                dc.b -44                        ;Jump initial speed (negative)
                 dc.b 96                         ;Climbing speed
                 dc.b 2*8                        ;Ladder jump / wallflip speed right
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
