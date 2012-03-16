@@ -17,7 +17,7 @@ actDispTblHi:   dc.b >adPlayer
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_PLAYER                   ;Lower part spritefile number
-                dc.b 31                         ;Lower part base spritenumber
+                dc.b 35                         ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 24                         ;Lower part left frame add
                 dc.b C_PLAYER                   ;Upper part spritefile number
@@ -39,8 +39,8 @@ adExplosion:    dc.b ONESPRITE                  ;Number of sprites
 
         ; Human actor upper part framenumbers
 
-humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,17,16,17,18,19,20,21,22,23,24,6,11,7,12,8,13,9,14,10,15
-                dc.b 4,3,3,4,4,5,5,4,4,5,4,3,3,3,17,16,17,18,25,26,27,28,29,30,6,11,7,12,8,13,9,14,10,15
+humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,21,20,21,22,23,24,25,26,27,28,8,15,9,16,10,17,11,18,12,19
+                dc.b 4,3,3,4,4,5,5,4,4,5,4,3,3,3,21,20,21,22,29,30,31,32,33,34,8,15,9,16,10,17,11,18,12,19
 
         ; Human actor lower part framenumbers
 
