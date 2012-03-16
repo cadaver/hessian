@@ -1,3 +1,27 @@
+        ; Weapon tables
+
+attackTbl:      dc.b 0+$80                      ;Up
+                dc.b 8+$80                      ;Down
+                dc.b 8+$80                      ;Up+Down
+                dc.b 5                          ;Left
+                dc.b 3                          ;Left+Up
+                dc.b 7                          ;Left+Down
+                dc.b 3                          ;Left+Up+Down
+                dc.b 4                          ;Right
+                dc.b 2                          ;Right+Up
+                dc.b 6                          ;Right+Down
+                dc.b 2                          ;Right+Up+Down
+                dc.b 4                          ;Right+Left
+                dc.b 2                          ;Right+Left+Up
+                dc.b 6                          ;Right+Left+Down
+                dc.b 2                          ;Right+Left+Up+Down
+
+wpnFrameTbl:    dc.b 0,0                        ;TODO: define per-weapon
+                dc.b 1,2
+                dc.b 3,4
+                dc.b 5,6
+                dc.b 7,7
+
         ; Music relocation tables
         
 ntFixupTblLo:   dc.b <PMus_SongTblP2
