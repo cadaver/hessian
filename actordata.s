@@ -29,13 +29,13 @@ adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 1                          ;Number of frames
-                dc.b 0                          ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 5,6,7,8                    ;Frametable (first all frames of sprite1, then sprite2)
 
 adExplosion:    dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 5                          ;Number of frames
-                dc.b 1,2,3,4,5                  ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 0,1,2,3,4                  ;Frametable (first all frames of sprite1, then sprite2)
 
         ; Human actor upper part framenumbers
 

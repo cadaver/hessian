@@ -423,43 +423,6 @@ MH_InitClimb:   lda #$80
                 sta actSY,x
                 jmp NoInterpolation
 
-        ; Bullet update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MoveBullet:     jsr MoveProjectile
-                and #CI_OBSTACLE
-                bne MBlt_Explode
-                dec actTime,x
-                bne MBlt_NoRemove
-                jmp RemoveActor
-MBlt_Explode:   lda #$00
-                sta actF1,x
-                sta actFd,x
-                sta actC,x                      ;Remove flashing
-                lda #ACT_EXPLOSION
-                sta actT,x
-MBlt_NoRemove:  rts
-
-        ; Explosion update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MoveExplosion:  lda #1
-                jsr AnimationDelay
-                bcc MExpl_NoAnimation
-                inc actF1,x
-                lda actF1,x
-                cmp #5
-                bcc MExpl_NoRemove
-                jmp RemoveActor
-MExpl_NoAnimation:
-MExpl_NoRemove: rts
-
         ; Scroll screen around the player actor
         ;
         ; Parameters: -

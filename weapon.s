@@ -4,7 +4,30 @@
         ; Returns: -
         ; Modifies: A,Y
 
-AttackHuman:    lda actFireCtrl,x
+AH_NoAttack:    lda actAttackD,x                ;When weapon not in firing
+                bne AH_NoAttackDelay2           ;position, give 1 frame attack
+                lda #1                          ;delay to reduce possibility of firing
+                sta actAttackD,x                ;the initial bullet to undesired direction
+AH_NoAttackDelay2:
+                ldy #$ff
+                lda actF2,x
+                cmp #FR_CLIMB
+                bcs AH_WeaponFrameDone
+                ldy #3                          ;TODO: define weapon frame per-weapon
+                lda actD,x
+                bpl AH_WeaponFrameDone
+                iny
+AH_WeaponFrameDone:
+                tya
+                sta actWpnF,x
+                rts
+
+AttackHuman:    lda actAttackD,x
+                sta temp2
+                beq AH_NoAttackDelay
+                dec actAttackD,x
+AH_NoAttackDelay:
+                lda actFireCtrl,x
                 beq AH_NoAttack
                 ldy actF1,x
                 cpy #FR_ROLL
@@ -31,113 +54,101 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 and #$7f
                 adc #$00
 AH_FrameOk:     tay
+                sty temp1
                 clc
                 adc #FR_ATTACK
                 sta actF2,x
                 lda wpnFrameTbl,y
                 sta actWpnF,x
-                rts
-
-AH_NoAttack:    ldy #$ff
-                lda actF2,x
-                cmp #FR_CLIMB
-                bcs AH_WeaponFrameDone
-                ldy #3                          ;TODO: define per-weapon
-                lda actD,x
-                bpl AH_WeaponFrameDone
-                iny
-AH_WeaponFrameDone:
+                lda temp2
+                bne AH_NoNewBullet
+                jsr GetBulletOffset
+                bcc AH_NoNewBullet
+                lda #ACTI_FIRSTPLRBULLET
+                ldy #ACTI_LASTPLRBULLET
+                jsr GetFreeActor
+                bcc AH_NoNewBullet
+                lda #ACT_BULLET
+                jsr SpawnWithOffset
+                ldx temp1                       ;TODO: define bullet parameters
+                lda bulletFrameTbl,x            ;per weapon
+                sta actF1,y
+                lda bulletXSpdTbl,x
+                sta actSX,y
+                lda bulletYSpdTbl,x
+                sta actSY,y
+                lda #20
+                sta actTime,y
                 tya
-                sta actWpnF,x
-GBO_Fail:       rts
+                jsr GetFlashColorOverride
+                sta actC,y
+                ldx actIndex
+                lda #6                          ;TODO: define attack delay per-weapon
+                sta actAttackD,x
+AH_NoNewBullet: rts
+
 
         ; Find spawn offset for bullet (humanoid actor)
         ;
         ; Parameters: X actor index
-        ; Returns: C=1 success: temp1-temp2 X offset, temp3-temp4 Y offset, C=0 failure (sprites unloaded)
+        ; Returns: C=1 success (temp5-temp6 X offset, temp7-temp8 Y offset), C=0 failure (sprites unloaded)
         ; Modifies: A,Y,loader temp regs
 
 GetBulletOffset:lda #$00
-                sta temp1
-                sta temp3
+                sta temp5
+                sta temp7
                 ldy actT,x
                 lda actDispTblLo-1,y            ;Get actor display structure address
-                sta zpBitsLo
+                sta actLo
                 lda actDispTblHi-1,y
-                sta zpBitsHi
-                ldy #AD_SPRFILE
-                lda (zpBitsLo),y
-                tay
+                sta actHi
                 clc
-                lda fileHi,y
-                beq GBO_Fail
-                sta sprFileHi
-                lda fileLo,y
-                sta sprFileLo
-                lda actF1,x
-                ldy actD,x
-                bpl GBO_Right
-                ldy #ADH_LEFTFRADD              ;Add left frame offset if necessary
-                adc (zpBitsLo),y
-GBO_Right:      ldy #ADH_BASEINDEX
-                adc (zpBitsLo),y
+                jsr DA_GetHumanFrames
+                ldy #AD_SPRFILE
+                lda (actLo),y
                 tay
-                lda humanLowerFrTbl,y           ;Take sprite frame from the frametable
-                ldy #ADH_BASEFRAME
-                adc (zpBitsLo),y
+                lda DA_HumanFrame1+1
                 jsr GBO_Sub
                 ldy #ADH_SPRFILE2
-                lda (zpBitsLo),y
+                lda (actLo),y
                 tay
-                clc
-                lda fileHi,y
-                beq GBO_Fail
-                sta sprFileHi
-                lda fileLo,y
-                sta sprFileLo
-                lda actF2,x
-                ldy actD,x
-                bpl GBO_Right2
-                ldy #ADH_LEFTFRADD2             ;Add left frame offset if necessary
-                adc (zpBitsLo),y
-GBO_Right2:     ldy #ADH_BASEINDEX2
-                adc (zpBitsLo),y
-                tay
-                lda humanUpperFrTbl,y           ;Take sprite frame from the frametable
-                ldy #ADH_BASEFRAME2
-                adc (zpBitsLo),y
+                lda DA_HumanFrame2+1
                 jsr GBO_Sub
                 lda actWpnF,x                   ;If no weapon frame, spawn projectile from the hand
                 bmi GBO_NoWeapon
-                ldy fileLo+C_WEAPON
-                sty sprFileLo
-                ldy fileHi+C_WEAPON
-                sty sprFileHi
+                ldy #C_WEAPON
                 jsr GBO_Sub
 GBO_NoWeapon:   lda #$00
-                asl temp1
+                asl temp5
                 bcc GBO_XPos
                 lda #$ff
 GBO_XPos:       rol
-                asl temp1
+                asl temp5
                 rol
-                asl temp1
+                asl temp5
                 rol
-                sta temp2
+                sta temp6
                 lda #$00
-                asl temp3
+                asl temp7
                 bcc GBO_YPos
                 lda #$ff
 GBO_YPos:       rol
-                asl temp3
+                asl temp7
                 rol
-                asl temp3
+                asl temp7
                 rol
-                sta temp4
+                sta temp8
                 sec
                 rts
 
-GBO_Sub:        asl
+GBO_Sub:        pha
+                lda fileHi,y
+                beq GBO_Fail
+                sta sprFileHi
+                lda fileLo,y
+                sta sprFileLo
+                pla
+                asl
                 tay
                 lda (sprFileLo),y
                 sta frameLo
@@ -145,19 +156,63 @@ GBO_Sub:        asl
                 lda (sprFileLo),y
                 sta frameHi
                 ldy #SPRH_HOTSPOTX
-                lda temp1
+                lda temp5
                 sec
-                sbc (zpSrcLo),y
+                sbc (frameLo),y
                 iny
                 clc
-                adc (zpSrcLo),y
-                sta temp1
+                adc (frameLo),y
+                sta temp5
                 iny
-                lda temp3
+                lda temp7
                 sec
-                sbc (zpSrcLo),y
+                sbc (frameLo),y
                 iny
                 clc
-                adc (zpSrcLo),y
-                sta temp3
+                adc (frameLo),y
+                sta temp7
                 rts
+
+GBO_Fail:       pla
+                pla
+                pla
+                clc
+                rts
+                
+
+        ; Bullet update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveBullet:     jsr MoveProjectile
+                and #CI_OBSTACLE
+                bne MBlt_Explode
+                dec actTime,x
+                bne MBlt_NoRemove
+                jmp RemoveActor
+MBlt_Explode:   lda #$00
+                sta actF1,x
+                sta actFd,x
+                sta actC,x                      ;Remove flashing
+                lda #ACT_EXPLOSION
+                sta actT,x
+MBlt_NoRemove:  rts
+
+        ; Explosion update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveExplosion:  lda #1
+                jsr AnimationDelay
+                bcc MExpl_NoAnimation
+                inc actF1,x
+                lda actF1,x
+                cmp #5
+                bcc MExpl_NoRemove
+                jmp RemoveActor
+MExpl_NoAnimation:
+MExpl_NoRemove: rts

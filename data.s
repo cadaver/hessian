@@ -22,8 +22,26 @@ wpnFrameTbl:    dc.b 0,0                        ;TODO: define per-weapon
                 dc.b 5,6
                 dc.b 7,7
 
+bulletFrameTbl: dc.b 0,0
+                dc.b 1,3
+                dc.b 2,2
+                dc.b 3,1
+                dc.b 0,0
+              
+bulletXSpdTbl:  dc.b 0,0
+                dc.b 56,-56
+                dc.b 80,-80
+                dc.b 56,-56
+                dc.b 0,0
+
+bulletYSpdTbl:  dc.b -80,-80
+                dc.b -56,-56
+                dc.b 0,0
+                dc.b 56,56
+                dc.b 80,80
+
         ; Music relocation tables
-        
+
 ntFixupTblLo:   dc.b <PMus_SongTblP2
                 dc.b <PMus_SongTblP1
                 dc.b <PMus_SongTblP0
@@ -275,7 +293,6 @@ fileAge:        ds.b MAX_CHUNKFILES,0
 
 actT:           ds.b MAX_ACT,0
 actF1:          ds.b MAX_ACT,0
-actF2:          ds.b MAX_ACT,0
 actFd:          ds.b MAX_ACT,0
 actC:           ds.b MAX_ACT,0
 actD:           ds.b MAX_ACT,0
@@ -298,7 +315,9 @@ actMoveFlags:   ds.b MAX_ACT,0
 actMoveCtrl:    ds.b MAX_COMPLEXACT,0
 actPrevMoveCtrl:ds.b MAX_COMPLEXACT,0
 actFireCtrl:    ds.b MAX_COMPLEXACT,0
+actF2:          ds.b MAX_COMPLEXACT,0
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
+actAttackD:     ds.b MAX_COMPLEXACT,0
 
         ; Playroutine variables
 

@@ -195,35 +195,14 @@ DA_LastSprite:  jsr GetAndStoreLastSprite
 
 DA_Humanoid:    lda actWpnF,x
                 sta DA_HumanWpnF+1
-                lda actF2,x
-                ldy actD,x
-                bpl DA_HumanRight2
-                ldy #ADH_LEFTFRADD2             ;Add left frame offset if necessary
-                adc (actLo),y
-DA_HumanRight2: ldy #ADH_BASEINDEX2
-                adc (actLo),y
-                tay
-                lda humanUpperFrTbl,y           ;Take sprite frame from the frametable
-                ldy #ADH_BASEFRAME2
-                adc (actLo),y
-                sta DA_HumanFrame2+1
-                lda actF1,x
-                ldy actD,x
-                bpl DA_HumanRight1
-                ldy #ADH_LEFTFRADD              ;Add left frame offset if necessary
-                adc (actLo),y
-DA_HumanRight1: ldy #ADH_BASEINDEX
-                adc (actLo),y
-                tay
-                lda humanLowerFrTbl,y           ;Take sprite frame from the frametable
-                ldy #ADH_BASEFRAME
-                adc (actLo),y
+                jsr DA_GetHumanFrames
+DA_HumanFrame1: lda #$00
                 ldx sprIndex
                 jsr GetAndStoreSprite
                 ldy #ADH_SPRFILE2               ;Get second part spritefile
                 lda (actLo),y
                 cmp sprFileNum
-                beq DA_SameSprFile2
+                beq DA_HumanFrame2
                 sta sprFileNum
                 tay
                 lda fileHi,y
@@ -233,7 +212,6 @@ DA_SprFileLoaded2:
                 sta sprFileHi
                 lda fileLo,y
                 sta sprFileLo
-DA_SameSprFile2:
 DA_HumanFrame2: lda #$00
                 jsr GetAndStoreSprite
 DA_HumanWpnF:   lda #$00
@@ -249,6 +227,33 @@ DA_HumanNoWeapon:
                 stx sprIndex
                 ldx actIndex
                 jmp DA_ActorDone
+
+DA_GetHumanFrames:
+                lda actF1,x
+                ldy actD,x
+                bpl DA_HumanRight1
+                ldy #ADH_LEFTFRADD              ;Add left frame offset if necessary
+                adc (actLo),y
+DA_HumanRight1: ldy #ADH_BASEINDEX
+                adc (actLo),y
+                tay
+                lda humanLowerFrTbl,y           ;Take sprite frame from the frametable
+                ldy #ADH_BASEFRAME
+                adc (actLo),y
+                sta DA_HumanFrame1+1
+                lda actF2,x
+                ldy actD,x
+                bpl DA_HumanRight2
+                ldy #ADH_LEFTFRADD2             ;Add left frame offset if necessary
+                adc (actLo),y
+DA_HumanRight2: ldy #ADH_BASEINDEX2
+                adc (actLo),y
+                tay
+                lda humanUpperFrTbl,y           ;Take sprite frame from the frametable
+                ldy #ADH_BASEFRAME2
+                adc (actLo),y
+                sta DA_HumanFrame2+1
+                rts
 
         ; Update actors
         ;
@@ -322,7 +327,8 @@ IA_SprLoop:     lda sprC,x                      ;Process flickering
                 bmi IA_Next
 IA_NoFlicker:   ldy sprAct,x                    ;Take actor number associated with sprite
                 lda actPrevYH,y                 ;Offset already calculated?
-                bmi IA_AddOffset
+                cmp #$c0
+                beq IA_AddOffset
                 lda actXL,y                     ;Calculate average movement
                 sec                             ;of actor in X-direction
                 sbc actPrevXL,y
@@ -378,7 +384,7 @@ IA_ScrollYAdjust:
                 clc
                 adc sprY,x
                 sta sprY,x                      ;Add offset to sprite
-                lda #$ff                        ;Replace the Y-coord MSB with a marker
+                lda #$c0                        ;Replace the Y-coord MSB with a marker
                 sta actPrevYH,y                 ;so we don't repeat this calculation
 IA_Next:        dex
                 bmi IA_Done
@@ -883,19 +889,43 @@ GFA_Cmp:        cpy #$00
 GFA_Found:      sec
                 lda #$00                        ;Reset animation & speed when free actor found
                 sta actF1,y                     ;Todo: reset more as needed
-                sta actF2,y
                 sta actFd,y
                 sta actSX,y
                 sta actSY,y
                 sta actMoveFlags,y
                 cpy #MAX_COMPLEXACT
                 bcs GFA_NotComplex
+                sta actF2,y
                 sta actMoveCtrl,y
                 sta actPrevMoveCtrl,y
                 sta actFireCtrl,y
                 lda #$ff
                 sta actWpnF,y
 GFA_NotComplex: rts
+
+        ; Spawn an actor with X & Y offset
+        ;
+        ; Parameters: A actor type, X creating actor, Y destination actor index, temp5-temp6 X offset,
+        ;             temp7-temp8 Y offset
+        ; Returns: -
+        ; Modifies: A
+
+SpawnWithOffset:sta actT,y
+                lda actXL,x
+                clc
+                adc temp5
+                sta actXL,y
+                lda actXH,x
+                adc temp6
+                sta actXH,y
+                lda actYL,x
+                clc
+                adc temp7
+                sta actYL,y
+                lda actYH,x
+                adc temp8
+                sta actYH,y
+                rts
 
         ; Get flashing color override for actor based on low bit of actor index
         ;
