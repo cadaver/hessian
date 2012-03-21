@@ -12,14 +12,22 @@ FR_ATTACK       = 24
         ; Returns: -
         ; Modifies: A,Y
 
-MovePlayer:     lda actCtrl,x
+MovePlayer:     ldy #JOY_DOWN                   ;If not climbing, keep down move
+                lda actF1,x                     ;bit when fire held, otherwise
+                cmp #FR_CLIMB                   ;keep none
+                bcc MP_NotClimbing
+                cmp #FR_ROLL
+                bcs MP_NotClimbing
+                ldy #$00
+MP_NotClimbing: sty temp1
+                lda actCtrl,x
                 sta actPrevCtrl,x
                 lda joystick
                 sta actCtrl,x
                 cmp #JOY_FIRE
                 bcc MP_NewMoveCtrl
-                ora #JOY_DOWN                   ;When fire held, do not set new
-                and actMoveCtrl,x               ;move bits, but keep the previous
+                ora temp1
+                and actMoveCtrl,x               
 MP_NewMoveCtrl: sta actMoveCtrl,x
 MP_Common:      jsr MoveHuman
                 jmp AttackHuman
