@@ -896,9 +896,9 @@ GFA_Found:      sec
                 cpy #MAX_COMPLEXACT
                 bcs GFA_NotComplex
                 sta actF2,y
+                sta actCtrl,y
                 sta actMoveCtrl,y
-                sta actPrevMoveCtrl,y
-                sta actFireCtrl,y
+                sta actPrevCtrl,y
                 lda #$ff
                 sta actWpnF,y
 GFA_NotComplex: rts

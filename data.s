@@ -312,9 +312,9 @@ actSizeU:       ds.b MAX_ACT,0
 actSizeD:       ds.b MAX_ACT,0
 actTime:        ds.b MAX_ACT,0
 actMoveFlags:   ds.b MAX_ACT,0
+actCtrl:        ds.b MAX_COMPLEXACT,0
 actMoveCtrl:    ds.b MAX_COMPLEXACT,0
-actPrevMoveCtrl:ds.b MAX_COMPLEXACT,0
-actFireCtrl:    ds.b MAX_COMPLEXACT,0
+actPrevCtrl:    ds.b MAX_COMPLEXACT,0
 actF2:          ds.b MAX_COMPLEXACT,0
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0

@@ -12,25 +12,17 @@ FR_ATTACK       = 24
         ; Returns: -
         ; Modifies: A,Y
 
-MovePlayer:     lda actMoveCtrl,x
-                sta actPrevMoveCtrl,x
+MovePlayer:     lda actCtrl,x
+                sta actPrevCtrl,x
                 lda joystick
+                sta actCtrl,x
                 cmp #JOY_FIRE
-                bcs MP_FirePressed
-                sta actMoveCtrl,x
-                lda #$00
-                sta actFireCtrl,x
+                bcc MP_NewMoveCtrl
+                ora #JOY_DOWN                   ;When fire held, do not set new
+                and actMoveCtrl,x               ;move bits, but keep the previous
+MP_NewMoveCtrl: sta actMoveCtrl,x
 MP_Common:      jsr MoveHuman
                 jmp AttackHuman
-MP_FirePressed: sta actFireCtrl,x
-                lda actMoveCtrl,x               ;If fire held, and last move
-                and #JOY_DOWN                   ;control has duckings, remove
-                beq MP_Common                   ;left/right move to not cause
-                lda actMoveCtrl,x               ;bugged turning
-                and #255-JOY_LEFT-JOY_RIGHT
-                sta actMoveCtrl,x
-                jmp MP_Common
-
 
         ; Humanoid character move routine
         ;
@@ -43,7 +35,7 @@ MH_ClimbUp:     jsr GetCharInfo4Above
                 and #CI_OBSTACLE
                 bne MH_ClimbUpNoJump
                 lda actMoveCtrl,x               ;Check for exiting the ladder
-                cmp actPrevMoveCtrl,x           ;by jumping
+                cmp actPrevCtrl,x               ;by jumping
                 beq MH_ClimbUpNoJump
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_ClimbUpNoJump
@@ -234,6 +226,9 @@ MH_NoHitWall:   lda temp1
                 lda #$00                        ;If head bumped, reset Y-speed
                 sta actSY,x
 MH_NoHeadBump:  bcc MH_NoNewJump
+                lda actCtrl,x                   ;When holding fire can not initiate jump
+                and #JOY_FIRE                   ;or grab a ladder
+                bne MH_NoNewJump
                 lda actMoveCtrl,x               ;If on ground, can initiate a jump
                 and #JOY_UP                     ;except if in the middle of a roll
                 beq MH_NoNewJump
@@ -242,17 +237,15 @@ MH_NoHeadBump:  bcc MH_NoNewJump
                 lda temp3
                 and #AMC_CLIMB
                 beq MH_NoInitClimbUp
-                lda actFireCtrl,x               ;When holding fire can not initiate climbing
-                bne MH_NoInitClimbUp
                 jsr GetCharInfo4Above           ;Jump or climb?
                 and #CI_CLIMB
                 beq MH_NoInitClimbUp
                 jmp MH_InitClimb
-MH_NoInitClimbUp:          
+MH_NoInitClimbUp:
                 lda temp3
                 and #AMC_JUMP
                 beq MH_NoNewJump
-                lda actPrevMoveCtrl,x
+                lda actPrevCtrl,x
                 and #JOY_UP
                 bne MH_NoNewJump
 MH_StartJump:   ldy #AL_JUMPSPEED
@@ -285,7 +278,8 @@ MH_NoLongJump:  lda (actLo),y
 MH_GrabLadderOk:lda actMoveCtrl,x
                 and #JOY_UP
                 beq MH_JumpAnim
-                lda actFireCtrl,x               ;If fire is held, do not grab ladder
+                lda actCtrl,x                   ;If fire is held, do not grab ladder
+                and #JOY_FIRE
                 bne MH_JumpAnim
                 lda temp3
                 and #AMC_CLIMB
@@ -331,7 +325,7 @@ MH_NewDuckOrRoll:
                 and #AMC_ROLL
                 beq MH_NoNewRoll
                 lda actMoveCtrl,x               ;To initiate a roll, must push the
-                cmp actPrevMoveCtrl,x           ;joystick diagonally while standing
+                cmp actPrevCtrl,x               ;joystick diagonally while standing
                 beq MH_NoNewRoll                ;or walking
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_NoNewRoll
@@ -342,7 +336,8 @@ MH_StartRoll:   lda #$00
 MH_NoNewRoll:   lda temp3
                 and #AMC_CLIMB
                 beq MH_NoInitClimbDown
-                lda actFireCtrl,x               ;When holding fire can not initiate climbing
+                lda actCtrl,x                   ;When holding fire can not initiate climbing
+                and #JOY_FIRE
                 bne MH_NoInitClimbDown
                 jsr GetCharInfo                 ;Duck or climb?
                 and #CI_CLIMB

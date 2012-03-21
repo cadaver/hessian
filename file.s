@@ -155,11 +155,10 @@ PF_FindSizeLoop:cpx zpLenLo
                 lda fileHi,x
                 sbc zpSrcHi
                 sta zpDestHi
-                cmp zpBitsHi
-                bcc PF_FindSizeNewSize
-                bne PF_FindSizeSkip
                 lda zpDestLo
                 cmp zpBitsLo
+                lda zpDestHi
+                sbc zpBitsHi
                 bcs PF_FindSizeSkip
 PF_FindSizeNewSize:
                 lda zpDestLo

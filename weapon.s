@@ -27,23 +27,20 @@ AttackHuman:    lda actAttackD,x
                 beq AH_NoAttackDelay
                 dec actAttackD,x
 AH_NoAttackDelay:
-                lda actFireCtrl,x
-                beq AH_NoAttack
+                lda actCtrl,x     
+                cmp #JOY_FIRE
+                bcc AH_NoAttack
                 ldy actF1,x
                 cpy #FR_ROLL
                 bcs AH_NoAttack
-                cpy #FR_DUCK
-                bcs AH_TurnOk
-                cpy #FR_STAND                   ;If left/right attack and not walking
-                bne AH_NoTurn                   ;turn also actor direction
-AH_TurnOk:      and #JOY_LEFT|JOY_RIGHT
+                and #JOY_LEFT|JOY_RIGHT         ;If left/right attack, turn actor
                 beq AH_NoTurn2
                 lsr
                 lsr
                 lsr
                 ror
                 sta actD,x
-AH_NoTurn2:     lda actFireCtrl,x
+AH_NoTurn2:     lda actCtrl,x
 AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 beq AH_NoAttack
                 tay
