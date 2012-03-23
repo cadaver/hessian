@@ -1,3 +1,22 @@
+        ; Player control tables
+
+moveCtrlAndTbl: dc.b $ff                        ;None
+                dc.b $ff-JOY_DOWN               ;Up
+                dc.b $ff-JOY_UP                 ;Down
+                dc.b $ff-JOY_DOWN-JOY_UP        ;Up+Down
+                dc.b $ff-JOY_RIGHT              ;Left
+                dc.b $ff-JOY_RIGHT-JOY_DOWN     ;Left+Up
+                dc.b $ff-JOY_RIGHT-JOY_UP       ;Left+Down
+                dc.b $ff-JOY_RIGHT-JOY_DOWN-JOY_UP ;Left+Up+Down
+                dc.b $ff-JOY_LEFT               ;Right
+                dc.b $ff-JOY_LEFT-JOY_DOWN      ;Right+Up
+                dc.b $ff-JOY_LEFT-JOY_UP        ;Right+Down
+                dc.b $ff-JOY_LEFT-JOY_DOWN-JOY_UP ;Right+Up+Down
+                dc.b $ff-JOY_LEFT-JOY_RIGHT     ;Right+Left
+                dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_DOWN ;Right+Left+Up
+                dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP ;Right+Left+Down
+                dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP-JOY_DOWN ;Right+Left+Up+Down
+
         ; Weapon tables
 
 attackTbl:      dc.b 0+$80                      ;Up

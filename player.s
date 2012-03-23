@@ -12,22 +12,20 @@ FR_ATTACK       = 24
         ; Returns: -
         ; Modifies: A,Y
 
-MovePlayer:     ldy #JOY_DOWN                   ;If not climbing, keep down move
-                lda actF1,x                     ;bit when fire held, otherwise
-                cmp #FR_CLIMB                   ;keep none
-                bcc MP_NotClimbing
-                cmp #FR_ROLL
-                bcs MP_NotClimbing
-                ldy #$00
-MP_NotClimbing: sty temp1
-                lda actCtrl,x
+MovePlayer:     lda actCtrl,x
                 sta actPrevCtrl,x
                 lda joystick
                 sta actCtrl,x
                 cmp #JOY_FIRE
                 bcc MP_NewMoveCtrl
-                ora temp1
-                and actMoveCtrl,x               
+                and #$0f                        ;When fire held down, eliminate the opposite
+                tay                             ;directions from the previous move control
+                lda moveCtrlAndTbl,y
+                ldy actF1,x                     ;If holding a duck, keep the down direction
+                cpy #FR_DUCK+1                  ;regardless of joystick position
+                bne MP_NotDucked
+                ora #JOY_DOWN
+MP_NotDucked:   and actMoveCtrl,x
 MP_NewMoveCtrl: sta actMoveCtrl,x
 MP_Common:      jsr MoveHuman
                 jmp AttackHuman
