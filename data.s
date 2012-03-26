@@ -17,23 +17,24 @@ moveCtrlAndTbl: dc.b $ff                        ;None
                 dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP ;Right+Left+Down
                 dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP-JOY_DOWN ;Right+Left+Up+Down
 
-        ; Weapon tables
+        ; Weapon/attack tables
 
-attackTbl:      dc.b 0+$80                      ;Up
-                dc.b 8+$80                      ;Down
-                dc.b 8+$80                      ;Up+Down
-                dc.b 5                          ;Left
-                dc.b 3                          ;Left+Up
-                dc.b 7                          ;Left+Down
-                dc.b 3                          ;Left+Up+Down
-                dc.b 4                          ;Right
-                dc.b 2                          ;Right+Up
-                dc.b 6                          ;Right+Down
-                dc.b 2                          ;Right+Up+Down
-                dc.b 4                          ;Right+Left
-                dc.b 2                          ;Right+Left+Up
-                dc.b 6                          ;Right+Left+Down
-                dc.b 2                          ;Right+Left+Up+Down
+attackTbl:      dc.b $ff                        ;None
+                dc.b 0                          ;Up
+                dc.b 4                          ;Down
+                dc.b $ff                        ;Up+Down
+                dc.b 2                          ;Left
+                dc.b 1                          ;Left+Up
+                dc.b 3                          ;Left+Down
+                dc.b $ff                        ;Left+Up+Down
+                dc.b 2                          ;Right
+                dc.b 1                          ;Right+Up
+                dc.b 3                          ;Right+Down
+                dc.b $ff                        ;Right+Up+Down
+                dc.b $ff                        ;Right+Left
+                dc.b $ff                        ;Right+Left+Up
+                dc.b $ff                        ;Right+Left+Down
+                dc.b $ff                        ;Right+Left+Up+Down
 
 wpnFrameTbl:    dc.b 0,0                        ;TODO: define per-weapon
                 dc.b 1,2

@@ -61,6 +61,7 @@ MainLoop:       jsr ScrollLogic
                 jmp MainLoop
 
                 include actordata.s
+                include weapondata.s
                 include data.s
 
         ; Disposable init part

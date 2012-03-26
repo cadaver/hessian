@@ -4,7 +4,8 @@ FR_JUMP         = 9
 FR_DUCK         = 12
 FR_CLIMB        = 14
 FR_ROLL         = 18
-FR_ATTACK       = 24
+FR_PREPARE      = 24
+FR_ATTACK       = 26
 
         ; Player update routine
         ;

@@ -27,7 +27,7 @@ AttackHuman:    lda actAttackD,x
                 beq AH_NoAttackDelay
                 dec actAttackD,x
 AH_NoAttackDelay:
-                lda actCtrl,x     
+                lda actCtrl,x
                 cmp #JOY_FIRE
                 bcc AH_NoAttack
                 ldy actF1,x
@@ -42,19 +42,19 @@ AH_NoAttackDelay:
                 sta actD,x
 AH_NoTurn2:     lda actCtrl,x
 AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
-                beq AH_NoAttack
                 tay
-                lda actD,x
-                asl
-                lda attackTbl-1,y               ;When aiming up/down, modify
-                bpl AH_FrameOk                  ;frame based on direction
-                and #$7f
-                adc #$00
-AH_FrameOk:     tay
-                sty temp1
+                lda attackTbl,y
+                bmi AH_NoAttack
+                pha
                 clc
                 adc #FR_ATTACK
                 sta actF2,x
+                lda actD,x
+                rol
+                pla
+                rol
+                sta temp1
+                tay
                 lda wpnFrameTbl,y
                 sta actWpnF,x
                 lda temp2
