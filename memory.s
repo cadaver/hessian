@@ -76,6 +76,9 @@ MAX_BLK         = 192
                 Var actLo
                 Var actHi
 
+                Var wpnLo                       ;Weapon variables
+                Var wpnHi
+
                 Var temp1                       ;Temp variables
                 Var temp2
                 Var temp3

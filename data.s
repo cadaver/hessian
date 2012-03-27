@@ -17,49 +17,6 @@ moveCtrlAndTbl: dc.b $ff                        ;None
                 dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP ;Right+Left+Down
                 dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP-JOY_DOWN ;Right+Left+Up+Down
 
-        ; Weapon/attack tables
-
-attackTbl:      dc.b $ff                        ;None
-                dc.b 0                          ;Up
-                dc.b 4                          ;Down
-                dc.b $ff                        ;Up+Down
-                dc.b 2                          ;Left
-                dc.b 1                          ;Left+Up
-                dc.b 3                          ;Left+Down
-                dc.b $ff                        ;Left+Up+Down
-                dc.b 2                          ;Right
-                dc.b 1                          ;Right+Up
-                dc.b 3                          ;Right+Down
-                dc.b $ff                        ;Right+Up+Down
-                dc.b $ff                        ;Right+Left
-                dc.b $ff                        ;Right+Left+Up
-                dc.b $ff                        ;Right+Left+Down
-                dc.b $ff                        ;Right+Left+Up+Down
-
-wpnFrameTbl:    dc.b 0,0                        ;TODO: define per-weapon
-                dc.b 1,2
-                dc.b 3,4
-                dc.b 5,6
-                dc.b 7,7
-
-bulletFrameTbl: dc.b 0,0
-                dc.b 1,3
-                dc.b 2,2
-                dc.b 3,1
-                dc.b 0,0
-              
-bulletXSpdTbl:  dc.b 0,0
-                dc.b 56,-56
-                dc.b 80,-80
-                dc.b 56,-56
-                dc.b 0,0
-
-bulletYSpdTbl:  dc.b -80,-80
-                dc.b -56,-56
-                dc.b 0,0
-                dc.b 56,56
-                dc.b 80,80
-
         ; Music relocation tables
 
 ntFixupTblLo:   dc.b <PMus_SongTblP2
@@ -336,6 +293,7 @@ actCtrl:        ds.b MAX_COMPLEXACT,0
 actMoveCtrl:    ds.b MAX_COMPLEXACT,0
 actPrevCtrl:    ds.b MAX_COMPLEXACT,0
 actF2:          ds.b MAX_COMPLEXACT,0
+actWpn:         ds.b MAX_COMPLEXACT,WPN_NONE
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0
 

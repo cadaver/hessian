@@ -1,3 +1,18 @@
+AIM_UP          = 0
+AIM_DIAGONALUP  = 1
+AIM_HORIZONTAL  = 2
+AIM_DIAGONALDOWN = 3
+AIM_DOWN        = 4
+AIM_NONE        = $ff
+
+WD_MINAIM       = 0
+WD_MAXAIM       = 1
+WD_BULLETTYPE   = 2
+WD_DELAY        = 3
+
+WPN_NONE        = 0
+WPN_PISTOL      = 1
+
         ; Humanoid character attack routine
         ;
         ; Parameters: X actor index
@@ -18,7 +33,7 @@ AH_NoAttackDelay2:
                 bpl AH_WeaponFrameDone
                 iny
 AH_WeaponFrameDone:
-                tya
+AH_NoWeapon:    tya
                 sta actWpnF,x
                 rts
 
@@ -27,6 +42,13 @@ AttackHuman:    lda actAttackD,x
                 beq AH_NoAttackDelay
                 dec actAttackD,x
 AH_NoAttackDelay:
+                ldy actWpn,x
+                dey
+                bmi AH_NoWeapon
+                lda wpnTblLo,y
+                sta wpnLo
+                lda wpnTblHi,y
+                sta wpnHi
                 lda actCtrl,x
                 cmp #JOY_FIRE
                 bcc AH_NoAttack
@@ -45,7 +67,14 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 tay
                 lda attackTbl,y
                 bmi AH_NoAttack
-                pha
+                ldy #WD_MINAIM                  ;Check that aim direction is OK for weapon
+                cmp (wpnLo),y                   ;in question
+                bcc AH_NoAttack
+                ldy #WD_MAXAIM
+                cmp (wpnLo),y
+                beq AH_AimOk
+                bcs AH_NoAttack
+AH_AimOk:       pha
                 clc
                 adc #FR_ATTACK
                 sta actF2,x
@@ -65,7 +94,10 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 ldy #ACTI_LASTPLRBULLET
                 jsr GetFreeActor
                 bcc AH_NoNewBullet
-                lda #ACT_BULLET
+                sty temp2
+                ldy #WD_BULLETTYPE
+                lda (wpnLo),y
+                ldy temp2
                 jsr SpawnWithOffset
                 ldx temp1                       ;TODO: define bullet parameters
                 lda bulletFrameTbl,x            ;per weapon
@@ -80,10 +112,10 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 jsr GetFlashColorOverride
                 sta actC,y
                 ldx actIndex
-                lda #6                          ;TODO: define attack delay per-weapon
+                ldy #WD_DELAY
+                lda (wpnLo),y
                 sta actAttackD,x
 AH_NoNewBullet: rts
-
 
         ; Find spawn offset for bullet (humanoid actor)
         ;

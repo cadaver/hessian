@@ -899,6 +899,7 @@ GFA_Found:      sec
                 sta actCtrl,y
                 sta actMoveCtrl,y
                 sta actPrevCtrl,y
+                sta actWpn,y
                 lda #$ff
                 sta actWpnF,y
 GFA_NotComplex: rts
