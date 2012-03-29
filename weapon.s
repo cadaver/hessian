@@ -7,8 +7,21 @@ AIM_NONE        = $ff
 
 WD_MINAIM       = 0
 WD_MAXAIM       = 1
-WD_BULLETTYPE   = 2
-WD_DELAY        = 3
+WD_ATTACKDELAY  = 2
+WD_BULLETTYPE   = 3
+WD_BULLETSPEED  = 4
+WD_BULLETTIME   = 5
+WD_BITS         = 6
+WD_IDLEFR       = 7
+WD_IDLEFRLEFT   = 8
+WD_PREPAREFR    = 9
+WD_PREPAREFRLEFT = 10
+WD_ATTACKFR     = 11
+WD_ATTACKFRLEFT = 16
+
+WDB_NOWEAPONSPRITE = 1
+WDB_MELEE       = 2
+WDB_BULLETDIRFRAME = 4
 
 WPN_NONE        = 0
 WPN_PISTOL      = 1
@@ -24,16 +37,21 @@ AH_NoAttack:    lda actAttackD,x                ;When weapon not in firing
                 lda #1                          ;delay to reduce possibility of firing
                 sta actAttackD,x                ;the initial bullet to undesired direction
 AH_NoAttackDelay2:
-                ldy #$ff
-                lda actF2,x
-                cmp #FR_CLIMB
-                bcs AH_WeaponFrameDone
-                ldy #3                          ;TODO: define weapon frame per-weapon
+                ldy actF2,x
+                cpy #FR_CLIMB
+                bcs AH_NoWeapon
+                lda temp3
+                lsr
+                bcs AH_NoWeapon
+                ldy #WD_IDLEFR
                 lda actD,x
-                bpl AH_WeaponFrameDone
+                bpl AH_NoAttackRight
                 iny
+AH_NoAttackRight:
+                lda (wpnLo),y
+                bpl AH_WeaponFrameDone
+AH_NoWeapon:    lda #$ff                
 AH_WeaponFrameDone:
-AH_NoWeapon:    tya
                 sta actWpnF,x
                 rts
 
@@ -43,12 +61,14 @@ AttackHuman:    lda actAttackD,x
                 dec actAttackD,x
 AH_NoAttackDelay:
                 ldy actWpn,x
-                dey
-                bmi AH_NoWeapon
-                lda wpnTblLo,y
+                beq AH_NoWeapon
+                lda wpnTblLo-1,y
                 sta wpnLo
-                lda wpnTblHi,y
+                lda wpnTblHi-1,y
                 sta wpnHi
+                ldy #WD_BITS
+                lda (wpnLo),y
+                sta temp3
                 lda actCtrl,x
                 cmp #JOY_FIRE
                 bcc AH_NoAttack
@@ -78,13 +98,19 @@ AH_AimOk:       pha
                 clc
                 adc #FR_ATTACK
                 sta actF2,x
-                lda actD,x
-                rol
                 pla
-                rol
-                sta temp1
+                ldy actD,x
+                bpl AH_AimRight
+                adc #5
+AH_AimRight:    sta temp1
+                adc #WD_ATTACKFR
                 tay
-                lda wpnFrameTbl,y
+                lda temp3
+                lsr
+                lda #$ff
+                bcs AH_NoWeaponFrame
+                lda (wpnLo),y
+AH_NoWeaponFrame:
                 sta actWpnF,x
                 lda temp2
                 bne AH_NoNewBullet
@@ -99,20 +125,39 @@ AH_AimOk:       pha
                 lda (wpnLo),y
                 ldy temp2
                 jsr SpawnWithOffset
-                ldx temp1                       ;TODO: define bullet parameters
-                lda bulletFrameTbl,x            ;per weapon
+                lda temp3
+                and #WDB_BULLETDIRFRAME
+                beq AH_BulletFrameDone
+                lda temp1
+AH_BulletFrameDone:
                 sta actF1,y
-                lda bulletXSpdTbl,x
-                sta actSX,y
-                lda bulletYSpdTbl,x
-                sta actSY,y
-                lda #20
-                sta actTime,y
-                tya
+                ldy #WD_BULLETSPEED
+                lda (wpnLo),y
+                sta temp4
+                ldy temp1
+                lda bulletXSpdTbl,y
+                ldy temp4
+                ldx #zpSrcLo
+                jsr MulU
+                ldy temp1
+                lda bulletYSpdTbl,y
+                ldy temp4
+                ldx #zpDestLo
+                jsr MulU
+                lda zpSrcLo
+                ldx temp2
+                lda zpSrcLo
+                sta actSX,x
+                lda zpDestLo
+                sta actSY,x
+                ldy #WD_BULLETTIME
+                lda (wpnLo),y
+                sta actTime,x
+                txa
                 jsr GetFlashColorOverride
-                sta actC,y
+                sta actC,x
                 ldx actIndex
-                ldy #WD_DELAY
+                ldy #WD_ATTACKDELAY
                 lda (wpnLo),y
                 sta actAttackD,x
 AH_NoNewBullet: rts

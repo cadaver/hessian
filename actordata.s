@@ -27,10 +27,11 @@ adPlayer:       dc.b HUMANOID                   ;Number of sprites
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
+                dc.b 5                          ;Left frame add
                 dc.b 1                          ;Number of frames
-                dc.b 5,6,7,8                    ;Frametable (first all frames of sprite1, then sprite2)
-
+                dc.b 5,6,7,8,5                  ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 5,8,7,6,5
+                
 adExplosion:    dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
