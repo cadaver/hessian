@@ -83,15 +83,15 @@ MH_ClimbCommon: lda #$00                        ;Climbing speed
                 adc actFd,x
                 sta actFd,x
                 bcc MH_ClimbDone
-                lda #$01                        ;Run the animation either forward
-                cpy #$80                        ;or backward depending on climbing dir
+                lda #$01                        ;Add 1 or 3 depending on climbing dir
+                cpy #$80
                 bcc MH_ClimbAnimDown
-                lda #$0e                        ;C=1, add one less, leave high bits alone
-MH_ClimbAnimDown:                               ;to avoid C becoming 1
+                lda #$02                        ;C=1, add one less
+MH_ClimbAnimDown:
                 adc actF1,x
-                sbc #FR_CLIMB-1                 ;C=0, subtract one less
+                sbc #FR_CLIMB-1                 ;Keep within climb frame range
                 and #$03
-                adc #FR_CLIMB-1                 ;C=1, add one less
+                adc #FR_CLIMB-1
                 sta actF1,x
                 sta actF2,x
                 tya
