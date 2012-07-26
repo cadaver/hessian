@@ -93,6 +93,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\kernal.s"
+				>
+			</File>
+			<File
 				RelativePath=".\ldepack.s"
 				>
 			</File>
@@ -142,6 +146,10 @@
 			</File>
 			<File
 				RelativePath=".\sprite.s"
+				>
+			</File>
+			<File
+				RelativePath=".\testlev.s"
 				>
 			</File>
 			<File

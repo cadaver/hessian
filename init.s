@@ -18,7 +18,7 @@ IsNTSC:         lda #<fileAreaStart             ;Initialize dynamic memory alloc
                 jsr InitScroll
 
         ; Initialize controls variables
-        
+
 InitControls:   lda #$00
                 sta joystick                    ;Control reset
                 sta prevJoy
@@ -26,11 +26,11 @@ InitControls:   lda #$00
                 sta keyType
 
         ; Initialize one-time playroutine variables
-        
+
                 sta $d415                       ;Filter lowbyte
                 sta ntFiltPos
                 sta ntFiltTime
-                        
+
         ; Initialize video registers and screen memory
 
 InitVideo:      lda $dd00                       ;Set game videobank
