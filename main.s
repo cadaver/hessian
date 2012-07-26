@@ -1,9 +1,6 @@
 SHOW_FREE_RASTERTIME = 0
 REDUCE_CONTROL_LATENCY = 1
 
-SCRCENTER_X     = 19
-SCRCENTER_Y     = 13
-
         ; Memory configuration & loader symbols
 
                 include memory.s

@@ -1,3 +1,10 @@
+        ; Scrolling center position in chars
+
+SCRCENTER_X     = 19
+SCRCENTER_Y     = 13
+
+        ; Fixed human frame numbers
+
 FR_STAND        = 0
 FR_WALK         = 1
 FR_JUMP         = 9
@@ -79,13 +86,12 @@ MH_ClimbCommon: lda #$00                        ;Climbing speed
                 lda #$01                        ;Run the animation either forward
                 cpy #$80                        ;or backward depending on climbing dir
                 bcc MH_ClimbAnimDown
-                lda #$ff
-MH_ClimbAnimDown:
-                clc
+                lda #$0e                        ;C=1, add one less, leave high bits alone
+MH_ClimbAnimDown:                               ;to avoid C becoming 1
                 adc actF1,x
-                and #$03                        ;Note: works only as long as FR_CLIMB
-                clc                             ;is divisible by 4
-                adc #FR_CLIMB
+                sbc #FR_CLIMB-1                 ;C=0, subtract one less
+                and #$03
+                adc #FR_CLIMB-1                 ;C=1, add one less
                 sta actF1,x
                 sta actF2,x
                 tya

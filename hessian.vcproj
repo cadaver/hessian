@@ -153,6 +153,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\weapon.s"
+				>
+			</File>
+			<File
 				RelativePath=".\weapondata.s"
 				>
 			</File>
