@@ -892,6 +892,7 @@ GFA_Found:      sec
                 sta actFd,y
                 sta actSX,y
                 sta actSY,y
+                sta actC,y
                 sta actMoveFlags,y
                 cpy #MAX_COMPLEXACT
                 bcs GFA_NotComplex

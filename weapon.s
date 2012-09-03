@@ -22,6 +22,7 @@ WD_ATTACKFRLEFT = 16
 WDB_NOWEAPONSPRITE = 1
 WDB_MELEE       = 2
 WDB_BULLETDIRFRAME = 4
+WDB_FLASHBULLET = 8
 
 WPN_NONE        = 0
 WPN_PISTOL      = 1
@@ -50,7 +51,7 @@ AH_NoAttackDelay2:
 AH_NoAttackRight:
                 lda (wpnLo),y
                 bpl AH_WeaponFrameDone
-AH_NoWeapon:    lda #$ff                
+AH_NoWeapon:    lda #$ff
 AH_WeaponFrameDone:
                 sta actWpnF,x
                 rts
@@ -153,9 +154,13 @@ AH_BulletFrameDone:
                 ldy #WD_BULLETTIME
                 lda (wpnLo),y
                 sta actTime,x
+                lda temp3
+                and #WDB_FLASHBULLET
+                beq AH_NoBulletFlash
                 txa
                 jsr GetFlashColorOverride
                 sta actC,x
+AH_NoBulletFlash:
                 ldx actIndex
                 ldy #WD_ATTACKDELAY
                 lda (wpnLo),y
@@ -252,7 +257,29 @@ GBO_Fail:       pla
                 pla
                 clc
                 rts
-                
+
+        ; Bullet update routine with muzzle flash as first frame
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MBltMF_FirstFrame:
+                inc actFd,x
+                rts
+
+MoveBulletMuzzleFlash:
+                lda actFd,x                     ;First frame: just show the muzzle flash
+                beq MBltMF_FirstFrame           ;and do not move
+                lda actF1,x
+                cmp #$0a
+                bcs MoveBullet
+                adc #$0a
+                sta actF1,x
+                jsr MoveBullet
+                jmp NoInterpolation             ;No interpolation on second frame
+                                                ;to prevent flash from appearing in different
+                                                ;position dependent on flashing order
 
         ; Bullet update routine
         ;

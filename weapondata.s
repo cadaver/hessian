@@ -37,7 +37,7 @@ wdPistol:       dc.b AIM_UP                     ;First aim direction
                 dc.b ACT_BULLET                 ;Bullet actor type
                 dc.b 10                         ;Bullet speed in pixels
                 dc.b 20                         ;Bullet time duration
-                dc.b WDB_BULLETDIRFRAME         ;Weapon bits
+                dc.b WDB_BULLETDIRFRAME|WDB_FLASHBULLET         ;Weapon bits
                 dc.b 2                          ;Idle weapon frame (right)
                 dc.b 6                          ;Idle weapon frame (left)
                 dc.b 2                          ;Prepare weapon frame (right)
