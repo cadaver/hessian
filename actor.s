@@ -888,7 +888,7 @@ GFA_Cmp:        cpy #$00
                 rts
 GFA_Found:      sec
                 lda #$00                        ;Reset animation & speed when free actor found
-                sta actF1,y                     ;Todo: reset more as needed
+                sta actF1,y                     ;TODO: reset more as needed
                 sta actFd,y
                 sta actSX,y
                 sta actSY,y

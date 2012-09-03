@@ -145,6 +145,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\sounddata.s"
+				>
+			</File>
+			<File
 				RelativePath=".\sprite.s"
 				>
 			</File>

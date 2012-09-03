@@ -1,4 +1,4 @@
-all: filejoin.exe invert.exe lpack.exe ldepack.exe makedisk.exe pack2.exe pchunk2.exe mchunk.exe leveled.exe spred.exe symbols.exe
+all: filejoin.exe invert.exe lpack.exe ldepack.exe makedisk.exe pack2.exe pchunk2.exe mchunk.exe leveled.exe spred.exe symbols.exe ins2nt2.exe
 
 clean:
 	del *.exe
@@ -54,6 +54,9 @@ leveled.exe: leveled.c editdata.c
 
 spred.exe: spred.c fileio.c editdata.c
 	gcc spred.c editdata.c fileio.c libbme.a -ospred.exe -lmingw32 -lSDLmain -lSDL
-	
+
 symbols.exe: symbols.c
 	gcc symbols.c -osymbols.exe
+
+ins2nt2.exe: ins2nt2.c fileio.c
+	gcc ins2nt2.c fileio.c -oins2nt2.exe

@@ -12,12 +12,13 @@ WD_BULLETTYPE   = 3
 WD_BULLETSPEED  = 4
 WD_BULLETTIME   = 5
 WD_BITS         = 6
-WD_IDLEFR       = 7
-WD_IDLEFRLEFT   = 8
-WD_PREPAREFR    = 9
-WD_PREPAREFRLEFT = 10
-WD_ATTACKFR     = 11
-WD_ATTACKFRLEFT = 16
+WD_SFX          = 7
+WD_IDLEFR       = 8
+WD_IDLEFRLEFT   = 9
+WD_PREPAREFR    = 10
+WD_PREPAREFRLEFT = 11
+WD_ATTACKFR     = 12
+WD_ATTACKFRLEFT = 17
 
 WDB_NOWEAPONSPRITE = 1
 WDB_MELEE       = 2
@@ -138,18 +139,21 @@ AH_BulletFrameDone:
                 ldy temp1
                 lda bulletXSpdTbl,y
                 ldy temp4
-                ldx #zpSrcLo
+                ldx #temp5
                 jsr MulU
                 ldy temp1
                 lda bulletYSpdTbl,y
                 ldy temp4
-                ldx #zpDestLo
+                ldx #temp7
                 jsr MulU
                 lda zpSrcLo
                 ldx temp2
-                lda zpSrcLo
+                jsr GetCharInfo                 ;Check if spawned inside wall
+                and #CI_OBSTACLE                ;and destroy immediately in that case
+                bne AH_InsideWall
+                lda temp5
                 sta actSX,x
-                lda zpDestLo
+                lda temp7
                 sta actSY,x
                 ldy #WD_BULLETTIME
                 lda (wpnLo),y
@@ -165,8 +169,14 @@ AH_NoBulletFlash:
                 ldy #WD_ATTACKDELAY
                 lda (wpnLo),y
                 sta actAttackD,x
+                ldy #WD_SFX
+                lda (wpnLo),y
+                jsr PlaySfx
 AH_NoNewBullet: rts
-
+AH_InsideWall:  jsr RemoveActor
+                ldx actIndex
+                rts
+                
         ; Find spawn offset for bullet (humanoid actor)
         ;
         ; Parameters: X actor index
@@ -299,6 +309,8 @@ MBlt_Explode:   lda #$00
                 sta actC,x                      ;Remove flashing
                 lda #ACT_EXPLOSION
                 sta actT,x
+                lda #SFX_EXPLOSION
+                jmp PlaySfx
 MBlt_NoRemove:  rts
 
         ; Explosion update routine

@@ -328,7 +328,7 @@ ntChnPulseTime: dc.b 0
 ntChnSfx:       dc.b 0
 ntChnSfxLo:     dc.b 0
 ntChnSfxHi:
-ntChnWaveold:   dc.b 0
+ntChnWaveOld:   dc.b 0
 
                 dc.b 0,0,0,0,0,0,0
                 dc.b 0,0,0,0,0,0,0

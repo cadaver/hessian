@@ -61,6 +61,7 @@ MainLoop:       jsr ScrollLogic
 
                 include actordata.s
                 include weapondata.s
+                include sounddata.s
                 include data.s
 
         ; Disposable init part

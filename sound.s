@@ -1,21 +1,31 @@
         ; Ninjatracker V2.03 gamemusic playroutine
-        ; Defines
+        ; Relocation defines
         
-NT_FIRSTNOTE       = $18
-NT_DUR             = $c0
-NT_HEADERLENGTH    = 6
-NT_NUMFIXUPS       = 21
-NT_ADDZERO         = $80
-NT_ADDWAVE         = $00
-NT_ADDPULSE        = $04
-NT_ADDFILT         = $08
-NT_ADDCMD          = $0c
-NT_ADDLEGATOCMD    = $10
-NT_ADDPATT         = $14
-NT_HRPARAM         = $00
-NT_FIRSTWAVE       = $09
-NT_SFXHRPARAM      = $00
-NT_SFXFIRSTWAVE    = $09
+NT_FIRSTNOTE        = $18
+NT_DUR              = $c0
+NT_HEADERLENGTH     = 6
+NT_NUMFIXUPS        = 21
+NT_ADDZERO          = $80
+NT_ADDWAVE          = $00
+NT_ADDPULSE         = $04
+NT_ADDFILT          = $08
+NT_ADDCMD           = $0c
+NT_ADDLEGATOCMD     = $10
+NT_ADDPATT          = $14
+NT_HRPARAM          = $00
+NT_FIRSTWAVE        = $09
+NT_SFXHRPARAM       = $00
+NT_SFXFIRSTWAVE     = $09
+
+        ; Sound effect numbers
+
+SFX_PISTOL          = $00
+SFX_EXPLOSION       = $01
+
+        ; Hardcoded sound effect channel
+        ; TODO: rotate sound effect channel when music off
+
+CHN_SFX             = $00
 
         ; Load new music file
         ;
@@ -74,6 +84,35 @@ IMD_AddDone:    pla
 IMD_Store:      sta PlayMusic,y
 LM_Error:       rts
 
+        ; Play a sound effect, with priority (higher memory address has precedence)
+        
+        ; Parameters: A sound effect number
+        ; Returns: -
+        ; Modifies: A
+
+PlaySfx:        stx PSnd_RestX+1
+                sty PSnd_RestY+1
+                tay
+                lda sfxTblLo,y
+                ldx sfxTblHi,y
+                ldy #CHN_SFX
+                sta PSnd_SfxLo+1
+                cmp ntChnSfxLo,y
+                txa
+                sbc ntChnSfxHi,y
+                bpl PSnd_Ok
+                lda ntChnSfx,y
+                bne PSnd_RestX
+PSnd_Ok:        lda #$01
+                sta ntChnSfx,y
+PSnd_SfxLo:     lda #$00
+                sta ntChnSfxLo,y
+                txa
+                sta ntChnSfxHi,y
+PSnd_RestX:     ldx #$00
+PSnd_RestY:     ldy #$00
+                rts
+
         ;New song initialization
 
 PMus_DoInit:    asl
@@ -115,27 +154,6 @@ PMus_SongTblP2: lda $1000,y
 
 InitMusic:      sta PMus_InitSongNum+1
                 rts
-
-        ; Initialize sound effect playback, with priority (higher memory address has precedence)
-        
-        ; Parameters: A,X sound effect address Y channel index (0,7,14)
-        ; Returns: -
-        ; Modifies: A
-
-InitSound:      sta ISnd_AddressLo+1
-                cmp ntChnSfxLo,y
-                txa
-                sbc ntChnSfxHi,y
-                bpl ISnd_Ok
-                lda ntChnSfx,y
-                bne ISnd_Skip
-ISnd_Ok:        lda #$01
-                sta ntChnSfx,y
-ISnd_AddressLo: lda #$00
-                sta ntChnSfxLo,y
-                txa
-                sta ntChnSfxHi,y
-ISnd_Skip:      rts
 
         ; Call each frame to advance music & sound effect playback
         ; Modifies: A,X,Y,player temp vars
@@ -392,7 +410,7 @@ PMus_WaveDelay: beq PMus_NoWaveChange
 
 PMus_WaveChange:sta ntChnWave,x
                 tya
-                sta ntChnWaveold,x
+                sta ntChnWaveOld,x
 PMus_NoWaveChange:
 PMus_WaveP0:    lda $1000,y
                 cmp #$ff
@@ -410,7 +428,7 @@ PMus_NoteM1a:   lda $1000,y
 PMus_AbsFreq:   tay
                 bne PMus_NoteNum
 PMus_SlideDone: ldy ntChnNote,x
-                lda ntChnWaveold,x
+                lda ntChnWaveOld,x
                 sta ntChnWavePos,x
 PMus_NoteNum:   lda ntFreqTbl-24,y
                 sta ntChnFreqLo,x
@@ -523,7 +541,7 @@ PMus_SfxWaveChg:sta ntChnWave,x
 PMus_SfxDone:   rts
 PMus_SfxEnd:    sta ntChnSfx,x
                 sta ntChnWavePos,x
-                sta ntChnWaveold,x
+                sta ntChnWaveOld,x
                 beq PMus_SfxWaveChg
 PMus_SfxInit:   lda (ntTemp1),y
                 sta $d402,x

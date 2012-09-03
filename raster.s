@@ -273,7 +273,7 @@ N               set 0
                 sta screen1+$3f8+N
 N               set N+1
                 repend
-                lda #IRQ4_LINE                  ;Todo: needs testing on IDE64 new firmware
+                lda #IRQ4_LINE                  ;TODO: needs testing on IDE64 new firmware
                 sta $d012                       ;as IRQ delay may cause whole frame blanking (?)
                 lda #<Irq4
                 sta $fffe
