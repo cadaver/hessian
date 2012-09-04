@@ -56,7 +56,7 @@ AH_NoWeapon:    lda #$ff
 AH_WeaponFrameDone:
                 sta actWpnF,x
                 rts
-
+      
 AttackHuman:    lda actAttackD,x
                 sta temp2
                 beq AH_NoAttackDelay
@@ -240,16 +240,16 @@ GBO_YPos:       rol
 GBO_Sub:        pha
                 lda fileHi,y
                 beq GBO_Fail
-                sta sprFileHi
+                sta zpSrcHi
                 lda fileLo,y
-                sta sprFileLo
+                sta zpSrcLo
                 pla
                 asl
                 tay
-                lda (sprFileLo),y
+                lda (zpSrcLo),y
                 sta frameLo
                 iny
-                lda (sprFileLo),y
+                lda (zpSrcLo),y
                 sta frameHi
                 ldy #SPRH_HOTSPOTX
                 lda temp5
@@ -274,65 +274,3 @@ GBO_Fail:       pla
                 pla
                 clc
                 rts
-
-        ; Bullet update routine with muzzle flash as first frame
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MBltMF_FirstFrame:
-                inc actFd,x
-                rts
-
-MoveBulletMuzzleFlash:
-                lda actFd,x                     ;First frame: just show the muzzle flash
-                beq MBltMF_FirstFrame           ;and do not move
-                lda actF1,x
-                cmp #$0a
-                bcs MoveBullet
-                adc #$0a
-                sta actF1,x
-                jsr MoveBullet
-                jmp NoInterpolation             ;No interpolation on second frame
-                                                ;to prevent flash from appearing in different
-                                                ;position dependent on flashing order
-
-        ; Bullet update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MoveBullet:     jsr MoveProjectile
-                and #CI_OBSTACLE
-                bne MBlt_Explode
-                dec actTime,x
-                bne MBlt_NoRemove
-                jmp RemoveActor
-MBlt_Explode:   lda #$00
-                sta actF1,x
-                sta actFd,x
-                sta actC,x                      ;Remove flashing
-                lda #ACT_EXPLOSION
-                sta actT,x
-                lda #SFX_EXPLOSION
-                jmp PlaySfx
-MBlt_NoRemove:  rts
-
-        ; Explosion update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MoveExplosion:  lda #1
-                jsr AnimationDelay
-                bcc MExpl_NoAnimation
-                inc actF1,x
-                lda actF1,x
-                cmp #5
-                bcc MExpl_NoRemove
-                jmp RemoveActor
-MExpl_NoAnimation:
-MExpl_NoRemove: rts

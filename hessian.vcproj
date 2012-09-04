@@ -77,6 +77,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\bullet.s"
+				>
+			</File>
+			<File
 				RelativePath=".\data.s"
 				>
 			</File>

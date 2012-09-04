@@ -18,7 +18,7 @@ FR_ATTACK       = 26
         ;
         ; Parameters: X actor index
         ; Returns: -
-        ; Modifies: A,Y
+        ; Modifies: A,Y,temp1-temp8,loader temp regs
 
 MovePlayer:     lda actCtrl,x
                 sta actPrevCtrl,x
@@ -35,14 +35,22 @@ MovePlayer:     lda actCtrl,x
                 ora #JOY_DOWN
 MP_NotDucked:   and actMoveCtrl,x
 MP_NewMoveCtrl: sta actMoveCtrl,x
-MP_Common:      jsr MoveHuman
+
+        ; Humanoid character move and attack routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp regs
+
+MoveAndAttackHuman:
+                jsr MoveHuman
                 jmp AttackHuman
 
         ; Humanoid character move routine
         ;
         ; Parameters: X actor index
         ; Returns: -
-        ; Modifies: A,Y,temp1-temp8
+        ; Modifies: A,Y,temp1-temp8,loader temp regs
 
 MH_ClimbUp:     jsr GetCharInfo4Above
                 sta temp1

@@ -82,7 +82,7 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
 
 alInactivePlayer:
-                dc.w MoveHuman                  ;Update routine
+                dc.w MoveAndAttackHuman         ;Update routine
                 dc.b HP_PLAYER                  ;Initial health
                 dc.b AMC_JUMP|AMC_DUCK|AMC_CLIMB|AMC_ROLL|AMC_WALLFLIP ;Move caps
                 dc.b 4*8                        ;Max. movement speed

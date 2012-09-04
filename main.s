@@ -22,6 +22,7 @@ REDUCE_CONTROL_LATENCY = 1
                 include physics.s
                 include player.s
                 include weapon.s
+                include bullet.s
 
         ; Test initialization code, will be removed
 
@@ -66,6 +67,7 @@ CreatePlayer:   lda #6
                 sta actYH+2
                 lda #ACT_INACTIVEPLAYER
                 sta actT+2
+                lda #
                 lda #WPN_PISTOL
                 sta actWpn+2
 
