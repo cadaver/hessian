@@ -102,13 +102,6 @@ ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
                 dc.w $8b42,$9389,$9c4f,$a59b,$af74,$b9e2
                 dc.w $c4f0,$d0a6,$dd0e,$ea33,$f820,$ffff
 
-                org ((* + $ff) & $ff00)
-
-        ; Char info & colors
-
-charInfo:       ds.b 256,0
-charColors:     ds.b 256,0
-
         ; Sprite cache / depacking tables
 
         ; Next slice lowbyte table for sprite depacking. Interleaved with data to not waste memory,
@@ -239,6 +232,8 @@ N               set -32
 N               set N+32
                 repend
 
+        ; Char slope table
+        
 slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
                 dc.b $38,$30,$28,$20,$18,$10,$08,$00    ;Slope 1
                 dc.b $38,$38,$30,$30,$28,$28,$20,$20    ;Slope 2
@@ -330,7 +325,7 @@ ntChnWaveOld:   dc.b 0
 
                 dc.b 0,0,0,0,0,0,0
                 dc.b 0,0,0,0,0,0,0
-              
+
         ; Dynamic memory allocation area begins here
          
 fileAreaStart:

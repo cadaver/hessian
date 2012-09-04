@@ -121,7 +121,9 @@ cacheSprFrame   = $02a7
 mainCodeStart   = $0334
 MainEntryPoint  = $4000
 
-fileAreaEnd     = $d000
+fileAreaEnd     = $ce00
+charInfo        = $ce00
+charColors      = $cf00
 spriteCache     = $d000
 emptySprite     = $dfc0
 colors          = $d800
