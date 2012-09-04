@@ -2,6 +2,7 @@ ACT_NONE        = 0
 ACT_PLAYER      = 1
 ACT_BULLET      = 2
 ACT_EXPLOSION   = 3
+ACT_INACTIVEPLAYER = 4
 
 HP_PLAYER       = 32
 
@@ -10,10 +11,12 @@ HP_PLAYER       = 32
 actDispTblLo:   dc.b <adPlayer
                 dc.b <adBullet
                 dc.b <adExplosion
+                dc.b <adPlayer
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adBullet
                 dc.b >adExplosion
+                dc.b >adPlayer
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_PLAYER                   ;Lower part spritefile number
@@ -55,12 +58,31 @@ humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,10,11,12,16,17,21,20,21,22,23,24,25,26,27
 actLogicTblLo:  dc.b <alPlayer
                 dc.b <alBullet
                 dc.b <alExplosion
+                dc.b <alInactivePlayer
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alBullet
                 dc.b >alExplosion
+                dc.b >alInactivePlayer
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
+                dc.b HP_PLAYER                  ;Initial health
+                dc.b AMC_JUMP|AMC_DUCK|AMC_CLIMB|AMC_ROLL|AMC_WALLFLIP ;Move caps
+                dc.b 4*8                        ;Max. movement speed
+                dc.b 6*8                        ;Terminal falling speed
+                dc.b 8                          ;Ground movement acceleration
+                dc.b 3                          ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 4                          ;Long jump gravity acceleration
+                dc.b 6                          ;Ground braking
+                dc.b -4                         ;Height in chars for headbump check (negative)
+                dc.b -44                        ;Jump initial speed (negative)
+                dc.b 96                         ;Climbing speed
+                dc.b 2*8                        ;Ladder jump / wallflip speed right
+                dc.b -2*8                       ;Ladder jump / wallflip speed left
+
+alInactivePlayer:
+                dc.w MoveHuman                  ;Update routine
                 dc.b HP_PLAYER                  ;Initial health
                 dc.b AMC_JUMP|AMC_DUCK|AMC_CLIMB|AMC_ROLL|AMC_WALLFLIP ;Move caps
                 dc.b 4*8                        ;Max. movement speed

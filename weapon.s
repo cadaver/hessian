@@ -115,13 +115,21 @@ AH_AimRight:    sta temp1
 AH_NoWeaponFrame:
                 sta actWpnF,x
                 lda temp2
-                bne AH_NoNewBullet
+                beq AH_ProceedToFire
+AH_CannotFire:  rts
+
+AH_ProceedToFire:
                 jsr GetBulletOffset
-                bcc AH_NoNewBullet
-                lda #ACTI_FIRSTPLRBULLET
+                bcc AH_CannotFire
+                txa                             ;Check whether to use player or NPC bullet actor
+                bne AH_IsPlayer                 ;indices
+                lda #ACTI_FIRSTNPCBULLET
+                ldy #ACTI_LASTNPCBULLET
+                bne AH_IsNpc
+AH_IsPlayer:    lda #ACTI_FIRSTPLRBULLET
                 ldy #ACTI_LASTPLRBULLET
-                jsr GetFreeActor
-                bcc AH_NoNewBullet
+AH_IsNpc:       jsr GetFreeActor
+                bcc AH_CannotFire
                 sty temp2
                 ldy #WD_BULLETTYPE
                 lda (wpnLo),y
@@ -171,8 +179,7 @@ AH_NoBulletFlash:
                 sta actAttackD,x
                 ldy #WD_SFX
                 lda (wpnLo),y
-                jsr PlaySfx
-AH_NoNewBullet: rts
+                jmp PlaySfx
 AH_InsideWall:  jsr RemoveActor
                 ldx actIndex
                 rts

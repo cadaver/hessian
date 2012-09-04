@@ -107,6 +107,16 @@ DivU_Skip:      rol $00,x
                 bpl DivU_Loop
                 rts
 
+        ; Negate a 8-bit value
+        ;
+        ; Returns: zeropage result
+        ; Modifies: A
+
+Negate8:        clc
+Negate8NoCarry: eor #$ff
+                adc #$01
+                rts
+
         ; Negate a 16-bit value
         ;
         ; Parameters: X zeropage base

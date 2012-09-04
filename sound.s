@@ -17,11 +17,6 @@ NT_FIRSTWAVE        = $09
 NT_SFXHRPARAM       = $00
 NT_SFXFIRSTWAVE     = $09
 
-        ; Sound effect numbers
-
-SFX_PISTOL          = $00
-SFX_EXPLOSION       = $01
-
         ; Hardcoded sound effect channel
         ; TODO: rotate sound effect channel when music off
 

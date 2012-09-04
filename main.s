@@ -47,6 +47,28 @@ CreatePlayer:   lda #6
                 lda #WPN_PISTOL
                 sta actWpn
 
+                lda #7
+                sta actXH+1
+                lda #$80
+                sta actXL+1
+                lda #4
+                sta actYH+1
+                lda #ACT_INACTIVEPLAYER
+                sta actT+1
+                lda #WPN_PISTOL
+                sta actWpn+1
+
+                lda #5
+                sta actXH+2
+                lda #$80
+                sta actXL+2
+                lda #4
+                sta actYH+2
+                lda #ACT_INACTIVEPLAYER
+                sta actT+2
+                lda #WPN_PISTOL
+                sta actWpn+2
+
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors
                 jsr ScrollPlayer
