@@ -8,6 +8,10 @@ REDUCE_CONTROL_LATENCY = 1
 
                 org loaderCodeEnd
 
+        ; Entry point. Jump to disposable init
+        
+                jmp InitAll
+
         ; Memory alignment of raster interrupt code is critical, so include first
 
                 include raster.s
@@ -26,7 +30,11 @@ REDUCE_CONTROL_LATENCY = 1
 
         ; Test initialization code, will be removed
 
-Main:           lda #0
+Main:           ldy #C_COMMON                   ;Load the always resident sprites
+                jsr LoadSpriteFile
+                ldy #C_WEAPON
+                jsr LoadSpriteFile
+                lda #0
                 jsr LoadLevel
                 ldx #0
                 ldy #0

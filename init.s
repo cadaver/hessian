@@ -1,5 +1,3 @@
-                org MainEntryPoint
-
         ; Initialize registers/variables at startup. This code is called only once and can be
         ; disposed after that.
         ;
@@ -172,13 +170,6 @@ InitRaster:     sei
                 lda #$01                        ;Raster interrupt on
                 sta $d01a
                 cli
-
-        ; Load the always resident sprites
-        
-                ldy #C_COMMON
-                jsr LoadSpriteFile
-                ldy #C_WEAPON
-                jsr LoadSpriteFile
 
         ; Initializations are complete. Start the main program
 
