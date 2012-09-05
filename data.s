@@ -243,6 +243,42 @@ slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
                 dc.b $00,$00,$08,$08,$10,$10,$18,$18    ;Slope 6
                 dc.b $20,$20,$28,$28,$30,$30,$38,$38    ;Slope 7
 
+        ; Playroutine variables
+
+ntChnPattPos:   dc.b 0
+ntChnCounter:   dc.b 0
+ntChnNewNote:   dc.b 0
+ntChnWavePos:   dc.b 0
+ntChnPulsePos:  dc.b 0
+ntChnWave:      dc.b 0
+ntChnPulse:     dc.b 0
+
+                dc.b 0,0,0,0,0,0,0
+                dc.b 0,0,0,0,0,0,0
+
+ntChnGate:      dc.b $fe
+ntChnTrans:     dc.b $ff
+ntChnCmd:       dc.b $01
+ntChnSongPos:   dc.b 0
+ntChnPattNum:   dc.b 0
+ntChnDuration:  dc.b 0
+ntChnNote:      dc.b 0
+
+                dc.b $fe,$ff,$01,0,0,0,0
+                dc.b $fe,$ff,$01,0,0,0,0
+
+ntChnFreqLo:    dc.b 0
+ntChnFreqHi:    dc.b 0
+ntChnWaveTime:  dc.b 0
+ntChnPulseTime: dc.b 0
+ntChnSfx:       dc.b 0
+ntChnSfxLo:     dc.b 0
+ntChnSfxHi:
+ntChnWaveOld:   dc.b 0
+
+                dc.b 0,0,0,0,0,0,0
+                dc.b 0,0,0,0,0,0,0
+
         ; Sprite variables
 
 sortSprY:       ds.b MAX_SPR*2,0
@@ -289,42 +325,6 @@ actF2:          ds.b MAX_COMPLEXACT,0
 actWpn:         ds.b MAX_COMPLEXACT,WPN_NONE
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0
-
-        ; Playroutine variables
-
-ntChnPattPos:   dc.b 0
-ntChnCounter:   dc.b 0
-ntChnNewNote:   dc.b 0
-ntChnWavePos:   dc.b 0
-ntChnPulsePos:  dc.b 0
-ntChnWave:      dc.b 0
-ntChnPulse:     dc.b 0
-
-                dc.b 0,0,0,0,0,0,0
-                dc.b 0,0,0,0,0,0,0
-
-ntChnGate:      dc.b $fe
-ntChnTrans:     dc.b $ff
-ntChnCmd:       dc.b $01
-ntChnSongPos:   dc.b 0
-ntChnPattNum:   dc.b 0
-ntChnDuration:  dc.b 0
-ntChnNote:      dc.b 0
-
-                dc.b $fe,$ff,$01,0,0,0,0
-                dc.b $fe,$ff,$01,0,0,0,0
-
-ntChnFreqLo:    dc.b 0
-ntChnFreqHi:    dc.b 0
-ntChnWaveTime:  dc.b 0
-ntChnPulseTime: dc.b 0
-ntChnSfx:       dc.b 0
-ntChnSfxLo:     dc.b 0
-ntChnSfxHi:
-ntChnWaveOld:   dc.b 0
-
-                dc.b 0,0,0,0,0,0,0
-                dc.b 0,0,0,0,0,0,0
 
         ; Dynamic memory allocation area begins here
          

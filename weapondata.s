@@ -33,10 +33,10 @@ wpnTblHi:       dc.b >wdPistol
 
 wdPistol:       dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN                   ;Last aim direction
-                dc.b 6                          ;Attack delay
+                dc.b 2                          ;Attack delay
                 dc.b ACT_BULLET                 ;Bullet actor type
-                dc.b 10                         ;Bullet speed in pixels
-                dc.b 20                         ;Bullet time duration
+                dc.b 12                         ;Bullet speed in pixels
+                dc.b 15                         ;Bullet time duration
                 dc.b WDB_BULLETDIRFRAME|WDB_FLASHBULLET         ;Weapon bits
                 dc.b SFX_PISTOL                 ;Sound effect
                 dc.b 2                          ;Idle weapon frame (right)

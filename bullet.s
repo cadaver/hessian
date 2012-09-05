@@ -29,10 +29,10 @@ MoveBulletMuzzleFlash:
 
 MoveBullet:     jsr MoveProjectile
                 and #CI_OBSTACLE
-                bne MBlt_Explode
+                bne MBlt_Remove
                 dec actTime,x
                 bne MBlt_NoRemove
-                jmp RemoveActor
+MBlt_Remove:    jmp RemoveActor
 MBlt_Explode:   lda #$00
                 sta actF1,x
                 sta actFd,x

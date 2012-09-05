@@ -808,8 +808,8 @@ N               set N+1
                 rts
 
 SW_DrawColorsReconstruct:
-                ldy #12                         ;Reconstruct the colors that are lost when
-SW_DrawColorsRLoop:
+                ldy #12                         ;Reconstruct the colors that are lost at
+SW_DrawColorsRLoop:                             ;the scroll split
                 ldx screen1+SCROLLSPLIT*40+40,y
                 lda charColors,x
                 sta colors+SCROLLSPLIT*40+40,y
