@@ -122,7 +122,7 @@ AH_NoWeaponFrame2:
                 lda temp3
                 and #WDB_MELEE|WDB_THROW
                 beq AH_CannotFire
-                lda actF1,x                     ;When melee weapon is waiting for next strike,
+AH_MeleeIdle:   lda actF1,x                     ;When melee weapon is waiting for next strike,
 AH_SetMeleeFrame:                               ;put hands in idle position
                 sta actF2,x
 AH_MeleeDelay:
@@ -133,8 +133,9 @@ AH_ProceedToFire:
                 and #WDB_MELEE|WDB_THROW
                 beq AH_NotMeleeWeapon
                 dey                             ;Melee delay/animation
-                cpy #$fd
-                bcc AH_MeleeAnimDone
+                cpy #$fc                        ;Check for finishing animation, or reaching
+                bcc AH_MeleeIdle                ;"failed to attack" state in which the idle
+                beq AH_MeleeAnimDone            ;hand position is shown
                 tya
                 sta actAttackD,x
                 cpy #$fe
