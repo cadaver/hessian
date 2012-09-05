@@ -10,23 +10,22 @@ WD_MAXAIM       = 1
 WD_ATTACKDELAY  = 2
 WD_BULLETTYPE   = 3
 WD_BULLETSPEED  = 4
-WD_BULLETTIME   = 5
-WD_BITS         = 6
-WD_SFX          = 7
-WD_IDLEFR       = 8
-WD_IDLEFRLEFT   = 9
-WD_PREPAREFR    = 10
-WD_PREPAREFRLEFT = 11
-WD_ATTACKFR     = 12
-WD_ATTACKFRLEFT = 17
+WD_SPEEDTABLEOFFSET = 5
+WD_BULLETTIME   = 6
+WD_BITS         = 7
+WD_SFX          = 8
+WD_IDLEFR       = 9
+WD_IDLEFRLEFT   = 10
+WD_PREPAREFR    = 11
+WD_PREPAREFRLEFT = 12
+WD_ATTACKFR     = 13
+WD_ATTACKFRLEFT = 18
 
 WDB_NOWEAPONSPRITE = 1
-WDB_MELEE       = 2
-WDB_BULLETDIRFRAME = 4
-WDB_FLASHBULLET = 8
-
-WPN_NONE        = 0
-WPN_PISTOL      = 1
+WDB_BULLETDIRFRAME = 2
+WDB_FLASHBULLET = 4
+WDB_MELEE       = 8
+WDB_THROW       = 16
 
         ; Humanoid character attack routine
         ;
@@ -34,17 +33,19 @@ WPN_PISTOL      = 1
         ; Returns: -
         ; Modifies: A,Y
 
-AH_NoAttack:    lda actAttackD,x                ;When weapon not in firing
-                bne AH_NoAttackDelay2           ;position, give 1 frame attack
-                lda #1                          ;delay to reduce possibility of firing
-                sta actAttackD,x                ;the initial bullet to undesired direction
+AH_NoAttack:    lda temp2                       ;When weapon not in firing
+                bmi AH_BreakMeleeAttack         ;position, give 1 frame attack
+                bne AH_NoAttackDelay2           ;delay to reduce possibility of firing
+AH_BreakMeleeAttack:                            ;the initial bullet to undesired direction.
+                lda #$01                        ;Also break unfinished melee attack
+                sta actAttackD,x
 AH_NoAttackDelay2:
                 ldy actF2,x
                 cpy #FR_CLIMB
-                bcs AH_NoWeapon
+                bcs AH_NoWeaponFrame
                 lda temp3
                 lsr
-                bcs AH_NoWeapon
+                bcs AH_NoWeaponFrame
                 ldy #WD_IDLEFR
                 lda actD,x
                 bpl AH_NoAttackRight
@@ -52,18 +53,19 @@ AH_NoAttackDelay2:
 AH_NoAttackRight:
                 lda (wpnLo),y
                 bpl AH_WeaponFrameDone
-AH_NoWeapon:    lda #$ff
+AH_NoWeaponFrame:
+                lda #$ff
 AH_WeaponFrameDone:
                 sta actWpnF,x
                 rts
-      
+
 AttackHuman:    lda actAttackD,x
                 sta temp2
                 beq AH_NoAttackDelay
                 dec actAttackD,x
 AH_NoAttackDelay:
                 ldy actWpn,x
-                beq AH_NoWeapon
+                beq AH_NoWeaponFrame
                 lda wpnTblLo-1,y
                 sta wpnLo
                 lda wpnTblHi-1,y
@@ -110,15 +112,51 @@ AH_AimRight:    sta temp1
                 lda temp3
                 lsr
                 lda #$ff
-                bcs AH_NoWeaponFrame
+                bcs AH_NoWeaponFrame2
                 lda (wpnLo),y
-AH_NoWeaponFrame:
+AH_NoWeaponFrame2:
                 sta actWpnF,x
-                lda temp2
+                ldy temp2
                 beq AH_ProceedToFire
+                bmi AH_ProceedToFire
+                lda temp3
+                and #WDB_MELEE|WDB_THROW
+                beq AH_CannotFire
+                lda actF1,x                     ;When melee weapon is waiting for next strike,
+AH_SetMeleeFrame:                               ;put hands in idle position
+                sta actF2,x
+AH_MeleeDelay:
 AH_CannotFire:  rts
 
 AH_ProceedToFire:
+                lda temp3
+                and #WDB_MELEE|WDB_THROW
+                beq AH_NotMeleeWeapon
+                dey                             ;Melee delay/animation
+                cpy #$fd
+                bcc AH_MeleeAnimDone
+                tya
+                sta actAttackD,x
+                cpy #$fe
+                bcc AH_MeleeDelay
+                lda temp3                       ;Set prepare frame for weapon & upper body
+                lsr
+                bcs AH_NoWeaponFrame3
+                ldy #WD_PREPAREFR
+                lda actD,x
+                bpl AH_PrepareRight
+                iny
+AH_PrepareRight:lda (wpnLo),y
+                sta actWpnF,x
+AH_NoWeaponFrame3:
+                lda #FR_PREPARE
+                ldy temp3
+                cpy #WDB_THROW
+                adc #$00
+                jmp AH_SetMeleeFrame
+
+AH_MeleeAnimDone:
+AH_NotMeleeWeapon:
                 jsr GetBulletOffset
                 bcc AH_CannotFire
                 txa                             ;Check whether to use player or NPC bullet actor
@@ -144,12 +182,17 @@ AH_BulletFrameDone:
                 ldy #WD_BULLETSPEED
                 lda (wpnLo),y
                 sta temp4
-                ldy temp1
+                iny
+                lda temp1
+                clc
+                adc (wpnLo),y
+                tay
+                sty AH_SpdTblOffset+1
                 lda bulletXSpdTbl,y
                 ldy temp4
                 ldx #temp5
                 jsr MulU
-                ldy temp1
+AH_SpdTblOffset:ldy #$00
                 lda bulletYSpdTbl,y
                 ldy temp4
                 ldx #temp7

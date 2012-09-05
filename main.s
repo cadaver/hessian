@@ -89,6 +89,17 @@ MainLoop:       jsr ScrollLogic
                 jsr InterpolateActors
                 jsr ScrollPlayer
                 jsr UpdateFrame
+                
+                lda keyType                     ;Test code for weapon switch, to be removed
+                cmp #KEY_SPACE
+                bne MainLoop
+                lda actWpn
+                adc #$00
+                cmp #WPN_LAST+1
+                bcc WeaponOk
+                lda #WPN_PISTOL
+WeaponOk:       sta actWpn
+
                 jmp MainLoop
 
                 include actordata.s

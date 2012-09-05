@@ -86,6 +86,8 @@ MWG_CheckCeiling:
                 jsr GetCharInfoOffset
                 and #CI_OBSTACLE
                 beq MWG_NoCeiling
+                lda #$00                        ;If hit ceiling, reset Y-speed
+                sta actSY,x
                 lda temp5
                 ora #AMF_HITCEILING
                 sta actMoveFlags,x

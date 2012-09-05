@@ -40,9 +40,12 @@ sfx/pistol.sfx: sfx/pistol.ins
 sfx/explosion.sfx: sfx/explosion.ins
 	ins2nt2 sfx/explosion.ins sfx/explosion.sfx
 
-main.pak: actor.s actordata.s data.s file.s init.s level.s macros.s main.s memory.s physics.s player.s \
-	raster.s screen.s sound.s sprite.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx \
-	sfx/explosion.sfx
+sfx/throw.sfx: sfx/throw.ins
+	ins2nt2 sfx/throw.ins sfx/throw.sfx
+
+main.pak: actor.s actordata.s bullet.s data.s file.s init.s level.s macros.s main.s memory.s physics.s \
+    player.s raster.s screen.s sound.s sounddata.s sprite.s weapon.s weapondata.s loader.pak \
+    bg/scorescr.chr sfx/pistol.sfx sfx/explosion.sfx sfx/throw.sfx
 	dasm main.s -omain.bin -smain.tbl -f3
 	pack2 main.bin main.pak
 

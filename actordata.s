@@ -1,8 +1,9 @@
 ACT_NONE        = 0
 ACT_PLAYER      = 1
 ACT_BULLET      = 2
-ACT_EXPLOSION   = 3
-ACT_INACTIVEPLAYER = 4
+ACT_GRENADE     = 3
+ACT_EXPLOSION   = 4
+ACT_INACTIVEPLAYER = 5
 
 HP_PLAYER       = 32
 
@@ -10,11 +11,13 @@ HP_PLAYER       = 32
 
 actDispTblLo:   dc.b <adPlayer
                 dc.b <adBullet
+                dc.b <adGrenade
                 dc.b <adExplosion
                 dc.b <adPlayer
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adBullet
+                dc.b >adGrenade
                 dc.b >adExplosion
                 dc.b >adPlayer
 
@@ -31,12 +34,18 @@ adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
-                dc.b 1                          ;Number of frames
+                dc.b 20                         ;Number of frames
                 dc.b 9,10,11,12,13              ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 9,16,15,14,13
                 dc.b 5,6,7,8,5
                 dc.b 5,8,7,6,5
                 
+adGrenade:      dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 1                          ;Number of frames
+                dc.b 17                         ;Frametable (first all frames of sprite1, then sprite2)
+
 adExplosion:    dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
@@ -57,11 +66,13 @@ humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,10,11,12,16,17,21,20,21,22,23,24,25,26,27
 
 actLogicTblLo:  dc.b <alPlayer
                 dc.b <alBullet
+                dc.b <alGrenade
                 dc.b <alExplosion
                 dc.b <alInactivePlayer
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alBullet
+                dc.b >alGrenade
                 dc.b >alExplosion
                 dc.b >alInactivePlayer
 
@@ -99,6 +110,8 @@ alInactivePlayer:
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
 
 alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
+
+alGrenade:      dc.w MoveGrenade               ;Update routine
 
 alExplosion:    dc.w MoveExplosion              ;Update routine
 

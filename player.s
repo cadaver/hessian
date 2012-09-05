@@ -243,10 +243,8 @@ MH_NoWallFlip:  lda #$00
 MH_NoHitWall:   lda temp1
                 lsr                             ;Grounded bit to C
                 and #AMF_HITCEILING/2
-                beq MH_NoHeadBump
-                lda #$00                        ;If head bumped, reset Y-speed
-                sta actSY,x
-MH_NoHeadBump:  bcc MH_NoNewJump
+                bne MH_NoNewJump
+                bcc MH_NoNewJump
                 lda actCtrl,x                   ;When holding fire can not initiate jump
                 and #JOY_FIRE                   ;or grab a ladder
                 bne MH_NoNewJump
