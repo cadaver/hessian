@@ -34,13 +34,15 @@ WDB_MELEE       = 16
         ; Returns: -
         ; Modifies: A,Y
 
-AH_NoAttack:    lda temp2                       ;When weapon not in firing
+AH_NoAttack:    lda actAttackD,x                ;When weapon not in firing
                 bmi AH_BreakMeleeAttack         ;position, give 1 frame attack
-                bne AH_NoAttackDelay2           ;delay to reduce possibility of firing
+                bne AH_DecrementDelay           ;delay to reduce possibility of firing
 AH_BreakMeleeAttack:                            ;the initial bullet to undesired direction.
                 lda #$01                        ;Also break unfinished melee attack
                 sta actAttackD,x
-AH_NoAttackDelay2:
+                bne AH_SetIdleWeaponFrame
+AH_DecrementDelay:
+                dec actAttackD,x
 AH_SetIdleWeaponFrame:
                 ldy actF2,x
                 cpy #FR_CLIMB
@@ -62,12 +64,7 @@ AH_WeaponFrameDone:
                 sta actWpnF,x
                 rts
 
-AttackHuman:    lda actAttackD,x
-                sta temp2
-                beq AH_NoAttackDelay
-                dec actAttackD,x
-AH_NoAttackDelay:
-                ldy actWpn,x
+AttackHuman:    ldy actWpn,x
                 beq AH_NoWeaponFrame
                 lda wpnTblLo-1,y
                 sta wpnLo
@@ -119,36 +116,40 @@ AH_AimRight:    sta temp1
                 lda (wpnLo),y
 AH_NoWeaponFrame2:
                 sta actWpnF,x
-                ldy temp2
+                lda actAttackD,x
                 beq AH_CanFire
-                bmi AH_CanFire
+                dec actAttackD,x                ;Decrement delay / progress the melee animation
+                bmi AH_MeleeAnimation
                 lda temp3
                 and #WDB_THROW|WDB_MELEE
                 beq AH_CannotFire
+                bne AH_MeleeIdle
+AH_MeleeFailed: inc actAttackD,x                ;If melee failed, restore previous counter value
 AH_MeleeIdle:   lda actF1,x                     ;When melee weapon is waiting for next strike,  
                 sta actF2,x                     ;put hands in idle position
                 jmp AH_SetIdleWeaponFrame
-AH_MeleeDelay:
+AH_MeleeStrike:
 AH_CannotFire:  rts
 
 AH_CanFire:     lda temp3                       ;Check for melee/throw weapon and play its
                 and #WDB_THROW|WDB_MELEE        ;animation, else go directly to firing
                 beq AH_SpawnBullet
-                dey
-                cpy #$fc                        ;Check for finishing animation, or reaching
-                bcc AH_MeleeIdle                ;"failed to attack" state in which the idle
-                beq AH_SpawnBullet               ;hand position is shown
-                tya
+                lda #$84                        ;Setup the melee animation counter
                 sta actAttackD,x
-                cpy #$fe
-                bcc AH_MeleeDelay
-                lda #FR_PREPARE                 ;Set prepare frame for hands & weapon
+AH_MeleePrepare:lda #FR_PREPARE                 ;Show prepare frame for hands & weapon
                 ldy temp3
                 cpy #WDB_MELEE
                 adc #$00
                 sta actF2,x
                 ldy #WD_PREPAREFR
                 jmp AH_SetPrepareWeaponFrame
+AH_MeleeAnimation:
+                lda actAttackD,x                ;Check for finishing animation, or reaching
+                cmp #$83                        ;"failed to attack" state in which the attack
+                bcs AH_MeleePrepare             ;must be released before retrying
+                cmp #$81
+                bcc AH_MeleeFailed
+                bne AH_MeleeStrike              ;Show strike frame just before spawning bullet
 
 AH_SpawnBullet: jsr GetBulletOffset
                 bcc AH_CannotFire

@@ -112,7 +112,7 @@ nextSliceTbl:   dc.b 1,2,21
 d018Tbl:        dc.b $a8,$b8
 sprIrqJumpTbl:  dc.b <Irq2_Spr0,<Irq2_Spr1,<Irq2_Spr2,<Irq2_Spr3,<Irq2_Spr4,<Irq2_Spr5,<Irq2_Spr6,<Irq2_Spr7
 sprIrqAdvanceTbl:
-                dc.b -3,-4,-5,-6,-7,-8,-9,-10
+                dc.b -2,-3,-4,-5,-7,-8,-9,-10
 
                 org nextSliceTbl+21
                 dc.b 22,23,42
