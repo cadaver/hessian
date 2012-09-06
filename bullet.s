@@ -30,7 +30,14 @@ MoveBulletMuzzleFlash:
 MoveBullet:     jsr MoveProjectile
                 and #CI_OBSTACLE
                 bne MBlt_Remove
-                dec actTime,x
+                
+        ; Mele hit update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveMeleeHit:   dec actTime,x
                 bne MBlt_NoRemove
 MBlt_Remove:    jmp RemoveActor
 MBlt_Explode:   lda #$00

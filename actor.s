@@ -38,17 +38,17 @@ AL_UPDATEROUTINE = 0
 AL_INITIALHP     = 2
 AL_MOVECAPS      = 3
 AL_MOVESPEED     = 4
-AL_FALLSPEED     = 5                           ;Terminal falling velocity, positive
+AL_FALLSPEED     = 5                            ;Terminal falling velocity, positive
 AL_GROUNDACCEL   = 6
 AL_INAIRACCEL    = 7
-AL_FALLACCEL     = 8                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 9                           ;Gravity acceleration in longjump
+AL_FALLACCEL     = 8                            ;Gravity acceleration
+AL_LONGJUMPACCEL = 9                            ;Gravity acceleration in longjump
 AL_BRAKING       = 10
-AL_HEIGHT        = 11                          ;Height for headbump check, negative
-AL_JUMPSPEED     = 12                          ;Negative
+AL_HEIGHT        = 11                           ;Height for headbump check, negative
+AL_JUMPSPEED     = 12                           ;Negative
 AL_CLIMBSPEED    = 13
-AL_HALFSPEEDRIGHT = 14                         ;Ladder jump / wallflip speed right
-AL_HALFSPEEDLEFT = 15                          ;Ladder jump / wallflip speed left
+AL_HALFSPEEDRIGHT = 14                          ;Ladder jump / wallflip speed right
+AL_HALFSPEEDLEFT = 15                           ;Ladder jump / wallflip speed left
 
 AMC_JUMP        = 1
 AMC_DUCK        = 2
@@ -87,10 +87,11 @@ DA_FillSpritesDone:
                 jmp AgeSpriteCache              ;Sprite cache use finished, age the cache now
 
 DA_NotZero:     stx actIndex
+                lda actDispTblHi-1,y            ;Zero display address = invisible
+                beq DA_ActorDone
+                sta actHi
                 lda actDispTblLo-1,y            ;Get actor display structure address
                 sta actLo
-                lda actDispTblHi-1,y
-                sta actHi
 DA_GetScreenPos:
                 lda actYL,x                     ;Convert actor coordinates to screen
                 sta actPrevYL,x

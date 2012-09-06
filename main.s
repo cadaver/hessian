@@ -53,7 +53,7 @@ CreatePlayer:   lda #6
                 sta actYH
                 lda #ACT_PLAYER
                 sta actT
-                lda #WPN_PISTOL
+                lda #WPN_KNIFE
                 sta actWpn
 
                 lda #7
@@ -95,9 +95,9 @@ MainLoop:       jsr ScrollLogic
                 bne MainLoop
                 lda actWpn
                 adc #$00
-                cmp #WPN_LAST+1
+                cmp #WPN_GRENADE+1
                 bcc WeaponOk
-                lda #WPN_PISTOL
+                lda #WPN_KNIFE
 WeaponOk:       sta actWpn
 
                 jmp MainLoop

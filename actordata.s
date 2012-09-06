@@ -1,21 +1,26 @@
 ACT_NONE        = 0
 ACT_PLAYER      = 1
-ACT_BULLET      = 2
-ACT_GRENADE     = 3
-ACT_EXPLOSION   = 4
-ACT_INACTIVEPLAYER = 5
+ACT_MELEEHIT    = 2
+ACT_BULLET      = 3
+ACT_GRENADE     = 4
+ACT_EXPLOSION   = 5
+ACT_INACTIVEPLAYER = 6
 
 HP_PLAYER       = 32
 
         ; Actors' display data pointers
 
+adMeleeHit      = $0000                         ;Not displayed
+
 actDispTblLo:   dc.b <adPlayer
+                dc.b <adMeleeHit
                 dc.b <adBullet
                 dc.b <adGrenade
                 dc.b <adExplosion
                 dc.b <adPlayer
 
 actDispTblHi:   dc.b >adPlayer
+                dc.b >adMeleeHit
                 dc.b >adBullet
                 dc.b >adGrenade
                 dc.b >adExplosion
@@ -65,12 +70,14 @@ humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,10,11,12,16,17,21,20,21,22,23,24,25,26,27
         ; Actors' logic data pointers
 
 actLogicTblLo:  dc.b <alPlayer
+                dc.b <alMeleeHit
                 dc.b <alBullet
                 dc.b <alGrenade
                 dc.b <alExplosion
                 dc.b <alInactivePlayer
 
 actLogicTblHi:  dc.b >alPlayer
+                dc.b >alMeleeHit
                 dc.b >alBullet
                 dc.b >alGrenade
                 dc.b >alExplosion
@@ -92,6 +99,14 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b 2*8                        ;Ladder jump / wallflip speed right
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
 
+alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
+
+alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
+
+alGrenade:      dc.w MoveGrenade                ;Update routine
+
+alExplosion:    dc.w MoveExplosion              ;Update routine
+
 alInactivePlayer:
                 dc.w MoveAndAttackHuman         ;Update routine
                 dc.b HP_PLAYER                  ;Initial health
@@ -108,10 +123,4 @@ alInactivePlayer:
                 dc.b 96                         ;Climbing speed
                 dc.b 2*8                        ;Ladder jump / wallflip speed right
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
-
-alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
-
-alGrenade:      dc.w MoveGrenade               ;Update routine
-
-alExplosion:    dc.w MoveExplosion              ;Update routine
 
