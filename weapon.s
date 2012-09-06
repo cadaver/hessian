@@ -196,10 +196,11 @@ AH_SpdTblOffset:ldy #$00
                 jsr GetCharInfo                 ;Check if spawned inside wall
                 and #CI_OBSTACLE                ;and destroy immediately in that case
                 bne AH_InsideWall
-                lda temp5
+                lda temp5                       ;Set speed
                 sta actSX,x
                 lda temp7
                 sta actSY,x
+                jsr SetActorSize                ;Set collision size
                 ldy #WD_BULLETTIME
                 lda (wpnLo),y
                 sta actTime,x

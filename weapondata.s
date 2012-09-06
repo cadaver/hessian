@@ -46,7 +46,7 @@ wpnTblHi:       dc.b >wdKnife
 
 wdKnife:        dc.b AIM_HORIZONTAL             ;First aim direction
                 dc.b AIM_HORIZONTAL             ;Last aim direction
-                dc.b 8                          ;Attack delay
+                dc.b 7                          ;Attack delay
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b 0                          ;Bullet speed in pixels
                 dc.b 0                          ;Bullet speed table offset
@@ -62,7 +62,7 @@ wdKnife:        dc.b AIM_HORIZONTAL             ;First aim direction
 
 wdPistol:       dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN                   ;Last aim direction
-                dc.b 8                          ;Attack delay
+                dc.b 7                          ;Attack delay
                 dc.b ACT_BULLET                 ;Bullet actor type
                 dc.b 12                         ;Bullet speed in pixels
                 dc.b 0                          ;Bullet speed table offset

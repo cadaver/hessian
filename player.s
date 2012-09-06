@@ -151,7 +151,13 @@ MH_ClimbExit:   lda actYL,x
                 jsr NoInterpolation
                 jmp MH_StandAnim
 
-MoveHuman:      lda actMoveFlags,x
+MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently displayed
+                lda (actLo),y                   ;frame
+                ldy actF1,x
+                sec
+                sbc humanSizeReduceTbl,y
+                sta actSizeU,x
+                lda actMoveFlags,x
                 sta temp1
                 lda #$00                        ;Roll flag
                 sta temp2

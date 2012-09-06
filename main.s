@@ -45,39 +45,48 @@ Main:           ldy #C_COMMON                   ;Load the always resident sprite
                 jsr LoadMusic
                 lda #0
                 jsr InitMusic
-CreatePlayer:   lda #6
-                sta actXH
+CreatePlayer:   ldx #ACTI_PLAYER
+                lda #6
+                sta actXH,x
                 lda #$80
-                sta actXL
+                sta actXL,x
                 lda #4
-                sta actYH
+                sta actYH,x
                 lda #ACT_PLAYER
-                sta actT
+                sta actT,x
                 lda #WPN_KNIFE
-                sta actWpn
+                sta actWpn,x
+                jsr SetActorSize
 
+                inx
                 lda #7
-                sta actXH+1
+                sta actXH,x
                 lda #$80
-                sta actXL+1
+                sta actXL,x
                 lda #4
-                sta actYH+1
+                sta actYH,x
                 lda #ACT_INACTIVEPLAYER
-                sta actT+1
+                sta actT,x
                 lda #WPN_PISTOL
-                sta actWpn+1
+                sta actWpn,x
+                lda #10
+                sta actHp,x
+                jsr SetActorSize
 
+                inx
                 lda #5
-                sta actXH+2
+                sta actXH,x
                 lda #$80
-                sta actXL+2
+                sta actXL,x
                 lda #4
-                sta actYH+2
+                sta actYH,x
                 lda #ACT_INACTIVEPLAYER
-                sta actT+2
-                lda #
+                sta actT,x
                 lda #WPN_PISTOL
-                sta actWpn+2
+                sta actWpn,x
+                lda #10
+                sta actHp,x                
+                jsr SetActorSize
 
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors

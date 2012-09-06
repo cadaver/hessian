@@ -35,20 +35,23 @@ FOURSPRITE      = $03
 HUMANOID        = $80
 
 AL_UPDATEROUTINE = 0
-AL_INITIALHP     = 2
-AL_MOVECAPS      = 3
-AL_MOVESPEED     = 4
-AL_FALLSPEED     = 5                            ;Terminal falling velocity, positive
-AL_GROUNDACCEL   = 6
-AL_INAIRACCEL    = 7
-AL_FALLACCEL     = 8                            ;Gravity acceleration
-AL_LONGJUMPACCEL = 9                            ;Gravity acceleration in longjump
-AL_BRAKING       = 10
-AL_HEIGHT        = 11                           ;Height for headbump check, negative
-AL_JUMPSPEED     = 12                           ;Negative
-AL_CLIMBSPEED    = 13
-AL_HALFSPEEDRIGHT = 14                          ;Ladder jump / wallflip speed right
-AL_HALFSPEEDLEFT = 15                           ;Ladder jump / wallflip speed left
+AL_SIZEHORIZ     = 2
+AL_SIZEUP        = 3
+AL_SIZEDOWN      = 4
+AL_INITIALHP     = 5
+AL_MOVECAPS      = 6
+AL_MOVESPEED     = 7
+AL_FALLSPEED     = 8                            ;Terminal falling velocity, positive
+AL_GROUNDACCEL   = 9
+AL_INAIRACCEL    = 10
+AL_FALLACCEL     = 11                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 12                           ;Gravity acceleration in longjump
+AL_BRAKING       = 13
+AL_HEIGHT        = 14                           ;Height for headbump check, negative
+AL_JUMPSPEED     = 15                           ;Negative
+AL_CLIMBSPEED    = 16
+AL_HALFSPEEDRIGHT = 17                          ;Ladder jump / wallflip speed right
+AL_HALFSPEEDLEFT = 18                           ;Ladder jump / wallflip speed left
 
 AMC_JUMP        = 1
 AMC_DUCK        = 2
@@ -469,7 +472,6 @@ MAY_Neg:        clc
                 dec actYH,x
 MAY_NegOk:      rts
 
-
         ; Accelerate actor in X-direction with negative acceleration & speed limit
         ;
         ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit
@@ -766,6 +768,28 @@ GetCharInfoOffset:
                 tay
                 jmp GCI_Common
 
+        ; Set collision size for actor
+        ;
+        ; Parametrs: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,actLo-actHi
+        
+SetActorSize:   ldy actT,x
+                lda actLogicTblLo-1,y            ;Get actor logic structure address
+                sta actLo
+                lda actLogicTblHi-1,y
+                sta actHi
+                ldy #AL_SIZEHORIZ
+                lda (actLo),y
+                sta actSizeH,x
+                iny
+                lda (actLo),y
+                sta actSizeU,x
+                iny
+                lda (actLo),y
+                sta actSizeD,x
+                rts
+
         ; Check if two actors have collided
         ;
         ; Parameters: X,Y actor numbers
@@ -836,8 +860,8 @@ CAC_YPos:       lsr
                 lda actSizeU,x
                 adc actSizeD,y
                 cmp temp8
-                rts
-                
+                rts                        
+
         ; Remove actor
         ; TODO: return to leveldata
         ;
@@ -914,6 +938,8 @@ GFA_NotComplex: rts
         ; Modifies: A
 
 SpawnWithOffset:sta actT,y
+                lda actGrp,x                    ;Copy origin group
+                sta actGrp,y
                 lda actXL,x
                 clc
                 adc temp5

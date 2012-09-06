@@ -31,13 +31,15 @@ MoveBullet:     jsr MoveProjectile
                 and #CI_OBSTACLE
                 bne MBlt_Remove
                 
-        ; Mele hit update routine
+        ; Melee hit update routine
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y
 
-MoveMeleeHit:   dec actTime,x
+MoveMeleeHit:   jsr CheckBulletCollisions
+                bcs MBlt_Remove
+                dec actTime,x
                 bne MBlt_NoRemove
 MBlt_Remove:    jmp RemoveActor
 MBlt_Explode:   lda #$00
@@ -103,6 +105,28 @@ MGrn_NoHitWall: and #AMF_HITCEILING             ;Halve X-speed when hit ceiling
 MGrn_StoreNewXSpeed:
                 sta actSX,x
 MGrn_DecrementTime: 
+                jsr CheckBulletCollisions
+                bcs MBlt_Explode
                 dec actTime,x
                 beq MBlt_Explode
                 bne MBlt_NoRemove
+
+        ; Check bullet collisions TODO: optimize using actor group lists
+        ;
+        ; Parameters: X actor index
+        ; Returns: C=0 no collision, C=1 collision, Y=actor index
+        ; Modifies: A,Y
+        
+CheckBulletCollisions:
+                ldy #ACTI_LASTNPC
+CBC_Loop:       lda actT,y
+                beq CBC_Next
+                lda actHp,y
+                beq CBC_Next
+                jsr CheckActorCollision
+                bcs CBC_HasCollision
+CBC_Next:       dey
+                bne CBC_Loop
+                clc
+CBC_HasCollision:
+                rts
