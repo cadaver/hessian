@@ -70,9 +70,9 @@ MoveGrenade:    lda #$00                        ;Grenade never stays grounded
                 sta actMoveFlags,x
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
-                lda #-1
+                lda #-1                         ;Ceiling check offset
                 sta temp4
-                lda #3
+                lda #4
                 ldy #-3*8
                 jsr MoveWithGravity
                 lsr
@@ -88,7 +88,14 @@ MGrn_NoBounce:  lda actMoveFlags,x
                 bne MGrn_NoHitWall
                 lda actSX,x
                 jsr Negate8Asr8
+                jmp MGrn_StoreNewXSpeed
+MGrn_NoHitWall: and #AMF_HITCEILING             ;Halve X-speed when hit ceiling
+                beq MGrn_DecrementTime
+                lda actSX,x
+                jsr Asr8
+MGrn_StoreNewXSpeed:
                 sta actSX,x
-MGrn_NoHitWall: dec actTime,x
+MGrn_DecrementTime: 
+                dec actTime,x
                 beq MBlt_Explode
                 bne MBlt_NoRemove

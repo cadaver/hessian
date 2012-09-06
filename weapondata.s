@@ -24,13 +24,13 @@ attackTbl:      dc.b AIM_NONE                   ;None
 
 bulletXSpdTbl:  dc.b 0,6,8,6,0                  ;Normal bullets
                 dc.b 0,-6,-8,-6,0
-                dc.b 0,7,8,7,0                  ;Grenades
-                dc.b 0,-7,-8,-7,0
+                dc.b 0,8,8,8,0                  ;Grenades
+                dc.b 0,-8,-8,-8,0
 
 bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
                 dc.b -8,-6,0,6,8
-                dc.b -6,-6,-3,0,0               ;Grenades
-                dc.b -6,-6,-3,0,0
+                dc.b -8,-7,-4,-1,0               ;Grenades
+                dc.b -8,-7,-4,-1,0
 
         ; Weapon data pointers
 
