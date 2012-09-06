@@ -107,29 +107,6 @@ DivU_Skip:      rol $00,x
                 bpl DivU_Loop
                 rts
 
-        ; Negate a 8-bit value
-        ;
-        ; Parameters: A value to be negated
-        ; Returns: A result
-        ; Modifies: A
-
-Negate8:        clc
-Negate8NoCarry: eor #$ff
-                adc #$01
-                rts
-
-        ; Arithmetic shift right a 8-bit value
-        ;
-        ; Parameters: A value to be negated
-        ; Returns: A result
-        ; Modifies: A
-
-Asr8:           lsr
-                cmp #$40
-                bcc Asr8_Pos
-                ora #$80
-Asr8_Pos:       rts
-
         ; Negate a 16-bit value
         ;
         ; Parameters: X zeropage base
@@ -146,3 +123,27 @@ Negate16:       lda $00,x
                 adc #$00
                 sta $01,x
                 rts
+                
+
+        ; Negate and arithmetic shift right a 8-bit value
+        ;
+        ; Parameters: A value to be negated & shifted
+        ; Returns: A result
+        ; Modifies: A
+
+Negate8Asr8:    clc
+                eor #$ff
+                adc #$01
+
+        ; Arithmetic shift right a 8-bit value
+        ;
+        ; Parameters: A value to be shifted
+        ; Returns: A result
+        ; Modifies: A
+
+Asr8:           cmp #$80
+                ror
+                bpl Asr8Pos
+                adc #$00
+Asr8Pos:        rts
+

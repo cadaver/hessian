@@ -64,6 +64,6 @@ wdGrenade:      dc.b AIM_DIAGONALUP             ;First aim direction
                 dc.b ACT_GRENADE                ;Bullet actor type
                 dc.b 6                          ;Bullet speed in pixels
                 dc.b 10                         ;Bullet speed table offset
-                dc.b 25                         ;Bullet time duration
+                dc.b 30                         ;Bullet time duration
                 dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
                 dc.b SFX_THROW                  ;Sound effect

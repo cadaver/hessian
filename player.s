@@ -445,11 +445,9 @@ MH_InitClimb:   lda #$80
 
 ScrollPlayer:   ldx #ACTI_PLAYER
                 jsr GetActorCharCoords
-                sta temp1
-                sty temp2
+                sty temp1
                 ldx #0
                 ldy #0
-                lda temp1
                 cmp #SCRCENTER_X-3
                 bcs SP_NotLeft1
                 dex
@@ -462,7 +460,7 @@ SP_NotLeft2:    cmp #SCRCENTER_X+2
 SP_NotRight1:   cmp #SCRCENTER_X+4
                 bcc SP_NotRight2
                 inx
-SP_NotRight2:   lda temp2
+SP_NotRight2:   lda temp1
                 cmp #SCRCENTER_Y-3
                 bcs SP_NotUp1
                 dey

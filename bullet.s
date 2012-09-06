@@ -70,7 +70,7 @@ MoveGrenade:    lda #$00                        ;Grenade never stays grounded
                 sta actMoveFlags,x
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
-                lda #0
+                lda #-1
                 sta temp4
                 lda #3
                 ldy #-3*8
@@ -78,19 +78,16 @@ MoveGrenade:    lda #$00                        ;Grenade never stays grounded
                 lsr
                 bcc MGrn_NoBounce
                 lda temp1                       ;Bounce: negate and halve velocity
-                jsr Asr8
-                jsr Negate8
+                jsr Negate8Asr8
                 sta actSY,x
                 lda #8                          ;Brake X-speed with each bounce
                 jsr BrakeActorX
 MGrn_NoBounce:  lda actMoveFlags,x
-                and #AMF_HITWALL
-                lda actMoveFlags,x
-                and #AMF_HITWALL
-                beq MGrn_NoHitWall
+                and #AMF_HITWALL|AMF_HITCEILING
+                cmp #AMF_HITWALL
+                bne MGrn_NoHitWall
                 lda actSX,x
-                jsr Asr8
-                jsr Negate8
+                jsr Negate8Asr8
                 sta actSX,x
 MGrn_NoHitWall: dec actTime,x
                 beq MBlt_Explode
