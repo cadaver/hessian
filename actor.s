@@ -790,11 +790,12 @@ SetActorSize:   ldy actT,x
                 sta actSizeD,x
                 rts
 
-        ; Check if two actors have collided
+        ; Check if two actors have collided. Actors further apart than 128 pixels
+        ; are assumed to not collide, regardless of sizes
         ;
         ; Parameters: X,Y actor numbers
         ; Returns: C=1 if collided
-        ; Modifies: A,temp7-temp8
+        ; Modifies: A,temp8
 
 CheckActorCollision:
                 lda actXL,x
@@ -803,64 +804,69 @@ CheckActorCollision:
                 sta temp8
                 lda actXH,x
                 sbc actXH,y
-                bpl CAC_XPos
-                sta temp7
-                lda temp8
-                eor #$ff
-                adc #$01                        ;C=0
-                sta temp8
-                lda temp7
-                eor #$ff
-                adc #$00
+                lsr
+                ror temp8
+                lsr
+                ror temp8
+                cmp #$00
+                beq CAC_XPos
+                cmp #$3f
+                bcs CAC_XNeg
+                rts                             ;128 pixels or more apart in X-dir
 CAC_XPos:       lsr
-                ror temp8
-                lsr
-                ror temp8
-                lsr
-                bne CAC_TooFar
-                ror temp8
-                lda actSizeH,x
-                adc actSizeH,y
-                cmp temp8
-                bcs CAC_XOk
-CAC_TooFar:     clc
+                lda temp8
+                ror
+                sbc actSizeH,x                  ;C=1
+                bcc CAC_XOk
+                sbc actSizeH,y
+                bcc CAC_XOk
+                clc                             ;Too far apart in X-dir
                 rts
-CAC_XOk:        lda actYL,x
-                sec
+CAC_XNeg:       lsr
+                lda temp8
+                ror
+                clc
+                adc actSizeH,x
+                bcs CAC_XOk2
+                adc actSizeH,y
+                bcs CAC_XOk2
+                rts                             ;Too far apart in X-dir
+CAC_XOk:        sec
+CAC_XOk2:       lda actYL,x
                 sbc actYL,y
                 sta temp8
                 lda actYH,x
                 sbc actYH,y
-                bpl CAC_YPos
-CAC_YNeg:       sta temp7
-                eor #$ff
-                adc #$01                        ;C=0
-                sta temp8
-                lda temp7
-                eor #$ff
-                adc #$00
                 lsr
                 ror temp8
                 lsr
                 ror temp8
-                lsr
-                bne CAC_TooFar
-                ror temp8
-                lda actSizeD,x
-                adc actSizeU,y
-                cmp temp8
-                rts
+                cmp #$00
+                beq CAC_YPos
+                cmp #$3f
+                bcs CAC_YNeg
+                rts                             ;128 pixels or more apart in Y-dir
 CAC_YPos:       lsr
-                ror temp8
-                lsr
-                ror temp8
-                lsr
-                bne CAC_TooFar
-                ror temp8
-                lda actSizeU,x
-                adc actSizeD,y
-                cmp temp8
-                rts                        
+                lda temp8
+                ror
+                sbc actSizeU,x                  ;C=1
+                bcc CAC_HasCollision
+                sbc actSizeD,y
+                bcc CAC_HasCollision
+                clc                             ;Too far apart in Y-dir
+                rts
+CAC_YNeg:       lsr
+                lda temp8
+                ror
+                clc
+                adc actSizeD,x
+                bcs CAC_HasCollision2
+                adc actSizeU,y
+                rts
+CAC_HasCollision:
+                sec
+CAC_HasCollision2:
+                rts
 
         ; Remove actor
         ; TODO: return to leveldata
