@@ -136,8 +136,13 @@ DA_SprSubXH:    sbc #$00
                 sta temp2
                 ldy #$0f                        ;Get flashing/flicker/color override:
                 lda actC,x                      ;$01-$0f = color override only
-                sta GASS_ColorOr+1              ;$40/$80 = flicker with sprite's own color
-                and #$0f                        ;$4x/$8x = flicker with color override
+                cmp #$f0                        ;$40/$80 = flicker with sprite's own color
+                bcc DA_NoHitFlash               ;$4x/$8x = flicker with color override
+                and #$0f                        ;$f0-$ff = one time hit flash + color override
+                sta actC,x
+                lda #$01
+DA_NoHitFlash:  sta GASS_ColorOr+1
+                and #$0f
                 beq DA_ColorOverrideDone
                 ldy #$00
 DA_ColorOverrideDone:
@@ -220,6 +225,10 @@ DA_HumanFrame2: lda #$00
                 jsr GetAndStoreSprite
 DA_HumanWpnF:   lda #$00
                 bmi DA_HumanNoWeapon
+                ldy #$0f                        ;No color override for the weapon sprite
+                sty GASS_ColorAnd+1
+                ldy #$00
+                sty GASS_ColorOr+1
                 ldy #C_WEAPON                   ;Note: weapon sprites must always be loaded
                 sty sprFileNum                  ;into the memory
                 ldy fileLo+C_WEAPON

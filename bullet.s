@@ -128,5 +128,9 @@ CBC_Loop:       lda actT,y
 CBC_Next:       dey
                 bne CBC_Loop
                 clc
+                rts
 CBC_HasCollision:
+                lda actC,y                      ;Flash the hit actor
+                ora #$f0
+                sta actC,y
                 rts

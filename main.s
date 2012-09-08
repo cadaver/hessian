@@ -71,6 +71,8 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actWpn,x
                 lda #10
                 sta actHp,x
+                lda #$02
+                sta actC,x
                 jsr SetActorSize
 
                 inx
@@ -85,7 +87,9 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 lda #WPN_PISTOL
                 sta actWpn,x
                 lda #10
-                sta actHp,x                
+                sta actHp,x
+                lda #$08
+                sta actC,x
                 jsr SetActorSize
 
 MainLoop:       jsr ScrollLogic
