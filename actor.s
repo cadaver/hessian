@@ -779,7 +779,7 @@ GetCharInfo4Above:
                 ldy actYH,x
                 dey
                 bpl GCI_Common2
-                bpl GCI_Outside
+                bmi GCI_Outside
 
         ; Get char collision info from the actor's position with Y offset
         ;
