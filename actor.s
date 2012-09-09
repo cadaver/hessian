@@ -60,9 +60,9 @@ AMC_CLIMB       = 4
 AMC_ROLL        = 8
 AMC_WALLFLIP    = 16
 
-GRP_NEUTRAL     = 0
-GRP_HEROES      = 1
-GRP_VILLAINS    = 2
+GRP_NEUTRAL     = $00
+GRP_HEROES      = $01
+GRP_VILLAINS    = $80
 
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
@@ -279,15 +279,14 @@ DA_HumanRight2: ldy #ADH_BASEINDEX2
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-BCL_StoreHero:  txa
+BCL_StoreHero:  beq BCL_Next
+                txa
                 ldx temp1
                 sta heroList,x
                 inx
                 stx temp1
                 tax
-BCL_Next2:      dex
-                bpl BCL_Loop
-                bmi BCL_AllDone
+                bpl BCL_Next
 
 UpdateActors:
 BuildCollisionLists:
@@ -299,9 +298,7 @@ BCL_Loop:       lda actT,x                      ;Actor must exist and have nonze
                 lda actHp,x
                 beq BCL_Next
                 lda actGrp,x
-                cmp #GRP_HEROES
-                bcc BCL_Next
-                beq BCL_StoreHero
+                bpl BCL_StoreHero
 BCL_StoreVillain:
                 txa
                 sta villainList,y

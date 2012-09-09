@@ -52,8 +52,7 @@ MoveBullet:     dec actTime,x
 
 CheckBulletCollisions:
                 lda actGrp,x
-                cmp #GRP_VILLAINS
-                beq CBC_CheckHeroes
+                bmi CBC_CheckHeroes
 CBC_CheckVillains:
                 lda #<villainList
                 sta CBC_GetNextVillain+1
