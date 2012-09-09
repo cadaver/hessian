@@ -27,22 +27,52 @@ MoveBulletMuzzleFlash:
         ; Returns: -
         ; Modifies: A,Y
 
+MBlt_Remove:    jmp RemoveActor
+
 MoveBullet:     jsr MoveProjectile
                 and #CI_OBSTACLE
                 bne MBlt_Remove
-                
+
         ; Melee hit update routine
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y
 
-MoveMeleeHit:   jsr CheckBulletCollisions
-                bcs MBlt_Remove
-                dec actTime,x
-                bne MBlt_NoRemove
-MBlt_Remove:    jmp RemoveActor
-MBlt_Explode:   lda #$00
+MoveMeleeHit:   dec actTime,x
+                beq MBlt_Remove
+
+        ; Check bullet collisions TODO: optimize using actor group lists
+        ;
+        ; Parameters: X actor index
+        ; Returns: C=0 no collision, C=1 collision, Y=actor index
+        ; Modifies: A,Y
+
+CheckBulletCollisions:
+                ldy #ACTI_LASTNPC
+CBC_Loop:       lda actT,y
+                beq CBC_Next
+                lda actHp,y
+                beq CBC_Next
+                jsr CheckActorCollision
+                bcs CBC_HasCollision
+CBC_Next:       dey
+                bne CBC_Loop
+                clc
+                rts
+CBC_HasCollision:
+                lda actC,y                      ;Flash the hit actor
+                ora #$f0
+                sta actC,y
+                jmp DestroyActorHasLogicData    ;Destroy the bullet
+
+        ; Turn an actor into an explosion
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A
+
+ExplodeActor:   lda #$00
                 sta actF1,x
                 sta actFd,x
                 sta actC,x                      ;Remove flashing
@@ -50,7 +80,6 @@ MBlt_Explode:   lda #$00
                 sta actT,x
                 lda #SFX_EXPLOSION
                 jmp PlaySfx
-MBlt_NoRemove:  rts
 
         ; Explosion update routine
         ;
@@ -104,33 +133,7 @@ MGrn_NoHitWall: and #AMF_HITCEILING             ;Halve X-speed when hit ceiling
                 jsr Asr8
 MGrn_StoreNewXSpeed:
                 sta actSX,x
-MGrn_DecrementTime: 
-                jsr CheckBulletCollisions
-                bcs MBlt_Explode
+MGrn_DecrementTime:
                 dec actTime,x
-                beq MBlt_Explode
-                bne MBlt_NoRemove
-
-        ; Check bullet collisions TODO: optimize using actor group lists
-        ;
-        ; Parameters: X actor index
-        ; Returns: C=0 no collision, C=1 collision, Y=actor index
-        ; Modifies: A,Y
-        
-CheckBulletCollisions:
-                ldy #ACTI_LASTNPC
-CBC_Loop:       lda actT,y
-                beq CBC_Next
-                lda actHp,y
-                beq CBC_Next
-                jsr CheckActorCollision
-                bcs CBC_HasCollision
-CBC_Next:       dey
-                bne CBC_Loop
-                clc
-                rts
-CBC_HasCollision:
-                lda actC,y                      ;Flash the hit actor
-                ora #$f0
-                sta actC,y
-                rts
+                beq ExplodeActor
+                jmp CheckBulletCollisions

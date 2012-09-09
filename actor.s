@@ -35,23 +35,24 @@ FOURSPRITE      = $03
 HUMANOID        = $80
 
 AL_UPDATEROUTINE = 0
-AL_SIZEHORIZ     = 2
-AL_SIZEUP        = 3
-AL_SIZEDOWN      = 4
-AL_INITIALHP     = 5
-AL_MOVECAPS      = 6
-AL_MOVESPEED     = 7
-AL_FALLSPEED     = 8                            ;Terminal falling velocity, positive
-AL_GROUNDACCEL   = 9
-AL_INAIRACCEL    = 10
-AL_FALLACCEL     = 11                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 12                           ;Gravity acceleration in longjump
-AL_BRAKING       = 13
-AL_HEIGHT        = 14                           ;Height for headbump check, negative
-AL_JUMPSPEED     = 15                           ;Negative
-AL_CLIMBSPEED    = 16
-AL_HALFSPEEDRIGHT = 17                          ;Ladder jump / wallflip speed right
-AL_HALFSPEEDLEFT = 18                           ;Ladder jump / wallflip speed left
+AL_DESTROYROUTINE = 2
+AL_SIZEHORIZ     = 4
+AL_SIZEUP        = 5
+AL_SIZEDOWN      = 6
+AL_INITIALHP     = 7
+AL_MOVECAPS      = 8
+AL_MOVESPEED     = 9
+AL_FALLSPEED     = 10                            ;Terminal falling velocity, positive
+AL_GROUNDACCEL   = 11
+AL_INAIRACCEL    = 12
+AL_FALLACCEL     = 13                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 14                           ;Gravity acceleration in longjump
+AL_BRAKING       = 15
+AL_HEIGHT        = 16                           ;Height for headbump check, negative
+AL_JUMPSPEED     = 17                           ;Negative
+AL_CLIMBSPEED    = 18
+AL_HALFSPEEDRIGHT = 19                          ;Ladder jump / wallflip speed right
+AL_HALFSPEEDLEFT = 20                           ;Ladder jump / wallflip speed left
 
 AMC_JUMP        = 1
 AMC_DUCK        = 2
@@ -144,7 +145,7 @@ DA_SprSubXH:    sbc #$00
 DA_NoHitFlash:  sta GASS_ColorOr+1
                 and #$0f
                 beq DA_ColorOverrideDone
-                ldy #$00
+                iny
 DA_ColorOverrideDone:
                 sty GASS_ColorAnd+1
                 ldy #AD_SPRFILE                 ;Get spritefile. Also called for invisible actors,
@@ -777,17 +778,27 @@ GetCharInfoOffset:
                 tay
                 jmp GCI_Common
 
-        ; Set collision size for actor
+        ; Get actor's logic data address
         ;
-        ; Parametrs: X actor index
+        ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,actLo-actHi
         
-SetActorSize:   ldy actT,x
-                lda actLogicTblLo-1,y            ;Get actor logic structure address
+GetActorLogicData:
+                ldy actT,x
+                lda actLogicTblLo-1,y
                 sta actLo
                 lda actLogicTblHi-1,y
                 sta actHi
+                rts
+
+        ; Set collision size for actor
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,actLo-actHi
+        
+SetActorSize:   jsr GetActorLogicData
                 ldy #AL_SIZEHORIZ
                 lda (actLo),y
                 sta actSizeH,x
@@ -876,6 +887,22 @@ CAC_HasCollision:
                 sec
 CAC_HasCollision2:
                 rts
+
+        ; Call destroy routine of an actor
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,more depending on the routine called
+
+DestroyActor:   jsr GetActorLogicData
+DestroyActorHasLogicData:
+                ldy #AL_DESTROYROUTINE
+                lda (actLo),y
+                sta DA_Jump+1
+                iny
+                lda (actLo),y
+                sta DA_Jump+2
+DA_Jump:        jmp $0000
 
         ; Remove actor
         ; TODO: return to leveldata
