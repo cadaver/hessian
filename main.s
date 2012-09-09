@@ -45,6 +45,7 @@ Main:           ldy #C_COMMON                   ;Load the always resident sprite
                 jsr LoadMusic
                 lda #0
                 jsr InitMusic
+
 CreatePlayer:   ldx #ACTI_PLAYER
                 lda #6
                 sta actXH,x
@@ -56,6 +57,10 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actT,x
                 lda #WPN_KNIFE
                 sta actWpn,x
+                lda #10
+                sta actHp,x
+                lda #GRP_HEROES
+                sta actGrp,x
                 jsr SetActorSize
 
                 inx
@@ -71,6 +76,8 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actWpn,x
                 lda #10
                 sta actHp,x
+                lda #GRP_VILLAINS
+                sta actGrp,x
                 lda #$02
                 sta actC,x
                 jsr SetActorSize
@@ -88,6 +95,8 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actWpn,x
                 lda #10
                 sta actHp,x
+                lda #GRP_VILLAINS
+                sta actGrp,x
                 lda #$08
                 sta actC,x
                 jsr SetActorSize

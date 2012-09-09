@@ -4,7 +4,7 @@
 
 MAX_SPR         = 24
 MAX_ACT         = 24
-MAX_COMPLEXACT  = 6
+MAX_COMPLEXACT  = 7
 MAX_CACHESPRITES = 63
 MAX_BLK         = 192
 
@@ -130,6 +130,8 @@ chars           = $e000
 screen1         = $e800
 screen2         = $ec00
 textChars       = $f000
+heroList        = screen2+1016-MAX_SPR*4-(MAX_COMPLEXACT+1)*2
+villainList     = screen2+1016-MAX_SPR*4-(MAX_COMPLEXACT+1)
 sprOrTbl        = screen2+1016-MAX_SPR*4
 sprAndTbl       = screen2+1016-MAX_SPR*2
 loadBuffer      = $f300

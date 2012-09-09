@@ -60,6 +60,10 @@ AMC_CLIMB       = 4
 AMC_ROLL        = 8
 AMC_WALLFLIP    = 16
 
+GRP_NEUTRAL     = 0
+GRP_HEROES      = 1
+GRP_VILLAINS    = 2
+
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
         ;
@@ -269,13 +273,46 @@ DA_HumanRight2: ldy #ADH_BASEINDEX2
                 sta DA_HumanFrame2+1
                 rts
 
-        ; Update actors
+        ; Update actors. Build first collision lists for bullet collisions
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-UpdateActors:   ldx #$00
+BCL_StoreHero:  txa
+                ldx temp1
+                sta heroList,x
+                inx
+                stx temp1
+                tax
+BCL_Next2:      dex
+                bpl BCL_Loop
+                bmi BCL_AllDone
+
+UpdateActors:
+BuildCollisionLists:
+                ldx #ACTI_LASTNPC
+                ldy #$00                        ;Villain list index
+                sty temp1                       ;Hero list index
+BCL_Loop:       lda actT,x                      ;Actor must exist and have nonzero health
+                beq BCL_Next
+                lda actHp,x
+                beq BCL_Next
+                lda actGrp,x
+                cmp #GRP_HEROES
+                bcc BCL_Next
+                beq BCL_StoreHero
+BCL_StoreVillain:
+                txa
+                sta villainList,y
+                iny
+BCL_Next:       dex
+                bpl BCL_Loop
+BCL_AllDone:    lda #$ff                        ;Store endmarks
+                sta villainList,y
+                ldx temp1
+                sta heroList,x
+                ldx #$00
 UA_Loop:        ldy actT,x
                 bne UA_NotZero
 UA_Next:        inx

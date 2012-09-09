@@ -21,6 +21,16 @@ MoveBulletMuzzleFlash:
                                                 ;to prevent flash from appearing in different
                                                 ;position dependent on flashing order
 
+        ; Melee hit update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveMeleeHit:   lda #$00                        ;Remove in any case after this frame,
+                sta actT,x                      ;but check collisions once
+                jmp CheckBulletCollisions
+
         ; Bullet update routine
         ;
         ; Parameters: X actor index
@@ -28,43 +38,44 @@ MoveBulletMuzzleFlash:
         ; Modifies: A,Y
 
 MBlt_Remove:    jmp RemoveActor
-
-MoveBullet:     jsr MoveProjectile
+MoveBullet:     dec actTime,x
+                bmi MBlt_Remove
+                jsr MoveProjectile
                 and #CI_OBSTACLE
                 bne MBlt_Remove
 
-        ; Melee hit update routine
+        ; Check bullet collisions
         ;
-        ; Parameters: X actor index
+        ; Parameters: X bullet actor index
         ; Returns: -
-        ; Modifies: A,Y
-
-MoveMeleeHit:   dec actTime,x
-                beq MBlt_Remove
-
-        ; Check bullet collisions TODO: optimize using actor group lists
-        ;
-        ; Parameters: X actor index
-        ; Returns: C=0 no collision, C=1 collision, Y=actor index
-        ; Modifies: A,Y
+        ; Modifies: A,Y,temp variables
 
 CheckBulletCollisions:
-                ldy #ACTI_LASTNPC
-CBC_Loop:       lda actT,y
-                beq CBC_Next
-                lda actHp,y
-                beq CBC_Next
+                lda actGrp,x
+                cmp #GRP_VILLAINS
+                beq CBC_CheckHeroes
+CBC_CheckVillains:
+                lda #<villainList
+                sta CBC_GetNextVillain+1
+CBC_GetNextVillain:
+                ldy villainList
+                bmi CBC_Done
+                inc CBC_GetNextVillain+1
                 jsr CheckActorCollision
-                bcs CBC_HasCollision
-CBC_Next:       dey
-                bne CBC_Loop
-                clc
-                rts
+                bcc CBC_GetNextVillain
 CBC_HasCollision:
                 lda actC,y                      ;Flash the hit actor
-                ora #$f0
+                ora #$f0                        ;TODO: do that in damage routine instead
                 sta actC,y
                 jmp DestroyActorHasLogicData    ;Destroy the bullet
+CBC_CheckHeroes:lda #<heroList
+                sta CBC_GetNextHero+1
+CBC_GetNextHero:ldy heroList
+                bmi CBC_Done
+                inc CBC_GetNextHero+1
+                jsr CheckActorCollision
+                bcc CBC_GetNextHero
+                bcs CBC_HasCollision
 
         ; Turn an actor into an explosion
         ;
@@ -95,6 +106,7 @@ MoveExplosion:  lda #1
                 cmp #5
                 bcc MExpl_NoRemove
                 jmp RemoveActor
+CBC_Done:
 MExpl_NoAnimation:
 MExpl_NoRemove: rts
 
@@ -104,7 +116,9 @@ MExpl_NoRemove: rts
         ; Returns: -
         ; Modifies: A,Y
 
-MoveGrenade:    lda #$00                        ;Grenade never stays grounded
+MoveGrenade:    dec actTime,x
+                bmi ExplodeActor
+                lda #$00                        ;Grenade never stays grounded
                 sta actMoveFlags,x
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
@@ -128,12 +142,10 @@ MGrn_NoBounce:  lda actMoveFlags,x
                 jsr Negate8Asr8
                 jmp MGrn_StoreNewXSpeed
 MGrn_NoHitWall: and #AMF_HITCEILING             ;Halve X-speed when hit ceiling
-                beq MGrn_DecrementTime
+                beq MGrn_CheckCollisions
                 lda actSX,x
                 jsr Asr8
 MGrn_StoreNewXSpeed:
                 sta actSX,x
-MGrn_DecrementTime:
-                dec actTime,x
-                beq ExplodeActor
+MGrn_CheckCollisions:
                 jmp CheckBulletCollisions
