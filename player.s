@@ -433,9 +433,12 @@ MH_InitClimb:   lda #$80
                 sta actXL,x
                 sta actFd,x
                 lda actYL,x
-                and #$c0
+                and #$e0
                 sta actYL,x
+                and #$3f
+                cmp #$20
                 lda #FR_CLIMB
+                adc #$00
                 sta actF1,x
                 sta actF2,x
                 lda #$00
