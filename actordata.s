@@ -89,7 +89,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alInactivePlayer
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
-                dc.w RemoveActor                ;Destroy routine
+                dc.w ExplodeActor               ;Destroy routine
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
@@ -130,7 +130,7 @@ alExplosion:    dc.w MoveExplosion              ;Update routine
 
 alInactivePlayer:
                 dc.w MoveAndAttackHuman         ;Update routine
-                dc.w RemoveActor                ;Destroy routine
+                dc.w ExplodeActor               ;Destroy routine
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down

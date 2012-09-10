@@ -60,8 +60,7 @@ AMC_CLIMB       = 4
 AMC_ROLL        = 8
 AMC_WALLFLIP    = 16
 
-GRP_NEUTRAL     = $00
-GRP_HEROES      = $01
+GRP_HEROES      = $00
 GRP_VILLAINS    = $80
 
         ; Draw actors as sprites
@@ -279,8 +278,7 @@ DA_HumanRight2: ldy #ADH_BASEINDEX2
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-BCL_StoreHero:  beq BCL_Next
-                txa
+BCL_StoreHero:  txa
                 ldx temp1
                 sta heroList,x
                 inx
@@ -920,13 +918,33 @@ CAC_YNeg:       lsr
 CAC_HasCollision:
                 sec
 CAC_HasCollision2:
-                rts
+DA_Done:        rts
+
+        ; Damage actor, and destroy if health goes to zero
+        ;
+        ; Parameters: A damage amount,X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp8,possibly other temp registers
+
+DamageActor:    sta temp8
+                lda actHp,x                     ;First check that there is health
+                beq DA_Done                     ;(prevent destroy being called
+                sec                             ;multiple times)
+DA_Sub:         sbc temp8
+                bcs DA_NotDead
+                lda #$00
+DA_NotDead:     sta actHp,x
+                cmp #$01
+                lda actC,x                      ;Flash actor as a sign of damage
+                ora #$f0
+                sta actC,x
+                bcs DA_Done
 
         ; Call destroy routine of an actor
         ;
         ; Parameters: X actor index
         ; Returns: -
-        ; Modifies: A,Y,more depending on the routine called
+        ; Modifies: A,Y,possibly other temp registers
 
 DestroyActor:   jsr GetActorLogicData
 DestroyActorHasLogicData:
@@ -1044,3 +1062,31 @@ GetFlashColorOverride:
                 and #$80
                 ora #$40
                 rts
+
+        ; Calculate distance to target actor in blocks
+        ;
+        ; Parameters: X actor index, Y target actor index
+        ; Returns: temp5 X distance, temp6 abs X distance, temp7 Y distance, temp8 abs Y distance
+        ; Modifies: A
+        
+GetActorDistance:
+                lda actXL,y
+                sec
+                sbc actXL,x
+                lda actXH,y
+                sbc actXH,x
+                sta temp5
+                bpl GAD_XDistPos
+                eor #$ff
+GAD_XDistPos:   sta temp6
+                lda actYL,y
+                sec
+                sbc actYL,x
+                lda actYH,y
+                sbc actYH,x
+                sta temp7
+                bpl GAD_YDistPos
+                eor #$ff
+GAD_YDistPos:   sta temp8
+                rts
+                

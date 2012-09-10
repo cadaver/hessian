@@ -5,21 +5,22 @@ AIM_DIAGONALDOWN = 3
 AIM_DOWN        = 4
 AIM_NONE        = $ff
 
-WD_MINAIM       = 0
-WD_MAXAIM       = 1
-WD_ATTACKDELAY  = 2
-WD_BULLETTYPE   = 3
-WD_BULLETSPEED  = 4
-WD_SPEEDTABLEOFFSET = 5
-WD_BULLETTIME   = 6
-WD_BITS         = 7
-WD_SFX          = 8
-WD_IDLEFR       = 9
-WD_IDLEFRLEFT   = 10
-WD_PREPAREFR    = 11
-WD_PREPAREFRLEFT = 12
-WD_ATTACKFR     = 13
-WD_ATTACKFRLEFT = 18
+WD_BITS         = 0
+WD_MINAIM       = 1
+WD_MAXAIM       = 2
+WD_ATTACKDELAY  = 3
+WD_BULLETTYPE   = 4
+WD_DAMAGE       = 5
+WD_DURATION     = 6
+WD_BULLETSPEED  = 7
+WD_SPEEDTABLEOFFSET = 8
+WD_SFX          = 9
+WD_IDLEFR       = 10
+WD_IDLEFRLEFT   = 11
+WD_PREPAREFR    = 12
+WD_PREPAREFRLEFT = 13
+WD_ATTACKFR     = 14
+WD_ATTACKFRLEFT = 19
 
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
@@ -94,7 +95,7 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 ldy #WD_MINAIM                  ;Check that aim direction is OK for weapon
                 cmp (wpnLo),y                   ;in question
                 bcc AH_NoAttack
-                ldy #WD_MAXAIM
+                iny
                 cmp (wpnLo),y
                 beq AH_AimOk
                 bcs AH_NoAttack
@@ -201,7 +202,10 @@ AH_SpdTblOffset:ldy #$00
                 lda temp7
                 sta actSY,x
                 jsr SetActorSize                ;Set collision size
-                ldy #WD_BULLETTIME
+                ldy #WD_DAMAGE                  ;Set duration and damage
+                lda (wpnLo),y
+                sta actHp,x
+                iny
                 lda (wpnLo),y
                 sta actTime,x
                 lda temp3

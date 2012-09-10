@@ -52,105 +52,6 @@ MoveAndAttackHuman:
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp regs
 
-MH_ClimbUp:     jsr GetCharInfo4Above
-                sta temp1
-                and #CI_OBSTACLE
-                bne MH_ClimbUpNoJump
-                lda actMoveCtrl,x               ;Check for exiting the ladder
-                cmp actPrevCtrl,x               ;by jumping
-                beq MH_ClimbUpNoJump
-                and #JOY_LEFT|JOY_RIGHT
-                beq MH_ClimbUpNoJump
-                jsr GetCharInfo                 ;If in the middle of an obstacle
-                and #CI_OBSTACLE                ;block, can not exit by jump
-                bne MH_ClimbUpNoJump
-                lda #-2
-                jsr GetCharInfoOffset
-                and #CI_OBSTACLE
-                bne MH_ClimbUpNoJump
-                lda actMoveCtrl,x
-                cmp #JOY_RIGHT
-                ldy #AL_HALFSPEEDRIGHT
-                bcs MH_ClimbUpJumpRight
-                ldy #AL_HALFSPEEDLEFT
-MH_ClimbUpJumpRight:
-                lda (actLo),y
-                sta actSX,x
-                sta actD,x
-                jmp MH_StartJump
-MH_ClimbUpNoJump:
-                lda actYL,x
-                and #$20
-                bne MH_ClimbUpOk
-                lda temp1
-                and #CI_CLIMB
-                beq MH_ClimbDone
-MH_ClimbUpOk:   ldy #-4*8
-MH_ClimbCommon: lda #$00                        ;Climbing speed
-                clc
-                adc actFd,x
-                sta actFd,x
-                bcc MH_ClimbDone
-                lda #$01                        ;Add 1 or 3 depending on climbing dir
-                cpy #$80
-                bcc MH_ClimbAnimDown
-                lda #$02                        ;C=1, add one less
-MH_ClimbAnimDown:
-                adc actF1,x
-                sbc #FR_CLIMB-1                 ;Keep within climb frame range
-                and #$03
-                adc #FR_CLIMB-1
-                sta actF1,x
-                sta actF2,x
-                tya
-                jsr MoveActorY
-                jmp NoInterpolation
-
-MH_ClimbDown:   jsr GetCharInfo
-                and #CI_CLIMB
-                beq MH_ClimbDone
-                ldy #4*8
-                bne MH_ClimbCommon
-
-MH_ClimbDone:   rts
-
-MH_Climbing:    ldy #AL_CLIMBSPEED
-                lda (actLo),y
-                sta MH_ClimbCommon+1
-                lda actF1,x                     ;Reset frame in case attack ended
-                sta actF2,x
-                lda actMoveCtrl,x
-                lsr
-                bcc MH_NoClimbUp
-                jmp MH_ClimbUp
-MH_NoClimbUp:   lsr
-                bcs MH_ClimbDown
-                lda actMoveCtrl,x
-                and #JOY_LEFT|JOY_RIGHT         ;Exit ladder?
-                beq MH_ClimbDone
-                lsr                             ;Left bit to direction
-                lsr
-                lsr
-                ror
-                sta actD,x
-                jsr GetCharInfo                 ;Check ground bit
-                lsr
-                bcs MH_ClimbExit
-                lda actYL,x                     ;If half way a char, check also 1 char
-                and #$20                        ;below
-                beq MH_ClimbDone
-                jsr GetCharInfo1Below
-                lsr
-                bcc MH_ClimbDone
-MH_ClimbExitBelow:
-                lda #8*8
-                jsr MoveActorY
-MH_ClimbExit:   lda actYL,x
-                and #$c0
-                sta actYL,x
-                jsr NoInterpolation
-                jmp MH_StandAnim
-
 MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently displayed
                 lda (actLo),y                   ;frame
                 ldy actF1,x
@@ -174,8 +75,9 @@ MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently 
                 cmp #FR_CLIMB
                 bcc MH_NoRoll
                 cmp #FR_ROLL                    ;If rolling, automatically accelerate
-                bcc MH_Climbing                 ;to facing direction
-                inc temp2
+                bcs MH_Rolling                  ;to facing direction
+                jmp MH_Climbing
+MH_Rolling:     inc temp2
                 lda actD,x
                 bmi MH_AccLeft
                 bpl MH_AccRight
@@ -435,7 +337,7 @@ MH_InitClimb:   lda #$80
                 lda actYL,x
                 and #$e0
                 sta actYL,x
-                and #$3f
+                and #$30
                 cmp #$20
                 lda #FR_CLIMB
                 adc #$00
@@ -444,6 +346,104 @@ MH_InitClimb:   lda #$80
                 lda #$00
                 sta actSX,x
                 sta actSY,x
+                jmp NoInterpolation
+
+MH_Climbing:    ldy #AL_CLIMBSPEED
+                lda (actLo),y
+                sta MH_ClimbCommon+1
+                lda actF1,x                     ;Reset frame in case attack ended
+                sta actF2,x
+                lda actMoveCtrl,x
+                lsr
+                bcc MH_NoClimbUp
+                jmp MH_ClimbUp
+MH_NoClimbUp:   lsr
+                bcs MH_ClimbDown
+                lda actMoveCtrl,x               ;Exit ladder?
+                and #JOY_LEFT|JOY_RIGHT
+                beq MH_ClimbDone
+                lsr                             ;Left bit to direction
+                lsr
+                lsr
+                ror
+                sta actD,x
+                jsr GetCharInfo                 ;Check ground bit
+                lsr
+                bcs MH_ClimbExit
+                lda actYL,x                     ;If half way a char, check also 1 char
+                and #$20                        ;below
+                beq MH_ClimbDone
+                jsr GetCharInfo1Below
+                lsr
+                bcc MH_ClimbDone
+MH_ClimbExitBelow:
+                lda #8*8
+                jsr MoveActorY
+MH_ClimbExit:   lda actYL,x
+                and #$c0
+                sta actYL,x
+                jsr NoInterpolation
+                jmp MH_StandAnim
+
+MH_ClimbDown:   jsr GetCharInfo
+                and #CI_CLIMB
+                beq MH_ClimbDone
+                ldy #4*8
+                bne MH_ClimbCommon
+MH_ClimbDone:   rts
+
+MH_ClimbUp:     jsr GetCharInfo4Above
+                sta temp1
+                and #CI_OBSTACLE
+                bne MH_ClimbUpNoJump
+                lda actMoveCtrl,x               ;Check for exiting the ladder
+                cmp actPrevCtrl,x               ;by jumping
+                beq MH_ClimbUpNoJump
+                and #JOY_LEFT|JOY_RIGHT
+                beq MH_ClimbUpNoJump
+                jsr GetCharInfo                 ;If in the middle of an obstacle
+                and #CI_OBSTACLE                ;block, can not exit by jump
+                bne MH_ClimbUpNoJump
+                lda #-2
+                jsr GetCharInfoOffset
+                and #CI_OBSTACLE
+                bne MH_ClimbUpNoJump
+                lda actMoveCtrl,x
+                cmp #JOY_RIGHT
+                ldy #AL_HALFSPEEDRIGHT
+                bcs MH_ClimbUpJumpRight
+                ldy #AL_HALFSPEEDLEFT
+MH_ClimbUpJumpRight:
+                lda (actLo),y
+                sta actSX,x
+                sta actD,x
+                jmp MH_StartJump
+MH_ClimbUpNoJump:
+                lda actYL,x
+                and #$20
+                bne MH_ClimbUpOk
+                lda temp1
+                and #CI_CLIMB
+                beq MH_ClimbDone
+MH_ClimbUpOk:   ldy #-4*8
+MH_ClimbCommon: lda #$00                        ;Climbing speed
+                clc
+                adc actFd,x
+                sta actFd,x
+                bcc MH_ClimbDone
+                lda #$01                        ;Add 1 or 3 depending on climbing dir
+                cpy #$80
+                bcc MH_ClimbAnimDown
+                lda #$02                        ;C=1, add one less
+MH_ClimbAnimDown:
+                adc actF1,x
+                sbc #FR_CLIMB-1                 ;Keep within climb frame range
+                and #$03
+                adc #FR_CLIMB-1
+                sta actF1,x
+                sta actF2,x
+                tya
+                jsr MoveActorY
                 jmp NoInterpolation
 
         ; Scroll screen around the player actor

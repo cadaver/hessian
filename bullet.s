@@ -27,8 +27,8 @@ MoveBulletMuzzleFlash:
         ; Returns: -
         ; Modifies: A,Y
 
-MoveMeleeHit:   lda #$00                        ;Remove in any case after this frame,
-                sta actT,x                      ;but check collisions once
+MoveMeleeHit:   dec actTime,x
+                bmi MBlt_Remove
                 jmp CheckBulletCollisions
 
         ; Bullet update routine
@@ -63,10 +63,20 @@ CBC_GetNextVillain:
                 jsr CheckActorCollision
                 bcc CBC_GetNextVillain
 CBC_HasCollision:
-                lda actC,y                      ;Flash the hit actor
-                ora #$f0                        ;TODO: do that in damage routine instead
-                sta actC,y
-                jmp DestroyActorHasLogicData    ;Destroy the bullet
+                lda actHp,x                     ;Damage target and destroy bullet
+                bmi CBC_RadiusDamage
+                pha                             ;(bullet's damage value stored as its health)
+                tya
+                tax
+                pla
+                jsr DamageActor
+                ldx actIndex
+                jmp DestroyActor
+CBC_RadiusDamage:
+                and #$7f
+                jsr RadiusDamage
+                jmp DestroyActor
+
 CBC_CheckHeroes:lda #<heroList
                 sta CBC_GetNextHero+1
 CBC_GetNextHero:ldy heroList
@@ -75,6 +85,17 @@ CBC_GetNextHero:ldy heroList
                 jsr CheckActorCollision
                 bcc CBC_GetNextHero
                 bcs CBC_HasCollision
+
+        ; Explode grenade and do radius damage
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A
+
+ExplodeGrenade: lda actHp,x
+                and #$7f
+                ldy #$ff
+                jsr RadiusDamage
 
         ; Turn an actor into an explosion
         ;
@@ -116,7 +137,7 @@ MExpl_NoRemove: rts
         ; Modifies: A,Y
 
 MoveGrenade:    dec actTime,x
-                bmi ExplodeActor
+                bmi ExplodeGrenade
                 lda #$00                        ;Grenade never stays grounded
                 sta actMoveFlags,x
                 lda actSY,x                     ;Store original Y-speed for bounce
@@ -148,3 +169,51 @@ MGrn_StoreNewXSpeed:
                 sta actSX,x
 MGrn_CheckCollisions:
                 jmp CheckBulletCollisions
+
+        ; Give radius damage up to 2 blocks away (both heroes & villains)
+        ;
+        ; Parameters: X source actor index (must also be in actIndex), A damage amount, 
+        ;             Y direct hit target actor index ($ff if none)
+        ; Returns: -
+        ; Modifies: A,Y,temp1,temp2,temp5-temp8,possibly other temp registers
+        
+RD_HalfDamage:  tya
+                tax
+                lda temp1
+                lsr
+                bpl RD_DamageCommon
+
+RadiusDamage:   sta temp1
+                sty temp2
+                ldy #ACTI_LASTNPC
+RD_Loop:        lda actT,y
+                beq RD_Next
+                lda actHp,y
+                beq RD_Next
+RD_DirectHitCmp:cpy temp2
+                beq RD_FullDamage
+                jsr GetActorDistance
+                lda temp7                       ;If Y-distance >0 decrement it by one
+                beq RD_NoYAdjust                ;because enemies/player have height
+                bmi RD_NoYAdjust
+                dec temp8
+RD_NoYAdjust:   lda temp6                       ;Take the greater of X & Y distance
+                cmp temp8
+                bcs RD_XDistGreater
+                lda temp8
+RD_XDistGreater:cmp #$01
+                beq RD_HalfDamage
+                bcs RD_Next
+RD_FullDamage:  tya
+                tax
+                lda temp1
+RD_DamageCommon:sty temp3
+                jsr DamageActor
+                ldx actIndex
+                ldy temp3
+RD_Next:        dey
+                bpl RD_Loop
+                rts
+
+
+

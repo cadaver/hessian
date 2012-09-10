@@ -57,7 +57,7 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actT,x
                 lda #WPN_KNIFE
                 sta actWpn,x
-                lda #10
+                lda #30
                 sta actHp,x
                 lda #GRP_HEROES
                 sta actGrp,x
