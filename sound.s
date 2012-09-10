@@ -83,29 +83,29 @@ LM_Error:       rts
         
         ; Parameters: A sound effect number
         ; Returns: -
-        ; Modifies: A
+        ; Modifies: A,loader temp vars
 
-PlaySfx:        stx PSnd_RestX+1
-                sty PSnd_RestY+1
+PlaySfx:        stx zpSrcLo
+                sty zpSrcHi
                 tay
                 lda sfxTblLo,y
                 ldx sfxTblHi,y
                 ldy #CHN_SFX
-                sta PSnd_SfxLo+1
+                sta zpBitsLo
                 cmp ntChnSfxLo,y
                 txa
                 sbc ntChnSfxHi,y
                 bpl PSnd_Ok
                 lda ntChnSfx,y
-                bne PSnd_RestX
+                bne PSnd_Done
 PSnd_Ok:        lda #$01
                 sta ntChnSfx,y
-PSnd_SfxLo:     lda #$00
+                lda zpBitsLo
                 sta ntChnSfxLo,y
                 txa
                 sta ntChnSfxHi,y
-PSnd_RestX:     ldx #$00
-PSnd_RestY:     ldy #$00
+PSnd_Done:      ldx zpSrcLo
+                ldy zpSrcHi
                 rts
 
         ;New song initialization

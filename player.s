@@ -18,7 +18,7 @@ FR_ATTACK       = 26
         ;
         ; Parameters: X actor index
         ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp regs
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MovePlayer:     lda actCtrl,x
                 sta actPrevCtrl,x
@@ -40,7 +40,7 @@ MP_NewMoveCtrl: sta actMoveCtrl,x
         ;
         ; Parameters: X actor index
         ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp regs
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveAndAttackHuman:
                 jsr MoveHuman
@@ -50,7 +50,7 @@ MoveAndAttackHuman:
         ;
         ; Parameters: X actor index
         ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp regs
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently displayed
                 lda (actLo),y                   ;frame
@@ -350,7 +350,7 @@ MH_InitClimb:   lda #$80
 
 MH_Climbing:    ldy #AL_CLIMBSPEED
                 lda (actLo),y
-                sta MH_ClimbCommon+1
+                sta zpSrcLo
                 lda actF1,x                     ;Reset frame in case attack ended
                 sta actF2,x
                 lda actMoveCtrl,x
@@ -426,7 +426,7 @@ MH_ClimbUpNoJump:
                 and #CI_CLIMB
                 beq MH_ClimbDone
 MH_ClimbUpOk:   ldy #-4*8
-MH_ClimbCommon: lda #$00                        ;Climbing speed
+MH_ClimbCommon: lda zpSrcLo                     ;Climbing speed
                 clc
                 adc actFd,x
                 sta actFd,x

@@ -1070,7 +1070,7 @@ RS_Colors:      jsr SW_DrawColorsHorizTop
         ; the destination zone first. Note: nonexistent map position causes undefined behaviour
 
 UB_OutsideZone: lda zoneNum                     ;TODO: test this codepath
-                sta UB_RestoreZone+1
+                sta temp4
                 jsr FindZoneXY
                 lda temp8
                 sec
@@ -1091,7 +1091,7 @@ UB_OutsideZone: lda zoneNum                     ;TODO: test this codepath
                 and temp6
                 adc temp5
                 sta (zpDestLo),y
-UB_RestoreZone: lda #$00
+UB_RestoreZone: lda temp4
                 jmp FindZoneNum
 
         ; Animate a block on the map by deltavalue. If on screen, refresh it immediately. 

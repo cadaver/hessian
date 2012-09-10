@@ -182,12 +182,12 @@ AH_BulletFrameDone:
                 clc
                 adc (wpnLo),y
                 tay
-                sty AH_SpdTblOffset+1
+                sty zpSrcLo
                 lda bulletXSpdTbl,y
                 ldy temp4
                 ldx #temp5
                 jsr MulU
-AH_SpdTblOffset:ldy #$00
+                ldy zpSrcLo
                 lda bulletYSpdTbl,y
                 ldy temp4
                 ldx #temp7
