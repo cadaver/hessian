@@ -7,6 +7,9 @@ DMG_KNIFE       = 2
 DMG_PISTOL      = 4
 DMG_GRENADE     = 10
 
+DMG_BULLETSTAYS = $80                           ;Bullet does not disappear after damage
+                                                ;(flamethrower etc.)
+                                                
         ; Weapon/attack tables
 
 attackTbl:      dc.b AIM_NONE                   ;None
@@ -87,7 +90,7 @@ wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW ;Weapon bits
                 dc.b AIM_DIAGONALDOWN           ;Last aim direction
                 dc.b 15                         ;Attack delay
                 dc.b ACT_GRENADE                ;Bullet actor type
-                dc.b DMG_GRENADE+$80            ;Bullet damage + radius damage bit
+                dc.b DMG_GRENADE                ;Bullet damage
                 dc.b 30                         ;Bullet time duration
                 dc.b 6                          ;Bullet speed in pixels
                 dc.b 10                         ;Bullet speed table offset
