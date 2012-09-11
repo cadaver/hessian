@@ -14,13 +14,28 @@ FR_ROLL         = 18
 FR_PREPARE      = 24
 FR_ATTACK       = 26
 
+HEALTH_RECHARGE_DELAY = 50
+
         ; Player update routine
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MovePlayer:     lda actCtrl,x
+MovePlayer:     inc healthRecharge              ;Health recharge: recharge fast when health
+                bmi MP_NoHealthRecharge         ;low, slower when more health
+                lda actHp,x            
+                asl
+                cmp healthRecharge
+                bcs MP_NoHealthRecharge
+                lda #$00
+                sta healthRecharge
+                lda actHp,x
+                cmp #HP_PLAYER
+                bcs MP_NoHealthRecharge
+                inc actHp,x
+MP_NoHealthRecharge:
+                lda actCtrl,x
                 sta actPrevCtrl,x
                 lda joystick
                 sta actCtrl,x

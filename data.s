@@ -327,6 +327,11 @@ actWpn:         ds.b MAX_COMPLEXACT,WPN_NONE
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0
 
+        ;Other variables
+
+displayedHealth:dc.b 0
+healthRecharge: dc.b 0
+
         ; Dynamic memory allocation area begins here
          
 fileAreaStart:

@@ -934,11 +934,16 @@ DA_Sub:         sbc temp8
                 bcs DA_NotDead
                 lda #$00
 DA_NotDead:     sta actHp,x
-                cmp #$01
-                lda actC,x                      ;Flash actor as a sign of damage
+                php
+                txa                             ;Check if player, reset health
+                bne DA_NotPlayer                ;recharge delay counter whenever
+                lda #-HEALTH_RECHARGE_DELAY     ;damage taken
+                sta healthRecharge
+DA_NotPlayer:   lda actC,x                      ;Flash actor as a sign of damage
                 ora #$f0
                 sta actC,x
-                bcs DA_Done
+                plp
+                bne DA_Done
 
         ; Call destroy routine of an actor
         ;

@@ -6,7 +6,7 @@ ACT_GRENADE     = 4
 ACT_EXPLOSION   = 5
 ACT_INACTIVEPLAYER = 6
 
-HP_PLAYER       = 32
+HP_PLAYER       = 28
 
         ; Actors' display data pointers
 

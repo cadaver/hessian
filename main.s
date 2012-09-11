@@ -27,6 +27,7 @@ REDUCE_CONTROL_LATENCY = 1
                 include player.s
                 include weapon.s
                 include bullet.s
+                include panel.s
 
         ; Test initialization code, will be removed
 
@@ -57,7 +58,7 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actT,x
                 lda #WPN_KNIFE
                 sta actWpn,x
-                lda #30
+                lda #HP_PLAYER
                 sta actHp,x
                 lda #GRP_HEROES
                 sta actGrp,x
@@ -105,12 +106,14 @@ MainLoop:       jsr ScrollLogic
                 jsr DrawActors
                 jsr ScrollPlayer
                 jsr UpdateFrame
+                jsr UpdatePanel
                 jsr ScrollLogic
                 jsr GetControls
                 jsr UpdateActors
                 jsr InterpolateActors
                 jsr ScrollPlayer
                 jsr UpdateFrame
+                jsr UpdatePanel
                 
                 lda keyType                     ;Test code for weapon switch, to be removed
                 cmp #KEY_SPACE

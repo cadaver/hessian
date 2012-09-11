@@ -129,6 +129,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\panel.s"
+				>
+			</File>
+			<File
 				RelativePath=".\physics.s"
 				>
 			</File>

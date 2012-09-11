@@ -89,15 +89,15 @@ IVid_CopyTextChars:
 IVid_InitScorePanel:
                 lda scorePanel,x
                 sta screen1+SCROLLROWS*40,x
-                jsr IVid_GetPanelColor
+                lda scorePanelColors,x
                 sta colors+SCROLLROWS*40,x
                 lda scorePanel+40,x
                 sta screen1+SCROLLROWS*40+40,x
-                jsr IVid_GetPanelColor
+                lda scorePanelColors+40,x
                 sta colors+SCROLLROWS*40+40,x
                 lda scorePanel+80,x
                 sta screen1+SCROLLROWS*40+80,x
-                jsr IVid_GetPanelColor
+                lda scorePanelColors+80,x
                 sta colors+SCROLLROWS*40+80,x
                 dex
                 bpl IVid_InitScorePanel
@@ -175,14 +175,6 @@ InitRaster:     sei
 
                 jmp Main
 
-IVid_GetPanelColor:
-                cmp #$13
-                bcc IVid_GPCOk
-                lda #$13
-IVid_GPCOk:     tay
-                lda scorePanelColors,y
-                rts
-
         ; Scorepanel chars
 
 textCharsCopy:  incbin bg/scorescr.chr
@@ -190,8 +182,16 @@ textCharsCopy:  incbin bg/scorescr.chr
         ; Initial scorepanel mockup
 
 scorePanel:     dc.b 0,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,4
-                dc.b 5,16,16,16,16,16,16,16,6, "                      ", 5,17,18, "07/04", 6
+                dc.b 5,"       ",6, "                      ",5,17,18,"07/04",6
                 dc.b 7,8,8,8,8,8,8,9,10,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,11,8,8,8,8,8,8,9,12
 
 scorePanelColors:
-                dc.b 11,11,11,11,11,11,11,11,11,11,11,11,11,13,13,13,13,9,9,1
+                ds.b 40,11
+                dc.b 11
+                ds.b 7,13
+                dc.b 11
+                ds.b 22,1
+                ds.b 3,11
+                ds.b 5,1
+                dc.b 11
+                ds.b 40,11
