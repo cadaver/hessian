@@ -1,4 +1,6 @@
 GRENADE_DMG_RADIUS = 48
+GRENADE_MAX_YSPEED = 6*8
+GRENADE_ACCEL      = 4
 
         ; Bullet update routine with muzzle flash as first frame
         ;
@@ -148,8 +150,8 @@ MoveGrenade:    dec actTime,x
                 sta temp1
                 lda #-1                         ;Ceiling check offset
                 sta temp4
-                lda #4
-                ldy #-3*8
+                lda #GRENADE_ACCEL
+                ldy #GRENADE_MAX_YSPEED
                 jsr MoveWithGravity
                 lsr
                 bcc MGrn_NoBounce

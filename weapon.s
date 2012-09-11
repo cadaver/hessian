@@ -46,7 +46,7 @@ AH_DecrementDelay:
                 dec actAttackD,x
 AH_SetIdleWeaponFrame:
                 ldy actF2,x
-                cpy #FR_CLIMB
+                cpy #FR_DIE
                 bcs AH_NoWeaponFrame
                 ldy #WD_IDLEFR
 AH_SetPrepareWeaponFrame:

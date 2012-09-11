@@ -9,12 +9,22 @@ FR_STAND        = 0
 FR_WALK         = 1
 FR_JUMP         = 9
 FR_DUCK         = 12
-FR_CLIMB        = 14
-FR_ROLL         = 18
-FR_PREPARE      = 24
-FR_ATTACK       = 26
+FR_DIE          = 14
+FR_CLIMB        = 17
+FR_ROLL         = 21
+FR_PREPARE      = 27
+FR_ATTACK       = 29
 
 HEALTH_RECHARGE_DELAY = 50
+
+DEATH_DISAPPEAR_DELAY = 75
+DEATH_FLASH_DELAY = 25
+DEATH_HEIGHT    = -3                            ;Ceiling check height for dead bodies
+DEATH_YSPEED    = -5*8
+DEATH_ACCEL     = 6
+DEATH_BRAKING   = 6
+
+HUMAN_MAX_YSPEED = 6*8
 
         ; Player update routine
         ;
@@ -22,17 +32,17 @@ HEALTH_RECHARGE_DELAY = 50
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MovePlayer:     inc healthRecharge              ;Health recharge: recharge fast when health
+MovePlayer:     lda actHp,x                     ;Restore health if not dead and not at
+                beq MP_NoHealthRecharge         ;full health
+                cmp #HP_PLAYER
+                bcs MP_NoHealthRecharge
+                inc healthRecharge              ;Health recharge: recharge fast when health
                 bmi MP_NoHealthRecharge         ;low, slower when more health
-                lda actHp,x            
                 asl
                 cmp healthRecharge
                 bcs MP_NoHealthRecharge
                 lda #$00
                 sta healthRecharge
-                lda actHp,x
-                cmp #HP_PLAYER
-                bcs MP_NoHealthRecharge
                 inc actHp,x
 MP_NoHealthRecharge:
                 lda actCtrl,x
@@ -67,6 +77,37 @@ MoveAndAttackHuman:
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
+MH_DeathAnim:   lda #DEATH_HEIGHT                ;Actor height for ceiling check
+                sta temp4
+                lda #DEATH_ACCEL
+                ldy #HUMAN_MAX_YSPEED
+                jsr MoveWithGravity             ;Actually move & check collisions
+                lsr
+                bcs MH_DeathGrounded
+                lda #FR_DIE
+                ldy actSY,x
+                bmi MH_DeathSetFrame
+                lda #FR_DIE+1
+                bne MH_DeathSetFrame
+MH_DeathGrounded:
+                lda #DEATH_BRAKING
+                jsr BrakeActorX
+                lda #FR_DIE+2
+MH_DeathSetFrame:
+                sta actF1,x
+                sta actF2,x
+                bcc MH_DeathDone
+MH_DeathCheckRemove:
+                dec actTime,x
+                bmi MH_DeathRemove
+                lda actTime,x
+                cmp #DEATH_FLASH_DELAY
+                bne MH_DeathDone
+                lda #$80
+                sta actC,x
+MH_DeathDone:   rts
+MH_DeathRemove: jmp RemoveActor
+
 MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently displayed
                 lda (actLo),y                   ;frame
                 ldy actF1,x
@@ -83,12 +124,11 @@ MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently 
                 iny
                 lda (actLo),y
                 sta temp4                       ;Movement speed
-                iny
-                lda (actLo),y
-                sta temp5                       ;Terminal falling speed
                 lda actF1,x                     ;Check if climbing
-                cmp #FR_CLIMB
+                cmp #FR_DIE
                 bcc MH_NoRoll
+                cmp #FR_CLIMB
+                bcc MH_DeathAnim
                 cmp #FR_ROLL                    ;If rolling, automatically accelerate
                 bcs MH_Rolling                  ;to facing direction
                 jmp MH_Climbing
@@ -206,7 +246,7 @@ MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 beq MH_NoLongJump
                 ldy #AL_LONGJUMPACCEL
 MH_NoLongJump:  lda (actLo),y
-                ldy temp5
+                ldy #HUMAN_MAX_YSPEED
                 jsr MoveWithGravity             ;Actually move & check collisions
                 sta temp1                       ;Updated move flags to temp1
                 lsr
@@ -460,6 +500,23 @@ MH_ClimbAnimDown:
                 tya
                 jsr MoveActorY
                 jmp NoInterpolation
+
+        ; Humanoid character destroy routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A
+       
+HumanDeath:     lda #FR_DIE
+                sta actF1,x
+                sta actF2,x
+                lda #DEATH_DISAPPEAR_DELAY
+                sta actTime,x
+                lda #DEATH_YSPEED
+                sta actSY,x
+                lda #$00
+                sta actMoveFlags,x              ;Not grounded anymore
+                rts
 
         ; Scroll screen around the player actor
         ;
