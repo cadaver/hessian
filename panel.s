@@ -3,7 +3,7 @@
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
-        
+
 UpdatePanel:    lda actHp+ACTI_PLAYER
                 cmp displayedHealth
                 beq UP_HealthDone

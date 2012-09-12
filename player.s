@@ -503,10 +503,10 @@ MH_ClimbAnimDown:
 
         ; Humanoid character destroy routine
         ;
-        ; Parameters: X actor index
+        ; Parameters: X actor index,Y damage source actor or $ff if none
         ; Returns: -
-        ; Modifies: A
-       
+        ; Modifies: A,temp8
+
 HumanDeath:     lda #FR_DIE
                 sta actF1,x
                 sta actF2,x
@@ -516,7 +516,26 @@ HumanDeath:     lda #FR_DIE
                 sta actSY,x
                 lda #$00
                 sta actMoveFlags,x              ;Not grounded anymore
-                rts
+                tya                             ;Check if damage source
+                bmi HD_NoDamageSource
+                lda actHp,y
+                asl
+                sta temp8
+                lda actSX,y                     ;Check if final attack came from right or left
+                bmi HD_LeftImpulse
+                bne HD_RightImpulse
+                lda actXL,x
+                sec
+                sbc actXL,y
+                lda actXH,x
+                sbc actXH,y
+                bmi HD_LeftImpulse
+HD_RightImpulse:lda temp8
+                ldy #8*8
+                jmp AccActorX
+HD_LeftImpulse: lda temp8
+                ldy #8*8
+                jmp AccActorXNeg
 
         ; Scroll screen around the player actor
         ;
@@ -556,4 +575,5 @@ SP_NotDown1:    cmp #SCRCENTER_Y+4
                 iny
 SP_NotDown2:    stx scrollSX
                 sty scrollSY
+HD_NoDamageSource:
                 rts

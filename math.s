@@ -107,6 +107,17 @@ DivU_Skip:      rol $00,x
                 bpl DivU_Loop
                 rts
 
+        ; Negate a 8-bit value
+        ;
+        ; Parameters: A value to be negated
+        ; Returns: A result
+        ; Modifies: A
+
+Negate8:        clc
+                eor #$ff
+                adc #$01
+                rts
+                
         ; Negate a 16-bit value
         ;
         ; Parameters: X zeropage base
@@ -123,7 +134,7 @@ Negate16:       lda $00,x
                 adc #$00
                 sta $01,x
                 rts
-                
+
 
         ; Negate and arithmetic shift right a 8-bit value
         ;

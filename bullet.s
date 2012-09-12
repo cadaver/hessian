@@ -72,6 +72,7 @@ CBC_HasCollision:
                 pha
                 and #$7f
                 ldx temp8
+                ldy actIndex
                 jsr DamageActor
                 ldx actIndex
                 pla
@@ -100,7 +101,9 @@ ExplodeGrenade: lda #GRENADE_DMG_RADIUS         ;Expand grenade collision size f
                 sta actSizeH,x
                 sta actSizeU,x
                 sta actSizeD,x
-                lda actHp,x
+                lda #$00                        ;Clear the X-speed so that possible death impulse
+                sta actSX,x                     ;only depends on enemy's relative location to the
+                lda actHp,x                     ;grenade
                 jsr RadiusDamage
 
         ; Turn an actor into an explosion
@@ -179,7 +182,7 @@ MGrn_Done:      rts
         ;
         ; Parameters: X source actor index (must also be in actIndex), A damage amount
         ; Returns: -
-        ; Modifies: A,Y,temp1,temp2,temp5-temp8,possibly other temp registers
+        ; Modifies: A,Y,temp1,temp2,possibly other temp registers
 
 RadiusDamage:   sta temp1
                 ldy #ACTI_LASTNPC
@@ -189,11 +192,13 @@ RD_Loop:        lda actT,y
                 beq RD_Next
                 jsr CheckActorCollision
                 bcc RD_Next
-                tya
-                tax
+                sty temp2
                 lda temp1
+                ldx temp2
+                ldy actIndex
                 jsr DamageActor
                 ldx actIndex
+                ldy temp2
 RD_Next:        dey
                 bpl RD_Loop
                 rts

@@ -78,11 +78,11 @@ KEY_NONE        = $ff
 
 GetControls:
                 if REDUCE_CONTROL_LATENCY > 0   ;In control latency reduction mode, wait here
-                if SHOW_FREE_RASTERTIME > 0
-                dec $d020
+                if SHOW_FREE_RASTERTIME > 0     ;until sprite IRQ is done with the current sprites
+                dec $d020                       ;to ensure we don't get controls two frames ahead
                 endif
-GC_Wait:        lda newFrame                    ;until sprite IRQ is done with the current sprites
-                bmi GC_Wait                     ;to ensure we don't get controls two frames ahead
+GC_Wait:        lda newFrame
+                bmi GC_Wait
                 if SHOW_FREE_RASTERTIME > 0
                 inc $d020
                 endif

@@ -5,11 +5,11 @@ WPN_GRENADE     = 3
 
 DMG_KNIFE       = 2
 DMG_PISTOL      = 4
-DMG_GRENADE     = 10
+DMG_GRENADE     = 16
 
 DMG_BULLETSTAYS = $80                           ;Bullet does not disappear after damage
                                                 ;(flamethrower etc.)
-                                                
+
         ; Weapon/attack tables
 
 attackTbl:      dc.b AIM_NONE                   ;None
@@ -58,7 +58,7 @@ wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b DMG_KNIFE                  ;Bullet damage
                 dc.b 1                          ;Bullet time duration
-                dc.b 0                          ;Bullet speed in pixels
+                dc.b 1                          ;Bullet speed in pixels
                 dc.b 0                          ;Bullet speed table offset
                 dc.b SFX_MELEE                  ;Sound effect
                 dc.b 8                          ;Idle weapon frame (right)

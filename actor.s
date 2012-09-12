@@ -921,7 +921,7 @@ DA_Done:        rts
 
         ; Damage actor, and destroy if health goes to zero
         ;
-        ; Parameters: A damage amount,X actor index
+        ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or $ff if none
         ; Returns: -
         ; Modifies: A,Y,temp8,possibly other temp registers
 
@@ -946,11 +946,12 @@ DA_NotPlayer:   lda actC,x                      ;Flash actor as a sign of damage
 
         ; Call destroy routine of an actor
         ;
-        ; Parameters: X actor index
+        ; Parameters: X actor index, Y damage source actor if applicable or $ff if none
         ; Returns: -
-        ; Modifies: A,Y,possibly other temp registers
+        ; Modifies: A,Y,temp8,possibly other temp registers
 
-DestroyActor:   jsr GetActorLogicData
+DestroyActor:   sty temp8
+                jsr GetActorLogicData
 DestroyActorHasLogicData:
                 ldy #AL_DESTROYROUTINE
                 lda (actLo),y
@@ -958,6 +959,7 @@ DestroyActorHasLogicData:
                 iny
                 lda (actLo),y
                 sta DA_Jump+2
+                ldy temp8
 DA_Jump:        jmp $0000
 
         ; Remove actor
