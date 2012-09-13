@@ -1,10 +1,11 @@
 ACT_NONE        = 0
 ACT_PLAYER      = 1
-ACT_MELEEHIT    = 2
-ACT_BULLET      = 3
-ACT_GRENADE     = 4
-ACT_EXPLOSION   = 5
-ACT_INACTIVEPLAYER = 6
+ACT_ITEM        = 2
+ACT_MELEEHIT    = 3
+ACT_BULLET      = 4
+ACT_GRENADE     = 5
+ACT_EXPLOSION   = 6
+ACT_INACTIVEPLAYER = 7
 
 HP_PLAYER       = 28
 
@@ -13,6 +14,7 @@ HP_PLAYER       = 28
 adMeleeHit      = $0000                         ;Not displayed
 
 actDispTblLo:   dc.b <adPlayer
+                dc.b <adItem
                 dc.b <adMeleeHit
                 dc.b <adBullet
                 dc.b <adGrenade
@@ -20,6 +22,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adPlayer
 
 actDispTblHi:   dc.b >adPlayer
+                dc.b >adItem
                 dc.b >adMeleeHit
                 dc.b >adBullet
                 dc.b >adGrenade
@@ -44,6 +47,12 @@ adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b 9,16,15,14,13
                 dc.b 5,6,7,8,5
                 dc.b 5,8,7,6,5
+
+adItem:         dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_WEAPON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 3                          ;Number of frames
+                dc.b 11,12,13                   ;Frametable (first all frames of sprite1, then sprite2)
 
 adGrenade:      dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -72,9 +81,14 @@ humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,10,11,12,16,17,20,21,22,27,26,27,28,29,30
 humanSizeReduceTbl:
                 dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,2,1,2,12,16,16,16,16,12
 
+        ; Item color flashing table
+
+itemFlashTbl:   dc.b 10,7,1,7
+
         ; Actors' logic data pointers
 
 actLogicTblLo:  dc.b <alPlayer
+                dc.b <alItem
                 dc.b <alMeleeHit
                 dc.b <alBullet
                 dc.b <alGrenade
@@ -82,6 +96,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alInactivePlayer
 
 actLogicTblHi:  dc.b >alPlayer
+                dc.b >alItem
                 dc.b >alMeleeHit
                 dc.b >alBullet
                 dc.b >alGrenade
@@ -106,6 +121,12 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b 96                         ;Climbing speed
                 dc.b 2*8                        ;Ladder jump / wallflip speed right
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
+
+alItem:         dc.w MoveItem                   ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b 4                          ;Horizontal size
+                dc.b 7                          ;Size up
+                dc.b 0                          ;Size down
 
 alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
                 dc.w RemoveActor                ;Destroy routine

@@ -97,6 +97,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\item.s"
+				>
+			</File>
+			<File
 				RelativePath=".\kernal.s"
 				>
 			</File>

@@ -100,6 +100,7 @@ CBC_GetNextHero:ldy heroList
 ExplodeGrenade: lda #GRENADE_DMG_RADIUS         ;Expand grenade collision size for radius damage
                 sta actSizeH,x
                 sta actSizeU,x
+                lda #GRENADE_DMG_RADIUS/2
                 sta actSizeD,x
                 lda #$00                        ;Clear the X-speed so that possible death impulse
                 sta actSX,x                     ;only depends on enemy's relative location to the

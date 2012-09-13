@@ -73,6 +73,15 @@ DrawActors:     lda scrollX                     ;Save this frame's finescrolling
                 sta IA_PrevScrollX+1
                 lda scrollY
                 sta IA_PrevScrollY+1
+                inc DA_ItemFlashCounter+1
+DA_ItemFlashCounter:                            ;Get color override for items
+                lda #$00
+                lsr
+                lsr
+                and #$03
+                tax
+                lda itemFlashTbl,x
+                sta MoveItem+1
                 ldx #$00                        ;Reset amount of used sprites
                 stx sprIndex
 DA_Loop:        ldy actT,x

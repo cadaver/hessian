@@ -27,6 +27,7 @@ REDUCE_CONTROL_LATENCY = 1
                 include player.s
                 include weapon.s
                 include bullet.s
+                include item.s
                 include panel.s
 
         ; Test initialization code, will be removed

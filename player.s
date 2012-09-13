@@ -506,7 +506,7 @@ MH_ClimbAnimDown:
         ;
         ; Parameters: X actor index,Y damage source actor or $ff if none
         ; Returns: -
-        ; Modifies: A,temp8
+        ; Modifies: A,temp4-temp8
 
 HumanDeath:     lda #FR_DIE
                 sta actF1,x
@@ -517,7 +517,29 @@ HumanDeath:     lda #FR_DIE
                 sta actSY,x
                 lda #$00
                 sta actMoveFlags,x              ;Not grounded anymore
-                tya                             ;Check if damage source
+                sty temp4
+                lda actWpn,x                    ;Check if should spawn the weapon item
+                beq HD_NoItem                   ;TODO: spawn other items like med-kits or
+                lda #ACTI_FIRSTITEM             ;quest items if necessary
+                ldy #ACTI_LASTITEM
+                jsr GetFreeActor
+                bcc HD_NoItem                   ;TODO: if item is important, it needs to be
+                lda #$00                        ;stored directly to leveldata if no room
+                sta temp5
+                sta temp6
+                lda #<ITEM_SPAWN_OFFSET
+                sta temp7
+                lda #>ITEM_SPAWN_OFFSET
+                sta temp8
+                lda #ACT_ITEM
+                jsr SpawnWithOffset
+                lda actWpn,x
+                sec
+                sbc #$01
+                sta actF1,y
+                lda #ITEM_YSPEED
+                sta actSY,y
+HD_NoItem:      ldy temp4                      ;Check if has a damage source
                 bmi HD_NoDamageSource
                 lda actHp,y
                 asl
