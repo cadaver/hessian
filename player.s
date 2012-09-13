@@ -21,6 +21,7 @@ DEATH_DISAPPEAR_DELAY = 75
 DEATH_FLASH_DELAY = 25
 DEATH_HEIGHT    = -3                            ;Ceiling check height for dead bodies
 DEATH_YSPEED    = -5*8
+DEATH_MAX_XSPEED = 6*8
 DEATH_ACCEL     = 6
 DEATH_BRAKING   = 6
 
@@ -531,10 +532,10 @@ HumanDeath:     lda #FR_DIE
                 sbc actXH,y
                 bmi HD_LeftImpulse
 HD_RightImpulse:lda temp8
-                ldy #6*8
+                ldy #DEATH_MAX_XSPEED
                 jmp AccActorX
 HD_LeftImpulse: lda temp8
-                ldy #6*8
+                ldy #DEATH_MAX_XSPEED
                 jmp AccActorXNeg
 
         ; Scroll screen around the player actor

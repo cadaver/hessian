@@ -52,7 +52,7 @@ MoveBullet:     dec actTime,x
         ;
         ; Parameters: X bullet actor index
         ; Returns: -
-        ; Modifies: A,Y,temp variables
+        ; Modifies: A,Y,tgtActIndex,temp variables
 
 CheckBulletCollisions:
                 lda actGrp,x
@@ -67,11 +67,11 @@ CBC_GetNextVillain:
                 jsr CheckActorCollision
                 bcc CBC_GetNextVillain
 CBC_HasCollision:
-                sty temp8
+                sty tgtActIndex
                 lda actHp,x                     ;Damage target
                 pha
                 and #$7f
-                ldx temp8
+                ldx tgtActIndex
                 ldy actIndex
                 jsr DamageActor
                 ldx actIndex
@@ -178,13 +178,14 @@ MGrn_StoreNewXSpeed:
                 sta actSX,x
 MGrn_Done:      rts
 
-        ; Give radius damage to both heroes & villains
+        ; Give radius damage to both heroes & villains. Prior to calling, expand the
+        ; collision size of the source actor as necessary
         ;
         ; Parameters: X source actor index (must also be in actIndex), A damage amount
         ; Returns: -
-        ; Modifies: A,Y,temp1,temp2,possibly other temp registers
+        ; Modifies: A,Y,tgtActIndex,possibly other temp registers
 
-RadiusDamage:   sta temp1
+RadiusDamage:   sta RD_Damage+1
                 ldy #ACTI_LASTNPC
 RD_Loop:        lda actT,y
                 beq RD_Next
@@ -192,13 +193,13 @@ RD_Loop:        lda actT,y
                 beq RD_Next
                 jsr CheckActorCollision
                 bcc RD_Next
-                sty temp2
-                lda temp1
-                ldx temp2
+                sty tgtActIndex
+RD_Damage:      lda #$00
+                ldx tgtActIndex
                 ldy actIndex
                 jsr DamageActor
                 ldx actIndex
-                ldy temp2
+                ldy tgtActIndex
 RD_Next:        dey
                 bpl RD_Loop
                 rts
