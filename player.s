@@ -531,10 +531,10 @@ HumanDeath:     lda #FR_DIE
                 sbc actXH,y
                 bmi HD_LeftImpulse
 HD_RightImpulse:lda temp8
-                ldy #8*8
+                ldy #6*8
                 jmp AccActorX
 HD_LeftImpulse: lda temp8
-                ldy #8*8
+                ldy #6*8
                 jmp AccActorXNeg
 
         ; Scroll screen around the player actor
