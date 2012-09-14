@@ -124,7 +124,7 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
 
 alItem:         dc.w MoveItem                   ;Update routine
                 dc.w RemoveActor                ;Destroy routine
-                dc.b 4                          ;Horizontal size
+                dc.b 8                          ;Horizontal size
                 dc.b 7                          ;Size up
                 dc.b 0                          ;Size down
 

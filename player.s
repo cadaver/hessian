@@ -283,9 +283,10 @@ MH_JumpAnimDown:cmp #2*8
                 iny
 MH_JumpAnimDone:tya
                 jmp MH_AnimDone
+MH_AnimDone3:   rts
 MH_RollAnim:    lda #$01
                 jsr AnimationDelay
-                bcc MH_AnimDone2Jump
+                bcc MH_AnimDone3
                 lda actF1,x
                 adc #$00
                 cmp #FR_ROLL+6                  ;Transition from roll to low duck
@@ -337,15 +338,19 @@ MH_NoInitClimbDown:
                 sta actFd,x
                 lda #FR_DUCK
                 bne MH_AnimDone
-MH_DuckAnim:    lda #$01
+MH_DuckAnim:    lda actF1,x                     ;Check if already ducked
+                cmp #FR_DUCK+1
+                bcs MH_AnimDone2
+                lda #$01
                 jsr AnimationDelay
-MH_AnimDone2Jump:
                 bcc MH_AnimDone2
+                txa                             ;Check item pickup if player
+                bne MH_NoPickupCheck            
+                jsr CheckPickup
+MH_NoPickupCheck:
                 lda actF1,x
-                adc #$00
-                cmp #FR_DUCK+2
-                bcc MH_AnimDone
-                lda #FR_DUCK+1
+                clc
+                adc #$01
                 bne MH_AnimDone
 MH_NoDuck:      lda actF1,x
                 cmp #FR_DUCK
@@ -506,7 +511,7 @@ MH_ClimbAnimDown:
         ;
         ; Parameters: X actor index,Y damage source actor or $ff if none
         ; Returns: -
-        ; Modifies: A,temp4-temp8
+        ; Modifies: A,temp3-temp8
 
 HumanDeath:     lda #FR_DIE
                 sta actF1,x
@@ -517,6 +522,7 @@ HumanDeath:     lda #FR_DIE
                 sta actSY,x
                 lda #$00
                 sta actMoveFlags,x              ;Not grounded anymore
+                stx temp3
                 sty temp4
                 lda actWpn,x                    ;Check if should spawn the weapon item
                 beq HD_NoItem                   ;TODO: spawn other items like med-kits or
@@ -539,6 +545,10 @@ HumanDeath:     lda #FR_DIE
                 sta actF1,y
                 lda #ITEM_YSPEED
                 sta actSY,y
+                tya
+                tax
+                jsr SetActorSize
+                ldx temp3
 HD_NoItem:      ldy temp4                      ;Check if has a damage source
                 bmi HD_NoDamageSource
                 lda actHp,y

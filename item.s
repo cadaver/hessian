@@ -4,6 +4,34 @@ ITEM_YSPEED     = -4*8
 ITEM_MAX_YSPEED = 6*8
 ITEM_SPAWN_OFFSET = -16*8
 
+        ; Item pickup check
+        ;
+        ; Parameters: X player actor index (0)
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+        
+CheckPickup:    ldy #ACTI_FIRSTITEM
+CP_Loop:        lda actT,y
+                cmp #ACT_ITEM
+                bne CP_Next
+                jsr CheckActorCollision
+                bcs CP_HasCollision
+CP_Next:        iny
+                cpy #ACTI_LASTITEM+1
+                bcc CP_Loop
+                rts
+CP_HasCollision:tya
+                tax
+                jsr RemoveActor                 ;TODO add to inventory
+                ldx actIndex
+                rts
+
+        ; Item update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
 MoveItem:       lda #$00
                 sta actC,x
                 lda actMoveFlags,x              ;Skip movement if grounded and stationary
