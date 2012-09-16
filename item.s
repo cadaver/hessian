@@ -4,6 +4,10 @@ ITEM_YSPEED     = -4*8
 ITEM_MAX_YSPEED = 6*8
 ITEM_SPAWN_OFFSET = -16*8
 
+MAX_INVENTORYITEMS = 16
+
+INVENTORY_TEXT_DURATION = 50
+
         ; Item pickup check
         ;
         ; Parameters: X player actor index (0)
@@ -23,6 +27,17 @@ CP_Next:        iny
 CP_HasCollision:tya
                 tax
                 jsr RemoveActor                 ;TODO add to inventory
+                lda actF1,x
+                sta CP_ItemType+1
+                lda #<txtPickedUp
+                ldx #>txtPickedUp
+                ldy #INVENTORY_TEXT_DURATION
+                jsr ShowPanelText
+CP_ItemType:    ldy #$00
+                lda itemNameLo,y
+                ldx itemNameHi,y
+                ldy #INVENTORY_TEXT_DURATION
+                jsr ContinueText
                 ldx actIndex
                 rts
 

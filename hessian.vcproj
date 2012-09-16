@@ -101,6 +101,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\itemdata.s"
+				>
+			</File>
+			<File
 				RelativePath=".\kernal.s"
 				>
 			</File>
@@ -166,6 +170,10 @@
 			</File>
 			<File
 				RelativePath=".\testlev.s"
+				>
+			</File>
+			<File
+				RelativePath=".\text.s"
 				>
 			</File>
 			<File

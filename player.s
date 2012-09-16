@@ -345,7 +345,7 @@ MH_DuckAnim:    lda actF1,x                     ;Check if already ducked
                 jsr AnimationDelay
                 bcc MH_AnimDone2
                 txa                             ;Check item pickup if player
-                bne MH_NoPickupCheck            
+                bne MH_NoPickupCheck
                 jsr CheckPickup
 MH_NoPickupCheck:
                 lda actF1,x
