@@ -79,7 +79,7 @@ humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,10,11,12,16,17,20,21,22,27,26,27,28,29,30
         ; Human Y-size reduce table based on animation
 
 humanSizeReduceTbl:
-                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,2,1,2,12,16,16,16,16,12
+                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,0,0,16,1,2,1,2,12,16,16,16,16,12
 
         ; Item color flashing table
 
@@ -149,7 +149,7 @@ alGrenade:      dc.w MoveGrenade                ;Update routine
 alExplosion:    dc.w MoveExplosion              ;Update routine
 
 alInactivePlayer:
-                dc.w MoveAndAttackHuman         ;Update routine
+                dc.w MoveHuman                  ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
