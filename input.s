@@ -156,19 +156,3 @@ KC_Pressed:     lda joystick
                 bne KC_Next
 SK_NoKey:       sta keyPress
                 rts
-
-        ; Checks if fire button has been pressed on this frame
-        ;
-        ; Parameters: -
-        ; Returns: C=0 not pressed, C=1 pressed
-        ; Modifies: A
-
-GetFireClick:   clc
-                lda prevJoy
-                and #JOY_FIRE
-                bne GFC_Not
-                lda joystick
-                and #JOY_FIRE
-                beq GFC_Not
-                sec
-GFC_Not:        rts

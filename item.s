@@ -59,6 +59,22 @@ CP_PrintItemName:
 CP_PickupFail:  ldx actIndex
                 rts
 
+        ; Find item from inventory
+        ;
+        ; Parameters: A item type
+        ; Returns: C=1 if found (index in Y), C=0 not found (first free index in Y)
+        ; Modifies: A,Y,zpSrcLo
+        
+FindItem:       sta zpSrcLo
+                ldy #$ff
+FI_Loop:        iny
+                lda invType,y
+                clc
+                beq FI_NotFound
+                cmp zpSrcLo
+                bne FI_Loop
+FI_NotFound:    rts
+
         ; Add item to inventory. If too many weapons, swap with current
         ;
         ; Parameters: A item type, X ammo amount
@@ -66,16 +82,11 @@ CP_PickupFail:  ldx actIndex
         ;          zpBitsHi dropped ammo count
         ; Modifies: A,X,Y,loader temp vars
         
-AddItem:        sta zpSrcLo
-                stx zpSrcHi
-                ldy #$00
-                sty zpBitsLo                    ;Assume: don't have to drop an existing weapon
-AI_FindItemLoop:lda invType,y                   ;Try to find the item
-                beq AI_NewItem
-                cmp zpSrcLo
-                beq AI_HasItem
-                iny
-                bpl AI_FindItemLoop
+AddItem:        stx zpSrcHi
+                ldx #$00
+                stx zpBitsLo                    ;Assume: don't have to drop an existing weapon
+                jsr FindItem
+                bcc AI_NewItem
 AI_HasItem:     tax
                 lda invCount,y                  ;Check for maximum ammo
                 cmp itemMaxCount-1,x
@@ -108,23 +119,16 @@ AI_NotAWeapon:  iny
 AI_CheckWeaponsDone:
                 cpx #MAX_WEAPONS
                 bcc AI_NoWeaponLimit
-                ldx itemIndex                   ;If weapon limit exceeded, check if current
-                lda invType,x                   ;weapon can be swapped
+                ldy itemIndex                   ;If weapon limit exceeded, check if current
+                lda invType,y                   ;weapon can be swapped
                 cmp #ITEM_FIRST_CONSUMABLE
                 bcc AI_CanBeSwapped             ;TODO: when fists weapon exists, assure they can never be dropped
                 clc
                 rts                             ;Weapon not selected, nothing to swap with, fail pickup
 AI_CanBeSwapped:sta zpBitsLo
-                lda invCount,x
+                lda invCount,y
                 sta zpBitsHi
-AI_ShiftItems:  lda invCount+1,x                ;Shift items to remove the hole left by dropped item
-                sta invCount,x
-                lda invType+1,x
-                sta invType,x
-                beq AI_ShiftItemsDone
-                inx
-                bpl AI_ShiftItems
-AI_ShiftItemsDone:
+                jsr RemoveItemByIndex
 AI_NoWeaponLimit:
                 ldy #$00
 AI_FindPosLoop: lda invType,y                   ;Find proper position for new item (item types in sorted order)
@@ -153,8 +157,29 @@ AI_StoreItem:   lda zpSrcLo
                 lda zpBitsLo                    ;If swapped a weapon, select the new weapon now
                 beq AI_DidNotDrop
                 sty itemIndex
+RI_ShiftDone:
 AI_DidNotDrop:  sec                             ;Successful pickup
-                rts
+RI_NotFound:    rts
+
+        ; Remove item from inventory
+        ;
+        ; Parameters: A item type
+        ; Returns: C=1 if found and removed
+        ; Modifies: A,Y,zpSrcLo
+
+RemoveItem:     jsr FindItem
+                bcc RI_NotFound
+RemoveItemByIndex:
+                cpy itemIndex
+                bcs RI_ShiftLoop
+                dec itemIndex                   ;Change selection if selected item was shifted
+RI_ShiftLoop:   lda invCount+1,y                ;Shift items to remove the hole left by dropped item
+                sta invCount,y
+                lda invType+1,y
+                sta invType,y
+                beq RI_ShiftDone
+                iny
+                bpl RI_ShiftLoop
 
         ; Item update routine
         ;
