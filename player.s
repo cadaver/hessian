@@ -9,8 +9,8 @@ FR_STAND        = 0
 FR_WALK         = 1
 FR_JUMP         = 9
 FR_DUCK         = 12
-FR_DIE          = 14
-FR_CLIMB        = 17
+FR_CLIMB        = 14
+FR_DIE          = 18
 FR_ROLL         = 21
 FR_PREPARE      = 27
 FR_ATTACK       = 29
@@ -62,33 +62,21 @@ MP_NoHealthRecharge:
 MP_NotDucked:   and actMoveCtrl,x
 MP_NewMoveCtrl: sta actMoveCtrl,x
 
-        ; Humanoid character move routine. Also executes AttackHuman.
+        ; Humanoid character move and attack routine
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently displayed
-                lda (actLo),y                   ;frame
-                ldy actF1,x
-                sec
-                sbc humanSizeReduceTbl,y
-                sta actSizeU,x
-                lda actMoveFlags,x
-                sta temp1
-                lda #$00                        ;Roll flag
-                sta temp2
-                ldy #AL_MOVECAPS
-                lda (actLo),y
-                sta temp3                       ;Movement capabilities
-                iny
-                lda (actLo),y
-                sta temp4                       ;Movement speed
-                lda actF1,x                     ;Check if climbing
-                cmp #FR_DIE
-                bcc MH_NoRoll
-                cmp #FR_CLIMB
-                bcs MH_NoDeathAnim
+MoveAndAttackHuman:
+                jsr MoveHuman
+                jmp AttackHuman
+
+        ; Humanoid character move routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MH_DeathAnim:   lda #DEATH_HEIGHT                ;Actor height for ceiling check
                 sta temp4
@@ -121,14 +109,35 @@ MH_DeathCheckRemove:
 MH_DeathDone:   rts
 MH_DeathRemove: jmp RemoveActor
 
-MH_NoDeathAnim: cmp #FR_ROLL                    ;If rolling, automatically accelerate
-                bcs MH_Rolling                  ;to facing direction
+MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently displayed
+                lda (actLo),y                   ;frame
+                ldy actF1,x
+                sec
+                sbc humanSizeReduceTbl,y
+                sta actSizeU,x
+                lda actMoveFlags,x
+                sta temp1
+                lda #$00                        ;Roll flag
+                sta temp2
+                ldy #AL_MOVECAPS
+                lda (actLo),y
+                sta temp3                       ;Movement capabilities
+                iny
+                lda (actLo),y
+                sta temp4                       ;Movement speed
+                lda actF1,x                     ;Check special movement states
+                cmp #FR_CLIMB
+                bcc MH_NotClimbing
+                cmp #FR_ROLL
+                bcs MH_Rolling
+                cmp #FR_DIE
+                bcs MH_DeathAnim
                 jmp MH_Climbing
 MH_Rolling:     inc temp2
                 lda actD,x
                 bmi MH_AccLeft
                 bpl MH_AccRight
-MH_NoRoll:      cmp #FR_DUCK+1
+MH_NotClimbing: cmp #FR_DUCK+1
                 lda actMoveCtrl,x               ;Check turning / X-acceleration / braking
                 and #JOY_LEFT
                 beq MH_NotLeft
@@ -274,9 +283,10 @@ MH_JumpAnimDown:cmp #2*8
                 iny
 MH_JumpAnimDone:tya
                 jmp MH_AnimDone
+MH_AnimDone3:   rts
 MH_RollAnim:    lda #$01
                 jsr AnimationDelay
-                bcc MH_AllDone2
+                bcc MH_AnimDone3
                 lda actF1,x
                 adc #$00
                 cmp #FR_ROLL+6                  ;Transition from roll to low duck
@@ -288,7 +298,6 @@ MH_RollToJump:  lda #FR_JUMP+2
                 bne MH_RollAnimDone
 MH_RollToDuck:  lda #FR_DUCK+1
 MH_RollAnimDone:jmp MH_AnimDone
-MH_AllDone2:    jmp AttackHuman
 MH_GroundAnim:  lda actMoveCtrl,x
                 and #JOY_DOWN
                 beq MH_NoDuck
@@ -331,10 +340,10 @@ MH_NoInitClimbDown:
                 bne MH_AnimDone
 MH_DuckAnim:    lda actF1,x                     ;Check if already ducked
                 cmp #FR_DUCK+1
-                bcs MH_AllDone
+                bcs MH_AnimDone2
                 lda #$01
                 jsr AnimationDelay
-                bcc MH_AllDone
+                bcc MH_AnimDone2
                 txa                             ;Check item pickup if player
                 bne MH_NoPickupCheck
                 jsr CheckPickup
@@ -349,7 +358,7 @@ MH_NoDuck:      lda actF1,x
 MH_DuckStandUpAnim:
                 lda #$01
                 jsr AnimationDelay
-                bcc MH_AllDone
+                bcc MH_AnimDone2
                 lda actF1,x
                 sbc #$01
                 cmp #FR_DUCK
@@ -381,7 +390,7 @@ MH_StandAnim:   lda #$00
                 lda #FR_STAND
 MH_AnimDone:    sta actF1,x
                 sta actF2,x
-MH_AllDone:     jmp AttackHuman
+MH_AnimDone2:   rts
 
 MH_InitClimb:   lda #$80
                 sta actXL,x
@@ -398,7 +407,7 @@ MH_InitClimb:   lda #$80
                 lda #$00
                 sta actSX,x
                 sta actSY,x
-                jmp MH_ClimbDone2
+                jmp NoInterpolation
 
 MH_Climbing:    ldy #AL_CLIMBSPEED
                 lda (actLo),y
@@ -413,7 +422,7 @@ MH_NoClimbUp:   lsr
                 bcs MH_ClimbDown
                 lda actMoveCtrl,x               ;Exit ladder?
                 and #JOY_LEFT|JOY_RIGHT
-                beq MH_AllDone
+                beq MH_ClimbDone
                 lsr                             ;Left bit to direction
                 lsr
                 lsr
@@ -424,10 +433,10 @@ MH_NoClimbUp:   lsr
                 bcs MH_ClimbExit
                 lda actYL,x                     ;If half way a char, check also 1 char
                 and #$20                        ;below
-                beq MH_AllDone
+                beq MH_ClimbDone
                 jsr GetCharInfo1Below
                 lsr
-                bcc MH_AllDone
+                bcc MH_ClimbDone
 MH_ClimbExitBelow:
                 lda #8*8
                 jsr MoveActorY
@@ -442,6 +451,7 @@ MH_ClimbDown:   jsr GetCharInfo
                 beq MH_ClimbDone
                 ldy #4*8
                 bne MH_ClimbCommon
+MH_ClimbDone:   rts
 
 MH_ClimbUp:     jsr GetCharInfo4Above
                 sta temp1
@@ -495,8 +505,7 @@ MH_ClimbAnimDown:
                 sta actF2,x
                 tya
                 jsr MoveActorY
-MH_ClimbDone2:  jsr NoInterpolation
-MH_ClimbDone:   jmp AttackHuman
+                jmp NoInterpolation
 
         ; Humanoid character destroy routine
         ;

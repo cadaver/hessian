@@ -68,18 +68,18 @@ adExplosion:    dc.b ONESPRITE                  ;Number of sprites
 
         ; Human actor upper part framenumbers
 
-humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,6,20,21,25,24,25,26,27,28,29,30,31,32,6,7,8,9,10,11,12
-                dc.b 4,3,3,4,4,5,5,4,4,5,4,3,3,3,13,22,23,25,24,25,26,33,34,35,36,37,38,13,14,15,16,17,18,19
+humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,25,24,25,26,6,20,21,27,28,29,30,31,32,6,7,8,9,10,11,12
+                dc.b 4,3,3,4,4,5,5,4,4,5,4,3,3,3,25,24,25,26,13,22,23,33,34,35,36,37,38,13,14,15,16,17,18,19
 
         ; Human actor lower part framenumbers
 
-humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,10,11,12,16,17,20,21,22,27,26,27,28,29,30,31,32,33,34
-                dc.b 5,6,7,8,9,6,7,8,9,13,14,15,18,19,23,24,25,27,26,27,28,35,36,37,38,39,40
+humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,10,11,12,16,17,27,26,27,28,20,21,22,29,30,31,32,33,34
+                dc.b 5,6,7,8,9,6,7,8,9,13,14,15,18,19,27,26,27,28,23,24,25,35,36,37,38,39,40
 
         ; Human Y-size reduce table based on animation
 
 humanSizeReduceTbl:
-                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,0,0,16,1,2,1,2,12,16,16,16,16,12
+                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,2,1,2,0,0,0,12,16,16,16,16,12
 
         ; Item color flashing table
 
@@ -149,7 +149,7 @@ alGrenade:      dc.w MoveGrenade                ;Update routine
 alExplosion:    dc.w MoveExplosion              ;Update routine
 
 alInactivePlayer:
-                dc.w MoveHuman                  ;Update routine
+                dc.w MoveAndAttackHuman         ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up

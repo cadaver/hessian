@@ -46,7 +46,7 @@ AH_DecrementDelay:
                 dec actAttackD,x
 AH_SetIdleWeaponFrame:
                 ldy actF2,x
-                cpy #FR_DIE
+                cpy #FR_CLIMB
                 bcs AH_NoWeaponFrame
                 ldy #WD_IDLEFR
 AH_SetPrepareWeaponFrame:
@@ -78,7 +78,7 @@ AttackHuman:    ldy actWpn,x
                 cmp #JOY_FIRE
                 bcc AH_NoAttack
                 ldy actF1,x
-                cpy #FR_ROLL
+                cpy #FR_DIE
                 bcs AH_NoAttack
                 and #JOY_LEFT|JOY_RIGHT         ;If left/right attack, turn actor
                 beq AH_NoTurn2
