@@ -80,6 +80,11 @@ MAX_BLK         = 192
                 Var wpnLo                       ;Weapon variables
                 Var wpnHi
 
+                Var textLo                      ;Panel text printing variables
+                Var textHi
+                Var textLeftMargin
+                Var textRightMargin
+
                 Var temp1                       ;Temp variables
                 Var temp2
                 Var temp3

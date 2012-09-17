@@ -57,8 +57,6 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actYH,x
                 lda #ACT_PLAYER
                 sta actT,x
-                lda #WPN_KNIFE
-                sta actWpn,x
                 lda #HP_PLAYER
                 sta actHp,x
                 lda #GRP_HEROES
@@ -102,6 +100,51 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 lda #$08
                 sta actC,x
                 jsr SetActorSize
+                
+                ldx #ACTI_FIRSTITEM
+                lda #5
+                sta actXH,x
+                lda #$80
+                sta actXL,x
+                lda #2
+                sta actYH,x
+                lda #ACT_ITEM
+                sta actT,x
+                lda #ITEM_KNIFE-1
+                sta actF1,x
+                lda #1
+                sta actHp,x
+                jsr SetActorSize
+
+                inx
+                lda #6
+                sta actXH,x
+                lda #$80
+                sta actXL,x
+                lda #2
+                sta actYH,x
+                lda #ACT_ITEM
+                sta actT,x
+                lda #ITEM_PISTOL-1
+                sta actF1,x
+                lda #1
+                sta actHp,x
+                jsr SetActorSize
+
+                inx
+                lda #7
+                sta actXH,x
+                lda #$80
+                sta actXL,x
+                lda #2
+                sta actYH,x
+                lda #ACT_ITEM
+                sta actT,x
+                lda #ITEM_GRENADE-1
+                sta actF1,x
+                lda #1
+                sta actHp,x
+                jsr SetActorSize
 
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors
@@ -115,16 +158,28 @@ MainLoop:       jsr ScrollLogic
                 jsr ScrollPlayer
                 jsr UpdateFrame
                 jsr UpdatePanel
-                
-                lda keyType                     ;Test code for weapon switch, to be removed
-                cmp #KEY_SPACE
-                bne MainLoop
-                lda actWpn
-                adc #$00
-                cmp #WPN_GRENADE+1
-                bcc WeaponOk
-                lda #WPN_KNIFE
-WeaponOk:       sta actWpn
+
+                lda keyType                     ;Test code for inventory switching, TODO remove
+                ldy itemIndex
+                beq NotPrevItem
+                cmp #KEY_N
+                bne NotPrevItem
+                dey
+                bpl NewSelectedItem
+NotPrevItem:    cmp #KEY_M
+                bne ItemSelectDone
+                lda invType+1,y
+                beq ItemSelectDone
+                iny
+NewSelectedItem:sty itemIndex
+                lda invType,y
+                tay
+                lda itemNameLo-1,y
+                ldx itemNameHi-1,y
+                ldy #INVENTORY_TEXT_DURATION/2
+                jsr PrintPanelText              ;Show name of new selected item
+                jsr RefreshPlayerWeapon
+ItemSelectDone:
 
                 jmp MainLoop
 

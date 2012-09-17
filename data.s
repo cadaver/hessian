@@ -329,14 +329,13 @@ actAttackD:     ds.b MAX_COMPLEXACT,0
 
         ;Other variables
 
+itemIndex:      dc.b 0
 invType:        ds.b MAX_INVENTORYITEMS,0
 invCount:       ds.b MAX_INVENTORYITEMS,0
 displayedHealth:dc.b 0
 healthRecharge: dc.b 0
-panelTextLo:    dc.b 0
-panelTextHi:    dc.b 0
-panelTextDelay: dc.b 0
-panelTextTime:  dc.b 0
+textDelay:      dc.b 0
+textTime:       dc.b 0
 
         ; Dynamic memory allocation area begins here
          

@@ -42,108 +42,103 @@ UP_EmptyCharsLoop:
 UP_EmptyCharsCmp:
                 cpx #HP_PLAYER/4
                 bcc UP_EmptyCharsLoop
-UP_HealthDone:  lda panelTextTime
+UP_HealthDone:  lda textTime
                 beq UP_TextDone
-                dec panelTextTime
+                dec textTime
                 beq UP_UpdateText
 UP_TextDone:    rts
-UP_UpdateText:  ldx #$00
+UP_UpdateText:  ldx textLeftMargin
 UP_ContinueText:ldy #$00
-                lda panelTextHi
+                lda textHi
                 beq UP_ClearEndOfLine
-                sta zpSrcHi
-                lda panelTextLo
-                sta zpSrcLo
-                lda (zpSrcLo),y
+                lda (textLo),y
                 beq UP_ClearEndOfLine
-UP_BeginLine:   lda panelTextDelay
+UP_BeginLine:   lda textDelay
                 asl
-                sta panelTextTime
+                sta textTime
 UP_PrintTextLoop:
-                sty zpBitsHi
+                sty zpSrcHi
                 lda #$00
-                sta zpBitsLo
-UP_ScanWordLoop:lda (zpSrcLo),y
+                sta zpSrcLo
+UP_ScanWordLoop:lda (textLo),y
                 beq UP_ScanWordDone
                 cmp #$20
                 beq UP_ScanWordDone
                 cmp #"-"
                 beq UP_ScanWordDone2
-                inc zpBitsLo
+                inc zpSrcLo
                 iny
                 bne UP_ScanWordLoop
 UP_ScanWordDone2:
-                inc zpBitsLo
-UP_ScanWordDone:ldy zpBitsHi
+                inc zpSrcLo
+UP_ScanWordDone:ldy zpSrcHi
                 txa
                 clc
-                adc zpBitsLo
-                sta UP_WordCmp+1
-                cmp #PANEL_TEXT_SIZE+1
-                bcc UP_WordCmp
-UP_EndLine:     stx zpBitBuf
-                tya
-                clc
                 adc zpSrcLo
-                sta panelTextLo
-                lda zpSrcHi
-                adc #$00
-                sta panelTextHi
-                cpx #PANEL_TEXT_SIZE
+                sta UP_WordCmp+1
+                cmp textRightMargin
+                beq UP_WordCmp
+                bcc UP_WordCmp
+UP_EndLine:     stx zpBitsLo
+                tya
+                ldx #textLo
+                jsr Add8
+                ldx zpBitsLo
+                cpx textRightMargin
                 bcs UP_PrintTextDone
 UP_ClearEndOfLine:
                 lda #$20
 UP_ClearLoop:   sta screen1+SCROLLROWS*40+40+9,x
                 inx
-                cpx #PANEL_TEXT_SIZE
+                cpx textRightMargin
                 bcc UP_ClearLoop
 UP_PrintTextDone:
                 rts
-UP_WordLoop:    lda (zpSrcLo),y
+UP_WordLoop:    lda (textLo),y
                 sta screen1+SCROLLROWS*40+40+9,x
                 inx
                 iny
 UP_WordCmp:     cpx #$00
                 bcc UP_WordLoop
-UP_SpaceLoop:   lda (zpSrcLo),y
+UP_SpaceLoop:   lda (textLo),y
                 beq UP_EndLine
                 cmp #$20
                 bne UP_SpaceLoopDone
-                cpx #PANEL_TEXT_SIZE
+                cpx textRightMargin
                 bcs UP_SpaceSkip
                 sta screen1+SCROLLROWS*40+40+9,x
                 inx
 UP_SpaceSkip:   iny
                 bne UP_SpaceLoop
 UP_SpaceLoopDone:
-                cpx #PANEL_TEXT_SIZE
+                cpx textRightMargin
                 bcc UP_PrintTextLoop
                 bcs UP_EndLine
 
-        ; Show text on panel, possibly multi-line
+        ; Print text to panel, possibly multi-line
         ;
         ; Parameters: A,X text address, Y delay in game logic frames (25 = 1 sec)
         ; Returns: -
         ; Modifies: A
         
-ShowPanelText:  sty panelTextDelay
-SetTextPtr:     sta panelTextLo
-                stx panelTextHi
+PrintPanelText: sty textDelay
+SetTextPtr:     sta textLo
+                stx textHi
                 jmp UP_UpdateText
 
-        ; Show continued panel text. Should be called immediately after printing
+        ; Print continued panel text. Should be called immediately after printing
         ; the beginning part.
         ;
         ; Parameters: A,X text address, Y delay in game logic frames (25 = 1 sec)
         ; Returns: -
         ; Modifies: A
         
-ContinueText:   sty panelTextDelay
-                sta panelTextLo
-                stx panelTextHi
-                ldx zpBitBuf
+ContinuePanelText:   
+                sty textDelay
+                sta textLo
+                stx textHi
+                ldx zpBitsLo
                 jmp UP_ContinueText
-
 
         ; Clear the panel text
         ;

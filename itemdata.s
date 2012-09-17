@@ -3,6 +3,10 @@ ITEM_KNIFE      = 1
 ITEM_PISTOL     = 2
 ITEM_GRENADE    = 3
 
+ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
+ITEM_FIRST_NONWEAPON = 4
+
+
         ; Item data
         
 itemNameLo:     dc.b <txtKnife
@@ -17,4 +21,4 @@ itemMaxCount:   dc.b 1
                 dc.b 100
                 dc.b 10
                 
-                
+

@@ -524,6 +524,8 @@ HumanDeath:     lda #FR_DIE
                 sta actMoveFlags,x              ;Not grounded anymore
                 stx temp3
                 sty temp4
+                txa                             ;Player dropping weapon is unnecessary
+                beq HD_NoItem
                 lda actWpn,x                    ;Check if should spawn the weapon item
                 beq HD_NoItem                   ;TODO: spawn other items like med-kits or
                 lda #ACTI_FIRSTITEM             ;quest items if necessary
@@ -609,4 +611,19 @@ SP_NotDown1:    cmp #SCRCENTER_Y+4
 SP_NotDown2:    stx scrollSX
                 sty scrollSY
 HD_NoDamageSource:
+                rts
+                
+        ; Refresh player's current weapon from inventory
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,Y
+        
+RefreshPlayerWeapon:
+                ldy itemIndex
+                lda invType,y
+                cmp #ITEM_FIRST_NONWEAPON
+                bcc RPW_WeaponOK
+                lda #WPN_NONE
+RPW_WeaponOK:   sta actWpn+ACTI_PLAYER
                 rts

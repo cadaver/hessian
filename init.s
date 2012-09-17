@@ -28,6 +28,14 @@ InitControls:   lda #$00
                 sta $d415                       ;Filter lowbyte
                 sta ntFiltPos
                 sta ntFiltTime
+        
+        ; Initialize panel text printing
+
+                sta textLo
+                sta textHi
+                sta textLeftMargin
+                lda #PANEL_TEXT_SIZE
+                sta textRightMargin
 
         ; Initialize video registers and screen memory
 
