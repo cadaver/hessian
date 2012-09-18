@@ -280,7 +280,8 @@ DA_HumanRight2: ldy #ADH_BASEINDEX2
                 sta DA_HumanFrame2+1
                 rts
 
-        ; Update actors. Build first collision lists for bullet collisions
+        ; Update actors. Build first collision lists for bullet collisions. Followed by
+        ; ScrollPlayer and InterpolateActors
         ;
         ; Parameters: -
         ; Returns: -
@@ -317,11 +318,7 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
                 sta heroList,x
                 ldx #$00
 UA_Loop:        ldy actT,x
-                bne UA_NotZero
-UA_Next:        inx
-                cpx #MAX_ACT
-                bcc UA_Loop
-                rts
+                beq UA_Next
 UA_NotZero:     stx actIndex
                 lda actLogicTblLo-1,y            ;Get actor logic structure address
                 sta actLo
@@ -334,10 +331,9 @@ UA_NotZero:     stx actIndex
                 lda (actLo),y
                 sta UA_Jump+2
 UA_Jump:        jsr $1000
-                inx
+UA_Next:        inx
                 cpx #MAX_ACT
                 bcc UA_Loop
-IA_Done2:       rts
 
         ; Interpolate actors' movement each second frame
         ;
@@ -372,7 +368,8 @@ IA_ScrollYNeg:  cmp #$fc
 IA_ScrollYOk:   sta IA_ScrollYAdjust+1
                 ldx DA_LastSprIndex+1
                 dex
-                bmi IA_Done2
+                bpl IA_SprLoop
+                rts
 IA_SprLoop:     lda sprC,x                      ;Process flickering
                 cmp #$40
                 bcc IA_NoFlicker

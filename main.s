@@ -148,15 +148,12 @@ CreatePlayer:   ldx #ACTI_PLAYER
 
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors
-                jsr ScrollPlayer
-                jsr UpdateFrame
+                jsr ScrollAndUpdateFrame
                 jsr UpdatePanel
                 jsr ScrollLogic
                 jsr GetControls
                 jsr UpdateActors
-                jsr InterpolateActors
-                jsr ScrollPlayer
-                jsr UpdateFrame
+                jsr ScrollAndUpdateFrame
                 jsr UpdatePanel
 
                 lda keyType                     ;Test code for inventory switching, TODO remove

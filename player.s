@@ -572,47 +572,6 @@ HD_LeftImpulse: lda temp8
                 ldy #DEATH_MAX_XSPEED
                 jmp AccActorXNeg
 
-        ; Scroll screen around the player actor
-        ;
-        ; Parameters: -
-        ; Returns: scrollSX,scrollSY new scrolling speed
-        ; Modifies: A,X,Y,temp1-temp2
-
-ScrollPlayer:   ldx #ACTI_PLAYER
-                jsr GetActorCharCoords
-                sty temp1
-                ldx #0
-                ldy #0
-                cmp #SCRCENTER_X-3
-                bcs SP_NotLeft1
-                dex
-SP_NotLeft1:    cmp #SCRCENTER_X-1
-                bcs SP_NotLeft2
-                dex
-SP_NotLeft2:    cmp #SCRCENTER_X+2
-                bcc SP_NotRight1
-                inx
-SP_NotRight1:   cmp #SCRCENTER_X+4
-                bcc SP_NotRight2
-                inx
-SP_NotRight2:   lda temp1
-                cmp #SCRCENTER_Y-3
-                bcs SP_NotUp1
-                dey
-SP_NotUp1:      cmp #SCRCENTER_Y-1
-                bcs SP_NotUp2
-                dey
-SP_NotUp2:      cmp #SCRCENTER_Y+2
-                bcc SP_NotDown1
-                iny
-SP_NotDown1:    cmp #SCRCENTER_Y+4
-                bcc SP_NotDown2
-                iny
-SP_NotDown2:    stx scrollSX
-                sty scrollSY
-HD_NoDamageSource:
-                rts
-                
         ; Refresh player's current weapon from inventory
         ;
         ; Parameters: -
@@ -626,4 +585,5 @@ RefreshPlayerWeapon:
                 bcc RPW_WeaponOK
                 lda #WPN_NONE
 RPW_WeaponOK:   sta actWpn+ACTI_PLAYER
+HD_NoDamageSource:
                 rts
