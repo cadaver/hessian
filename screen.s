@@ -1,6 +1,9 @@
 SCROLLROWS      = 22
 SCROLLSPLIT     = 11
 
+SCRCENTER_X     = 19
+SCRCENTER_Y     = 13
+
 CI_GROUND       = 1                             ;Char info bits
 CI_OBSTACLE     = 2
 CI_CLIMB        = 4

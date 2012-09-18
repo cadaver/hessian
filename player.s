@@ -1,10 +1,3 @@
-        ; Scrolling center position in chars
-
-SCRCENTER_X     = 19
-SCRCENTER_Y     = 13
-
-        ; Fixed human frame numbers
-
 FR_STAND        = 0
 FR_WALK         = 1
 FR_JUMP         = 9

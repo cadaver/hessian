@@ -45,8 +45,9 @@ AH_BreakMeleeAttack:                            ;the initial bullet to undesired
 AH_DecrementDelay:
                 dec actAttackD,x
 AH_SetIdleWeaponFrame:
-                ldy actF2,x
-                cpy #FR_CLIMB
+                lda actF1,x
+                sta actF2,x                    
+                cmp #FR_CLIMB
                 bcs AH_NoWeaponFrame
                 ldy #WD_IDLEFR
 AH_SetPrepareWeaponFrame:
@@ -74,7 +75,12 @@ AttackHuman:    ldy actWpn,x
                 ldy #WD_BITS
                 lda (wpnLo),y
                 sta temp3
-                lda actCtrl,x
+                txa                             ;If player is in menu, do not attack
+                bne AH_NotPlayer
+                lda menuCounter
+                cmp #MENU_DELAY
+                beq AH_NoAttack
+AH_NotPlayer:   lda actCtrl,x
                 cmp #JOY_FIRE
                 bcc AH_NoAttack
                 ldy actF1,x
@@ -97,8 +103,8 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 bcc AH_NoAttack
                 iny
                 cmp (wpnLo),y
-                beq AH_AimOk
-                bcs AH_NoAttack
+                bcc AH_AimOk
+                jmp AH_NoAttack
 AH_AimOk:       pha
                 clc
                 adc #FR_ATTACK
@@ -126,9 +132,7 @@ AH_NoWeaponFrame2:
                 beq AH_CannotFire
                 bne AH_MeleeIdle
 AH_MeleeFailed: inc actAttackD,x                ;If melee failed, restore previous counter value
-AH_MeleeIdle:   lda actF1,x                     ;When melee weapon is waiting for next strike,  
-                sta actF2,x                     ;put hands in idle position
-                jmp AH_SetIdleWeaponFrame
+AH_MeleeIdle:   jmp AH_SetIdleWeaponFrame
 AH_MeleeStrike:
 AH_CannotFire:  rts
 

@@ -53,7 +53,7 @@ wpnTblHi:       dc.b >wdKnife
 
 wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction
-                dc.b AIM_HORIZONTAL             ;Last aim direction
+                dc.b AIM_HORIZONTAL+1           ;Last aim direction+1
                 dc.b 7                          ;Attack delay
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b DMG_KNIFE                  ;Bullet damage
@@ -70,7 +70,7 @@ wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
 
 wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLASHBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
-                dc.b AIM_DOWN                   ;Last aim direction
+                dc.b AIM_DOWN+1                 ;Last aim direction+1
                 dc.b 7                          ;Attack delay
                 dc.b ACT_BULLET                 ;Bullet actor type
                 dc.b DMG_PISTOL                 ;Bullet damage
@@ -87,7 +87,7 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLASHBULLET ;Weapon bits
 
 wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
-                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b AIM_DIAGONALDOWN+1         ;Last aim direction+1
                 dc.b 15                         ;Attack delay
                 dc.b ACT_GRENADE                ;Bullet actor type
                 dc.b DMG_GRENADE                ;Bullet damage

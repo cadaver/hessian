@@ -115,7 +115,7 @@ AI_CheckWeapons:lda invType,y
                 bcs AI_NotAWeapon
                 inx
 AI_NotAWeapon:  iny
-                bpl AI_CheckWeapons
+                bne AI_CheckWeapons
 AI_CheckWeaponsDone:
                 cpx #MAX_WEAPONS
                 bcc AI_NoWeaponLimit
@@ -136,7 +136,7 @@ AI_FindPosLoop: lda invType,y                   ;Find proper position for new it
                 cmp zpSrcLo
                 bcs AI_PosFound
                 iny
-                bpl AI_FindPosLoop
+                bne AI_FindPosLoop
 AI_PosFound:    sty zpBitBuf
                 ldx #MAX_INVENTORYITEMS-2       ;TODO: will bug when inventory is full
 AI_MakeRoomLoop:lda invType,x                   ;Shift items to make room
@@ -179,7 +179,7 @@ RI_ShiftLoop:   lda invCount+1,y                ;Shift items to remove the hole 
                 sta invType,y
                 beq RI_ShiftDone
                 iny
-                bpl RI_ShiftLoop
+                bne RI_ShiftLoop
 
         ; Item update routine
         ;

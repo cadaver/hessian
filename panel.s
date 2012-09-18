@@ -1,4 +1,7 @@
 PANEL_TEXT_SIZE = 22
+MENU_DELAY      = 20
+MENU_MOVEDELAY  = 3
+INDEFINITE_TEXT_DURATION = $7f
 
         ; Update scorepanel each frame
         ;
@@ -44,6 +47,8 @@ UP_EmptyCharsCmp:
                 bcc UP_EmptyCharsLoop
 UP_HealthDone:  lda textTime
                 beq UP_TextDone
+                cmp #INDEFINITE_TEXT_DURATION*2
+                bcs UP_TextDone
                 dec textTime
                 beq UP_UpdateText
 UP_TextDone:    rts
@@ -148,3 +153,79 @@ ContinuePanelText:
 
 ClearPanelText: ldx #$00
                 beq SetTextPtr
+
+        ; Update menu system (inventory) in the panel
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars,loader temp vars
+
+UpdateMenu:     ldx menuCounter
+                lda actHp+ACTI_PLAYER           ;Close inventory if dead
+                beq UM_Close
+                lda joystick
+                cmp #JOY_FIRE
+                bcc UM_Close
+                cpx #$ff
+                beq UM_NeedRelease
+                cpx #MENU_DELAY
+                beq UM_IsActive
+                cmp #JOY_FIRE
+                bne UM_Inactivate
+                inx
+                cpx #MENU_DELAY
+                bcs UM_Open
+UM_StoreCounter:stx menuCounter
+UM_NeedRelease: rts
+UM_Close:       cpx #MENU_DELAY
+                bcc UM_WasNotOpen
+                jsr ClearPanelText
+UM_WasNotOpen:  ldx #$00
+                beq UM_StoreCounter
+UM_Inactivate:  ldx #$ff
+                bne UM_StoreCounter
+UM_Open:        stx menuCounter
+                lda #$00
+                sta menuMoveDelay
+UM_Refresh:     inc textLeftMargin
+                dec textRightMargin
+                ldx itemIndex
+                ldy invType,x
+                lda itemNameLo-1,y
+                ldx itemNameHi-1,y
+                ldy #INDEFINITE_TEXT_DURATION
+                jsr PrintPanelText
+                dec textLeftMargin
+                inc textRightMargin
+                lda #$20
+                ldx itemIndex
+                beq UM_NoLeftArrow
+                lda #19
+UM_NoLeftArrow: sta screen1+SCROLLROWS*40+40+9
+                lda #$20
+                ldy invType+1,x
+                beq UM_NoRightArrow
+                lda #20
+UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+30
+                rts
+UM_IsActive:    ldy menuMoveDelay
+                beq UM_NoMoveDelay
+                dec menuMoveDelay
+                rts
+UM_NoMoveDelay: ldy itemIndex
+                cmp #JOY_FIRE+JOY_LEFT
+                bne UM_NoMoveLeft
+                cpy #$00
+                beq UM_NoMoveLeft
+                dec itemIndex
+UM_MoveCommon:  lda #MENU_MOVEDELAY
+                sta menuMoveDelay
+                jsr RefreshPlayerWeapon
+                jmp UM_Refresh
+UM_NoMoveLeft:  cmp #JOY_FIRE+JOY_RIGHT
+                bne UM_NoMoveRight
+                lda invType+1,y
+                beq UM_NoMoveRight
+                inc itemIndex
+                bne UM_MoveCommon
+UM_NoMoveRight: rts

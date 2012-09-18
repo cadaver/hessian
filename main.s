@@ -138,35 +138,12 @@ MainLoop:       jsr ScrollLogic
                 jsr DrawActors
                 jsr ScrollPlayerUpdateFrame
                 jsr UpdatePanel
-
                 jsr ScrollLogic
                 jsr GetControls
+                jsr UpdateMenu
                 jsr UpdateActors
                 jsr ScrollPlayerUpdateFrame
                 jsr UpdatePanel
-
-                lda keyType                     ;Test code for inventory switching, TODO remove
-                ldy itemIndex
-                beq NotPrevItem
-                cmp #KEY_N
-                bne NotPrevItem
-                dey
-                bpl NewSelectedItem
-NotPrevItem:    cmp #KEY_M
-                bne ItemSelectDone
-                lda invType+1,y
-                beq ItemSelectDone
-                iny
-NewSelectedItem:sty itemIndex
-                lda invType,y
-                tay
-                lda itemNameLo-1,y
-                ldx itemNameHi-1,y
-                ldy #INVENTORY_TEXT_DURATION/2
-                jsr PrintPanelText              ;Show name of new selected item
-                jsr RefreshPlayerWeapon
-ItemSelectDone:
-
                 jmp MainLoop
 
                 include actordata.s
