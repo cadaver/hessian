@@ -62,6 +62,9 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 lda #GRP_HEROES
                 sta actGrp,x
                 jsr SetActorSize
+                lda #ITEM_KNIFE
+                sta invType
+                jsr RefreshPlayerWeapon
 
                 inx
                 lda #7
@@ -102,21 +105,6 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 jsr SetActorSize
                 
                 ldx #ACTI_FIRSTITEM
-                lda #5
-                sta actXH,x
-                lda #$80
-                sta actXL,x
-                lda #2
-                sta actYH,x
-                lda #ACT_ITEM
-                sta actT,x
-                lda #ITEM_KNIFE-1
-                sta actF1,x
-                lda #1
-                sta actHp,x
-                jsr SetActorSize
-
-                inx
                 lda #6
                 sta actXH,x
                 lda #$80
@@ -148,12 +136,13 @@ CreatePlayer:   ldx #ACTI_PLAYER
 
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors
-                jsr ScrollAndUpdateFrame
+                jsr ScrollPlayerUpdateFrame
                 jsr UpdatePanel
+
                 jsr ScrollLogic
                 jsr GetControls
                 jsr UpdateActors
-                jsr ScrollAndUpdateFrame
+                jsr ScrollPlayerUpdateFrame
                 jsr UpdatePanel
 
                 lda keyType                     ;Test code for inventory switching, TODO remove

@@ -286,12 +286,9 @@ SL_CSSMapY:     lda #$00
         ; Returns: -
         ; Modifies: A,X,Y,temp1-temp6
         
-ScrollAndUpdateFrame:
+ScrollPlayerUpdateFrame:
                 ldx #ACTI_PLAYER
                 jsr GetActorCharCoords
-                sty temp1
-                ldx #$00
-                ldy #$00
                 cmp #SCRCENTER_X-3
                 bcs SP_NotLeft1
                 dex
@@ -304,21 +301,21 @@ SP_NotLeft2:    cmp #SCRCENTER_X+2
 SP_NotRight1:   cmp #SCRCENTER_X+4
                 bcc SP_NotRight2
                 inx
-SP_NotRight2:   lda temp1
-                cmp #SCRCENTER_Y-3
+SP_NotRight2:   stx scrollSX
+                ldx #$00
+                cpy #SCRCENTER_Y-3
                 bcs SP_NotUp1
-                dey
-SP_NotUp1:      cmp #SCRCENTER_Y-1
+                dex
+SP_NotUp1:      cpy #SCRCENTER_Y-1
                 bcs SP_NotUp2
-                dey
-SP_NotUp2:      cmp #SCRCENTER_Y+2
+                dex
+SP_NotUp2:      cpy #SCRCENTER_Y+2
                 bcc SP_NotDown1
-                iny
-SP_NotDown1:    cmp #SCRCENTER_Y+4
+                inx
+SP_NotDown1:    cpy #SCRCENTER_Y+4
                 bcc SP_NotDown2
-                iny
-SP_NotDown2:    stx scrollSX
-                sty scrollSY
+                inx
+SP_NotDown2:    stx scrollSY
 
         ; Sort sprites, set new frame to be displayed and perform scrollwork
         ;
