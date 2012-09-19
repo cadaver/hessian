@@ -1,22 +1,3 @@
-        ; Player control tables
-
-moveCtrlAndTbl: dc.b $ff                        ;None
-                dc.b $ff-JOY_DOWN               ;Up
-                dc.b $ff-JOY_UP                 ;Down
-                dc.b $ff-JOY_DOWN-JOY_UP        ;Up+Down
-                dc.b $ff-JOY_RIGHT              ;Left
-                dc.b $ff-JOY_RIGHT-JOY_DOWN     ;Left+Up
-                dc.b $ff-JOY_RIGHT-JOY_UP       ;Left+Down
-                dc.b $ff-JOY_RIGHT-JOY_DOWN-JOY_UP ;Left+Up+Down
-                dc.b $ff-JOY_LEFT               ;Right
-                dc.b $ff-JOY_LEFT-JOY_DOWN      ;Right+Up
-                dc.b $ff-JOY_LEFT-JOY_UP        ;Right+Down
-                dc.b $ff-JOY_LEFT-JOY_DOWN-JOY_UP ;Right+Up+Down
-                dc.b $ff-JOY_LEFT-JOY_RIGHT     ;Right+Left
-                dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_DOWN ;Right+Left+Up
-                dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP ;Right+Left+Down
-                dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP-JOY_DOWN ;Right+Left+Up+Down
-
         ; Music relocation tables
 
 ntFixupTblLo:   dc.b <PMus_SongTblP2
@@ -190,25 +171,10 @@ colorSideTbl:   dc.b 0,-1,38
 
 keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
-kcJoyBits:      dc.b JOY_LEFT+JOY_UP
-                dc.b JOY_UP
-                dc.b JOY_RIGHT+JOY_UP
-                dc.b JOY_LEFT
-                dc.b JOY_RIGHT
-                dc.b JOY_LEFT+JOY_DOWN
-                dc.b JOY_DOWN
-                dc.b JOY_RIGHT+JOY_DOWN
-                dc.b JOY_FIRE
-                dc.b JOY_FIRE
+d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 
                 org nextSliceTbl+$80+42
                 dc.b $80+43,$80+44,0
-
-kcRowNum:       dc.b 7,1,1,1,2,1,2,2,1,6
-d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
-
-                org nextSliceTbl+$c0
-                dc.b $c0+1,$c0+2,$c0+21
 
 coordTblLo:
 N               set -32
@@ -217,13 +183,8 @@ N               set -32
 N               set N+32
                 repend
 
-                org nextSliceTbl+$c0+21
-                dc.b $c0+22,$c0+23,$c0+42
-
-kcRowAnd:       dc.b $40,$02,$40,$04,$04,$10,$80,$10,$80,$10
-
-                org nextSliceTbl+$c0+42
-                dc.b $c0+43,$c0+44,0
+                org nextSliceTbl+$c0
+                dc.b $c0+1,$c0+2,$c0+21
 
 coordTblHi:
 N               set -32
@@ -232,8 +193,31 @@ N               set -32
 N               set N+32
                 repend
 
+                org nextSliceTbl+$c0+21
+                dc.b $c0+22,$c0+23,$c0+42
+
+moveCtrlAndTbl: dc.b $ff                        ;None
+                dc.b $ff-JOY_DOWN               ;Up
+                dc.b $ff-JOY_UP                 ;Down
+                dc.b $ff-JOY_DOWN-JOY_UP        ;Up+Down
+                dc.b $ff-JOY_RIGHT              ;Left
+                dc.b $ff-JOY_RIGHT-JOY_DOWN     ;Left+Up
+                dc.b $ff-JOY_RIGHT-JOY_UP       ;Left+Down
+                dc.b $ff-JOY_RIGHT-JOY_DOWN-JOY_UP ;Left+Up+Down
+                dc.b $ff-JOY_LEFT               ;Right
+                dc.b $ff-JOY_LEFT-JOY_DOWN      ;Right+Up
+                dc.b $ff-JOY_LEFT-JOY_UP        ;Right+Down
+                dc.b $ff-JOY_LEFT-JOY_DOWN-JOY_UP ;Right+Up+Down
+                dc.b $ff-JOY_LEFT-JOY_RIGHT     ;Right+Left
+                dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_DOWN ;Right+Left+Up
+                dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP ;Right+Left+Down
+                dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP-JOY_DOWN ;Right+Left+Up+Down
+
+                org nextSliceTbl+$c0+42
+                dc.b $c0+43,$c0+44,0
+
         ; Char slope table
-        
+
 slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
                 dc.b $38,$30,$28,$20,$18,$10,$08,$00    ;Slope 1
                 dc.b $38,$38,$30,$30,$28,$28,$20,$20    ;Slope 2

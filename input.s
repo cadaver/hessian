@@ -131,28 +131,5 @@ SK_KeyFound:    tya
                 cmp keyPress
                 beq SK_SameKey
                 sta keyType
-                sta keyPress
-SK_SameKey:
-
-        ; "Joystick" control with keyboard, with keys Q W E and SHIFT for fire.
-        ;                                             A   D
-        ;                                             Z X C
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y
-
-KeyControl:     ldx #$09
-KC_Loop:        ldy kcRowNum,x
-                lda keyRowTbl,y
-                and kcRowAnd,x
-                beq KC_Pressed
-KC_Next:        dex
-                bpl KC_Loop
-                rts
-KC_Pressed:     lda joystick
-                ora kcJoyBits,x
-                sta joystick
-                bne KC_Next
 SK_NoKey:       sta keyPress
-                rts
+SK_SameKey:     rts

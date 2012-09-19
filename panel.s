@@ -222,13 +222,13 @@ UpdateMenu:     ldx menuCounter
                 cpx #MENU_DELAY
                 bcs UM_Open
 UM_StoreCounter:stx menuCounter
-UM_KeyControl:  ldx keyType                     ;Can also use ,. keys to select items
-                cpx #KEY_COMMA
+UM_KeyControl:  ldx keyType                     ;Can also use Z & X keys to select items
+                cpx #KEY_Z
                 bne UM_NotPreviousKey
                 lda #JOY_FIRE+JOY_LEFT
                 bne UM_NoMoveDelay
 UM_NotPreviousKey:
-                cpx #KEY_COLON
+                cpx #KEY_X
                 bne UM_NotNextKey
                 lda #JOY_FIRE+JOY_RIGHT
                 bne UM_NoMoveDelay
@@ -287,6 +287,11 @@ UM_NoMoveDelay: ldy itemIndex
                 dec itemIndex
 UM_MoveCommon:  lda #MENU_MOVEDELAY
                 sta menuMoveDelay
+                lda joystick                    ;If joystick held, use smaller move delay
+                cmp prevJoy
+                bne UM_NoDelayReduce
+                dec menuMoveDelay
+UM_NoDelayReduce:
                 jmp UM_Refresh
 UM_NoMoveLeft:  cmp #JOY_FIRE+JOY_RIGHT
                 bne UM_NoMoveRight
