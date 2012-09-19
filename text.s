@@ -5,3 +5,5 @@ txtPistol:      dc.b "PISTOL",0
 txtGrenade:     dc.b "GRENADES",0
 
 txtPickedUp:    dc.b "PICKED UP ",0
+
+txtInf:         dc.b 32,21,"INF"

@@ -130,7 +130,7 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actT,x
                 lda #ITEM_GRENADE-1
                 sta actF1,x
-                lda #1
+                lda #3
                 sta actHp,x
                 jsr SetActorSize
 

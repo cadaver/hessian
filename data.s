@@ -309,6 +309,7 @@ actPrevCtrl:    ds.b MAX_COMPLEXACT,0
 actF2:          ds.b MAX_COMPLEXACT,0
 actWpn:         ds.b MAX_COMPLEXACT,WPN_NONE
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
+actMag:         ds.b MAX_COMPLEXACT,0
 actAttackD:     ds.b MAX_COMPLEXACT,0
 
         ;Other variables

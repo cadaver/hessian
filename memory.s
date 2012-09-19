@@ -5,7 +5,7 @@
 MAX_SPR         = 24
 MAX_ACT         = 24
 MAX_COMPLEXACT  = 7
-MAX_CACHESPRITES = 63
+MAX_CACHESPRITES = 64
 MAX_BLK         = 192
 
         ; Zeropage variables

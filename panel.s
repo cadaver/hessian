@@ -159,7 +159,7 @@ ClearPanelText: ldx #$00
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,Y
+        ; Modifies: A,X,Y,temp vars,loader temp vars
 
 RefreshPlayerWeapon:
                 ldy itemIndex
@@ -190,8 +190,51 @@ RPW_WeaponOK:   sta actWpn+ACTI_PLAYER
                 lsr zpBitBuf
                 inx
                 jsr RPW_DrawSlice
-RedrawAmmo:     rts                             ;TODO: implement
-RPW_DrawSlice:  txa     
+RedrawAmmo:     ldy itemIndex
+                ldx invType,y
+                lda itemMagazineSize-1,x
+                sta temp5
+                beq RA_Consumable
+                cmp #$ff
+                beq RA_MeleeWeapon
+RA_FireArm:     lda actMag+ACTI_PLAYER          ;Print rounds in magazine
+                jsr ConvertToBCD8
+                lda temp7
+                ldx #34
+                jsr PrintBCDDigits
+                lda #"/"
+                sta screen1+SCROLLROWS*40+40+36
+                ldy itemIndex
+                lda invCount,y                  ;Get ammo in reserve
+                sec
+                sbc actMag+ACTI_PLAYER
+                ldy temp5
+                ldx #temp7
+                jsr DivU                        ;Divide by magazine size, add one
+                cmp #$00                        ;if there's a remainder
+                lda temp7
+                adc #$00
+                jsr ConvertToBCD8
+RA_Common:      lda temp7
+                ldx #37
+                jmp PrintBCDDigits
+RA_Consumable:  ldx #$01
+                jsr RA_MeleeWeaponLoop
+                lda invCount,y
+                jsr ConvertToBCD8
+                lda temp8
+                ldx #36
+                jsr PrintBCDDigit
+                jmp RA_Common
+RA_MeleeWeapon: ldx #$04
+RA_MeleeWeaponLoop:
+                lda txtInf,x
+                sta screen1+SCROLLROWS*40+40+34,x
+                dex
+                bpl RA_MeleeWeaponLoop
+                rts
+
+RPW_DrawSlice:  txa
                 ora #$07
                 sta zpDestLo
 RPW_DrawSliceLoop:
@@ -304,3 +347,48 @@ UM_NoMoveLeft:  cmp #JOY_FIRE+JOY_RIGHT
                 inc itemIndex
                 bne UM_MoveCommon
 UM_NoMoveRight: rts
+
+        ; Convert a 8-bit value to BCD
+        ;
+        ; Parameters: A value
+        ; Returns: temp7-temp8 BCD value
+        ; Modifies: A,Y,temp6-temp8
+
+ConvertToBCD8:  sta temp6
+                lda #$00
+                sta temp7
+                sta temp8
+                ldy #$08
+                sed
+CTB8_Loop:      asl temp6
+                lda temp7
+                adc temp7
+                sta temp7
+                lda temp8
+                adc temp8
+                sta temp8
+                dey
+                bne CTB8_Loop
+                cld
+                rts
+    
+        ; Print a BCD value to panel
+        ;
+        ; Parameters: A value, X position
+        ; Returns: X position incremented
+        ; Modifies: A
+
+PrintBCDDigits: pha
+                lsr
+                lsr
+                lsr
+                lsr
+                ora #$30
+                sta screen1+SCROLLROWS*40+40,x
+                inx
+                pla
+PrintBCDDigit:  and #$0f
+                ora #$30
+                sta screen1+SCROLLROWS*40+40,x
+                inx
+                rts

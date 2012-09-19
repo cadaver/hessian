@@ -21,4 +21,16 @@ itemMaxCount:   dc.b 1
                 dc.b 100
                 dc.b 10
                 
+itemDefaultPickup:
+                dc.b 1
+                dc.b 12
+                dc.b 2
+                
+itemMagazineSize:
+                dc.b $ff
+                dc.b 12
+                dc.b 0
+                
+
+                
 

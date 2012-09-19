@@ -535,9 +535,12 @@ HumanDeath:     lda #FR_DIE
                 lda #ACT_ITEM
                 jsr SpawnWithOffset
                 lda actWpn,x
+                tax
                 sec
                 sbc #$01
                 sta actF1,y
+                lda itemDefaultPickup-1,x
+                sta actHp,y
                 lda #ITEM_YSPEED
                 sta actSY,y
                 tya
