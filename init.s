@@ -190,7 +190,7 @@ textCharsCopy:  incbin bg/scorescr.chr
         ; Scorepanel borders
 
 scorePanel:     dc.b 0,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,4
-                dc.b 5,"       ",6, "                      ",5,17,18,"     ",6
+                dc.b 5,"       ",6, "                      ",5,17,18,19,"    ",6
                 dc.b 7,8,8,8,8,8,8,9,10,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,11,8,8,8,8,8,8,9,12
 
 scorePanelColors:
@@ -200,7 +200,7 @@ scorePanelColors:
                 dc.b 11
                 ds.b 22,1
                 dc.b 11
-                ds.b 2,8
-                ds.b 5,1
+                ds.b 3,8
+                ds.b 4,1
                 dc.b 11
                 ds.b 40,11

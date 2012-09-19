@@ -309,7 +309,6 @@ actPrevCtrl:    ds.b MAX_COMPLEXACT,0
 actF2:          ds.b MAX_COMPLEXACT,0
 actWpn:         ds.b MAX_COMPLEXACT,WPN_NONE
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
-actMag:         ds.b MAX_COMPLEXACT,0
 actAttackD:     ds.b MAX_COMPLEXACT,0
 
         ;Other variables
@@ -317,6 +316,7 @@ actAttackD:     ds.b MAX_COMPLEXACT,0
 itemIndex:      dc.b 0
 invType:        ds.b MAX_INVENTORYITEMS,0
 invCount:       ds.b MAX_INVENTORYITEMS,0
+invMag:         ds.b MAX_INVENTORYITEMS,0
 displayedHealth:dc.b 0
 healthRecharge: dc.b 0
 textDelay:      dc.b 0

@@ -190,46 +190,51 @@ RPW_WeaponOK:   sta actWpn+ACTI_PLAYER
                 lsr zpBitBuf
                 inx
                 jsr RPW_DrawSlice
+                lsr zpBitBuf
+                inx
+                jsr RPW_DrawSlice
 RedrawAmmo:     ldy itemIndex
                 ldx invType,y
                 lda itemMagazineSize-1,x
                 sta temp5
                 beq RA_Consumable
-                cmp #$ff
-                beq RA_MeleeWeapon
-RA_FireArm:     lda actMag+ACTI_PLAYER          ;Print rounds in magazine
+                bmi RA_MeleeWeapon
+RA_Firearm:     lda invMag,y                    ;Print rounds in magazine
                 jsr ConvertToBCD8
                 lda temp7
-                ldx #34
+                ldx #35
                 jsr PrintBCDDigits
                 lda #"/"
-                sta screen1+SCROLLROWS*40+40+36
+                sta screen1+SCROLLROWS*40+40+37
                 ldy itemIndex
                 lda invCount,y                  ;Get ammo in reserve
                 sec
-                sbc actMag+ACTI_PLAYER
+                sbc invMag,y
                 ldy temp5
                 ldx #temp7
                 jsr DivU                        ;Divide by magazine size, add one
                 cmp #$00                        ;if there's a remainder
                 lda temp7
                 adc #$00
-                jsr ConvertToBCD8
-RA_Common:      lda temp7
-                ldx #37
-                jmp PrintBCDDigits
-RA_Consumable:  ldx #$01
-                jsr RA_MeleeWeaponLoop
+                cmp #$0a                        ;More than 9 can not be printed, clamp
+                bcc RA_ClipCountOK
+                lda #$09
+RA_ClipCountOK: ora #$30
+                sta screen1+SCROLLROWS*40+40+38
+                rts
+RA_Consumable:  lda #22
+                sta screen1+SCROLLROWS*40+40+35
                 lda invCount,y
                 jsr ConvertToBCD8
                 lda temp8
                 ldx #36
                 jsr PrintBCDDigit
-                jmp RA_Common
-RA_MeleeWeapon: ldx #$04
+                lda temp7
+                jmp PrintBCDDigits
+RA_MeleeWeapon: ldx #$03
 RA_MeleeWeaponLoop:
                 lda txtInf,x
-                sta screen1+SCROLLROWS*40+40+34,x
+                sta screen1+SCROLLROWS*40+40+35,x
                 dex
                 bpl RA_MeleeWeaponLoop
                 rts
@@ -313,12 +318,12 @@ UM_RefreshInactive:
                 lda #$20
                 ldx itemIndex
                 beq UM_NoLeftArrow
-                lda #19
+                lda #20
 UM_NoLeftArrow: sta screen1+SCROLLROWS*40+40+9
                 lda #$20
                 ldy invType+1,x
                 beq UM_NoRightArrow
-                lda #20
+                lda #21
 UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+30
                 jmp RefreshPlayerWeapon
 
