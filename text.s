@@ -6,4 +6,4 @@ txtGrenade:     dc.b "GRENADES",0
 
 txtPickedUp:    dc.b "PICKED UP ",0
 
-txtInf:         dc.b 22,"INF"
+txtInf:         dc.b "*INF"

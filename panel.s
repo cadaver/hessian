@@ -222,7 +222,7 @@ RA_Firearm:     lda invMag,y                    ;Print rounds in magazine
 RA_ClipCountOK: ora #$30
                 sta screen1+SCROLLROWS*40+40+38
                 rts
-RA_Consumable:  lda #22
+RA_Consumable:  lda #42
                 sta screen1+SCROLLROWS*40+40+35
                 lda invCount,y
                 jsr ConvertToBCD8
