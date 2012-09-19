@@ -94,14 +94,14 @@ UP_EndLine:     stx zpBitsLo
                 bcs UP_PrintTextDone
 UP_ClearEndOfLine:
                 lda #$20
-UP_ClearLoop:   sta screen1+SCROLLROWS*40+40+9,x
+UP_ClearLoop:   sta screen1+SCROLLROWS*40+40,x
                 inx
                 cpx textRightMargin
                 bcc UP_ClearLoop
 UP_PrintTextDone:
                 rts
 UP_WordLoop:    lda (textLo),y
-                sta screen1+SCROLLROWS*40+40+9,x
+                sta screen1+SCROLLROWS*40+40,x
                 inx
                 iny
 UP_WordCmp:     cpx #$00
@@ -112,7 +112,7 @@ UP_SpaceLoop:   lda (textLo),y
                 bne UP_SpaceLoopDone
                 cpx textRightMargin
                 bcs UP_SpaceSkip
-                sta screen1+SCROLLROWS*40+40+9,x
+                sta screen1+SCROLLROWS*40+40,x
                 inx
 UP_SpaceSkip:   iny
                 bne UP_SpaceLoop
@@ -155,15 +155,20 @@ ContinuePanelText:
 ClearPanelText: ldx #$00
                 beq SetTextPtr
 
-        ; Redraw player weapon and ammo
+        ; Refresh player's current weapon from inventory. Also redraws weapon panel
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,X,Y,loader temp vars
+        ; Modifies: A,Y
 
-RedrawWeaponAmmo:
+RefreshPlayerWeapon:
                 ldy itemIndex
-                ldx invType,y
+                lda invType,y
+                tax
+                cmp #ITEM_FIRST_NONWEAPON
+                bcc RPW_WeaponOK
+                lda #WPN_NONE
+RPW_WeaponOK:   sta actWpn+ACTI_PLAYER
                 lda itemFrames-1,x
                 asl
                 tay
@@ -181,24 +186,24 @@ RedrawWeaponAmmo:
                 sta zpBitBuf                    ;Slice bitmask
                 ldy #SPRH_DATA
                 ldx #$00
-                jsr RWA_DrawSlice
+                jsr RPW_DrawSlice
                 lsr zpBitBuf
                 inx
-                jsr RWA_DrawSlice
+                jsr RPW_DrawSlice
 RedrawAmmo:     rts                             ;TODO: implement
-RWA_DrawSlice:  txa     
+RPW_DrawSlice:  txa     
                 ora #$07
                 sta zpDestLo
-RWA_DrawSliceLoop:
+RPW_DrawSliceLoop:
                 lda zpBitBuf
                 and #$01
-                beq RWA_EmptySlice
+                beq RPW_EmptySlice
                 lda (zpSrcLo),y
                 iny
-RWA_EmptySlice: sta textChars+17*8,x
+RPW_EmptySlice: sta textChars+17*8,x
                 inx
                 cpx zpDestLo
-                bcc RWA_DrawSliceLoop
+                bcc RPW_DrawSliceLoop
                 rts
 
         ; Update menu system (inventory) in the panel
@@ -272,8 +277,7 @@ UM_NoLeftArrow: sta screen1+SCROLLROWS*40+40+9
                 beq UM_NoRightArrow
                 lda #20
 UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+30
-                jsr RefreshPlayerWeapon
-                jmp RedrawWeaponAmmo
+                jmp RefreshPlayerWeapon
 
 UM_IsActive:    ldy menuMoveDelay
                 beq UM_NoMoveDelay

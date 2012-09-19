@@ -65,7 +65,6 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 lda #ITEM_KNIFE
                 sta invType
                 jsr RefreshPlayerWeapon
-                jsr RedrawWeaponAmmo
 
                 ldx #ACTI_PLAYER+1
                 lda #7

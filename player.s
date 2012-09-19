@@ -564,19 +564,5 @@ HD_RightImpulse:lda temp8
 HD_LeftImpulse: lda temp8
                 ldy #DEATH_MAX_XSPEED
                 jmp AccActorXNeg
-
-        ; Refresh player's current weapon from inventory
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,Y
-        
-RefreshPlayerWeapon:
-                ldy itemIndex
-                lda invType,y
-                cmp #ITEM_FIRST_NONWEAPON
-                bcc RPW_WeaponOK
-                lda #WPN_NONE
-RPW_WeaponOK:   sta actWpn+ACTI_PLAYER
 HD_NoDamageSource:
                 rts

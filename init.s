@@ -33,8 +33,9 @@ InitControls:   lda #$00
 
                 sta textLo
                 sta textHi
+                lda #9
                 sta textLeftMargin
-                lda #PANEL_TEXT_SIZE
+                lda #31
                 sta textRightMargin
 
         ; Initialize video registers and screen memory
