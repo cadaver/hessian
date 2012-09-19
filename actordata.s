@@ -52,7 +52,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_WEAPON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
-                dc.b 11,12,13                   ;Frametable (first all frames of sprite1, then sprite2)
+itemFrames:     dc.b 11,12,13                   ;Frametable (first all frames of sprite1, then sprite2)
 
 adGrenade:      dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number

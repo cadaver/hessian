@@ -8,8 +8,6 @@ MAX_INVENTORYITEMS = 16
 
 MAX_WEAPONS     = 2                             ;TODO: make dynamic
 
-INVENTORY_TEXT_DURATION = 50
-
         ; Item pickup check
         ;
         ; Parameters: X player actor index (0)
@@ -48,7 +46,6 @@ CP_NoSwap:      jsr RemoveActor                 ;If not swapped, remove
 CP_PrintItemName:
                 lda #<txtPickedUp
                 ldx #>txtPickedUp
-                ldy #INVENTORY_TEXT_DURATION
                 jsr PrintPanelText
                 ldy temp2
                 lda itemNameLo-1,y

@@ -2,9 +2,6 @@ MAX_SPRX        = 335
 MIN_SPRY        = 34
 MAX_SPRY        = 221
 
-SPR_MC1         = $00
-SPR_MC2         = $0a
-
 FIRSTCACHEFRAME = $40
 EMPTYSPRITEFRAME = $7f
 

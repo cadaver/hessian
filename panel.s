@@ -2,6 +2,7 @@ PANEL_TEXT_SIZE = 22
 MENU_DELAY      = 20
 MENU_MOVEDELAY  = 3
 INDEFINITE_TEXT_DURATION = $7f
+INVENTORY_TEXT_DURATION = 50
 
         ; Update scorepanel each frame
         ;
@@ -154,6 +155,53 @@ ContinuePanelText:
 ClearPanelText: ldx #$00
                 beq SetTextPtr
 
+        ; Redraw player weapon and ammo
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,loader temp vars
+
+RedrawWeaponAmmo:
+                ldy itemIndex
+                ldx invType,y
+                lda itemFrames-1,x
+                asl
+                tay
+                lda fileLo+C_WEAPON
+                sta zpBitsLo
+                lda fileHi+C_WEAPON
+                sta zpBitsHi
+                lda (zpBitsLo),y
+                sta zpSrcLo
+                iny
+                lda (zpBitsLo),y
+                sta zpSrcHi
+                ldy #SPRH_MASK
+                lda (zpSrcLo),y
+                sta zpBitBuf                    ;Slice bitmask
+                ldy #SPRH_DATA
+                ldx #$00
+                jsr RWA_DrawSlice
+                lsr zpBitBuf
+                ldx #$08
+                jsr RWA_DrawSlice
+RedrawAmmo:     rts                             ;TODO: implement
+RWA_DrawSlice:  txa     
+                clc
+                adc #$07
+                sta zpDestLo
+RWA_DrawSliceLoop:
+                lda zpBitBuf
+                and #$01
+                beq RWA_EmptySlice
+                lda (zpSrcLo),y
+                iny
+RWA_EmptySlice: sta textChars+17*8,x
+                inx
+                cpx zpDestLo
+                bcc RWA_DrawSliceLoop
+                rts
+
         ; Update menu system (inventory) in the panel
         ;
         ; Parameters: -
@@ -166,24 +214,35 @@ UpdateMenu:     ldx menuCounter
                 lda joystick
                 cmp #JOY_FIRE
                 bcc UM_Close
-                cpx #$ff
-                beq UM_NeedRelease
                 cpx #MENU_DELAY
                 beq UM_IsActive
+                bcs UM_KeyControl
                 cmp #JOY_FIRE
                 bne UM_Inactivate
                 inx
                 cpx #MENU_DELAY
                 bcs UM_Open
 UM_StoreCounter:stx menuCounter
-UM_NeedRelease: rts
+UM_KeyControl:  ldx keyType                     ;Can also use ,. keys to select items
+                cpx #KEY_COMMA
+                bne UM_NotPreviousKey
+                lda #JOY_FIRE+JOY_LEFT
+                bne UM_NoMoveDelay
+UM_NotPreviousKey:
+                cpx #KEY_COLON
+                bne UM_NotNextKey
+                lda #JOY_FIRE+JOY_RIGHT
+                bne UM_NoMoveDelay
+UM_NotNextKey:  rts
+UM_Inactivate:  ldx #$ff
+                bne UM_StoreCounter
+
 UM_Close:       cpx #MENU_DELAY
                 bcc UM_WasNotOpen
                 jsr ClearPanelText
 UM_WasNotOpen:  ldx #$00
                 beq UM_StoreCounter
-UM_Inactivate:  ldx #$ff
-                bne UM_StoreCounter
+
 UM_Open:        stx menuCounter
                 lda #$00
                 sta menuMoveDelay
@@ -193,7 +252,14 @@ UM_Refresh:     inc textLeftMargin
                 ldy invType,x
                 lda itemNameLo-1,y
                 ldx itemNameHi-1,y
+                ldy menuCounter                 ;When using keys to select item,
+                cpy #MENU_DELAY                 ;only show the text for a short time
+                beq UM_RefreshActive
+                ldy #INVENTORY_TEXT_DURATION
+                bne UM_RefreshInactive
+UM_RefreshActive:
                 ldy #INDEFINITE_TEXT_DURATION
+UM_RefreshInactive:
                 jsr PrintPanelText
                 dec textLeftMargin
                 inc textRightMargin
@@ -207,7 +273,9 @@ UM_NoLeftArrow: sta screen1+SCROLLROWS*40+40+9
                 beq UM_NoRightArrow
                 lda #20
 UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+30
-                rts
+                jsr RefreshPlayerWeapon
+                jmp RedrawWeaponAmmo
+
 UM_IsActive:    ldy menuMoveDelay
                 beq UM_NoMoveDelay
                 dec menuMoveDelay
@@ -220,7 +288,6 @@ UM_NoMoveDelay: ldy itemIndex
                 dec itemIndex
 UM_MoveCommon:  lda #MENU_MOVEDELAY
                 sta menuMoveDelay
-                jsr RefreshPlayerWeapon
                 jmp UM_Refresh
 UM_NoMoveLeft:  cmp #JOY_FIRE+JOY_RIGHT
                 bne UM_NoMoveRight

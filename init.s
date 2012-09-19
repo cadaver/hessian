@@ -59,13 +59,12 @@ InitVideo:      lda $dd00                       ;Set game videobank
                 sta $d00f
                 sta $d015                       ;All sprites on and to the bottom
                 jsr WaitBottom
-                lda #$00                        ;Sprites off now
-                sta $d015
-                lda #SPR_MC1
-                sta $d025                       ;Set sprite multicolor 1
-                lda #SPR_MC2
-                sta $d026                       ;Set sprite multicolor 2
-                ldx #$00
+                ldx #$00                        ;Sprites off now
+                stx $d015
+                stx $d026                       ;Set sprite multicolors
+                lda #$0a
+                sta $d025
+                txa
 IVid_ClearColors:
                 sta screen1,x
                 sta screen1+$100,x
@@ -187,10 +186,10 @@ InitRaster:     sei
 
 textCharsCopy:  incbin bg/scorescr.chr
 
-        ; Initial scorepanel mockup
+        ; Scorepanel borders
 
 scorePanel:     dc.b 0,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,4
-                dc.b 5,"       ",6, "                      ",5,17,18,"07/04",6
+                dc.b 5,"       ",6, "                      ",5,17,18,"     ",6
                 dc.b 7,8,8,8,8,8,8,9,10,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,11,8,8,8,8,8,8,9,12
 
 scorePanelColors:
@@ -199,7 +198,8 @@ scorePanelColors:
                 ds.b 7,13
                 dc.b 11
                 ds.b 22,1
-                ds.b 3,11
+                dc.b 11
+                ds.b 2,8
                 ds.b 5,1
                 dc.b 11
                 ds.b 40,11
