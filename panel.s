@@ -183,12 +183,11 @@ RedrawWeaponAmmo:
                 ldx #$00
                 jsr RWA_DrawSlice
                 lsr zpBitBuf
-                ldx #$08
+                inx
                 jsr RWA_DrawSlice
 RedrawAmmo:     rts                             ;TODO: implement
 RWA_DrawSlice:  txa     
-                clc
-                adc #$07
+                ora #$07
                 sta zpDestLo
 RWA_DrawSliceLoop:
                 lda zpBitBuf
