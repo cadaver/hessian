@@ -140,6 +140,8 @@ AI_MakeRoomLoop:lda invType,x                   ;Shift items to make room
                 sta invType+1,x
                 lda invCount,x
                 sta invCount+1,x
+                lda invMag,x
+                sta invMag+1,x
                 cpx itemIndex                   ;Change selection if selected item was shifted
                 bne AI_NotSelected
                 inc itemIndex
@@ -172,11 +174,37 @@ RemoveItemByIndex:
                 dec itemIndex                   ;Change selection if selected item was shifted
 RI_ShiftLoop:   lda invCount+1,y                ;Shift items to remove the hole left by dropped item
                 sta invCount,y
+                lda invMag+1,y
+                sta invMag,y
                 lda invType+1,y
                 sta invType,y
                 beq RI_ShiftDone
                 iny
                 bne RI_ShiftLoop
+
+        ; Decrease ammo in inventory
+        ;
+        ; Parameters: A ammo amount, Y inventory index
+        ; Returns: C=1 item was not removed C=0 item was removed
+        ; Modifies: A,Y,zpSrcLo
+
+DecreaseAmmo:   sta zpSrcLo
+                lda invCount,y
+                sec
+                sbc zpSrcLo
+                bcs DA_NotNegative
+                lda #$00
+DA_NotNegative: sta invCount,y
+                bne DA_DecreaseDone
+                sty zpSrcLo
+                lda invType,y
+                tay
+                sec
+                lda itemMagazineSize-1,y        ;If it's a consumable item, remove when ammo
+                bne DA_DecreaseDone             ;goes to zero
+                jsr RemoveItemByIndex
+                clc
+DA_DecreaseDone:rts
 
         ; Item update routine
         ;

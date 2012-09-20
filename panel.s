@@ -213,7 +213,7 @@ RA_Firearm:     lda invMag,y                    ;Print rounds in magazine
                 ldy temp5
                 ldx #temp7
                 jsr DivU                        ;Divide by magazine size, add one
-                cmp #$00                        ;if there's a remainder
+                cmp #$01                        ;if there's a remainder
                 lda temp7
                 adc #$00
                 cmp #$0a                        ;More than 9 can not be printed, clamp
