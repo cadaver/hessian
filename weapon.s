@@ -87,7 +87,7 @@ AttackHuman:    ldy actWpn,x
                 beq AH_NoAttack
 AH_CheckFirearm:lda invMag,y                    ;Check if reload ongoing
                 bpl AH_NotReloading
-                lda actAttackD,x
+                lda actAttackD+ACTI_PLAYER
                 cmp #$01
                 bcs AH_NoAttack                 ;While ongoing, keep weapon in down position
                 lda invCount,y                  ;Finish reloading
@@ -106,10 +106,10 @@ AH_EmptyMagazine:
                 sta invMag,y
                 ldy #WD_RELOADDELAY
                 lda (wpnLo),y
-                sta actAttackD,x                ;TODO: play reload sound
+                sta actAttackD+ACTI_PLAYER      ;TODO: play reload sound
                 jmp AH_RedrawAmmoNoAttack
 AH_FirearmEmpty:lda #$02                        ;If no bullets, set a constant attack delay to
-                sta actAttackD,x                ;prevent firing but allow brandishing empty weapon
+                sta actAttackD+ACTI_PLAYER      ;prevent firing but allow brandishing empty weapon
 AH_AmmoCheckOK: lda menuCounter                 ;If player is in inventory menu,
                 cmp #MENU_DELAY                 ;do not attack
                 beq AH_NoAttack2

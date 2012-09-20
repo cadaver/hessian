@@ -26,7 +26,7 @@ HUMAN_MAX_YSPEED = 6*8
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MovePlayer:     lda actHp,x                     ;Restore health if not dead and not at
+MovePlayer:     lda actHp+ACTI_PLAYER           ;Restore health if not dead and not at
                 beq MP_NoHealthRecharge         ;full health
                 cmp #HP_PLAYER
                 bcs MP_NoHealthRecharge
@@ -37,7 +37,7 @@ MovePlayer:     lda actHp,x                     ;Restore health if not dead and 
                 bcs MP_NoHealthRecharge
                 lda #$00
                 sta healthRecharge
-                inc actHp,x
+                inc actHp+ACTI_PLAYER
 MP_NoHealthRecharge:
                 ldy itemIndex                   ;Set player weapon from inventory
                 ldx invType,y
@@ -48,21 +48,21 @@ MP_NoHealthRecharge:
                 ldx #WPN_NONE
 MP_WeaponOK:    stx actWpn+ACTI_PLAYER
                 ldx actIndex
-                lda actCtrl,x
-                sta actPrevCtrl,x
+                lda actCtrl+ACTI_PLAYER
+                sta actPrevCtrl+ACTI_PLAYER
                 lda joystick
-                sta actCtrl,x
+                sta actCtrl+ACTI_PLAYER
                 cmp #JOY_FIRE
                 bcc MP_NewMoveCtrl
                 and #$0f                        ;When fire held down, eliminate the opposite
                 tay                             ;directions from the previous move control
                 lda moveCtrlAndTbl,y
-                ldy actF1,x                     ;If holding a duck, keep the down direction
+                ldy actF1+ACTI_PLAYER           ;If holding a duck, keep the down direction
                 cpy #FR_DUCK+1                  ;regardless of joystick position
                 bne MP_NotDucked
                 ora #JOY_DOWN
-MP_NotDucked:   and actMoveCtrl,x
-MP_NewMoveCtrl: sta actMoveCtrl,x
+MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
+MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
 
         ; Humanoid character move and attack routine
         ;
