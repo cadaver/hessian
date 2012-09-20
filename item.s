@@ -13,7 +13,7 @@ MAX_WEAPONS     = 2                             ;TODO: make dynamic
         ; Parameters: X player actor index (0)
         ; Returns: -
         ; Modifies: A,Y,temp vars
-        
+
 CheckPickup:    ldy #ACTI_FIRSTITEM
 CP_Loop:        lda actT,y
                 cmp #ACT_ITEM
@@ -52,7 +52,6 @@ CP_PrintItemName:
                 ldx itemNameHi-1,y
                 ldy #INVENTORY_TEXT_DURATION
                 jsr ContinuePanelText
-                jsr RefreshPlayerWeapon
 CP_PickupFail:  ldx actIndex
                 rts
 
@@ -97,8 +96,7 @@ AI_HasRoomForAmmo:
                 lda itemMaxCount-1,x
 AI_AmmoNotExceeded:
                 sta invCount,y
-                sec                             ;Successful pickup
-                rts
+                jmp AI_Success
 AI_NewItem:     tya                             ;If first item, always stored to slot 0 (and no swap check)
                 beq AI_StoreItem
                 lda zpSrcLo                     ;If a weapon, check if limit exceeded
@@ -154,10 +152,14 @@ AI_StoreItem:   lda zpSrcLo
                 lda zpSrcHi
                 sta invCount,y
                 lda zpBitsLo                    ;If swapped a weapon, select the new weapon now
-                beq AI_DidNotDrop
+                beq AI_Success
                 sty itemIndex
-RI_ShiftDone:
-AI_DidNotDrop:  sec                             ;Successful pickup
+AI_Success:     
+RI_Success:     
+SetPanelRedrawItemAmmo:
+                lda #REDRAW_ITEM+REDRAW_AMMO
+                sta panelUpdateFlags
+                sec
 RI_NotFound:    rts
 
         ; Remove item from inventory
@@ -178,18 +180,33 @@ RI_ShiftLoop:   lda invCount+1,y                ;Shift items to remove the hole 
                 sta invMag,y
                 lda invType+1,y
                 sta invType,y
-                beq RI_ShiftDone
+                beq RI_Done
                 iny
                 bne RI_ShiftLoop
+RI_Done:        ldy itemIndex                   ;If current index points past inventory end,
+                beq RI_Success                  ;change selection back
+                lda invType,y
+                bne RI_Success
+                dec itemIndex
+                jmp RI_Success
+
 
         ; Decrease ammo in inventory
         ;
         ; Parameters: A ammo amount, Y inventory index
-        ; Returns: C=1 item was not removed C=0 item was removed
+        ; Returns: -
         ; Modifies: A,Y,zpSrcLo
 
 DecreaseAmmo:   sta zpSrcLo
-                lda invCount,y
+                lda invMag,y                    ;Decrease ammo in magazine as well
+                beq DA_NoAmmoInMag
+                sec
+                sbc zpSrcLo
+                bcs DA_MagNotNegative
+                lda #$00
+DA_MagNotNegative:
+                sta invMag,y
+DA_NoAmmoInMag: lda invCount,y
                 sec
                 sbc zpSrcLo
                 bcs DA_NotNegative
@@ -199,12 +216,15 @@ DA_NotNegative: sta invCount,y
                 sty zpSrcLo
                 lda invType,y
                 tay
-                sec
                 lda itemMagazineSize-1,y        ;If it's a consumable item, remove when ammo
                 bne DA_DecreaseDone             ;goes to zero
-                jsr RemoveItemByIndex
-                clc
-DA_DecreaseDone:rts
+                ldy itemIndex
+                jmp RemoveItemByIndex
+SetPanelRedrawAmmo:
+DA_DecreaseDone:lda panelUpdateFlags
+                ora #REDRAW_AMMO
+                sta panelUpdateFlags
+                rts
 
         ; Item update routine
         ;

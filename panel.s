@@ -1,10 +1,14 @@
 PANEL_TEXT_SIZE = 22
 MENU_DELAY      = 20
 MENU_MOVEDELAY  = 3
+
 INDEFINITE_TEXT_DURATION = $7f
 INVENTORY_TEXT_DURATION = 50
 
-        ; Update scorepanel each frame
+REDRAW_ITEM     = $01
+REDRAW_AMMO     = $02
+
+        ; Update scorepanel each frame (health, text display, weapon, ammo)
         ;
         ; Parameters: -
         ; Returns: -
@@ -46,7 +50,90 @@ UP_EmptyCharsLoop:
 UP_EmptyCharsCmp:
                 cpx #HP_PLAYER/4
                 bcc UP_EmptyCharsLoop
-UP_HealthDone:  lda textTime
+UP_HealthDone:  lda panelUpdateFlags
+                lsr
+                bcc UP_SkipWeapon
+                ldy itemIndex
+                ldx invType,y
+                lda itemFrames-1,x
+                asl
+                tay
+                lda fileLo+C_WEAPON
+                sta zpBitsLo
+                lda fileHi+C_WEAPON
+                sta zpBitsHi
+                lda (zpBitsLo),y
+                sta zpSrcLo
+                iny
+                lda (zpBitsLo),y
+                sta zpSrcHi
+                ldy #SPRH_MASK
+                lda (zpSrcLo),y
+                sta zpBitBuf                    ;Slice bitmask
+                ldy #SPRH_DATA
+                ldx #$00
+                jsr UP_DrawSlice
+                lsr zpBitBuf
+                inx
+                jsr UP_DrawSlice
+                lsr zpBitBuf
+                inx
+                jsr UP_DrawSlice
+UP_SkipWeapon:  lda panelUpdateFlags
+                and #REDRAW_AMMO
+                beq UP_SkipAmmo
+                ldy itemIndex
+                ldx invType,y
+                lda itemMagazineSize-1,x
+                sta temp5
+                beq UP_Consumable
+                bmi UP_MeleeWeapon
+UP_Firearm:     lda invMag,y                    ;Print rounds in magazine
+                bmi UP_Reloading
+                jsr ConvertToBCD8
+                lda temp7
+                ldx #35
+                jsr PrintBCDDigits
+                lda #"/"
+                sta screen1+SCROLLROWS*40+40+37
+                ldy itemIndex
+                lda invCount,y                  ;Get ammo in reserve
+                sec
+                sbc invMag,y
+                ldy temp5
+                ldx #temp7
+                jsr DivU                        ;Divide by magazine size, add one
+                cmp #$01                        ;if there's a remainder
+                lda temp7
+                adc #$00
+                cmp #$0a                        ;More than 9 can not be printed, clamp
+                bcc UP_ClipCountOK
+                lda #$09
+UP_ClipCountOK: ora #$30
+                sta screen1+SCROLLROWS*40+40+38
+                bne UP_SkipAmmo
+UP_Consumable:  lda #42
+                sta screen1+SCROLLROWS*40+40+35
+                lda invCount,y
+                jsr ConvertToBCD8
+                lda temp8
+                ldx #36
+                jsr PrintBCDDigit
+                lda temp7
+                jmp PrintBCDDigits
+UP_Reloading:   ldy #$07
+                bne UP_Reloading2
+UP_MeleeWeapon: ldy #$03
+UP_Reloading2:  ldx #$03
+UP_MeleeWeaponLoop:
+                lda txtInf,y
+                sta screen1+SCROLLROWS*40+40+35,x
+                dey
+                dex
+                bpl UP_MeleeWeaponLoop
+UP_SkipAmmo:    lda #$00
+                sta panelUpdateFlags
+                lda textTime
                 beq UP_TextDone
                 cmp #INDEFINITE_TEXT_DURATION*2
                 bcs UP_TextDone
@@ -121,6 +208,21 @@ UP_SpaceLoopDone:
                 bcc UP_PrintTextLoop
                 bcs UP_EndLine
 
+UP_DrawSlice:   txa
+                ora #$07
+                sta zpDestLo
+UP_DrawSliceLoop:
+                lda zpBitBuf
+                and #$01
+                beq UP_EmptySlice
+                lda (zpSrcLo),y
+                iny
+UP_EmptySlice:  sta textChars+17*8,x
+                inx
+                cpx zpDestLo
+                bcc UP_DrawSliceLoop
+                rts
+
         ; Print text to panel, possibly multi-line
         ;
         ; Parameters: A,X text address, Y delay in game logic frames (25 = 1 sec)
@@ -155,105 +257,6 @@ ContinuePanelText:
 ClearPanelText: ldx #$00
                 beq SetTextPtr
 
-        ; Refresh player's current weapon from inventory. Also redraws weapon panel
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,temp vars,loader temp vars
-
-RefreshPlayerWeapon:
-                ldy itemIndex
-                lda invType,y
-                tax
-                cmp #ITEM_FIRST_NONWEAPON
-                bcc RPW_WeaponOK
-                lda #WPN_NONE
-RPW_WeaponOK:   sta actWpn+ACTI_PLAYER
-                lda itemFrames-1,x
-                asl
-                tay
-                lda fileLo+C_WEAPON
-                sta zpBitsLo
-                lda fileHi+C_WEAPON
-                sta zpBitsHi
-                lda (zpBitsLo),y
-                sta zpSrcLo
-                iny
-                lda (zpBitsLo),y
-                sta zpSrcHi
-                ldy #SPRH_MASK
-                lda (zpSrcLo),y
-                sta zpBitBuf                    ;Slice bitmask
-                ldy #SPRH_DATA
-                ldx #$00
-                jsr RPW_DrawSlice
-                lsr zpBitBuf
-                inx
-                jsr RPW_DrawSlice
-                lsr zpBitBuf
-                inx
-                jsr RPW_DrawSlice
-RedrawAmmo:     ldy itemIndex
-                ldx invType,y
-                lda itemMagazineSize-1,x
-                sta temp5
-                beq RA_Consumable
-                bmi RA_MeleeWeapon
-RA_Firearm:     lda invMag,y                    ;Print rounds in magazine
-                jsr ConvertToBCD8
-                lda temp7
-                ldx #35
-                jsr PrintBCDDigits
-                lda #"/"
-                sta screen1+SCROLLROWS*40+40+37
-                ldy itemIndex
-                lda invCount,y                  ;Get ammo in reserve
-                sec
-                sbc invMag,y
-                ldy temp5
-                ldx #temp7
-                jsr DivU                        ;Divide by magazine size, add one
-                cmp #$01                        ;if there's a remainder
-                lda temp7
-                adc #$00
-                cmp #$0a                        ;More than 9 can not be printed, clamp
-                bcc RA_ClipCountOK
-                lda #$09
-RA_ClipCountOK: ora #$30
-                sta screen1+SCROLLROWS*40+40+38
-                rts
-RA_Consumable:  lda #42
-                sta screen1+SCROLLROWS*40+40+35
-                lda invCount,y
-                jsr ConvertToBCD8
-                lda temp8
-                ldx #36
-                jsr PrintBCDDigit
-                lda temp7
-                jmp PrintBCDDigits
-RA_MeleeWeapon: ldx #$03
-RA_MeleeWeaponLoop:
-                lda txtInf,x
-                sta screen1+SCROLLROWS*40+40+35,x
-                dex
-                bpl RA_MeleeWeaponLoop
-                rts
-
-RPW_DrawSlice:  txa
-                ora #$07
-                sta zpDestLo
-RPW_DrawSliceLoop:
-                lda zpBitBuf
-                and #$01
-                beq RPW_EmptySlice
-                lda (zpSrcLo),y
-                iny
-RPW_EmptySlice: sta textChars+17*8,x
-                inx
-                cpx zpDestLo
-                bcc RPW_DrawSliceLoop
-                rts
-
         ; Update menu system (inventory) in the panel
         ;
         ; Parameters: -
@@ -285,7 +288,11 @@ UM_NotPreviousKey:
                 bne UM_NotNextKey
                 lda #JOY_FIRE+JOY_RIGHT
                 bne UM_NoMoveDelay
-UM_NotNextKey:  rts
+UM_NotNextKey:  cpx #KEY_R                      ;Use R to reload
+                bne UM_NotReloadKey
+                lda #JOY_FIRE+JOY_DOWN
+                bne UM_NoMoveDelay
+UM_NotReloadKey:rts
 UM_Inactivate:  ldx #$ff
                 bne UM_StoreCounter
 
@@ -325,7 +332,7 @@ UM_NoLeftArrow: sta screen1+SCROLLROWS*40+40+9
                 beq UM_NoRightArrow
                 lda #21
 UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+30
-                jmp RefreshPlayerWeapon
+                jmp SetPanelRedrawItemAmmo      ;Redraw item & ammo next time panel is updated
 
 UM_IsActive:    ldy menuMoveDelay
                 beq UM_NoMoveDelay
@@ -351,7 +358,18 @@ UM_NoMoveLeft:  cmp #JOY_FIRE+JOY_RIGHT
                 beq UM_NoMoveRight
                 inc itemIndex
                 bne UM_MoveCommon
-UM_NoMoveRight: rts
+UM_NoMoveRight: cmp #JOY_FIRE+JOY_DOWN
+                bne UM_NoReload
+                ldx invType,y                   ;Do not reload if already full magazine
+                lda invMag,y                    ;or already reloading
+                bmi UM_NoReload
+                cmp itemMagazineSize-1,x
+                bcs UM_NoReload
+                cmp invCount,y
+                bcs UM_NoReload
+                lda #$00                        ;Initiate reload by zeroing magazine
+                sta invMag,y
+UM_NoReload:    rts
 
         ; Convert a 8-bit value to BCD
         ;

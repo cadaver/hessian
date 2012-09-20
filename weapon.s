@@ -21,6 +21,7 @@ WD_PREPAREFR    = 12
 WD_PREPAREFRLEFT = 13
 WD_ATTACKFR     = 14
 WD_ATTACKFRLEFT = 19
+WD_RELOADDELAY  = 24
 
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
@@ -75,17 +76,49 @@ AttackHuman:    ldy actWpn,x
                 ldy #WD_BITS
                 lda (wpnLo),y
                 sta temp3
-                txa                             ;If player is in menu, do not attack
+                txa
                 bne AH_NotPlayer
-                lda menuCounter
-                cmp #MENU_DELAY
+                ldy itemIndex                   ;Check for ammo & reloading
+                lda magazineSize
+                bmi AH_AmmoCheckOK              ;Melee weapon, no ammo check / no reload
+                bne AH_CheckFirearm
+                lda invCount,y                  ;Consumable item: no attack if out of ammo
+                bne AH_AmmoCheckOK
                 beq AH_NoAttack
+AH_CheckFirearm:lda invMag,y                    ;Check if reload ongoing
+                bpl AH_NotReloading
+                lda actAttackD,x
+                cmp #$01
+                bcs AH_NoAttack                 ;While ongoing, keep weapon in down position
+                lda invCount,y                  ;Finish reloading
+                cmp magazineSize
+                bcc AH_ReloadSizeOK
+                lda magazineSize
+AH_ReloadSizeOK:sta invMag,y
+AH_RedrawAmmoNoAttack:
+                jsr SetPanelRedrawAmmo
+                jmp AH_NoAttack
+AH_NotReloading:bne AH_AmmoCheckOK
+AH_EmptyMagazine:
+                lda invCount,y                  ;Initiate reloading if mag empty and reserve left
+                beq AH_FirearmEmpty
+                lda #$ff
+                sta invMag,y
+                ldy #WD_RELOADDELAY
+                lda (wpnLo),y
+                sta actAttackD,x                ;TODO: play reload sound
+                jmp AH_RedrawAmmoNoAttack
+AH_FirearmEmpty:lda #$02                        ;If no bullets, set a constant attack delay to
+                sta actAttackD,x                ;prevent firing but allow brandishing empty weapon
+AH_AmmoCheckOK: lda menuCounter                 ;If player is in inventory menu,
+                cmp #MENU_DELAY                 ;do not attack
+                beq AH_NoAttack2
 AH_NotPlayer:   lda actCtrl,x
                 cmp #JOY_FIRE
-                bcc AH_NoAttack
+                bcc AH_NoAttack2
                 ldy actF1,x
                 cpy #FR_DIE
-                bcs AH_NoAttack
+                bcs AH_NoAttack2
                 and #JOY_LEFT|JOY_RIGHT         ;If left/right attack, turn actor
                 beq AH_NoTurn2
                 lsr
@@ -97,14 +130,14 @@ AH_NoTurn2:     lda actCtrl,x
 AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 tay
                 lda attackTbl,y
-                bmi AH_NoAttack
+                bmi AH_NoAttack2
                 ldy #WD_MINAIM                  ;Check that aim direction is OK for weapon
                 cmp (wpnLo),y                   ;in question
-                bcc AH_NoAttack
+                bcc AH_NoAttack2
                 iny
                 cmp (wpnLo),y
                 bcc AH_AimOk
-                jmp AH_NoAttack
+AH_NoAttack2:   jmp AH_NoAttack
 AH_AimOk:       pha
                 clc
                 adc #FR_ATTACK
@@ -139,6 +172,7 @@ AH_CannotFire:  rts
 AH_CanFire:     lda temp3                       ;Check for melee/throw weapon and play its
                 and #WDB_THROW|WDB_MELEE        ;animation, else go directly to firing
                 beq AH_SpawnBullet
+AH_ThrownOrMelee:
                 lda #$84                        ;Setup the melee animation counter
                 sta actAttackD,x
 AH_MeleePrepare:lda #FR_PREPARE                 ;Show prepare frame for hands & weapon
@@ -219,7 +253,15 @@ AH_BulletFrameDone:
                 jsr GetFlashColorOverride
                 sta actC,x
 AH_NoBulletFlash:
-                ldx actIndex
+                ldx actIndex                    ;If player, decrement ammo
+                bne AH_NoAmmoDecrement
+                ldy actWpn+ACTI_PLAYER
+                lda itemMagazineSize-1,y
+                bmi AH_NoAmmoDecrement          ;Melee weapon, no decrement
+                ldy itemIndex
+                lda #$01
+                jsr DecreaseAmmo
+AH_NoAmmoDecrement:
                 ldy #WD_ATTACKDELAY
                 lda (wpnLo),y
                 sta actAttackD,x

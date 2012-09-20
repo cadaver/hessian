@@ -84,6 +84,7 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLASHBULLET ;Weapon bits
                 dc.b 6                          ;Prepare weapon frame (left)
                 dc.b 0,1,2,3,4                  ;Attack weapon frames (right)
                 dc.b 0,5,6,7,4                  ;Attack weapon frames (left)
+                dc.b 25                         ;Reload delay
 
 wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction

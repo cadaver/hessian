@@ -319,10 +319,14 @@ invCount:       ds.b MAX_INVENTORYITEMS,0
 invMag:         ds.b MAX_INVENTORYITEMS,0
 displayedHealth:dc.b 0
 healthRecharge: dc.b 0
+magazineSize:   dc.b 0
 textDelay:      dc.b 0
 textTime:       dc.b 0
 menuCounter:    dc.b 0
 menuMoveDelay:  dc.b 0
+panelUpdateFlags:
+                dc.b REDRAW_ITEM+REDRAW_AMMO
+
 
         ; Dynamic memory allocation area begins here
          

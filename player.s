@@ -39,6 +39,15 @@ MovePlayer:     lda actHp,x                     ;Restore health if not dead and 
                 sta healthRecharge
                 inc actHp,x
 MP_NoHealthRecharge:
+                ldy itemIndex                   ;Set player weapon from inventory
+                ldx invType,y
+                lda itemMagazineSize-1,x        ;Mag size needed for weapon routines,
+                sta magazineSize                ;cache it now
+                cpx #ITEM_FIRST_NONWEAPON
+                bcc MP_WeaponOK
+                ldx #WPN_NONE
+MP_WeaponOK:    stx actWpn+ACTI_PLAYER
+                ldx actIndex
                 lda actCtrl,x
                 sta actPrevCtrl,x
                 lda joystick

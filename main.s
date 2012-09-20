@@ -64,7 +64,6 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 jsr SetActorSize
                 lda #ITEM_KNIFE
                 sta invType
-                jsr RefreshPlayerWeapon
 
                 ldx #ACTI_PLAYER+1
                 lda #7
@@ -115,7 +114,7 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actT,x
                 lda #ITEM_PISTOL-1
                 sta actF1,x
-                lda #1
+                lda #12
                 sta actHp,x
                 jsr SetActorSize
 
