@@ -36,13 +36,11 @@ WDB_MELEE       = 16
         ; Returns: -
         ; Modifies: A,Y
 
-AH_NoAttack:    lda actAttackD,x                ;When weapon not in firing
-                bmi AH_BreakMeleeAttack         ;position, give 1 frame attack
-                bne AH_DecrementDelay           ;delay to reduce possibility of firing
-AH_BreakMeleeAttack:                            ;the initial bullet to undesired direction.
-                lda #$01                        ;Also break unfinished melee attack
-                sta actAttackD,x
-                bne AH_SetIdleWeaponFrame
+AH_NoAttack:    lda actAttackD,x
+                beq AH_SetIdleWeaponFrame
+                bpl AH_DecrementDelay      ;Break failed or incomplete melee attack
+                lda #$01
+                sta actAttackD,x    
 AH_DecrementDelay:
                 dec actAttackD,x
 AH_SetIdleWeaponFrame:

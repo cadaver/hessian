@@ -135,14 +135,12 @@ CreatePlayer:   ldx #ACTI_PLAYER
 
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors
-                jsr ScrollPlayerUpdateFrame
-                jsr UpdatePanel
+                jsr FinishFrame
                 jsr ScrollLogic
                 jsr GetControls
                 jsr UpdateMenu
                 jsr UpdateActors
-                jsr ScrollPlayerUpdateFrame
-                jsr UpdatePanel
+                jsr FinishFrame
                 jmp MainLoop
 
                 include actordata.s
