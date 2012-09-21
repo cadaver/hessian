@@ -561,7 +561,7 @@ HD_NoItem:      ldy temp4                      ;Check if has a damage source
                 lda actHp,y
                 asl
                 sta temp8
-                lda actSX,y                     ;Check if final attack came from right or left
+                lda actSX,y                    ;Check if final attack came from right or left
                 bmi HD_LeftImpulse
                 bne HD_RightImpulse
                 lda actXL,x
