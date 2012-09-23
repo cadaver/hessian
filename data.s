@@ -324,6 +324,8 @@ textDelay:      dc.b 0
 textTime:       dc.b 0
 menuCounter:    dc.b 0
 menuMoveDelay:  dc.b 0
+itemSearch:     dc.b ACTI_FIRSTITEM
+itemNameDisplay:dc.b 0
 panelUpdateFlags:
                 dc.b REDRAW_ITEM+REDRAW_AMMO
 

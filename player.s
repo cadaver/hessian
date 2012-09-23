@@ -39,7 +39,36 @@ MovePlayer:     lda actHp+ACTI_PLAYER           ;Restore health if not dead and 
                 sta healthRecharge
                 inc actHp+ACTI_PLAYER
 MP_NoHealthRecharge:
-                ldy itemIndex                   ;Set player weapon from inventory
+                lda textTime                    ;If no other text displayed, check for item
+                bne MP_SkipItemName             ;at player's feet and print its name
+                ldy itemSearch
+                lda actT,y
+                cmp #ACT_ITEM
+                bne MP_ItemNameNext
+                jsr CheckActorCollision
+                bcc MP_ItemNameNext
+                lda actF1,y
+                cmp itemNameDisplay
+                beq MP_SkipItemName
+                pha
+                jsr GetItemName
+                ldy #$00
+                jsr PrintPanelText
+                pla
+                sta itemNameDisplay
+                ldx actIndex
+                bpl MP_SkipItemName
+MP_ItemNameNext:iny
+                cpy #ACTI_LASTITEM+1
+                bcc MP_ItemNameNoWrap
+                ldy #ACTI_FIRSTITEM
+MP_ItemNameNoWrap:
+                sty itemSearch
+                bcc MP_SkipItemName
+                lda itemNameDisplay             ;When search counter wraps, clear
+                beq MP_SkipItemName             ;existing item name text
+                jsr ClearPanelText
+MP_SkipItemName:ldy itemIndex                   ;Set player weapon from inventory
                 ldx invType,y
                 lda itemMagazineSize-1,x        ;Mag size needed for weapon routines,
                 sta magazineSize                ;cache it now
@@ -545,8 +574,6 @@ HumanDeath:     lda #FR_DIE
                 jsr SpawnWithOffset
                 lda actWpn,x
                 tax
-                sec
-                sbc #$01
                 sta actF1,y
                 lda itemDefaultPickup-1,x
                 sta actHp,y

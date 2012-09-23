@@ -26,8 +26,6 @@ CP_Next:        iny
                 rts
 CP_HasCollision:sty temp1                       ;Item actor number
                 lda actF1,y
-                clc
-                adc #$01
                 sta temp2                       ;Item type
                 ldx actHp,y
                 jsr AddItem
@@ -36,8 +34,6 @@ CP_PickupSuccess:
                 ldx temp1
                 lda zpBitsLo                    ;Was the item swapped?
                 beq CP_NoSwap
-                sec
-                sbc #$01
                 sta actF1,x                     ;Store type/ammo after swap
                 lda zpBitsHi
                 sta actHp,x
@@ -47,20 +43,30 @@ CP_PrintItemName:
                 lda #<txtPickedUp
                 ldx #>txtPickedUp
                 jsr PrintPanelText
-                ldy temp2
-                lda itemNameLo-1,y
-                ldx itemNameHi-1,y
-                ldy #INVENTORY_TEXT_DURATION
+                lda temp2
+                jsr GetItemName
                 jsr ContinuePanelText
 CP_PickupFail:  ldx actIndex
                 rts
-
+                  
+        ; Get name of item
+        ;
+        ; Parameters: A item type
+        ; Returns: A,X pointer to item name text, Y default inventory text duration
+        ; Modifies: A,X,Y
+        
+GetItemName:    tay
+                lda itemNameLo-1,y
+                ldx itemNameHi-1,y
+                ldy #INVENTORY_TEXT_DURATION
+                rts
+                
         ; Find item from inventory
         ;
         ; Parameters: A item type
         ; Returns: C=1 if found (index in Y), C=0 not found (first free index in Y)
         ; Modifies: A,Y,zpSrcLo
-        
+
 FindItem:       sta zpSrcLo
                 ldy #$ff
 FI_Loop:        iny

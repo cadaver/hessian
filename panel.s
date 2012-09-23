@@ -103,7 +103,7 @@ UP_HealthDone:  lda panelUpdateFlags
                 bcc UP_SkipWeapon
                 ldy itemIndex
                 ldx invType,y
-                lda itemFrames-1,x
+                lda itemFrames,x
                 asl
                 tay
                 lda fileLo+C_WEAPON
@@ -188,11 +188,15 @@ UP_SkipAmmo:    lda #$00
                 dec textTime
                 beq UP_UpdateText
 UP_TextDone:    rts
-UP_UpdateText:  ldx textLeftMargin
+UP_UpdateText:  lda #$00
+                sta itemNameDisplay
+                ldx textLeftMargin
 UP_ContinueText:ldy #$00
                 lda textHi
-                beq UP_ClearEndOfLine
+                beq UP_NoLine
                 lda (textLo),y
+                bne UP_BeginLine
+UP_NoLine:      sta textTime
                 beq UP_ClearEndOfLine
 UP_BeginLine:   lda textDelay
                 asl
@@ -271,14 +275,23 @@ UP_EmptySlice:  sta textChars+17*8,x
                 bcc UP_DrawSliceLoop
                 rts
 
+        ; Clear the panel text
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X
+
+ClearPanelText: ldx #$00
+                ldy #$00
+
         ; Print text to panel, possibly multi-line
         ;
         ; Parameters: A,X text address, Y delay in game logic frames (25 = 1 sec)
         ; Returns: -
         ; Modifies: A
-        
+
 PrintPanelText: sty textDelay
-SetTextPtr:     sta textLo
+                sta textLo
                 stx textHi
                 jmp UP_UpdateText
 
@@ -288,22 +301,13 @@ SetTextPtr:     sta textLo
         ; Parameters: A,X text address, Y delay in game logic frames (25 = 1 sec)
         ; Returns: -
         ; Modifies: A
-        
-ContinuePanelText:   
+
+ContinuePanelText:
                 sty textDelay
                 sta textLo
                 stx textHi
                 ldx zpBitsLo
                 jmp UP_ContinueText
-
-        ; Clear the panel text
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X
-
-ClearPanelText: ldx #$00
-                beq SetTextPtr
 
         ; Update menu system (inventory) in the panel
         ;
@@ -356,9 +360,8 @@ UM_Open:        stx menuCounter
 UM_Refresh:     inc textLeftMargin
                 dec textRightMargin
                 ldx itemIndex
-                ldy invType,x
-                lda itemNameLo-1,y
-                ldx itemNameHi-1,y
+                lda invType,x
+                jsr GetItemName
                 ldy menuCounter                 ;When using keys to select item,
                 cpy #MENU_DELAY                 ;only show the text for a short time
                 beq UM_RefreshActive

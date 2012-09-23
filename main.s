@@ -112,7 +112,7 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actYH,x
                 lda #ACT_ITEM
                 sta actT,x
-                lda #ITEM_PISTOL-1
+                lda #ITEM_PISTOL
                 sta actF1,x
                 lda #12
                 sta actHp,x
@@ -127,7 +127,7 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actYH,x
                 lda #ACT_ITEM
                 sta actT,x
-                lda #ITEM_GRENADE-1
+                lda #ITEM_GRENADE
                 sta actF1,x
                 lda #3
                 sta actHp,x
