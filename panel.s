@@ -190,7 +190,7 @@ UP_SkipAmmo:    lda #$00
                 beq UP_UpdateText
 UP_TextDone:    rts
 UP_UpdateText:  lda #$00
-                sta itemNameDisplay
+                sta displayedItemName
                 ldx textLeftMargin
 UP_ContinueText:ldy #$00
                 lda textHi

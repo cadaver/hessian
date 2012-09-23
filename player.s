@@ -27,7 +27,7 @@ HUMAN_MAX_YSPEED = 6*8
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MP_CheckPickupSub:
-                ldy itemSearch
+                ldy #ACTI_FIRSTITEM
 MP_CheckPickupSub2:
                 lda actT,y
                 cmp #ACT_ITEM
@@ -40,7 +40,7 @@ MP_CPSNoItem:   iny
                 ldy #ACTI_FIRSTITEM
                 clc
 MP_CPSNoItemNoWrap:
-                sty itemSearch
+                sty MP_CheckPickupSub+1
 MP_CPSHasItem:  rts
 
 MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new controls
@@ -77,21 +77,21 @@ MP_CheckPickup: jsr MP_CheckPickupSub           ;Check for item pickup / name di
                 bcs MP_HasItem
                 jsr MP_CheckPickupSub2
                 bcs MP_HasItem
-                lda itemNameDisplay             ;If no items, clear existing item name
+                lda displayedItemName           ;If no items, clear existing item name
                 beq MP_SetWeapon                ;text
                 jsr ClearPanelText
                 jmp MP_SetWeapon
 MP_HasItem:     lda textTime                    ;Make sure to not overwrite other game
                 bne MP_SkipItemName             ;messages
                 lda actF1,y
-                cmp itemNameDisplay             ;Do not reprint same item name
+                cmp displayedItemName           ;Do not reprint same item name
                 beq MP_SkipItemName
                 pha
                 jsr GetItemName
                 ldy #$00
                 jsr PrintPanelText
                 pla
-                sta itemNameDisplay
+                sta displayedItemName
 MP_SkipItemName:lda actCtrl+ACTI_PLAYER
                 cmp #JOY_DOWN
                 bne MP_SetWeapon
@@ -100,7 +100,7 @@ MP_SkipItemName:lda actCtrl+ACTI_PLAYER
                 lda actF1+ACTI_PLAYER
                 cmp #FR_DUCK
                 bne MP_SetWeapon
-                ldy itemSearch
+                ldy MP_CheckPickupSub+1
                 jsr TryPickup
                 
 MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventory

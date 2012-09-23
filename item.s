@@ -20,17 +20,17 @@ TryPickup:      sty temp1                       ;Item actor number
                 sta temp2                       ;Item type
                 ldx actHp,y
                 jsr AddItem
-                bcc CP_PickupFail
-CP_PickupSuccess:
+                bcc TP_PickupFail
+TP_PickupSuccess:
                 ldx temp1
                 lda zpBitsLo                    ;Was the item swapped?
-                beq CP_NoSwap
+                beq TP_NoSwap
                 sta actF1,x                     ;Store type/ammo after swap
                 lda zpBitsHi
                 sta actHp,x
-                jmp CP_PrintItemName
-CP_NoSwap:      jsr RemoveActor                 ;If not swapped, remove
-CP_PrintItemName:
+                jmp TP_PrintItemName
+TP_NoSwap:      jsr RemoveActor                 ;If not swapped, remove
+TP_PrintItemName:
                 lda #<txtPickedUp
                 ldx #>txtPickedUp
                 ldy #INVENTORY_TEXT_DURATION
@@ -50,7 +50,7 @@ CP_PrintItemName:
 GetItemName:    tay
                 lda itemNameLo-1,y
                 ldx itemNameHi-1,y
-CP_PickupFail:  rts
+TP_PickupFail:  rts
 
         ; Find item from inventory
         ;

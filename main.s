@@ -64,6 +64,8 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 jsr SetActorSize
                 lda #ITEM_FISTS
                 sta invType
+                lda #0
+                sta itemIndex
 
                 ldx #ACTI_PLAYER+1
                 lda #7

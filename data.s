@@ -313,10 +313,10 @@ actAttackD:     ds.b MAX_COMPLEXACT,0
 
         ;Other variables
 
-itemIndex:      dc.b 0
 invType:        ds.b MAX_INVENTORYITEMS,0
 invCount:       ds.b MAX_INVENTORYITEMS,0
 invMag:         ds.b MAX_INVENTORYITEMS,0
+displayedItemName:dc.b 0
 displayedHealth:dc.b 0
 healthRecharge: dc.b 0
 magazineSize:   dc.b 0
@@ -324,8 +324,6 @@ textDelay:      dc.b 0
 textTime:       dc.b 0
 menuCounter:    dc.b 0
 menuMoveDelay:  dc.b 0
-itemSearch:     dc.b ACTI_FIRSTITEM
-itemNameDisplay:dc.b 0
 panelUpdateFlags:
                 dc.b REDRAW_ITEM+REDRAW_AMMO
 
