@@ -43,7 +43,7 @@ MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
 MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
 
 MP_CheckHealth: lda actHp+ACTI_PLAYER           ;Restore health if not dead and not at
-                beq MP_CheckPickup            ;full health
+                beq MP_CheckPickup              ;full health
                 cmp #HP_PLAYER
                 bcs MP_CheckPickup
                 inc healthRecharge              ;Recharge fast when health low
@@ -76,7 +76,7 @@ MP_SkipItemName:lda actCtrl+ACTI_PLAYER
                 cmp #JOY_DOWN
                 bne MP_NoPickup
                 lda actFd+ACTI_PLAYER           ;If ducking, try picking up the item
-                bne MP_NoPickup
+                beq MP_NoPickup
                 lda actF1+ACTI_PLAYER
                 cmp #FR_DUCK
                 bne MP_NoPickup

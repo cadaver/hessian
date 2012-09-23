@@ -23,6 +23,7 @@ WD_ATTACKFR     = 14
 WD_ATTACKFRLEFT = 19
 WD_RELOADDELAY  = 24
 WD_RELOADSFX    = 25
+WD_RELOADDONESFX = 26
 
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
@@ -94,6 +95,9 @@ AH_CheckFirearm:lda invMag,y                    ;Check if reload ongoing
                 bcc AH_ReloadSizeOK
                 lda magazineSize
 AH_ReloadSizeOK:sta invMag,y
+                ldy #WD_RELOADDONESFX
+                lda (wpnLo),y
+                jsr PlaySfx
 AH_RedrawAmmoNoAttack:
                 jsr SetPanelRedrawAmmo
                 jmp AH_NoAttack
@@ -105,7 +109,7 @@ AH_EmptyMagazine:
                 sta invMag,y
                 ldy #WD_RELOADDELAY
                 lda (wpnLo),y
-                sta actAttackD+ACTI_PLAYER      
+                sta actAttackD+ACTI_PLAYER
                 ldy #WD_RELOADSFX
                 lda (wpnLo),y
                 jsr PlaySfx

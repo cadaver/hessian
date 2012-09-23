@@ -2,6 +2,8 @@ all: hessian.d64 hessian.d81
 
 clean:
 	del *.bin
+	del music\*.bin
+	del sfx\*.sfx
 	del *.pak
 	del *.prg
 	del *.tbl
@@ -52,8 +54,14 @@ sfx/punch.sfx: sfx/punch.ins
 sfx/reload.sfx: sfx/reload.ins
 	ins2nt2 sfx/reload.ins sfx/reload.sfx
 
+sfx/cockfast.sfx: sfx/cockfast.ins
+	ins2nt2 sfx/cockfast.ins sfx/cockfast.sfx
+
 sfx/powerup.sfx: sfx/powerup.ins
 	ins2nt2 sfx/powerup.ins sfx/powerup.sfx
+
+sfx/select.sfx: sfx/select.ins
+	ins2nt2 sfx/select.ins sfx/select.sfx
 
 sfx/pickup.sfx: sfx/pickup.ins
 	ins2nt2 sfx/pickup.ins sfx/pickup.sfx
@@ -61,11 +69,12 @@ sfx/pickup.sfx: sfx/pickup.ins
 main.pak: actor.s actordata.s bullet.s data.s file.s init.s item.s itemdata.s level.s macros.s main.s \
     memory.s panel.s physics.s player.s raster.s screen.s sound.s sounddata.s sprite.s text.s weapon.s \
     weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx \
-    sfx/punch.sfx sfx/reload.sfx sfx/powerup.sfx sfx/pickup.sfx
+    sfx/punch.sfx sfx/reload.sfx sfx/cockfast.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx
 	dasm main.s -omain.bin -smain.tbl -f3
 	pack2 main.bin main.pak
 
-testmusic.pak: music/testmusic.bin
+testmusic.pak: music/ninjatr2.d64
+	d642prg music/ninjatr2.d64 testmusic.bin music/testmusic.bin -h
 	pack2 music/testmusic.bin testmusic.pak
 
 testlev.pak: testlev.s bg/testlev.map bg/testlev.blk bg/testlev.chi bg/testlev.chc bg/testlev.chr

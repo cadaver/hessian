@@ -146,5 +146,5 @@ mapTblLo        = $f300                         ;Map/blocktables need to be alwa
 mapTblHi        = $f380                         ;after loading
 blkTblLo        = $f400
 blkTblHi        = $f400+MAX_BLK
-musicData       = $f400+MAX_BLK*2
+musicData       = $f580
 

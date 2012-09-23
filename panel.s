@@ -357,6 +357,45 @@ UM_WasNotOpen:  ldx #$00
 UM_Open:        stx menuCounter
                 lda #$00
                 sta menuMoveDelay
+                beq UM_Refresh
+
+UM_IsActive:    ldy menuMoveDelay
+                beq UM_NoMoveDelay
+                dec menuMoveDelay
+                rts
+UM_NoMoveDelay: ldy itemIndex
+                cmp #JOY_FIRE+JOY_LEFT
+                bne UM_NoMoveLeft
+                cpy #$00
+                beq UM_NoMoveLeft
+                dec itemIndex
+UM_MoveCommon:  lda #MENU_MOVEDELAY
+                sta menuMoveDelay
+                lda joystick                    ;If joystick held, use smaller move delay
+                cmp prevJoy
+                bne UM_NoDelayReduce
+                dec menuMoveDelay
+UM_NoDelayReduce:
+                bpl UM_Refresh
+UM_NoMoveLeft:  cmp #JOY_FIRE+JOY_RIGHT
+                bne UM_NoMoveRight
+                lda invType+1,y
+                beq UM_NoMoveRight
+                inc itemIndex
+                bne UM_MoveCommon
+UM_NoMoveRight: cmp #JOY_FIRE+JOY_DOWN
+                bne UM_NoReload
+                ldx invType,y                   ;Do not reload if already full magazine
+                lda invMag,y                    ;or already reloading
+                bmi UM_NoReload
+                cmp itemMagazineSize-1,x
+                bcs UM_NoReload
+                cmp invCount,y
+                bcs UM_NoReload
+                lda #$00                        ;Initiate reload by zeroing magazine
+                sta invMag,y
+UM_NoReload:    rts
+
 UM_Refresh:     inc textLeftMargin
                 dec textRightMargin
                 ldx itemIndex
@@ -383,44 +422,9 @@ UM_NoLeftArrow: sta screen1+SCROLLROWS*40+40+9
                 beq UM_NoRightArrow
                 lda #21
 UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+30
+                lda #SFX_SELECT
+                jsr PlaySfx
                 jmp SetPanelRedrawItemAmmo      ;Redraw item & ammo next time panel is updated
-
-UM_IsActive:    ldy menuMoveDelay
-                beq UM_NoMoveDelay
-                dec menuMoveDelay
-                rts
-UM_NoMoveDelay: ldy itemIndex
-                cmp #JOY_FIRE+JOY_LEFT
-                bne UM_NoMoveLeft
-                cpy #$00
-                beq UM_NoMoveLeft
-                dec itemIndex
-UM_MoveCommon:  lda #MENU_MOVEDELAY
-                sta menuMoveDelay
-                lda joystick                    ;If joystick held, use smaller move delay
-                cmp prevJoy
-                bne UM_NoDelayReduce
-                dec menuMoveDelay
-UM_NoDelayReduce:
-                jmp UM_Refresh
-UM_NoMoveLeft:  cmp #JOY_FIRE+JOY_RIGHT
-                bne UM_NoMoveRight
-                lda invType+1,y
-                beq UM_NoMoveRight
-                inc itemIndex
-                bne UM_MoveCommon
-UM_NoMoveRight: cmp #JOY_FIRE+JOY_DOWN
-                bne UM_NoReload
-                ldx invType,y                   ;Do not reload if already full magazine
-                lda invMag,y                    ;or already reloading
-                bmi UM_NoReload
-                cmp itemMagazineSize-1,x
-                bcs UM_NoReload
-                cmp invCount,y
-                bcs UM_NoReload
-                lda #$00                        ;Initiate reload by zeroing magazine
-                sta invMag,y
-UM_NoReload:    rts
 
         ; Convert a 8-bit value to BCD
         ;
