@@ -6,25 +6,15 @@ ITEM_SPAWN_OFFSET = -16*8
 
 MAX_INVENTORYITEMS = 16
 
-MAX_WEAPONS     = 2                             ;TODO: make dynamic
+MAX_WEAPONS     = 3                             ;TODO: make dynamic
 
-        ; Item pickup check
+        ; Try picking up an item
         ;
-        ; Parameters: X player actor index (0)
+        ; Parameters: Y item actor index
         ; Returns: -
-        ; Modifies: A,Y,temp vars
+        ; Modifies: A,X,Y,temp vars
 
-CheckPickup:    ldy #ACTI_FIRSTITEM
-CP_Loop:        lda actT,y
-                cmp #ACT_ITEM
-                bne CP_Next
-                jsr CheckActorCollision
-                bcs CP_HasCollision
-CP_Next:        iny
-                cpy #ACTI_LASTITEM+1
-                bcc CP_Loop
-                rts
-CP_HasCollision:sty temp1                       ;Item actor number
+TryPickup:      sty temp1                       ;Item actor number
                 lda actF1,y
                 sta temp2                       ;Item type
                 ldx actHp,y
@@ -46,21 +36,21 @@ CP_PrintItemName:
                 lda temp2
                 jsr GetItemName
                 jsr ContinuePanelText
-CP_PickupFail:  ldx actIndex
-                rts
-                  
+                lda #SFX_PICKUP
+                jmp PlaySfx
+
         ; Get name of item
         ;
         ; Parameters: A item type
         ; Returns: A,X pointer to item name text, Y default inventory text duration
         ; Modifies: A,X,Y
-        
+
 GetItemName:    tay
                 lda itemNameLo-1,y
                 ldx itemNameHi-1,y
                 ldy #INVENTORY_TEXT_DURATION
-                rts
-                
+CP_PickupFail:  rts
+
         ; Find item from inventory
         ;
         ; Parameters: A item type
@@ -122,9 +112,12 @@ AI_CheckWeaponsDone:
                 bcc AI_NoWeaponLimit
                 ldy itemIndex                   ;If weapon limit exceeded, check if current
                 lda invType,y                   ;weapon can be swapped
+                cmp #ITEM_FISTS+1
+                bcc AI_CannotBeSwapped
                 cmp #ITEM_FIRST_CONSUMABLE
-                bcc AI_CanBeSwapped             ;TODO: when fists weapon exists, assure they can never be dropped
+                bcc AI_CanBeSwapped
                 clc
+AI_CannotBeSwapped:
                 rts                             ;Weapon not selected, nothing to swap with, fail pickup
 AI_CanBeSwapped:sta zpBitsLo
                 lda invCount,y

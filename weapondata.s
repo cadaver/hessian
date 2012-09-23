@@ -1,8 +1,10 @@
 WPN_NONE        = 0
-WPN_KNIFE       = 1
-WPN_PISTOL      = 2
-WPN_GRENADE     = 3
+WPN_FISTS       = 1
+WPN_KNIFE       = 2
+WPN_PISTOL      = 3
+WPN_GRENADE     = 4
 
+DMG_FISTS       = 1
 DMG_KNIFE       = 2
 DMG_PISTOL      = 4
 DMG_GRENADE     = 16
@@ -41,15 +43,28 @@ bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
 
         ; Weapon data pointers
 
-wpnTblLo:       dc.b <wdKnife
+wpnTblLo:       dc.b <wdFists
+                dc.b <wdKnife
                 dc.b <wdPistol
                 dc.b <wdGrenade
 
-wpnTblHi:       dc.b >wdKnife
+wpnTblHi:       dc.b >wdFists
+                dc.b >wdKnife
                 dc.b >wdPistol
                 dc.b >wdGrenade
 
         ; Weapon data
+
+wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
+                dc.b AIM_HORIZONTAL             ;First aim direction
+                dc.b AIM_HORIZONTAL+1           ;Last aim direction+1
+                dc.b 5                          ;Attack delay
+                dc.b ACT_MELEEHIT               ;Bullet actor type
+                dc.b DMG_FISTS                  ;Bullet damage
+                dc.b 1                          ;Bullet time duration
+                dc.b 1                          ;Bullet speed in pixels
+                dc.b 0                          ;Bullet speed table offset
+                dc.b SFX_PUNCH                  ;Sound effect
 
 wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction
@@ -85,6 +100,7 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLASHBULLET ;Weapon bits
                 dc.b 0,1,2,3,4                  ;Attack weapon frames (right)
                 dc.b 0,5,6,7,4                  ;Attack weapon frames (left)
                 dc.b 25                         ;Reload delay
+                dc.b SFX_RELOAD                 ;Reload sound
 
 wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction

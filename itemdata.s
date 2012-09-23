@@ -1,36 +1,43 @@
 ITEM_NONE       = 0
-ITEM_KNIFE      = 1
-ITEM_PISTOL     = 2
-ITEM_GRENADE    = 3
+ITEM_FISTS      = 1
+ITEM_KNIFE      = 2
+ITEM_PISTOL     = 3
+ITEM_GRENADE    = 4
+ITEM_FIRSTAIDKIT = 5
 
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
-ITEM_FIRST_NONWEAPON = 4
-
+ITEM_FIRST_NONWEAPON = ITEM_FIRSTAIDKIT
 
         ; Item data
-        
-itemNameLo:     dc.b <txtKnife
+
+itemNameLo:     dc.b <txtFists
+                dc.b <txtKnife
                 dc.b <txtPistol
                 dc.b <txtGrenade
-                
-itemNameHi:     dc.b >txtKnife
+                dc.b <txtFirstAidKit
+
+itemNameHi:     dc.b >txtFists
+                dc.b >txtKnife
                 dc.b >txtPistol
                 dc.b >txtGrenade
-                
+                dc.b >txtFirstAidKit
+
 itemMaxCount:   dc.b 1
+                dc.b 1
                 dc.b 100
                 dc.b 10
-                
+                dc.b 2
+
 itemDefaultPickup:
+                dc.b 1
                 dc.b 1
                 dc.b 12
                 dc.b 2
-                
+                dc.b 1
+
 itemMagazineSize:
+                dc.b $ff
                 dc.b $ff
                 dc.b 12
                 dc.b 0
-                
-
-                
-
+                dc.b 0

@@ -46,9 +46,22 @@ sfx/throw.sfx: sfx/throw.ins
 sfx/melee.sfx: sfx/melee.ins
 	ins2nt2 sfx/melee.ins sfx/melee.sfx
 
+sfx/punch.sfx: sfx/punch.ins
+	ins2nt2 sfx/punch.ins sfx/punch.sfx
+
+sfx/reload.sfx: sfx/reload.ins
+	ins2nt2 sfx/reload.ins sfx/reload.sfx
+
+sfx/powerup.sfx: sfx/powerup.ins
+	ins2nt2 sfx/powerup.ins sfx/powerup.sfx
+
+sfx/pickup.sfx: sfx/pickup.ins
+	ins2nt2 sfx/pickup.ins sfx/pickup.sfx
+
 main.pak: actor.s actordata.s bullet.s data.s file.s init.s item.s itemdata.s level.s macros.s main.s \
     memory.s panel.s physics.s player.s raster.s screen.s sound.s sounddata.s sprite.s text.s weapon.s \
-    weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx
+    weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx \
+    sfx/punch.sfx sfx/reload.sfx sfx/powerup.sfx sfx/pickup.sfx
 	dasm main.s -omain.bin -smain.tbl -f3
 	pack2 main.bin main.pak
 

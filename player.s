@@ -26,58 +26,7 @@ HUMAN_MAX_YSPEED = 6*8
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MovePlayer:     lda actHp+ACTI_PLAYER           ;Restore health if not dead and not at
-                beq MP_NoHealthRecharge         ;full health
-                cmp #HP_PLAYER
-                bcs MP_NoHealthRecharge
-                inc healthRecharge              ;Health recharge: recharge fast when health
-                bmi MP_NoHealthRecharge         ;low, slower when more health
-                asl
-                cmp healthRecharge
-                bcs MP_NoHealthRecharge
-                lda #$00
-                sta healthRecharge
-                inc actHp+ACTI_PLAYER
-MP_NoHealthRecharge:
-                lda textTime                    ;If no other text displayed, check for item
-                bne MP_SkipItemName             ;at player's feet and print its name
-                ldy itemSearch
-                lda actT,y
-                cmp #ACT_ITEM
-                bne MP_ItemNameNext
-                jsr CheckActorCollision
-                bcc MP_ItemNameNext
-                lda actF1,y
-                cmp itemNameDisplay
-                beq MP_SkipItemName
-                pha
-                jsr GetItemName
-                ldy #$00
-                jsr PrintPanelText
-                pla
-                sta itemNameDisplay
-                ldx actIndex
-                bpl MP_SkipItemName
-MP_ItemNameNext:iny
-                cpy #ACTI_LASTITEM+1
-                bcc MP_ItemNameNoWrap
-                ldy #ACTI_FIRSTITEM
-MP_ItemNameNoWrap:
-                sty itemSearch
-                bcc MP_SkipItemName
-                lda itemNameDisplay             ;When search counter wraps, clear
-                beq MP_SkipItemName             ;existing item name text
-                jsr ClearPanelText
-MP_SkipItemName:ldy itemIndex                   ;Set player weapon from inventory
-                ldx invType,y
-                lda itemMagazineSize-1,x        ;Mag size needed for weapon routines,
-                sta magazineSize                ;cache it now
-                cpx #ITEM_FIRST_NONWEAPON
-                bcc MP_WeaponOK
-                ldx #WPN_NONE
-MP_WeaponOK:    stx actWpn+ACTI_PLAYER
-                ldx actIndex
-                lda actCtrl+ACTI_PLAYER
+MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new controls
                 sta actPrevCtrl+ACTI_PLAYER
                 lda joystick
                 sta actCtrl+ACTI_PLAYER
@@ -93,6 +42,68 @@ MP_WeaponOK:    stx actWpn+ACTI_PLAYER
 MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
 MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
 
+MP_CheckHealth: lda actHp+ACTI_PLAYER           ;Restore health if not dead and not at
+                beq MP_CheckPickup            ;full health
+                cmp #HP_PLAYER
+                bcs MP_CheckPickup
+                inc healthRecharge              ;Recharge fast when health low
+                bmi MP_CheckPickup
+                asl
+                cmp healthRecharge
+                bcs MP_CheckPickup
+                lda #$00
+                sta healthRecharge
+                inc actHp+ACTI_PLAYER
+
+MP_CheckPickup: ldy itemSearch                  ;Check for item pickup / item name display
+                lda actT,y
+                cmp #ACT_ITEM
+                bne MP_CheckPickupNext
+                jsr CheckActorCollision
+                bcc MP_CheckPickupNext
+                lda textTime                    ;Make sure to not overwrite other game
+                bne MP_SkipItemName             ;messages
+                lda actF1,y
+                cmp itemNameDisplay             ;Do not reprint same item name
+                beq MP_SkipItemName
+                pha
+                jsr GetItemName
+                ldy #$00
+                jsr PrintPanelText
+                pla
+                sta itemNameDisplay
+MP_SkipItemName:lda actCtrl+ACTI_PLAYER
+                cmp #JOY_DOWN
+                bne MP_NoPickup
+                lda actFd+ACTI_PLAYER           ;If ducking, try picking up the item
+                bne MP_NoPickup
+                lda actF1+ACTI_PLAYER
+                cmp #FR_DUCK
+                bne MP_NoPickup
+                ldy itemSearch
+                jsr TryPickup
+MP_NoPickup:    jmp MP_SetWeapon
+MP_CheckPickupNext:iny
+                cpy #ACTI_LASTITEM+1
+                bcc MP_ItemNameNoWrap
+                ldy #ACTI_FIRSTITEM
+MP_ItemNameNoWrap:
+                sty itemSearch
+                bcc MP_SetWeapon
+                lda itemNameDisplay             ;When search counter wraps, clear
+                beq MP_SetWeapon                ;existing item name text
+                jsr ClearPanelText
+
+MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventory
+                ldx invType,y
+                lda itemMagazineSize-1,x        ;Mag size needed for weapon routines,
+                sta magazineSize                ;cache it now
+                cpx #ITEM_FIRST_NONWEAPON
+                bcc MP_WeaponOK
+                ldx #WPN_NONE
+MP_WeaponOK:    stx actWpn+ACTI_PLAYER
+                ldx actIndex
+                
         ; Humanoid character move and attack routine
         ;
         ; Parameters: X actor index
@@ -369,19 +380,14 @@ MH_NoInitClimbDown:
                 sta actFd,x
                 lda #FR_DUCK
                 bne MH_AnimDone
-MH_DuckAnim:    lda actF1,x                     ;Check if already ducked
-                cmp #FR_DUCK+1
-                bcs MH_AnimDone2
-                lda #$01
+MH_DuckAnim:    lda #$01
                 jsr AnimationDelay
                 bcc MH_AnimDone2
-                txa                             ;Check item pickup if player
-                bne MH_NoPickupCheck
-                jsr CheckPickup
-MH_NoPickupCheck:
                 lda actF1,x
-                clc
-                adc #$01
+                adc #$00
+                cmp #FR_DUCK+2
+                bcc MH_AnimDone
+                lda #FR_DUCK+1
                 bne MH_AnimDone
 MH_NoDuck:      lda actF1,x
                 cmp #FR_DUCK

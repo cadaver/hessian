@@ -22,6 +22,7 @@ WD_PREPAREFRLEFT = 13
 WD_ATTACKFR     = 14
 WD_ATTACKFRLEFT = 19
 WD_RELOADDELAY  = 24
+WD_RELOADSFX    = 25
 
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
@@ -104,7 +105,10 @@ AH_EmptyMagazine:
                 sta invMag,y
                 ldy #WD_RELOADDELAY
                 lda (wpnLo),y
-                sta actAttackD+ACTI_PLAYER      ;TODO: play reload sound
+                sta actAttackD+ACTI_PLAYER      
+                ldy #WD_RELOADSFX
+                lda (wpnLo),y
+                jsr PlaySfx
                 jmp AH_RedrawAmmoNoAttack
 AH_FirearmEmpty:lda #$02                        ;If no bullets, set a constant attack delay to
                 sta actAttackD+ACTI_PLAYER      ;prevent firing but allow brandishing empty weapon

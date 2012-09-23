@@ -62,7 +62,7 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 lda #GRP_HEROES
                 sta actGrp,x
                 jsr SetActorSize
-                lda #ITEM_KNIFE
+                lda #ITEM_FISTS
                 sta invType
 
                 ldx #ACTI_PLAYER+1
@@ -102,8 +102,23 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 lda #$08
                 sta actC,x
                 jsr SetActorSize
-                
+
                 ldx #ACTI_FIRSTITEM
+                lda #5
+                sta actXH,x
+                lda #$80
+                sta actXL,x
+                lda #2
+                sta actYH,x
+                lda #ACT_ITEM
+                sta actT,x
+                lda #ITEM_KNIFE
+                sta actF1,x
+                lda #1
+                sta actHp,x
+                jsr SetActorSize
+
+                inx
                 lda #6
                 sta actXH,x
                 lda #$80
