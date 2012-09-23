@@ -32,6 +32,7 @@ CP_NoSwap:      jsr RemoveActor                 ;If not swapped, remove
 CP_PrintItemName:
                 lda #<txtPickedUp
                 ldx #>txtPickedUp
+                ldy #INVENTORY_TEXT_DURATION
                 jsr PrintPanelText
                 lda temp2
                 jsr GetItemName
@@ -42,13 +43,12 @@ CP_PrintItemName:
         ; Get name of item
         ;
         ; Parameters: A item type
-        ; Returns: A,X pointer to item name text, Y default inventory text duration
+        ; Returns: A,X pointer to item name text
         ; Modifies: A,X,Y
 
 GetItemName:    tay
                 lda itemNameLo-1,y
                 ldx itemNameHi-1,y
-                ldy #INVENTORY_TEXT_DURATION
 CP_PickupFail:  rts
 
         ; Find item from inventory
@@ -182,13 +182,13 @@ RI_ShiftLoop:   lda invCount+1,y                ;Shift items to remove the hole 
                 beq RI_Done
                 iny
                 bne RI_ShiftLoop
-RI_Done:        ldy itemIndex                   ;If current index points past inventory end,
+RI_Done:        inc UM_ForceRefresh+1           ;If inventory open, force it to refresh
+                ldy itemIndex                   ;If current index points past inventory end,
                 beq RI_Success                  ;change selection back
                 lda invType,y
                 bne RI_Success
                 dec itemIndex
                 jmp RI_Success
-
 
         ; Decrease ammo in inventory
         ;
@@ -252,3 +252,23 @@ MoveItem:       lda #$00
                 lda #$00
                 sta actMoveFlags,x
 MoveItem_Done:  rts
+
+        ; Use an inventory item
+        ;
+        ; Parameters: Y inventory index
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+        
+UseItem:        lda invType,y
+                cmp #ITEM_MEDKIT
+                beq UseMedKit
+UMK_FullHealth: rts
+UseMedKit:      lda actHp+ACTI_PLAYER
+                cmp #HP_PLAYER
+                bcs UMK_FullHealth
+                lda #HP_PLAYER
+                sta actHp+ACTI_PLAYER
+                lda #SFX_POWERUP
+                jsr PlaySfx
+                lda #$01
+                jmp DecreaseAmmo

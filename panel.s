@@ -155,20 +155,21 @@ UP_Firearm:     lda invMag,y                    ;Print rounds in magazine
                 lda temp7
                 adc #$00
                 cmp #$0a                        ;More than 9 can not be printed, clamp
-                bcc UP_ClipCountOK
+                bcc UP_MagCountOK
                 lda #$09
-UP_ClipCountOK: ora #$30
+UP_MagCountOK:  ora #$30
                 sta screen1+SCROLLROWS*40+40+38
                 bne UP_SkipAmmo
 UP_Consumable:  lda #42
                 sta screen1+SCROLLROWS*40+40+35
                 lda invCount,y
                 jsr ConvertToBCD8
-                lda temp8
                 ldx #36
+                lda temp8
                 jsr PrintBCDDigit
                 lda temp7
-                jmp PrintBCDDigits
+                jsr PrintBCDDigits
+                jmp UP_SkipAmmo
 UP_Reloading:   ldy #$07
                 bne UP_Reloading2
 UP_MeleeWeapon: ldy #$03
@@ -298,12 +299,11 @@ PrintPanelText: sty textDelay
         ; Print continued panel text. Should be called immediately after printing
         ; the beginning part.
         ;
-        ; Parameters: A,X text address, Y delay in game logic frames (25 = 1 sec)
+        ; Parameters: A,X text address
         ; Returns: -
         ; Modifies: A
 
 ContinuePanelText:
-                sty textDelay
                 sta textLo
                 stx textHi
                 ldx zpBitsLo
@@ -330,20 +330,20 @@ UpdateMenu:     ldx menuCounter
                 cpx #MENU_DELAY
                 bcs UM_Open
 UM_StoreCounter:stx menuCounter
-UM_KeyControl:  ldx keyType                     ;Can also use Z & X keys to select items
-                cpx #KEY_Z
+                lda actHp+ACTI_PLAYER
+                beq UM_NotReloadKey
+UM_KeyControl:  ldy itemIndex
+                lda keyType                     ;Can also use Z & X keys to select items
+                cmp #KEY_Z
                 bne UM_NotPreviousKey
-                lda #JOY_FIRE+JOY_LEFT
-                bne UM_NoMoveDelay
+                jmp UM_MoveLeft
 UM_NotPreviousKey:
-                cpx #KEY_X
+                cmp #KEY_X
                 bne UM_NotNextKey
-                lda #JOY_FIRE+JOY_RIGHT
-                bne UM_NoMoveDelay
-UM_NotNextKey:  cpx #KEY_R                      ;Use R to reload
+                jmp UM_MoveRight
+UM_NotNextKey:  cmp #KEY_R                      ;Use R to reload
                 bne UM_NotReloadKey
-                lda #JOY_FIRE+JOY_DOWN
-                bne UM_NoMoveDelay
+                jmp UM_Reload
 UM_NotReloadKey:rts
 UM_Inactivate:  ldx #$ff
                 bne UM_StoreCounter
@@ -359,33 +359,36 @@ UM_Open:        stx menuCounter
                 sta menuMoveDelay
                 beq UM_Refresh
 
-UM_IsActive:    ldy menuMoveDelay
+UM_IsActive:    
+UM_ForceRefresh:ldy #$00                        ;Check for forced refresh (when inventory
+                bne UM_Refresh                  ;modified while open)
+                ldy menuMoveDelay
                 beq UM_NoMoveDelay
                 dec menuMoveDelay
                 rts
 UM_NoMoveDelay: ldy itemIndex
-                cmp #JOY_FIRE+JOY_LEFT
-                bne UM_NoMoveLeft
-                cpy #$00
-                beq UM_NoMoveLeft
-                dec itemIndex
-UM_MoveCommon:  lda #MENU_MOVEDELAY
-                sta menuMoveDelay
+                cmp #JOY_FIRE+JOY_RIGHT
+                bcc UM_NoMoveRight
+UM_MoveRight:   lda invType+1,y
+                beq UM_NoMoveRight
+                inc itemIndex
+UM_MoveCommon:  ldy #MENU_MOVEDELAY
                 lda joystick                    ;If joystick held, use smaller move delay
                 cmp prevJoy
                 bne UM_NoDelayReduce
-                dec menuMoveDelay
+                dey
 UM_NoDelayReduce:
-                bpl UM_Refresh
-UM_NoMoveLeft:  cmp #JOY_FIRE+JOY_RIGHT
-                bne UM_NoMoveRight
-                lda invType+1,y
-                beq UM_NoMoveRight
-                inc itemIndex
-                bne UM_MoveCommon
-UM_NoMoveRight: cmp #JOY_FIRE+JOY_DOWN
+                sty menuMoveDelay
+                bne UM_Refresh
+UM_NoMoveRight: cmp #JOY_FIRE+JOY_LEFT
+                bcc UM_NoMoveLeft
+UM_MoveLeft:    cpy #$00
+                beq UM_NoMoveLeft
+                dec itemIndex
+                bpl UM_MoveCommon
+UM_NoMoveLeft:  cmp #JOY_FIRE+JOY_DOWN
                 bne UM_NoReload
-                ldx invType,y                   ;Do not reload if already full magazine
+UM_Reload:      ldx invType,y                   ;Do not reload if already full magazine
                 lda invMag,y                    ;or already reloading
                 bmi UM_NoReload
                 cmp itemMagazineSize-1,x
@@ -396,7 +399,9 @@ UM_NoMoveRight: cmp #JOY_FIRE+JOY_DOWN
                 sta invMag,y
 UM_NoReload:    rts
 
-UM_Refresh:     inc textLeftMargin
+UM_Refresh:     lda #$00
+                sta UM_ForceRefresh+1
+                inc textLeftMargin
                 dec textRightMargin
                 ldx itemIndex
                 lda invType,x

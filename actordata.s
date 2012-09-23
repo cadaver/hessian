@@ -52,7 +52,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_WEAPON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
-itemFrames:     dc.b 11,11,12,13,14             ;Frametable (first all frames of sprite1, then sprite2)
+itemFrames:     dc.b 11,11,12,13,14,15          ;Frametable (first all frames of sprite1, then sprite2)
 
 adGrenade:      dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -124,7 +124,7 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
 
 alItem:         dc.w MoveItem                   ;Update routine
                 dc.w RemoveActor                ;Destroy routine
-                dc.b 8                          ;Horizontal size
+                dc.b 10                         ;Horizontal size
                 dc.b 7                          ;Size up
                 dc.b 0                          ;Size down
 

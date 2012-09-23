@@ -26,6 +26,23 @@ HUMAN_MAX_YSPEED = 6*8
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
+MP_CheckPickupSub:
+                ldy itemSearch
+MP_CheckPickupSub2:
+                lda actT,y
+                cmp #ACT_ITEM
+                bne MP_CPSNoItem
+                jsr CheckActorCollision
+                bcs MP_CPSHasItem
+MP_CPSNoItem:   iny
+                cpy #ACTI_LASTITEM+1
+                bcc MP_CPSNoItemNoWrap
+                ldy #ACTI_FIRSTITEM
+                clc
+MP_CPSNoItemNoWrap:
+                sty itemSearch
+MP_CPSHasItem:  rts
+
 MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new controls
                 sta actPrevCtrl+ACTI_PLAYER
                 lda joystick
@@ -43,11 +60,12 @@ MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
 MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
 
 MP_CheckHealth: lda actHp+ACTI_PLAYER           ;Restore health if not dead and not at
-                beq MP_CheckPickup              ;full health
+                beq MoveAndAttackHuman          ;full health
                 cmp #HP_PLAYER
                 bcs MP_CheckPickup
                 inc healthRecharge              ;Recharge fast when health low
                 bmi MP_CheckPickup
+                asl
                 asl
                 cmp healthRecharge
                 bcs MP_CheckPickup
@@ -55,13 +73,15 @@ MP_CheckHealth: lda actHp+ACTI_PLAYER           ;Restore health if not dead and 
                 sta healthRecharge
                 inc actHp+ACTI_PLAYER
 
-MP_CheckPickup: ldy itemSearch                  ;Check for item pickup / item name display
-                lda actT,y
-                cmp #ACT_ITEM
-                bne MP_CheckPickupNext
-                jsr CheckActorCollision
-                bcc MP_CheckPickupNext
-                lda textTime                    ;Make sure to not overwrite other game
+MP_CheckPickup: jsr MP_CheckPickupSub           ;Check for item pickup / name display
+                bcs MP_HasItem
+                jsr MP_CheckPickupSub2
+                bcs MP_HasItem
+                lda itemNameDisplay             ;If no items, clear existing item name
+                beq MP_SetWeapon                ;text
+                jsr ClearPanelText
+                jmp MP_SetWeapon
+MP_HasItem:     lda textTime                    ;Make sure to not overwrite other game
                 bne MP_SkipItemName             ;messages
                 lda actF1,y
                 cmp itemNameDisplay             ;Do not reprint same item name
@@ -74,36 +94,24 @@ MP_CheckPickup: ldy itemSearch                  ;Check for item pickup / item na
                 sta itemNameDisplay
 MP_SkipItemName:lda actCtrl+ACTI_PLAYER
                 cmp #JOY_DOWN
-                bne MP_NoPickup
+                bne MP_SetWeapon
                 lda actFd+ACTI_PLAYER           ;If ducking, try picking up the item
-                beq MP_NoPickup
+                beq MP_SetWeapon
                 lda actF1+ACTI_PLAYER
                 cmp #FR_DUCK
-                bne MP_NoPickup
+                bne MP_SetWeapon
                 ldy itemSearch
                 jsr TryPickup
-MP_NoPickup:    jmp MP_SetWeapon
-MP_CheckPickupNext:iny
-                cpy #ACTI_LASTITEM+1
-                bcc MP_ItemNameNoWrap
-                ldy #ACTI_FIRSTITEM
-MP_ItemNameNoWrap:
-                sty itemSearch
-                bcc MP_SetWeapon
-                lda itemNameDisplay             ;When search counter wraps, clear
-                beq MP_SetWeapon                ;existing item name text
-                jsr ClearPanelText
-
+                
 MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventory
                 ldx invType,y
                 lda itemMagazineSize-1,x        ;Mag size needed for weapon routines,
                 sta magazineSize                ;cache it now
                 cpx #ITEM_FIRST_NONWEAPON
-                bcc MP_WeaponOK
-                ldx #WPN_NONE
+                bcs MP_NoWeaponSelected
 MP_WeaponOK:    stx actWpn+ACTI_PLAYER
                 ldx actIndex
-                
+
         ; Humanoid character move and attack routine
         ;
         ; Parameters: X actor index
@@ -113,6 +121,16 @@ MP_WeaponOK:    stx actWpn+ACTI_PLAYER
 MoveAndAttackHuman:
                 jsr MoveHuman
                 jmp AttackHuman
+
+MP_NoWeaponSelected:
+                lda actCtrl+ACTI_PLAYER         ;If not holding a weapon, check
+                cmp actPrevCtrl+ACTI_PLAYER     ;for item use
+                beq MP_NoItemUse
+                cmp #JOY_DOWN+JOY_FIRE
+                bne MP_NoItemUse
+                jsr UseItem
+MP_NoItemUse:   ldx #$00
+                beq MP_WeaponOK
 
         ; Humanoid character move routine
         ;

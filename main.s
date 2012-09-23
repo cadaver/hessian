@@ -147,6 +147,21 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 lda #3
                 sta actHp,x
                 jsr SetActorSize
+                
+                inx
+                lda #16
+                sta actXH,x
+                lda #$80
+                sta actXL,x
+                lda #2
+                sta actYH,x
+                lda #ACT_ITEM
+                sta actT,x
+                lda #ITEM_MEDKIT
+                sta actF1,x
+                lda #1
+                sta actHp,x
+                jsr SetActorSize
 
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors
