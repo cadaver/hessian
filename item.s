@@ -5,8 +5,9 @@ ITEM_MAX_YSPEED = 6*8
 ITEM_SPAWN_OFFSET = -16*8
 
 MAX_INVENTORYITEMS = 16
-
 MAX_WEAPONS     = 3                             ;TODO: make dynamic
+
+USEITEM_ATTACK_DELAY = 5                        ;Attack delay after using an item
 
         ; Try picking up an item
         ;
@@ -270,5 +271,7 @@ UseMedKit:      lda actHp+ACTI_PLAYER
                 sta actHp+ACTI_PLAYER
                 lda #SFX_POWERUP
                 jsr PlaySfx
-                lda #$01
+UI_ReduceAmmo:  lda #USEITEM_ATTACK_DELAY       ;In case the item is removed, give an
+                sta actAttackD+ACTI_PLAYER      ;attack delay to prevent accidental
+                lda #$01                        ;fire when a weapon becomes selected
                 jmp DecreaseAmmo
