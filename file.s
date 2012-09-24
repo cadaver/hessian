@@ -16,30 +16,28 @@ MAX_CHUNKFILES   = 32
         ;
         ; Parameters: A file number, X file number add
         ; Returns: fileName
-        ; Modifies: A,loader temp vars
+        ; Modifies: A,X,zpSrcLo
 
 MakeFileName:   stx zpSrcLo
                 clc
                 adc zpSrcLo
 MakeFileName_Direct:
-MakeFileName2:  pha
+                pha
                 lsr
                 lsr
                 lsr
                 lsr
+                ldx #$00
                 jsr MFN_Sub
-                sta fileName
                 pla
-                jsr MFN_Sub
-                sta fileName+1
-                rts
-
+                inx
 MFN_Sub:        and #$0f
                 ora #$30
                 cmp #$3a
                 bcc MFN_Number
                 adc #$06
-MFN_Number:     rts
+MFN_Number:     sta fileName,x
+                rts
 
         ; Allocate & load a chunk-file. If no memory, purge unused files
         ;

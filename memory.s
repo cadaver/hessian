@@ -83,8 +83,11 @@ MAX_BLK         = 192
 
                 Var textLo                      ;Panel text printing variables
                 Var textHi
+                Var textTime
+                Var textDelay
                 Var textLeftMargin
                 Var textRightMargin
+                Var panelUpdateFlags
 
                 Var temp1                       ;Temp variables
                 Var temp2
@@ -104,7 +107,6 @@ MAX_BLK         = 192
 
                 VarRange sprXL,MAX_SPR
                 VarRange sprXH,MAX_SPR
-                VarRange keyRowTbl,8
                 Var ntTemp1                     ;Playroutine
                 Var ntTemp2
                 Var ntTrackLo

@@ -74,7 +74,7 @@ KEY_NONE        = $ff
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A
+        ; Modifies: A,temp8
 
 GetControls:
                 if REDUCE_CONTROL_LATENCY > 0   ;In control latency reduction mode, wait here
@@ -89,47 +89,39 @@ GC_Wait:        lda newFrame
                 endif
                 lda #$ff
                 sta $dc00
+                sta keyType
                 lda joystick
                 sta prevJoy
                 lda $dc00
                 eor #$ff
                 and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT|JOY_FIRE
                 sta joystick
-
-        ; Reads keyboard.
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,temp1
-
-ScanKeys:       lda #$ff
-                sta keyType
                 ldy #$07
-SK_RowLoop:     ldx keyRowBit,y
-                stx $dc00
-                ldx $dc01
-                stx keyRowTbl,y
-                cpx #$ff
-                beq SK_RowEmpty
+GC_RowLoop:     lda keyRowBit,y
+                sta $dc00
+                lda $dc01
+                cmp #$ff
+                bne GC_RowFound
+GC_RowEmpty:    dey
+                bpl GC_RowLoop
+                bmi GC_NoKey
+GC_RowFound:    tax
                 tya
-SK_RowEmpty:    dey
-                bpl SK_RowLoop
-                tax
-                bmi SK_NoKey
                 asl
                 asl
                 asl
-                sta temp1
+                sta temp8
+                txa
                 ldy #$07
-                lda keyRowTbl,x
-SK_ColLoop:     asl
-                bcc SK_KeyFound
+GC_ColLoop:     asl
+                bcc GC_KeyFound
                 dey
-                bpl SK_ColLoop
-SK_KeyFound:    tya
-                ora temp1
+                bpl GC_ColLoop
+GC_KeyFound:    tya
+                ora temp8
                 cmp keyPress
-                beq SK_SameKey
+                beq GC_SameKey
                 sta keyType
-SK_NoKey:       sta keyPress
-SK_SameKey:     rts
+GC_SameKey:
+GC_NoKey:       sta keyPress
+                rts

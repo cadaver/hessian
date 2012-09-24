@@ -226,9 +226,9 @@ Irq2_AllDone:   lda #IRQ3_LINE
                 bcc Irq2_LatePanel
                 dec $d019                       ;Acknowledge raster IRQ
                 lda #<Irq3
-                sta $fffe
-                lda #>Irq3
-                sta $ffff
+                ldx #>Irq3
+SetNextIrq:     sta $fffe
+                stx $ffff
                 lda irqSave01
                 sta $01                         ;Restore $01 value
                 lda irqSaveA
@@ -239,51 +239,6 @@ Irq2_AllDone:   lda #IRQ3_LINE
 Irq2_LatePanel: ldx irqSaveX
                 ldy irqSaveY
                 jmp Irq3_Wait
-
-        ; Raster interrupt 3. Gamescreen / scorepanel split
-
-Irq3:           sta irqSaveA
-                lda #$35
-                sta $01                         ;Ensure IO memory is available
-Irq3_Wait:      lda $d012
-                cmp #IRQ3_LINE+1
-                bcc Irq3_Wait
-                bit $00
-                nop
-Irq3_D011:      lda #$57                        ;Stabilize Y-scrolling
-                sta $d011                       ;immediately
-                cmp #$57
-                beq Irq3_BadLine
-                nop
-                pha
-                pla
-                pha
-                pla
-                pha
-                pla
-                pha
-                pla
-Irq3_BadLine:   lda #$57
-                sta $d011
-Irq3_Direct:    lda #PANEL_D018                 ;Set panelscreen screen ptr.
-                sta $d018
-                lda #EMPTYSPRITEFRAME           ;Set empty spriteframe
-N               set 0
-                repeat 8
-                sta screen1+$3f8+N
-N               set N+1
-                repend
-                lda #IRQ4_LINE                  ;TODO: needs testing on IDE64 new firmware
-                sta $d012                       ;as IRQ delay may cause whole frame blanking (?)
-                lda #<Irq4
-                sta $fffe
-                lda #>Irq4
-                sta $ffff
-                dec $d019                       ;Acknowledge raster IRQ
-                lda irqSave01
-                sta $01                         ;Restore $01 value
-                lda irqSaveA
-                rti
 
         ;Raster interrupt 4. Show the scorepanel and play music
 
@@ -321,14 +276,52 @@ Irq4_SkipFrame:
                 lda #IRQ1_LINE
                 sta $d012
                 lda #<Irq1
+                ldx #>Irq1
+                bne SetNextIrq
+
+        ; Raster interrupt 3. Gamescreen / scorepanel split
+
+Irq3:           sta irqSaveA
+                lda #$35
+                sta $01                         ;Ensure IO memory is available
+Irq3_Wait:      lda $d012
+                cmp #IRQ3_LINE+1
+                bcc Irq3_Wait
+                bit $00
+                nop
+Irq3_D011:      lda #$57                        ;Stabilize Y-scrolling
+                sta $d011                       ;immediately
+                cmp #$57
+                beq Irq3_BadLine
+                nop
+                pha
+                pla
+                pha
+                pla
+                pha
+                pla
+                pha
+                pla
+Irq3_BadLine:   lda #$57
+                sta $d011
+                lda #PANEL_D018                 ;Set panelscreen screen ptr.
+                sta $d018
+                lda #EMPTYSPRITEFRAME           ;Set empty spriteframe
+N               set 0
+                repeat 8
+                sta screen1+$3f8+N
+N               set N+1
+                repend
+                lda #IRQ4_LINE                  ;TODO: needs testing on IDE64 new firmware
+                sta $d012                       ;as IRQ delay may cause whole frame blanking (?)
+                lda #<Irq4
                 sta $fffe
-                lda #>Irq1
+                lda #>Irq4
                 sta $ffff
+                dec $d019                       ;Acknowledge raster IRQ
                 lda irqSave01
                 sta $01                         ;Restore $01 value
                 lda irqSaveA
-                ldx irqSaveX
-                ldy irqSaveY
                 rti
 
         ; IRQ redirector when Kernal is on

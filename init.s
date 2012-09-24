@@ -33,10 +33,13 @@ InitControls:   lda #$00
 
                 sta textLo
                 sta textHi
+                sta textTime
                 lda #9
                 sta textLeftMargin
                 lda #31
                 sta textRightMargin
+                lda #REDRAW_ITEM+REDRAW_AMMO
+                sta panelUpdateFlags
 
         ; Initialize video registers and screen memory
 
