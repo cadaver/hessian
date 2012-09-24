@@ -311,6 +311,7 @@ actWpn:         ds.b MAX_COMPLEXACT,WPN_NONE
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0
 actFallDistance:ds.b MAX_COMPLEXACT,0
+actFallDistanceL:ds.b MAX_COMPLEXACT,0
 
         ;Other variables
 

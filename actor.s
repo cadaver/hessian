@@ -1035,6 +1035,7 @@ GFA_Found:      sec
                 sta actWpn,y
                 sta actAttackD,y
                 sta actFallDistance,y
+                sta actFallDistanceL,y
                 lda #$ff
                 sta actWpnF,y
 GFA_NotComplex: rts

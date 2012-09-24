@@ -20,7 +20,7 @@ DEATH_BRAKING   = 6
 
 HUMAN_MAX_YSPEED = 6*8
 
-DAMAGING_FALL_DISTANCE = 3
+DAMAGING_FALL_DISTANCE = 4
 
         ; Player update routine
         ;
@@ -188,9 +188,8 @@ MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently 
                 sta temp1
                 lsr                             ;Check fall damage now
                 bcc MH_NoFallDamageCheck
-                lda temp3
-                and #AMC_NOFALLDAMAGE
-                bne MH_NoFallDamageCheck
+                lda #$00
+                sta actFallDistanceL,x
                 ldy actFallDistance,x
                 beq MH_NoFallDamageCheck
                 lda temp1                       ;After falling, duck forcibly and
@@ -199,14 +198,13 @@ MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently 
                 tya
                 sbc #DAMAGING_FALL_DISTANCE
                 bcc MH_NoFallDamage
+                beq MH_NoFallDamage
                 sta temp8
                 asl
                 adc temp8
 MH_FallDamageOK:ldy #$ff
                 jsr DamageActor
-MH_NoFallDamage:lda #JOY_DOWN
-                sta actMoveCtrl,x
-                dec actFallDistance,x
+MH_NoFallDamage:dec actFallDistance,x
 MH_NoFallDamageCheck:
                 lda actF1,x                     ;Check special movement states
                 cmp #FR_CLIMB
@@ -329,9 +327,7 @@ MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 and #JOY_UP
                 beq MH_NoLongJump
                 ldy #AL_LONGJUMPACCEL
-MH_NoLongJump:  lda actYH,x
-                sta MH_OldYH+1
-                lda (actLo),y
+MH_NoLongJump:  lda (actLo),y
                 ldy #HUMAN_MAX_YSPEED
                 jsr MoveWithGravity             ;Actually move & check collisions
                 sta temp1                       ;Updated move flags to temp1
@@ -339,12 +335,16 @@ MH_NoLongJump:  lda actYH,x
                 lda temp2                       ;If rolling, continue roll animation
                 bne MH_RollAnim
                 bcs MH_GroundAnim
-MH_OldYH:       lda #$00
-                cmp actYH,x
-                bcs MH_NoFallDistance
-                lda actFallDistance,x
-                adc #$02
-                sta actFallDistance,x
+                lda temp3                       ;Check for increasing fall distance
+                and #AMC_NOFALLDAMAGE
+                bne MH_NoFallDistance
+                lda actSY,x
+                bmi MH_NoFallDistance
+                asl
+                adc actFallDistanceL,x
+                sta actFallDistanceL,x
+                bcc MH_NoFallDistance
+                inc actFallDistance,x
 MH_NoFallDistance:
                 lda actSY,x                     ;Check for grabbing a ladder while
                 bpl MH_GrabLadderOk             ;in midair
@@ -390,7 +390,9 @@ MH_RollToJump:  lda #FR_JUMP+2
                 bne MH_RollAnimDone
 MH_RollToDuck:  lda #FR_DUCK+1
 MH_RollAnimDone:jmp MH_AnimDone
-MH_GroundAnim:  lda actMoveCtrl,x
+MH_GroundAnim:  lda actFallDistance,x           ;Check for forced duck after falling
+                bne MH_NoInitClimbDown
+                lda actMoveCtrl,x
                 and #JOY_DOWN
                 beq MH_NoDuck
 MH_NewDuckOrRoll:
@@ -495,6 +497,7 @@ MH_InitClimb:   lda #$80
                 sta actSX,x
                 sta actSY,x
                 sta actFallDistance,x
+                sta actFallDistanceL,x
                 jmp NoInterpolation
 
 MH_Climbing:    ldy #AL_CLIMBSPEED
