@@ -105,6 +105,8 @@ AH_NotReloading:bne AH_AmmoCheckOK
 AH_EmptyMagazine:
                 lda invCount,y                  ;Initiate reloading if mag empty and reserve left
                 beq AH_FirearmEmpty
+                lda actAttackD+ACTI_PLAYER      ;Do not start reloading before attack delay
+                bne AH_AmmoCheckOK              ;zero
                 lda #$ff
                 sta invMag,y
                 ldy #WD_RELOADDELAY
