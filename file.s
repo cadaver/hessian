@@ -78,23 +78,25 @@ LF_MemOk:       lda freeMemLo                   ;We can load here
 
 AgeFiles:       ldx #MAX_CHUNKFILES-1
                 lda #$ff
-AF_Loop:        ldy fileHi,x                    ;Now increase the time counter
-                beq AF_Skip                     ;on all chunkfiles that are
-                inc fileAge,x                   ;in memory
+AF_Loop:        ldy fileHi,x
+                beq AF_Skip
+                inc fileAge,x
                 bne AF_Skip
                 sta fileAge,x
 AF_Skip:        dex
                 bpl AF_Loop
 
+        ; Finish loading, relocate chunk object pointers
+
                 ldy temp6
                 lda freeMemLo                   ;Increment free mem pointer
-                sta zpSrcLo
+                sta zpBitsLo
                 sta zpDestLo
                 sta fileLo,y
                 adc temp7
                 sta freeMemLo
                 lda freeMemHi
-                sta zpSrcHi
+                sta zpBitsHi
                 sta zpDestHi
                 sta fileHi,y
                 adc temp8
@@ -105,11 +107,11 @@ LF_Relocate2:   txa
                 ldy #$00
 LF_Relocate:    lda (zpDestLo),y                ;Relocate object pointers
                 clc
-                adc zpSrcLo
+                adc zpBitsLo
                 sta (zpDestLo),y
                 iny
                 lda (zpDestLo),y
-                adc zpSrcHi
+                adc zpBitsHi
                 sta (zpDestLo),y
                 iny
                 dex
@@ -117,6 +119,30 @@ LF_Relocate:    lda (zpDestLo),y                ;Relocate object pointers
 LF_RelocDone:
 LSpr_Done:      clc                             ;OK!
 PF_Done:        rts
+
+        ; Purge the chunk-file that has not been accessed for the longest time
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,loader temp vars
+
+PurgeOldestFile:lda #$00
+POF_Limit:      sta zpBitBuf
+                ldy #$ff
+                ldx #C_FIRSTPURGEABLE
+POF_Loop:       lda fileHi,x
+                beq POF_Skip
+                lda fileAge,x
+POF_Cmp:        cmp zpBitBuf
+                bcc POF_Skip
+                sta zpBitBuf
+                txa
+                tay
+POF_Skip:       inx
+                cpx #MAX_CHUNKFILES
+                bcc POF_Loop
+                tya
+                bmi PF_Done
 
         ; Remove a chunk-file from memory
         ;
@@ -130,16 +156,16 @@ PurgeFile:      sty zpLenLo
                 lda #$00                        ;Reset chunk age
                 sta fileAge,y
                 lda fileLo,y
-                sta zpSrcLo
+                sta zpDestLo
                 lda fileHi,y                    ;Check that chunk exists
                 beq PF_Done
-                sta zpSrcHi
+                sta zpDestHi
                 lda freeMemLo                   ;Find out size of the erased chunk
                 sec
-                sbc zpSrcLo
+                sbc zpDestLo
                 sta zpBitsLo
                 lda freeMemHi
-                sbc zpSrcHi
+                sbc zpDestHi
                 sta zpBitsHi
                 ldx #MAX_CHUNKFILES-1
 PF_FindSizeLoop:cpx zpLenLo
@@ -148,64 +174,48 @@ PF_FindSizeLoop:cpx zpLenLo
                 beq PF_FindSizeSkip
                 lda fileLo,x
                 sec
-                sbc zpSrcLo
-                sta zpDestLo
+                sbc zpDestLo
+                sta zpSrcLo
                 lda fileHi,x
-                sbc zpSrcHi
-                sta zpDestHi
-                lda zpDestLo
+                sbc zpDestHi
+                sta zpSrcHi
+                lda zpSrcLo
                 cmp zpBitsLo
-                lda zpDestHi
+                lda zpSrcHi
                 sbc zpBitsHi
                 bcs PF_FindSizeSkip
 PF_FindSizeNewSize:
-                lda zpDestLo
+                lda zpSrcLo
                 sta zpBitsLo                    ;zpBitsLo,Hi = size of purged chunk-file
-                lda zpDestHi
+                lda zpSrcHi
                 sta zpBitsHi
 PF_FindSizeSkip:dex
                 bpl PF_FindSizeLoop
-                lda zpSrcLo
-                sec
-                sbc zpBitsLo
-                sta zpDestLo
-                lda zpSrcHi
-                sbc zpBitsHi
-                sta zpDestHi
-                lda freeMemLo                   ;Find out needed copy size
-                sec
-                sbc zpSrcLo
-                sta zpBitBuf
-                lda freeMemHi
-                sbc zpSrcHi
+                lda zpDestLo                    ;Set source address for memory shift
+                clc
+                adc zpBitsLo
+                sta zpSrcLo
+                lda zpDestHi
+                adc zpBitsHi
+                sta zpSrcHi
+                ldy freeMemHi
+                iny
+                sty zpBitBuf
                 ldy #$00
-                tax
-                beq PF_NoFullPages
-PF_FullPageLoop:lda (zpSrcLo),y
+PF_ShiftMemory: lda (zpSrcLo),y
                 sta (zpDestLo),y
                 iny
-                bne PF_FullPageLoop
-                inc zpSrcLo
-                inc zpDestLo
-                dex
-                bne PF_FullPageLoop
-PF_NoFullPages: cpy zpBitBuf
-                beq PF_CopyDone
-                lda (zpSrcLo),y
-                sta (zpDestLo),y
-                iny
-                bne PF_NoFullPages
-PF_CopyDone:    ldx #freeMemLo                  ;Reduce amount of free memory
+                bne PF_ShiftMemory
+                inc zpSrcHi
+                inc zpDestHi
+                lda zpSrcHi                     ;Note: we may copy extra (up to 256 bytes)
+                cmp zpBitBuf                    ;but it should do no harm
+                bcc PF_ShiftMemory
+PF_CopyDone:    ldx #freeMemLo                  ;Shift top of memory pointer
                 ldy #zpBitsLo
                 jsr Sub16
-                lda zpBitsLo                    ;zpSrcLo,Hi = negative size of file
-                eor #$ff
-                adc #$00                        ;C=1 here
-                sta zpSrcLo
-                lda zpBitsHi
-                eor #$ff
-                adc #$00
-                sta zpSrcHi
+                ldx #zpBitsLo                   ;zpBitsLo,Hi = negative size of file
+                jsr Negate16
                 ldy #MAX_CHUNKFILES-1
 PF_RelocLoop:   cpy zpLenLo                     ;Do not relocate itself
                 beq PF_RelocNext
@@ -217,48 +227,22 @@ PF_RelocLoop:   cpy zpLenLo                     ;Do not relocate itself
                 lda fileLo,y
                 cmp fileLo,x
                 bcc PF_RelocNext
-PF_RelocOk:     lda fileLo,y                    ;Relocate the chunk pointer
+PF_RelocOk:     lda fileLo,y                    ;Relocate the file pointer
                 clc
-                adc zpSrcLo
+                adc zpBitsLo
                 sta fileLo,y
                 sta zpDestLo
                 lda fileHi,y
-                adc zpSrcLo
+                adc zpBitsHi
                 sta fileHi,y
-                sta zpDestLo
+                sta zpDestHi
                 ldx fileNumObjects,y            ;Number of objects
-                sty PF_ReloadY+1
+                sty zpBitBuf
                 jsr LF_Relocate2                ;Relocate the object pointers
-PF_ReloadY:     ldy #$00
+                ldy zpBitBuf
 PF_RelocNext:   dey
                 bpl PF_RelocLoop
                 ldy zpLenLo
                 lda #$00
                 sta fileHi,y                    ;Mark chunk not in memory
-POF_NoFiles:    rts
-
-        ; Purge the chunk-file that has not been accessed for the longest time
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,loader temp vars
-
-PurgeOldestFile:lda #$00
-POF_Limit:      sta POF_Cmp+1
-                ldy #$ff
-                ldx #C_FIRSTPURGEABLE
-POF_Loop:       lda fileHi,x
-                beq POF_Skip
-                lda fileAge,x
-POF_Cmp:        cmp #$00
-                bcc POF_Skip
-                sta POF_Cmp+1
-                txa
-                tay
-POF_Skip:       inx
-                cpx #MAX_CHUNKFILES
-                bcc POF_Loop
-                tya
-                bmi POF_NoFiles
-                jmp PurgeFile
-
+                rts
