@@ -948,6 +948,8 @@ DA_NotDead:     sta actHp,x
 DA_NotPlayer:   lda actC,x                      ;Flash actor as a sign of damage
                 ora #$f0
                 sta actC,x
+                lda #SFX_DAMAGE
+                jsr PlaySfx
                 plp
                 bne DA_Done
 

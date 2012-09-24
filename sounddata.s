@@ -8,6 +8,8 @@ SFX_COCKWEAPON      = $06
 SFX_POWERUP         = $07
 SFX_SELECT          = $08
 SFX_PICKUP          = $09
+SFX_DAMAGE          = $0a
+SFX_DEATH           = $0b
 
 sfxTblLo:       dc.b <sfxPistol
                 dc.b <sfxExplosion
@@ -19,6 +21,8 @@ sfxTblLo:       dc.b <sfxPistol
                 dc.b <sfxPowerup
                 dc.b <sfxSelect
                 dc.b <sfxPickup
+                dc.b <sfxDamage
+                dc.b <sfxDeath
 
 sfxTblHi:       dc.b >sfxPistol
                 dc.b >sfxExplosion
@@ -30,6 +34,8 @@ sfxTblHi:       dc.b >sfxPistol
                 dc.b >sfxPowerup
                 dc.b >sfxSelect
                 dc.b >sfxPickup
+                dc.b >sfxDamage
+                dc.b >sfxDeath
 
         ; Sound effect data
 
@@ -41,5 +47,7 @@ sfxPowerup:     include sfx/powerup.sfx
 sfxPunch:       include sfx/punch.sfx
 sfxMelee:       include sfx/melee.sfx
 sfxThrow:       include sfx/throw.sfx
+sfxDamage:      include sfx/damage.sfx
 sfxPistol:      include sfx/pistol.sfx
+sfxDeath:       include sfx/death.sfx
 sfxExplosion:   include sfx/explosion.sfx

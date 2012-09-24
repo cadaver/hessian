@@ -604,7 +604,9 @@ MH_ClimbAnimDown:
         ; Returns: -
         ; Modifies: A,temp3-temp8
 
-HumanDeath:     lda #FR_DIE
+HumanDeath:     lda #SFX_DEATH
+                jsr PlaySfx
+                lda #FR_DIE
                 sta actF1,x
                 sta actF2,x
                 lda #DEATH_DISAPPEAR_DELAY
