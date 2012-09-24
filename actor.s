@@ -58,6 +58,7 @@ AMC_DUCK        = 2
 AMC_CLIMB       = 4
 AMC_ROLL        = 8
 AMC_WALLFLIP    = 16
+AMC_NOFALLDAMAGE = 32
 
 GRP_HEROES      = $00
 GRP_VILLAINS    = $80
@@ -1032,6 +1033,8 @@ GFA_Found:      sec
                 sta actMoveCtrl,y
                 sta actPrevCtrl,y
                 sta actWpn,y
+                sta actAttackD,y
+                sta actFallDistance,y
                 lda #$ff
                 sta actWpnF,y
 GFA_NotComplex: rts

@@ -20,6 +20,8 @@ DEATH_BRAKING   = 6
 
 HUMAN_MAX_YSPEED = 6*8
 
+DAMAGING_FALL_DISTANCE = 3
+
         ; Player update routine
         ;
         ; Parameters: X actor index
@@ -66,7 +68,6 @@ MP_CheckHealth: lda actHp+ACTI_PLAYER           ;Restore health if not dead and 
                 inc healthRecharge              ;Recharge fast when health low
                 bmi MP_CheckPickup
                 asl
-                asl
                 cmp healthRecharge
                 bcs MP_CheckPickup
                 lda #$00
@@ -102,7 +103,7 @@ MP_SkipItemName:lda actCtrl+ACTI_PLAYER
                 bne MP_SetWeapon
                 ldy MP_CheckPickupSub+1
                 jsr TryPickup
-                
+
 MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventory
                 ldx invType,y
                 lda itemMagazineSize-1,x        ;Mag size needed for weapon routines,
@@ -138,18 +139,6 @@ MP_NoItemUse:   ldx #$00
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MH_DeathAnim:   lda #DEATH_HEIGHT                ;Actor height for ceiling check
-                sta temp4
-                lda #DEATH_ACCEL
-                ldy #HUMAN_MAX_YSPEED
-                jsr MoveWithGravity             ;Actually move & check collisions
-                lsr
-                bcs MH_DeathGrounded
-                lda #FR_DIE
-                ldy actSY,x
-                bmi MH_DeathSetFrame
-                lda #FR_DIE+1
-                bne MH_DeathSetFrame
 MH_DeathGrounded:
                 lda #DEATH_BRAKING
                 jsr BrakeActorX
@@ -168,6 +157,18 @@ MH_DeathCheckRemove:
                 sta actC,x
 MH_DeathDone:   rts
 MH_DeathRemove: jmp RemoveActor
+MH_DeathAnim:   lda #DEATH_HEIGHT                ;Actor height for ceiling check
+                sta temp4
+                lda #DEATH_ACCEL
+                ldy #HUMAN_MAX_YSPEED
+                jsr MoveWithGravity             ;Actually move & check collisions
+                lsr
+                bcs MH_DeathGrounded
+                lda #FR_DIE
+                ldy actSY,x
+                bmi MH_DeathSetFrame
+                lda #FR_DIE+1
+                bne MH_DeathSetFrame
 
 MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently displayed
                 lda (actLo),y                   ;frame
@@ -175,8 +176,6 @@ MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently 
                 sec
                 sbc humanSizeReduceTbl,y
                 sta actSizeU,x
-                lda actMoveFlags,x
-                sta temp1
                 lda #$00                        ;Roll flag
                 sta temp2
                 ldy #AL_MOVECAPS
@@ -185,6 +184,30 @@ MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently 
                 iny
                 lda (actLo),y
                 sta temp4                       ;Movement speed
+                lda actMoveFlags,x              ;Movement flags
+                sta temp1
+                lsr                             ;Check fall damage now
+                bcc MH_NoFallDamageCheck
+                lda temp3
+                and #AMC_NOFALLDAMAGE
+                bne MH_NoFallDamageCheck
+                ldy actFallDistance,x
+                beq MH_NoFallDamageCheck
+                lda temp1                       ;After falling, duck forcibly and
+                and #AMF_LANDED                 ;apply damage on the first frame
+                beq MH_NoFallDamage             ;after landing
+                tya
+                sbc #DAMAGING_FALL_DISTANCE
+                bcc MH_NoFallDamage
+                sta temp8
+                asl
+                adc temp8
+MH_FallDamageOK:ldy #$ff
+                jsr DamageActor
+MH_NoFallDamage:lda #JOY_DOWN
+                sta actMoveCtrl,x
+                dec actFallDistance,x
+MH_NoFallDamageCheck:
                 lda actF1,x                     ;Check special movement states
                 cmp #FR_CLIMB
                 bcc MH_NotClimbing
@@ -306,7 +329,9 @@ MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 and #JOY_UP
                 beq MH_NoLongJump
                 ldy #AL_LONGJUMPACCEL
-MH_NoLongJump:  lda (actLo),y
+MH_NoLongJump:  lda actYH,x
+                sta MH_OldYH+1
+                lda (actLo),y
                 ldy #HUMAN_MAX_YSPEED
                 jsr MoveWithGravity             ;Actually move & check collisions
                 sta temp1                       ;Updated move flags to temp1
@@ -314,6 +339,13 @@ MH_NoLongJump:  lda (actLo),y
                 lda temp2                       ;If rolling, continue roll animation
                 bne MH_RollAnim
                 bcs MH_GroundAnim
+MH_OldYH:       lda #$00
+                cmp actYH,x
+                bcs MH_NoFallDistance
+                lda actFallDistance,x
+                adc #$02
+                sta actFallDistance,x
+MH_NoFallDistance:
                 lda actSY,x                     ;Check for grabbing a ladder while
                 bpl MH_GrabLadderOk             ;in midair
                 cmp #-2*8                       ;Can not grab while still going up fast
@@ -462,6 +494,7 @@ MH_InitClimb:   lda #$80
                 lda #$00
                 sta actSX,x
                 sta actSY,x
+                sta actFallDistance,x
                 jmp NoInterpolation
 
 MH_Climbing:    ldy #AL_CLIMBSPEED
