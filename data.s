@@ -1,3 +1,10 @@
+        ; Game data
+
+                include actordata.s
+                include itemdata.s
+                include weapondata.s
+                include sounddata.s
+
         ; Music relocation tables
 
 ntFixupTblLo:   dc.b <PMus_SongTblP2

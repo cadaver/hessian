@@ -41,7 +41,7 @@ bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
                 dc.b -8,-7,-4,-1,0              ;Grenades
                 dc.b -8,-7,-4,-1,0
 
-        ; Weapon data pointers
+        ; Weapon data
 
 wpnTblLo:       dc.b <wdFists
                 dc.b <wdKnife
@@ -52,8 +52,6 @@ wpnTblHi:       dc.b >wdFists
                 dc.b >wdKnife
                 dc.b >wdPistol
                 dc.b >wdGrenade
-
-        ; Weapon data
 
 wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction

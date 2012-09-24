@@ -9,7 +9,7 @@ ACT_INACTIVEPLAYER = 7
 
 HP_PLAYER       = 28
 
-        ; Actors' display data pointers
+        ; Actor display data
 
 adMeleeHit      = $0000                         ;Not displayed
 
@@ -85,7 +85,7 @@ humanSizeReduceTbl:
 
 itemFlashTbl:   dc.b 10,7,1,7
 
-        ; Actors' logic data pointers
+        ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
                 dc.b <alItem
@@ -168,4 +168,3 @@ alInactivePlayer:
                 dc.b 96                         ;Climbing speed
                 dc.b 2*8                        ;Ladder jump / wallflip speed right
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
-

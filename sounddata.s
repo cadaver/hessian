@@ -37,8 +37,6 @@ sfxTblHi:       dc.b >sfxPistol
                 dc.b >sfxDamage
                 dc.b >sfxDeath
 
-        ; Sound effect data
-
 sfxSelect:      include sfx/select.sfx
 sfxPickup:      include sfx/pickup.sfx
 sfxReload:      include sfx/reload.sfx

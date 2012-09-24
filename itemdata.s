@@ -8,8 +8,6 @@ ITEM_MEDKIT     = 5
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
 ITEM_FIRST_NONWEAPON = ITEM_MEDKIT
 
-        ; Item data
-
 itemNameLo:     dc.b <txtFists
                 dc.b <txtKnife
                 dc.b <txtPistol

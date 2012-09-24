@@ -175,10 +175,6 @@ MainLoop:       jsr ScrollLogic
                 jsr FinishFrame
                 jmp MainLoop
 
-                include actordata.s
-                include itemdata.s
-                include weapondata.s
-                include sounddata.s
                 include text.s
                 include data.s
 
