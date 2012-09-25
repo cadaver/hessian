@@ -255,18 +255,6 @@ DA_HumanNoWeapon:
                 jmp DA_ActorDone
 
 DA_GetHumanFrames:
-                lda actF1,x
-                ldy actD,x
-                bpl DA_HumanRight1
-                ldy #ADH_LEFTFRADD              ;Add left frame offset if necessary
-                adc (actLo),y
-DA_HumanRight1: ldy #ADH_BASEINDEX
-                adc (actLo),y
-                tay
-                lda humanLowerFrTbl,y           ;Take sprite frame from the frametable
-                ldy #ADH_BASEFRAME
-                adc (actLo),y
-                sta DA_HumanFrame1+1
                 lda actF2,x
                 ldy actD,x
                 bpl DA_HumanRight2
@@ -279,6 +267,18 @@ DA_HumanRight2: ldy #ADH_BASEINDEX2
                 ldy #ADH_BASEFRAME2
                 adc (actLo),y
                 sta DA_HumanFrame2+1
+                lda actF1,x
+                ldy actD,x
+                bpl DA_HumanRight1
+                ldy #ADH_LEFTFRADD              ;Add left frame offset if necessary
+                adc (actLo),y
+DA_HumanRight1: ldy #ADH_BASEINDEX
+                adc (actLo),y
+                tay
+                lda humanLowerFrTbl,y           ;Take sprite frame from the frametable
+                ldy #ADH_BASEFRAME
+                adc (actLo),y
+                sta DA_HumanFrame1+1
                 rts
 
         ; Update actors. Build first collision lists for bullet collisions. Followed by

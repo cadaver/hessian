@@ -169,6 +169,7 @@ MainLoop:       jsr ScrollLogic
                 jsr DrawActors
                 jsr FinishFrame
                 jsr ScrollLogic
+                jsr GetControls
                 jsr UpdateMenu
                 jsr UpdateActors
                 jsr FinishFrame

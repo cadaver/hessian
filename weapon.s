@@ -280,9 +280,9 @@ AH_InsideWall:  jsr RemoveActor
                 ldx actIndex
                 rts
                 
-        ; Find spawn offset for bullet (humanoid actor)
+        ; Find spawn offset for bullet
         ;
-        ; Parameters: X actor index
+        ; Parameters: X actor index, must also be in actIndex
         ; Returns: C=1 success (temp5-temp6 X offset, temp7-temp8 Y offset), C=0 failure (sprites unloaded)
         ; Modifies: A,Y,loader temp regs
 
@@ -295,8 +295,8 @@ GetBulletOffset:lda #$00
                 lda actDispTblHi-1,y
                 sta actHi
                 clc
-                jsr DA_GetHumanFrames
-                ldy #AD_SPRFILE
+                jsr DA_GetHumanFrames			;TODO: implement for non-humans
+                dey
                 lda (actLo),y
                 tay
                 lda DA_HumanFrame1+1
@@ -347,22 +347,21 @@ GBO_Sub:        pha
                 iny
                 lda (zpSrcLo),y
                 sta frameHi
-                ldy #SPRH_HOTSPOTX
-                lda temp5
-                sec
-                sbc (frameLo),y
-                iny
-                clc
-                adc (frameLo),y
-                sta temp5
-                iny
+                ldy #SPRH_CONNECTSPOTY
                 lda temp7
+                adc (frameLo),y
+                dey
                 sec
                 sbc (frameLo),y
-                iny
+                sta temp7
+                dey
+                lda temp5
                 clc
                 adc (frameLo),y
-                sta temp7
+                dey
+                sec
+                sbc (frameLo),y
+                sta temp5
                 rts
 
 GBO_Fail:       pla
