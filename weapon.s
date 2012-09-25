@@ -282,20 +282,46 @@ AH_InsideWall:  jsr RemoveActor
                 
         ; Find spawn offset for bullet
         ;
-        ; Parameters: X actor index, must also be in actIndex
+        ; Parameters: X actor index
         ; Returns: C=1 success (temp5-temp6 X offset, temp7-temp8 Y offset), C=0 failure (sprites unloaded)
         ; Modifies: A,Y,loader temp regs
 
-GetBulletOffset:lda #$00
-                sta temp5
-                sta temp7
-                ldy actT,x
+GetBulletOffset:ldy actT,x
                 lda actDispTblLo-1,y            ;Get actor display structure address
                 sta actLo
                 lda actDispTblHi-1,y
                 sta actHi
+                ldy #
+                sty temp5
+                sty temp7
                 clc
-                jsr DA_GetHumanFrames			;TODO: implement for non-humans
+                lda (actLo),y                   ;Get display type
+                bmi GBO_Humanoid
+                sta zpBitsLo                    ;Sprite counter
+                iny
+                lda (actLo),y                   ;Sprite file
+                sta GBO_NormalSprFile+1
+                lda actF1,x
+                ldy actD,x
+                bpl GBO_NormalRight
+                ldy #AD_LEFTFRADD               ;Add left frame offset if necessary
+                adc (actLo),y
+GBO_NormalRight:adc #AD_FRAMES
+GBO_NormalLoop: sta zpBitsHi                    ;Frame index
+                tay
+                lda (actLo),y
+GBO_NormalSprFile:
+                ldy #$00
+                jsr GBO_Sub
+                ldy #AD_NUMFRAMES
+                lda zpBitsHi                    ;Advance framepointer
+                clc
+                adc (actLo),y
+                dec zpBitsLo
+                bpl GBO_NormalLoop
+                bmi GBO_Common
+
+GBO_Humanoid:   jsr DA_GetHumanFrames
                 dey
                 lda (actLo),y
                 tay
@@ -307,10 +333,10 @@ GetBulletOffset:lda #$00
                 lda DA_HumanFrame2+1
                 jsr GBO_Sub
                 lda actWpnF,x                   ;If no weapon frame, spawn projectile from the hand
-                bmi GBO_NoWeapon
+                bmi GBO_Common
                 ldy #C_WEAPON
                 jsr GBO_Sub
-GBO_NoWeapon:   lda #$00
+GBO_Common:     lda #$00
                 asl temp5
                 bcc GBO_XPos
                 lda #$ff
