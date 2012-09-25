@@ -315,7 +315,64 @@ ContinuePanelText:
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,loader temp vars
 
-UpdateMenu:     ldx menuCounter
+UpdateMenu:
+
+        ; Read joystick + scan the keyboard.
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,temp8
+
+GetControls:
+                if REDUCE_CONTROL_LATENCY > 0   ;In control latency reduction mode, wait here
+                if SHOW_FREE_RASTERTIME > 0     ;until sprite IRQ is done with the current sprites
+                dec $d020                       ;to ensure we don't get controls two frames ahead
+                endif
+GC_Wait:        lda newFrame
+                bmi GC_Wait
+                if SHOW_FREE_RASTERTIME > 0
+                inc $d020
+                endif
+                endif
+                lda #$ff
+                sta $dc00
+                sta keyType
+                lda joystick
+                sta prevJoy
+                lda $dc00
+                eor #$ff
+                and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT|JOY_FIRE
+                sta joystick
+                ldy #$07
+GC_RowLoop:     lda keyRowBit,y
+                sta $dc00
+                lda $dc01
+                cmp #$ff
+                bne GC_RowFound
+GC_RowEmpty:    dey
+                bpl GC_RowLoop
+                bmi GC_NoKey
+GC_RowFound:    tax
+                tya
+                asl
+                asl
+                asl
+                sta temp8
+                txa
+                ldy #$07
+GC_ColLoop:     asl
+                bcc GC_KeyFound
+                dey
+                bpl GC_ColLoop
+GC_KeyFound:    tya
+                ora temp8
+                cmp keyPress
+                beq GC_SameKey
+                sta keyType
+GC_SameKey:
+GC_NoKey:       sta keyPress
+
+                ldx menuCounter
                 lda actHp+ACTI_PLAYER           ;Close inventory if dead
                 beq UM_Close
                 lda joystick
