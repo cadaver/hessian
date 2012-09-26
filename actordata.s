@@ -126,37 +126,45 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
 
 alItem:         dc.w MoveItem                   ;Update routine
                 dc.w RemoveActor                ;Destroy routine
+                dc.b AF_NONE                    ;Actor flags                
                 dc.b 10                         ;Horizontal size
                 dc.b 7                          ;Size up
                 dc.b 0                          ;Size down
 
 alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
                 dc.w RemoveActor                ;Destroy routine
+                dc.b AF_NONE                    ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 
 alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
                 dc.w RemoveActor                ;Destroy routine
+                dc.b AF_NONE                    ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 
 alGrenade:      dc.w MoveGrenade                ;Update routine
                 dc.w ExplodeActor               ;Destroy routine
+                dc.b AF_NONE                    ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 
 alExplosion:    dc.w MoveExplosion              ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_NONE                    ;Actor flags
 
 alInactivePlayer:
                 dc.w MoveAndAttackHuman         ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
+                dc.b AF_ISVILLAIN               ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
-                dc.b HP_PLAYER                  ;Initial health
+                dc.b 12                         ;Initial health
+                dc.b 2                          ;Color override
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move caps
                 dc.b 4*8                        ;Max. movement speed
                 dc.b 6*8                        ;Terminal falling speed

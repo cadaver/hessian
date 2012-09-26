@@ -392,7 +392,7 @@ void level_mainloop(void)
           for (c = 0; c < NUMLVLACT; c++)
           {
             if ((lvlactt[c]) && (lvlactx[c] == x) && ((lvlacty[c]&0x7f) == y) &&
-                ((lvlactf[c] & 3) == xf) && (((lvlactf[c] & 0xc)>> 2) == yf))
+                (((lvlactf[c] >> 4) & 3) == xf) && (((lvlactf[c] >> 6) & 3) == yf))
             {
               actfound = 1;
               actindex = c;
@@ -420,11 +420,19 @@ void level_mainloop(void)
         {
           if (k == KEY_M)
           {
-            lvlactf[actindex] += 16; // AI Mode
+            int mode = lvlactf[actindex] & 0xf;
+            mode++;
+            mode &= 0xf;
+            lvlactf[actindex] &= 0xf0;
+            lvlactf[actindex] |= mode;
           }
           if (k == KEY_N)
           {
-            lvlactf[actindex] -= 16; // AI Mode
+            int mode = lvlactf[actindex] & 0xf;
+            mode--;
+            mode &= 0xf;
+            lvlactf[actindex] &= 0xf0;
+            lvlactf[actindex] |= mode;
           }
           if (k == KEY_D) // Dir
           {
@@ -770,7 +778,7 @@ void level_mainloop(void)
                 lvlactt[c] = actnum;
                 lvlactx[c] = x;
                 lvlacty[c] = y;
-                lvlactf[c] = (yf << 2) + xf;
+                lvlactf[c] = (yf << 6) + (xf << 4);
                 if (actnum < 128) // Not item
                   lvlactw[c] = 0;
                 else
@@ -1291,7 +1299,7 @@ void drawmap(void)
           if (lvlactw[a] & 128) sprintf(textbuffer, "LEFT");
           else sprintf(textbuffer, "RIGHT");
           printtext_color(textbuffer, 256,165,SPR_FONTS,COL_WHITE);
-          sprintf(textbuffer, "MODE:%01X (%s)", lvlactf[a] >> 4, modename[lvlactf[a] >> 4]);
+          sprintf(textbuffer, "MODE:%01X (%s)", lvlactf[a] & 0xf, modename[lvlactf[a] & 0xf]);
           printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
           sprintf(textbuffer, "WPN:%02X (%s)", lvlactw[a] & 0x7f, itemname[lvlactw[a] & 0x7f]);
           printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
@@ -1426,8 +1434,8 @@ void drawmap(void)
 
           if ((x >= 0) && (x < 10) && (y >= 0) && (y < 5))
           {
-            int xc = x * 32 + (lvlactf[c] & 3) * 8;
-            int yc = y * 32 + ((lvlactf[c] >> 2) & 3) * 8;
+            int xc = x * 32 + ((lvlactf[c] >> 4) & 3) * 8;
+            int yc = y * 32 + ((lvlactf[c] >> 6) & 3) * 8;
 
             gfx_line(xc,yc,xc+7,yc+7,1);
             gfx_line(xc+7,yc,xc,yc+7,1);

@@ -55,7 +55,9 @@ AL_CLIMBSPEED    = 19
 AL_HALFSPEEDRIGHT = 20                          ;Ladder jump / wallflip speed right
 AL_HALFSPEEDLEFT = 21                           ;Ladder jump / wallflip speed left
 
-AF_NOREMOVECHECK = 1
+AF_NONE         = $00
+AF_NOREMOVECHECK = $40
+AF_ISVILLAIN    = $80
 
 AMF_JUMP        = 1
 AMF_DUCK        = 2
@@ -66,6 +68,15 @@ AMF_NOFALLDAMAGE = 32
 
 GRP_HEROES      = $00
 GRP_VILLAINS    = $80
+
+ADDACTOR_LEFT_LIMIT = 2
+ADDACTOR_TOP_LIMIT = 1
+ADDACTOR_RIGHT_LIMIT = 12
+ADDACTOR_BOTTOM_LIMIT = 7
+
+ORG_NONE        = $80                           ;No leveldata origin
+                                                ;TODO: differentiate between persistent/nonpersistent
+DEFAULT_PICKUP  = $ff
 
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
@@ -285,12 +296,18 @@ DA_HumanRight1: ldy #ADH_BASEINDEX
                 sta DA_HumanFrame1+1
                 rts
 
-        ; Update actors. Build first collision lists for bullet collisions. Followed by
-        ; ScrollPlayer and InterpolateActors
+        ; Add all actors to screen and update them once before drawing. Call before
+        ; entering the main loop after moving to another area or loading a level
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
+
+UpdateAndAddAllActors:
+                lda #$00
+                sta addActorIndex
+                sta UA_AAEndCmp+1
+                beq BuildCollisionLists
 
 BCL_StoreHero:  txa
                 ldx temp1
@@ -300,7 +317,22 @@ BCL_StoreHero:  txa
                 tax
                 bpl BCL_Next
 
-UpdateActors:
+        ; Update actors. Build first collision lists for bullet collisions. Also add
+        ; and remove actors from/to leveldata when crossing the screen edges. Followed
+        ; by InterpolateActors
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars,actor temp vars
+
+UpdateActors:   lda addActorIndex
+                clc
+                adc #MAX_LVLACT/8               ;To account for max. scrolling speed, check
+                and #MAX_LVLACT-1               ;all level actors in space of 8 logic frames
+                sta UA_AAEndCmp+1
+
+        ; Build hero/villain lists for bullet collision
+
 BuildCollisionLists:
                 ldx #ACTI_LASTNPC
                 ldy #$00                        ;Villain list index
@@ -321,15 +353,103 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
                 sta villainList,y
                 ldx temp1
                 sta heroList,x
+
+        ; Calculate border coordinates for adding/removing actors
+
+GetActorBorders:lda mapX                        ;Calculate borders for add/removechecks
+                sec
+                sbc #ADDACTOR_LEFT_LIMIT
+                bcs GAB_LeftOK1
+                lda #$00
+GAB_LeftOK1:    cmp limitL
+                bcs GAB_LeftOK2
+                lda limitL
+GAB_LeftOK2:    sta UA_RALeftCheck+1            ;Left border
+                sta UA_AALeftCheck+1
+                lda mapX
+                clc
+                adc #ADDACTOR_RIGHT_LIMIT
+                bcc GAB_RightOK1
+                lda #$ff
+GAB_RightOK1:   cmp limitR
+                bcc GAB_RightOK2
+                lda limitR
+GAB_RightOK2:   sta UA_RARightCheck+1           ;Right border
+                sta UA_AARightCheck+1
+                lda mapY
+                sec
+                sbc #ADDACTOR_TOP_LIMIT
+                bcs GAB_TopOK1
+                lda #$00
+GAB_TopOK1:     cmp limitU
+                bcs GAB_TopOK2
+                lda limitU
+GAB_TopOK2:     sta UA_RATopCheck+1             ;Top border
+                sta UA_AATopCheck+1
+                lda mapY
+                clc
+                adc #ADDACTOR_BOTTOM_LIMIT
+                bpl GAB_BottomOK1
+                lda #$7f
+GAB_BottomOK1:  cmp limitD
+                bcc GAB_BottomOK2
+                lda limitD
+GAB_BottomOK2:  sta UA_RABottomCheck+1          ;Bottom border
+                sta UA_AABottomCheck+1
+
+        ; Add actors from leveldata to screen
+
+AddActors:      ldx addActorIndex
+UA_AddActorsLoop:
+                lda lvlActT,x
+                beq UA_AASkip
+                lda lvlActX,x
+UA_AALeftCheck: cmp #$00
+                bcc UA_AASkip
+UA_AARightCheck:cmp #$00
+                bcs UA_AASkip
+                lda lvlActY,x
+UA_AATopCheck:  cmp #$00
+                bcc UA_AASkip
+UA_AABottomCheck:
+                cmp #$00
+                bcs UA_AASkip
+                jsr AddLevelActor
+UA_AASkip:      inx
+                bpl UA_AAEndCmp
+                ldx #$00
+UA_AAEndCmp:    cpx #$00
+                bne UA_AddActorsLoop
+                stx addActorIndex
+
+        ; Call update routines of all on-screen actors
+
                 ldx #$00
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex
-                lda actLogicTblLo-1,y            ;Get actor logic structure address
+                lda actLogicTblLo-1,y           ;Get actor logic structure address
                 sta actLo
                 lda actLogicTblHi-1,y
                 sta actHi
-                ldy #AL_UPDATEROUTINE
+                ldy #AL_ACTORFLAGS              ;Perform remove check?
+                lda (actLo),y
+                asl
+                bmi UA_NoRemove
+                lda actXH,x
+UA_RALeftCheck: cmp #$00
+                bcc UA_Remove
+UA_RARightCheck:cmp #$00
+                bcs UA_Remove
+                lda actYH,x
+UA_RATopCheck:  cmp #$00
+                bcc UA_Remove
+UA_RABottomCheck:
+                cmp #$00
+                bcc UA_NoRemove
+UA_Remove:      jsr RemoveLevelActor
+                jmp UA_Next
+UA_NoRemove:    ldy #AL_UPDATEROUTINE
                 lda (actLo),y
                 sta UA_Jump+1
                 iny
@@ -341,10 +461,6 @@ UA_Next:        inx
                 bcc UA_Loop
 
         ; Interpolate actors' movement each second frame
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,temp vars
 
 InterpolateActors:
                 lda scrollX                     ;Calculate how much the scrolling has changed
@@ -472,7 +588,7 @@ IA_XOffsetCommon2:
         ;
         ; Parameters: X actor index
         ; Returns: -
-        ; Modified: A
+        ; Modifies: A
         
 NoInterpolation:lda actXL,x
                 sta actPrevXL,x
@@ -834,7 +950,7 @@ GetActorLogicData:
                 sta actHi
                 rts
 
-        ; Init actor: set initial health, color override & collision size
+        ; Init actor: set initial health, color override, group & collision size
         ;
         ; Parameters: X actor index
         ; Returns: -
@@ -842,11 +958,18 @@ GetActorLogicData:
 
 InitActor:      jsr SetActorSize
                 iny
+                lda actT,x                      ;For items health describes the pickup
+                cmp #ACT_ITEM                   ;amount, do not load the default value
+                beq IA_SkipHealth               ;from actor logic structure
                 lda (actLo),y
                 sta actHp,x
-                iny
+IA_SkipHealth:  iny
                 lda (actLo),y
                 sta actC,x
+                ldy #AL_ACTORFLAGS
+                lda (actLo),y
+                and #AF_ISVILLAIN
+                sta actGrp,x
                 rts
 
         ; Set collision size for actor
@@ -990,8 +1113,114 @@ DestroyActorHasLogicData:
                 ldy temp8
 DA_Jump:        jmp $0000
 
-        ; Remove actor
-        ; TODO: return to leveldata
+        ; Add actor from leveldata
+        ;
+        ; Parameters: X leveldata index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars,actor temp vars
+
+AddLevelActor:  stx addActorIndex
+                lda lvlActT,x
+                bmi ALA_IsItem
+ALA_IsNPC:      lda #ACTI_FIRSTNPC
+                ldy #ACTI_LASTNPC
+                jsr GetFreeActor
+                bcc ALA_Fail
+                lda lvlActT,x
+                sta actT,y
+                lda lvlActWpn,x
+                pha
+                and #$7f
+                sta actWpn,y
+                pla
+                sta actD,y
+ALA_Common:     lda lvlActX,x
+                sta actXH,y
+                lda lvlActY,x
+                sta actYH,y
+                lda lvlActF,x
+                pha
+                and #$c0
+                sta actYL,y
+                pla
+                asl
+                asl
+                and #$c0
+                sta actXL,y
+                txa                             ;Store leveldata origin
+                sta actOrg,y
+                lda #$00                        ;Remove from leveldata
+                sta lvlActT,x
+                tya
+                tax
+                jsr InitActor
+                ldx addActorIndex
+ALA_Fail:       rts
+ALA_IsItem:     lda #ACTI_FIRSTITEM
+                ldy #ACTI_LASTITEM
+                jsr GetFreeActor
+                bcc ALA_Fail
+                lda #ACT_ITEM
+                sta actT,y
+                lda lvlActT,x
+                and #$7f
+                sta actF1,y
+                lda lvlActWpn,x
+                cmp #DEFAULT_PICKUP
+                bne ALA_NoDefaultPickup
+                ldx actF1,y
+                lda itemDefaultPickup-1,x
+ALA_NoDefaultPickup:
+                sta actHp,y
+                ldx addActorIndex
+                bpl ALA_Common
+
+        ; Remove actor and return to leveldata if applicable
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,zpSrcLo
+
+RemoveLevelActor:
+                lda actT,x
+                beq RA_Done
+                ldy actOrg,x                    ;Has leveldata origin?
+                bmi RemoveActor
+                sty RA_EndCmp+1
+RA_Search:      lda lvlActT,y                   ;Look for empty space in leveldata
+                beq RA_Found
+                iny
+                bpl RA_EndCmp
+                ldy #$00
+RA_EndCmp:      cpy #$00                        ;Keep searching until looped back
+                bne RA_Search                   ;to the beginning
+                beq RemoveActor
+RA_Found:       lda actXH,x                     ;Store block coordinates
+                sta lvlActX,y
+                lda actYH,x
+                sta lvlActY,y
+                lda actXL,x                     ;Store char coordinates
+                and #$c0
+                lsr
+                lsr
+                sta zpSrcLo
+                lda actYL,x
+                and #$c0
+                ora zpSrcLo
+                sta lvlActF,y                   ;TODO: store actor AI mode
+                lda actT,x                      ;Store actor type differently if
+                cmp #ACT_ITEM                   ;item or NPC
+                bne RA_StoreNPC
+RA_StoreItem:   lda actF1,x
+                ora #$80
+                sta lvlActT,y
+                lda actHp,x
+                jmp RA_StoreCommon
+RA_StoreNPC:    sta lvlActT,y
+                lda actWpn,x
+RA_StoreCommon: sta lvlActWpn,y
+
+        ; Remove actor without returning to leveldata
         ;
         ; Parameters: X actor index
         ; Returns: -
@@ -999,18 +1228,18 @@ DA_Jump:        jmp $0000
 
 RemoveActor:    lda #ACT_NONE
                 sta actT,x
-                rts
+RA_Done:        rts
 
-        ; Remove all actors
+        ; Remove all actors except player back to leveldata
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X
 
-RemoveAllActors:ldx #MAX_ACT-1
-RAA_Loop:       jsr RemoveActor
+RemoveLevelActors:ldx #MAX_ACT-1
+RAA_Loop:       jsr RemoveLevelActor
                 dex
-                bpl RAA_Loop
+                bne RAA_Loop
                 rts
 
         ; Clear all actors without returning them to leveldata
@@ -1041,7 +1270,7 @@ GFA_Cmp:        cpy #$00
                 rts
 GFA_Found:      sec
                 lda #$00                        ;Reset animation & speed when free actor found
-                sta actF1,y                     ;TODO: reset more as needed
+                sta actF1,y
                 sta actFd,y
                 sta actSX,y
                 sta actSY,y
@@ -1059,6 +1288,7 @@ GFA_Found:      sec
                 sta actFallDistanceL,y
                 lda #$ff
                 sta actWpnF,y
+                sec
 GFA_NotComplex: rts
 
         ; Spawn an actor with X & Y offset

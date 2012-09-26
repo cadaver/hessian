@@ -118,6 +118,7 @@ IVid_InitScorePanel:
 InitSprites:    lda #$00
                 sta newFrame
                 sta firstSortSpr
+                sta addActorIndex
                 lda #$ff
                 sta sprFileNum
                 ldx #MAX_SPR

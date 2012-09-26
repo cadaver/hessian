@@ -602,6 +602,8 @@ MH_ClimbAnimDown:
 
 HumanDeath:     lda #SFX_DEATH
                 jsr PlaySfx
+                lda #ORG_NONE                   ;If scrolled off the screen, do not return
+                sta actOrg,x
                 lda #FR_DIE
                 sta actF1,x
                 sta actF2,x
@@ -616,7 +618,7 @@ HumanDeath:     lda #SFX_DEATH
                 txa                             ;Player dropping weapon is unnecessary
                 beq HD_NoItem
                 lda actWpn,x                    ;Check if should spawn the weapon item
-                beq HD_NoItem                   ;TODO: spawn other items like med-kits or
+                beq HD_NoItem                   ;TODO: spawn other items like medkits or
                 lda #ACTI_FIRSTITEM             ;quest items if necessary
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
@@ -624,6 +626,8 @@ HumanDeath:     lda #SFX_DEATH
                 lda #$00                        ;stored directly to leveldata if no room
                 sta temp5
                 sta temp6
+                sta actOrg,y                    ;Set leveldata origin. TODO: use a "last found empty spot"
+                                                ;variable to optimize returning the actor to leveldata
                 lda #<ITEM_SPAWN_OFFSET
                 sta temp7
                 lda #>ITEM_SPAWN_OFFSET
@@ -639,7 +643,7 @@ HumanDeath:     lda #SFX_DEATH
                 sta actSY,y
                 tya
                 tax
-                jsr SetActorSize
+                jsr InitActor
                 ldx temp3
 HD_NoItem:      ldy temp4                      ;Check if has a damage source
                 bmi HD_NoDamageSource

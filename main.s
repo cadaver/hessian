@@ -59,10 +59,14 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 lda #GRP_HEROES
                 sta actGrp,x
                 jsr InitActor
+                lda #ORG_NONE                   ;Player has no leveldata origin
+                sta actOrg,x
                 lda #ITEM_FISTS
                 sta invType
                 lda #0
                 sta itemIndex
+
+                jsr UpdateAndAddAllActors
 
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors

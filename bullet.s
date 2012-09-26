@@ -171,7 +171,7 @@ MGrn_NoBounce:  lda actMB,x
                 lda actSX,x
                 jsr Negate8Asr8
                 jmp MGrn_StoreNewXSpeed
-MGrn_NoHitWall: and #MB_HITCEILING             ;Halve X-speed when hit ceiling
+MGrn_NoHitWall: and #MB_HITCEILING              ;Halve X-speed when hit ceiling
                 beq MGrn_Done
                 lda actSX,x
                 jsr Asr8

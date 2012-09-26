@@ -78,6 +78,7 @@ MAX_LVLACT      = 128
                 Var actLo
                 Var actHi
                 Var tgtActIndex
+                Var addActorIndex
 
                 Var wpnLo                       ;Weapon variables
                 Var wpnHi
@@ -106,7 +107,6 @@ MAX_LVLACT      = 128
                 CheckVarBase $90
 
                 VarBase $c0
-
                 VarRange sprXL,MAX_SPR
                 VarRange sprXH,MAX_SPR
                 Var ntTemp1                     ;Playroutine
