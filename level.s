@@ -8,9 +8,6 @@ ZONEH_BG3       = 6
 ZONEH_MUSIC     = 7
 ZONEH_DATA      = 8
 
-MAX_MAP_ROWS    = 128
-MAX_BLOCKS      = 128
-
         ; Load a level. TODO: add retry/error handling
         ;
         ; Parameters: A:Level number
@@ -20,14 +17,14 @@ MAX_BLOCKS      = 128
 LoadLevel:      sta levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
-                lda #<charInfo                  ;Load char/zoneinfos
-                ldx #>charInfo
+                lda #<lvlActX                 ;Load levelactors & charinfo & charcolors
+                ldx #>lvlActX
                 jsr LoadFile
                 ldy #C_MAP
                 jsr LoadAllocFile               ;Load MAP chunk
                 ldy #C_BLOCKS
                 jsr LoadAllocFile               ;Load BLOCKS chunk
-                lda #<chars                     ;Finally load chars
+                lda #<chars                     ;Load chars
                 ldx #>chars
                 jsr LoadFile
                 lda #$00                        ;Assume zone 0 after loading

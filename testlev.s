@@ -2,6 +2,8 @@
 
                 org $0000
 
+                incbin bg/testlev.lva
                 incbin bg/testlev.chi
                 incbin bg/testlev.chc
+
 

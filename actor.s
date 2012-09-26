@@ -36,29 +36,33 @@ HUMANOID        = $80
 
 AL_UPDATEROUTINE = 0
 AL_DESTROYROUTINE = 2
-AL_SIZEHORIZ     = 4
-AL_SIZEUP        = 5
-AL_SIZEDOWN      = 6
-AL_INITIALHP     = 7
-AL_MOVECAPS      = 8
-AL_MOVESPEED     = 9
-AL_GROUNDACCEL   = 10
-AL_INAIRACCEL    = 11
-AL_FALLACCEL     = 12                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 13                           ;Gravity acceleration in longjump
-AL_BRAKING       = 14
-AL_HEIGHT        = 15                           ;Height for headbump check, negative
-AL_JUMPSPEED     = 16                           ;Negative
-AL_CLIMBSPEED    = 17
-AL_HALFSPEEDRIGHT = 18                          ;Ladder jump / wallflip speed right
-AL_HALFSPEEDLEFT = 19                           ;Ladder jump / wallflip speed left
+AL_ACTORFLAGS    = 4
+AL_SIZEHORIZ     = 5
+AL_SIZEUP        = 6
+AL_SIZEDOWN      = 7
+AL_INITIALHP     = 8
+AL_COLOROVERRIDE = 9
+AL_MOVEFLAGS     = 10
+AL_MOVESPEED     = 11
+AL_GROUNDACCEL   = 12
+AL_INAIRACCEL    = 13
+AL_FALLACCEL     = 14                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 15                           ;Gravity acceleration in longjump
+AL_BRAKING       = 16
+AL_HEIGHT        = 17                           ;Height for headbump check, negative
+AL_JUMPSPEED     = 18                           ;Negative
+AL_CLIMBSPEED    = 19
+AL_HALFSPEEDRIGHT = 20                          ;Ladder jump / wallflip speed right
+AL_HALFSPEEDLEFT = 21                           ;Ladder jump / wallflip speed left
 
-AMC_JUMP        = 1
-AMC_DUCK        = 2
-AMC_CLIMB       = 4
-AMC_ROLL        = 8
-AMC_WALLFLIP    = 16
-AMC_NOFALLDAMAGE = 32
+AF_NOREMOVECHECK = 1
+
+AMF_JUMP        = 1
+AMF_DUCK        = 2
+AMF_CLIMB       = 4
+AMF_ROLL        = 8
+AMF_WALLFLIP    = 16
+AMF_NOFALLDAMAGE = 32
 
 GRP_HEROES      = $00
 GRP_VILLAINS    = $80
@@ -821,7 +825,7 @@ GetCharInfoOffset:
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,actLo-actHi
-        
+
 GetActorLogicData:
                 ldy actT,x
                 lda actLogicTblLo-1,y
@@ -830,12 +834,27 @@ GetActorLogicData:
                 sta actHi
                 rts
 
+        ; Init actor: set initial health, color override & collision size
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,actLo-actHi
+
+InitActor:      jsr SetActorSize
+                iny
+                lda (actLo),y
+                sta actHp,x
+                iny
+                lda (actLo),y
+                sta actC,x
+                rts
+
         ; Set collision size for actor
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,actLo-actHi
-        
+
 SetActorSize:   jsr GetActorLogicData
                 ldy #AL_SIZEHORIZ
                 lda (actLo),y
@@ -1027,7 +1046,7 @@ GFA_Found:      sec
                 sta actSX,y
                 sta actSY,y
                 sta actC,y
-                sta actMoveFlags,y
+                sta actMB,y
                 cpy #MAX_COMPLEXACT
                 bcs GFA_NotComplex
                 sta actF2,y

@@ -10,12 +10,12 @@
 #include "bme.h"
 #include "editio.h"
 
-#define MAPCOPYSIZE 2048
+#define MAPCOPYSIZE 4096
 
 #define COLOR_DELAY 10
 #define NUMZONES 128
 #define NUMLVLOBJ 128
-#define NUMLVLACT 427
+#define NUMLVLACT 128
 
 #define NUMRANDOMACT 16
 
@@ -47,7 +47,6 @@ unsigned char lvlobjd2[NUMLVLOBJ];
 unsigned char randomactt[NUMRANDOMACT];
 unsigned char randomactw[NUMRANDOMACT];
 
-unsigned char lvlactl[NUMLVLACT];
 unsigned char lvlactx[NUMLVLACT];
 unsigned char lvlacty[NUMLVLACT];
 unsigned char lvlactf[NUMLVLACT];
@@ -64,6 +63,7 @@ unsigned char zonebg1[NUMZONES];
 unsigned char zonebg2[NUMZONES];
 unsigned char zonebg3[NUMZONES];
 unsigned char zonemusic[NUMZONES];
+
 char *actorname[256];
 char *itemname[256];
 char *modename[16];
@@ -391,8 +391,7 @@ void level_mainloop(void)
           }
           for (c = 0; c < NUMLVLACT; c++)
           {
-            if ((lvlactt[c]) && (lvlactl[c] == levelnum) &&
-                (lvlactx[c] == x) && ((lvlacty[c]&0x7f) == y) &&
+            if ((lvlactt[c]) && (lvlactx[c] == x) && ((lvlacty[c]&0x7f) == y) &&
                 ((lvlactf[c] & 3) == xf) && (((lvlactf[c] & 0xc)>> 2) == yf))
             {
               actfound = 1;
@@ -496,7 +495,6 @@ void level_mainloop(void)
           }
           if ((k == KEY_DEL) || (k == KEY_BACKSPACE))
           {
-            lvlactl[actindex] = 0;
             lvlactx[actindex] = 0;
             lvlacty[actindex] = 0;
             lvlactf[actindex] = 0;
@@ -750,7 +748,7 @@ void level_mainloop(void)
               case 3:
               for (c = 0; c < NUMLVLACT; c++)
               {
-                if ((lvlactx[c] == x) && ((lvlacty[c] & 0x7f) == y) && (lvlactl[c] == levelnum))
+                if ((lvlactx[c] == x) && ((lvlacty[c] & 0x7f) == y))
                 {
                   lvlobjd1[objindex] = lvlactw[c] & 0x7f;
                   lvlobjd2[objindex] = lvlactt[c];
@@ -770,7 +768,6 @@ void level_mainloop(void)
               if (!lvlactt[c])
               {
                 lvlactt[c] = actnum;
-                lvlactl[c] = levelnum;
                 lvlactx[c] = x;
                 lvlacty[c] = y;
                 lvlactf[c] = (yf << 2) + xf;
@@ -1369,7 +1366,6 @@ void drawmap(void)
       {
         int o = 0;
         int a = 0;
-        int ta = 0;
         if (actnum < 128)
         {
           sprintf(textbuffer, "ACTOR %02X (%s)", actnum, actorname[actnum]);
@@ -1388,12 +1384,11 @@ void drawmap(void)
         }
         for (c = 0; c < NUMLVLACT; c++)
         {
-          if ((lvlactt[c]) && (lvlactl[c] == levelnum)) a++;
-          if (lvlactt[c]) ta++;
+          if (lvlactt[c]) a++;
         }
         sprintf(textbuffer, "OBJECTS %d", o);
         printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
-        sprintf(textbuffer, "ACTORS %d (%d TOTAL)", a, ta);
+        sprintf(textbuffer, "ACTORS %d", a);
         printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
       }
       for (c = 0; c < NUMLVLOBJ; c++)
@@ -1424,7 +1419,7 @@ void drawmap(void)
       }
       for (c = 0; c < NUMLVLACT; c++)
       {
-        if ((lvlactt[c]) && (lvlactl[c] == levelnum))
+        if (lvlactt[c])
         {
           x = lvlactx[c] - mapx;
           y = (lvlacty[c] & 0x7f) - mapy;
@@ -2253,26 +2248,11 @@ int initchars(void)
   }
   for (c = 0; c < NUMLVLACT; c++)
   {
-    lvlactl[c] = 0;
     lvlactx[c] = 0;
     lvlacty[c] = 0;
     lvlactf[c] = 0;
     lvlactt[c] = 0;
     lvlactw[c] = 0;
-  }
-  handle = open("lvlact.dat", O_RDONLY | O_BINARY);
-  if (handle != -1)
-  {
-    for (c = 0; c < NUMLVLACT; c++)
-    {
-      lvlactl[c] = read8(handle);
-      lvlactx[c] = read8(handle);
-      lvlacty[c] = read8(handle);
-      lvlactf[c] = read8(handle);
-      lvlactt[c] = read8(handle);
-      lvlactw[c] = read8(handle);
-    }
-    close(handle);
   }
   memset(randomactt,0,NUMRANDOMACT);
   memset(randomactw,0,NUMRANDOMACT);
@@ -2666,20 +2646,6 @@ void loadalldata(void)
 
       if (firstnum < strlen(ib1)) levelnum = atoi(&ib1[firstnum]);
 
-      handle = open("lvlact.dat", O_RDONLY | O_BINARY);
-      if (handle != -1)
-      {
-        for (c = 0; c < NUMLVLACT; c++)
-        {
-          lvlactl[c] = read8(handle);
-          lvlactx[c] = read8(handle);
-          lvlacty[c] = read8(handle);
-          lvlactf[c] = read8(handle);
-          lvlactt[c] = read8(handle);
-          lvlactw[c] = read8(handle);
-        }
-        close(handle);
-      }
       strcpy(ib2, ib1);
       strcat(ib2, ".chi");
       handle = open(ib2, O_RDONLY | O_BINARY);
@@ -2762,6 +2728,27 @@ void loadalldata(void)
         read(handle, &lvlobjr[0], NUMLVLOBJ);
         read(handle, &lvlobjd1[0], NUMLVLOBJ);
         read(handle, &lvlobjd2[0], NUMLVLOBJ);
+        close(handle);
+      }
+      
+      for (c = 0; c < NUMLVLACT; c++)
+      {
+        lvlactx[c] = 0;
+        lvlacty[c] = 0;
+        lvlactf[c] = 0;
+        lvlactt[c] = 0;
+        lvlactw[c] = 0;
+      }
+      strcpy(ib2, ib1);
+      strcat(ib2, ".lva");
+      handle = open(ib2, O_RDONLY | O_BINARY);
+      if (handle != -1)
+      {
+        read(handle, &lvlactx[0], NUMLVLACT);
+        read(handle, &lvlacty[0], NUMLVLACT);
+        read(handle, &lvlactf[0], NUMLVLACT);
+        read(handle, &lvlactt[0], NUMLVLACT);
+        read(handle, &lvlactw[0], NUMLVLACT);
         close(handle);
       }
 
@@ -2874,21 +2861,6 @@ void savealldata(void)
 
       if (firstnum < strlen(ib1)) levelnum = atoi(&ib1[firstnum]);
 
-      handle = open("lvlact.dat", O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
-      if (handle != -1)
-      {
-        for (c = 0; c < NUMLVLACT; c++)
-        {
-          // If type zero, give impossible levelnumber
-          if (!lvlactt[c]) lvlactl[c] = 0x7f;
-          write(handle, &lvlactl[c], 1);
-          write(handle, &lvlactx[c], 1);
-          write(handle, &lvlacty[c], 1);
-          write(handle, &lvlactf[c], 1);
-          write(handle, &lvlactt[c], 1);
-          write(handle, &lvlactw[c], 1);
-        }
-      }
 
       strcpy(levelname, ib1);
       strcpy(ib2, ib1);
@@ -3007,6 +2979,19 @@ void savealldata(void)
         write(handle, &lvlobjr[0], NUMLVLOBJ);
         write(handle, &lvlobjd1[0], NUMLVLOBJ);
         write(handle, &lvlobjd2[0], NUMLVLOBJ);
+        close(handle);
+      }
+
+      strcpy(ib2, ib1);
+      strcat(ib2, ".lva");
+      handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
+      if (handle != -1)
+      {
+        write(handle, &lvlactx[0], NUMLVLACT);
+        write(handle, &lvlacty[0], NUMLVLACT);
+        write(handle, &lvlactf[0], NUMLVLACT);
+        write(handle, &lvlactt[0], NUMLVLACT);
+        write(handle, &lvlactw[0], NUMLVLACT);
         close(handle);
       }
 

@@ -234,7 +234,7 @@ DA_DecreaseDone:lda panelUpdateFlags
 
 MoveItem:       lda #$00
                 sta actC,x
-                lda actMoveFlags,x              ;Skip movement if grounded and stationary
+                lda actMB,x                     ;Skip movement if grounded and stationary
                 lsr
                 bcs MoveItem_Done
                 lda actSY,x                     ;Store original Y-speed for bounce
@@ -251,7 +251,7 @@ MoveItem:       lda #$00
                 beq MoveItem_Done               ;If velocity left, clear the grounded
                 sta actSY,x                     ;flag
                 lda #$00
-                sta actMoveFlags,x
+                sta actMB,x
 MoveItem_Done:  rts
 
         ; Use an inventory item

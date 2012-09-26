@@ -149,7 +149,7 @@ MExpl_NoRemove: rts
 MoveGrenade:    dec actTime,x
                 bmi ExplodeGrenade
                 lda #$00                        ;Grenade never stays grounded
-                sta actMoveFlags,x
+                sta actMB,x
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
                 lda #-1                         ;Ceiling check offset
@@ -164,14 +164,14 @@ MoveGrenade:    dec actTime,x
                 sta actSY,x
                 lda #8                          ;Brake X-speed with each bounce
                 jsr BrakeActorX
-MGrn_NoBounce:  lda actMoveFlags,x
-                and #AMF_HITWALL|AMF_HITCEILING
-                cmp #AMF_HITWALL
+MGrn_NoBounce:  lda actMB,x
+                and #MB_HITWALL|MB_HITCEILING
+                cmp #MB_HITWALL
                 bne MGrn_NoHitWall
                 lda actSX,x
                 jsr Negate8Asr8
                 jmp MGrn_StoreNewXSpeed
-MGrn_NoHitWall: and #AMF_HITCEILING             ;Halve X-speed when hit ceiling
+MGrn_NoHitWall: and #MB_HITCEILING             ;Halve X-speed when hit ceiling
                 beq MGrn_Done
                 lda actSX,x
                 jsr Asr8

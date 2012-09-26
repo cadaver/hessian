@@ -1,8 +1,8 @@
-AMF_GROUNDED    = 1
-AMF_LANDED      = 2
-AMF_HITWALL     = 4
-AMF_HITCEILING  = 8
-AMF_STARTFALLING = 16
+MB_GROUNDED    = 1
+MB_LANDED      = 2
+MB_HITWALL     = 4
+MB_HITCEILING  = 8
+MB_STARTFALLING = 16
 
         ; Move actor in a straight line and return charinfo from final position
         ;
@@ -20,12 +20,12 @@ MoveProjectile: lda actSX,x
         ;
         ; Parameters: X actor index, A gravity acceleration (should be positive), Y speed limit,
         ;             temp4 vertical char offset (negative) for ceiling check
-        ; Returns: actMoveFlags updated, also returned in A
+        ; Returns: actMB updated, also returned in A
         ; Modifies: A,Y,temp5-temp8
 
 MoveWithGravity:sta temp6
-                lda actMoveFlags,x              ;Only retain the grounded flag
-                and #AMF_GROUNDED
+                lda actMB,x                     ;Only retain the grounded flag
+                and #MB_GROUNDED
                 sta temp5
                 bne MWG_NoYMove                 ;If not grounded, move in Y-dir first
                 sty temp7
@@ -71,7 +71,7 @@ MWG_HitWallLeft:lda actXL,x
                 bcc MWG_HitWallDone
                 inc actXH,x
 MWG_HitWallDone:lda temp5
-                ora #AMF_HITWALL
+                ora #MB_HITWALL
                 sta temp5
 MWG_NoWallHit:
 MWG_NoXMove:    lda temp5                       ;Do in air or grounded collision checks?
@@ -89,8 +89,8 @@ MWG_CheckCeiling:
                 lda #$00                        ;If hit ceiling, reset Y-speed
                 sta actSY,x
                 lda temp5
-                ora #AMF_HITCEILING
-                sta actMoveFlags,x
+                ora #MB_HITCEILING
+                sta actMB,x
                 rts
 MWG_NoCeiling:  lda actSX,x
                 beq MWG_NoLanding               ;If abs. X-speed is higher than abs. Y-speed
@@ -111,7 +111,7 @@ MWG_XSpeedNeg:  cmp actSY,x
                 eor actSX,x                     ;If it's a diagonal slope, verify that X-speed
                 bpl MWG_HitGround2              ;is actually against it
 MWG_NoLanding:  lda temp5
-                sta actMoveFlags,x
+                sta actMB,x
                 rts
 
 MWG_CheckLanding:
@@ -169,8 +169,8 @@ MWG_HitGround:  lda #$00
                 ora slopeTbl,y
                 sta actYL,x                     ;Align actor to slope
                 lda temp5
-                ora #AMF_GROUNDED|AMF_LANDED
-                sta actMoveFlags,x
+                ora #MB_GROUNDED|MB_LANDED
+                sta actMB,x
                 rts
 
 MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground under feet (may have
@@ -186,9 +186,9 @@ MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground
                 lsr
                 bcs MWG_FinalizeGroundBelow
                 lda temp5                       ;Start falling
-                and #$ff-AMF_GROUNDED
-                ora #AMF_STARTFALLING
-                sta actMoveFlags,x
+                and #$ff-MB_GROUNDED
+                ora #MB_STARTFALLING
+                sta actMB,x
                 rts
 MWG_FinalizeGroundBelow:
                 lda #8*8
@@ -216,5 +216,5 @@ MWG_OnGroundDone:
                 ora slopeTbl,y
                 sta actYL,x
                 lda temp5
-                sta actMoveFlags,x
+                sta actMB,x
                 rts

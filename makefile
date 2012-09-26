@@ -84,7 +84,7 @@ testmusic.pak: music/ninjatr2.d64
 	d642prg music/ninjatr2.d64 testmusic.bin music/testmusic.bin -h
 	pack2 music/testmusic.bin testmusic.pak
 
-testlev.pak: testlev.s bg/testlev.map bg/testlev.blk bg/testlev.chi bg/testlev.chc bg/testlev.chr
+testlev.pak: testlev.s bg/testlev.map bg/testlev.blk bg/testlev.chi bg/testlev.chc bg/testlev.chr bg/testlev.lva
 	dasm testlev.s -otestlev1.bin -f3
 	pack2 testlev1.bin testlev1.pak
 	pchunk2 bg/testlev.map testlev2.pak

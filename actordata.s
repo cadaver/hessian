@@ -105,11 +105,13 @@ actLogicTblHi:  dc.b >alPlayer
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
+                dc.b AF_NOREMOVECHECK           ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
                 dc.b HP_PLAYER                  ;Initial health
-                dc.b AMC_JUMP|AMC_DUCK|AMC_CLIMB|AMC_ROLL|AMC_WALLFLIP ;Move caps
+                dc.b 0                          ;Color override
+                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move flags
                 dc.b 4*8                        ;Max. movement speed
                 dc.b 8                          ;Ground movement acceleration
                 dc.b 3                          ;In air movement acceleration
@@ -155,7 +157,7 @@ alInactivePlayer:
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
                 dc.b HP_PLAYER                  ;Initial health
-                dc.b AMC_JUMP|AMC_DUCK|AMC_CLIMB|AMC_ROLL|AMC_WALLFLIP ;Move caps
+                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move caps
                 dc.b 4*8                        ;Max. movement speed
                 dc.b 6*8                        ;Terminal falling speed
                 dc.b 8                          ;Ground movement acceleration

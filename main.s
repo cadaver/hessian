@@ -47,7 +47,6 @@ Main:           lda #0
                 jsr SetMapPos
                 jsr RedrawScreen
 
-
 CreatePlayer:   ldx #ACTI_PLAYER
                 lda #6
                 sta actXH,x
@@ -57,113 +56,13 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actYH,x
                 lda #ACT_PLAYER
                 sta actT,x
-                lda #HP_PLAYER
-                sta actHp,x
                 lda #GRP_HEROES
                 sta actGrp,x
-                jsr SetActorSize
+                jsr InitActor
                 lda #ITEM_FISTS
                 sta invType
                 lda #0
                 sta itemIndex
-
-                ldx #ACTI_PLAYER+1
-                lda #7
-                sta actXH,x
-                lda #$80
-                sta actXL,x
-                lda #4
-                sta actYH,x
-                lda #ACT_INACTIVEPLAYER
-                sta actT,x
-                lda #WPN_PISTOL
-                sta actWpn,x
-                lda #10
-                sta actHp,x
-                lda #GRP_VILLAINS
-                sta actGrp,x
-                lda #$02
-                sta actC,x
-                jsr SetActorSize
-
-                inx
-                lda #5
-                sta actXH,x
-                lda #$80
-                sta actXL,x
-                lda #4
-                sta actYH,x
-                lda #ACT_INACTIVEPLAYER
-                sta actT,x
-                lda #WPN_PISTOL
-                sta actWpn,x
-                lda #10
-                sta actHp,x
-                lda #GRP_VILLAINS
-                sta actGrp,x
-                lda #$08
-                sta actC,x
-                jsr SetActorSize
-
-                ldx #ACTI_FIRSTITEM
-                lda #5
-                sta actXH,x
-                lda #$80
-                sta actXL,x
-                lda #2
-                sta actYH,x
-                lda #ACT_ITEM
-                sta actT,x
-                lda #ITEM_KNIFE
-                sta actF1,x
-                lda #1
-                sta actHp,x
-                jsr SetActorSize
-
-                inx
-                lda #6
-                sta actXH,x
-                lda #$80
-                sta actXL,x
-                lda #2
-                sta actYH,x
-                lda #ACT_ITEM
-                sta actT,x
-                lda #ITEM_PISTOL
-                sta actF1,x
-                lda #12
-                sta actHp,x
-                jsr SetActorSize
-
-                inx
-                lda #7
-                sta actXH,x
-                lda #$80
-                sta actXL,x
-                lda #2
-                sta actYH,x
-                lda #ACT_ITEM
-                sta actT,x
-                lda #ITEM_GRENADE
-                sta actF1,x
-                lda #3
-                sta actHp,x
-                jsr SetActorSize
-                
-                inx
-                lda #16
-                sta actXH,x
-                lda #$80
-                sta actXL,x
-                lda #2
-                sta actYH,x
-                lda #ACT_ITEM
-                sta actT,x
-                lda #ITEM_MEDKIT
-                sta actF1,x
-                lda #1
-                sta actHp,x
-                jsr SetActorSize
 
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors

@@ -6,7 +6,9 @@ MAX_SPR         = 24
 MAX_ACT         = 24
 MAX_COMPLEXACT  = 7
 MAX_CACHESPRITES = 64
+MAX_MAPROWS     = 128
 MAX_BLK         = 192
+MAX_LVLACT      = 128
 
         ; Zeropage variables
 
@@ -129,7 +131,12 @@ cacheSprFrame   = $02a7
 
 mainCodeStart   = $0334
 
-fileAreaEnd     = $ce00
+fileAreaEnd     = $cb80
+lvlActX         = $cb80
+lvlActY         = $cc00
+lvlActF         = $cc80
+lvlActT         = $cd00
+lvlActWpn       = $cd80
 charInfo        = $ce00
 charColors      = $cf00
 spriteCache     = $d000

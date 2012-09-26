@@ -157,7 +157,7 @@ MH_DeathCheckRemove:
                 sta actC,x
 MH_DeathDone:   rts
 MH_DeathRemove: jmp RemoveActor
-MH_DeathAnim:   lda #DEATH_HEIGHT                ;Actor height for ceiling check
+MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 sta temp4
                 lda #DEATH_ACCEL
                 ldy #HUMAN_MAX_YSPEED
@@ -178,13 +178,13 @@ MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently 
                 sta actSizeU,x
                 lda #$00                        ;Roll flag
                 sta temp2
-                ldy #AL_MOVECAPS
+                ldy #AL_MOVEFLAGS
                 lda (actLo),y
-                sta temp3                       ;Movement capabilities
+                sta temp3                       ;Movement capability flags
                 iny
                 lda (actLo),y
                 sta temp4                       ;Movement speed
-                lda actMoveFlags,x              ;Movement flags
+                lda actMB,x                     ;Movement state bits
                 sta temp1
                 lda actF1,x                     ;Check special movement states
                 cmp #FR_CLIMB
@@ -236,11 +236,11 @@ MH_Brake:       ldy #AL_BRAKING                 ;When grounded and not moving, b
                 lda (actLo),y
                 jsr BrakeActorX
 MH_NoBraking:   lda temp1
-                and #AMF_HITWALL|AMF_LANDED     ;If hit wall (and did not land simultaneously), reset X-speed
-                cmp #AMF_HITWALL
+                and #MB_HITWALL|MB_LANDED       ;If hit wall (and did not land simultaneously), reset X-speed
+                cmp #MB_HITWALL
                 bne MH_NoHitWall
                 lda temp3
-                and #AMC_WALLFLIP
+                and #AMF_WALLFLIP
                 beq MH_NoWallFlip
                 lda temp1                       ;Check for wallflip (push joystick up & opposite to wall)
                 lsr
@@ -267,7 +267,7 @@ MH_NoWallFlip:  lda #$00
                 sta actSX,x
 MH_NoHitWall:   lda temp1
                 lsr                             ;Grounded bit to C
-                and #AMF_HITCEILING/2
+                and #MB_HITCEILING/2
                 bne MH_NoNewJump
                 bcc MH_NoNewJump
                 lda actCtrl,x                   ;When holding fire can not initiate jump
@@ -279,7 +279,7 @@ MH_NoHitWall:   lda temp1
                 lda temp2
                 bne MH_NoNewJump
                 lda temp3
-                and #AMC_CLIMB
+                and #AMF_CLIMB
                 beq MH_NoInitClimbUp
                 jsr GetCharInfo4Above           ;Jump or climb?
                 and #CI_CLIMB
@@ -287,7 +287,7 @@ MH_NoHitWall:   lda temp1
                 jmp MH_InitClimb
 MH_NoInitClimbUp:
                 lda temp3
-                and #AMC_JUMP
+                and #AMF_JUMP
                 beq MH_NoNewJump
                 lda actPrevCtrl,x
                 and #JOY_UP
@@ -295,8 +295,8 @@ MH_NoInitClimbUp:
 MH_StartJump:   ldy #AL_JUMPSPEED
                 lda (actLo),y
                 sta actSY,x
-                lda #$00                        ;Reset grounded flag manually for immediate
-                sta actMoveFlags,x              ;jump physics
+                lda #$00                        ;Reset grounded bit manually for immediate
+                sta actMB,x                     ;jump physics
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 lda (actLo),y
                 sta temp4
@@ -316,7 +316,7 @@ MH_NoLongJump:  lda (actLo),y
                 bne MH_RollAnim
                 bcs MH_GroundAnim
                 lda temp3                       ;Check for increasing fall distance
-                and #AMC_NOFALLDAMAGE
+                and #AMF_NOFALLDAMAGE
                 bne MH_NoIncFallDistance
                 lda actSY,x
                 bmi MH_NoIncFallDistance
@@ -337,7 +337,7 @@ MH_GrabLadderOk:lda actMoveCtrl,x
                 and #JOY_FIRE
                 bne MH_JumpAnim
                 lda temp3
-                and #AMC_CLIMB
+                and #AMF_CLIMB
                 beq MH_JumpAnim
                 jsr GetCharInfo4Above
                 and #CI_CLIMB
@@ -372,7 +372,7 @@ MH_RollToDuck:  lda #FR_DUCK+1
 MH_RollAnimDone:jmp MH_AnimDone
 MH_GroundAnim:  ldy actFallDistance,x           ;Check for forced duck after falling
                 beq MH_NoFallDistance
-                and #AMF_LANDED/2               ;Apply falling damage when landed
+                and #MB_LANDED/2                ;Apply falling damage when landed
                 beq MH_NoFallDamage
                 lda #$00
                 sta actFallDistanceL,x
@@ -396,7 +396,7 @@ MH_NewDuckOrRoll:
                 cmp #FR_DUCK
                 bcs MH_NoNewRoll
                 lda temp3
-                and #AMC_ROLL
+                and #AMF_ROLL
                 beq MH_NoNewRoll
                 lda actMoveCtrl,x               ;To initiate a roll, must push the
                 cmp actPrevCtrl,x               ;joystick diagonally while standing
@@ -408,7 +408,7 @@ MH_StartRoll:   lda #$00
                 lda #FR_ROLL
                 jmp MH_AnimDone
 MH_NoNewRoll:   lda temp3
-                and #AMC_CLIMB
+                and #AMF_CLIMB
                 beq MH_NoInitClimbDown
                 lda actCtrl,x                   ;When holding fire can not initiate climbing
                 and #JOY_FIRE
@@ -419,7 +419,7 @@ MH_NoNewRoll:   lda temp3
                 jmp MH_InitClimb
 MH_NoInitClimbDown:
                 lda temp3
-                and #AMC_DUCK
+                and #AMF_DUCK
                 beq MH_NoDuck
                 lda actF1,x
                 cmp #FR_DUCK
@@ -450,7 +450,7 @@ MH_DuckStandUpAnim:
                 bcc MH_StandAnim
                 bcs MH_AnimDone
 MH_StandOrWalk: lda temp1
-                and #AMF_HITWALL
+                and #MB_HITWALL
                 bne MH_StandAnim
 MH_WalkAnim:    lda actMoveCtrl,x
                 and #JOY_LEFT|JOY_RIGHT
@@ -610,7 +610,7 @@ HumanDeath:     lda #SFX_DEATH
                 lda #DEATH_YSPEED
                 sta actSY,x
                 lda #$00
-                sta actMoveFlags,x              ;Not grounded anymore
+                sta actMB,x                     ;Not grounded anymore
                 stx temp3
                 sty temp4
                 txa                             ;Player dropping weapon is unnecessary
