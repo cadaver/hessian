@@ -307,15 +307,7 @@ UpdateAndAddAllActors:
                 lda #$00
                 sta addActorIndex
                 sta UA_AAEndCmp+1
-                beq BuildCollisionLists
-
-BCL_StoreHero:  txa
-                ldx temp1
-                sta heroList,x
-                inx
-                stx temp1
-                tax
-                bpl BCL_Next
+                beq GetActorBorders
 
         ; Update actors. Build first collision lists for bullet collisions. Also add
         ; and remove actors from/to leveldata when crossing the screen edges. Followed
@@ -330,29 +322,6 @@ UpdateActors:   lda addActorIndex
                 adc #MAX_LVLACT/8               ;To account for max. scrolling speed, check
                 and #MAX_LVLACT-1               ;all level actors in space of 8 logic frames
                 sta UA_AAEndCmp+1
-
-        ; Build hero/villain lists for bullet collision
-
-BuildCollisionLists:
-                ldx #ACTI_LASTNPC
-                ldy #$00                        ;Villain list index
-                sty temp1                       ;Hero list index
-BCL_Loop:       lda actT,x                      ;Actor must exist and have nonzero health
-                beq BCL_Next
-                lda actHp,x
-                beq BCL_Next
-                lda actGrp,x
-                bpl BCL_StoreHero
-BCL_StoreVillain:
-                txa
-                sta villainList,y
-                iny
-BCL_Next:       dex
-                bpl BCL_Loop
-BCL_AllDone:    lda #$ff                        ;Store endmarks
-                sta villainList,y
-                ldx temp1
-                sta heroList,x
 
         ; Calculate border coordinates for adding/removing actors
 
@@ -421,6 +390,37 @@ UA_AASkip:      inx
 UA_AAEndCmp:    cpx #$00
                 bne UA_AddActorsLoop
                 stx addActorIndex
+
+        ; Build hero/villain lists for bullet collision
+
+BuildCollisionLists:
+                ldx #ACTI_LASTNPC
+                ldy #$00                        ;Villain list index
+                sty temp1                       ;Hero list index
+BCL_Loop:       lda actT,x                      ;Actor must exist and have nonzero health
+                beq BCL_Next
+                lda actHp,x
+                beq BCL_Next
+                lda actGrp,x
+                bpl BCL_StoreHero
+BCL_StoreVillain:
+                txa
+                sta villainList,y
+                iny
+BCL_Next:       dex
+                bpl BCL_Loop
+                bmi BCL_AllDone
+BCL_StoreHero:  txa
+                ldx temp1
+                sta heroList,x
+                inc temp1
+                tax
+                dex
+                bpl BCL_Loop
+BCL_AllDone:    lda #$ff                        ;Store endmarks
+                sta villainList,y
+                ldx temp1
+                sta heroList,x
 
         ; Call update routines of all on-screen actors
 
@@ -1228,7 +1228,8 @@ RA_StoreCommon: sta lvlActWpn,y
 
 RemoveActor:    lda #ACT_NONE
                 sta actT,x
-RA_Done:        rts
+                sta actHp,x                     ;Clear hitpoints so that bullet collision can not cause damage to an
+RA_Done:        rts                             ;actor removed on the same frame (outdated collision list)
 
         ; Remove all actors except player back to leveldata
         ;

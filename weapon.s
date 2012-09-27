@@ -198,7 +198,10 @@ AH_MeleeAnimation:
                 bcc AH_MeleeFailed
                 bne AH_MeleeStrike              ;Show strike frame just before spawning bullet
 
-AH_SpawnBullet: jsr GetBulletOffset
+AH_SpawnBullet: lda actCtrl,x                   ;Require stabilized input before firing
+                cmp actPrevCtrl,x               ;to reduce possibility of erratic shots
+                bne AH_CannotFire
+                jsr GetBulletOffset
                 bcc AH_CannotFire
                 txa                             ;Check whether to use player or NPC bullet actor
                 bne AH_IsPlayer                 ;indices
