@@ -126,35 +126,35 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
 
 alItem:         dc.w MoveItem                   ;Update routine
                 dc.w RemoveActor                ;Destroy routine
-                dc.b AF_NONE                    ;Actor flags                
+                dc.b AF_INITONLYSIZE            ;Actor flags                
                 dc.b 10                         ;Horizontal size
                 dc.b 7                          ;Size up
                 dc.b 0                          ;Size down
 
 alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
                 dc.w RemoveActor                ;Destroy routine
-                dc.b AF_NONE                    ;Actor flags
+                dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 
 alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
                 dc.w RemoveActor                ;Destroy routine
-                dc.b AF_NONE                    ;Actor flags
+                dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 
 alGrenade:      dc.w MoveGrenade                ;Update routine
                 dc.w ExplodeActor               ;Destroy routine
-                dc.b AF_NONE                    ;Actor flags
+                dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 
 alExplosion:    dc.w MoveExplosion              ;Update routine
                 dc.w RemoveActor                ;Destroy routine
-                dc.b AF_NONE                    ;Actor flags
+                dc.b AF_INITONLYSIZE            ;Actor flags
 
 alInactivePlayer:
                 dc.w MoveAndAttackHuman         ;Update routine

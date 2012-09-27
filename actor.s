@@ -56,15 +56,16 @@ AL_HALFSPEEDRIGHT = 20                          ;Ladder jump / wallflip speed ri
 AL_HALFSPEEDLEFT = 21                           ;Ladder jump / wallflip speed left
 
 AF_NONE         = $00
+AF_INITONLYSIZE = $01
 AF_NOREMOVECHECK = $40
 AF_ISVILLAIN    = $80
 
-AMF_JUMP        = 1
-AMF_DUCK        = 2
-AMF_CLIMB       = 4
-AMF_ROLL        = 8
-AMF_WALLFLIP    = 16
-AMF_NOFALLDAMAGE = 32
+AMF_JUMP        = $01
+AMF_DUCK        = $02
+AMF_CLIMB       = $04
+AMF_ROLL        = $08
+AMF_WALLFLIP    = $10
+AMF_NOFALLDAMAGE = $20
 
 GRP_HEROES      = $00
 GRP_VILLAINS    = $80
@@ -956,30 +957,12 @@ GetActorLogicData:
         ; Returns: -
         ; Modifies: A,Y,actLo-actHi
 
-InitActor:      jsr SetActorSize
-                iny
-                lda actT,x                      ;For items health describes the pickup
-                cmp #ACT_ITEM                   ;amount, do not load the default value
-                beq IA_SkipHealth               ;from actor logic structure
-                lda (actLo),y
-                sta actHp,x
-IA_SkipHealth:  iny
-                lda (actLo),y
-                sta actC,x
+InitActor:      jsr GetActorLogicData
                 ldy #AL_ACTORFLAGS
                 lda (actLo),y
-                and #AF_ISVILLAIN
-                sta actGrp,x
-                rts
-
-        ; Set collision size for actor
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,actLo-actHi
-
-SetActorSize:   jsr GetActorLogicData
-                ldy #AL_SIZEHORIZ
+                pha
+                lsr
+                iny
                 lda (actLo),y
                 sta actSizeH,x
                 iny
@@ -988,6 +971,17 @@ SetActorSize:   jsr GetActorLogicData
                 iny
                 lda (actLo),y
                 sta actSizeD,x
+                pla
+                bcs IA_SkipGroupHealthColor
+                and #AF_ISVILLAIN
+                sta actGrp,x
+                iny
+                lda (actLo),y
+                sta actHp,x
+                iny
+                lda (actLo),y
+                sta actC,x
+IA_SkipGroupHealthColor:
                 rts
 
         ; Check if two actors have collided. Actors further apart than 128 pixels
