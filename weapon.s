@@ -32,7 +32,7 @@ WDB_FLASHBULLET = 4
 WDB_THROW       = 8
 WDB_MELEE       = 16
 
-        ; Humanoid character attack routine
+        ; Actor attack routine
         ;
         ; Parameters: X actor index
         ; Returns: -
@@ -116,6 +116,7 @@ AH_EmptyMagazine:
                 lda (wpnLo),y
                 jsr PlaySfx
                 jmp AH_RedrawAmmoNoAttack
+AH_NoAttack2:   jmp AH_NoAttack                
 AH_FirearmEmpty:lda #$02                        ;If no bullets, set a constant attack delay to
                 sta actAttackD+ACTI_PLAYER      ;prevent firing but allow brandishing empty weapon
 AH_AmmoCheckOK: lda menuCounter                 ;If player is in inventory menu,
@@ -140,13 +141,14 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 lda attackTbl,y
                 bmi AH_NoAttack2
                 ldy #WD_MINAIM                  ;Check that aim direction is OK for weapon
-                cmp (wpnLo),y                   ;in question
-                bcc AH_NoAttack2
-                iny
+                cmp (wpnLo),y                   ;in question, limit if necessary
+                bcs AH_DirOk1
+                lda (wpnLo),y
+AH_DirOk1:      iny
                 cmp (wpnLo),y
-                bcc AH_AimOk
-AH_NoAttack2:   jmp AH_NoAttack
-AH_AimOk:       pha
+                bcc AH_DirOk2
+                lda (wpnLo),y
+AH_DirOk2:      pha
                 clc
                 adc #FR_ATTACK
                 sta actF2,x

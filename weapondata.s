@@ -12,6 +12,9 @@ DMG_GRENADE     = 16
 DMG_BULLETSTAYS = $80                           ;Bullet does not disappear after damage
                                                 ;(flamethrower etc.)
 
+SPDTBL_NORMAL   = 0
+SPDTBL_GRENADE  = 10
+
         ; Weapon/attack tables
 
 attackTbl:      dc.b AIM_NONE                   ;None
@@ -55,24 +58,24 @@ wpnTblHi:       dc.b >wdFists
 
 wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction
-                dc.b AIM_HORIZONTAL+1           ;Last aim direction+1
+                dc.b AIM_HORIZONTAL             ;Last aim direction
                 dc.b 5                          ;Attack delay
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b DMG_FISTS                  ;Bullet damage
                 dc.b 1                          ;Bullet time duration
                 dc.b 1                          ;Bullet speed in pixels
-                dc.b 0                          ;Bullet speed table offset
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_PUNCH                  ;Sound effect
 
 wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction
-                dc.b AIM_HORIZONTAL+1           ;Last aim direction+1
+                dc.b AIM_HORIZONTAL             ;Last aim direction
                 dc.b 7                          ;Attack delay
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b DMG_KNIFE                  ;Bullet damage
                 dc.b 1                          ;Bullet time duration
                 dc.b 1                          ;Bullet speed in pixels
-                dc.b 0                          ;Bullet speed table offset
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_MELEE                  ;Sound effect
                 dc.b 8                          ;Idle weapon frame (right)
                 dc.b 8                          ;Idle weapon frame (left)
@@ -83,13 +86,13 @@ wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
 
 wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLASHBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
-                dc.b AIM_DOWN+1                 ;Last aim direction+1
+                dc.b AIM_DOWN                   ;Last aim direction
                 dc.b 7                          ;Attack delay
                 dc.b ACT_BULLET                 ;Bullet actor type
                 dc.b DMG_PISTOL                 ;Bullet damage
                 dc.b 18                         ;Bullet time duration
                 dc.b 12                         ;Bullet speed in pixels
-                dc.b 0                          ;Bullet speed table offset
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_PISTOL                 ;Sound effect
                 dc.b 2                          ;Idle weapon frame (right)
                 dc.b 6                          ;Idle weapon frame (left)
@@ -103,11 +106,11 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLASHBULLET ;Weapon bits
 
 wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
-                dc.b AIM_DIAGONALDOWN+1         ;Last aim direction+1
+                dc.b AIM_DIAGONALDOWN           ;Last aim direction
                 dc.b 15                         ;Attack delay
                 dc.b ACT_GRENADE                ;Bullet actor type
                 dc.b DMG_GRENADE                ;Bullet damage
                 dc.b 30                         ;Bullet time duration
                 dc.b 6                          ;Bullet speed in pixels
-                dc.b 10                         ;Bullet speed table offset
+                dc.b SPDTBL_GRENADE             ;Bullet speed table offset
                 dc.b SFX_THROW                  ;Sound effect
