@@ -384,7 +384,7 @@ MH_GroundAnim:  ldy actFallDistance,x           ;Check for forced duck after fal
                 asl
                 adc temp8
                 ldy #$ff
-                jsr DamageActor
+                jmp DamageActor
 MH_NoFallDamage:dec actFallDistance,x
                 jmp MH_NoInitClimbDown
 MH_NoFallDistance:

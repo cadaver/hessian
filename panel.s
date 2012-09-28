@@ -333,12 +333,12 @@ UM_StoreCounter:stx menuCounter
                 lda actHp+ACTI_PLAYER
                 beq UM_NotReloadKey
 UM_KeyControl:  ldy itemIndex
-                lda keyType                     ;Can also use Z & X keys to select items
-                cmp #KEY_Z
+                lda keyType                     ;Can also use , & . keys to select items
+                cmp #KEY_COMMA
                 bne UM_NotPreviousKey
                 jmp UM_MoveLeft
 UM_NotPreviousKey:
-                cmp #KEY_X
+                cmp #KEY_COLON
                 bne UM_NotNextKey
                 jmp UM_MoveRight
 UM_NotNextKey:  cmp #KEY_R                      ;Use R to reload
