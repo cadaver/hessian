@@ -70,10 +70,10 @@ AMF_NOFALLDAMAGE = $20
 GRP_HEROES      = $00
 GRP_VILLAINS    = $80
 
-ADDACTOR_LEFT_LIMIT = 2
-ADDACTOR_TOP_LIMIT = 1
+ADDACTOR_LEFT_LIMIT = 1
+ADDACTOR_TOP_LIMIT = 0
 ADDACTOR_RIGHT_LIMIT = 12
-ADDACTOR_BOTTOM_LIMIT = 7
+ADDACTOR_BOTTOM_LIMIT = 8
 
 ORG_NONE        = $80                           ;No leveldata origin
                                                 ;TODO: differentiate between persistent/nonpersistent
@@ -347,10 +347,10 @@ GAB_RightOK1:   cmp limitR
 GAB_RightOK2:   sta UA_RARightCheck+1           ;Right border
                 sta UA_AARightCheck+1
                 lda mapY
-                sec
-                sbc #ADDACTOR_TOP_LIMIT
-                bcs GAB_TopOK1
-                lda #$00
+                ;sec
+                ;sbc #ADDACTOR_TOP_LIMIT
+                ;bcs GAB_TopOK1
+                ;lda #$00
 GAB_TopOK1:     cmp limitU
                 bcs GAB_TopOK2
                 lda limitU
@@ -425,10 +425,10 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
 
         ; Call update routines of all on-screen actors
 
-                ldx #$00
+                ldx #$00                
 UA_Loop:        ldy actT,x
                 beq UA_Next
-UA_NotZero:     stx actIndex
+UA_NotZero:     stx actIndex                
                 lda actLogicTblLo-1,y           ;Get actor logic structure address
                 sta actLo
                 lda actLogicTblHi-1,y
@@ -460,7 +460,7 @@ UA_Jump:        jsr $1000
 UA_Next:        inx
                 cpx #MAX_ACT
                 bcc UA_Loop
-
+                
         ; Interpolate actors' movement each second frame
 
 InterpolateActors:
