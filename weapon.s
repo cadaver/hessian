@@ -116,8 +116,8 @@ AH_EmptyMagazine:
                 lda (wpnLo),y
                 jsr PlaySfx
                 jmp AH_RedrawAmmoNoAttack
-AH_NoAttack2:   jmp AH_NoAttack                
-AH_FirearmEmpty:lda #$02                        ;If no bullets, set a constant attack delay to
+AH_NoAttack2:   jmp AH_NoAttack
+AH_FirearmEmpty:lda #$01                        ;If no bullets, set a constant attack delay to
                 sta actAttackD+ACTI_PLAYER      ;prevent firing but allow brandishing empty weapon
 AH_AmmoCheckOK: lda menuCounter                 ;If player is in inventory menu,
                 cmp #MENU_DELAY                 ;do not attack
@@ -270,8 +270,7 @@ AH_BulletFrameDone:
 AH_NoBulletFlash:
                 ldx actIndex                    ;If player, decrement ammo
                 bne AH_NoAmmoDecrement
-                ldy actWpn+ACTI_PLAYER
-                lda itemMagazineSize-1,y
+                lda magazineSize
                 bmi AH_NoAmmoDecrement          ;Melee weapon, no decrement
                 ldy itemIndex
                 lda #$01
