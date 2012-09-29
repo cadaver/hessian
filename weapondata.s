@@ -84,7 +84,7 @@ wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b 9,9,9,9,9                  ;Attack weapon frames (right)
                 dc.b 10,10,10                   ;Attack weapon frames (left)
 
-wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLASHBULLET ;Weapon bits
+wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN                   ;Last aim direction
                 dc.b 7                          ;Attack delay

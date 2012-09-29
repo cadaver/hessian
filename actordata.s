@@ -5,7 +5,7 @@ ACT_MELEEHIT    = 3
 ACT_BULLET      = 4
 ACT_GRENADE     = 5
 ACT_EXPLOSION   = 6
-ACT_INACTIVEPLAYER = 7
+ACT_ENEMY       = 7
 
 HP_PLAYER       = 28
 
@@ -93,7 +93,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alBullet
                 dc.b <alGrenade
                 dc.b <alExplosion
-                dc.b <alInactivePlayer
+                dc.b <alEnemy
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -101,7 +101,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alBullet
                 dc.b >alGrenade
                 dc.b >alExplosion
-                dc.b >alInactivePlayer
+                dc.b >alEnemy
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
@@ -156,8 +156,7 @@ alExplosion:    dc.w MoveExplosion              ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
-alInactivePlayer:
-                dc.w MoveAndAttackHuman         ;Update routine
+alEnemy:        dc.w MoveAndAttackHuman         ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b AF_ISVILLAIN               ;Actor flags
                 dc.b 8                          ;Horizontal size

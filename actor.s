@@ -34,6 +34,10 @@ THREESPRITE     = $02
 FOURSPRITE      = $03
 HUMANOID        = $80
 
+COLOR_FLICKER   = $40
+COLOR_INVISIBLE = $80
+COLOR_ONETIMEFLASH = $f0
+
 AL_UPDATEROUTINE = 0
 AL_DESTROYROUTINE = 2
 AL_ACTORFLAGS    = 4
@@ -107,14 +111,14 @@ DA_ActorDone:   inx
                 cpx #MAX_ACT
                 bcc DA_Loop
 DA_FillSprites: ldx sprIndex                    ;If less sprites used than last frame, set unused Y-coords to max.
+                txa
+                ldy #$ff
 DA_FillSpritesLoop:
-                lda #$ff
-                sta sprY,x
+                sty sprY,x
                 inx
 DA_LastSprIndex:cpx #$00
                 bcc DA_FillSpritesLoop
 DA_FillSpritesDone:
-                lda sprIndex
                 sta DA_LastSprIndex+1
                 jmp AgeSpriteCache              ;Sprite cache use finished, age the cache now
 
@@ -165,7 +169,7 @@ DA_SprSubXH:    sbc #$00
                 sta temp2
                 ldy #$0f                        ;Get flashing/flicker/color override:
                 lda actC,x                      ;$01-$0f = color override only
-                cmp #$f0                        ;$40/$80 = flicker with sprite's own color
+                cmp #COLOR_ONETIMEFLASH         ;$40/$80 = flicker with sprite's own color
                 bcc DA_NoHitFlash               ;$4x/$8x = flicker with color override
                 and #$0f                        ;$f0-$ff = one time hit flash + color override
                 sta actC,x
@@ -493,9 +497,9 @@ IA_ScrollYOk:   sta IA_ScrollYAdjust+1
                 bpl IA_SprLoop
                 rts
 IA_SprLoop:     lda sprC,x                      ;Process flickering
-                cmp #$40
+                cmp #COLOR_FLICKER
                 bcc IA_NoFlicker
-                eor #$80                        ;If sprite is invisible on this frame,
+                eor #COLOR_INVISIBLE            ;If sprite is invisible on this frame,
                 sta sprC,x                      ;no need to calculate & add offset
                 bmi IA_Next
 IA_NoFlicker:   ldy sprAct,x                    ;Take actor number associated with sprite
@@ -1312,17 +1316,17 @@ SpawnWithOffset:sta actT,y
                 sta actYH,y
                 rts
 
-        ; Get flashing color override for actor based on low bit of actor index
+        ; Get flicker color override for actor based on low bit of actor index
         ;
         ; Parameters: A actor index
         ; Returns: A color override value, either $40 or $c0
         ; Modifies: A
-        
-GetFlashColorOverride:
+
+GetFlickerColorOverride:
                 ror
                 ror
-                and #$80
-                ora #$40
+                and #COLOR_INVISIBLE
+                ora #COLOR_FLICKER
                 rts
 
         ; Calculate distance to target actor in blocks

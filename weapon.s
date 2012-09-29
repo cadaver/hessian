@@ -28,7 +28,7 @@ WD_RELOADDONESFX = 26
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
 WDB_BULLETDIRFRAME = 2
-WDB_FLASHBULLET = 4
+WDB_FLICKERBULLET = 4
 WDB_THROW       = 8
 WDB_MELEE       = 16
 
@@ -262,12 +262,12 @@ AH_BulletFrameDone:
                 lda (wpnLo),y
                 sta actTime,x
                 lda temp3
-                and #WDB_FLASHBULLET
-                beq AH_NoBulletFlash
+                and #WDB_FLICKERBULLET
+                beq AH_NoBulletFlicker
                 txa
-                jsr GetFlashColorOverride
+                jsr GetFlickerColorOverride
                 sta actC,x
-AH_NoBulletFlash:
+AH_NoBulletFlicker:
                 ldx actIndex                    ;If player, decrement ammo
                 bne AH_NoAmmoDecrement
                 lda magazineSize

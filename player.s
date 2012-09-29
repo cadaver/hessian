@@ -11,7 +11,7 @@ FR_ATTACK       = 29
 HEALTH_RECHARGE_DELAY = 50
 
 DEATH_DISAPPEAR_DELAY = 75
-DEATH_FLASH_DELAY = 25
+DEATH_FLICKER_DELAY = 25
 DEATH_HEIGHT    = -3                            ;Ceiling check height for dead bodies
 DEATH_YSPEED    = -5*8
 DEATH_MAX_XSPEED = 6*8
@@ -151,9 +151,10 @@ MH_DeathCheckRemove:
                 dec actTime,x
                 bmi MH_DeathRemove
                 lda actTime,x
-                cmp #DEATH_FLASH_DELAY
+                cmp #DEATH_FLICKER_DELAY
                 bne MH_DeathDone
-                lda #$80
+                jsr GetFlickerColorOverride
+                ora actC,x
                 sta actC,x
 MH_DeathDone:   rts
 MH_DeathRemove: jmp RemoveActor
@@ -192,8 +193,6 @@ MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently 
                 beq MH_NoFallCheck
                 and #MB_LANDED/2                ;Falling damage applied right after landing
                 beq MH_NoFallDamage
-                lda #$00
-                sta actFallL,x
                 tya
                 sbc #DAMAGING_FALL_DISTANCE
                 bcc MH_NoFallDamage
@@ -317,6 +316,8 @@ MH_StartJump:   ldy #AL_JUMPSPEED
                 sta actSY,x
                 lda #$00                        ;Reset grounded bit manually for immediate
                 sta actMB,x                     ;jump physics
+                sta actFall,x
+                sta actFallL,x
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 lda (actLo),y
                 sta temp4
@@ -495,8 +496,6 @@ MH_InitClimb:   lda #$80
                 lda #$00
                 sta actSX,x
                 sta actSY,x
-                sta actFall,x
-                sta actFallL,x
                 jmp NoInterpolation
 
 MH_Climbing:    ldy #AL_CLIMBSPEED
