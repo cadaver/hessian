@@ -310,7 +310,7 @@ actSizeU:       ds.b MAX_ACT,0
 actSizeD:       ds.b MAX_ACT,0
 actTime:        ds.b MAX_ACT,0
 actHp:          ds.b MAX_ACT,0
-actMB:   ds.b MAX_ACT,0
+actMB:          ds.b MAX_ACT,0
 actCtrl:        ds.b MAX_COMPLEXACT,0
 actMoveCtrl:    ds.b MAX_COMPLEXACT,0
 actPrevCtrl:    ds.b MAX_COMPLEXACT,0
@@ -318,8 +318,8 @@ actF2:          ds.b MAX_COMPLEXACT,0
 actWpn:         ds.b MAX_COMPLEXACT,WPN_NONE
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0
-actFallDistance:ds.b MAX_COMPLEXACT,0
-actFallDistanceL:ds.b MAX_COMPLEXACT,0
+actFall:        ds.b MAX_COMPLEXACT,0
+actFallL:       ds.b MAX_COMPLEXACT,0
 
         ;Other variables
 

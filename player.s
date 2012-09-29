@@ -186,7 +186,27 @@ MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently 
                 sta temp4                       ;Movement speed
                 lda actMB,x                     ;Movement state bits
                 sta temp1
-                lda actF1,x                     ;Check special movement states
+                lsr                             ;Check after fall-effects (forced duck, damage)
+                bcc MH_NoFallCheck
+                ldy actFall,x
+                beq MH_NoFallCheck
+                and #MB_LANDED/2                ;Falling damage applied right after landing
+                beq MH_NoFallDamage
+                lda #$00
+                sta actFallL,x
+                tya
+                sbc #DAMAGING_FALL_DISTANCE
+                bcc MH_NoFallDamage
+                beq MH_NoFallDamage
+                sta temp8
+                asl
+                adc temp8
+                ldy #$ff
+                jsr DamageActor
+MH_NoFallDamage:dec actFall,x
+                lda #$00
+                sta actMoveCtrl,x
+MH_NoFallCheck: lda actF1,x                     ;Check special movement states
                 cmp #FR_CLIMB
                 bcc MH_NotClimbing
                 cmp #FR_ROLL
@@ -317,16 +337,15 @@ MH_NoLongJump:  lda (actLo),y
                 bcs MH_GroundAnim
                 lda temp3                       ;Check for increasing fall distance
                 and #AMF_NOFALLDAMAGE
-                bne MH_NoIncFallDistance
+                bne MH_NoIncFall
                 lda actSY,x
-                bmi MH_NoIncFallDistance
+                bmi MH_NoIncFall
                 asl
-                adc actFallDistanceL,x
-                sta actFallDistanceL,x
-                bcc MH_NoIncFallDistance
-                inc actFallDistance,x
-MH_NoIncFallDistance:
-                lda actSY,x                     ;Check for grabbing a ladder while
+                adc actFallL,x
+                sta actFallL,x
+                bcc MH_NoIncFall
+                inc actFall,x
+MH_NoIncFall:   lda actSY,x                     ;Check for grabbing a ladder while
                 bpl MH_GrabLadderOk             ;in midair
                 cmp #-2*8                       ;Can not grab while still going up fast
                 bcc MH_JumpAnim
@@ -370,24 +389,8 @@ MH_RollToJump:  lda #FR_JUMP+2
                 bne MH_RollAnimDone
 MH_RollToDuck:  lda #FR_DUCK+1
 MH_RollAnimDone:jmp MH_AnimDone
-MH_GroundAnim:  ldy actFallDistance,x           ;Check for forced duck after falling
-                beq MH_NoFallDistance
-                and #MB_LANDED/2                ;Apply falling damage when landed
-                beq MH_NoFallDamage
-                lda #$00
-                sta actFallDistanceL,x
-                tya
-                sbc #DAMAGING_FALL_DISTANCE
-                bcc MH_NoFallDamage
-                beq MH_NoFallDamage
-                sta temp8
-                asl
-                adc temp8
-                ldy #$ff
-                jmp DamageActor
-MH_NoFallDamage:dec actFallDistance,x
-                jmp MH_NoInitClimbDown
-MH_NoFallDistance:
+MH_GroundAnim:  lda actFall,x                   ;Forced duck after falling
+                bne MH_NoInitClimbDown
                 lda actMoveCtrl,x
                 and #JOY_DOWN
                 beq MH_NoDuck
@@ -492,8 +495,8 @@ MH_InitClimb:   lda #$80
                 lda #$00
                 sta actSX,x
                 sta actSY,x
-                sta actFallDistance,x
-                sta actFallDistanceL,x
+                sta actFall,x
+                sta actFallL,x
                 jmp NoInterpolation
 
 MH_Climbing:    ldy #AL_CLIMBSPEED

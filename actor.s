@@ -1279,8 +1279,8 @@ GFA_Found:      sec
                 sta actPrevCtrl,y
                 sta actWpn,y
                 sta actAttackD,y
-                sta actFallDistance,y
-                sta actFallDistanceL,y
+                sta actFall,y
+                sta actFallL,y
                 lda #$ff
                 sta actWpnF,y
                 sec
