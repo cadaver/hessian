@@ -22,6 +22,9 @@ HUMAN_MAX_YSPEED = 6*8
 
 DAMAGING_FALL_DISTANCE = 4
 
+AIH_AUTOTURN    = 1
+AIH_AUTOJUMP    = 1
+
         ; Player update routine
         ;
         ; Parameters: X actor index
@@ -332,8 +335,34 @@ MH_NoLongJump:  lda (actLo),y
                 ldy #HUMAN_MAX_YSPEED
                 jsr MoveWithGravity             ;Actually move & check collisions
                 sta temp1                       ;Updated move flags to temp1
-                lsr
-                ldy temp2                       ;If rolling, continue roll animation
+                cmp #MB_STARTFALLING
+                bcc MH_NoFallStart
+                lda #$00
+                sta actFall,x
+                sta actFallL,x
+                lda actAIHelp,x                 ;Check AI autojumping
+                and #AIH_AUTOJUMP
+                beq MH_NoAutoJump
+                lda temp3
+                and #AMF_JUMP
+                beq MH_NoAutoJump
+                ldy #AL_JUMPSPEED
+                lda (actLo),y
+                sta actSY,x
+MH_NoAutoJump:  lda temp1
+MH_NoFallStart: lsr                             ;Grounded bit to carry
+                and #MB_HITWALL/2
+                beq MH_NoAutoTurn
+                lda actAIHelp,x                 ;Check AI autoturning
+                and #AIH_AUTOTURN
+                beq MH_NoAutoTurn
+                lda actSX,x
+                eor actD,x
+                bmi MH_NoAutoTurn
+                lda actD,x
+                eor #$80
+                sta actD,x
+MH_NoAutoTurn:  ldy temp2                       ;If rolling, continue roll animation
                 bne MH_RollAnim
                 bcs MH_GroundAnim
                 lda temp3                       ;Check for increasing fall distance

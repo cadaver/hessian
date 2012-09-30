@@ -1285,6 +1285,7 @@ GFA_Found:      sec
                 sta actAttackD,y
                 sta actFall,y
                 sta actFallL,y
+                sta actAIHelp,y
                 lda #$ff
                 sta actWpnF,y
                 sec
