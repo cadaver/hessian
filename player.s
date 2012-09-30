@@ -22,8 +22,9 @@ HUMAN_MAX_YSPEED = 6*8
 
 DAMAGING_FALL_DISTANCE = 4
 
-AIH_AUTOTURN    = 1
-AIH_AUTOJUMP    = 1
+AIH_AUTOTURNWALL = 1
+AIH_AUTOTURNLEDGE = 2
+AIH_AUTOJUMPLEDGE = 4
 
         ; Player update routine
         ;
@@ -340,13 +341,21 @@ MH_NoLongJump:  lda (actLo),y
                 lda #$00
                 sta actFall,x
                 sta actFallL,x
-                lda actAIHelp,x                 ;Check AI autojumping
-                and #AIH_AUTOJUMP
+                lda actAIHelp,x                 ;Check AI autojumping or autoturning
+                cmp #AIH_AUTOJUMPLEDGE          ;when falling
+                bcs MH_AutoJump
+                and #AIH_AUTOTURNLEDGE
                 beq MH_NoAutoJump
-                lda temp3
-                and #AMF_JUMP
-                beq MH_NoAutoJump
-                ldy #AL_JUMPSPEED
+                lda actSX,x
+                eor #$ff
+                adc #$00
+                jsr MoveActorX                  ;Back off from the ledge
+                lda #MB_GROUNDED
+                sta actMB,x                     ;Force grounded status
+                sta temp1
+                sec
+                bne MH_DoAutoTurn
+MH_AutoJump:    ldy #AL_JUMPSPEED
                 lda (actLo),y
                 sta actSY,x
 MH_NoAutoJump:  lda temp1
@@ -354,14 +363,19 @@ MH_NoFallStart: lsr                             ;Grounded bit to carry
                 and #MB_HITWALL/2
                 beq MH_NoAutoTurn
                 lda actAIHelp,x                 ;Check AI autoturning
-                and #AIH_AUTOTURN
+                and #AIH_AUTOTURNWALL
                 beq MH_NoAutoTurn
-                lda actSX,x
+MH_DoAutoTurn:  lda actSX,x
                 eor actD,x
                 bmi MH_NoAutoTurn
+                ldy #JOY_LEFT
                 lda actD,x
                 eor #$80
-                sta actD,x
+                bmi MH_AutoTurnLeft
+                ldy #JOY_RIGHT
+MH_AutoTurnLeft:sta actD,x
+                tya
+                sta actMoveCtrl,x
 MH_NoAutoTurn:  ldy temp2                       ;If rolling, continue roll animation
                 bne MH_RollAnim
                 bcs MH_GroundAnim
