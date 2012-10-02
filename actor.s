@@ -426,6 +426,80 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
                 sta villainList,y
                 ldx temp1
                 sta heroList,x
+                
+        ; Do route check for one AI actor at a time
+        
+CheckRoute:     ldx #ACTI_FIRSTNPC
+                lda actT,x
+                beq CR_NoCheck2
+                ldy actAITarget,x
+                bmi CR_NoCheck2
+                lda actXH,x
+                sta temp1
+                lda actYL,x                     ;Check 1 block higher if standing on top
+                cmp #$80                        ;of a block
+                lda actYH,x
+                sbc #$00
+                sta temp2
+                lda actXH,y
+                sta CR_CmpX+1
+                lda actYL,y
+                cmp #$80
+                lda actYH,y
+                sbc #$00
+                sta CR_CmpY+1
+                sta CR_CmpY2+1
+                lda #MAX_ROUTE_STEPS
+                sta temp3
+CR_Loop:        ldy temp1
+CR_CmpX:        cpy #$00
+                bcc CR_MoveRight
+                bne CR_MoveLeft
+                ldy temp2
+CR_CmpY:        cpy #$00
+                bcc CR_MoveDown
+                bne CR_MoveUp
+                lda #$01                        ;Route found
+                bne CR_Done
+CR_NoCheck2:    jmp CR_NoCheck
+CR_MoveRight:   iny
+                bcc CR_MoveXDone
+CR_MoveLeft:    dey
+CR_MoveXDone:   sty temp1
+                ldy temp2
+CR_CmpY2:       cpy #$00
+                bcc CR_MoveDown
+                beq CR_MoveYDone2
+CR_MoveUp:      dey
+                bcs CR_MoveYDone
+CR_MoveDown:    iny
+CR_MoveYDone:   sty temp2
+CR_MoveYDone2:  dec temp3
+                beq CR_NoRoute
+                lda mapTblLo,y
+                sta zpDestLo
+                lda mapTblHi,y
+                sta zpDestHi
+                ldy temp1
+                lda (zpDestLo),y                ;Take block from map
+                tay
+                lda blkTblLo,y
+                sta zpDestLo
+                lda blkTblHi,y
+                sta zpDestHi
+                ldy #2*4+2
+                lda (zpDestLo),y                ;Get char from block (middle)
+                tay
+                lda charInfo,y                  ;Get charinfo
+                and #CI_OBSTACLE
+                beq CR_Loop
+CR_NoRoute:     lda #$00                        ;Route not found
+CR_Done:        sta actAIRoute,x    
+CR_NoCheck:     inx
+                cpx #ACTI_LASTNPC+1
+                bcc CR_NotOver
+                ldx #ACTI_FIRSTNPC
+CR_NotOver:     stx CheckRoute+1
 
         ; Call update routines of all on-screen actors
 
@@ -1286,6 +1360,8 @@ GFA_Found:      sec
                 sta actFall,y
                 sta actFallL,y
                 sta actAIHelp,y
+                sta actAITarget,y               ;TODO: this targets player always. May need
+                sta actAIRoute,y                ;to start from a "no target" state
                 lda #$ff
                 sta actWpnF,y
                 sec

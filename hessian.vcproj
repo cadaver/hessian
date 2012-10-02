@@ -73,6 +73,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ai.s"
+				>
+			</File>
+			<File
 				RelativePath=".\boot.s"
 				>
 			</File>

@@ -21,14 +21,15 @@ REDUCE_CONTROL_LATENCY = 0
                 include file.s
                 include sprite.s
                 include screen.s
+                include panel.s
                 include level.s
                 include actor.s
                 include physics.s
                 include player.s
+                include item.s
                 include weapon.s
                 include bullet.s
-                include item.s
-                include panel.s
+                include ai.s
 
         ; Test initialization code, will be removed
 

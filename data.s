@@ -322,6 +322,8 @@ actFall:        ds.b MAX_COMPLEXACT,0
 actFallL:       ds.b MAX_COMPLEXACT,0
 actAIMode:      ds.b MAX_COMPLEXACT,0
 actAIHelp:      ds.b MAX_COMPLEXACT,0
+actAITarget:    ds.b MAX_COMPLEXACT,0
+actAIRoute:     ds.b MAX_COMPLEXACT,0
 
         ;Other variables
 
