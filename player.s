@@ -59,9 +59,11 @@ MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new controls
                 tay                             ;directions from the previous move control
                 lda moveCtrlAndTbl,y
                 ldy actF1+ACTI_PLAYER           ;If holding a duck, keep the down direction
-                cpy #FR_DUCK+1                  ;regardless of joystick position
+                cpy #FR_DUCK                    ;regardless of joystick position
+                beq MP_Ducked
+                cpy #FR_DUCK+1
                 bne MP_NotDucked
-                ora #JOY_DOWN
+MP_Ducked:      ora #JOY_DOWN
 MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
 MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
 

@@ -122,7 +122,10 @@ AH_FirearmEmpty:lda #$01                        ;If no bullets, set a constant a
 AH_AmmoCheckOK: lda menuCounter                 ;If player is in inventory menu,
                 cmp #MENU_DELAY                 ;do not attack
                 beq AH_NoAttack2
-AH_NotPlayer:   lda actCtrl,x
+AH_NotPlayer:   lda actPrevCtrl,x               ;Require fire pressed also in previous controls
+                and #JOY_FIRE                   ;to "debounce" erroneous attacks
+                beq AH_NoAttack2
+                lda actCtrl,x
                 cmp #JOY_FIRE
                 bcc AH_NoAttack2
                 ldy actF1,x
@@ -200,10 +203,7 @@ AH_MeleeAnimation:
                 bcc AH_MeleeFailed
                 bne AH_MeleeStrike              ;Show strike frame just before spawning bullet
 
-AH_SpawnBullet: lda actCtrl,x                   ;Require stabilized input before firing
-                cmp actPrevCtrl,x               ;to reduce possibility of erratic shots
-                bne AH_CannotFire
-                jsr GetBulletOffset
+AH_SpawnBullet: jsr GetBulletOffset
                 bcc AH_CannotFire
                 txa                             ;Check whether to use player or NPC bullet actor
                 bne AH_IsPlayer                 ;indices

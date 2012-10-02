@@ -203,19 +203,19 @@ N               set N+32
                 org nextSliceTbl+$c0+21
                 dc.b $c0+22,$c0+23,$c0+42
 
-moveCtrlAndTbl: dc.b $ff                        ;None
-                dc.b $ff-JOY_DOWN               ;Up
-                dc.b $ff-JOY_UP                 ;Down
-                dc.b $ff-JOY_DOWN-JOY_UP        ;Up+Down
-                dc.b $ff-JOY_RIGHT              ;Left
+moveCtrlAndTbl: dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP-JOY_DOWN ;None
+                dc.b $ff-JOY_DOWN-JOY_LEFT-JOY_RIGHT ;Up
+                dc.b $ff-JOY_UP-JOY_LEFT-JOY_RIGHT ;Down
+                dc.b $ff-JOY_UP-JOY_DOWN-JOY_LEFT-JOY_RIGHT ;Up+Down
+                dc.b $ff-JOY_RIGHT-JOY_UP-JOY_DOWN ;Left
                 dc.b $ff-JOY_RIGHT-JOY_DOWN     ;Left+Up
                 dc.b $ff-JOY_RIGHT-JOY_UP       ;Left+Down
-                dc.b $ff-JOY_RIGHT-JOY_DOWN-JOY_UP ;Left+Up+Down
-                dc.b $ff-JOY_LEFT               ;Right
+                dc.b $ff-JOY_RIGHT-JOY_UP-JOY_DOWN ;Left+Up+Down
+                dc.b $ff-JOY_LEFT-JOY_UP-JOY_DOWN ;Right
                 dc.b $ff-JOY_LEFT-JOY_DOWN      ;Right+Up
                 dc.b $ff-JOY_LEFT-JOY_UP        ;Right+Down
-                dc.b $ff-JOY_LEFT-JOY_DOWN-JOY_UP ;Right+Up+Down
-                dc.b $ff-JOY_LEFT-JOY_RIGHT     ;Right+Left
+                dc.b $ff-JOY_LEFT-JOY_UP-JOY_DOWN ;Right+Up+Down
+                dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP-JOY_DOWN     ;Right+Left
                 dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_DOWN ;Right+Left+Up
                 dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP ;Right+Left+Down
                 dc.b $ff-JOY_LEFT-JOY_RIGHT-JOY_UP-JOY_DOWN ;Right+Left+Up+Down
