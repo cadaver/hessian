@@ -77,6 +77,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\aidata.s"
+				>
+			</File>
+			<File
 				RelativePath=".\boot.s"
 				>
 			</File>

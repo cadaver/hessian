@@ -124,7 +124,6 @@ Negate16:       lda $00,x
                 sta $01,x
                 rts
 
-
         ; Negate and arithmetic shift right a 8-bit value
         ;
         ; Parameters: A value to be negated & shifted
@@ -147,3 +146,23 @@ Asr8:           cmp #$80
                 adc #$00
 Asr8Pos:        rts
 
+
+        ; Return a 8bit pseudorandom number.
+        ;
+        ; Parameters: -
+        ; Returns: A:number ($00-$ff)
+        ; Modifies: A
+
+Random:         inc RandomAdd+1
+                bne RandomSeed
+                lda RandomAdd+2
+                cmp #>randomAreaEnd-1
+                bcc RandomOK
+                lda #>randomAreaStart-2
+RandomOK:       adc #$01
+                sta RandomAdd+2
+RandomSeed:     lda #$00
+RandomAdd:      eor randomAreaStart
+                adc #$3b
+                sta RandomSeed+1
+                rts

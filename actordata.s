@@ -79,7 +79,7 @@ humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,10,11,12,16,17,27,26,27,28,20,21,22,29,30
         ; Human Y-size reduce table based on animation
 
 humanSizeReduceTbl:
-                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,2,1,2,0,0,0,12,16,16,16,16,12
+                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,2,1,2,0,0,0,18,18,18,18,18,18
 
         ; Item color flashing table
 
@@ -105,12 +105,14 @@ actLogicTblHi:  dc.b >alPlayer
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
-                dc.b AF_NOREMOVECHECK           ;Actor flags
+                dc.b AF_ISHERO|AF_NOREMOVECHECK ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
                 dc.b HP_PLAYER                  ;Initial health
                 dc.b 0                          ;Color override
+                dc.b $ff                        ;AI offense probability
+                dc.b $ff                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move flags
                 dc.b 4*8                        ;Max. movement speed
                 dc.b 8                          ;Ground movement acceleration
@@ -142,8 +144,8 @@ alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
-                dc.b 4                          ;Size up
-                dc.b 4                          ;Size down
+                dc.b 2                          ;Size up
+                dc.b 2                          ;Size down
 
 alGrenade:      dc.w MoveGrenade                ;Update routine
                 dc.w ExplodeActor               ;Destroy routine
@@ -156,7 +158,7 @@ alExplosion:    dc.w MoveExplosion              ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
-alEnemy:        dc.w MoveAndAttackHuman         ;Update routine
+alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b AF_ISVILLAIN               ;Actor flags
                 dc.b 8                          ;Horizontal size
@@ -164,6 +166,8 @@ alEnemy:        dc.w MoveAndAttackHuman         ;Update routine
                 dc.b 0                          ;Size down
                 dc.b 12                         ;Initial health
                 dc.b 2                          ;Color override
+                dc.b $18                        ;AI offense probability
+                dc.b $08                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move caps
                 dc.b 4*8                        ;Max. movement speed
                 dc.b 6*8                        ;Terminal falling speed

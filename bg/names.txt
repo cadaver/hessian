@@ -20,8 +20,8 @@ MEDKIT
 end
 ;Actor mode names
 ;----------------
-MODE0
-MODE1
+IDLE
+SNIPER
 MODE2
 MODE3
 MODE4

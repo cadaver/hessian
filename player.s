@@ -22,10 +22,6 @@ HUMAN_MAX_YSPEED = 6*8
 
 DAMAGING_FALL_DISTANCE = 4
 
-AIH_AUTOTURNWALL = 1
-AIH_AUTOTURNLEDGE = 2
-AIH_AUTOJUMPLEDGE = 4
-
         ; Player update routine
         ;
         ; Parameters: X actor index
@@ -68,8 +64,9 @@ MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
 MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
 
 MP_CheckHealth: lda actHp+ACTI_PLAYER           ;Restore health if not dead and not at
-                beq MoveAndAttackHuman          ;full health
-                cmp #HP_PLAYER
+                bne MP_NotDead                  ;full health
+                jmp MP_PlayerMove
+MP_NotDead:     cmp #HP_PLAYER
                 bcs MP_CheckPickup
                 inc healthRecharge              ;Recharge fast when health low
                 bmi MP_CheckPickup
@@ -115,29 +112,19 @@ MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventor
                 lda itemMagazineSize-1,x        ;Mag size needed for weapon routines,
                 sta magazineSize                ;cache it now
                 cpx #ITEM_FIRST_NONWEAPON
-                bcs MP_NoWeaponSelected
-MP_WeaponOK:    stx actWpn+ACTI_PLAYER
-                ldx actIndex
-
-        ; Humanoid character move and attack routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveAndAttackHuman:
-                jsr MoveHuman
-                jmp AttackHuman
-
-MP_NoWeaponSelected:
-                lda actCtrl+ACTI_PLAYER         ;If not holding a weapon, check
+                bcc MP_WeaponOK
+MP_NoWeapon:    lda actCtrl+ACTI_PLAYER         ;If not holding a weapon, check
                 cmp actPrevCtrl+ACTI_PLAYER     ;for item use
                 beq MP_NoItemUse
                 cmp #JOY_DOWN+JOY_FIRE
                 bne MP_NoItemUse
                 jsr UseItem
-MP_NoItemUse:   ldx #$00
-                beq MP_WeaponOK
+MP_NoItemUse:   ldx #WPN_NONE
+MP_WeaponOK:    stx actWpn+ACTI_PLAYER
+                ldx actIndex
+
+MP_PlayerMove:  jsr MoveHuman
+                jmp AttackHuman
 
         ; Humanoid character move routine
         ;
@@ -177,7 +164,11 @@ MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 lda #FR_DIE+1
                 bne MH_DeathSetFrame
 
-MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently displayed
+MoveHuman:      lda actHp,x
+                beq MH_DeathAnim
+                lda actD,x
+                sta MH_OldDir+1
+                ldy #AL_SIZEUP                  ;Set size up based on currently displayed
                 lda (actLo),y                   ;frame
                 ldy actF1,x
                 sec
@@ -216,8 +207,6 @@ MH_NoFallCheck: lda actF1,x                     ;Check special movement states
                 bcc MH_NotClimbing
                 cmp #FR_ROLL
                 bcs MH_Rolling
-                cmp #FR_DIE
-                bcs MH_DeathAnim
                 jmp MH_Climbing
 MH_Rolling:     inc temp2
                 lda actD,x
@@ -392,10 +381,10 @@ MH_NoAutoTurn:  ldy temp2                       ;If rolling, continue roll anima
                 bcc MH_NoIncFall
                 inc actFall,x
 MH_NoIncFall:   lda actSY,x                     ;Check for grabbing a ladder while
-                bpl MH_GrabLadderOk             ;in midair
-                cmp #-2*8                       ;Can not grab while still going up fast
+                bpl MH_GrabLadderOK             ;in midair
+                cmp #-2*8
                 bcc MH_JumpAnim
-MH_GrabLadderOk:lda actMoveCtrl,x
+MH_GrabLadderOK:lda actMoveCtrl,x
                 and #JOY_UP
                 beq MH_JumpAnim
                 lda actCtrl,x                   ;If fire is held, do not grab ladder
@@ -441,17 +430,18 @@ MH_GroundAnim:  lda actFall,x                   ;Forced duck after falling
                 and #JOY_DOWN
                 beq MH_NoDuck
 MH_NewDuckOrRoll:
-                lda actF1,x
-                cmp #FR_DUCK
-                bcs MH_NoNewRoll
                 lda temp3
                 and #AMF_ROLL
                 beq MH_NoNewRoll
                 lda actMoveCtrl,x               ;To initiate a roll, must push the
-                cmp actPrevCtrl,x               ;joystick diagonally while standing
-                beq MH_NoNewRoll                ;or walking
+                cmp actPrevCtrl,x               ;joystick diagonally down
+                beq MH_NoNewRoll
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_NoNewRoll
+                lda actD,x
+MH_OldDir:      eor #$00
+                and #$80
+                bne MH_NoNewRoll                ;Also, must not have turned
 MH_StartRoll:   lda #$00
                 sta actFd,x
                 lda #FR_ROLL
@@ -660,6 +650,7 @@ HumanDeath:     lda #SFX_DEATH
                 sta actSY,x
                 lda #$00
                 sta actMB,x                     ;Not grounded anymore
+                sta actAIMode,x                 ;Reset any ongoing AI
                 stx temp3
                 sty temp4
                 txa                             ;Player dropping weapon is unnecessary

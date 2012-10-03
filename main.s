@@ -14,6 +14,8 @@ REDUCE_CONTROL_LATENCY = 1
 
         ; Memory alignment of raster interrupt code is critical, so include first
 
+randomAreaStart:
+
                 include raster.s
                 include sound.s
                 include input.s
@@ -53,7 +55,7 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 sta actXH,x
                 lda #$80
                 sta actXL,x
-                lda #4
+                lda #2
                 sta actYH,x
                 lda #ACT_PLAYER
                 sta actT,x
@@ -78,6 +80,8 @@ MainLoop:       jsr ScrollLogic
                 jsr UpdateActors
                 jsr FinishFrame
                 jmp MainLoop
+
+randomAreaEnd:
 
                 include text.s
                 include data.s

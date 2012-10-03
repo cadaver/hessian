@@ -72,7 +72,7 @@ sfx/damage.sfx: sfx/damage.ins
 sfx/death.sfx: sfx/death.ins
 	ins2nt2 sfx/death.ins sfx/death.sfx
 
-main.pak: actor.s actordata.s ai.s bullet.s data.s file.s init.s item.s itemdata.s level.s macros.s \
+main.pak: actor.s actordata.s ai.s aidata.s bullet.s data.s file.s init.s item.s itemdata.s level.s macros.s \
 	main.s math.s memory.s panel.s physics.s player.s raster.s screen.s sound.s sounddata.s sprite.s \
 	text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/explosion.sfx sfx/throw.sfx \
 	sfx/melee.sfx  sfx/punch.sfx sfx/reload.sfx sfx/cockfast.sfx sfx/powerup.sfx sfx/select.sfx \

@@ -39,3 +39,20 @@ itemMagazineSize:
                 dc.b 12
                 dc.b 0
                 dc.b 0
+                
+itemNPCMinDist: dc.b 0
+                dc.b 0
+                dc.b 1
+                dc.b 2
+
+itemNPCMaxDist: dc.b 1
+                dc.b 1
+                dc.b 6
+                dc.b 6
+
+itemNPCAttackLength:
+                dc.b 6/2
+                dc.b 6/2
+                dc.b 6/2
+                dc.b 6/2
+

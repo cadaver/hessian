@@ -40,27 +40,30 @@ COLOR_ONETIMEFLASH = $f0
 
 AL_UPDATEROUTINE = 0
 AL_DESTROYROUTINE = 2
-AL_ACTORFLAGS    = 4
-AL_SIZEHORIZ     = 5
-AL_SIZEUP        = 6
-AL_SIZEDOWN      = 7
-AL_INITIALHP     = 8
+AL_ACTORFLAGS   = 4
+AL_SIZEHORIZ    = 5
+AL_SIZEUP       = 6
+AL_SIZEDOWN     = 7
+AL_INITIALHP    = 8
 AL_COLOROVERRIDE = 9
-AL_MOVEFLAGS     = 10
-AL_MOVESPEED     = 11
-AL_GROUNDACCEL   = 12
-AL_INAIRACCEL    = 13
-AL_FALLACCEL     = 14                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 15                           ;Gravity acceleration in longjump
-AL_BRAKING       = 16
-AL_HEIGHT        = 17                           ;Height for headbump check, negative
-AL_JUMPSPEED     = 18                           ;Negative
-AL_CLIMBSPEED    = 19
-AL_HALFSPEEDRIGHT = 20                          ;Ladder jump / wallflip speed right
-AL_HALFSPEEDLEFT = 21                           ;Ladder jump / wallflip speed left
+AL_OFFENSE      = 10
+AL_DEFENSE      = 11
+AL_MOVEFLAGS    = 12
+AL_MOVESPEED    = 13
+AL_GROUNDACCEL  = 14
+AL_INAIRACCEL   = 15
+AL_FALLACCEL    = 16                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 17                          ;Gravity acceleration in longjump
+AL_BRAKING      = 18
+AL_HEIGHT       = 19                           ;Height for headbump check, negative
+AL_JUMPSPEED    = 20                           ;Negative
+AL_CLIMBSPEED   = 21
+AL_HALFSPEEDRIGHT = 22                         ;Ladder jump / wallflip speed right
+AL_HALFSPEEDLEFT = 23                          ;Ladder jump / wallflip speed left
 
 AF_NONE         = $00
-AF_INITONLYSIZE = $01
+AF_ISHERO       = $01
+AF_INITONLYSIZE = $02
 AF_NOREMOVECHECK = $40
 AF_ISVILLAIN    = $80
 
@@ -71,7 +74,8 @@ AMF_ROLL        = $08
 AMF_WALLFLIP    = $10
 AMF_NOFALLDAMAGE = $20
 
-GRP_HEROES      = $00
+GRP_NEUTRAL     = $00
+GRP_HEROES      = $01
 GRP_VILLAINS    = $80
 
 ADDACTOR_LEFT_LIMIT = 1
@@ -407,6 +411,7 @@ BCL_Loop:       lda actT,x                      ;Actor must exist and have nonze
                 lda actHp,x
                 beq BCL_Next
                 lda actGrp,x
+                beq BCL_Next
                 bpl BCL_StoreHero
 BCL_StoreVillain:
                 txa
@@ -459,7 +464,7 @@ CR_CmpX:        cpy #$00
 CR_CmpY:        cpy #$00
                 bcc CR_MoveDown
                 bne CR_MoveUp
-                lda #$01                        ;Route found
+                lda #ROUTE_OK                   ;Route found
                 bne CR_Done
 CR_NoCheck2:    jmp CR_NoCheck
 CR_MoveRight:   iny
@@ -493,8 +498,8 @@ CR_MoveYDone2:  dec temp3
                 lda charInfo,y                  ;Get charinfo
                 and #CI_OBSTACLE
                 beq CR_Loop
-CR_NoRoute:     lda #$00                        ;Route not found
-CR_Done:        sta actAIRoute,x    
+CR_NoRoute:     lda #ROUTE_FAIL                 ;Route not found
+CR_Done:        sta actAIRoute,x
 CR_NoCheck:     inx
                 cpx #ACTI_LASTNPC+1
                 bcc CR_NotOver
@@ -534,7 +539,7 @@ UA_NoRemove:    ldy #AL_UPDATEROUTINE
                 iny
                 lda (actLo),y
                 sta UA_Jump+2
-UA_Jump:        jsr $1000
+UA_Jump:        jsr $0000
 UA_Next:        inx
                 cpx #MAX_ACT
                 bcc UA_Loop
@@ -850,7 +855,7 @@ AD_Over:        lda #$00
         ;
         ; Parameters: X actor index
         ; Returns: A X-coordinate, Y y-coordinate
-        ; Modifies: A,Y,temp8
+        ; Modifies: A,Y,zpSrcLo
 
 GetActorCharCoords:
                 lda actYL,x
@@ -861,13 +866,14 @@ GetActorCharCoords:
                 sec
                 sbc SL_CSSBlockY+1
                 and #$03
-                sta temp8
+                sta zpSrcLo
                 lda actYH,x
                 sbc SL_CSSMapY+1
                 asl
                 asl
-                ora temp8
+                ora zpSrcLo
                 tay
+GetActorCharCoordX:
                 lda actXL,x
                 rol
                 rol
@@ -876,12 +882,12 @@ GetActorCharCoords:
                 sec
                 sbc SL_CSSBlockX+1
                 and #$03
-                sta temp8
+                sta zpSrcLo
                 lda actXH,x
                 sbc SL_CSSMapX+1
                 asl
                 asl
-                ora temp8
+                ora zpSrcLo
                 rts
 
         ; Get char collision info from the actor's position
@@ -1040,6 +1046,7 @@ InitActor:      jsr GetActorLogicData
                 lda (actLo),y
                 pha
                 lsr
+                lsr
                 iny
                 lda (actLo),y
                 sta actSizeH,x
@@ -1051,7 +1058,7 @@ InitActor:      jsr GetActorLogicData
                 sta actSizeD,x
                 pla
                 bcs IA_SkipGroupHealthColor
-                and #AF_ISVILLAIN
+                and #AF_ISVILLAIN|AF_ISHERO
                 sta actGrp,x
                 iny
                 lda (actLo),y
@@ -1198,6 +1205,9 @@ ALA_IsNPC:      lda #ACTI_FIRSTNPC
                 ldy #ACTI_LASTNPC
                 jsr GetFreeActor
                 bcc ALA_Fail
+                lda lvlActF,x
+                and #$0f
+                sta actAIMode,y
                 lda lvlActT,x
                 sta actT,y
                 lda lvlActWpn,x
@@ -1279,7 +1289,10 @@ RA_Found:       lda actXH,x                     ;Store block coordinates
                 lda actYL,x
                 and #$c0
                 ora zpSrcLo
-                sta lvlActF,y                   ;TODO: store actor AI mode
+                cpx #MAX_COMPLEXACT
+                bcs RA_SkipAIMode
+                ora actAIMode,x
+RA_SkipAIMode:  sta lvlActF,y
                 lda actT,x                      ;Store actor type differently if
                 cmp #ACT_ITEM                   ;item or NPC
                 bne RA_StoreNPC
@@ -1349,6 +1362,7 @@ GFA_Found:      sec
                 sta actSY,y
                 sta actC,y
                 sta actMB,y
+                sta actTime,y
                 cpy #MAX_COMPLEXACT
                 bcs GFA_NotComplex
                 sta actF2,y
@@ -1360,10 +1374,11 @@ GFA_Found:      sec
                 sta actFall,y
                 sta actFallL,y
                 sta actAIHelp,y
-                sta actAITarget,y               ;TODO: this targets player always. May need
-                sta actAIRoute,y                ;to start from a "no target" state
+                sta actAITarget,y
+                sta actAIRoute,y                
                 lda #$ff
                 sta actWpnF,y
+                sta actAITarget,y               ;Start with no target
                 sec
 GFA_NotComplex: rts
 

@@ -26,16 +26,16 @@ ScrollPlayer:   lda actT+ACTI_PLAYER            ;Skip if player actor does not e
                 beq SP_Skip
                 ldx #ACTI_PLAYER
                 jsr GetActorCharCoords
-                cmp #SCRCENTER_X-3
+                cmp #SCRCENTER_X-2
                 bcs SP_NotLeft1
                 dex
-SP_NotLeft1:    cmp #SCRCENTER_X-1
+SP_NotLeft1:    cmp #SCRCENTER_X
                 bcs SP_NotLeft2
                 dex
-SP_NotLeft2:    cmp #SCRCENTER_X+2
+SP_NotLeft2:    cmp #SCRCENTER_X+1
                 bcc SP_NotRight1
                 inx
-SP_NotRight1:   cmp #SCRCENTER_X+4
+SP_NotRight1:   cmp #SCRCENTER_X+3
                 bcc SP_NotRight2
                 inx
 SP_NotRight2:   stx scrollSX

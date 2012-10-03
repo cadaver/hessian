@@ -192,6 +192,8 @@ RD_Loop:        lda actT,y
                 beq RD_Next
                 lda actHp,y
                 beq RD_Next
+                lda actGrp,y
+                beq RD_Next
                 jsr CheckActorCollision
                 bcc RD_Next
                 sty tgtActIndex
