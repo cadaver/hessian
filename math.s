@@ -162,8 +162,7 @@ Random:         inc RandomAdd+1
 RandomOK:       adc #$01
                 sta RandomAdd+2
 RandomSeed:     lda #$00
-RandomAdd:      eor randomAreaStart
                 asl
-                adc #$3b
+RandomAdd:      adc randomAreaStart
                 sta RandomSeed+1
                 rts
