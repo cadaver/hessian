@@ -51,8 +51,13 @@ itemNPCMaxDist: dc.b 1
                 dc.b 6
 
 itemNPCAttackLength:
-                dc.b 6/2
-                dc.b 6/2
-                dc.b 6/2
-                dc.b 6/2
+                dc.b -6/2                       ;Note: stored as negative
+                dc.b -6/2
+                dc.b -6/2
+                dc.b -6/2
 
+itemNPCAttackThreshold:
+                dc.b $08
+                dc.b $0c
+                dc.b $20
+                dc.b $70

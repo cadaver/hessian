@@ -163,6 +163,7 @@ RandomOK:       adc #$01
                 sta RandomAdd+2
 RandomSeed:     lda #$00
 RandomAdd:      eor randomAreaStart
+                asl
                 adc #$3b
                 sta RandomSeed+1
                 rts

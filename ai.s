@@ -39,7 +39,7 @@ MA_SkipAI:      jsr MoveHuman
                 jmp AttackHuman
 
 AI_ContinueAttack:
-                dec actTime,x
+                inc actTime,x
                 rts
 AI_GoIdle:      jsr Random
                 ldy #AL_DEFENSE                 ;When no target or no route, randomly rise from duck
@@ -52,7 +52,7 @@ AI_NoAttack:    lda #$00
                 rts
 
 AI_Sniper:      lda actTime,x                   ;Attack time left?
-                bne AI_ContinueAttack
+                bmi AI_ContinueAttack
                 jsr ValidateTarget
                 tya
                 bmi AI_GoIdle
@@ -61,18 +61,6 @@ AI_Sniper:      lda actTime,x                   ;Attack time left?
                 jsr GetActorDistance
                 lda temp5                       ;Always face the target when in line of sight
                 sta actD,x
-                lda temp6                       ;Get absolute distance to target,
-                cmp temp8                       ;whichever (X/Y) is greater
-                bcs AI_XGreater
-                lda temp8
-AI_XGreater:    ldy actWpn,x                    ;Check that weapon is effective
-                beq AI_NoAttack
-                cmp itemNPCMinDist-1,y
-                bcc AI_NoAttack
-                cmp itemNPCMaxDist-1,y
-                bcs AI_NoAttack
-                lda actAttackD,x
-                bne AI_NoAttack
                 jsr Random                      ;Get random number for offense/defense logic
                 ldy #AL_DEFENSE
                 cmp (actLo),y
@@ -100,9 +88,26 @@ AI_DuckingCheckDone:
                 sta actMoveCtrl,x
                 jmp AI_NoAttack                 ;Do not attack on same frame when ducking changed
 AI_NoDuckingCheck:
-                ldy #AL_OFFENSE                 ;Check attack probability
-                cmp (actLo),y
+                ldy #AL_OFFENSE                 ;Accumulate aggression
+                and (actLo),y
+                clc
+                adc actTime,x
+                bpl AI_AggressionOK
+                lda #$7f
+AI_AggressionOK:sta actTime,x
+                ldy actWpn,x                    ;Check for enough aggression for weapon in question
+                cmp itemNPCAttackThreshold-1,y
+                bcc AI_NoAttack
+                lda temp6                       ;Get absolute distance to target,
+                cmp temp8                       ;whichever (X/Y) is greater
+                bcs AI_XGreater
+                lda temp8
+AI_XGreater:    cmp itemNPCMinDist-1,y          ;Check that weapon is effective
+                bcc AI_NoAttack
+                cmp itemNPCMaxDist-1,y
                 bcs AI_NoAttack
+                lda actAttackD,x
+                bne AI_NoAttack2
                 jsr GetActorCharCoordX          ;To not be unfair, require the enemy be on screen before firing
                 cmp #ATTACK_LEFT_CHARLIMIT
                 bcc AI_NoAttack2
@@ -110,8 +115,7 @@ AI_NoDuckingCheck:
                 bcs AI_NoAttack2
                 lda temp8                       ;Check whether to attack horizontally, vertically or diagonally
                 beq AI_Horizontal
-                lda actWpn,x                    ;Grenade is a special case which does not require exact diagonal distance
-                cmp #WPN_GRENADE
+                cpy #WPN_GRENADE                ;Grenade is a special case which does not require exact diagonal distance
                 bne AI_NoGrenade
 AI_Grenade:     lda temp6                       ;No vertical attack with grenade
                 beq AI_NoAttack2
