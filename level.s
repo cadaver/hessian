@@ -17,8 +17,8 @@ ZONEH_DATA      = 8
 LoadLevel:      sta levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
-                lda #<lvlActX                 ;Load levelactors & charinfo & charcolors
-                ldx #>lvlActX
+                lda #<charInfo                  ;Load charinfo & charcolors & levelactors
+                ldx #>charInfo
                 jsr LoadFile
                 ldy #C_MAP
                 jsr LoadAllocFile               ;Load MAP chunk
