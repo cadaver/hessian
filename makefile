@@ -89,8 +89,7 @@ testlev.pak: testlev.s bg/testlev.map bg/testlev.blk bg/testlev.chi bg/testlev.c
 	pack2 testlev1.bin testlev1.pak
 	pchunk2 bg/testlev.map testlev2.pak
 	pchunk2 bg/testlev.blk testlev3.pak
-	pack2 bg/testlev.chr testlev4.pak
-	filejoin testlev1.pak+testlev2.pak+testlev3.pak+testlev4.pak testlev.pak
+	filejoin testlev1.pak+testlev2.pak+testlev3.pak testlev.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak

@@ -17,16 +17,13 @@ ZONEH_DATA      = 8
 LoadLevel:      sta levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
-                lda #<charInfo                  ;Load charinfo & charcolors & levelactors
-                ldx #>charInfo
+                lda #<lvlActX                   ;Load levelactors, chars & charinfo/colors
+                ldx #>lvlActX
                 jsr LoadFile
                 ldy #C_MAP
                 jsr LoadAllocFile               ;Load MAP chunk
                 ldy #C_BLOCKS
                 jsr LoadAllocFile               ;Load BLOCKS chunk
-                lda #<chars                     ;Load chars
-                ldx #>chars
-                jsr LoadFile
                 lda #$00                        ;Assume zone 0 after loading
                 sta zoneNum                     ;a new level
 
