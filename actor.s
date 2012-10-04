@@ -1181,6 +1181,8 @@ DA_NotPlayer:   lda actC,x                      ;Flash actor as a sign of damage
         ; Modifies: A,Y,temp8,possibly other temp registers
 
 DestroyActor:   sty temp8
+                lda #ORG_NONE                   ;If scrolled off the screen, do not return
+                sta actOrg,x
                 jsr GetActorLogicData
 DestroyActorHasLogicData:
                 ldy #AL_DESTROYROUTINE

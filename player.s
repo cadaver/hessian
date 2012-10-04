@@ -639,8 +639,6 @@ MH_ClimbAnimDown:
 
 HumanDeath:     lda #SFX_DEATH
                 jsr PlaySfx
-                lda #ORG_NONE                   ;If scrolled off the screen, do not return
-                sta actOrg,x
                 lda #FR_DIE
                 sta actF1,x
                 sta actF2,x
