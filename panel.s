@@ -388,6 +388,8 @@ UM_MoveLeft:    cpy #$00
                 bpl UM_MoveCommon
 UM_NoMoveLeft:  cmp #JOY_FIRE+JOY_DOWN
                 bne UM_NoReload
+                cmp prevJoy
+                beq UM_NoReload
 UM_Reload:      ldx invType,y                   ;Do not reload if already full magazine
                 lda invMag,y                    ;or already reloading
                 bmi UM_NoReload
