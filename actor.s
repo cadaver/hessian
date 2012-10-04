@@ -645,7 +645,7 @@ IA_ScrollYAdjust:
 IA_Next:        dex
                 bmi IA_Done
                 jmp IA_SprLoop
-IA_Done:        jmp Random                      ;Use up one random number to randomize the game more
+IA_Done:        rts
 
 IA_AddOffset:   lda actPrevXL,y                 ;Add offset to sprite coords
                 clc
