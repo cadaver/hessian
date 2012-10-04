@@ -1,4 +1,5 @@
 SHOW_FREE_RASTERTIME = 0
+SHOW_COLORSCROLL_WAIT = 0
 REDUCE_CONTROL_LATENCY = 1
 
         ; Memory configuration & loader symbols

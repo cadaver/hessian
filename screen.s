@@ -480,12 +480,18 @@ UF_WaitPrevFrame:
                 lda scrCounter                  ;Is it the colorshift? (needs special timing)
                 cmp #$04
                 bne UF_WaitNormal
+                if SHOW_COLORSCROLL_WAIT > 0
+                dec $d020
+                endif
 UF_WaitColorShift:
                 lda $d012                       ;Wait until we are near the scorescreen split
                 cmp #IRQ3_LINE-$48
                 bcc UF_WaitColorShift
                 cmp #IRQ3_LINE+$20
                 bcs UF_WaitColorShift
+                if SHOW_COLORSCROLL_WAIT > 0
+                inc $d020
+                endif
                 bcc UF_WaitDone
 UF_WaitNormal:  lda $d011                       ;If no colorshift, just need to make sure we
                 bmi UF_WaitDone                 ;are not late from the frameupdate
