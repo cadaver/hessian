@@ -140,7 +140,6 @@ lvlActWpn       = $cd80
 charInfo        = $ce00
 charColors      = $cf00
 spriteCache     = $d000
-emptySprite     = $dfc0
 colors          = $d800
 chars           = $e000
 screen1         = $e800
@@ -155,6 +154,6 @@ depackBuffer    = $f401
 mapTblLo        = $f300                         ;Map/blocktables need to be always reinitialized
 mapTblHi        = $f380                         ;after loading
 blkTblLo        = $f400
-blkTblHi        = $f400+MAX_BLK
+blkTblHi        = $f4c0
 musicData       = $f580
 

@@ -142,14 +142,6 @@ ISpr_Loop:      txa
                 sta temp1
 ISpr_OrValueOk: dex
                 bpl ISpr_Loop
-                lda #$34                        ;Need access to RAM under I/O to clear the
-                sta $01                         ;empty sprite
-                ldx #$3f
-                lda #$00
-ISpr_ClearEmptySprite:
-                sta emptySprite,x
-                dex
-                bpl ISpr_ClearEmptySprite
                 ldx #MAX_CACHESPRITES-1
 ISpr_ClearCacheInUse:
                 lda #$00
