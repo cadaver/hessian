@@ -539,7 +539,7 @@ UF_NotMoreThan8:tax
 UF_NoSprites:   sta Irq1_MaxSprY+1
                 lda #$80
                 sta newFrame
-
+                
 ScrollWork:     lda scrCounter
                 bne SW_NoScreenShift
                 lda scrAdd

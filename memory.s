@@ -9,6 +9,7 @@ MAX_CACHESPRITES = 64
 MAX_MAPROWS     = 128
 MAX_BLK         = 192
 MAX_LVLACT      = 128
+MAX_LVLOBJ      = 96
 
         ; Zeropage variables
 
@@ -92,6 +93,15 @@ MAX_LVLACT      = 128
                 Var textRightMargin
                 Var panelUpdateFlags
 
+                VarRange sprOrder,MAX_SPR+1
+                VarRange sprY,MAX_SPR+1
+
+                CheckVarBase $90
+
+                VarBase $c0
+                VarRange sprXL,MAX_SPR
+                VarRange sprXH,MAX_SPR
+
                 Var temp1                       ;Temp variables
                 Var temp2
                 Var temp3
@@ -101,14 +111,6 @@ MAX_LVLACT      = 128
                 Var temp7
                 Var temp8
 
-                VarRange sprOrder,MAX_SPR+1
-                VarRange sprY,MAX_SPR+1
-
-                CheckVarBase $90
-
-                VarBase $c0
-                VarRange sprXL,MAX_SPR
-                VarRange sprXH,MAX_SPR
                 Var ntTemp1                     ;Playroutine
                 Var ntTemp2
                 Var ntTrackLo
@@ -131,9 +133,12 @@ cacheSprFrame   = $02a7
 
 mainCodeStart   = $0334
 
+scriptCodeStart = $c000                         ;Script code begins here
+blkTblLo        = $cd80
+blkTblHi        = $ce40
+depackBuffer    = blkTblHi
 mapTblLo        = $cf00
 mapTblHi        = $cf80
-fileAreaEnd     = mapTblLo
 loadBuffer      = mapTblLo
 spriteCache     = $d000
 colors          = $d800
@@ -144,15 +149,20 @@ villainList     = screen2+1016-MAX_SPR*4-(MAX_COMPLEXACT+1)
 sprOrTbl        = screen2+1016-MAX_SPR*4
 sprAndTbl       = screen2+1016-MAX_SPR*2
 textChars       = $e800
-blkTblLo        = $eb00
-blkTblHi        = $ebc0
-depackBuffer    = blkTblLo+1
-lvlActX         = $ec80
-lvlActY         = $ed00
-lvlActF         = $ed80
-lvlActT         = $ee00
-lvlActWpn       = $ee80
-charInfo        = $ef00
+lvlActX         = $eb00
+lvlActY         = $eb80
+lvlActF         = $ec00
+lvlActT         = $ec80
+lvlActWpn       = $ed00
+lvlObjX         = $ed80
+lvlObjY         = $ede0
+lvlObjT         = $ee40
+lvlObjDL        = $eea0
+lvlObjDH        = $ef00
+lvlSpawnT       = $ef60
+lvlSpawnWpn     = $ef70
+lvlCodeStart    = $ef80
 chars           = $f000
-charColors      = $f800
-musicData       = $f900
+charInfo        = $f800
+charColors      = $f900
+musicData       = $fa00

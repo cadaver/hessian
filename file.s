@@ -65,7 +65,7 @@ LF_MemLoop:     ldy temp6
                 adc freeMemLo
                 lda temp8                       ;Check for enough memory
                 adc freeMemHi
-                cmp #>fileAreaEnd
+                cmp #>scriptCodeStart
                 bcc LF_MemOk
 LF_NoMemory:    jsr PurgeOldestFile
                 jmp LF_MemLoop

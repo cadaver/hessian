@@ -8,6 +8,9 @@ ZONEH_BG3       = 6
 ZONEH_MUSIC     = 7
 ZONEH_DATA      = 8
 
+InitLevel       = lvlCodeStart
+UpdateLevel     = lvlCodeStart+3
+
         ; Load a level. TODO: add retry/error handling
         ;
         ; Parameters: A:Level number
@@ -15,6 +18,9 @@ ZONEH_DATA      = 8
         ; Modifies: A,X,Y,temp vars
 
 LoadLevel:      sta levelNum
+                lda #$00                        ;Assume zone 0 after loading
+                sta zoneNum                     ;a new level
+                sta Irq4_LevelUpdate+1          ;No level update while loading
                 ldx #F_LEVEL
                 jsr MakeFileName
                 lda #<lvlActX                   ;Load levelactors, chars & charinfo/colors
@@ -24,8 +30,8 @@ LoadLevel:      sta levelNum
                 jsr LoadAllocFile               ;Load MAP chunk
                 ldy #C_BLOCKS
                 jsr LoadAllocFile               ;Load BLOCKS chunk
-                lda #$00                        ;Assume zone 0 after loading
-                sta zoneNum                     ;a new level
+                jsr InitLevel
+                inc Irq4_LevelUpdate+1          ;Can update now
 
         ; Calculate start addresses for each map-row (of current zone) and for each
         ; block, and set zone multicolors. Also re-enables raster interrupts if disabled

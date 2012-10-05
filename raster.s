@@ -272,6 +272,9 @@ Irq4_NoNtscDelay:
                 inc targetFrames                ;is already lagging behind
 Irq4_TargetFramesOk:
                 jsr PlayMusic                   ;Play music/sound effects
+Irq4_LevelUpdate:lda #$00                       ;Animate level background?
+                beq Irq4_SkipFrame
+                jsr UpdateLevel
 Irq4_SkipFrame:
                 lda #IRQ1_LINE
                 sta $d012
