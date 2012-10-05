@@ -166,7 +166,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b 0                          ;Size down
                 dc.b 12                         ;Initial health
                 dc.b 2                          ;Color override
-                dc.b $0f                        ;AI offense accumulator
+                dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move caps
                 dc.b 4*8                        ;Max. movement speed
