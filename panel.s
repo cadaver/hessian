@@ -4,6 +4,7 @@ MENU_MOVEDELAY  = 3
 
 INDEFINITE_TEXT_DURATION = $7f
 INVENTORY_TEXT_DURATION = 50
+XP_TEXT_DURATION = 100
 
 REDRAW_ITEM     = $01
 REDRAW_AMMO     = $02
@@ -133,7 +134,7 @@ UP_SkipWeapon:  lda panelUpdateFlags
                 ldy itemIndex
                 ldx invType,y
                 lda itemMagazineSize-1,x
-                sta temp5
+                sta temp4
                 beq UP_Consumable
                 bmi UP_MeleeWeapon
 UP_Firearm:     lda invMag,y                    ;Print rounds in magazine
@@ -148,7 +149,7 @@ UP_Firearm:     lda invMag,y                    ;Print rounds in magazine
                 lda invCount,y                  ;Get ammo in reserve
                 sec
                 sbc invMag,y
-                ldy temp5
+                ldy temp4
                 ldx #temp7
                 jsr DivU                        ;Divide by magazine size, add one
                 cmp #$01                        ;if there's a remainder
@@ -349,7 +350,7 @@ UM_Inactivate:  ldx #$ff
                 bne UM_StoreCounter
 
 UM_Close:       cpx #MENU_DELAY
-                bcc UM_WasNotOpen
+                bne UM_WasNotOpen
                 jsr ClearPanelText
 UM_WasNotOpen:  ldx #$00
                 beq UM_StoreCounter
@@ -437,15 +438,16 @@ UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+30
         ;
         ; Parameters: A value
         ; Returns: temp7-temp8 BCD value
-        ; Modifies: A,Y,temp6-temp8
+        ; Modifies: A,Y,temp5-temp8
 
 ConvertToBCD8:  sta temp6
-                lda #$00
+                ldy #$08
+CTB_Common:     lda #$00
                 sta temp7
                 sta temp8
-                ldy #$08
                 sed
-CTB8_Loop:      asl temp6
+CTB_Loop:       asl temp5
+                rol temp6
                 lda temp7
                 adc temp7
                 sta temp7
@@ -453,10 +455,21 @@ CTB8_Loop:      asl temp6
                 adc temp8
                 sta temp8
                 dey
-                bne CTB8_Loop
+                bne CTB_Loop
                 cld
                 rts
-    
+
+        ; Convert a 16-bit value to BCD (max. 4 digits)
+        ;
+        ; Parameters: A,Y value
+        ; Returns: temp7-temp8 BCD value
+        ; Modifies: A,Y,temp5-temp8
+
+ConvertToBCD16: sta temp5
+                sty temp6
+                ldy #$10
+                bne CTB_Common
+
         ; Print a BCD value to panel
         ;
         ; Parameters: A value, X position
@@ -474,6 +487,81 @@ PrintBCDDigits: pha
                 pla
 PrintBCDDigit:  and #$0f
                 ora #$30
-                sta screen1+SCROLLROWS*40+40,x
+PrintPanelChar: sta screen1+SCROLLROWS*40+40,x
                 inx
                 rts
+
+        ; Print a BCD value to panel without leading zero
+        ;
+        ; Parameters: A value, X position
+        ; Returns: X position incremented
+        ; Modifies: A
+
+PrintBCDNoZero: cmp #$10
+                bcs PrintBCDDigits
+                bcc PrintBCDDigit
+
+        ; Handle XP messages, TODO: handle leveling up
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars,loader temp vars
+
+UpdateXP:       lda menuCounter                 ;If XP received, print message, but not
+                cmp #MENU_DELAY                 ;if in inventory
+                beq UXP_NoXPMessage
+                lda lastReceivedXP
+                beq UXP_NoXPMessage
+                jsr PrintXPMessage
+UXP_NoXPMessage:rts
+
+        ; Print message of received XP
+        ;
+        ; Parameters: A XP amount
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars,loader temp vars
+        
+PrintXPMessage: jsr ConvertToBCD8
+                jsr ClearPanelText
+                lda #XP_TEXT_DURATION*2
+                sta textTime
+                lda #$00
+                sta lastReceivedXP
+                ldx textLeftMargin
+                lda #"+"
+                jsr PrintPanelChar
+                lda temp8
+                beq PXPM_NoDigit1
+                jsr PrintBCDDigit
+PXPM_NoDigit1:  lda temp7
+                jsr PrintBCDNoZero
+                inx
+                ldy #$00
+PXPM_Text:      lda txtXP,y
+                sta screen1+SCROLLROWS*40+40,x
+                inx
+                iny
+                cpy #$07
+                bcc PXPM_Text
+                lda xpLevel
+                jsr ConvertToBCD8
+                lda temp7
+                jsr PrintBCDNoZero
+                inx
+                lda xpLo
+                ldy xpHi
+                jsr ConvertToBCD16
+                lda temp8
+                jsr PrintBCDDigit
+                lda temp7
+                jsr PrintBCDDigits
+                lda #"/"
+                jsr PrintPanelChar
+                lda xpLimitLo
+                ldy xpLimitHi
+                jsr ConvertToBCD16
+                lda temp8
+                jsr PrintBCDDigit
+                lda temp7
+                jmp PrintBCDDigits
+

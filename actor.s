@@ -46,20 +46,21 @@ AL_SIZEUP       = 6
 AL_SIZEDOWN     = 7
 AL_INITIALHP    = 8
 AL_COLOROVERRIDE = 9
-AL_OFFENSE      = 10
-AL_DEFENSE      = 11
-AL_MOVEFLAGS    = 12
-AL_MOVESPEED    = 13
-AL_GROUNDACCEL  = 14
-AL_INAIRACCEL   = 15
-AL_FALLACCEL    = 16                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 17                          ;Gravity acceleration in longjump
-AL_BRAKING      = 18
-AL_HEIGHT       = 19                           ;Height for headbump check, negative
-AL_JUMPSPEED    = 20                           ;Negative
-AL_CLIMBSPEED   = 21
-AL_HALFSPEEDRIGHT = 22                         ;Ladder jump / wallflip speed right
-AL_HALFSPEEDLEFT = 23                          ;Ladder jump / wallflip speed left
+AL_KILLXP       = 10
+AL_OFFENSE      = 11
+AL_DEFENSE      = 12
+AL_MOVEFLAGS    = 13
+AL_MOVESPEED    = 14
+AL_GROUNDACCEL  = 15
+AL_INAIRACCEL   = 16
+AL_FALLACCEL    = 17                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 18                          ;Gravity acceleration in longjump
+AL_BRAKING      = 19
+AL_HEIGHT       = 20                           ;Height for headbump check, negative
+AL_JUMPSPEED    = 21                           ;Negative
+AL_CLIMBSPEED   = 22
+AL_HALFSPEEDRIGHT = 23                         ;Ladder jump / wallflip speed right
+AL_HALFSPEEDLEFT = 24                          ;Ladder jump / wallflip speed left
 
 AF_NONE         = $00
 AF_ISHERO       = $01
@@ -1182,7 +1183,7 @@ DA_NotPlayer:   lda actC,x                      ;Flash actor as a sign of damage
 
 DestroyActor:   sty temp8
                 lda #ORG_NONE                   ;If scrolled off the screen, do not return
-                sta actOrg,x
+                sta actLvlOrg,x
                 jsr GetActorLogicData
 DestroyActorHasLogicData:
                 ldy #AL_DESTROYROUTINE
@@ -1191,6 +1192,13 @@ DestroyActorHasLogicData:
                 iny
                 lda (actLo),y
                 sta DA_Jump+2
+                ldy temp8                       ;Check if player is damage source and give XP
+                bmi DA_Jump                     ;in that case
+                lda actOrg,y
+                bne DA_Jump
+                ldy #AL_KILLXP
+                lda (actLo),y
+                jsr GiveXP
                 ldy temp8
 DA_Jump:        jmp $0000
 
@@ -1232,7 +1240,7 @@ ALA_Common:     lda lvlActX,x
                 and #$c0
                 sta actXL,y
                 txa                             ;Store leveldata origin
-                sta actOrg,y
+                sta actLvlOrg,y
                 lda #$00                        ;Remove from leveldata
                 sta lvlActT,x
                 tya
@@ -1268,7 +1276,7 @@ ALA_NoDefaultPickup:
 RemoveLevelActor:
                 lda actT,x
                 beq RA_Done
-                ldy actOrg,x                    ;Has leveldata origin?
+                ldy actLvlOrg,x                 ;Has leveldata origin?
                 bmi RemoveActor
                 sty RA_EndCmp+1
 RA_Search:      lda lvlActT,y                   ;Look for empty space in leveldata
@@ -1356,8 +1364,7 @@ GFA_Loop:       lda actT,y
 GFA_Cmp:        cpy #$00
                 bcs GFA_Loop
                 rts
-GFA_Found:      sec
-                lda #$00                        ;Reset animation & speed when free actor found
+GFA_Found:      lda #$00                        ;Reset animation & speed when free actor found
                 sta actF1,y
                 sta actFd,y
                 sta actSX,y
@@ -1392,6 +1399,8 @@ GFA_NotComplex: rts
         ; Modifies: A
 
 SpawnWithOffset:sta actT,y
+                txa
+                sta actOrg,y                    ;Set origin actor
                 lda actGrp,x                    ;Copy origin group
                 sta actGrp,y
                 lda actXL,x

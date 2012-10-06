@@ -254,7 +254,7 @@ AH_BulletFrameDone:
                 sta actSY,x
                 jsr InitActor                   ;Set collision size
                 lda #ORG_NONE                   ;Bullets have no leveldata origin
-                sta actOrg,x
+                sta actLvlOrg,x
                 ldy #WD_DAMAGE                  ;Set duration and damage
                 lda (wpnLo),y
                 sta actHp,x

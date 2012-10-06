@@ -77,6 +77,7 @@ CBC_HasCollision:
                 ldx actIndex
                 pla
                 bmi CBC_BulletStays
+                ldy #$ff                        ;Destroy bullet without damage source
                 jmp DestroyActor
 CBC_BulletStays:lda #$80                        ;In bullet stays-mode, do damage only once
                 sta actHp,x

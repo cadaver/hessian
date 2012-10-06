@@ -10,3 +10,4 @@ txtPickedUp:    dc.b "GOT ",0
 
 txtInf:         dc.b "*INF"
 txtLoad:        dc.b "LOAD"
+txtXP:          dc.b "XP, LV."

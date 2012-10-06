@@ -221,6 +221,7 @@ actPrevYL:      ds.b MAX_ACT,0
 actPrevYH:      ds.b MAX_ACT,0
 actGrp:         ds.b MAX_ACT,0
 actOrg:         ds.b MAX_ACT,0
+actLvlOrg:      ds.b MAX_ACT,0
 actSizeH:       ds.b MAX_ACT,0
 actSizeU:       ds.b MAX_ACT,0
 actSizeD:       ds.b MAX_ACT,0
@@ -230,12 +231,12 @@ actMB:          ds.b MAX_ACT,0
 actCtrl:        ds.b MAX_COMPLEXACT,0
 actMoveCtrl:    ds.b MAX_COMPLEXACT,0
 actPrevCtrl:    ds.b MAX_COMPLEXACT,0
+actFall:        ds.b MAX_COMPLEXACT,0
+actFallL:       ds.b MAX_COMPLEXACT,0
 actF2:          ds.b MAX_COMPLEXACT,0
 actWpn:         ds.b MAX_COMPLEXACT,WPN_NONE
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0
-actFall:        ds.b MAX_COMPLEXACT,0
-actFallL:       ds.b MAX_COMPLEXACT,0
 actAIMode:      ds.b MAX_COMPLEXACT,0
 actAIHelp:      ds.b MAX_COMPLEXACT,0
 actAITarget:    ds.b MAX_COMPLEXACT,0
@@ -252,6 +253,17 @@ healthRecharge: dc.b 0
 magazineSize:   dc.b 0
 menuCounter:    dc.b 0
 menuMoveDelay:  dc.b 0
+lastReceivedXP: dc.b 0
+xpLo:           dc.b 0
+xpHi:           dc.b 0
+xpLimitLo:      dc.b <100
+xpLimitHi:      dc.b >100
+xpLevel:        dc.b 1
+plrAgility:     dc.b 0
+plrVitality:    dc.b 0
+plrCapacity:    dc.b 0
+plrFirearms:    dc.b 0
+plrMelee:       dc.b 0
 
         ; Dynamic memory allocation area begins here
 

@@ -662,7 +662,7 @@ HumanDeath:     lda #SFX_DEATH
                 lda #$00                        ;stored directly to leveldata if no room
                 sta temp5
                 sta temp6
-                sta actOrg,y                    ;Set leveldata origin. TODO: use a "last found empty spot"
+                sta actLvlOrg,y                 ;Set leveldata origin. TODO: use a "last found empty spot"
                                                 ;variable to optimize returning the actor to leveldata
                 lda #<ITEM_SPAWN_OFFSET
                 sta temp7
@@ -702,4 +702,24 @@ HD_LeftImpulse: lda temp8
                 ldy #DEATH_MAX_XSPEED
                 jmp AccActorXNeg
 HD_NoDamageSource:
+                rts
+
+        ; Give experience points to player
+        ;
+        ; Parameters: A XP amount
+        ; Returns: -
+        ; Modifies: A
+        
+GiveXP:         pha
+                clc
+                adc xpLo
+                sta xpLo
+                bcc GXP_NotHigh
+                inc xpHi
+                clc
+GXP_NotHigh:    pla
+                adc lastReceivedXP
+                bcc GXP_NoLimit
+                lda #$ff
+GXP_NoLimit:    sta lastReceivedXP
                 rts
