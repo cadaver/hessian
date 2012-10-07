@@ -524,7 +524,9 @@ UM_RefreshSkillChoice:
                 adc #$31
                 jsr PrintPanelChar
                 pha
-                lda #21
+                lda #"-"
+                jsr PrintPanelChar
+                lda #">"
                 jsr PrintPanelChar
                 pla
                 adc #1
