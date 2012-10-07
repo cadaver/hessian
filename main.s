@@ -44,14 +44,18 @@ Main:           lda #0
                 jsr LoadSpriteFile
                 ldy #C_WEAPON
                 jsr LoadSpriteFile
-                lda #0
+
+Restart:        lda #0
                 jsr LoadLevel
                 ldx #0
                 ldy #0
                 jsr SetMapPos
                 jsr RedrawScreen
+                jsr ClearActors
 
-CreatePlayer:   ldx #ACTI_PLAYER
+CreatePlayer:   ldy #ACTI_PLAYER
+                jsr GFA_Found
+                ldx #ACTI_PLAYER
                 lda #6
                 sta actXH,x
                 lda #$80
@@ -76,7 +80,24 @@ MainLoop:       jsr ScrollLogic
                 jsr UpdateMenu
                 jsr UpdateActors
                 jsr FinishFrame
+                jsr CheckForRestart
                 jmp MainLoop
+
+CheckForRestart:lda actT+ACTI_PLAYER            ;Check if player actor vanished after death
+                bne CFR_Done
+                lda textTime
+                bne CFR_HasText
+                lda #<txtRestart
+                ldx #>txtRestart
+                ldy #INDEFINITE_TEXT_DURATION
+                jsr PrintPanelText
+CFR_HasText:    jsr GetFireClick
+                bcs CFR_DoRestart
+CFR_Done:       rts
+CFR_DoRestart:  pla
+                pla
+                jsr ClearPanelText
+                jmp Restart
 
 randomAreaEnd:
 

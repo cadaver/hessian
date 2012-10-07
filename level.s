@@ -23,6 +23,7 @@ LoadLevel:      sta levelNum
                 sta Irq4_LevelUpdate+1          ;No level update while loading
                 ldx #F_LEVEL
                 jsr MakeFileName
+                jsr BlankScreen
                 lda #<lvlActX                   ;Load levelactors, chars & charinfo/colors
                 ldx #>lvlActX
                 jsr LoadFile
