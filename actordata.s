@@ -85,15 +85,27 @@ humanSizeReduceTbl:
 
 itemFlashTbl:   dc.b 10,7,1,7
 
-        ; Player damage mod according to vitality skill
-        
-plrReloadBonusTbl:
-plrDamageModTbl:dc.b 16,13,10,7
-
-        ; Player damage bonus according to weapon skill
+        ; Player weapon damage bonus according to weapon skill
 
 plrWeaponBonusTbl:
-                dc.b 16,22,28,34
+                dc.b 8,10,12,14
+
+        ; Player reload time mod according to weapon skill
+
+plrReloadBonusTbl:
+                dc.b 8,6,4,3
+
+        ; Player damage mod according to vitality skill
+
+plrDamageModTbl:dc.b 8,7,6,5
+
+        ; Player health recharge delay according to vitality skill
+
+plrRechargeDelayTbl:
+                dc.b -HEALTH_RECHARGE_DELAY
+                dc.b -HEALTH_RECHARGE_DELAY/2
+                dc.b -HEALTH_RECHARGE_DELAY/4
+                dc.b -HEALTH_RECHARGE_DELAY/8
 
         ; Actor logic data
 

@@ -32,7 +32,7 @@ WDB_FLICKERBULLET = 4
 WDB_THROW       = 8
 WDB_MELEE       = 16
 
-NO_MODIFY       = 16
+NO_MODIFY       = 8
 
         ; Actor attack routine
         ;
@@ -421,26 +421,23 @@ GBO_Fail:       pla
 
         ; Modify damage
         ;
-        ; Parameters: A damage Y multiplier (16 = unmodified)
+        ; Parameters: A damage Y multiplier (8 = unmodified)
         ; Returns: A modified damage
         ; Modifies: A,Y,loader temp vars
 
 ModifyDamage:   ora #$00                        ;Zero in - zero out
                 beq MD_Zero
-                stx zpBitsLo                    ;Multiply damage by multiplier
-                ldx #zpSrcLo                    ;in y (16 = unchanged, 8 = half)
+                stx zpBitsLo
+                ldx #zpSrcLo
                 jsr MulU
                 lda zpSrcLo
-                lsr zpSrcHi                     ;Then divide by 16
+                lsr zpSrcHi                     ;Divide by 8
                 ror
                 lsr zpSrcHi
                 ror
                 lsr zpSrcHi
                 ror
-                lsr zpSrcHi
-                ror
-                adc #$00                        ;Round upwards
                 bne MD_NotZero
-                lda #$01                        ;Ensure at least 1 pt. damage
+                lda #$01                        ;Never reduce to zero
 MD_NotZero:     ldx zpBitsLo
 MD_Zero:        rts

@@ -4,8 +4,8 @@ WPN_KNIFE       = 2
 WPN_PISTOL      = 3
 WPN_GRENADE     = 4
 
-DMG_FISTS       = 1
-DMG_KNIFE       = 2
+DMG_FISTS       = 2
+DMG_KNIFE       = 3
 DMG_PISTOL      = 4
 DMG_GRENADE     = 16
 

@@ -811,12 +811,7 @@ AS_AmmoLoop:    lda itemMaxCountAdd,x
                 ldx plrVitality
                 lda plrDamageModTbl,x
                 sta DA_PlayerDamageMod+1
-                txa
-                asl
-                adc plrVitality
-                asl
-                asl
-                sbc #HEALTH_RECHARGE_DELAY-1    ;C=1
+                lda plrRechargeDelayTbl,x
                 sta DA_HealthRechargeDelay+1
                 rts
 
