@@ -1169,7 +1169,7 @@ DA_HealthRechargeDelay:
                 ldy #-HEALTH_RECHARGE_DELAY
                 sty healthRecharge
 DA_PlayerDamageMod:
-                ldy #8
+                ldy #NO_MODIFY
                 jsr ModifyDamage
                 ldy temp8
 DA_NotPlayer:   sta temp8

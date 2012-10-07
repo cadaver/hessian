@@ -32,6 +32,8 @@ WDB_FLICKERBULLET = 4
 WDB_THROW       = 8
 WDB_MELEE       = 16
 
+NO_MODIFY       = 16
+
         ; Actor attack routine
         ;
         ; Parameters: X actor index
@@ -111,6 +113,9 @@ AH_EmptyMagazine:
                 sta invMag,y
                 ldy #WD_RELOADDELAY
                 lda (wpnLo),y
+AH_ReloadDelayBonus:
+                ldy #NO_MODIFY
+                jsr ModifyDamage
                 sta actAttackD+ACTI_PLAYER
                 ldy #WD_RELOADSFX
                 lda (wpnLo),y
@@ -279,10 +284,10 @@ AH_NoBulletFlicker:
                 lda magazineSize
                 beq AH_PlayerMeleeBonus
 AH_PlayerFirearmBonus:
-                ldy #$00
+                ldy #NO_MODIFY
                 bpl AH_PlayerBonusCommon
 AH_PlayerMeleeBonus:
-                ldy #$00
+                ldy #NO_MODIFY
 AH_PlayerBonusCommon:
                 lda temp8
                 jsr ModifyDamage
@@ -408,9 +413,34 @@ GBO_Sub:        pha
                 sbc (frameLo),y
                 sta temp5
                 rts
-
 GBO_Fail:       pla
                 pla
                 pla
                 clc
                 rts
+
+        ; Modify damage
+        ;
+        ; Parameters: A damage Y multiplier (16 = unmodified)
+        ; Returns: A modified damage
+        ; Modifies: A,Y,loader temp vars
+
+ModifyDamage:   ora #$00                        ;Zero in - zero out
+                beq MD_Zero
+                stx zpBitsLo                    ;Multiply damage by multiplier
+                ldx #zpSrcLo                    ;in y (16 = unchanged, 8 = half)
+                jsr MulU
+                lda zpSrcLo
+                lsr zpSrcHi                     ;Then divide by 16
+                ror
+                lsr zpSrcHi
+                ror
+                lsr zpSrcHi
+                ror
+                lsr zpSrcHi
+                ror
+                adc #$00                        ;Round upwards
+                bne MD_NotZero
+                lda #$01                        ;Ensure at least 1 pt. damage
+MD_NotZero:     ldx zpBitsLo
+MD_Zero:        rts

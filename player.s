@@ -792,12 +792,14 @@ AS_AmmoLoop:    lda itemMaxCountAdd,x
                 adc #INITIAL_MAX_WEAPONS
                 sta AI_MaxWeaponsCount+1
                 
-        ; Firearms: damage bonus
+        ; Firearms: damage bonus and faster reloading
 
                 ldx plrFirearms
                 lda plrWeaponBonusTbl,x
                 sta AH_PlayerFirearmBonus+1
-                
+                lda plrReloadBonusTbl,x
+                sta AH_ReloadDelayBonus+1
+
         ; Melee: damage bonus
 
                 ldx plrMelee

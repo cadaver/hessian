@@ -1,6 +1,6 @@
 GRENADE_DMG_RADIUS = 48
 GRENADE_MAX_YSPEED = 6*8
-GRENADE_ACCEL      = 4
+GRENADE_ACCEL   = 4
 
         ; Bullet update routine with muzzle flash as first frame
         ;
@@ -208,28 +208,3 @@ RD_Next:        dey
                 bpl RD_Loop
                 rts
 
-        ; Modify damage
-        ;
-        ; Parameters: A damage Y multiplier (16 = unmodified)
-        ; Returns: A modified damage
-        ; Modifies: A,Y,loader temp vars
-
-ModifyDamage:   ora #$00                        ;Zero in - zero out
-                beq MD_Zero
-                stx zpBitsLo                    ;Multiply damage by multiplier
-                ldx #zpSrcLo                    ;in y (16 = unchanged, 8 = half)
-                jsr MulU
-                lda zpSrcLo
-                lsr zpSrcHi                     ;Then divide by 16
-                ror
-                lsr zpSrcHi
-                ror
-                lsr zpSrcHi
-                ror
-                lsr zpSrcHi
-                ror
-                adc #$00                        ;Round upwards
-                bne MD_NotZero
-                lda #$01                        ;Ensure at least 1 pt. damage
-MD_NotZero:     ldx zpBitsLo
-MD_Zero:        rts

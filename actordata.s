@@ -87,6 +87,7 @@ itemFlashTbl:   dc.b 10,7,1,7
 
         ; Player damage mod according to vitality skill
         
+plrReloadBonusTbl:
 plrDamageModTbl:dc.b 16,13,10,7
 
         ; Player damage bonus according to weapon skill
