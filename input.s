@@ -125,3 +125,19 @@ GC_KeyFound:    tya
 GC_SameKey:
 GC_NoKey:       sta keyPress
                 rts
+                
+        ; Return whether fire has been pressed down (not held down)
+        ;
+        ; Parameters: -
+        ; Returns: C=1 pressed C=0 not pressed
+        ; Modifies: A
+        
+GetFireClick:   clc
+                lda prevJoy
+                and #JOY_FIRE
+                bne GFC_Not
+                lda joystick
+                and #JOY_FIRE
+                beq GFC_Not
+                sec
+GFC_Not:        rts

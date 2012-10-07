@@ -105,8 +105,8 @@ ExplodeGrenade: lda #GRENADE_DMG_RADIUS         ;Expand grenade collision size f
                 sta actSizeD,x
                 lda #$00                        ;Clear the X-speed so that possible death impulse
                 sta actSX,x                     ;only depends on enemy's relative location to the
-                lda actHp,x                     ;grenade
-                jsr RadiusDamage
+                lda #DMG_GRENADE                ;grenade
+                jsr RadiusDamage                ;Grenade damage is fixed (no player skill bonus)
 
         ; Turn an actor into an explosion
         ;
@@ -207,3 +207,29 @@ RD_Damage:      lda #$00
 RD_Next:        dey
                 bpl RD_Loop
                 rts
+
+        ; Modify damage
+        ;
+        ; Parameters: A damage Y multiplier (16 = unmodified)
+        ; Returns: A modified damage
+        ; Modifies: A,Y,loader temp vars
+
+ModifyDamage:   ora #$00                        ;Zero in - zero out
+                beq MD_Zero
+                stx zpBitsLo                    ;Multiply damage by multiplier
+                ldx #zpSrcLo                    ;in y (16 = unchanged, 8 = half)
+                jsr MulU
+                lda zpSrcLo
+                lsr zpSrcHi                     ;Then divide by 16
+                ror
+                lsr zpSrcHi
+                ror
+                lsr zpSrcHi
+                ror
+                lsr zpSrcHi
+                ror
+                adc #$00                        ;Round upwards
+                bne MD_NotZero
+                lda #$01                        ;Ensure at least 1 pt. damage
+MD_NotZero:     ldx zpBitsLo
+MD_Zero:        rts

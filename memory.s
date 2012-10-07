@@ -84,6 +84,12 @@ MAX_LVLOBJ      = 96
                 Var wpnLo                       ;Weapon variables
                 Var wpnHi
                 Var itemIndex
+                
+                Var xpLo                        ;Experience points variables
+                Var xpHi
+                Var xpLevel
+                Var xpLimitLo
+                Var xpLimitHi
 
                 Var textLo                      ;Panel text printing variables
                 Var textHi
@@ -144,6 +150,7 @@ spriteCache     = $d000
 colors          = $d800
 screen1         = $e000
 screen2         = $e400
+improveList:    = screen1+1000
 heroList        = screen2+1016-MAX_SPR*4-(MAX_COMPLEXACT+1)*2
 villainList     = screen2+1016-MAX_SPR*4-(MAX_COMPLEXACT+1)
 sprOrTbl        = screen2+1016-MAX_SPR*4

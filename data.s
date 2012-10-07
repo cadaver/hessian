@@ -254,16 +254,14 @@ magazineSize:   dc.b 0
 menuCounter:    dc.b 0
 menuMoveDelay:  dc.b 0
 lastReceivedXP: dc.b 0
-xpLo:           dc.b 0
-xpHi:           dc.b 0
-xpLimitLo:      dc.b <100
-xpLimitHi:      dc.b >100
-xpLevel:        dc.b 1
+levelUp:        dc.b 0
+skillChoice:    dc.b 0
+plrSkills:
 plrAgility:     dc.b 0
-plrVitality:    dc.b 0
-plrCapacity:    dc.b 0
+plrCarrying:    dc.b 0
 plrFirearms:    dc.b 0
 plrMelee:       dc.b 0
+plrVitality:    dc.b 0
 
         ; Dynamic memory allocation area begins here
 

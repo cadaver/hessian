@@ -146,6 +146,18 @@ Asr8:           cmp #$80
                 adc #$00
 Asr8Pos:        rts
 
+        ; Compare two 16-bit values
+        ;
+        ; Parameters: X value to compare zeropage base, Y value to compare to zeropage base
+        ; Returns: flags
+        ; Modifies: A
+        
+Cmp16:          lda $01,x
+                cmp $01,y
+                bne Cmp16Done
+                lda $00,x
+                cmp $00,y
+Cmp16Done:      rts
 
         ; Return a 8bit pseudorandom number.
         ;

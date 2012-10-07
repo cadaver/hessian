@@ -85,6 +85,15 @@ humanSizeReduceTbl:
 
 itemFlashTbl:   dc.b 10,7,1,7
 
+        ; Player damage mod according to vitality skill
+        
+plrDamageModTbl:dc.b 16,13,10,7
+
+        ; Player damage bonus according to weapon skill
+
+plrWeaponBonusTbl:
+                dc.b 16,22,28,34
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -116,14 +125,16 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b $ff                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move flags
                 dc.b 4*8                        ;Max. movement speed
-                dc.b 8                          ;Ground movement acceleration
-                dc.b 3                          ;In air movement acceleration
+playerGroundAcc:dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
+playerInAirAcc: dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
                 dc.b 4                          ;Long jump gravity acceleration
-                dc.b 6                          ;Ground braking
+playerGroundBrake:
+                dc.b INITIAL_GROUNDBRAKE        ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
-                dc.b -44                        ;Jump initial speed (negative)
-                dc.b 96                         ;Climbing speed
+playerJumpSpeed:dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
+playerClimbSpeed:
+                dc.b INITIAL_CLIMBSPEED         ;Climbing speed
                 dc.b 2*8                        ;Ladder jump / wallflip speed right
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
 
@@ -167,7 +178,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b 0                          ;Size down
                 dc.b 12                         ;Initial health
                 dc.b 2                          ;Color override
-                dc.b 5                          ;XP from kill
+                dc.b 100                        ;XP from kill
                 dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move caps

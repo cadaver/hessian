@@ -258,6 +258,7 @@ AH_BulletFrameDone:
                 ldy #WD_DAMAGE                  ;Set duration and damage
                 lda (wpnLo),y
                 sta actHp,x
+                sta temp8
                 iny
                 lda (wpnLo),y
                 sta actTime,x
@@ -268,13 +269,25 @@ AH_BulletFrameDone:
                 jsr GetFlickerColorOverride
                 sta actC,x
 AH_NoBulletFlicker:
-                ldx actIndex                    ;If player, decrement ammo
+                ldx actIndex                    ;If player, decrement ammo and apply skill bonus
                 bne AH_NoAmmoDecrement
                 lda magazineSize
-                bmi AH_NoAmmoDecrement          ;Melee weapon, no decrement
+                bmi AH_PlayerMeleeBonus
                 ldy itemIndex
                 lda #$01
                 jsr DecreaseAmmo
+                lda magazineSize
+                beq AH_PlayerMeleeBonus
+AH_PlayerFirearmBonus:
+                ldy #$00
+                bpl AH_PlayerBonusCommon
+AH_PlayerMeleeBonus:
+                ldy #$00
+AH_PlayerBonusCommon:
+                lda temp8
+                jsr ModifyDamage
+                ldy temp2
+                sta actHp,y
 AH_NoAmmoDecrement:
                 ldy #WD_ATTACKDELAY
                 lda (wpnLo),y

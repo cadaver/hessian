@@ -8,23 +8,24 @@ ITEM_MEDKIT     = 5
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
 ITEM_FIRST_NONWEAPON = ITEM_MEDKIT
 
-itemNameLo:     dc.b <txtFists
-                dc.b <txtKnife
-                dc.b <txtPistol
-                dc.b <txtGrenade
-                dc.b <txtFirstAidKit
+itemMaxCount:   dc.b 0
+                dc.b 0
+                dc.b 0
+                dc.b 0
+                dc.b 0
 
-itemNameHi:     dc.b >txtFists
-                dc.b >txtKnife
-                dc.b >txtPistol
-                dc.b >txtGrenade
-                dc.b >txtFirstAidKit
-
-itemMaxCount:   dc.b 1
+itemDefaultMaxCount:
                 dc.b 1
-                dc.b 100
-                dc.b 10
+                dc.b 1
+                dc.b 48
+                dc.b 4
                 dc.b 2
+
+itemMaxCountAdd:dc.b 0
+                dc.b 0
+                dc.b 12
+                dc.b 2
+                dc.b 1
 
 itemDefaultPickup:
                 dc.b 1
@@ -60,4 +61,4 @@ itemNPCAttackThreshold:
                 dc.b $08
                 dc.b $0c
                 dc.b $20
-                dc.b $70
+                dc.b $40

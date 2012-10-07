@@ -107,7 +107,11 @@ DA_ItemFlashCounter:                            ;Get color override for items
                 and #$03
                 tax
                 lda itemFlashTbl,x
-                sta MoveItem+1
+                ldx #ACTI_LASTITEM-ACTI_FIRSTITEM
+DA_ItemFlashLoop:
+                sta actC+ACTI_FIRSTITEM,x
+                dex
+                bpl DA_ItemFlashLoop
                 ldx #$00                        ;Reset amount of used sprites
                 stx sprIndex
 DA_Loop:        ldy actT,x
@@ -304,7 +308,7 @@ DA_HumanRight1: ldy #ADH_BASEINDEX
                 ldy #ADH_BASEFRAME
                 adc (actLo),y
                 sta DA_HumanFrame1+1
-                rts
+UA_Skip:        rts
 
         ; Add all actors to screen and update them once before drawing. Call before
         ; entering the main loop after moving to another area or loading a level
@@ -433,8 +437,12 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
                 ldx temp1
                 sta heroList,x
                 
+                lda levelUp                     ;If levelup in progress, do not move actors
+                beq CheckRoute
+                jmp InterpolateActors
+
         ; Do route check for one AI actor at a time
-        
+
 CheckRoute:     ldx #ACTI_FIRSTNPC
                 lda actT,x
                 beq CR_NoCheck2
@@ -1152,22 +1160,28 @@ DA_Done:        rts
         ;
         ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or $ff if none
         ; Returns: -
-        ; Modifies: A,Y,temp8,possibly other temp registers
+        ; Modifies: A,Y,temp8,loader temp regs if player,possibly other temp registers
 
-DamageActor:    sta temp8
+DamageActor:    cpx #ACTI_PLAYER
+                bne DA_NotPlayer
+                sty temp8
+DA_HealthRechargeDelay:
+                ldy #-HEALTH_RECHARGE_DELAY
+                sty healthRecharge
+DA_PlayerDamageMod:
+                ldy #8
+                jsr ModifyDamage
+                ldy temp8
+DA_NotPlayer:   sta temp8
                 lda actHp,x                     ;First check that there is health
-                beq DA_Done                     ;(prevent destroy being called
-                sec                             ;multiple times)
+                beq DA_Done                     ;(prevent destroy being called multiple times)
+                sec
 DA_Sub:         sbc temp8
                 bcs DA_NotDead
                 lda #$00
 DA_NotDead:     sta actHp,x
                 php
-                txa                             ;Check if player, reset health
-                bne DA_NotPlayer                ;recharge delay counter whenever
-                lda #-HEALTH_RECHARGE_DELAY     ;damage taken
-                sta healthRecharge
-DA_NotPlayer:   lda actC,x                      ;Flash actor as a sign of damage
+                lda actC,x                      ;Flash actor as a sign of damage
                 ora #$f0
                 sta actC,x
                 lda #SFX_DAMAGE

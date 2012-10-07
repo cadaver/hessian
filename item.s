@@ -5,7 +5,7 @@ ITEM_MAX_YSPEED = 6*8
 ITEM_SPAWN_OFFSET = -16*8
 
 MAX_INVENTORYITEMS = 16
-MAX_WEAPONS     = 3                             ;TODO: make dynamic
+INITIAL_MAX_WEAPONS = 3
 
 USEITEM_ATTACK_DELAY = 5                        ;Attack delay after using an item
 
@@ -109,7 +109,8 @@ AI_CheckWeapons:lda invType,y
 AI_NotAWeapon:  iny
                 bne AI_CheckWeapons
 AI_CheckWeaponsDone:
-                cpx #MAX_WEAPONS
+AI_MaxWeaponsCount:
+                cpx #INITIAL_MAX_WEAPONS
                 bcc AI_NoWeaponLimit
                 ldy itemIndex                   ;If weapon limit exceeded, check if current
                 lda invType,y                   ;weapon can be swapped
@@ -232,9 +233,7 @@ DA_DecreaseDone:lda panelUpdateFlags
         ; Returns: -
         ; Modifies: A,Y
 
-MoveItem:       lda #$00
-                sta actC,x
-                lda actMB,x                     ;Skip movement if grounded and stationary
+MoveItem:       lda actMB,x                     ;Skip movement if grounded and stationary
                 lsr
                 bcs MoveItem_Done
                 lda actSY,x                     ;Store original Y-speed for bounce

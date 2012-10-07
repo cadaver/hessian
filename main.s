@@ -65,11 +65,7 @@ CreatePlayer:   ldx #ACTI_PLAYER
                 jsr InitActor
                 lda #ORG_NONE                   ;Player has no leveldata origin
                 sta actLvlOrg,x
-                lda #ITEM_FISTS
-                sta invType
-                lda #0
-                sta itemIndex
-
+                jsr InitPlayer
                 jsr UpdateAndAddAllActors
 
 MainLoop:       jsr ScrollLogic
@@ -78,7 +74,6 @@ MainLoop:       jsr ScrollLogic
                 jsr ScrollLogic
                 jsr GetControls
                 jsr UpdateMenu
-                jsr UpdateXP
                 jsr UpdateActors
                 jsr FinishFrame
                 jmp MainLoop

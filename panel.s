@@ -310,16 +310,84 @@ ContinuePanelText:
                 ldx zpBitsLo
                 jmp UP_ContinueText
 
-        ; Update menu system (inventory) in the panel
+        ; Update menu system (inventory) in the panel. Also handle XP messages and leveling up
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,loader temp vars
 
-UpdateMenu:     ldx menuCounter
-                lda actHp+ACTI_PLAYER           ;Close inventory if dead
-                beq UM_Close
+UM_LUFinish:    ldx improveList,y
+                inc plrSkills,x
+                jsr ClearPanelText
+                lda #$00
+                sta levelUp
+                lda #SFX_POWERUP
+                jsr PlaySfx
+                jmp ApplySkills
+                
+UM_LevelUp:     cmp #$02
+                bcs UM_LevelUpChoice
+                lda textTime
+                bne UM_TextInProgress
+                inc levelUp                     ;When text display finished, start the choice loop
+                sta skillChoice
+                sta menuMoveDelay
+                jmp UM_Refresh
+UM_TextInProgress:
+                jsr GetFireClick                ;Speed up levelup text by pressing fire
+                bcc UM_LevelUpNoFire
+                lda #$01
+                sta textTime
+UM_LevelUpNoFire:
+UM_LUMoveDone:  rts
+UM_LevelUpChoice:
+                ldy skillChoice
+                jsr GetFireClick
+                bcs UM_LUFinish
+                lda menuMoveDelay
+                beq UM_LUNoMoveDelay
+                dec menuMoveDelay
+                rts
+UM_LUNoMoveDelay:
                 lda joystick
+                cmp #JOY_FIRE
+                bcs UM_LUMoveDone
+                cmp #JOY_RIGHT
+                bcc UM_LUNoMoveRight
+UM_LUMoveRight: lda improveList+1,y
+                bmi UM_LUMoveDone
+                inc skillChoice
+UM_LUMoveCommon:jmp UM_MoveCommon
+UM_LUNoMoveRight:
+                cmp #JOY_LEFT
+                bcc UM_LUMoveDone
+UM_LUMoveLeft:  tya
+                beq UM_LUMoveDone
+                dec skillChoice
+                bpl UM_LUMoveCommon
+
+UpdateMenu:     ldx menuCounter
+                lda actHp+ACTI_PLAYER           ;If dead, close inventory, do not process leveling
+                beq UM_Close
+                lda levelUp                     ;Check if levelup already in progress
+                bne UM_LevelUp
+                cpx #MENU_DELAY
+                beq UM_NoXPMessage2             ;If inventory open, no XP messages
+                lda lastReceivedXP
+                bne UM_PrintXP
+                lda textTime                    ;Begin levelup if no texts on screen and
+                bne UM_NoXPMessage2             ;XP limit reached
+                lda xpLevel
+                cmp #MAX_LEVEL
+                bcs UM_NoXPMessage2
+                ldx #<xpLo
+                ldy #<xpLimitLo
+                jsr Cmp16
+                bcc UM_NoXPMessage
+                jmp BeginLevelUp
+UM_PrintXP:     jsr PrintXPMessage
+UM_NoXPMessage: ldx menuCounter
+UM_NoXPMessage2:lda joystick
                 cmp #JOY_FIRE
                 bcc UM_Close
                 cpx #MENU_DELAY
@@ -406,6 +474,8 @@ UM_Refresh:     lda #$00
                 sta UM_ForceRefresh+1
                 inc textLeftMargin
                 dec textRightMargin
+                lda levelUp
+                bne UM_RefreshSkillChoice
                 ldx itemIndex
                 lda invType,x
                 jsr GetItemName
@@ -418,21 +488,52 @@ UM_RefreshActive:
                 ldy #INDEFINITE_TEXT_DURATION
 UM_RefreshInactive:
                 jsr PrintPanelText
+                ldx itemIndex
+                ldy invType+1,x
+UM_RefreshCommon:
                 dec textLeftMargin
                 inc textRightMargin
+UM_DrawSelectionArrows:
                 lda #$20
-                ldx itemIndex
+                cpx #$00
                 beq UM_NoLeftArrow
                 lda #20
-UM_NoLeftArrow: sta screen1+SCROLLROWS*40+40+9
+UM_NoLeftArrow:sta screen1+SCROLLROWS*40+40+9
                 lda #$20
-                ldy invType+1,x
+                cpy #$00
                 beq UM_NoRightArrow
                 lda #21
 UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+30
                 lda #SFX_SELECT
                 jsr PlaySfx
                 jmp SetPanelRedrawItemAmmo      ;Redraw item & ammo next time panel is updated
+
+UM_RefreshSkillChoice:
+                ldx skillChoice
+                ldy improveList,x
+                sty temp1
+                lda skillNameLo,y
+                ldx skillNameHi,y
+                ldy #INDEFINITE_TEXT_DURATION
+                jsr PrintPanelText
+                ldx temp1
+                lda plrSkills,x
+                ldx zpBitsLo
+                inx
+                clc
+                adc #$31
+                jsr PrintPanelChar
+                pha
+                lda #21
+                jsr PrintPanelChar
+                pla
+                adc #1
+                jsr PrintPanelChar
+                ldx skillChoice
+                ldy improveList+1,x
+                bpl UM_RefreshCommon
+                ldy #$00
+                beq UM_RefreshCommon
 
         ; Convert a 8-bit value to BCD
         ;
@@ -501,20 +602,6 @@ PrintBCDNoZero: cmp #$10
                 bcs PrintBCDDigits
                 bcc PrintBCDDigit
 
-        ; Handle XP messages, TODO: handle leveling up
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,temp vars,loader temp vars
-
-UpdateXP:       lda menuCounter                 ;If XP received, print message, but not
-                cmp #MENU_DELAY                 ;if in inventory
-                beq UXP_NoXPMessage
-                lda lastReceivedXP
-                beq UXP_NoXPMessage
-                jsr PrintXPMessage
-UXP_NoXPMessage:rts
-
         ; Print message of received XP
         ;
         ; Parameters: A XP amount
@@ -533,9 +620,12 @@ PrintXPMessage: jsr ConvertToBCD8
                 lda temp8
                 beq PXPM_NoDigit1
                 jsr PrintBCDDigit
+                lda temp7
+                jsr PrintBCDDigits
+                jmp PXPM_DigitsDone
 PXPM_NoDigit1:  lda temp7
                 jsr PrintBCDNoZero
-                inx
+PXPM_DigitsDone:inx
                 ldy #$00
 PXPM_Text:      lda txtXP,y
                 sta screen1+SCROLLROWS*40+40,x

@@ -22,6 +22,18 @@ HUMAN_MAX_YSPEED = 6*8
 
 DAMAGING_FALL_DISTANCE = 4
 
+FIRST_XPLIMIT   = 100
+NEXT_XPLIMIT    = 50
+MAX_LEVEL       = 16
+MAX_SKILL       = 3
+NUM_SKILLS      = 5
+
+INITIAL_GROUNDACC = 7
+INITIAL_INAIRACC = 2
+INITIAL_GROUNDBRAKE = 6
+INITIAL_JUMPSPEED = 41
+INITIAL_CLIMBSPEED = 88
+
         ; Player update routine
         ;
         ; Parameters: X actor index
@@ -32,8 +44,7 @@ MP_CheckPickupSub:
                 ldy #ACTI_FIRSTITEM
 MP_CheckPickupSub2:
                 lda actT,y
-                cmp #ACT_ITEM
-                bne MP_CPSNoItem
+                beq MP_CPSNoItem
                 jsr CheckActorCollision
                 bcs MP_CPSHasItem
 MP_CPSNoItem:   iny
@@ -704,22 +715,186 @@ HD_LeftImpulse: lda temp8
 HD_NoDamageSource:
                 rts
 
+        ; Init player XP level, skills and inventory
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X
+
+InitPlayer:     lda #0
+                ldx #NUM_SKILLS-1
+IP_XPSkillLoop: sta xpLo,x
+                sta plrSkills,x
+                dex
+                bpl IP_XPSkillLoop
+                ldx #MAX_INVENTORYITEMS-1
+IP_InvLoop:     sta invType,x
+                sta invCount,x
+                sta invMag,x
+                dex
+                bpl IP_InvLoop
+                sta itemIndex
+                sta lastReceivedXP
+                sta levelUp
+                lda #<FIRST_XPLIMIT
+                sta xpLimitLo
+                lda #1
+                sta xpLevel
+                sta invType                     ;1 = fists
+
+        ; Apply skill effects
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y
+
+ApplySkills:    
+
+        ; Agility: acceleration, jump height, climbing speed
+
+                ldx plrAgility
+                txa
+                clc
+                adc #INITIAL_GROUNDACC
+                sta playerGroundAcc
+                txa
+                adc #INITIAL_INAIRACC
+                sta playerInAirAcc
+                txa
+                asl
+                asl
+                asl
+                adc #INITIAL_CLIMBSPEED
+                sta playerClimbSpeed
+                txa
+                asl
+                adc plrAgility
+                eor #$ff
+                adc #1-INITIAL_JUMPSPEED
+                sta playerJumpSpeed
+        
+        ; Carrying: more weapons in inventory and higher ammo limit
+
+                ldx #itemDefaultMaxCount - itemMaxCount - 1
+AS_AmmoLoop:    lda itemMaxCountAdd,x
+                ldy plrCarrying
+                stx temp1
+                ldx #<temp2
+                jsr MulU
+                ldx temp1
+                lda itemDefaultMaxCount,x
+                clc
+                adc temp2
+                sta itemMaxCount,x
+                dex
+                bpl AS_AmmoLoop
+                lda plrCarrying
+                adc #INITIAL_MAX_WEAPONS
+                sta AI_MaxWeaponsCount+1
+                
+        ; Firearms: damage bonus
+
+                ldx plrFirearms
+                lda plrWeaponBonusTbl,x
+                sta AH_PlayerFirearmBonus+1
+                
+        ; Melee: damage bonus
+
+                ldx plrMelee
+                lda plrWeaponBonusTbl,x
+                sta AH_PlayerMeleeBonus+1
+                
+        ; Vitality: damage reduction and health recharge starts faster
+
+                ldx plrVitality
+                lda plrDamageModTbl,x
+                sta DA_PlayerDamageMod+1
+                txa
+                asl
+                adc plrVitality
+                asl
+                asl
+                sbc #HEALTH_RECHARGE_DELAY-1    ;C=1
+                sta DA_HealthRechargeDelay+1
+                rts
+
         ; Give experience points to player
         ;
         ; Parameters: A XP amount
         ; Returns: -
-        ; Modifies: A
-        
+        ; Modifies: A,zpSrcLo
+
 GiveXP:         pha
+                stx zpSrcLo
+                ldx #<xpLo
+                jsr Add8
+                ldx zpSrcLo
+                pla
                 clc
-                adc xpLo
-                sta xpLo
-                bcc GXP_NotHigh
-                inc xpHi
-                clc
-GXP_NotHigh:    pla
                 adc lastReceivedXP
                 bcc GXP_NoLimit
                 lda #$ff
 GXP_NoLimit:    sta lastReceivedXP
+                rts
+                
+        ; Begin levelup procedure
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars,loader temp vars
+
+BeginLevelUp:   inc levelUp
+                inc xpLevel
+                ldx #<xpLo
+                ldy #<xpLimitLo
+                jsr Sub16
+                lda xpLevel
+                cmp #MAX_LEVEL
+                bcc BLU_NotMaxLevel
+                lda #<999
+                sta xpLimitLo
+                lda #>999
+                sta xpLimitHi
+                bne BLU_XPLimitDone
+BLU_NotMaxLevel:lda #NEXT_XPLIMIT
+                ldx #<xpLimitLo
+                jsr Add8
+BLU_XPLimitDone:lda #HP_PLAYER
+                sta actHp+ACTI_PLAYER           ;Fill health when leveled up
+                lda #SFX_POWERUP
+                jsr PlaySfx
+                lda xpLevel
+                jsr ConvertToBCD8
+                lda temp7
+                ldx #80
+                jsr PrintBCDDigits
+                ldx #$00
+                lda screen1+25*40
+                cmp #$30
+                beq BLU_SkipZero
+                sta txtLevelUpLevel,x
+                inx
+BLU_SkipZero:   lda screen1+25*40+1
+                sta txtLevelUpLevel,x
+                inx
+                lda #$20
+                sta txtLevelUpLevel,x
+                lda #<txtLevelUp
+                ldx #>txtLevelUp
+                ldy #XP_TEXT_DURATION
+                jsr PrintPanelText
+                ldx #$00
+                ldy #$00
+BLU_BuildSkillList:
+                lda plrSkills,y                 ;Build list of skills that can be improved
+                cmp #MAX_SKILL
+                bcs BLU_AtMaximum
+                tya
+                sta improveList,x
+                inx
+BLU_AtMaximum:  iny
+                cpy #NUM_SKILLS
+                bcc BLU_BuildSkillList
+                lda #$ff
+                sta improveList,x               ;Endmark
                 rts
