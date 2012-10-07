@@ -166,10 +166,7 @@ UP_Consumable:  lda #42
                 lda invCount,y
                 jsr ConvertToBCD8
                 ldx #36
-                lda temp8
-                jsr PrintBCDDigit
-                lda temp7
-                jsr PrintBCDDigits
+                jsr Print3BCDDigits
                 jmp UP_SkipAmmo
 UP_Reloading:   ldy #$07
                 bne UP_Reloading2
@@ -537,6 +534,45 @@ UM_RefreshSkillChoice:
                 ldy #$00
                 beq UM_RefreshCommon
 
+        ; Print message of received XP
+        ;
+        ; Parameters: A XP amount
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars,loader temp vars
+        
+PrintXPMessage: jsr ConvertToBCD8
+                jsr ClearPanelText
+                lda #XP_TEXT_DURATION*2
+                sta textTime
+                lda #$00
+                sta lastReceivedXP
+                ldx textLeftMargin
+                lda #"+"
+                jsr PrintPanelChar
+                jsr Print3BCDDigitsNoZeroes
+                inx
+                ldy #$00
+PXPM_Text:      lda txtXP,y
+                sta screen1+SCROLLROWS*40+40,x
+                inx
+                iny
+                cpy #$07
+                bcc PXPM_Text
+                lda xpLevel
+                jsr ConvertToBCD8
+                jsr Print3BCDDigitsNoZeroes
+                inx
+                lda xpLo
+                ldy xpHi
+                jsr ConvertToBCD16
+                jsr Print3BCDDigits
+                lda #"/"
+                jsr PrintPanelChar
+                lda xpLimitLo
+                ldy xpLimitHi
+                jsr ConvertToBCD16
+                jmp Print3BCDDigits
+
         ; Convert a 8-bit value to BCD
         ;
         ; Parameters: A value
@@ -573,6 +609,16 @@ ConvertToBCD16: sta temp5
                 ldy #$10
                 bne CTB_Common
 
+        ; Print a 3-digit BCD value to panel
+        ;
+        ; Parameters: temp7-temp8 value, X position
+        ; Returns: X position incremented
+        ; Modifies: A
+
+Print3BCDDigits:lda temp8
+PBCD_3DigitsOK: jsr PrintBCDDigit
+                lda temp7
+
         ; Print a BCD value to panel
         ;
         ; Parameters: A value, X position
@@ -594,66 +640,16 @@ PrintPanelChar: sta screen1+SCROLLROWS*40+40,x
                 inx
                 rts
 
-        ; Print a BCD value to panel without leading zero
+        ; Print a 3-digit BCD value to panel without leading zeroes
         ;
-        ; Parameters: A value, X position
+        ; Parameters: temp7-temp8 value, X position
         ; Returns: X position incremented
         ; Modifies: A
 
-PrintBCDNoZero: cmp #$10
+Print3BCDDigitsNoZeroes:
+                lda temp8
+                bne PBCD_3DigitsOK
+                lda temp7
+                cmp #$10
                 bcs PrintBCDDigits
                 bcc PrintBCDDigit
-
-        ; Print message of received XP
-        ;
-        ; Parameters: A XP amount
-        ; Returns: -
-        ; Modifies: A,X,Y,temp vars,loader temp vars
-        
-PrintXPMessage: jsr ConvertToBCD8
-                jsr ClearPanelText
-                lda #XP_TEXT_DURATION*2
-                sta textTime
-                lda #$00
-                sta lastReceivedXP
-                ldx textLeftMargin
-                lda #"+"
-                jsr PrintPanelChar
-                lda temp8
-                beq PXPM_NoDigit1
-                jsr PrintBCDDigit
-                lda temp7
-                jsr PrintBCDDigits
-                jmp PXPM_DigitsDone
-PXPM_NoDigit1:  lda temp7
-                jsr PrintBCDNoZero
-PXPM_DigitsDone:inx
-                ldy #$00
-PXPM_Text:      lda txtXP,y
-                sta screen1+SCROLLROWS*40+40,x
-                inx
-                iny
-                cpy #$07
-                bcc PXPM_Text
-                lda xpLevel
-                jsr ConvertToBCD8
-                lda temp7
-                jsr PrintBCDNoZero
-                inx
-                lda xpLo
-                ldy xpHi
-                jsr ConvertToBCD16
-                lda temp8
-                jsr PrintBCDDigit
-                lda temp7
-                jsr PrintBCDDigits
-                lda #"/"
-                jsr PrintPanelChar
-                lda xpLimitLo
-                ldy xpLimitHi
-                jsr ConvertToBCD16
-                lda temp8
-                jsr PrintBCDDigit
-                lda temp7
-                jmp PrintBCDDigits
-

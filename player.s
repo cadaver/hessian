@@ -860,22 +860,22 @@ BLU_XPLimitDone:lda #HP_PLAYER
                 sta actHp+ACTI_PLAYER           ;Fill health when leveled up
                 lda #SFX_POWERUP
                 jsr PlaySfx
+                lda #$20
+                ldx #2
+BLU_ClearLevelText:
+                sta txtLevelUpLevel,x
+                dex
+                bpl BLU_ClearLevelText
                 lda xpLevel
                 jsr ConvertToBCD8
-                lda temp7
                 ldx #80
-                jsr PrintBCDDigits
-                ldx #$00
-                lda screen1+25*40
-                cmp #$30
-                beq BLU_SkipZero
-                sta txtLevelUpLevel,x
-                inx
-BLU_SkipZero:   lda screen1+25*40+1
-                sta txtLevelUpLevel,x
-                inx
-                lda #$20
-                sta txtLevelUpLevel,x
+                jsr Print3BCDDigitsNoZeroes
+BLU_CopyLevelText:
+                lda screen1+23*40-1,x
+                sta txtLevelUpLevel-81,x
+                dex
+                cpx #81
+                bcs BLU_CopyLevelText
                 lda #<txtLevelUp
                 ldx #>txtLevelUp
                 ldy #XP_TEXT_DURATION
