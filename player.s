@@ -741,7 +741,8 @@ IP_InvLoop:     sta invType,x
                 lda #1
                 sta xpLevel
                 sta invType                     ;1 = fists
-
+                jsr SetPanelRedrawItemAmmo
+                
         ; Apply skill effects
         ;
         ; Parameters: -

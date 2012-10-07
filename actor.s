@@ -1326,7 +1326,9 @@ RA_StoreItem:   lda actF1,x
                 lda actHp,x
                 jmp RA_StoreCommon
 RA_StoreNPC:    sta lvlActT,y
-                lda actWpn,x
+                lda actD,x
+                and #$80
+                ora actWpn,x
 RA_StoreCommon: sta lvlActWpn,y
 
         ; Remove actor without returning to leveldata

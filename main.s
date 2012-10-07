@@ -56,6 +56,9 @@ Restart:        lda #0
 CreatePlayer:   ldy #ACTI_PLAYER
                 jsr GFA_Found
                 ldx #ACTI_PLAYER
+                lda #$00
+                sta actD,x
+                sta actYL,x
                 lda #6
                 sta actXH,x
                 lda #$80
