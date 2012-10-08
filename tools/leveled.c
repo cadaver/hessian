@@ -1546,6 +1546,15 @@ void char_mainloop(void)
       chinfo[charnum] += 32;
     }
 
+    if (k == KEY_A) // Global multicolor toggle
+    {
+      int c;
+      for (c = 0; c < 256; c++)
+        chcol[c] ^= 8;
+      updateall();
+      updateallblocks();
+    }
+
     if (k == KEY_M)
     {
       chcol[charnum] ^= 8;
