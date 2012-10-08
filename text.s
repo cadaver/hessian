@@ -39,14 +39,13 @@ txtFirearms:    dc.b "FIREARMS",0
 txtMelee:       dc.b "MELEE",0
 txtVitality:    dc.b "VITALITY",0
 
-skillLetters:   dc.b "ACFMV"
-
         ; Game messages
 
 txtPickedUp:    dc.b "GOT ",0
 txtInf:         dc.b "*INF"
 txtLoad:        dc.b "LOAD"
-txtXP:          dc.b "XP, LV."
+txtXP:          dc.b "XP, "
+txtSkillDisplay:dc.b "LV.           A C F M V",0
 txtLevelUp:     dc.b "LEVELED UP TO LV."
 txtLevelUpLevel:dc.b "    PICK SKILL TO IMPROVE",0
 txtRestart:     dc.b "PRESS FIRE TO CONTINUE",0

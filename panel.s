@@ -141,7 +141,7 @@ UP_Firearm:     lda invMag,y                    ;Print rounds in magazine
                 ldx #35
                 jsr PrintBCDDigits
                 lda #"/"
-                sta screen1+SCROLLROWS*40+40+37
+                jsr PrintPanelChar
                 ldy itemIndex
                 lda invCount,y                  ;Get ammo in reserve
                 sec
@@ -229,17 +229,13 @@ UP_EndLine:     stx zpBitsLo
                 bcs UP_PrintTextDone
 UP_ClearEndOfLine:
 UP_ClearLoop:   lda #$20
-                sta screen1+SCROLLROWS*40+40,x
-                lda #$01
-                sta colors+SCROLLROWS*40+40,x
-                inx
+                jsr PrintPanelChar
                 cpx textRightMargin
                 bcc UP_ClearLoop
 UP_PrintTextDone:
                 rts
 UP_WordLoop:    lda (textLo),y
-                sta screen1+SCROLLROWS*40+40,x
-                inx
+                jsr PrintPanelChar
                 iny
 UP_WordCmp:     cpx #$00
                 bcc UP_WordLoop
@@ -249,8 +245,7 @@ UP_SpaceLoop:   lda (textLo),y
                 bne UP_SpaceLoopDone
                 cpx textRightMargin
                 bcs UP_SpaceSkip
-                sta screen1+SCROLLROWS*40+40,x
-                inx
+                jsr PrintPanelChar
 UP_SpaceSkip:   iny
                 bne UP_SpaceLoop
 UP_SpaceLoopDone:
@@ -515,8 +510,8 @@ UM_RefreshSkillChoice:
                 inx
                 clc
                 adc #$31
-                jsr PrintPanelChar
                 pha
+                jsr PrintPanelChar
                 lda #"-"
                 jsr PrintPanelChar
                 lda #">"
@@ -531,28 +526,21 @@ UM_RefreshSkillChoice:
                 bpl UM_RefreshCommon
 
 UM_ShowSkills:  sta UM_ForceRefresh+1           ;Restore normal view when joystick
-                jsr ClearPanelText              ;released
-                ldx textLeftMargin
-                ldy #$00
-UM_LevelTextLoop:  
-                lda txtXP+4,y
-                sta screen1+SCROLLROWS*40+40,x
-                inx
-                iny
-                cpy #$03
-                bcc UM_LevelTextLoop
+                lda #<txtSkillDisplay           ;released
+                ldx #>txtSkillDisplay
+                ldy #INDEFINITE_TEXT_DURATION
+                jsr PrintPanelText
+                ldx #11
                 jsr PXPM_XPLevel
-                ldx #22
+                ldx #23
                 ldy #0
-UM_SkillLoop:   lda skillLetters,y
-                sta screen1+SCROLLROWS*40+40,x
-                inx
-                lda plrSkills,y
+UM_SkillLoop:   lda plrSkills,y
                 clc
                 adc #17
                 sta screen1+SCROLLROWS*40+40,x
                 lda #$0d
                 sta colors+SCROLLROWS*40+40,x
+                inx
                 inx
                 iny
                 cpy #NUM_SKILLS
@@ -578,8 +566,7 @@ PrintXPMessage: jsr ConvertToBCD8
                 inx
                 ldy #$00
 PXPM_Text:      lda txtXP,y
-                sta screen1+SCROLLROWS*40+40,x
-                inx
+                jsr PrintPanelChar
                 iny
                 cpy #$07
                 bcc PXPM_Text
@@ -662,6 +649,8 @@ PrintBCDDigits: pha
 PrintBCDDigit:  and #$0f
                 ora #$30
 PrintPanelChar: sta screen1+SCROLLROWS*40+40,x
+                lda #$01
+                sta colors+SCROLLROWS*40+40,x
                 inx
                 rts
 
