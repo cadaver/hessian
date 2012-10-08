@@ -39,6 +39,8 @@ txtFirearms:    dc.b "FIREARMS",0
 txtMelee:       dc.b "MELEE",0
 txtVitality:    dc.b "VITALITY",0
 
+skillLetters:   dc.b "ACFMV"
+
         ; Game messages
 
 txtPickedUp:    dc.b "GOT ",0

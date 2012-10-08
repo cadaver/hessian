@@ -228,8 +228,10 @@ UP_EndLine:     stx zpBitsLo
                 cpx textRightMargin
                 bcs UP_PrintTextDone
 UP_ClearEndOfLine:
-                lda #$20
-UP_ClearLoop:   sta screen1+SCROLLROWS*40+40,x
+UP_ClearLoop:   lda #$20
+                sta screen1+SCROLLROWS*40+40,x
+                lda #$01
+                sta colors+SCROLLROWS*40+40,x
                 inx
                 cpx textRightMargin
                 bcc UP_ClearLoop
@@ -265,7 +267,7 @@ UP_DrawSliceLoop:
                 beq UP_EmptySlice
                 lda (zpSrcLo),y
                 iny
-UP_EmptySlice:  sta textChars+17*8,x
+UP_EmptySlice:  sta textChars+23*8,x
                 inx
                 cpx zpDestLo
                 bcc UP_DrawSliceLoop
@@ -312,7 +314,7 @@ ContinuePanelText:
 
 UM_LUFinish:    ldx improveList,y
                 inc plrSkills,x
-                lda #SFX_PICKUP
+                lda #SFX_POWERUP
                 jsr PlaySfx
                 jsr ClearPanelText
                 jsr ApplySkills
@@ -416,7 +418,11 @@ UM_Open:        stx menuCounter
                 sta menuMoveDelay
                 beq UM_Refresh
 
-UM_IsActive:    
+UM_IsActive:    cmp #JOY_FIRE+JOY_UP            ;If fire+up held, show XP and skills
+                bne UM_ForceRefresh
+                cmp prevJoy
+                beq UM_IsShowingSkills
+                jmp UM_ShowSkills
 UM_ForceRefresh:ldy #$00                        ;Check for forced refresh (when inventory
                 bne UM_Refresh                  ;modified while open)
                 ldy menuMoveDelay
@@ -456,12 +462,12 @@ UM_Reload:      ldx invType,y                   ;Do not reload if already full m
                 bcs UM_NoReload
                 lda #$00                        ;Initiate reload by zeroing magazine
                 sta invMag,y
+UM_IsShowingSkills:
 UM_NoReload:    rts
 
 UM_Refresh:     lda #$00
                 sta UM_ForceRefresh+1
                 inc textLeftMargin
-                dec textRightMargin
                 lda levelUp
                 bne UM_RefreshSkillChoice
                 ldx itemIndex
@@ -480,19 +486,18 @@ UM_RefreshInactive:
                 ldy invType+1,x
 UM_RefreshCommon:
                 dec textLeftMargin
-                inc textRightMargin
 UM_DrawSelectionArrows:
                 lda #$20
                 cpx #$00
                 beq UM_NoLeftArrow
-                lda #20
-UM_NoLeftArrow:sta screen1+SCROLLROWS*40+40+8
+                lda #21
+UM_NoLeftArrow: sta screen1+SCROLLROWS*40+40+8
                 lda #$20
                 cpy #$00
                 beq UM_NoRightArrow
-                lda #21
+                lda #22
 UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+31
-                lda #SFX_SELECT
+UM_RefreshSound:lda #SFX_SELECT
                 jsr PlaySfx
                 jmp SetPanelRedrawItemAmmo      ;Redraw item & ammo next time panel is updated
 
@@ -523,7 +528,36 @@ UM_RefreshSkillChoice:
                 ldy improveList+1,x
                 bpl UM_RefreshCommon
                 ldy #$00
-                beq UM_RefreshCommon
+                bpl UM_RefreshCommon
+
+UM_ShowSkills:  sta UM_ForceRefresh+1           ;Restore normal view when joystick
+                jsr ClearPanelText              ;released
+                ldx textLeftMargin
+                ldy #$00
+UM_LevelTextLoop:  
+                lda txtXP+4,y
+                sta screen1+SCROLLROWS*40+40,x
+                inx
+                iny
+                cpy #$03
+                bcc UM_LevelTextLoop
+                jsr PXPM_XPLevel
+                ldx #22
+                ldy #0
+UM_SkillLoop:   lda skillLetters,y
+                sta screen1+SCROLLROWS*40+40,x
+                inx
+                lda plrSkills,y
+                clc
+                adc #17
+                sta screen1+SCROLLROWS*40+40,x
+                lda #$0d
+                sta colors+SCROLLROWS*40+40,x
+                inx
+                iny
+                cpy #NUM_SKILLS
+                bcc UM_SkillLoop
+                bcs UM_RefreshSound
 
         ; Print message of received XP
         ;
@@ -549,7 +583,7 @@ PXPM_Text:      lda txtXP,y
                 iny
                 cpy #$07
                 bcc PXPM_Text
-                lda xpLevel
+PXPM_XPLevel:   lda xpLevel
                 jsr ConvertToBCD8
                 jsr Print3BCDDigitsNoZeroes
                 inx
