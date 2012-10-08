@@ -107,9 +107,9 @@ plrRechargeDelayTbl:
                 
 plrRechargeRateTbl:
                 dc.b HEALTH_RECHARGE_RATE
-                dc.b HEALTH_RECHARGE_RATE-1
-                dc.b HEALTH_RECHARGE_RATE-2
                 dc.b HEALTH_RECHARGE_RATE-3
+                dc.b HEALTH_RECHARGE_RATE-6
+                dc.b HEALTH_RECHARGE_RATE-9
 
         ; Actor logic data
 

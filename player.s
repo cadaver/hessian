@@ -33,7 +33,7 @@ INITIAL_GROUNDACC = 6
 INITIAL_INAIRACC = 2
 INITIAL_GROUNDBRAKE = 6
 INITIAL_JUMPSPEED = 42
-INITIAL_CLIMBSPEED = 80
+INITIAL_CLIMBSPEED = 84
 
 HP_PLAYER       = 24
 
@@ -765,7 +765,7 @@ ApplySkills:
                 sta playerInAirAcc
                 txa
                 asl
-                asl
+                adc plrAgility
                 asl
                 adc #INITIAL_CLIMBSPEED
                 sta playerClimbSpeed
