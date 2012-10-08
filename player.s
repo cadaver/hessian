@@ -8,7 +8,8 @@ FR_ROLL         = 21
 FR_PREPARE      = 27
 FR_ATTACK       = 29
 
-HEALTH_RECHARGE_DELAY = 50
+HEALTH_RECHARGE_DELAY = 75
+HEALTH_RECHARGE_RATE = 20
 
 DEATH_DISAPPEAR_DELAY = 75
 DEATH_FLICKER_DELAY = 25
@@ -33,6 +34,8 @@ INITIAL_INAIRACC = 2
 INITIAL_GROUNDBRAKE = 6
 INITIAL_JUMPSPEED = 41
 INITIAL_CLIMBSPEED = 88
+
+HP_PLAYER       = 24
 
         ; Player update routine
         ;
@@ -79,14 +82,14 @@ MP_CheckHealth: lda actHp+ACTI_PLAYER           ;Restore health if not dead and 
                 jmp MP_PlayerMove
 MP_NotDead:     cmp #HP_PLAYER
                 bcs MP_CheckPickup
-                inc healthRecharge              ;Recharge fast when health low
-                bmi MP_CheckPickup
-                asl
-                cmp healthRecharge
-                bcs MP_CheckPickup
-                lda #$00
-                sta healthRecharge
+                lda healthRecharge
+                adc #$01
+MP_HealthRechargeRate:
+                cmp #HEALTH_RECHARGE_RATE
+                bne MP_NoRecharge
                 inc actHp+ACTI_PLAYER
+                lda #$00
+MP_NoRecharge:  sta healthRecharge
 
 MP_CheckPickup: jsr MP_CheckPickupSub           ;Check for item pickup / name display
                 bcs MP_HasItem
@@ -742,7 +745,7 @@ IP_InvLoop:     sta invType,x
                 sta xpLevel
                 sta invType                     ;1 = fists
                 jsr SetPanelRedrawItemAmmo
-                
+
         ; Apply skill effects
         ;
         ; Parameters: -
@@ -807,13 +810,15 @@ AS_AmmoLoop:    lda itemMaxCountAdd,x
                 lda plrWeaponBonusTbl,x
                 sta AH_PlayerMeleeBonus+1
                 
-        ; Vitality: damage reduction and health recharge starts faster
+        ; Vitality: damage reduction, faster health recharge
 
                 ldx plrVitality
                 lda plrDamageModTbl,x
                 sta DA_PlayerDamageMod+1
                 lda plrRechargeDelayTbl,x
                 sta DA_HealthRechargeDelay+1
+                lda plrRechargeRateTbl,x
+                sta MP_HealthRechargeRate+1
                 rts
 
         ; Give experience points to player

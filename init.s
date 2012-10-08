@@ -34,9 +34,9 @@ InitControls:   lda #$00
                 sta textLo
                 sta textHi
                 sta textTime
-                lda #9
+                lda #8
                 sta textLeftMargin
-                lda #31
+                lda #32
                 sta textRightMargin
                 lda #REDRAW_ITEM+REDRAW_AMMO
                 sta panelUpdateFlags
@@ -185,18 +185,18 @@ textCharsCopy:  incbin bg/scorescr.chr
 
         ; Scorepanel borders
 
-scorePanel:     dc.b 0,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,4
-                dc.b 5,"       ",6, "                      ",5,17,18,19,"    ",6
-                dc.b 7,8,8,8,8,8,8,9,10,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,11,8,8,8,8,8,8,9,12
+scorePanel:     dc.b 0,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,4
+                dc.b 5,"      ",6, "                        ",5,17,18,"    ",6
+                dc.b 7,8,8,8,8,8,9,10,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,11,8,8,8,8,8,9,12
 
 scorePanelColors:
                 ds.b 40,11
                 dc.b 11
-                ds.b 7,13
+                ds.b 6,13
                 dc.b 11
-                ds.b 22,1
+                ds.b 24,1
                 dc.b 11
-                ds.b 3,8
+                ds.b 2,8
                 ds.b 4,1
                 dc.b 11
                 ds.b 40,11

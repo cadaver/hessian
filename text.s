@@ -46,5 +46,5 @@ txtInf:         dc.b "*INF"
 txtLoad:        dc.b "LOAD"
 txtXP:          dc.b "XP, LV."
 txtLevelUp:     dc.b "LEVELED UP TO LV."
-txtLevelUpLevel:dc.b "   PICK SKILL TO IMPROVE",0
+txtLevelUpLevel:dc.b "    PICK SKILL TO IMPROVE",0
 txtRestart:     dc.b "PRESS FIRE TO CONTINUE",0

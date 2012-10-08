@@ -125,9 +125,6 @@ UP_HealthDone:  lda panelUpdateFlags
                 lsr zpBitBuf
                 inx
                 jsr UP_DrawSlice
-                lsr zpBitBuf
-                inx
-                jsr UP_DrawSlice
 UP_SkipWeapon:  lda panelUpdateFlags
                 and #REDRAW_AMMO
                 beq UP_SkipAmmo
@@ -495,12 +492,12 @@ UM_DrawSelectionArrows:
                 cpx #$00
                 beq UM_NoLeftArrow
                 lda #20
-UM_NoLeftArrow:sta screen1+SCROLLROWS*40+40+9
+UM_NoLeftArrow:sta screen1+SCROLLROWS*40+40+8
                 lda #$20
                 cpy #$00
                 beq UM_NoRightArrow
                 lda #21
-UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+30
+UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+31
                 lda #SFX_SELECT
                 jsr PlaySfx
                 jmp SetPanelRedrawItemAmmo      ;Redraw item & ammo next time panel is updated

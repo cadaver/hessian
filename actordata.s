@@ -7,8 +7,6 @@ ACT_GRENADE     = 5
 ACT_EXPLOSION   = 6
 ACT_ENEMY       = 7
 
-HP_PLAYER       = 28
-
         ; Actor display data
 
 adMeleeHit      = $0000                         ;Not displayed
@@ -103,9 +101,15 @@ plrDamageModTbl:dc.b 8,7,6,5
 
 plrRechargeDelayTbl:
                 dc.b -HEALTH_RECHARGE_DELAY
-                dc.b -HEALTH_RECHARGE_DELAY/2
-                dc.b -HEALTH_RECHARGE_DELAY/4
-                dc.b -HEALTH_RECHARGE_DELAY/8
+                dc.b -HEALTH_RECHARGE_DELAY+20
+                dc.b -HEALTH_RECHARGE_DELAY+40
+                dc.b -HEALTH_RECHARGE_DELAY+60
+                
+plrRechargeRateTbl:
+                dc.b HEALTH_RECHARGE_RATE
+                dc.b HEALTH_RECHARGE_RATE-1
+                dc.b HEALTH_RECHARGE_RATE-2
+                dc.b HEALTH_RECHARGE_RATE-3
 
         ; Actor logic data
 
