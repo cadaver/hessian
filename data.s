@@ -254,7 +254,6 @@ magazineSize:   dc.b 0
 menuCounter:    dc.b 0
 menuMoveDelay:  dc.b 0
 lastReceivedXP: dc.b 0
-levelUp:        dc.b 0
 skillChoice:    dc.b 0
 plrSkills:
 plrAgility:     dc.b 0

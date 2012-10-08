@@ -438,7 +438,7 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
                 sta heroList,x
                 
                 lda levelUp                     ;If levelup in progress, do not move actors
-                beq CheckRoute
+                bpl CheckRoute
                 jmp InterpolateActors
 
         ; Do route check for one AI actor at a time

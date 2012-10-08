@@ -738,7 +738,6 @@ IP_InvLoop:     sta invType,x
                 bpl IP_InvLoop
                 sta itemIndex
                 sta lastReceivedXP
-                sta levelUp
                 lda #<FIRST_XPLIMIT
                 sta xpLimitLo
                 lda #1
@@ -779,19 +778,20 @@ ApplySkills:
         
         ; Carrying: more weapons in inventory and higher ammo limit
 
-                ldx #itemDefaultMaxCount - itemMaxCount - 1
-AS_AmmoLoop:    lda itemMaxCountAdd,x
+                ldx #itemDefaultMaxCount - itemMaxCount
+AS_AmmoLoop:    lda itemMaxCountAdd-1,x
                 ldy plrCarrying
                 stx temp1
                 ldx #<temp2
                 jsr MulU
                 ldx temp1
-                lda itemDefaultMaxCount,x
+                lda itemDefaultMaxCount-1,x
                 clc
                 adc temp2
-                sta itemMaxCount,x
+                sta itemMaxCount-1,x
                 dex
-                bpl AS_AmmoLoop
+                bne AS_AmmoLoop
+                stx levelUp                     ;Reset current levelup process
                 lda plrCarrying
                 adc #INITIAL_MAX_WEAPONS
                 sta AI_MaxWeaponsCount+1
@@ -821,32 +821,48 @@ AS_AmmoLoop:    lda itemMaxCountAdd,x
                 sta MP_HealthRechargeRate+1
                 rts
 
-        ; Give experience points to player
+        ; Give experience points to player, check for leveling
         ;
         ; Parameters: A XP amount
         ; Returns: -
-        ; Modifies: A,zpSrcLo
+        ; Modifies: A,zpSrcLo-zpSrcHi
 
 GiveXP:         pha
                 stx zpSrcLo
+                sty zpSrcHi
                 ldx #<xpLo
                 jsr Add8
-                ldx zpSrcLo
                 pla
                 clc
                 adc lastReceivedXP
                 bcc GXP_NoLimit
                 lda #$ff
 GXP_NoLimit:    sta lastReceivedXP
+                ldx #<xpLo
+                ldy #<xpLimitLo
+                jsr Cmp16
+                bcc GXP_Done
+                lda xpLevel
+                cmp #MAX_LEVEL
+                bcc GXP_NoMaxLevel
+                lda xpLimitLo                   ;Clamp XP on last level
+                sta xpLo
+                lda xpLimitHi
+                sta xpHi
+                bne GXP_Done
+GXP_NoMaxLevel: sta levelUp                     ;Mark pending levelup
+GXP_Done:       ldx zpSrcLo
+                ldy zpSrcHi
                 rts
-                
+
         ; Begin levelup procedure
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,loader temp vars
 
-BeginLevelUp:   inc levelUp
+BeginLevelUp:   lda #$ff
+                sta levelUp
                 inc xpLevel
                 ldx #<xpLo
                 ldy #<xpLimitLo

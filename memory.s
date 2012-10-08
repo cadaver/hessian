@@ -90,6 +90,7 @@ MAX_LVLOBJ      = 96
                 Var xpLevel
                 Var xpLimitLo
                 Var xpLimitHi
+                Var levelUp
 
                 Var textLo                      ;Panel text printing variables
                 Var textHi

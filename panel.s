@@ -312,30 +312,29 @@ ContinuePanelText:
 
 UM_LUFinish:    ldx improveList,y
                 inc plrSkills,x
-                jsr ClearPanelText
-                lda #$00
-                sta levelUp
-                lda #SFX_POWERUP
+                lda #SFX_PICKUP
                 jsr PlaySfx
-                jmp ApplySkills
-                
-UM_LevelUp:     cmp #$02
-                bcs UM_LevelUpChoice
+                jsr ClearPanelText
+                jsr ApplySkills
+                lda #$00                        ;Hack: give 0 XP now to correctly process several
+                jmp GiveXP                      ;levelups in a row
+
+UM_LevelUp:     cmp #$fe
+                beq UM_LUChoice
                 lda textTime
-                bne UM_TextInProgress
-                inc levelUp                     ;When text display finished, start the choice loop
+                bne UM_LUTextInProgress
+                dec levelUp                     ;When text display finished, start the choice loop
                 sta skillChoice
                 sta menuMoveDelay
                 jmp UM_Refresh
-UM_TextInProgress:
+UM_LUTextInProgress:
                 jsr GetFireClick                ;Speed up levelup text by pressing fire
-                bcc UM_LevelUpNoFire
+                bcc UM_LUNoFire
                 lda #$01
                 sta textTime
-UM_LevelUpNoFire:
+UM_LUNoFire:
 UM_LUMoveDone:  rts
-UM_LevelUpChoice:
-                ldy skillChoice
+UM_LUChoice:    ldy skillChoice
                 jsr GetFireClick
                 bcs UM_LUFinish
                 lda menuMoveDelay
@@ -364,24 +363,19 @@ UpdateMenu:     ldx menuCounter
                 lda actHp+ACTI_PLAYER           ;If dead, close inventory, do not process leveling
                 beq UM_Close
                 lda levelUp                     ;Check if levelup already in progress
-                bne UM_LevelUp
+                bmi UM_LevelUp
                 cpx #MENU_DELAY
-                beq UM_NoXPMessage2             ;If inventory open, no XP messages
+                beq UM_NoXPMessage              ;If inventory open, no XP messages
                 lda lastReceivedXP
                 bne UM_PrintXP
-                lda textTime                    ;Begin levelup if no texts on screen and
-                bne UM_NoXPMessage2             ;XP limit reached
-                lda xpLevel
-                cmp #MAX_LEVEL
-                bcs UM_NoXPMessage2
-                ldx #<xpLo
-                ldy #<xpLimitLo
-                jsr Cmp16
-                bcc UM_NoXPMessage
+                lda levelUp                     ;Check for pending levelup: begin if
+                beq UM_NoXPMessage              ;no other messages displayed
+                lda textTime
+                bne UM_NoXPMessage
                 jmp BeginLevelUp
 UM_PrintXP:     jsr PrintXPMessage
-UM_NoXPMessage: ldx menuCounter
-UM_NoXPMessage2:lda joystick
+                ldx menuCounter
+UM_NoXPMessage: lda joystick
                 cmp #JOY_FIRE
                 bcc UM_Close
                 cpx #MENU_DELAY
