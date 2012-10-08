@@ -91,7 +91,7 @@ plrWeaponBonusTbl:
         ; Player reload time mod according to weapon skill
 
 plrReloadBonusTbl:
-                dc.b 8,6,4,3
+                dc.b 8,6,5,4
 
         ; Player damage mod according to vitality skill
 
@@ -195,7 +195,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b 0                          ;Size down
                 dc.b 12                         ;Initial health
                 dc.b 2                          ;Color override
-                dc.b 100                        ;XP from kill
+                dc.b 50                         ;XP from kill
                 dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move caps

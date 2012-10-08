@@ -9,7 +9,7 @@ FR_PREPARE      = 27
 FR_ATTACK       = 29
 
 HEALTH_RECHARGE_DELAY = 75
-HEALTH_RECHARGE_RATE = 20
+HEALTH_RECHARGE_RATE = 25
 
 DEATH_DISAPPEAR_DELAY = 75
 DEATH_FLICKER_DELAY = 25
@@ -29,11 +29,11 @@ MAX_LEVEL       = 16
 MAX_SKILL       = 3
 NUM_SKILLS      = 5
 
-INITIAL_GROUNDACC = 7
+INITIAL_GROUNDACC = 6
 INITIAL_INAIRACC = 2
 INITIAL_GROUNDBRAKE = 6
-INITIAL_JUMPSPEED = 41
-INITIAL_CLIMBSPEED = 88
+INITIAL_JUMPSPEED = 42
+INITIAL_CLIMBSPEED = 80
 
 HP_PLAYER       = 24
 
@@ -771,7 +771,6 @@ ApplySkills:
                 sta playerClimbSpeed
                 txa
                 asl
-                adc plrAgility
                 eor #$ff
                 adc #1-INITIAL_JUMPSPEED
                 sta playerJumpSpeed
