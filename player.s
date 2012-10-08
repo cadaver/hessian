@@ -824,7 +824,7 @@ AS_AmmoLoop:    lda itemMaxCountAdd-1,x
         ;
         ; Parameters: A XP amount
         ; Returns: -
-        ; Modifies: A,zpSrcLo-zpSrcHi
+        ; Modifies: A,loader temp vars
 
 GiveXP:         pha
                 stx zpSrcLo
@@ -834,11 +834,9 @@ GiveXP:         pha
                 pla
                 clc
                 adc lastReceivedXP
-                bcc GXP_NoLimit
-                lda #$ff
-GXP_NoLimit:    sta lastReceivedXP
-                ldx #<xpLo
-                ldy #<xpLimitLo
+                bcs GXP_TooMuchXP               ;If last received XP overflows,
+                sta lastReceivedXP              ;disregard the latest addition
+GXP_TooMuchXP:  ldy #<xpLimitLo                 ;(should not happen)
                 jsr Cmp16
                 bcc GXP_Done
                 lda xpLevel
@@ -850,9 +848,10 @@ GXP_NoLimit:    sta lastReceivedXP
                 sta xpHi
                 bne GXP_Done
 GXP_NoMaxLevel: sta levelUp                     ;Mark pending levelup
-GXP_Done:       ldx zpSrcLo
-                ldy zpSrcHi
-                rts
+GXP_Done:       jmp PSnd_Done                   ;Hack: PlaySound ends similarly
+                ;ldx zpSrcLo                    
+                ;ldy zpSrcHi
+                ;rts
 
         ; Begin levelup procedure
         ;
