@@ -572,7 +572,7 @@ PXPM_Text:      lda txtXP,y
                 bcc PXPM_Text
 PXPM_XPLevel:   lda xpLevel
                 jsr ConvertToBCD8
-                jsr Print3BCDDigitsNoZeroes
+                jsr PrintBCDDigitsNoZeroes
                 inx
                 lda xpLo
                 ldy xpHi
@@ -663,6 +663,14 @@ PrintPanelChar: sta screen1+SCROLLROWS*40+40,x
 Print3BCDDigitsNoZeroes:
                 lda temp8
                 bne PBCD_3DigitsOK
+                
+        ; Print a 2-digit BCD value to panel without leading zeroes
+        ;
+        ; Parameters: temp7-temp8 value, X position
+        ; Returns: X position incremented
+        ; Modifies: A
+
+PrintBCDDigitsNoZeroes:
                 lda temp7
                 cmp #$10
                 bcs PrintBCDDigits

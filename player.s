@@ -849,7 +849,7 @@ GXP_TooMuchXP:  ldy #<xpLimitLo                 ;(should not happen)
                 bne GXP_Done
 GXP_NoMaxLevel: sta levelUp                     ;Mark pending levelup
 GXP_Done:       jmp PSnd_Done                   ;Hack: PlaySound ends similarly
-                ;ldx zpSrcLo                    
+                ;ldx zpSrcLo
                 ;ldy zpSrcHi
                 ;rts
 
@@ -889,7 +889,7 @@ BLU_ClearLevelText:
                 lda xpLevel
                 jsr ConvertToBCD8
                 ldx #80
-                jsr Print3BCDDigitsNoZeroes
+                jsr PrintBCDDigitsNoZeroes
 BLU_CopyLevelText:
                 lda screen1+23*40-1,x
                 sta txtLevelUpLevel-81,x
