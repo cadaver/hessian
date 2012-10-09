@@ -129,7 +129,21 @@ DA_LastSprIndex:cpx #$00
                 bcc DA_FillSpritesLoop
 DA_FillSpritesDone:
                 sta DA_LastSprIndex+1
-                jmp AgeSpriteCache              ;Sprite cache use finished, age the cache now
+
+        ; Age the sprite cache. To be called after setting new sprites (DrawActors) is finished
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: -
+
+AgeSpriteCache: ldx #MAX_CACHESPRITES/4-1
+ASC_Loop:       lsr cacheSprInUse,x
+                lsr cacheSprInUse+MAX_CACHESPRITES/4,x
+                lsr cacheSprInUse+MAX_CACHESPRITES/4*2,x
+                lsr cacheSprInUse+MAX_CACHESPRITES/4*3,x
+                dex
+                bpl ASC_Loop
+                rts
 
 DA_NotZero:     stx actIndex
                 lda actDispTblHi-1,y            ;Zero display address = invisible

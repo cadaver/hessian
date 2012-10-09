@@ -35,13 +35,13 @@ MAX_LVLOBJ      = 96
                 Var irqSaveY
                 Var irqSave01
 
+                Var freeMemLo                   ;Memory allocator variables
+                Var freeMemHi
+
                 Var joystick                    ;Joystick/keyboard variables
                 Var prevJoy
                 Var keyPress
                 Var keyType
-
-                Var freeMemLo                   ;Memory allocator variables
-                Var freeMemHi
 
                 Var screen                      ;Scrolling/map/zone variables
                 Var scrollX
@@ -75,6 +75,14 @@ MAX_LVLOBJ      = 96
                 Var frameLo
                 Var frameHi
 
+                Var textLo                      ;Panel text printing variables
+                Var textHi
+                Var textTime
+                Var textDelay
+                Var textLeftMargin
+                Var textRightMargin
+                Var panelUpdateFlags
+
                 Var actIndex                    ;Actor variables
                 Var actLo
                 Var actHi
@@ -83,22 +91,26 @@ MAX_LVLOBJ      = 96
 
                 Var wpnLo                       ;Weapon variables
                 Var wpnHi
-                Var itemIndex
-                
-                Var xpLo                        ;Experience points variables
+                Var magazineSize
+
+                Var displayedItemName           ;Misc. game variables
+                Var displayedHealth
+                Var healthRecharge
+                Var menuCounter
+                Var menuMoveDelay
+                Var lastReceivedXP
+                Var skillChoice
+
+                Var itemIndex                   ;Player state
+                Var levelUp
+                Var xpLo
                 Var xpHi
                 Var xpLevel
                 Var xpLimitLo
                 Var xpLimitHi
-                Var levelUp
 
-                Var textLo                      ;Panel text printing variables
-                Var textHi
-                Var textTime
-                Var textDelay
-                Var textLeftMargin
-                Var textRightMargin
-                Var panelUpdateFlags
+playerStateZPStart = itemIndex
+playerStateZPEnd = xpLimitHi+1
 
                 VarRange sprOrder,MAX_SPR+1
                 VarRange sprY,MAX_SPR+1

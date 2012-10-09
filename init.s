@@ -5,7 +5,25 @@
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-InitAll:        lda ntscDelay                   ;Check if loader part detected PAL or NTSC
+InitAll:
+
+        ; Initialize zeropage variables
+
+                ldx #$90-joystick-1
+                lda #$00
+InitZP:         sta joystick,x
+                dex
+                bpl InitZP
+
+        ; Initialize one-time playroutine variables
+
+                sta $d415                       ;Filter lowbyte
+                sta ntFiltPos
+                sta ntFiltTime
+
+        ; Check NTSC
+
+                lda ntscDelay                   ;Check if loader part detected PAL or NTSC
                 beq IsNTSC
                 lda #$a5                        ;In PAL mode, disable NTSC delay counting
                 sta Irq4_NtscDelay              ;(replace DEC with LDA)
@@ -15,25 +33,8 @@ IsNTSC:         lda #<fileAreaStart             ;Initialize dynamic memory alloc
                 sta freeMemHi
                 jsr InitScroll
 
-        ; Initialize controls variables
-
-InitControls:   lda #$00
-                sta joystick                    ;Control reset
-                sta prevJoy
-                sta keyPress
-                sta keyType
-
-        ; Initialize one-time playroutine variables
-
-                sta $d415                       ;Filter lowbyte
-                sta ntFiltPos
-                sta ntFiltTime
-        
         ; Initialize panel text printing
 
-                sta textLo
-                sta textHi
-                sta textTime
                 lda #8
                 sta textLeftMargin
                 lda #32

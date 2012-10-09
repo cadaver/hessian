@@ -318,17 +318,3 @@ GASS_DepackDone:lda #$35                        ;Restore I/O registers
                 sta sprF,x
                 inx                             ;Increment sprite count
                 rts
-
-        ; Age the sprite cache. To be called after setting new sprites (DrawActors) is finished
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: -
-
-AgeSpriteCache:
-N               set 0
-                repeat MAX_CACHESPRITES
-                lsr cacheSprInUse+N
-N               set N+1
-                repend
-                rts

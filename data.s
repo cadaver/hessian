@@ -242,19 +242,11 @@ actAIHelp:      ds.b MAX_COMPLEXACT,0
 actAITarget:    ds.b MAX_COMPLEXACT,0
 actAIRoute:     ds.b MAX_COMPLEXACT,0
 
-        ;Other variables
+        ; Player state
 
 invType:        ds.b MAX_INVENTORYITEMS,0
 invCount:       ds.b MAX_INVENTORYITEMS,0
 invMag:         ds.b MAX_INVENTORYITEMS,0
-displayedItemName:dc.b 0
-displayedHealth:dc.b 0
-healthRecharge: dc.b 0
-magazineSize:   dc.b 0
-menuCounter:    dc.b 0
-menuMoveDelay:  dc.b 0
-lastReceivedXP: dc.b 0
-skillChoice:    dc.b 0
 plrSkills:
 plrAgility:     dc.b 0
 plrCarrying:    dc.b 0
