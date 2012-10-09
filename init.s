@@ -20,6 +20,8 @@ InitZP:         sta joystick,x
                 sta $d415                       ;Filter lowbyte
                 sta ntFiltPos
                 sta ntFiltTime
+                lda #$7f
+                sta ntInitSong
 
         ; Check NTSC
 

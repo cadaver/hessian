@@ -130,12 +130,14 @@ playerStateZPEnd = xpLimitHi+1
                 Var temp7
                 Var temp8
 
-                Var ntTemp1                     ;Playroutine
+                Var ntInitSong                  ;Playroutine
+                Var ntTemp1
                 Var ntTemp2
                 Var ntTrackLo
                 Var ntTrackHi
                 Var ntFiltPos
                 Var ntFiltTime
+                Var ntFiltCutoff
 
                 CheckVarBase $100
 

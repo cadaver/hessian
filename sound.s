@@ -31,7 +31,7 @@ CHN_SFX             = $00
 LoadMusic:      ldx #F_MUSIC
                 jsr MakeFileName
                 lda #$7f
-                sta PMus_InitSongNum+1          ;Silence during loading
+                sta ntInitSong                  ;Silence during loading
                 lda #<musicData
                 ldx #>musicData
                 jsr LoadFile                    ;TODO: check for error
@@ -114,7 +114,7 @@ PMus_DoInit:    asl
                 bpl PMus_NoSilence
                 jmp SilenceSID
 PMus_NoSilence: asl
-                adc PMus_InitSongNum+1
+                adc ntInitSong
                 tay
 PMus_SongTblP0: lda $1000,y
                 sta ntTrackLo
@@ -147,15 +147,17 @@ PMus_SongTblP2: lda $1000,y
         ; Returns: -
         ; Modifies: -
 
-InitMusic:      sta PMus_InitSongNum+1
+InitMusic:      sta ntInitSong
                 rts
 
-        ; Call each frame to advance music & sound effect playback
-        ; Modifies: A,X,Y,player temp vars
+        ; Play one frame of music & sound effects
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,player vars
 
 PlayMusic:      ldx #$00
-PMus_InitSongNum:
-                lda #$7f
+                lda ntInitSong
                 bpl PMus_DoInit
 
           ;Filter execution
@@ -183,10 +185,10 @@ PMus_FiltMod:   clc
                 inc ntFiltPos
                 bcc PMus_FiltDone
 PMus_NewFiltMod:sta ntFiltTime
-PMus_FiltCutoff:lda #$00
+PMus_FiltCutoff:lda ntFiltCutoff
 PMus_FiltSpdM1b:adc $1000,y
 PMus_StoreCutoff:
-                sta PMus_FiltCutoff+1
+                sta ntFiltCutoff
                 sta $d416
 PMus_FiltDone:  lda #$00
 PMus_MasterVolume:
