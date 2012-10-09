@@ -112,13 +112,12 @@ DA_ItemFlashLoop:
                 sta actC+ACTI_FIRSTITEM,x
                 dex
                 bpl DA_ItemFlashLoop
-                ldx GASS_FrameNumber+1
-                stx GASS_FrameThreshold+1
+                ldx GASS_CurrentFrame+1
+                stx GASS_LastFrame+1
                 inx                             ;Increment framenumber for sprite cache
-                bne DA_FrameOK
+                bne DA_FrameOK                  ;(framenumber is never 0)
                 inx
-DA_FrameOK:     stx GASS_FrameNumber+1
-                stx GASS_FrameNumber2+1
+DA_FrameOK:     stx GASS_CurrentFrame+1
                 txa
 DA_CheckCacheAge:
                 ldx #MAX_CACHESPRITES-1
@@ -152,14 +151,13 @@ DA_FillSpritesDone:
                 sta DA_LastSprIndex+1
                 rts
 
-DA_NotZero:     stx actIndex
-                lda actDispTblHi-1,y            ;Zero display address = invisible
+DA_NotZero:     lda actDispTblHi-1,y            ;Zero display address = invisible
                 beq DA_ActorDone
+                stx actIndex
                 sta actHi
                 lda actDispTblLo-1,y            ;Get actor display structure address
                 sta actLo
-DA_GetScreenPos:
-                lda actYL,x                     ;Convert actor coordinates to screen
+DA_GetScreenPos:lda actYL,x                     ;Convert actor coordinates to screen
                 sta actPrevYL,x
                 sec
 DA_SprSubYL:    sbc #$00
@@ -839,29 +837,6 @@ BAct_XNeg:      clc
                 bmi BAct_XDone
                 lda #$00
                 sta actSX,x
-                rts
-
-        ; Brake Y-speed of an actor towards zero
-        ;
-        ; Parameters: X Actor index, A deceleration (always positive)
-        ; Returns: -
-        ; Modifies: A, temp8
-
-BrakeActorY:    sta temp8
-                lda actSY,x
-                beq BAct_YDone2
-                bmi BAct_YNeg
-BAct_YPos:      sec
-                sbc temp8
-                bpl BAct_YDone
-                lda #$00
-BAct_YDone:     sta actSY,x
-BAct_YDone2:    rts
-BAct_YNeg:      clc
-                adc temp8
-                bmi BAct_YDone
-                lda #$00
-                sta actSY,x
                 rts
 
         ; Process actor's animation delay
