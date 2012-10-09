@@ -456,9 +456,10 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
                 ldx temp1
                 sta heroList,x
                 
-                lda levelUp                     ;If levelup in progress, do not move actors
+                lda pauseMenuCounter            ;If levelup or pausemenu in progress, do not move actors
+                ora levelUp
                 bpl CheckRoute
-                jmp InterpolateActors
+UA_SkipUpdate:  jmp InterpolateActors
 
         ; Do route check for one AI actor at a time
 

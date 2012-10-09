@@ -18,6 +18,7 @@ MAX_LVLOBJ      = 96
                 Var loadTempReg                 ;Loader variables
                 Var bufferStatus
                 Var fileOpen
+
                 Var zpLenLo                     ;Exomizer 2 depackroutine variables
                 Var zpSrcLo
                 Var zpSrcHi
@@ -27,13 +28,14 @@ MAX_LVLOBJ      = 96
                 Var zpDestLo
                 Var zpDestHi
 
-                Var ntscDelay                   ;Frame update/raster IRQ variables
-                Var targetFrames
-                Var newFrame
-                Var irqSaveA
-                Var irqSaveX
-                Var irqSaveY
-                Var irqSave01
+                Var temp1                       ;Temp variables
+                Var temp2
+                Var temp3
+                Var temp4
+                Var temp5
+                Var temp6
+                Var temp7
+                Var temp8
 
                 Var freeMemLo                   ;Memory allocator variables
                 Var freeMemHi
@@ -98,8 +100,9 @@ MAX_LVLOBJ      = 96
                 Var healthRecharge
                 Var menuCounter
                 Var menuMoveDelay
+                Var menuChoice
+                Var pauseMenuCounter
                 Var lastReceivedXP
-                Var skillChoice
 
                 Var itemIndex                   ;Player state
                 Var levelUp
@@ -121,14 +124,13 @@ playerStateZPEnd = xpLimitHi+1
                 VarRange sprXL,MAX_SPR
                 VarRange sprXH,MAX_SPR
 
-                Var temp1                       ;Temp variables
-                Var temp2
-                Var temp3
-                Var temp4
-                Var temp5
-                Var temp6
-                Var temp7
-                Var temp8
+                Var ntscDelay                   ;Frame update/raster IRQ variables
+                Var targetFrames
+                Var newFrame
+                Var irqSaveA
+                Var irqSaveX
+                Var irqSaveY
+                Var irqSave01
 
                 Var ntInitSong                  ;Playroutine
                 Var ntTemp1

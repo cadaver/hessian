@@ -83,24 +83,7 @@ MainLoop:       jsr ScrollLogic
                 jsr UpdateMenu
                 jsr UpdateActors
                 jsr FinishFrame
-                jsr CheckForRestart
                 jmp MainLoop
-
-CheckForRestart:lda actT+ACTI_PLAYER            ;Check if player actor vanished after death
-                bne CFR_Done
-                lda textTime
-                bne CFR_HasText
-                lda #<txtRestart
-                ldx #>txtRestart
-                ldy #INDEFINITE_TEXT_DURATION
-                jsr PrintPanelText
-CFR_HasText:    jsr GetFireClick
-                bcs CFR_DoRestart
-CFR_Done:       rts
-CFR_DoRestart:  pla
-                pla
-                jsr ClearPanelText
-                jmp Restart
 
 randomAreaEnd:
 

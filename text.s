@@ -48,4 +48,9 @@ txtXP:          dc.b "XP, "
 txtSkillDisplay:dc.b "LV.           A C F M V",0
 txtLevelUp:     dc.b "LEVELED UP TO LV."
 txtLevelUpLevel:dc.b "    PICK SKILL TO IMPROVE",0
-txtRestart:     dc.b "PRESS FIRE TO CONTINUE",0
+txtPauseResume: dc.b " RESUME GAME",0
+txtPauseRetry:  dc.b " CONTINUE   ",0
+txtPauseSave:   dc.b "  SAVE&EXIT",0
+
+pauseMenuArrowPosTbl:
+                dc.b 8,21
