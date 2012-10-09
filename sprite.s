@@ -189,8 +189,9 @@ GASS_ColorOr:   ora #$00
                 beq GASS_CacheSprite
                 sta sprF,x
                 tay
-                lda #$02                        ;Reset cache age
-                sta cacheSprInUse-FIRSTCACHEFRAME,y
+GASS_FrameNumber:
+                lda #$00
+                sta cacheSprAge-FIRSTCACHEFRAME,y
                 inx                             ;Finally increment sprite count
                 rts
 
@@ -202,9 +203,13 @@ GASS_CachePos:  ldx #MAX_CACHESPRITES           ;Continue from where we left off
 GASS_Loop:      dex
                 bpl GASS_NotOver
                 ldx #MAX_CACHESPRITES-1
-GASS_NotOver:   lda cacheSprInUse,x             ;Check if in use
-                bne GASS_Loop
-                ldy cacheSprFile,x              ;Clear the old cache mapping if the old file still in memory
+GASS_NotOver:   lda cacheSprAge,x
+                beq GASS_Found
+                sec
+GASS_FrameThreshold:
+                sbc #$00
+                bcs GASS_Loop
+GASS_Found:     ldy cacheSprFile,x              ;Clear the old cache mapping if the old file still in memory
                 bmi GASS_NoOldSprite
                 lda fileHi,y
                 beq GASS_NoOldSprite
@@ -230,8 +235,9 @@ GASS_NoOldSprite:
                 sta zpBitBuf
                 lda zpBitsLo
                 sta cacheSprFrame,x
-                lda #$02                        ;Mark in use
-                sta cacheSprInUse,x
+GASS_FrameNumber2:
+                lda #$00                        ;Mark in use
+                sta cacheSprAge,x
                 txa                             ;Calculate sprite address
                 lsr
                 ror zpBitBuf

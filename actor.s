@@ -112,6 +112,29 @@ DA_ItemFlashLoop:
                 sta actC+ACTI_FIRSTITEM,x
                 dex
                 bpl DA_ItemFlashLoop
+
+                ldx GASS_FrameNumber+1
+                stx GASS_FrameThreshold+1
+                inx                             ;Increment framenumber for sprite cache
+                bne DA_FrameOK
+                inx
+DA_FrameOK:     stx GASS_FrameNumber+1
+                stx GASS_FrameNumber2+1
+                txa
+DA_CheckCacheAge:
+                ldx #MAX_CACHESPRITES-1
+                sec                             ;If age stored in cache is very old, reset to zero
+                sbc cacheSprAge,x               ;to prevent overflow error (check one sprite per frame)
+                cmp #$a0
+                bcc DA_CacheAgeOK
+                lda #$00
+                sta cacheSprAge,x
+DA_CacheAgeOK:  dex
+                bpl DA_CacheAgeNotOver
+                ldx #MAX_CACHESPRITES-1
+DA_CacheAgeNotOver:
+                stx DA_CheckCacheAge+1
+
                 ldx #$00                        ;Reset amount of used sprites
                 stx sprIndex
 DA_Loop:        ldy actT,x
@@ -129,20 +152,6 @@ DA_LastSprIndex:cpx #$00
                 bcc DA_FillSpritesLoop
 DA_FillSpritesDone:
                 sta DA_LastSprIndex+1
-
-        ; Age the sprite cache. To be called after setting new sprites (DrawActors) is finished
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: -
-
-AgeSpriteCache: ldx #MAX_CACHESPRITES/4-1
-ASC_Loop:       lsr cacheSprInUse,x
-                lsr cacheSprInUse+MAX_CACHESPRITES/4,x
-                lsr cacheSprInUse+MAX_CACHESPRITES/4*2,x
-                lsr cacheSprInUse+MAX_CACHESPRITES/4*3,x
-                dex
-                bpl ASC_Loop
                 rts
 
 DA_NotZero:     stx actIndex

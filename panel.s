@@ -464,7 +464,7 @@ UM_Refresh:     lda #$00
                 sta UM_ForceRefresh+1
                 inc textLeftMargin
                 lda levelUp
-                bne UM_RefreshSkillChoice
+                bmi UM_RefreshSkillChoice
                 ldx itemIndex
                 lda invType,x
                 jsr GetItemName

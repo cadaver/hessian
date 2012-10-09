@@ -146,7 +146,7 @@ depackCodeStart = $0100
 sprF            = $0100
 sprC            = $0100+MAX_SPR
 sprAct          = $0100+MAX_SPR*2
-cacheSprInUse   = $0100+MAX_SPR*3
+cacheSprAge     = $0100+MAX_SPR*3
 cacheSprFile    = $0200
 cacheSprFrame   = $02a7
 

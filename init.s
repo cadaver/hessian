@@ -146,7 +146,7 @@ ISpr_OrValueOk: dex
                 ldx #MAX_CACHESPRITES-1
 ISpr_ClearCacheInUse:
                 lda #$00
-                sta cacheSprInUse,x
+                sta cacheSprAge,x
                 lda #$ff
                 sta cacheSprFile,x
                 dex
