@@ -392,12 +392,7 @@ UM_Inventory:   ldx #MENU_SKILLDISPLAY          ;Check for entering skill displa
                 lda joystick
                 cmp #JOY_FIRE+JOY_UP
                 beq SetMenuMode
-                cmp #JOY_FIRE+JOY_DOWN          ;Check for reloading weapon
-                bne UM_NoReload
-                ldy itemIndex
-                cmp prevJoy
-                bne UM_Reload
-UM_NoReload:    ldx #MENU_NONE                  ;Check for exiting inventory or waiting for
+                ldx #MENU_NONE                  ;Check for exiting inventory or waiting for
                 ldy #$ff                        ;pause menu
                 cmp #JOY_FIRE
                 bcc SetMenuMode2
@@ -419,6 +414,11 @@ UM_ForceRefresh:lda #$00                        ;Check for forced refresh (when 
                 bcs UM_MoveLeft
                 lsr
                 bcs UM_MoveRight
+                lda joystick
+                cmp #JOY_FIRE+JOY_DOWN          ;Check for reloading weapon
+                bne UM_MoveDone
+                cmp prevJoy
+                bne UM_Reload
 UM_MoveDone:    rts
 UM_MoveRight:   lda invType+1,y
                 beq UM_MoveDone
@@ -453,7 +453,10 @@ UM_SkillDisplay:ldx #MENU_NONE                  ;Exit either into inventory (fir
                 bcc SetMenuMode2
                 inx
                 cmp #JOY_FIRE+JOY_UP
-                bne SetMenuMode2
+                beq UM_SkillDisplayDone
+                jsr SetMenuMode                 ;When returning to inventory, do not
+                dec menuCounter                 ;allow to enter pausemenu anymore until
+UM_SkillDisplayDone:                            ;fire released
                 rts
 
         ; Levelup text
@@ -677,19 +680,18 @@ UM_RedrawSkillDisplay:
                 jsr PrintPanelText
                 ldx #11
                 jsr PXPM_XPLevel
-                ldx #23
-                ldy #0
+                ldx #31
+                ldy #NUM_SKILLS-1
 UM_SkillLoop:   lda plrSkills,y
                 clc
                 adc #17
                 sta screen1+SCROLLROWS*40+40,x
                 lda #$0d
                 sta colors+SCROLLROWS*40+40,x
-                inx
-                inx
-                iny
-                cpy #NUM_SKILLS
-                bcc UM_SkillLoop
+                dex
+                dex
+                dey
+                bpl UM_SkillLoop
                 rts
 
         ; Pause menu
