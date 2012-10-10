@@ -1,5 +1,6 @@
 PANEL_TEXT_SIZE = 22
 MENU_DELAY      = 13
+MENU_PAUSEDELAY = 37
 MENU_MOVEDELAY  = 3
 
 INDEFINITE_TEXT_DURATION = $7f
@@ -9,13 +10,20 @@ XP_TEXT_DURATION = 100
 REDRAW_ITEM     = $01
 REDRAW_AMMO     = $02
 
+MENU_NONE       = 0
+MENU_INVENTORY  = 1
+MENU_SKILLDISPLAY = 2
+MENU_LEVELUPMSG = 3
+MENU_LEVELUPCHOICE = 4
+MENU_PAUSE      = 5
+
         ; Finish frame. Scroll player, update frame and update score panel
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,loader temp vars
 
-FinishFrame:    
+FinishFrame:
 
         ; Scroll screen around player actor, then update frame
         ;
@@ -307,181 +315,256 @@ ContinuePanelText:
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,loader temp vars
 
-UM_LUFinish:    ldx improveList,y
-                inc plrSkills,x
+UpdateMenu:     ldx menuMode
+                lda menuUpdateTblLo,x
+                sta UM_UpdateJump+1
+                lda menuUpdateTblHi,x
+                sta UM_UpdateJump+2
+UM_UpdateJump:  jmp $0000
+
+        ; Switch menu mode and redraw the menu display
+        ;
+        ; Parameters: X new menu mode
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars,loader temp vars
+
+SetMenuMode:    stx menuMode
+                lda #$00
+                sta menuCounter
+SMM_Redraw:     lda menuRedrawTblLo,x
+                sta SMM_RedrawJump+1
+                lda menuRedrawTblHi,x
+                sta SMM_RedrawJump+2
+                lda #SFX_SELECT
+                cpx #MENU_LEVELUPMSG
+                bne SMM_SoundOK
                 lda #SFX_POWERUP
-                jsr PlaySfx
-                jsr ClearPanelText
-                jsr ApplySkills
-                lda #$00                        ;Hack: give 0 XP now to correctly process several
-                jmp GiveXP                      ;levelups in a row
+SMM_SoundOK:    jsr PlaySfx
+SMM_RedrawJump: jmp $0000
 
-UM_LevelUp:     cmp #$fe
-                beq UM_LUChoice
-                lda textTime
-                bne UM_LUTextInProgress
-                dec levelUp                     ;When text display finished, start the choice loop
-                sta menuChoice
-                jmp UM_Refresh
-UM_LUTextInProgress:
-                jsr GetFireClick                ;Speed up levelup text by pressing fire
-                bcc UM_LUNoFire
-                lda #$01
-                sta textTime
-UM_LUNoFire:
-UM_LUMoveDone:  rts
-UM_LUChoice:    ldy menuChoice
-                jsr GetFireClick
-                bcs UM_LUFinish
-                jsr MenuControl
-                cmp #JOY_LEFT
-                beq UM_LUMoveLeft
-                cmp #JOY_RIGHT
-                beq UM_LUMoveRight
-                rts
-UM_LUMoveLeft:  tya
-                beq UM_LUMoveDone
-                dec menuChoice
-                bpl UM_LUMoveCommon
-UM_LUMoveRight: lda improveList+1,y
-                bmi UM_LUMoveDone
-                inc menuChoice
-UM_LUMoveCommon:jmp UM_Refresh
+        ; Menu logic routines
 
-UM_InPauseMenu: jmp UM_PauseMenu
+        ; None
+     
+UM_PrintXP:     jmp PrintXPMessage
 
-UpdateMenu:     lda pauseMenuCounter
-                bmi UM_InPauseMenu
+UM_None:        ldx #MENU_PAUSE
                 lda actT+ACTI_PLAYER            ;If vanished after death, forcibly enter pause menu
-                beq UM_EnterPause2
-                ldx menuCounter
-                lda actHp+ACTI_PLAYER           ;If dead, close inventory, do not process leveling
-                beq UM_Close
-                lda levelUp                     ;Check if levelup already in progress
-                bmi UM_LevelUp
-                cpx #MENU_DELAY
-                beq UM_NoXPMessage              ;If inventory open, no XP messages
-                lda lastReceivedXP
+                beq SetMenuMode
+                lda keyType
+                cmp #KEY_RUNSTOP
+                beq SetMenuMode
+                ldx #MENU_LEVELUPMSG
+                lda lastReceivedXP              ;If XP received, show XP message now
                 bne UM_PrintXP
-                lda levelUp                     ;Check for pending levelup: begin if
-                beq UM_NoXPMessage              ;no other messages displayed
                 lda textTime
-                bne UM_NoXPMessage
-                jmp BeginLevelUp
-UM_PrintXP:     jsr PrintXPMessage
-                ldx menuCounter
-UM_NoXPMessage: lda joystick
+                bne UM_NoLevelUp
+                lda levelUp                     ;Check for pending levelup: begin if no other
+                bne SetMenuMode                 ;messages being displayed
+UM_NoLevelUp:   ldx #MENU_INVENTORY             ;Check for entering inventory by holding firebutton;
+                ldy #$ff                        ;if a direction simultaneously held, halt the
+                lda joystick                    ;counter until fire released
                 cmp #JOY_FIRE
-                bcc UM_Close
-                cpx #MENU_DELAY
-                beq UM_IsActive
-                bcs UM_KeyControl
-                cmp #JOY_FIRE
-                bne UM_Inactivate
-                inx
-                cpx #MENU_DELAY
-                bcs UM_Open
-UM_StoreCounter:stx menuCounter
-UM_KeyControl:  ldy itemIndex
-                ldx keyType
-                cpx #KEY_RUNSTOP
-                beq UM_EnterPause2
-                lda actHp+ACTI_PLAYER           ;Can also use , & . keys to select items,
+                bcc UM_NoFire
+                bne UM_StoreCounter
+                ldy menuCounter
+                bmi UM_NoCounter
+UM_NoFire:      iny
+                cpy #MENU_DELAY
+                beq SetMenuMode
+UM_StoreCounter:sty menuCounter
+UM_NoCounter:   lda actHp+ACTI_PLAYER           ;Can also use , & . keys to select items,
                 beq UM_KeyControlDone           ;or R to reload, but not when dead
-                cpx #KEY_COMMA
+                ldy itemIndex
+                lda keyType
+                cmp #KEY_COMMA
                 beq UM_MoveLeft
-                cpx #KEY_COLON
+                cmp #KEY_COLON
                 beq UM_MoveRight
-                cpx #KEY_R
+                cmp #KEY_R
                 beq UM_Reload
 UM_KeyControlDone:
                 rts
 
-UM_Inactivate:  ldx #$ff
-                bne UM_StoreCounter
-
-UM_Close:       cpx #MENU_DELAY
-                bne UM_WasNotOpen
-                jsr ClearPanelText
-UM_WasNotOpen:  ldx #$00
-                beq UM_StoreCounter
-
-UM_EnterPause2: jmp UM_EnterPause
-
-UM_Open:        stx menuCounter
-                lda #$00                        ;Reset pausemenucounter when opened
-                sta pauseMenuCounter
-                jmp UM_Refresh
-UM_IsActive:    cmp #JOY_FIRE+JOY_UP            ;If fire+up held, show XP and skills
-                bne UM_ForceRefresh
-                cmp prevJoy
-                beq UM_MoveDone
-                jmp UM_ShowSkills
-UM_ForceRefresh:ldy #$00                        ;Check for forced refresh (when inventory
-                bne UM_Refresh                  ;modified while open)
-                cmp #JOY_FIRE                   ;If fire only held, wait for pausemenu to open
-                beq UM_WaitForPause             ;Any other movement invalidates the counter
-                lda #$7f
-                bne UM_StorePauseCounter
-UM_WaitForPause:lda pauseMenuCounter
-                cmp #$7f
-                bcs UM_NoPauseCounter
-                adc #3
-                bmi UM_EnterPause2
-UM_StorePauseCounter:
-                sta pauseMenuCounter
-UM_NoPauseCounter:
-                ldy itemIndex
-                jsr MenuControl
-                cmp #JOY_LEFT
-                beq UM_MoveLeft
-                cmp #JOY_RIGHT
-                beq UM_MoveRight
+        ; Inventory
+        
+UM_Inventory:   ldx #MENU_SKILLDISPLAY          ;Check for entering skill display screen
                 lda joystick
-                cmp #JOY_FIRE+JOY_DOWN
-                bne UM_MoveDone
+                cmp #JOY_FIRE+JOY_UP
+                beq SetMenuMode
+                cmp #JOY_FIRE+JOY_DOWN          ;Check for reloading weapon
+                bne UM_NoReload
+                ldy itemIndex
                 cmp prevJoy
                 bne UM_Reload
+UM_NoReload:    ldx #MENU_NONE                  ;Check for exiting inventory or waiting for
+                ldy #$ff                        ;pause menu
+                cmp #JOY_FIRE
+                bcc SetMenuMode2
+                bne UM_StoreCounter2
+                ldy menuCounter
+                bmi UM_NoCounter2
+                ldx #MENU_PAUSE
+                iny
+                cpy #MENU_PAUSEDELAY
+                beq SetMenuMode2
+UM_StoreCounter2:
+                sty menuCounter
+UM_NoCounter2:
+UM_ForceRefresh:lda #$00                        ;Check for forced refresh (when inventory
+                bne RedrawMenu                  ;modified while open)
+                ldy itemIndex
+                jsr MenuControl                 ;Check for selecting items
+                lsr
+                bcs UM_MoveLeft
+                lsr
+                bcs UM_MoveRight
 UM_MoveDone:    rts
 UM_MoveRight:   lda invType+1,y
                 beq UM_MoveDone
                 inc itemIndex
-                bne UM_Refresh
-UM_MoveLeft:    tya
+                bpl RedrawInventory             ;Redraw the inventory explicitly, as items
+UM_MoveLeft:    tya                             ;can also be selected in NONE mode with keys
                 beq UM_MoveDone
                 dec itemIndex
-                bpl UM_Refresh
+                bpl RedrawInventory
 UM_Reload:      ldx invType,y                   ;Do not reload if already full magazine
                 lda invMag,y                    ;or already reloading
-                bmi UM_NoReload
+                bmi UM_DontReload
                 cmp itemMagazineSize-1,x
-                bcs UM_NoReload
+                bcs UM_DontReload
                 cmp invCount,y
-                bcs UM_NoReload
+                bcs UM_DontReload
                 lda #$00                        ;Initiate reload by zeroing magazine
                 sta invMag,y
-UM_NoReload:    rts
+UM_DontReload:  rts
 
-UM_Refresh:     lda #$00
+RedrawMenu:     ldx menuMode
+                jmp SMM_Redraw
+RedrawInventory:ldx #MENU_INVENTORY
+                jmp SMM_Redraw
+SetMenuMode2:   jmp SetMenuMode
+
+        ; Skill display
+
+UM_SkillDisplay:ldx #MENU_NONE                  ;Exit either into inventory (fire held)
+                lda joystick                    ;or to NONE mode (fire released)
+                cmp #JOY_FIRE
+                bcc SetMenuMode2
+                inx
+                cmp #JOY_FIRE+JOY_UP
+                bne SetMenuMode2
+                rts
+
+        ; Levelup text
+        
+UM_LevelUpMsg:  ldx #MENU_LEVELUPCHOICE
+                lda textTime
+                beq SetMenuMode2
+                jsr GetFireClick                ;Speed up levelup text by pressing fire
+                bcc UM_LUNoFire
+                lda #$01
+                sta textTime
+UM_LUNoFire:    rts
+
+        ; Levelup choice
+
+UM_LevelUpChoice:       
+                ldy menuCounter
+                jsr GetFireClick
+                bcs UM_LUFinish
+                jsr MenuControl
+                lsr
+                bcs UM_LUMoveLeft
+                lsr
+                bcs UM_LUMoveRight
+UM_LUMoveDone:  rts
+UM_LUMoveLeft:  tya
+                beq UM_LUMoveDone
+                dec menuCounter
+                bpl RedrawMenu
+UM_LUMoveRight: lda improveList+1,y
+                bmi UM_LUMoveDone
+                inc menuCounter
+                bpl RedrawMenu
+UM_LUFinish:    ldx improveList,y
+                inc plrSkills,x
+                lda #SFX_POWERUP
+                jsr PlaySfx
+                jsr ApplySkills
+                lda #$00                        ;Hack: give 0 XP now to correctly process several
+                jsr GiveXP                      ;levelups in a row
+UM_PauseMenuExit:
+                ldx #MENU_NONE
+                beq SetMenuMode2
+
+        ; Pause menu
+        
+
+UM_PauseMenuLeft:
+                tya
+                beq UM_PauseMenuDone
+                dec menuCounter
+                bpl RedrawMenu
+UM_PauseMenuRight:
+                tya
+                bne UM_PauseMenuDone
+                inc menuCounter
+                bpl RedrawMenu
+
+UM_PauseMenu:   ldy menuCounter
+                jsr GetFireClick
+                bcs UM_PauseMenuAction
+                lda keyType
+                cmp #KEY_RUNSTOP
+                bne UM_PauseMenuNoExit
+                lda actT+ACTI_PLAYER            ;If no player actor anymore, can not exit but must choose
+                bne UM_PauseMenuExit
+UM_PauseMenuNoExit:
+                jsr MenuControl
+                lsr
+                bcs UM_PauseMenuLeft
+                lsr
+                bcs UM_PauseMenuRight
+UM_PauseMenuDone:
+                rts
+UM_PauseMenuAction:
+                tya
+                bne UM_PauseMenuDone            ;TODO: implement save
+UM_ResumeOrRetry:
+                jsr UM_PauseMenuExit
+                lda actHp+ACTI_PLAYER
+                bne UM_PauseMenuDone
+                pla
+                pla
+                jmp Restart
+
+        ; Menu redraw routines
+
+        ; None
+
+UM_RedrawNone:  jmp ClearPanelText
+
+        ; Inventory
+
+UM_RedrawInventory:
+                lda #$00
                 sta UM_ForceRefresh+1
                 inc textLeftMargin
-                lda levelUp
-                bmi UM_RefreshSkillChoice
                 ldx itemIndex
                 lda invType,x
                 jsr GetItemName
-                ldy menuCounter                 ;When using keys to select item,
-                cpy #MENU_DELAY                 ;only show the text for a short time
-                beq UM_RefreshActive
+                ldy menuMode                    ;When using keys to select item,
+                bne UM_RedrawActive             ;only show the text for a short time
                 ldy #INVENTORY_TEXT_DURATION
-                bne UM_RefreshInactive
-UM_RefreshActive:
+                bne UM_RedrawInactive
+UM_RedrawActive:
                 ldy #INDEFINITE_TEXT_DURATION
-UM_RefreshInactive:
+UM_RedrawInactive:
                 jsr PrintPanelText
                 ldx itemIndex
                 ldy invType+1,x
-UM_RefreshCommon:
+UM_RedrawCommon:
                 dec textLeftMargin
 UM_DrawSelectionArrows:
                 lda #$20
@@ -494,12 +577,13 @@ UM_NoLeftArrow: sta screen1+SCROLLROWS*40+40+8
                 beq UM_NoRightArrow
                 lda #22
 UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+31
-UM_RefreshSound:lda #SFX_SELECT
-                jsr PlaySfx
                 jmp SetPanelRedrawItemAmmo      ;Redraw item & ammo next time panel is updated
 
-UM_RefreshSkillChoice:
-                ldx menuChoice
+        ; Levelup skill select
+
+UM_RedrawLevelUpChoice:
+                inc textLeftMargin
+                ldx menuCounter
                 ldy improveList,x
                 sty temp1
                 lda skillNameLo,y
@@ -521,18 +605,76 @@ UM_RefreshSkillChoice:
                 pla
                 adc #1
                 jsr PrintPanelChar
-                ldx menuChoice
+                ldx menuCounter
                 ldy improveList+1,x
-                bpl UM_RefreshCommon
+                bpl UM_RedrawCommon
                 ldy #$00
-                bpl UM_RefreshCommon
+                bpl UM_RedrawCommon
+   
+        ; Levelup message. Also actually levels up the player character
 
-UM_ShowSkills:  sta UM_ForceRefresh+1           ;Restore normal view when joystick
-                lda #<txtSkillDisplay           ;released
+UM_RedrawLevelUpMsg:
+                inc xpLevel
+                ldx #<xpLo
+                ldy #<xpLimitLo
+                jsr Sub16
+                lda xpLevel
+                cmp #MAX_LEVEL
+                bcc LU_NotMaxLevel
+                lda #<999
+                sta xpLimitLo
+                lda #>999
+                sta xpLimitHi
+                bne LU_XPLimitDone
+LU_NotMaxLevel: lda #NEXT_XPLIMIT
+                ldx #<xpLimitLo
+                jsr Add8
+LU_XPLimitDone: lda #HP_PLAYER
+                sta actHp+ACTI_PLAYER           ;Fill health when leveled up
+                lda #$20
+                ldx #2
+LU_ClearLevelText:
+                sta txtLevelUpLevel,x
+                dex
+                bpl LU_ClearLevelText
+                lda xpLevel
+                jsr ConvertToBCD8
+                ldx #80
+                jsr PrintBCDDigitsNoZeroes
+LU_CopyLevelText:
+                lda screen1+23*40-1,x
+                sta txtLevelUpLevel-81,x
+                dex
+                cpx #81
+                bcs LU_CopyLevelText
+                lda #<txtLevelUp
+                ldx #>txtLevelUp
+                ldy #XP_TEXT_DURATION
+                jsr PrintPanelText
+                ldx #$00
+                ldy #$00
+                sty levelUp                     ;Reset pending levelup flag
+LU_BuildSkillList:
+                lda plrSkills,y                 ;Build list of skills that can be improved
+                cmp #MAX_SKILL
+                bcs LU_AtMaximum
+                tya
+                sta improveList,x
+                inx
+LU_AtMaximum:   iny
+                cpy #NUM_SKILLS
+                bcc LU_BuildSkillList
+                lda #$ff
+                sta improveList,x               ;Endmark
+                rts
+
+        ; Show XP & skills
+
+UM_RedrawSkillDisplay:
+                lda #<txtSkillDisplay
                 ldx #>txtSkillDisplay
                 ldy #INDEFINITE_TEXT_DURATION
-                sty pauseMenuCounter            ;Can not enter pausemenu if skills shown
-                jsr PrintPanelText              ;(must exit inventory first)
+                jsr PrintPanelText
                 ldx #11
                 jsr PXPM_XPLevel
                 ldx #23
@@ -548,57 +690,11 @@ UM_SkillLoop:   lda plrSkills,y
                 iny
                 cpy #NUM_SKILLS
                 bcc UM_SkillLoop
-                bcs UM_RefreshSound
-
-UM_PauseMenu:   ldy menuChoice
-                jsr GetFireClick
-                bcs UM_PauseMenuAction
-                lda keyType
-                cmp #KEY_RUNSTOP
-                bne UM_PauseMenuNoExit
-                lda actT+ACTI_PLAYER            ;If no player actor anymore, can not exit but must choose
-                bne UM_PauseMenuExit
-UM_PauseMenuNoExit:
-                jsr MenuControl
-                cmp #JOY_LEFT
-                beq UM_PauseMenuLeft
-                cmp #JOY_RIGHT
-                beq UM_PauseMenuRight
-UM_PauseMenuDone:
                 rts
 
-UM_PauseMenuExit:
-                jsr ClearPanelText
-                lda #$00
-                sta pauseMenuCounter
-                jmp UM_RefreshSound
+        ; Pause menu
 
-UM_PauseMenuAction:
-                tya
-                bne UM_PauseMenuDone            ;TODO: implement save
-UM_ResumeOrRetry:
-                jsr UM_PauseMenuExit
-                lda actHp+ACTI_PLAYER
-                bne UM_PauseMenuDone
-                pla
-                pla
-                jmp Restart
-
-UM_PauseMenuLeft:
-                tya
-                beq UM_PauseMenuDone
-                dec menuChoice
-                bpl UM_PauseMenuRefresh
-UM_PauseMenuRight:
-                tya
-                bne UM_PauseMenuDone
-                inc menuChoice
-                bpl UM_PauseMenuRefresh
-
-UM_EnterPause:  ldx #$ff                        ;Depending on whether player is
-                stx pauseMenuCounter            ;alive, show either "resume"
-                inx                             ;or "retry"
-                stx menuChoice
+UM_RedrawPauseMenu:
                 lda #<txtPauseResume
                 ldx #>txtPauseResume
                 ldy actHp+ACTI_PLAYER
@@ -610,35 +706,34 @@ UM_PauseTextOK: ldy #INDEFINITE_TEXT_DURATION
                 lda #<txtPauseSave
                 ldx #>txtPauseSave
                 jsr ContinuePanelText
-UM_PauseMenuRefresh:
                 ldy #1
 UM_PauseMenuArrowLoop:
                 ldx pauseMenuArrowPosTbl,y
                 lda #$20
-                cpy menuChoice
+                cpy menuCounter
                 bne UM_PauseMenuSpace
                 lda #22
 UM_PauseMenuSpace:
                 sta screen1+SCROLLROWS*40+40,x
                 dey
                 bpl UM_PauseMenuArrowLoop
-                jmp UM_RefreshSound
+                rts
 
         ; Check for joystick left/right movement in menu, taking movement delay into account
         ;
         ; Parameters: -
-        ; Returns: A joystick left/right bits if OK, zero if delay or no movement
+        ; Returns: A=0 no movement, 1=left, 2=right
         ; Modifies: A,X
-        
+
 MenuControl:    lda menuMoveDelay
                 beq MC_NoDelay
                 dec menuMoveDelay
                 lda #$00
-                rts
+MC_NoMove:      rts
 MC_NoDelay:     lda joystick
-                and #JOY_LEFT
-                beq MC_NotLeft
-MC_Common:      pha
+                and #JOY_LEFT+JOY_RIGHT
+                beq MC_NoMove
+                pha
                 ldx #MENU_MOVEDELAY
                 lda joystick
                 cmp prevJoy
@@ -646,12 +741,10 @@ MC_Common:      pha
                 dex
 MC_NormalDelay: stx menuMoveDelay
                 pla
+                lsr
+                lsr
                 rts
-MC_NotLeft:     lda joystick
-                and #JOY_RIGHT
-                bne MC_Common
-                rts
-
+                
         ; Print message of received XP
         ;
         ; Parameters: A XP amount

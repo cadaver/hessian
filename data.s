@@ -1,5 +1,6 @@
         ; Game data
 
+                include paneldata.s
                 include actordata.s
                 include itemdata.s
                 include weapondata.s

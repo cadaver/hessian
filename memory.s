@@ -85,6 +85,10 @@ MAX_LVLOBJ      = 96
                 Var textRightMargin
                 Var panelUpdateFlags
 
+                Var menuMode                    ;Menu system variables
+                Var menuCounter
+                Var menuMoveDelay
+
                 Var actIndex                    ;Actor variables
                 Var actLo
                 Var actHi
@@ -98,19 +102,15 @@ MAX_LVLOBJ      = 96
                 Var displayedItemName           ;Misc. game variables
                 Var displayedHealth
                 Var healthRecharge
-                Var menuCounter
-                Var menuMoveDelay
-                Var menuChoice
-                Var pauseMenuCounter
                 Var lastReceivedXP
 
                 Var itemIndex                   ;Player state
-                Var levelUp
                 Var xpLo
                 Var xpHi
                 Var xpLevel
                 Var xpLimitLo
                 Var xpLimitHi
+                Var levelUp
 
 playerStateZPStart = itemIndex
 playerStateZPEnd = xpLimitHi+1

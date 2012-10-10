@@ -51,6 +51,3 @@ txtLevelUpLevel:dc.b "    PICK SKILL TO IMPROVE",0
 txtPauseResume: dc.b " RESUME GAME",0
 txtPauseRetry:  dc.b " CONTINUE   ",0
 txtPauseSave:   dc.b "  SAVE&EXIT",0
-
-pauseMenuArrowPosTbl:
-                dc.b 8,21

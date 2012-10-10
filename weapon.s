@@ -124,9 +124,8 @@ AH_ReloadDelayBonus:
 AH_NoAttack2:   jmp AH_NoAttack
 AH_FirearmEmpty:lda #$01                        ;If no bullets, set a constant attack delay to
                 sta actAttackD+ACTI_PLAYER      ;prevent firing but allow brandishing empty weapon
-AH_AmmoCheckOK: lda menuCounter                 ;If player is in inventory menu,
-                cmp #MENU_DELAY                 ;do not attack
-                beq AH_NoAttack2
+AH_AmmoCheckOK: lda menuMode                    ;If player is in any menu mode, do not attack
+                bne AH_NoAttack2
 AH_NotPlayer:   lda actPrevCtrl,x               ;Require fire pressed also in previous controls
                 and #JOY_FIRE                   ;to "debounce" erroneous attacks
                 beq AH_NoAttack2
