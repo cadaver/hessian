@@ -871,12 +871,7 @@ SW_DrawColorsDownLdx3:
 
         ; New blocks drawing routines
 
-SW_DrawRight:   ldx mapY                     ;Draw new blocks to the right
-                lda mapTblLo,x
-                sta temp3
-                lda mapTblHi,x
-                sta temp4
-                lda blockX
+SW_DrawRight:   lda blockX
                 clc
                 adc #$02
                 cmp #$04
@@ -884,23 +879,21 @@ SW_DrawRight:   ldx mapY                     ;Draw new blocks to the right
                 sta temp1
                 lda mapX
                 adc #$09
-                ldx #temp3
-                jsr Add8
-                lda #38
+                ldy #38
                 bne SWDL_Common
 
-SW_DrawLeft:    ldx mapY                     ;Draw new blocks to the left
-                lda mapTblLo,x
+SW_DrawLeft:    lda blockX
+                sta temp1
+                lda mapX
+                ldy #$00
+SWDL_Common:    sty SWDL_Sta+1
+                ldx mapY
+                clc
+                adc mapTblLo,x
                 sta temp3
                 lda mapTblHi,x
+                adc #$00
                 sta temp4
-                ldx #temp3
-                lda mapX
-                jsr Add8
-                lda blockX
-                sta temp1
-                lda #$00
-SWDL_Common:    sta SWDL_Sta+1
                 lda screen
                 eor #$01
                 tax
@@ -959,25 +952,17 @@ SW_DDCalcDone:  asl
                 asl
                 ora blockX
                 sta temp2
-                lda mapTblLo,x
-                sta temp3
-                lda mapTblHi,x
-                sta temp4
                 lda screen
                 eor #$01
-                tax
+                tay
                 lda #<(screen1+SCROLLROWS*40-40)
                 sta SWDU_Sta+1
-                lda screenBaseTbl,x
+                lda screenBaseTbl,y
                 ora #>(SCROLLROWS*40-40)
                 sta SWDU_Sta+2
                 bne SWDU_Common
 
-SW_DrawUp:      ldx mapY                     ;Draw new blocks to top of
-                lda mapTblLo,x                  ;screen
-                sta temp3
-                lda mapTblHi,x
-                sta temp4
+SW_DrawUp:      ldx mapY                     ;Draw new blocks to top of screen
                 lda blockY
                 asl
                 asl
@@ -985,12 +970,16 @@ SW_DrawUp:      ldx mapY                     ;Draw new blocks to top of
                 sta temp2
                 lda screen
                 eor #$01
-                tax
+                tay
                 lda #$00
                 sta SWDU_Sta+1
-                lda screenBaseTbl,x
+                lda screenBaseTbl,y
                 sta SWDU_Sta+2
-SWDU_Common:    ldx #$00
+SWDU_Common:    lda mapTblLo,x
+                sta temp3
+                lda mapTblHi,x
+                sta temp4
+                ldx #$00
                 ldy mapX
 SWDU_GetBlock:  lda (temp3),y
                 iny
@@ -1023,25 +1012,23 @@ SWDU_Ready:     rts
 
 RedrawScreen:   jsr BlankScreen
                 jsr InitScroll
-                ldx mapY
-                lda mapTblLo,x
-                sta temp3
-                lda mapTblHi,x
-                sta temp4
                 lda blockY
                 asl
                 asl
                 ora blockX
                 sta temp1
                 sta temp2
-                ldx screen
+                ldy screen
                 lda #$00
                 sta SWDU_Sta+1
-                lda screenBaseTbl,x
+                lda screenBaseTbl,y
                 sta SWDU_Sta+2
                 lda #SCROLLROWS
                 sta temp6
-RS_Loop:        jsr SWDU_Common
+                ldx mapY
+RS_Loop:        stx temp7
+                jsr SWDU_Common
+                ldx temp7
                 lda SWDU_Sta+1
                 clc
                 adc #40
@@ -1051,14 +1038,7 @@ RS_Loop:        jsr SWDU_Common
 RS_NotOver1:    ldy temp1
                 lda blockDownTbl,y
                 bpl RS_NotOver3
-                pha
-                lda temp3
-                clc
-                adc mapSizeX
-                sta temp3
-                pla
-                bcc RS_NotOver2
-                inc temp4
+                inx
 RS_NotOver2:    and #$0f
 RS_NotOver3:    sta temp1
                 sta temp2
