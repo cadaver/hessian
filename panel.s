@@ -77,7 +77,7 @@ UpdatePanel:    lda actHp+ACTI_PLAYER
                 bcs UP_IncrementHealth
 UP_DecrementHealth:
                 dec displayedHealth
-                bpl UP_RedrawHealth
+                skip2
 UP_IncrementHealth:
                 inc displayedHealth
 UP_RedrawHealth:ldx #$00
@@ -174,9 +174,9 @@ UP_Consumable:  lda #42
                 jsr Print3BCDDigits
                 jmp UP_SkipAmmo
 UP_Reloading:   ldy #$07
-                bne UP_Reloading2
+                skip2
 UP_MeleeWeapon: ldy #$03
-UP_Reloading2:  ldx #$03
+                ldx #$03
 UP_MeleeWeaponLoop:
                 lda txtInf,y
                 sta screen1+SCROLLROWS*40+40+35,x
@@ -439,9 +439,9 @@ UM_Reload:      ldx invType,y                   ;Do not reload if already full m
                 sta invMag,y
 UM_DontReload:  rts
 
-RedrawMenu:     ldx menuMode
-                jmp SMM_Redraw
 RedrawInventory:ldx #MENU_INVENTORY
+                skip2
+RedrawMenu:     ldx menuMode
                 jmp SMM_Redraw
 SetMenuMode2:   jmp SetMenuMode
 
@@ -560,10 +560,8 @@ UM_RedrawInventory:
                 ldy menuMode                    ;When using keys to select item,
                 bne UM_RedrawActive             ;only show the text for a short time
                 ldy #INVENTORY_TEXT_DURATION
-                bne UM_RedrawInactive
-UM_RedrawActive:
-                ldy #INDEFINITE_TEXT_DURATION
-UM_RedrawInactive:
+                skip2
+UM_RedrawActive:ldy #INDEFINITE_TEXT_DURATION
                 jsr PrintPanelText
                 ldx itemIndex
                 ldy invType+1,x

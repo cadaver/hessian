@@ -11,6 +11,12 @@ MAX_BLK         = 192
 MAX_LVLACT      = 128
 MAX_LVLOBJ      = 96
 
+        ; BIT instruction for skipping the next 2-byte instruction
+
+                MAC skip2
+                dc.b $2c
+                ENDM
+
         ; Zeropage variables
 
                 VarBase $02
