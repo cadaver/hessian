@@ -871,6 +871,24 @@ SW_DrawColorsDownLdx3:
 
         ; New blocks drawing routines
 
+SW_DrawRight:   ldx mapY                     ;Draw new blocks to the right
+                lda mapTblLo,x
+                sta temp3
+                lda mapTblHi,x
+                sta temp4
+                lda blockX
+                clc
+                adc #$02
+                cmp #$04
+                and #$03
+                sta temp1
+                lda mapX
+                adc #$09
+                ldx #temp3
+                jsr Add8
+                lda #38
+                bne SWDL_Common
+
 SW_DrawLeft:    ldx mapY                     ;Draw new blocks to the left
                 lda mapTblLo,x
                 sta temp3
@@ -924,30 +942,36 @@ SWDL_Block:     lda temp3
                 bcc SWDL_Not3
                 inc temp4
 SWDL_Not3:      lda temp1
-                jmp SWDL_GetBlock
+                bpl SWDL_GetBlock
 SWDL_Ready:     rts
 
-SW_DrawRight:   ldx mapY                     ;Draw new blocks to the right
+SW_DrawDown:    lda mapY                        ;Draw new blocks to bottom of
+                clc                             ;screen
+                adc #$05
+                tax
+                lda blockY
+                adc #$01
+                cmp #$04
+                bcc SW_DDCalcDone
+                and #$03
+                inx
+SW_DDCalcDone:  asl
+                asl
+                ora blockX
+                sta temp2
                 lda mapTblLo,x
                 sta temp3
                 lda mapTblHi,x
                 sta temp4
-                lda mapX
-                clc
-                adc #$09
-                ldx #temp3
-                jsr Add8
-                lda blockX
-                clc
-                adc #$02
-                cmp #$04
-                and #$03
-                sta temp1
-                bcc SWDR_NotOver
-                lda #$01
-                jsr Add8
-SWDR_NotOver:   lda #38
-                jmp SWDL_Common
+                lda screen
+                eor #$01
+                tax
+                lda #<(screen1+SCROLLROWS*40-40)
+                sta SWDU_Sta+1
+                lda screenBaseTbl,x
+                ora #>(SCROLLROWS*40-40)
+                sta SWDU_Sta+2
+                bne SWDU_Common
 
 SW_DrawUp:      ldx mapY                     ;Draw new blocks to top of
                 lda mapTblLo,x                  ;screen
@@ -990,34 +1014,6 @@ SWDU_Sta:       sta screen1,x
                 ldy temp5
                 jmp SWDU_GetBlock
 SWDU_Ready:     rts
-
-SW_DrawDown:    lda mapY                        ;Draw new blocks to bottom of
-                clc                             ;screen
-                adc #$05
-                tax
-                lda blockY
-                adc #$01
-                cmp #$04
-                bcc SW_DDCalcDone
-                and #$03
-                inx
-SW_DDCalcDone:  asl
-                asl
-                ora blockX
-                sta temp2
-                lda mapTblLo,x
-                sta temp3
-                lda mapTblHi,x
-                sta temp4
-                lda screen
-                eor #$01
-                tax
-                lda #<(screen1+SCROLLROWS*40-40)
-                sta SWDU_Sta+1
-                lda screenBaseTbl,x
-                ora #>(SCROLLROWS*40-40)
-                sta SWDU_Sta+2
-                jmp SWDU_Common
 
         ; Redraw screen fully and center scrolling
         ;
@@ -1265,8 +1261,7 @@ UB_Done2:       rts
 
         ;Subroutine to get screen row start offset with optimized multiply by 40
 
-UB_GetRowOffset:
-                ldy #$00
+UB_GetRowOffset:ldy #$00
                 sty zpDestHi
                 sta zpBitBuf
                 asl

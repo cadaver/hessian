@@ -283,7 +283,7 @@ AH_NoBulletFlicker:
                 beq AH_PlayerMeleeBonus
 AH_PlayerFirearmBonus:
                 ldy #NO_MODIFY
-                bpl AH_PlayerBonusCommon
+                skip2
 AH_PlayerMeleeBonus:
                 ldy #NO_MODIFY
 AH_PlayerBonusCommon:
