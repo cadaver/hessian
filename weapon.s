@@ -62,10 +62,9 @@ AH_SetPrepareWeaponFrame:
                 iny
 AH_NoAttackRight:
                 lda (wpnLo),y
-                bpl AH_WeaponFrameDone
+                skip2
 AH_NoWeaponFrame:
                 lda #$ff
-AH_WeaponFrameDone:
                 sta actWpnF,x
                 rts
 

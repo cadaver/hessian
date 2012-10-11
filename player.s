@@ -435,7 +435,7 @@ MH_RollAnim:    lda #$01
                 lsr                             ;to jump instead
                 bcs MH_RollToDuck
 MH_RollToJump:  lda #FR_JUMP+2
-                bne MH_RollAnimDone
+                skip2
 MH_RollToDuck:  lda #FR_DUCK+1
 MH_RollAnimDone:jmp MH_AnimDone
 MH_GroundAnim:  lda actFall,x                   ;Forced duck after falling
