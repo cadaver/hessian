@@ -57,28 +57,6 @@ BS_Common:      ldx #$00
                 stx Irq1_MaxSprY+1
                 rts
 
-        ; Show text at the game screen and turn off sprites
-        ; (return to normal display by calling UpdateFrame)
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X
-
-ShowTextScreen: jsr WaitBottom
-                lda #$18
-                sta Irq1_ScrollX+1
-                lda #$17
-                sta Irq1_ScrollY+1
-                lda #PANEL_D018
-                sta Irq1_Screen+1
-                lda #TEXT_BG1
-                sta Irq1_Bg1+1
-                lda #TEXT_BG2
-                sta Irq1_Bg2+1
-                lda #TEXT_BG3
-                sta Irq1_Bg3+1
-                bpl BS_Common
-
         ; Perform scrolling logic
         ;
         ; Parameters: -
@@ -1008,7 +986,7 @@ SWDU_Ready:     rts
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,X,Y,temp1-temp6
+        ; Modifies: A,X,Y,temp1-temp7
 
 RedrawScreen:   jsr BlankScreen
                 jsr InitScroll
