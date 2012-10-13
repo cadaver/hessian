@@ -313,7 +313,7 @@ GetBulletOffset:ldy actT,x
                 sta actLo
                 lda actDispTblHi-1,y
                 sta actHi
-                ldy #
+                ldy #$00
                 sty temp5
                 sty temp7
                 clc

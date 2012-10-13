@@ -11,12 +11,6 @@ MAX_BLK         = 192
 MAX_LVLACT      = 128
 MAX_LVLOBJ      = 96
 
-        ; BIT instruction for skipping the next 2-byte instruction
-
-                MAC skip2
-                dc.b $2c
-                ENDM
-
         ; Zeropage variables
 
                 VarBase $02
@@ -111,12 +105,12 @@ MAX_LVLOBJ      = 96
                 Var lastReceivedXP
 
                 Var itemIndex                   ;Player state
+                Var levelUp
                 Var xpLo
                 Var xpHi
                 Var xpLevel
                 Var xpLimitLo
                 Var xpLimitHi
-                Var levelUp
 
 playerStateZPStart = itemIndex
 playerStateZPEnd = xpLimitHi+1
@@ -186,7 +180,7 @@ lvlActT         = $ec80
 lvlActWpn       = $ed00
 lvlObjX         = $ed80
 lvlObjY         = $ede0
-lvlObjT         = $ee40
+lvlObjB         = $ee40
 lvlObjDL        = $eea0
 lvlObjDH        = $ef00
 lvlSpawnT       = $ef60

@@ -724,8 +724,8 @@ HD_NoDamageSource:
         ; Returns: -
         ; Modifies: A,X
 
-InitPlayer:     lda #0
-                ldx #NUM_SKILLS-1
+InitPlayer:     lda #0                          ;TODO: move to loadable script code. This does
+                ldx #NUM_SKILLS-1               ;not need to be memory-resident all the time
 IP_XPSkillLoop: sta xpLo,x
                 sta plrSkills,x
                 dex
@@ -738,6 +738,7 @@ IP_InvLoop:     sta invType,x
                 bpl IP_InvLoop
                 sta itemIndex
                 sta lastReceivedXP
+                sta levelUp
                 lda #<FIRST_XPLIMIT
                 sta xpLimitLo
                 lda #1
@@ -748,10 +749,10 @@ IP_InvLoop:     sta invType,x
         ; Apply skill effects
         ;
         ; Parameters: -
-        ; Returns: -
+        ; Returns: X=0
         ; Modifies: A,X,Y
 
-ApplySkills:    
+ApplySkills:
 
         ; Agility: acceleration, jump height, climbing speed
 
@@ -774,27 +775,7 @@ ApplySkills:
                 eor #$ff
                 adc #1-INITIAL_JUMPSPEED
                 sta playerJumpSpeed
-        
-        ; Carrying: more weapons in inventory and higher ammo limit
 
-                ldx #itemDefaultMaxCount - itemMaxCount
-AS_AmmoLoop:    lda itemMaxCountAdd-1,x
-                ldy plrCarrying
-                stx temp1
-                ldx #<temp2
-                jsr MulU
-                ldx temp1
-                lda itemDefaultMaxCount-1,x
-                clc
-                adc temp2
-                sta itemMaxCount-1,x
-                dex
-                bne AS_AmmoLoop
-                stx levelUp                     ;Reset current levelup process
-                lda plrCarrying
-                adc #INITIAL_MAX_WEAPONS
-                sta AI_MaxWeaponsCount+1
-                
         ; Firearms: damage bonus and faster reloading
 
                 ldx plrFirearms
@@ -808,7 +789,7 @@ AS_AmmoLoop:    lda itemMaxCountAdd-1,x
                 ldx plrMelee
                 lda plrWeaponBonusTbl,x
                 sta AH_PlayerMeleeBonus+1
-                
+
         ; Vitality: damage reduction, faster health recharge
 
                 ldx plrVitality
@@ -818,6 +799,25 @@ AS_AmmoLoop:    lda itemMaxCountAdd-1,x
                 sta DA_HealthRechargeDelay+1
                 lda plrRechargeRateTbl,x
                 sta MP_HealthRechargeRate+1
+
+        ; Carrying: more weapons in inventory and higher ammo limit
+
+                lda plrCarrying
+                adc #INITIAL_MAX_WEAPONS
+                sta AI_MaxWeaponsCount+1
+                ldx #itemDefaultMaxCount - itemMaxCount
+AS_AmmoLoop:    lda itemMaxCountAdd-1,x
+                ldy plrCarrying
+                stx temp1
+                ldx #<temp2
+                jsr MulU
+                ldx temp1
+                lda itemDefaultMaxCount-1,x
+                clc
+                adc temp2
+                sta itemMaxCount-1,x
+                dex
+                bne AS_AmmoLoop
                 rts
 
         ; Give experience points to player, check for leveling

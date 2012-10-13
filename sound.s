@@ -210,7 +210,7 @@ PMus_ChnExec:   inc ntChnCounter,x
         ;Get data from pattern
 
 PMus_Pattern:   ldy ntChnPattNum,x
-PMus_PattTblLoM1: 
+PMus_PattTblLoM1:
                 lda $1000,y
                 sta ntTemp1
 PMus_PattTblHiM1:
@@ -308,7 +308,8 @@ PMus_NoSongTrans:
 
         ;New note init / command exec
 
-PMus_NewNoteInit: cmp #NT_FIRSTNOTE/2
+PMus_NewNoteInit: 
+                cmp #NT_FIRSTNOTE/2
                 bcc PMus_SkipNote
                 adc ntChnTrans,x
                 asl
@@ -413,11 +414,11 @@ PMus_WaveP0:    lda $1000,y
                 cmp #$ff
                 bcs PMus_WaveJump
 PMus_NoWaveJump:inc ntChnWavePos,x
-                bcc PMus_WaveJumpdone
+                bcc PMus_WaveJumpDone
 PMus_WaveJump:
 PMus_NoteP0:    lda $1000,y
                 sta ntChnWavePos,x
-PMus_WaveJumpdone:
+PMus_WaveJumpDone:
 PMus_NoteM1a:   lda $1000,y
                 asl
                 bcs PMus_AbsFreq
@@ -473,7 +474,7 @@ PMus_FreqAdd:   lda ntChnFreqLo,x
                 jmp PMus_StoreFreqHi
 
         ;Sound effect hard restart
-       
+
 PMus_SfxHr:     lda #NT_SFXHRPARAM
                 sta $d406,x
                 bcc PMus_WaveDone

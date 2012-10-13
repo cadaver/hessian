@@ -14,7 +14,7 @@
 
 #define COLOR_DELAY 10
 #define NUMZONES 128
-#define NUMLVLOBJ 128
+#define NUMLVLOBJ 96
 #define NUMLVLACT 128
 
 #define NUMRANDOMACT 16
@@ -40,7 +40,6 @@
 unsigned char lvlobjx[NUMLVLOBJ];
 unsigned char lvlobjy[NUMLVLOBJ];
 unsigned char lvlobjb[NUMLVLOBJ];
-unsigned char lvlobjr[NUMLVLOBJ];
 unsigned char lvlobjd1[NUMLVLOBJ];
 unsigned char lvlobjd2[NUMLVLOBJ];
 
@@ -76,13 +75,13 @@ unsigned char *modetext[] = {
 
 unsigned char *actiontext[] = {
   "NONE",
-  "GOTO",
-  "A.OBJ",
-  "A.ACTOR",
-  "R.ACTOR",
-  "R+A.OBJ",
+  "DOOR",
+  "SIDEDOOR",
+  "CLOSET",
+  "SWITCH",
   "SCRIPT",
-  "SPAWN"};
+  "SPAWN G",
+  "SPAWN A"};
 
 unsigned char slopetbl[] = {
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,   // Slope 0
@@ -522,16 +521,20 @@ void level_mainloop(void)
                 {
                   case 1:
                   case 2:
-                  case 5:
                   if (lvlobjd2[objindex] == levelnum)
                   {
                     int tgt = lvlobjd1[objindex];
-                    gotopos(lvlobjx[tgt], lvlobjy[tgt] & 0x7f);
+                    if (tgt < NUMLVLOBJ)
+                      gotopos(lvlobjx[tgt], lvlobjy[tgt] & 0x7f);
                   }
                   break;
 
                   case 4:
-                  gotopos(lvlobjd1[objindex], lvlobjd2[objindex]);
+                  {
+                    int tgt = lvlobjd1[objindex];
+                    if (tgt < NUMLVLOBJ)
+                      gotopos(lvlobjx[tgt], lvlobjy[tgt] & 0x7f);
+                  }
                   break;
                 }
               }
@@ -541,13 +544,12 @@ void level_mainloop(void)
                 lvlobjx[objindex] = 0;
                 lvlobjy[objindex] = 0;
                 lvlobjb[objindex] = 0;
-                lvlobjr[objindex] = 0;
                 lvlobjd1[objindex] = 0;
                 lvlobjd2[objindex] = 0;
               }
               if (k == KEY_S) // Size
               {
-                lvlobjb[objindex] ^= 128;
+                lvlobjb[objindex] ^= 64;
               }
               if (k == KEY_A) // Animation toggle
               {
@@ -579,7 +581,7 @@ void level_mainloop(void)
                 lvlobjb[objindex] |= (a << 2);
               }
               // Spawnpoint default values: add 0, and 15
-              if ((lvlobjb[objindex] & 0x1c) == 0x1c)
+              if ((lvlobjb[objindex] & 0x1c) >= 0x1c)
               {
                 if ((!lvlobjd1[objindex]) && (!lvlobjd2[objindex]))
                 {
@@ -588,52 +590,9 @@ void level_mainloop(void)
                 }
               }
 
-              if (k == KEY_E) // Eat requirement
-              {
-                lvlobjb[objindex] ^= 32;
-              }
-
               if (k == KEY_D) // Auto-deactivate
               {
-                  lvlobjb[objindex] ^= 64;
-              }
-
-              if (k == KEY_R) // Requirement
-              {
-                if (lvlobjr[objindex])
-                {
-                  lvlobjr[objindex] ^= 128;
-                  if (!(lvlobjr[objindex] & 128))
-                  {
-                    lvlobjr[objindex] = 0;
-                  }
-                }
-                else lvlobjr[objindex]++;
-              }
-
-              if (k == KEY_Z)
-              {
-                lvlobjr[objindex]--;
-              }
-              if (k == KEY_X)
-              {
-                lvlobjr[objindex]++;
-              }
-              if (k == KEY_1)
-              {
-                lvlobjr[objindex]--;
-              }
-              if (k == KEY_2)
-              {
-                lvlobjr[objindex]++;
-              }
-              if (k == KEY_3)
-              {
-                lvlobjr[objindex] -= 16;
-              }
-              if (k == KEY_4)
-              {
-                lvlobjr[objindex] += 16;
+                  lvlobjb[objindex] ^= 32;
               }
             }
             else
@@ -732,34 +691,19 @@ void level_mainloop(void)
           }
           if ((dataeditmode) && (objfound))
           {
-            switch((lvlobjb[objindex] & 0x1c) >> 2)
+            int action = (lvlobjb[objindex] & 0x1c) >> 2;
+            switch(action)
             {
               case 1:
               case 2:
-              case 5:
+              case 4:
               for (c = 0; c < NUMLVLOBJ; c++)
               {
                 if ((lvlobjx[c] == x) && ((lvlobjy[c] & 0x7f) == y))
                 {
                   lvlobjd1[objindex] = c;
-                  lvlobjd2[objindex] = levelnum;
-                  break;
-                }
-              }
-              break;
-
-              case 4:
-              lvlobjd1[objindex] = x;
-              lvlobjd2[objindex] = y;
-              break;
-
-              case 3:
-              for (c = 0; c < NUMLVLACT; c++)
-              {
-                if ((lvlactx[c] == x) && ((lvlacty[c] & 0x7f) == y))
-                {
-                  lvlobjd1[objindex] = lvlactw[c] & 0x7f;
-                  lvlobjd2[objindex] = lvlactt[c];
+                  if (action <= 2)
+                    lvlobjd2[objindex] = levelnum;
                   break;
                 }
               }
@@ -1280,7 +1224,7 @@ void drawmap(void)
       }
       for (c = 0; c < NUMLVLOBJ; c++)
       {
-        if ((lvlobjb[c] & 0x1c) == 0x1c) sp++;
+        if ((lvlobjb[c] & 0x1c) >= 0x18) sp++;
       }
       sprintf(textbuffer, "SPAWNPOINTS IN LEVEL: %d", sp);
       printtext_color(textbuffer,0,175,SPR_FONTS,COL_WHITE);
@@ -1328,7 +1272,7 @@ void drawmap(void)
           sprintf(textbuffer, "OBJ %02X (%02X,%02X)", o, lvlobjx[o], lvlobjy[o] & 0x7f);
           printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
 
-          sprintf(textbuffer, "HSIZE:%d ", (lvlobjb[o] >> 7) + 1);
+          sprintf(textbuffer, "HSIZE:%d ", (lvlobjb[o] & 64) ? 2 : 1);
 
           if (lvlobjy[o] & 128)
           {
@@ -1336,28 +1280,8 @@ void drawmap(void)
           }
           printtext_color(textbuffer, 128,165,SPR_FONTS,COL_WHITE);
 
-          if (lvlobjr[o])
-          {
-            if (lvlobjr[o] & 128)
-            {
-              sprintf(textbuffer, "REQ:%02X (OBJ) ", lvlobjr[o] & 127);
-            }
-            else
-            {
-              sprintf(textbuffer, "%-16s", itemname[lvlobjr[o] & 127]);
-              printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
-
-              if (lvlobjb[o] & 32)
-                sprintf(textbuffer, "REQ:%02X (EAT)", lvlobjr[o] & 127);
-              else
-                sprintf(textbuffer, "REQ:%02X (ITEM)", lvlobjr[o] & 127);
-            }
-          }
-          else sprintf(textbuffer, "REQ:NONE");
-          printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
-
           sprintf(textbuffer, "MODE:%s", modetext[(lvlobjb[o] & 0x3)]);
-          if (lvlobjb[o] & 64) strcat(textbuffer, "+AUTO-DEACT");
+          if (lvlobjb[o] & 32) strcat(textbuffer, "+AUTO-DEACT");
           printtext_color(textbuffer, 128,175,SPR_FONTS,COL_WHITE);
 
           sprintf(textbuffer, "TYPE:%s (%02X%02X)", actiontext[(lvlobjb[o] & 0x1c) >> 2], lvlobjd2[o], lvlobjd1[o]);
@@ -1408,7 +1332,7 @@ void drawmap(void)
           if ((x >= 0) && (x < 10) && (y >= 0) && (y < 5))
           {
             // 2 blocks high
-            if (lvlobjb[c] & 128)
+            if (lvlobjb[c] & 64)
             {
               gfx_line(x*32,y*32-32,x*32+31,y*32-32,1);
               gfx_line(x*32+31,y*32-32,x*32+31,y*32+31,1);
@@ -2258,7 +2182,6 @@ int initchars(void)
   {
     lvlobjx[c] = 0;
     lvlobjy[c] = 0;
-    lvlobjr[c] = 0;
     lvlobjb[c] = 0;
     lvlobjd1[c] = 0;
     lvlobjd2[c] = 0;
@@ -2730,7 +2653,6 @@ void loadalldata(void)
         lvlobjx[c] = 0;
         lvlobjy[c] = 0;
         lvlobjb[c] = 0;
-        lvlobjr[c] = 0;
         lvlobjd1[c] = 0;
         lvlobjd2[c] = 0;
       }
@@ -2742,7 +2664,6 @@ void loadalldata(void)
         read(handle, &lvlobjx[0], NUMLVLOBJ);
         read(handle, &lvlobjy[0], NUMLVLOBJ);
         read(handle, &lvlobjb[0], NUMLVLOBJ);
-        read(handle, &lvlobjr[0], NUMLVLOBJ);
         read(handle, &lvlobjd1[0], NUMLVLOBJ);
         read(handle, &lvlobjd2[0], NUMLVLOBJ);
         close(handle);
@@ -2993,7 +2914,6 @@ void savealldata(void)
         write(handle, &lvlobjx[0], NUMLVLOBJ);
         write(handle, &lvlobjy[0], NUMLVLOBJ);
         write(handle, &lvlobjb[0], NUMLVLOBJ);
-        write(handle, &lvlobjr[0], NUMLVLOBJ);
         write(handle, &lvlobjd1[0], NUMLVLOBJ);
         write(handle, &lvlobjd2[0], NUMLVLOBJ);
         close(handle);

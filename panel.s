@@ -472,7 +472,7 @@ UM_LUNoFire:    rts
 
         ; Levelup choice
 
-UM_LevelUpChoice:       
+UM_LevelUpChoice:
                 ldy menuCounter
                 jsr GetFireClick
                 bcs UM_LUFinish
@@ -495,7 +495,7 @@ UM_LUFinish:    ldx improveList,y
                 lda #SFX_POWERUP
                 jsr PlaySfx
                 jsr ApplySkills
-                lda #$00                        ;Hack: give 0 XP now to correctly process several
+                txa                             ;Hack: give 0 XP now to correctly process several
                 jsr GiveXP                      ;levelups in a row
 UM_PauseMenuExit:
                 ldx #MENU_NONE

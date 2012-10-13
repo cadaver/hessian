@@ -989,7 +989,6 @@ SWDU_Ready:     rts
         ; Modifies: A,X,Y,temp1-temp7
 
 RedrawScreen:   jsr BlankScreen
-                jsr InitScroll
                 lda blockY
                 asl
                 asl
@@ -1027,7 +1026,7 @@ RS_Colors:      jsr SW_DrawColorsHorizTop
                 jsr SW_DrawColorsHorizBottom
                 dey
                 bpl RS_Colors
-                rts
+                jmp InitScroll
 
         ; Update block outside the current zone. No need to update on screen, but must find out
         ; the destination zone first. Note: nonexistent map position causes undefined behaviour

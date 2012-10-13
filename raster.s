@@ -183,7 +183,6 @@ Irq2_Spr7Frame: sta screen1+$03f8
 Irq2_ToSpr0:    jmp Irq2_Spr0
 
 Irq2_SprIrqDone:
-                sec
                 ldy sprIrqLine,x                ;Get startline of next IRQ
                 beq Irq2_AllDone                ;(0 if was last)
                 inx
@@ -194,6 +193,7 @@ Irq2_SprIrqDone:
                 lda sprIrqJumpTbl,x             ;Get the correct jump address
                 sta Irq2_SprJump+1
                 tya
+                sec
                 sbc fileOpen                    ;One line advance if loading
                 sta $d012
                 sbc #$03                        ;Already late from the next IRQ?
@@ -238,7 +238,7 @@ SetNextIrq:     sta $fffe
 
 Irq2_LatePanel: ldx irqSaveX
                 ldy irqSaveY
-                jmp Irq3_Wait
+                bcc Irq3_Wait
 
         ;Raster interrupt 4. Show the scorepanel and play music
 
