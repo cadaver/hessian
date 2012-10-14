@@ -4,6 +4,12 @@
 
                 org lvlActX
                 incbin bg/testlev.lva
+                
+                org lvlObjX
+                incbin bg/testlev.lvo
+                
+                org lvlSpawnT
+                incbin bg/testlev.lvr
 
                 org lvlCodeStart
                 

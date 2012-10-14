@@ -94,6 +94,7 @@ MAX_LVLOBJ      = 96
                 Var actHi
                 Var tgtActIndex
                 Var addActorIndex
+                Var lvlObjNum
 
                 Var wpnLo                       ;Weapon variables
                 Var wpnHi

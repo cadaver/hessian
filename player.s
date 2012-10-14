@@ -37,6 +37,8 @@ INITIAL_CLIMBSPEED = 84
 
 HP_PLAYER       = 24
 
+LVLOBJSEARCH    = 24
+
         ; Player update routine
         ;
         ; Parameters: X actor index
@@ -96,9 +98,9 @@ MP_CheckPickup: jsr MP_CheckPickupSub           ;Check for item pickup / name di
                 jsr MP_CheckPickupSub2
                 bcs MP_HasItem
                 lda displayedItemName           ;If no items, clear existing item name
-                beq MP_SetWeapon                ;text
+                beq MP_CheckObject              ;text
                 jsr ClearPanelText
-                jmp MP_SetWeapon
+                jmp MP_CheckObject
 MP_HasItem:     lda textTime                    ;Make sure to not overwrite other game
                 bne MP_SkipItemName             ;messages
                 lda actF1,y
@@ -112,14 +114,45 @@ MP_HasItem:     lda textTime                    ;Make sure to not overwrite othe
                 sta displayedItemName
 MP_SkipItemName:lda actCtrl+ACTI_PLAYER
                 cmp #JOY_DOWN
-                bne MP_SetWeapon
+                bne MP_CheckObject
                 lda actFd+ACTI_PLAYER           ;If ducking, try picking up the item
-                beq MP_SetWeapon
+                beq MP_CheckObject
                 lda actF1+ACTI_PLAYER
                 cmp #FR_DUCK
-                bne MP_SetWeapon
+                bne MP_CheckObject
                 ldy MP_CheckPickupSub+1
                 jsr TryPickup
+
+MP_CheckObject: lda actXH+ACTI_PLAYER
+                sta MPCO_CmpX+1
+                ldy actYH+ACTI_PLAYER
+                dey
+                sty MPCO_SubY+1
+MPCO_Start:     ldx #$00
+MPCO_Loop:      lda lvlObjX,x
+MPCO_CmpX:      cmp #$00
+                bne MPCO_Next
+                lda lvlObjY,x
+                and #$7f
+MPCO_SubY:      sbc #$00
+                cmp #$02                        ;Above or at object
+                bcc MPCO_Found
+MPCO_Next:      inx
+MPCO_EndCmp:    cpx #LVLOBJSEARCH
+                bcc MPCO_Loop
+                cpx #MAX_LVLOBJ
+                bcc MPCO_NotOver
+                ldx #$ff
+                stx lvlObjNum                   ;No object found
+                inx
+                clc
+MPCO_NotOver:   stx MPCO_Start+1
+                txa
+                adc #LVLOBJSEARCH
+                sta MPCO_EndCmp+1
+                bpl MPCO_Done
+MPCO_Found:     stx lvlObjNum
+MPCO_Done:
 
 MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventory
                 ldx invType,y
@@ -730,6 +763,7 @@ IP_XPSkillLoop: sta xpLo,x
                 sta plrSkills,x
                 dex
                 bpl IP_XPSkillLoop
+                stx lvlObjNum                   ;No levelobject found
                 ldx #MAX_INVENTORYITEMS-1
 IP_InvLoop:     sta invType,x
                 sta invCount,x
