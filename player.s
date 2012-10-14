@@ -1,12 +1,13 @@
 FR_STAND        = 0
 FR_WALK         = 1
-FR_JUMP         = 9
-FR_DUCK         = 12
-FR_CLIMB        = 14
-FR_DIE          = 18
-FR_ROLL         = 21
-FR_PREPARE      = 27
-FR_ATTACK       = 29
+FR_ENTER        = 9
+FR_JUMP         = 10
+FR_DUCK         = 13
+FR_CLIMB        = 15
+FR_DIE          = 19
+FR_ROLL         = 22
+FR_PREPARE      = 28
+FR_ATTACK       = 30
 
 HEALTH_RECHARGE_DELAY = 75
 HEALTH_RECHARGE_RATE = 25
@@ -339,7 +340,22 @@ MH_NoHitWall:   lda temp1
                 beq MH_NoNewJump
                 lda temp2
                 bne MH_NoNewJump
-                lda temp3
+                txa                             ;If player, check for operating level objects
+                bne MH_NoOperate
+                ldy lvlObjNum
+                bmi MH_NoOperate
+                lda lvlObjB,y
+                and #OBJ_MODEBITS
+                cmp #OBJMODE_MANUAL
+                bcc MH_NoOperate
+                lda actMoveCtrl,x
+                cmp #JOY_UP
+                bne MH_NoOperate
+                jsr OperateObject
+                ldx #ACTI_PLAYER
+                lda #FR_ENTER
+                jmp MH_AnimDone
+MH_NoOperate:   lda temp3
                 and #AMF_CLIMB
                 beq MH_NoInitClimbUp
                 jsr GetCharInfo4Above           ;Jump or climb?
@@ -526,6 +542,8 @@ MH_DuckAnim:    lda #$01
 MH_NoDuck:      lda actF1,x
                 cmp #FR_DUCK
                 bcc MH_StandOrWalk
+                cmp #FR_ENTER
+                beq MH_AnimDone2
 MH_DuckStandUpAnim:
                 lda #$01
                 jsr AnimationDelay

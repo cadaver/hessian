@@ -8,12 +8,24 @@ ZONEH_BG3       = 6
 ZONEH_MUSIC     = 7
 ZONEH_DATA      = 8
 
+OBJ_ANIMATE     = $80                           ;In levelobject Y-coordinate
+OBJ_MODEBITS    = $03
+OBJ_TYPEBITS    = $1c
+OBJ_AUTODEACT   = $20
+OBJ_SIZE        = $40
+OBJ_ACTIVE      = $80
+
+OBJMODE_NONE    = $00
+OBJMODE_TRIG    = $01
+OBJMODE_MANUAL  = $02
+OBJMODE_MANUALAD = $03
+
 InitLevel       = lvlCodeStart
 UpdateLevel     = lvlCodeStart+3
 
         ; Load a level. TODO: add retry/error handling
         ;
-        ; Parameters: A:Level number
+        ; Parameters: A Level number
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
@@ -156,4 +168,70 @@ FindZoneNum:    sta zoneNum
                 iny
                 lda (zoneLo),y
                 sta limitD
-                rts
+AOD_Done:
+OO_Done:        rts
+
+        ; Operate a level object
+        ;
+        ; Parameters: X player actor index (0), Y object number
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+OperateObject:  lda actMoveCtrl,x               ;Only operate on the first frame
+                cmp actPrevCtrl,x               ;TODO: play sound
+                beq OO_Done
+                lda lvlObjB,x
+                bmi OO_Active
+OO_Inactive:    jmp ActivateObject
+OO_Active:      and #OBJ_MODEBITS
+                cmp #OBJMODE_MANUALAD
+                bne OO_Done
+                
+        ; Inactivate a level object
+        ; 
+        ; Parameters: Y object number
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+        
+InactivateObject:
+                lda lvlObjB,x                 ;Make sure that is active
+                bpl OO_Done
+                and #$ff-OBJ_ACTIVE
+                sta lvlObjB,x
+                lda lvlObjY,x                 ;Check for animation
+                bpl OO_Done
+                lda #$ff
+
+AnimateObjectDelta:
+                sta temp2
+                sty temp1
+                lda lvlObjY,y
+                jsr AOD_Sub
+                ldy temp1
+                lda lvlObjB,x
+                and #OBJ_SIZE
+                beq AOD_Done
+                lda lvlObjY,y
+                sec
+                sbc #$01
+AOD_Sub:        and #$7f
+                ldx lvlObjX,y
+                tay
+                lda temp2
+                jmp UpdateBlockDelta
+
+        ; Activate a level object
+        ; 
+        ; Parameters: Y object number
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ActivateObject: lda lvlObjB,x                 ;Make sure that is inactive
+                bmi OO_Done
+                ora #OBJ_ACTIVE
+                sta lvlObjB,x
+                lda lvlObjY,x                 ;Check for animation
+                bpl OO_Done
+                lda #$01
+                bne AnimateObjectDelta
+

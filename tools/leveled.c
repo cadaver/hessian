@@ -69,9 +69,9 @@ char *modename[16];
 
 unsigned char *modetext[] = {
   "NONE",
+  "TRIG",
   "MAN.",
-  "MAN.AD",
-  "TRIG"};
+  "MAN.AD"};
 
 unsigned char *actiontext[] = {
   "NONE",

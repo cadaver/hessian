@@ -29,13 +29,13 @@ actDispTblHi:   dc.b >adPlayer
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_PLAYER                   ;Lower part spritefile number
-                dc.b 39                         ;Lower part base spritenumber
+                dc.b 40                         ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
-                dc.b 27                         ;Lower part left frame add
+                dc.b 28                         ;Lower part left frame add
                 dc.b C_PLAYER                   ;Upper part spritefile number
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable
-                dc.b 34                         ;Upper part left frame add
+                dc.b 35                         ;Upper part left frame add
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -66,13 +66,13 @@ adExplosion:    dc.b ONESPRITE                  ;Number of sprites
 
         ; Human actor upper part framenumbers
 
-humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,25,24,25,26,6,20,21,27,28,29,30,31,32,6,7,8,9,10,11,12
-                dc.b 4,3,3,4,4,5,5,4,4,5,4,3,3,3,25,24,25,26,13,22,23,33,34,35,36,37,38,13,14,15,16,17,18,19
+humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,27,2,1,0,0,0,25,24,25,26,6,20,21,28,29,30,31,32,33,6,7,8,9,10,11,12
+                dc.b 4,3,3,4,4,5,5,4,4,27,5,4,3,3,3,25,24,25,26,13,22,23,34,35,36,37,38,39,13,14,15,16,17,18,19
 
         ; Human actor lower part framenumbers
 
-humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,10,11,12,16,17,27,26,27,28,20,21,22,29,30,31,32,33,34
-                dc.b 5,6,7,8,9,6,7,8,9,13,14,15,18,19,27,26,27,28,23,24,25,35,36,37,38,39,40
+humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,27,10,11,12,16,17,27,26,27,28,20,21,22,29,30,31,32,33,34
+                dc.b 5,6,7,8,9,6,7,8,9,27,13,14,15,18,19,27,26,27,28,23,24,25,35,36,37,38,39,40
 
         ; Human Y-size reduce table based on animation
 
