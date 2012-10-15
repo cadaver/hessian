@@ -1,8 +1,8 @@
 FR_STAND        = 0
 FR_WALK         = 1
-FR_ENTER        = 9
-FR_JUMP         = 10
-FR_DUCK         = 13
+FR_JUMP         = 9
+FR_DUCK         = 12
+FR_ENTER        = 14
 FR_CLIMB        = 15
 FR_DIE          = 19
 FR_ROLL         = 22
@@ -543,7 +543,7 @@ MH_NoDuck:      lda actF1,x
                 cmp #FR_DUCK
                 bcc MH_StandOrWalk
                 cmp #FR_ENTER
-                beq MH_AnimDone2
+                beq MH_StandAnim                ;Release "operate" frame if joystick released
 MH_DuckStandUpAnim:
                 lda #$01
                 jsr AnimationDelay
