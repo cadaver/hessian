@@ -181,18 +181,17 @@ OO_Done:        rts
 
         ; Operate a level object
         ;
-        ; Parameters: X player actor index (0), Y object number
+        ; Parameters: Y object number
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
 OperateObject:  lda #FR_ENTER                 ;Todo: play sound
-                sta actF1,x
-                sta actF2,x
+                sta actF1+ACTI_PLAYER
+                sta actF2+ACTI_PLAYER
                 lda #1                        ;Reset door entry counter
-                sta actFd,x
+                sta actFd+ACTI_PLAYER
                 lda lvlObjB,y
-                bmi OO_Active
-OO_Inactive:    jmp ActivateObject
+                bpl ActivateObject
 OO_Active:      and #OBJ_MODEBITS
                 cmp #OBJMODE_MANUALAD
                 bne OO_Done

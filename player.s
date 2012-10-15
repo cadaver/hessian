@@ -354,7 +354,8 @@ MH_NoHitWall:   lda temp1
                 cmp actPrevCtrl,x
                 beq MH_NoOperate
                 jsr OperateObject
-                jmp MH_NoNewJump
+                ldx #ACTI_PLAYER
+                beq MH_NoNewJump
 MH_NoOperate:   lda temp3
                 and #AMF_CLIMB
                 beq MH_NoInitClimbUp
