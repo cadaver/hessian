@@ -352,9 +352,7 @@ MH_NoHitWall:   lda temp1
                 cmp #JOY_UP
                 bne MH_NoOperate
                 jsr OperateObject
-                ldx #ACTI_PLAYER
-                lda #FR_ENTER
-                jmp MH_AnimDone
+                jmp MH_NoNewJump
 MH_NoOperate:   lda temp3
                 and #AMF_CLIMB
                 beq MH_NoInitClimbUp
@@ -539,11 +537,17 @@ MH_DuckAnim:    lda #$01
                 bcc MH_AnimDone
                 lda #FR_DUCK+1
                 bne MH_AnimDone
-MH_NoDuck:      lda actF1,x
-                cmp #FR_DUCK
+MH_NoDuck:      lda actF1,x                     ;If door enter/operate object animation,
+                cmp #FR_ENTER                   ;hold it as long as joystick is held up
+                bne MH_NoEnterAnim
+                lda actMoveCtrl,x
+                cmp #JOY_UP
+                beq MH_AnimDone2
+                lda #$00                        ;If released, reset possible door entry flag
+                sta doorEntry                   ;(only player actor uses this frame)
+                beq MH_StandAnim                ;and go back to stand frame
+MH_NoEnterAnim: cmp #FR_DUCK
                 bcc MH_StandOrWalk
-                cmp #FR_ENTER
-                beq MH_StandAnim                ;Release "operate" frame if joystick released
 MH_DuckStandUpAnim:
                 lda #$01
                 jsr AnimationDelay

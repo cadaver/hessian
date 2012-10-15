@@ -7,24 +7,11 @@ SCRCENTER_Y     = 13
 CI_GROUND       = 1                             ;Char info bits
 CI_OBSTACLE     = 2
 CI_CLIMB        = 4
-CI_DOOR         = 8
 CI_SLOPE1       = 32
 CI_SLOPE2       = 64
 CI_SLOPE3       = 128
 
 OPTIMIZE_SPRITEIRQS = 0
-
-        ; Set map position and reset scrolling
-        ;
-        ; Parameters: X,Y new position
-        ; Returns: -
-        ; Modifies: A
-
-SetMapPos:      stx mapX
-                sty mapY
-                lda #$00
-                sta blockX
-                sta blockY
 
         ; Reset & center scrolling
         ;
@@ -988,8 +975,7 @@ SWDU_Ready:     rts
         ; Returns: -
         ; Modifies: A,X,Y,temp1-temp7
 
-RedrawScreen:   jsr BlankScreen
-                lda blockY
+RedrawScreen:   lda blockY
                 asl
                 asl
                 ora blockX

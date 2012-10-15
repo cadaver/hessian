@@ -20,6 +20,13 @@ OBJMODE_TRIG    = $01
 OBJMODE_MANUAL  = $02
 OBJMODE_MANUALAD = $03
 
+OBJTYPE_NONE    = $00
+OBJTYPE_DOOR    = $04
+OBJTYPE_SIDEDOOR = $08
+
+DOORENTRYDELAY  = 4
+AUTODEACTDELAY  = 12
+
 InitLevel       = lvlCodeStart
 UpdateLevel     = lvlCodeStart+3
 
@@ -30,8 +37,11 @@ UpdateLevel     = lvlCodeStart+3
         ; Modifies: A,X,Y,temp vars
 
 LoadLevel:      sta levelNum
+                lda #$ff
+                sta autoDeactObjNum             ;Reset object auto-deactivation
                 lda #$00                        ;Assume zone 0 after loading
                 sta zoneNum                     ;a new level
+                sta doorEntry                   ;Reset door entering
                 sta Irq4_LevelUpdate+1          ;No level update while loading
                 ldx #F_LEVEL
                 jsr MakeFileName
@@ -177,9 +187,25 @@ OO_Done:        rts
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-OperateObject:  lda actMoveCtrl,x               ;Only operate on the first frame
-                cmp actPrevCtrl,x               ;TODO: play sound
-                beq OO_Done
+OO_Hold:        lda lvlObjB,y                 ;If holding joystick up, increment
+                bpl OO_Done                   ;door entry counter for doors, first
+                and #OBJ_TYPEBITS             ;check the door is still open
+                cmp #OBJTYPE_DOOR
+                bne OO_Done
+                cpy autoDeactObjNum           ;Reset door auto-deactivation timer
+                bne OO_NoDoorAutoDeact        ;while holding
+                lda #AUTODEACTDELAY
+                sta autoDeactObjCounter
+OO_NoDoorAutoDeact:
+                inc doorEntry
+                jmp OO_Done
+
+OperateObject:  lda actMoveCtrl,x             ;Only activate on the frame joystick pushed up,
+                cmp actPrevCtrl,x             ;not when holding
+                beq OO_Hold
+                lda #FR_ENTER                 ;Todo: play sound
+                sta actF1,x
+                sta actF2,x
                 lda lvlObjB,y
                 bmi OO_Active
 OO_Inactive:    jmp ActivateObject
@@ -191,16 +217,16 @@ OO_Active:      and #OBJ_MODEBITS
         ; 
         ; Parameters: Y object number
         ; Returns: -
-        ; Modifies: A,Y,temp vars
+        ; Modifies: A,X,Y,temp vars
         
 InactivateObject:
                 lda lvlObjB,y                 ;Make sure that is active
                 bpl OO_Done
                 and #$ff-OBJ_ACTIVE
                 sta lvlObjB,y
-                lda lvlObjY,y                 ;Check for animation
-                bpl OO_Done
                 lda #$ff
+                ldx lvlObjY,y                 ;Check for animation
+                bpl OO_Done
 
 AnimateObjectDelta:
                 sta temp2
@@ -221,17 +247,138 @@ AOD_Sub:        and #$7f
                 jmp UpdateBlockDelta
 
         ; Activate a level object
-        ; 
+        ;
         ; Parameters: Y object number
         ; Returns: -
-        ; Modifies: A,Y,temp vars
+        ; Modifies: A,X,Y,temp vars
 
 ActivateObject: lda lvlObjB,y                 ;Make sure that is inactive
-                bmi OO_Done
+                bmi AO_Done
                 ora #OBJ_ACTIVE
                 sta lvlObjB,y
-                lda lvlObjY,y                 ;Check for animation
-                bpl OO_Done
-                lda #$01
-                bne AnimateObjectDelta
+                and #OBJ_AUTODEACT            ;Enable auto-deactivation if necessary
+                beq AO_NoAutoDeact
+                lda autoDeactObjNum           ;If another object already deactivating,
+                bmi AO_NoPreviousAutoDeact    ;deactivate it immediately
+                sty temp3
+                tay
+                jsr InactivateObject
+                ldy temp3
+AO_NoPreviousAutoDeact:
+                sty autoDeactObjNum
+                lda #AUTODEACTDELAY
+                sta autoDeactObjCounter
+AO_NoAutoDeact: lda #$01
+                ldx lvlObjY,y                 ;Check for animation
+                bmi AnimateObjectDelta
+ULO_Done:
+AO_Done:        rts
 
+        ; Update level objects. Handle auto-deactivation and actually entering doors
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+UpdateLevelObjects:
+                ldy autoDeactObjNum
+                bmi ULO_NoAutoDeact
+                dec autoDeactObjCounter
+                bne ULO_NoAutoDeact
+                lda #$ff
+                sta autoDeactObjNum
+                jsr InactivateObject
+ULO_NoAutoDeact:ldy lvlObjNum
+                bmi ULO_Done
+                lda doorEntry
+                cmp #DOORENTRYDELAY
+                bcs ULO_EnterDoor
+                lda lvlObjB,y                   ;Check for side door
+                and #OBJ_TYPEBITS
+                cmp #OBJTYPE_SIDEDOOR
+                bne ULO_Done
+                lda actXH+ACTI_PLAYER
+                cmp lvlObjX,y
+                bne ULO_Done
+                ldx actXL+ACTI_PLAYER
+                cmp limitL                      ;TODO: now side doors must be at
+                bne ULO_NotLeftSide             ;zone side boundaries. Permit other locations
+                txa
+                beq ULO_EnterDoor
+                bne ULO_Done
+ULO_NotLeftSide:adc #$00
+                cmp limitR
+                bne ULO_Done
+                cpx #$ff
+                bcc ULO_Done
+
+ULO_EnterDoor:  lda lvlObjDL,y                 ;Get destination door. TODO: handle level change
+                tay
+                lda #$80
+                sta actXL+ACTI_PLAYER
+                lda lvlObjX,y
+                sta actXH+ACTI_PLAYER
+                lda #$00
+                sta actYL+ACTI_PLAYER
+                sta actSX+ACTI_PLAYER
+                sta doorEntry
+                lda lvlObjY,y
+                and #$7f
+                tax
+                inx
+                stx actYH+ACTI_PLAYER
+                lda #FR_STAND
+                sta actF1+ACTI_PLAYER
+                sta actF2+ACTI_PLAYER
+                lda #MB_GROUNDED
+                sta actMB+ACTI_PLAYER
+
+        ; Centers player on screen, redraws screen, and adds all actors from leveldata
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+CenterPlayer:   jsr BlankScreen
+                ldx actXH+ACTI_PLAYER
+                ldy actYH+ACTI_PLAYER
+                jsr FindZoneXY
+                jsr InitMap
+                lda limitR
+                sec
+                sbc #10
+                sta temp1
+                lda limitD
+                sbc #6
+                sta temp2
+                ldx #3
+                ldy #2
+                lda actXH+ACTI_PLAYER
+                sbc #5
+                bcc CP_OverLeft
+                cmp limitL
+                bcs CP_NotOverLeft
+CP_OverLeft:    lda limitL
+                ldx #0
+CP_NotOverLeft: cmp temp1
+                bcc CP_NotOverRight
+                lda temp1
+                ldx #1
+CP_NotOverRight:sta mapX
+                lda actYH+ACTI_PLAYER
+                sec
+                sbc #4
+                bcc CP_OverUp
+                cmp limitU
+                bcs CP_NotOverUp
+CP_OverUp:      lda limitU
+                ldy #0
+CP_NotOverUp:   cmp temp2
+                bcc CP_NotOverDown
+                lda temp2
+                ldy #2
+CP_NotOverDown: sta mapY
+                stx blockX
+                sty blockY
+                jsr RedrawScreen
+                jmp UpdateAndAddAllActors

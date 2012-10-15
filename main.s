@@ -47,10 +47,6 @@ Main:           lda #0
 
 Restart:        lda #0
                 jsr LoadLevel
-                ldx #0
-                ldy #0
-                jsr SetMapPos
-                jsr RedrawScreen
                 jsr ClearActors
 
 CreatePlayer:   ldy #ACTI_PLAYER
@@ -73,7 +69,7 @@ CreatePlayer:   ldy #ACTI_PLAYER
                 lda #ORG_NONE                   ;Player has no leveldata origin
                 sta actLvlOrg,x
                 jsr InitPlayer
-                jsr UpdateAndAddAllActors
+                jsr CenterPlayer
 
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors
@@ -83,6 +79,7 @@ MainLoop:       jsr ScrollLogic
                 jsr UpdateMenu
                 jsr UpdateActors
                 jsr FinishFrame
+                jsr UpdateLevelObjects
                 jmp MainLoop
 
 randomAreaEnd:
