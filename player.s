@@ -351,6 +351,8 @@ MH_NoHitWall:   lda temp1
                 lda actMoveCtrl,x
                 cmp #JOY_UP
                 bne MH_NoOperate
+                cmp actPrevCtrl,x
+                beq MH_NoOperate
                 jsr OperateObject
                 jmp MH_NoNewJump
 MH_NoOperate:   lda temp3
@@ -542,10 +544,11 @@ MH_NoDuck:      lda actF1,x                     ;If door enter/operate object an
                 bne MH_NoEnterAnim
                 lda actMoveCtrl,x
                 cmp #JOY_UP
+                bne MH_StandAnim
+                lda actFd,x                     ;Increment door entry delay
                 beq MH_AnimDone2
-                lda #$00                        ;If released, reset possible door entry flag
-                sta doorEntry                   ;(only player actor uses this frame)
-                beq MH_StandAnim                ;and go back to stand frame
+                inc actFd,x
+                bne MH_AnimDone2
 MH_NoEnterAnim: cmp #FR_DUCK
                 bcc MH_StandOrWalk
 MH_DuckStandUpAnim:

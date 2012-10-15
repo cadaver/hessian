@@ -95,7 +95,6 @@ MAX_LVLOBJ      = 96
                 Var tgtActIndex
                 Var addActorIndex
                 Var lvlObjNum
-                Var doorEntry
                 Var autoDeactObjNum
                 Var autoDeactObjCounter
 
