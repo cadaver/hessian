@@ -279,6 +279,9 @@ ULO_NoAutoDeact:ldy lvlObjNum
                 and #OBJ_TYPEBITS+OBJ_ACTIVE
                 cmp #OBJTYPE_DOOR+OBJ_ACTIVE    ;Check for ordinary door that is open
                 bne ULO_NoDoor
+                ldx actF1+ACTI_PLAYER
+                cpx #FR_ENTER
+                bne ULO_NoDoor
                 ldx actFd+ACTI_PLAYER           ;Check for entry delay
                 cpx #DOORENTRYDELAY
                 bcs ULO_EnterDoor
