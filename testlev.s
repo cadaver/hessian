@@ -4,7 +4,7 @@
 
                 org lvlActX
                 incbin bg/testlev.lva
-                
+
                 org lvlObjX
                 incbin bg/testlev.lvo
                 
@@ -16,12 +16,12 @@
 InitLevel:      jmp DoNothing
 
 UpdateLevel:    ldx #$06
-                ldy chars+128*8+7
-UL_Loop:        lda chars+128*8,x
-                sta chars+128*8+1,x
+                ldy chars+54*8+7
+UL_Loop:        lda chars+54*8,x
+                sta chars+54*8+1,x
                 dex
                 bpl UL_Loop
-                sty chars+128*8
+                sty chars+54*8
 DoNothing:      rts
 
                 org chars

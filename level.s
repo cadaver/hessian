@@ -180,7 +180,7 @@ OO_Done:        rts
 OperateObject:  lda actMoveCtrl,x               ;Only operate on the first frame
                 cmp actPrevCtrl,x               ;TODO: play sound
                 beq OO_Done
-                lda lvlObjB,x
+                lda lvlObjB,y
                 bmi OO_Active
 OO_Inactive:    jmp ActivateObject
 OO_Active:      and #OBJ_MODEBITS
@@ -194,11 +194,11 @@ OO_Active:      and #OBJ_MODEBITS
         ; Modifies: A,Y,temp vars
         
 InactivateObject:
-                lda lvlObjB,x                 ;Make sure that is active
+                lda lvlObjB,y                 ;Make sure that is active
                 bpl OO_Done
                 and #$ff-OBJ_ACTIVE
-                sta lvlObjB,x
-                lda lvlObjY,x                 ;Check for animation
+                sta lvlObjB,y
+                lda lvlObjY,y                 ;Check for animation
                 bpl OO_Done
                 lda #$ff
 
@@ -208,7 +208,7 @@ AnimateObjectDelta:
                 lda lvlObjY,y
                 jsr AOD_Sub
                 ldy temp1
-                lda lvlObjB,x
+                lda lvlObjB,y
                 and #OBJ_SIZE
                 beq AOD_Done
                 lda lvlObjY,y
@@ -226,11 +226,11 @@ AOD_Sub:        and #$7f
         ; Returns: -
         ; Modifies: A,Y,temp vars
 
-ActivateObject: lda lvlObjB,x                 ;Make sure that is inactive
+ActivateObject: lda lvlObjB,y                 ;Make sure that is inactive
                 bmi OO_Done
                 ora #OBJ_ACTIVE
-                sta lvlObjB,x
-                lda lvlObjY,x                 ;Check for animation
+                sta lvlObjB,y
+                lda lvlObjY,y                 ;Check for animation
                 bpl OO_Done
                 lda #$01
                 bne AnimateObjectDelta
