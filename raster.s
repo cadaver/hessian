@@ -271,7 +271,7 @@ Irq4_NoNtscDelay:
                 bcs Irq4_TargetFramesOk         ;Delay will not be used when the update
                 inc targetFrames                ;is already lagging behind
 Irq4_TargetFramesOk:
-                jsr PlayMusic                   ;Play music/sound effects
+                jsr PlayRoutine                 ;Play music/sound effects
 Irq4_LevelUpdate:lda #$00                       ;Animate level background?
                 beq Irq4_SkipFrame
                 jsr UpdateLevel

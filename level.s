@@ -274,7 +274,7 @@ ULO_OperateFlag:lda #$00                        ;Check for manual operation of o
                 bmi ULO_Done
                 tax
                 beq ULO_NoOperate
-                inc actFd+ACTI_PLAYER           ;Start the doorentry-counter                
+                inc actFd+ACTI_PLAYER           ;Start the doorentry-counter
                 lda lvlObjB,y
                 bmi ULO_OperateActive
                 and #OBJ_MODEBITS
@@ -346,6 +346,9 @@ ULO_EnterDestDoor:
 CenterPlayer:   ldx actXH+ACTI_PLAYER
                 ldy actYH+ACTI_PLAYER
                 jsr FindZoneXY
+                ldy #ZONEH_MUSIC
+                lda (zoneLo),y
+                jsr PlaySong                    ;Play zone's music
                 jsr InitMap
                 lda limitR
                 sec

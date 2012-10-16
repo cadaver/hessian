@@ -36,11 +36,7 @@ randomAreaStart:
 
         ; Test initialization code, will be removed
 
-Main:           lda #0
-                jsr LoadMusic
-                lda #0
-                jsr InitMusic
-                ldy #C_COMMON                   ;Load the always resident sprites
+Main:           ldy #C_COMMON                   ;Load the always resident sprites
                 jsr LoadSpriteFile
                 ldy #C_WEAPON
                 jsr LoadSpriteFile

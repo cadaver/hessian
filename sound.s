@@ -22,13 +22,23 @@ NT_SFXFIRSTWAVE     = $09
 
 CHN_SFX             = $00
 
-        ; Load new music file
+        ; Play a song. Load if necessary. Do not reinit if already playing
         ;
-        ; Parameters: A music file number
+        ; Parameters: A song number, $00-$03 in first file, $04-$07 in second etc.
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-LoadMusic:      ldx #F_MUSIC
+PlaySong:
+PS_CurrentSong: cmp #$ff
+                beq PS_Done
+                sta PS_CurrentSong+1
+                pha
+                lsr
+                lsr
+PS_LoadedMusic: cmp #$ff                        ;Check if music already loaded
+                beq PS_SameMusicFile
+                sta PS_LoadedMusic+1
+                ldx #F_MUSIC
                 jsr MakeFileName
                 lda #$7f
                 sta ntInitSong                  ;Silence during loading
@@ -76,8 +86,14 @@ IMD_AddDone:    pla
                 jsr IMD_Store
                 dex
                 bpl IMD_Loop
-IMD_Store:      sta PlayMusic,y
-LM_Error:       rts
+PS_SameMusicFile:
+                pla
+                and #$03
+                sta ntInitSong
+PS_Done:        rts
+
+IMD_Store:      sta PlayRoutine,y
+                rts
 
         ; Play a sound effect, with priority (higher memory address has precedence)
         
@@ -110,44 +126,37 @@ PSnd_Done:      ldx zpSrcLo
 
         ;New song initialization
 
-PMus_DoInit:    asl
-                bpl PMus_NoSilence
+Play_DoInit:    asl
+                bpl Play_NoSilence
                 jmp SilenceSID
-PMus_NoSilence: asl
+Play_NoSilence: asl
                 adc ntInitSong
                 tay
-PMus_SongTblP0: lda $1000,y
+Play_SongTblP0: lda $1000,y
                 sta ntTrackLo
-PMus_SongTblP1: lda $1000,y
+Play_SongTblP1: lda $1000,y
                 sta ntTrackHi
                 txa
                 sta ntFiltPos
                 sta $d417
                 ldx #21
-PMus_InitLoop:  sta ntChnPattPos-1,x
+Play_InitLoop:  sta ntChnPattPos-1,x
                 dex
-                bne PMus_InitLoop
+                bne Play_InitLoop
                 lda #$04                        ;Hack: reset NTSC-delay to avoid systematic
                 sta ntscDelay                   ;hard restart bug at tempo 5
-                jsr PMus_InitChn
+                jsr Play_InitChn
                 ldx #$07
-                jsr PMus_InitChn
+                jsr Play_InitChn
                 ldx #$0e
-PMus_InitChn:    
-PMus_SongTblP2: lda $1000,y
+Play_InitChn:    
+Play_SongTblP2: lda $1000,y
                 sta ntChnSongPos,x
                 iny
                 lda #$ff
                 sta ntChnNewNote,x
                 sta ntChnDuration,x
-
-        ; Initialize subtune from the music data
-        ;
-        ; Parameters: A subtune
-        ; Returns: -
-        ; Modifies: -
-
-InitMusic:      sta ntInitSong
+                sta ntInitSong
                 rts
 
         ; Play one frame of music & sound effects
@@ -156,303 +165,303 @@ InitMusic:      sta ntInitSong
         ; Returns: -
         ; Modifies: A,X,Y,player vars
 
-PlayMusic:      ldx #$00
+PlayRoutine:    ldx #$00
                 lda ntInitSong
-                bpl PMus_DoInit
+                bpl Play_DoInit
 
           ;Filter execution
 
                 ldy ntFiltPos
-                beq PMus_FiltDone
-PMus_FiltTimeM1:lda $1000,y
-                bpl PMus_FiltMod
+                beq Play_FiltDone
+Play_FiltTimeM1:lda $1000,y
+                bpl Play_FiltMod
                 cmp #$ff
-                bcs PMus_FiltJump
-PMus_SetFilt:   sta $d417
+                bcs Play_FiltJump
+Play_SetFilt:   sta $d417
                 and #$70
-                sta PMus_FiltDone+1
-PMus_FiltJump:    
-PMus_FiltSpdM1a:lda $1000,y
-                bcs PMus_FiltJump2
-PMus_NextFilt:  inc ntFiltPos
-                bcc PMus_StoreCutoff
-PMus_FiltJump2: sta ntFiltPos
-                bcs PMus_FiltDone
-PMus_FiltMod:   clc
+                sta Play_FiltDone+1
+Play_FiltJump:    
+Play_FiltSpdM1a:lda $1000,y
+                bcs Play_FiltJump2
+Play_NextFilt:  inc ntFiltPos
+                bcc Play_StoreCutoff
+Play_FiltJump2: sta ntFiltPos
+                bcs Play_FiltDone
+Play_FiltMod:   clc
                 dec ntFiltTime
-                bmi PMus_NewFiltMod
-                bne PMus_FiltCutoff
+                bmi Play_NewFiltMod
+                bne Play_FiltCutoff
                 inc ntFiltPos
-                bcc PMus_FiltDone
-PMus_NewFiltMod:sta ntFiltTime
-PMus_FiltCutoff:lda ntFiltCutoff
-PMus_FiltSpdM1b:adc $1000,y
-PMus_StoreCutoff:
+                bcc Play_FiltDone
+Play_NewFiltMod:sta ntFiltTime
+Play_FiltCutoff:lda ntFiltCutoff
+Play_FiltSpdM1b:adc $1000,y
+Play_StoreCutoff:
                 sta ntFiltCutoff
                 sta $d416
-PMus_FiltDone:  lda #$00
-PMus_MasterVolume:
+Play_FiltDone:  lda #$00
+Play_MasterVolume:
                 ora #$0f
                 sta $d418
 
         ;Channel execution
 
-                jsr PMus_ChnExec
+                jsr Play_ChnExec
                 ldx #$07
-                jsr PMus_ChnExec
+                jsr Play_ChnExec
                 ldx #$0e
 
         ;Update duration counter
 
-PMus_ChnExec:   inc ntChnCounter,x
-                bne PMus_NoPattern
+Play_ChnExec:   inc ntChnCounter,x
+                bne Play_NoPattern
 
         ;Get data from pattern
 
-PMus_Pattern:   ldy ntChnPattNum,x
-PMus_PattTblLoM1:
+Play_Pattern:   ldy ntChnPattNum,x
+Play_PattTblLoM1:
                 lda $1000,y
                 sta ntTemp1
-PMus_PattTblHiM1:
+Play_PattTblHiM1:
                 lda $1000,y
                 sta ntTemp2
                 ldy ntChnPattPos,x
                 lda (ntTemp1),y
                 lsr
                 sta ntChnNewNote,x
-                bcc PMus_NoNewCmd
-PMus_NewCmd:    iny
+                bcc Play_NoNewCmd
+Play_NewCmd:    iny
                 lda (ntTemp1),y
                 sta ntChnCmd,x
-                bcc PMus_Rest
-PMus_CheckHr:   bmi PMus_Rest
+                bcc Play_Rest
+Play_CheckHr:   bmi Play_Rest
                 lda ntChnSfx,x
-                bne PMus_Rest
+                bne Play_Rest
                 lda #$fe
                 sta ntChnGate,x
                 sta $d405,x
                 lda #NT_HRPARAM
                 sta $d406,x
-PMus_Rest:      iny
+Play_Rest:      iny
                 lda (ntTemp1),y
                 cmp #$c0
-                bcc PMus_NoNewDur
+                bcc Play_NoNewDur
                 iny
                 sta ntChnDuration,x
-PMus_NoNewDur:  lda (ntTemp1),y
-                beq PMus_EndPatt
+Play_NoNewDur:  lda (ntTemp1),y
+                beq Play_EndPatt
                 tya
-PMus_EndPatt:   sta ntChnPattPos,x
-PMus_JumpToWave:ldy ntChnSfx,x
-                bne PMus_JumpToSfx
-                jmp PMus_WaveExec
-PMus_JumpToSfx: jmp PMus_SfxExec
+Play_EndPatt:   sta ntChnPattPos,x
+Play_JumpToWave:ldy ntChnSfx,x
+                bne Play_JumpToSfx
+                jmp Play_WaveExec
+Play_JumpToSfx: jmp Play_SfxExec
 
         ;No new command, or gate control
 
-PMus_NoNewCmd:  cmp #NT_FIRSTNOTE/2
-                bcc PMus_GateCtrl
+Play_NoNewCmd:  cmp #NT_FIRSTNOTE/2
+                bcc Play_GateCtrl
                 lda ntChnCmd,x
-                bcs PMus_CheckHr
-PMus_GateCtrl:  lsr
+                bcs Play_CheckHr
+Play_GateCtrl:  lsr
                 ora #$fe
                 sta ntChnGate,x
-                bcc PMus_NewCmd
+                bcc Play_NewCmd
                 sta ntChnNewNote,x
-                bcs PMus_Rest
+                bcs Play_Rest
 
         ;No new pattern data
 
-PMus_LegatoCmd: tya
+Play_LegatoCmd: tya
                 and #$7f
                 tay
-                bpl PMus_SkipAdsr
+                bpl Play_SkipAdsr
 
-PMus_JumpToPulse:
+Play_JumpToPulse:
                 ldy ntChnSfx,x
-                bne PMus_JumpToSfx
-                jmp PMus_PulseExec
-PMus_NoPattern: lda ntChnCounter,x
+                bne Play_JumpToSfx
+                jmp Play_PulseExec
+Play_NoPattern: lda ntChnCounter,x
                 cmp #$02
-                bne PMus_JumpToPulse
+                bne Play_JumpToPulse
 
         ;Reload counter and check for new note / command exec / track access
 
-PMus_Reload:    lda ntChnDuration,x
+Play_Reload:    lda ntChnDuration,x
                 sta ntChnCounter,x
                 lda ntChnNewNote,x
-                bpl PMus_NewNoteInit
+                bpl Play_NewNoteInit
                 lda ntChnPattPos,x
-                bne PMus_JumpToPulse
+                bne Play_JumpToPulse
 
          ;Get data from track
 
-PMus_Track:     ldy ntChnSongPos,x
+Play_Track:     ldy ntChnSongPos,x
                 lda (ntTrackLo),y
-                bne PMus_NoSongJump
+                bne Play_NoSongJump
                 iny
                 lda (ntTrackLo),y
                 tay
                 lda (ntTrackLo),y
-PMus_NoSongJump:bpl PMus_NoSongTrans
+Play_NoSongJump:bpl Play_NoSongTrans
                 sta ntChnTrans,x
                 iny
                 lda (ntTrackLo),y
-PMus_NoSongTrans:
+Play_NoSongTrans:
                 sta ntChnPattNum,x
                 iny
                 tya
                 sta ntChnSongPos,x
-                bcs PMus_JumpToWave
-                bcc PMus_CmdExecuted
+                bcs Play_JumpToWave
+                bcc Play_CmdExecuted
 
         ;New note init / command exec
 
-PMus_NewNoteInit: 
+Play_NewNoteInit: 
                 cmp #NT_FIRSTNOTE/2
-                bcc PMus_SkipNote
+                bcc Play_SkipNote
                 adc ntChnTrans,x
                 asl
                 sta ntChnNote,x
                 sec
-PMus_SkipNote:  ldy ntChnCmd,x
-                bmi PMus_LegatoCmd
-PMus_CmdADM1:   lda $1000,y
+Play_SkipNote:  ldy ntChnCmd,x
+                bmi Play_LegatoCmd
+Play_CmdADM1:   lda $1000,y
                 sta $d405,x
-PMus_CmdSRM1:   lda $1000,y
+Play_CmdSRM1:   lda $1000,y
                 sta $d406,x
-                bcc PMus_SkipGate
+                bcc Play_SkipGate
                 lda #$ff
                 sta ntChnGate,x
                 lda #NT_FIRSTWAVE
                 sta $d404,x
-PMus_SkipGate:
-PMus_SkipAdsr:
-PMus_CmdWaveM1: lda $1000,y
-                beq PMus_SkipWave
+Play_SkipGate:
+Play_SkipAdsr:
+Play_CmdWaveM1: lda $1000,y
+                beq Play_SkipWave
                 sta ntChnWavePos,x
                 lda #$00
                 sta ntChnWaveTime,x
-PMus_SkipWave:    
-PMus_CmdPulseM1:lda $1000,y
-                beq PMus_SkipPulse
+Play_SkipWave:    
+Play_CmdPulseM1:lda $1000,y
+                beq Play_SkipPulse
                 sta ntChnPulsePos,x
                 lda #$00
                 sta ntChnPulseTime,x
-PMus_SkipPulse:   
-PMus_CmdFiltM1: lda $1000,y
-                beq PMus_SkipFilt
+Play_SkipPulse:   
+Play_CmdFiltM1: lda $1000,y
+                beq Play_SkipFilt
                 sta ntFiltPos
                 lda #$00
                 sta ntFiltTime
-PMus_SkipFilt:  clc
+Play_SkipFilt:  clc
                 lda ntChnPattPos,x
-                beq PMus_Track
-PMus_CmdExecuted:
-PMus_NoTrack:   rts
+                beq Play_Track
+Play_CmdExecuted:
+Play_NoTrack:   rts
 
         ;Pulse execution
 
-PMus_NoPulseMod:cmp #$ff
-PMus_PulseSpdM1a:
+Play_NoPulseMod:cmp #$ff
+Play_PulseSpdM1a:
                 lda $1000,y
-                bcs PMus_PulseJump
+                bcs Play_PulseJump
                 inc ntChnPulsePos,x
-                bcc PMus_StorePulse
-PMus_PulseJump: sta ntChnPulsePos,x
-                bcs PMus_PulseDone
-PMus_PulseExec: ldy ntChnPulsePos,x
-                beq PMus_PulseDone
-PMus_PulseTimeM1:
+                bcc Play_StorePulse
+Play_PulseJump: sta ntChnPulsePos,x
+                bcs Play_PulseDone
+Play_PulseExec: ldy ntChnPulsePos,x
+                beq Play_PulseDone
+Play_PulseTimeM1:
                 lda $1000,y
-                bmi PMus_NoPulseMod
-PMus_PulseMod:  clc
+                bmi Play_NoPulseMod
+Play_PulseMod:  clc
                 dec ntChnPulseTime,x
-                bmi PMus_NewPulseMod
-                bne PMus_NoNewPulseMod
+                bmi Play_NewPulseMod
+                bne Play_NoNewPulseMod
                 inc ntChnPulsePos,x
-                bcc PMus_PulseDone
-PMus_NewPulseMod:
+                bcc Play_PulseDone
+Play_NewPulseMod:
                 sta ntChnPulseTime,x
-PMus_NoNewPulseMod:
+Play_NoNewPulseMod:
                 lda ntChnPulse,x
-PMus_PulseSpdM1b:
+Play_PulseSpdM1b:
                 adc $1000,y
                 adc #$00
-PMus_StorePulse:sta ntChnPulse,x
+Play_StorePulse:sta ntChnPulse,x
                 sta $d402,x
                 sta $d403,x
-PMus_PulseDone:
+Play_PulseDone:
 
         ;Wavetable execution
 
-PMus_WaveExec:  ldy ntChnWavePos,x
-                beq PMus_WaveDone
-PMus_WaveM1:    lda $1000,y
+Play_WaveExec:  ldy ntChnWavePos,x
+                beq Play_WaveDone
+Play_WaveM1:    lda $1000,y
                 cmp #$c0
-                bcs PMus_SlideOrVib
+                bcs Play_SlideOrVib
                 cmp #$90
-                bcc PMus_WaveChange
+                bcc Play_WaveChange
 
         ;Delayed wavetable
 
-PMus_WaveDelay: beq PMus_NoWaveChange
+Play_WaveDelay: beq Play_NoWaveChange
                 dec ntChnWaveTime,x
-                beq PMus_NoWaveChange
-                bpl PMus_WaveDone
+                beq Play_NoWaveChange
+                bpl Play_WaveDone
                 sbc #$90
                 sta ntChnWaveTime,x
-                bcs PMus_WaveDone
+                bcs Play_WaveDone
 
         ;Wave change + arpeggio
 
-PMus_WaveChange:sta ntChnWave,x
+Play_WaveChange:sta ntChnWave,x
                 tya
                 sta ntChnWaveOld,x
-PMus_NoWaveChange:
-PMus_WaveP0:    lda $1000,y
+Play_NoWaveChange:
+Play_WaveP0:    lda $1000,y
                 cmp #$ff
-                bcs PMus_WaveJump
-PMus_NoWaveJump:inc ntChnWavePos,x
-                bcc PMus_WaveJumpDone
-PMus_WaveJump:
-PMus_NoteP0:    lda $1000,y
+                bcs Play_WaveJump
+Play_NoWaveJump:inc ntChnWavePos,x
+                bcc Play_WaveJumpDone
+Play_WaveJump:
+Play_NoteP0:    lda $1000,y
                 sta ntChnWavePos,x
-PMus_WaveJumpDone:
-PMus_NoteM1a:   lda $1000,y
+Play_WaveJumpDone:
+Play_NoteM1a:   lda $1000,y
                 asl
-                bcs PMus_AbsFreq
+                bcs Play_AbsFreq
                 adc ntChnNote,x
-PMus_AbsFreq:   tay
-                bne PMus_NoteNum
-PMus_SlideDone: ldy ntChnNote,x
+Play_AbsFreq:   tay
+                bne Play_NoteNum
+Play_SlideDone: ldy ntChnNote,x
                 lda ntChnWaveOld,x
                 sta ntChnWavePos,x
-PMus_NoteNum:   lda ntFreqTbl-24,y
+Play_NoteNum:   lda ntFreqTbl-24,y
                 sta ntChnFreqLo,x
                 sta $d400,x
                 lda ntFreqTbl-23,y
-PMus_StoreFreqHi: 
+Play_StoreFreqHi: 
                 sta $d401,x
                 sta ntChnFreqHi,x
-PMus_WaveDone:  lda ntChnWave,x
+Play_WaveDone:  lda ntChnWave,x
                 and ntChnGate,x
                 sta $d404,x
                 rts
 
         ;Slide or vibrato
 
-PMus_SlideOrVib:sbc #$e0
+Play_SlideOrVib:sbc #$e0
                 sta ntTemp1
                 lda ntChnCounter,x
-                beq PMus_WaveDone
-PMus_NoteM1b:   lda $1000,y
+                beq Play_WaveDone
+Play_NoteM1b:   lda $1000,y
                 sta ntTemp2
-                bcc PMus_Vibrato
+                bcc Play_Vibrato
 
         ;Slide (toneportamento)
 
-PMus_Slide:     ldy ntChnNote,x
+Play_Slide:     ldy ntChnNote,x
                 lda ntChnFreqLo,x
                 sbc ntFreqTbl-24,y
                 pha
@@ -460,56 +469,56 @@ PMus_Slide:     ldy ntChnNote,x
                 sbc ntFreqTbl-23,y
                 tay
                 pla
-                bcs PMus_SlideDown
-PMus_Slideup:   adc ntTemp2
+                bcs Play_SlideDown
+Play_Slideup:   adc ntTemp2
                 tya
                 adc ntTemp1
-                bcs PMus_SlideDone
-PMus_FreqAdd:   lda ntChnFreqLo,x
+                bcs Play_SlideDone
+Play_FreqAdd:   lda ntChnFreqLo,x
                 adc ntTemp2
                 sta ntChnFreqLo,x
                 sta $d400,x
                 lda ntChnFreqHi,x
                 adc ntTemp1
-                jmp PMus_StoreFreqHi
+                jmp Play_StoreFreqHi
 
         ;Sound effect hard restart
 
-PMus_SfxHr:     lda #NT_SFXHRPARAM
+Play_SfxHr:     lda #NT_SFXHRPARAM
                 sta $d406,x
-                bcc PMus_WaveDone
+                bcc Play_WaveDone
 
-PMus_SlideDown: sbc ntTemp2
+Play_SlideDown: sbc ntTemp2
                 tya
                 sbc ntTemp1
-                bcc PMus_SlideDone
-PMus_FreqSub:   lda ntChnFreqLo,x
+                bcc Play_SlideDone
+Play_FreqSub:   lda ntChnFreqLo,x
                 sbc ntTemp2
                 sta ntChnFreqLo,x
                 sta $d400,x
                 lda ntChnFreqHi,x
                 sbc ntTemp1
-                jmp PMus_StoreFreqHi
+                jmp Play_StoreFreqHi
 
           ;Vibrato
 
-PMus_Vibrato:   lda ntChnWaveTime,x
-                bpl PMus_VibNoDir
+Play_Vibrato:   lda ntChnWaveTime,x
+                bpl Play_VibNoDir
                 cmp ntTemp1
-                bcs PMus_VibNoDir2
+                bcs Play_VibNoDir2
                 eor #$ff
-PMus_VibNoDir:  sec
-PMus_VibNoDir2: sbc #$02
+Play_VibNoDir:  sec
+Play_VibNoDir2: sbc #$02
                 sta ntChnWaveTime,x
                 lsr
                 lda #$00
                 sta ntTemp1
-                bcc PMus_FreqAdd
-                bcs PMus_FreqSub
+                bcc Play_FreqAdd
+                bcs Play_FreqSub
 
           ;Sound effect
 
-PMus_SfxExec:   lda ntChnSfxLo,x
+Play_SfxExec:   lda ntChnSfxLo,x
                 sta ntTemp1
                 lda ntChnSfxHi,x
                 sta ntTemp2
@@ -518,11 +527,11 @@ PMus_SfxExec:   lda ntChnSfxLo,x
                 sta ntChnGate,x
                 inc ntChnSfx,x
                 cpy #$02
-                beq PMus_SfxInit
-                bcc PMus_SfxHr
-PMus_SfxMain:   lda (ntTemp1),y
-                beq PMus_SfxEnd
-PMus_SfxNoEnd:  asl
+                beq Play_SfxInit
+                bcc Play_SfxHr
+Play_SfxMain:   lda (ntTemp1),y
+                beq Play_SfxEnd
+Play_SfxNoEnd:  asl
                 tay
                 lda ntFreqTbl-24,y
                 sta $d400,x
@@ -530,18 +539,18 @@ PMus_SfxNoEnd:  asl
                 sta $d401,x
                 ldy ntChnSfx,x
                 lda (ntTemp1),y
-                beq PMus_SfxDone
+                beq Play_SfxDone
                 cmp #$82
-                bcs PMus_SfxDone
+                bcs Play_SfxDone
                 inc ntChnSfx,x
-PMus_SfxWaveChg:sta ntChnWave,x
+Play_SfxWaveChg:sta ntChnWave,x
                 sta $d404,x
-PMus_SfxDone:   rts
-PMus_SfxEnd:    sta ntChnSfx,x
+Play_SfxDone:   rts
+Play_SfxEnd:    sta ntChnSfx,x
                 sta ntChnWavePos,x
                 sta ntChnWaveOld,x
-                beq PMus_SfxWaveChg
-PMus_SfxInit:   lda (ntTemp1),y
+                beq Play_SfxWaveChg
+Play_SfxInit:   lda (ntTemp1),y
                 sta $d402,x
                 sta $d403,x
                 dey
@@ -551,4 +560,4 @@ PMus_SfxInit:   lda (ntTemp1),y
                 lda (ntTemp1),y
                 sta $d406,x
                 lda #NT_SFXFIRSTWAVE
-                bcs PMus_SfxWaveChg
+                bcs Play_SfxWaveChg
