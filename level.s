@@ -22,7 +22,12 @@ OBJMODE_MANUALAD = $03
 
 OBJTYPE_NONE    = $00
 OBJTYPE_DOOR    = $04
-OBJTYPE_SIDEDOOR = $08
+OBJTYPE_SWITCH  = $08
+OBJTYPE_REVEAL  = $0c
+OBJTYPE_SCRIPT  = $10
+OBJTYPE_SIDEDOOR = $14
+OBJTYPE_SPAWNG  = $18
+OBJTYPE_SPAWNA  = $1c
 
 DOORENTRYDELAY  = 5
 AUTODEACTDELAY  = 12
@@ -177,25 +182,8 @@ FindZoneNum:    sta zoneNum
                 iny
                 lda (zoneLo),y
                 sta limitD
-OO_Done:        rts
+IO_Done:        rts
 
-        ; Operate a level object
-        ;
-        ; Parameters: Y object number
-        ; Returns: -
-        ; Modifies: A,X,Y,temp vars
-
-OperateObject:  lda #FR_ENTER                 ;Todo: play sound
-                sta actF1+ACTI_PLAYER
-                sta actF2+ACTI_PLAYER
-                lda #1                        ;Reset door entry counter
-                sta actFd+ACTI_PLAYER
-                lda lvlObjB,y
-                bpl ActivateObject
-OO_Active:      and #OBJ_MODEBITS
-                cmp #OBJMODE_MANUALAD
-                bne OO_Done
-                
         ; Inactivate a level object
         ; 
         ; Parameters: Y object number
@@ -204,12 +192,18 @@ OO_Active:      and #OBJ_MODEBITS
         
 InactivateObject:
                 lda lvlObjB,y                 ;Make sure that is active
-                bpl OO_Done
+                bpl IO_Done
                 and #$ff-OBJ_ACTIVE
                 sta lvlObjB,y
                 lda #$ff
                 ldx lvlObjY,y                 ;Check for animation
-                bpl OO_Done
+                bpl IO_Done
+
+        ; Animate a level object by block deltavalue
+        ; 
+        ; Parameters: A deltavalue, Y object number
+        ; Returns: -
+        ; Modifies: A,X,temp vars
 
 AnimateObjectDelta:
                 sty temp3
@@ -258,7 +252,7 @@ AO_NoAutoDeact: lda #$01
 ULO_Done:
 AO_Done:        rts
 
-        ; Update level objects. Handle auto-deactivation and actually entering doors
+        ; Update level objects. Handle operation, auto-deactivation and actually entering doors
         ;
         ; Parameters: -
         ; Returns: -
@@ -272,9 +266,28 @@ UpdateLevelObjects:
                 lda #$ff
                 sta autoDeactObjNum
                 jsr InactivateObject
-ULO_NoAutoDeact:ldy lvlObjNum
+ULO_NoAutoDeact:
+ULO_OperateFlag:lda #$00                        ;Check for manual operation of object
+                ldx #$00
+                stx ULO_OperateFlag+1
+                ldy lvlObjNum
                 bmi ULO_Done
+                tax
+                beq ULO_NoOperate
+                inc actFd+ACTI_PLAYER           ;Start the doorentry-counter                
                 lda lvlObjB,y
+                bmi ULO_OperateActive
+                and #OBJ_MODEBITS
+                cmp #OBJMODE_MANUAL             ;Check if manual activation possible
+                bcc ULO_NoOperate
+                jsr ActivateObject
+                jmp ULO_NoOperate
+ULO_OperateActive:
+                and #OBJ_MODEBITS               ;Object was active, inactivate if possible
+                cmp #OBJMODE_MANUALAD
+                bcc ULO_NoOperate
+                jsr InactivateObject
+ULO_NoOperate:  lda lvlObjB,y
                 and #OBJ_TYPEBITS+OBJ_ACTIVE
                 cmp #OBJTYPE_DOOR+OBJ_ACTIVE    ;Check for ordinary door that is open
                 bne ULO_NoDoor

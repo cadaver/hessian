@@ -340,22 +340,27 @@ MH_NoHitWall:   lda temp1
                 beq MH_NoNewJump
                 lda temp2
                 bne MH_NoNewJump
-                txa                             ;If player, check for operating level objects
-                bne MH_NoOperate
+                txa                             ;If player, check for entering door/
+                bne MH_NoOperate                ;operating level object
                 ldy lvlObjNum
                 bmi MH_NoOperate
                 lda lvlObjB,y
+                and #OBJ_TYPEBITS+OBJ_MODEBITS
+                cmp #OBJTYPE_SIDEDOOR           ;Side doors and spawnpoints can not be operated
+                bcs MH_NoOperate
                 and #OBJ_MODEBITS
-                cmp #OBJMODE_MANUAL
-                bcc MH_NoOperate
+                cmp #OBJMODE_TRIG               ;Triggered objects can not be operated
+                beq MH_NoOperate
                 lda actMoveCtrl,x
                 cmp #JOY_UP
                 bne MH_NoOperate
                 cmp actPrevCtrl,x
                 beq MH_NoOperate
-                jsr OperateObject
-                ldx #ACTI_PLAYER
-                beq MH_NoNewJump
+                inc ULO_OperateFlag+1
+                lda #FR_ENTER
+                sta actF1,x
+                sta actF2,x
+                bne MH_NoNewJump
 MH_NoOperate:   lda temp3
                 and #AMF_CLIMB
                 beq MH_NoInitClimbUp

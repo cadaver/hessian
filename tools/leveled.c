@@ -76,10 +76,10 @@ unsigned char *modetext[] = {
 unsigned char *actiontext[] = {
   "NONE",
   "DOOR",
-  "SIDEDOOR",
-  "CLOSET",
   "SWITCH",
+  "REVEAL",
   "SCRIPT",
+  "SIDEDOOR",
   "SPAWN G",
   "SPAWN A"};
 
