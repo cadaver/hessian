@@ -67,8 +67,7 @@ LoadLevel:      sta levelNum
         ; Returns: -
         ; Modifies: A,X,Y,loader temp vars
 
-PostLoad:       lda #$01                        ;Re-enable raster interrupts if disabled by loader
-                sta $d01a
+PostLoad:       
 InitMap:        lda zoneNum                     ;Map address might have changed
                 jsr FindZoneNum                 ;(dynamic memory), so re-find
                 lda limitU                      ;Startrow of zone

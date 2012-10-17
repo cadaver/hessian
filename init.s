@@ -71,24 +71,6 @@ InitVideo:      lda $dd00                       ;Set game videobank
                 stx $d026                       ;Set sprite multicolors
                 lda #$0a
                 sta $d025
-                txa
-IVid_ClearColors:
-                sta screen1,x
-                sta screen1+$100,x
-                sta screen1+$200,x
-                sta screen1+$300,x
-                sta colors,x
-                sta colors+$100,x
-                sta colors+$200,x
-                sta colors+$300,x
-                inx
-                bne IVid_ClearColors
-                ldx #$07
-                lda #$ff
-IVid_ClearFirstChar:
-                sta chars,x
-                dex
-                bpl IVid_ClearFirstChar
                 ldx #$00
 IVid_CopyTextChars:
                 lda textCharsCopy,x
@@ -174,8 +156,6 @@ InitRaster:     sei
                 sta $d011
                 lda #IRQ1_LINE                  ;Line where next IRQ happens
                 sta $d012
-                lda #$01                        ;Raster interrupt on
-                sta $d01a
                 cli
 
         ; Initializations are complete. Start the main program

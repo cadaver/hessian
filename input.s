@@ -78,6 +78,8 @@ KEY_NONE        = $ff
 
 GetControls:
                 if REDUCE_CONTROL_LATENCY > 0
+                lda #$01                        ;Re-enable raster IRQs after loading/saving
+                sta $d01a
                 if SHOW_FREE_RASTERTIME > 0     ;In control latency reduction mode, wait here
                 dec $d020                       ;until sprite IRQ is done with the current sprites
                 endif                           ;to ensure we don't get controls two frames ahead

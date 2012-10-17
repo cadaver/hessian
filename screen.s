@@ -242,7 +242,9 @@ SL_CSSMapY:     lda #$00
                     err
                 endif
 
-UpdateFrame:    if SHOW_FREE_RASTERTIME > 0
+UpdateFrame:    lda #$01                        ;Re-enable raster IRQs after loading/saving
+                sta $d01a
+                if SHOW_FREE_RASTERTIME > 0
                 dec $d020
                 endif
 UF_Wait:        lda targetFrames                ;Wait for NTSC delay if needed
@@ -995,7 +997,7 @@ RS_Colors:      jsr SW_DrawColorsHorizTop
                 jsr SW_DrawColorsHorizBottom
                 dey
                 bpl RS_Colors
-                
+
         ; Reset & center scrolling
         ;
         ; Parameters: -
