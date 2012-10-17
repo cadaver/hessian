@@ -6,13 +6,67 @@
                 dc.w TitleScreen
                 dc.w RestartGame
 
-TitleScreen:    lda fileHi+C_COMMON             ;If not loaded yet, load the always
+TitleScreen:    jsr BlankScreen
+                lda fileHi+C_COMMON             ;If not loaded yet, load the always
                 bne SpritesLoaded               ;resident sprites
                 ldy #C_COMMON
                 jsr LoadSpriteFile
                 ldy #C_WEAPON
                 jsr LoadSpriteFile
-SpritesLoaded:
+                lda #HP_PLAYER                  ;Init health & fists item immediately
+                sta actHp+ACTI_PLAYER           ;even before starting the game so that
+                lda #ITEM_FISTS                 ;the panel looks nice
+                sta invType
+SpritesLoaded:  ldx #$00
+CopyLogoLoop:   lda logoChars,x
+                sta textChars+$300,x
+                lda logoChars+$100,x
+                sta textChars+$400,x
+                lda logoChars+$200,x
+                sta textChars+$500,x
+                inx
+                bne CopyLogoLoop
+                lda #$00
+                sta Irq1_Bg1+1
+                sta scrollY
+                lda #$0e
+                sta Irq1_Bg2+1
+                lda #$0f
+                sta Irq1_Bg3+1
+                lda #$02
+                sta screen
+                lda #$0f
+                sta scrollX
+                ldx #39
+                lda #$20
+ClearScreenLoop:
+M               set 0
+                repeat SCROLLROWS
+                sta screen1+M*40,x
+M               set M+1
+                repend
+                dex
+                bpl ClearScreenLoop
+                ldx #23
+PrintLogoLoop:
+M               set 0
+                repeat 7
+                lda logoScreen+M*24,x
+                sta screen1+M*40+8+3*40,x
+                lda logoColors+M*24,x
+                sta colors+M*40+8+3*40,x
+M               set M+1
+                repend
+                dex
+                bpl PrintLogoLoop
+
+                lda #$00                        ;Play the title song
+                jsr PlaySong
+
+LogoWait:       jsr FinishFrame_NoScroll
+                jsr GetControls
+                jsr GetFireClick
+                bcc LogoWait
 
 RestartGame:    lda #0
                 jsr LoadLevel
@@ -64,3 +118,7 @@ CreatePlayer:   ldy #ACTI_PLAYER
 
 JumpToGame:     jsr CenterPlayer
                 jmp MainLoop
+
+logoChars:      incbin bg/logo.chr
+logoScreen:     incbin bg/logoscr.bin
+logoColors:     incbin bg/logocol.bin

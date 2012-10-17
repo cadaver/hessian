@@ -63,6 +63,8 @@ SP_NotDown1:    cpy #SCRCENTER_Y+4
                 inx
 SP_NotDown2:    stx scrollSY
 SP_Skip:        
+
+FinishFrame_NoScroll:
                 jsr UpdateFrame
 
         ; Update scorepanel (health, text display, weapon, ammo)

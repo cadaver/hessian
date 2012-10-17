@@ -14,7 +14,6 @@
 
 nextSliceTbl:   dc.b 1,2,21
 
-d018Tbl:        dc.b $8c,$9c
 sprIrqJumpTbl:  dc.b <Irq2_Spr0,<Irq2_Spr1,<Irq2_Spr2,<Irq2_Spr3,<Irq2_Spr4,<Irq2_Spr5,<Irq2_Spr6,<Irq2_Spr7
 sprIrqAdvanceTbl:
                 dc.b -2,-3,-4,-5,-7,-8,-9,-10
@@ -99,6 +98,8 @@ d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 
                 org nextSliceTbl+$80+42
                 dc.b $80+43,$80+44,0
+
+d018Tbl:        dc.b $8c,$9c,PANEL_D018
 
 coordTblLo:
 N               set -32

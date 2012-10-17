@@ -13,22 +13,6 @@ CI_SLOPE3       = 128
 
 OPTIMIZE_SPRITEIRQS = 0
 
-        ; Reset & center scrolling
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A
-
-InitScroll:     lda #$00
-                sta scrollSX
-                sta scrollSY
-                sta scrCounter
-                sta scrAdd
-                lda #$04
-                sta scrollX
-                sta scrollY
-                jmp SL_NewMapPos
-
         ; Blank the gamescreen and turn off sprites
         ; (return to normal display by calling UpdateFrame)
         ;
@@ -980,9 +964,9 @@ RedrawScreen:   lda blockY
                 ora blockX
                 sta temp1
                 sta temp2
-                ldy screen
-                lda #$00
-                sta SWDU_Sta+1
+                ldy #$00
+                sty screen
+                sty SWDU_Sta+1
                 lda screenBaseTbl,y
                 sta SWDU_Sta+2
                 lda #SCROLLROWS
@@ -1011,7 +995,22 @@ RS_Colors:      jsr SW_DrawColorsHorizTop
                 jsr SW_DrawColorsHorizBottom
                 dey
                 bpl RS_Colors
-                jmp InitScroll
+                
+        ; Reset & center scrolling
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A
+
+InitScroll:     lda #$00
+                sta scrollSX
+                sta scrollSY
+                sta scrCounter
+                sta scrAdd
+                lda #$04
+                sta scrollX
+                sta scrollY
+                jmp SL_NewMapPos
 
         ; Update block outside the current zone. No need to update on screen, but must find out
         ; the destination zone first. Note: nonexistent map position causes undefined behaviour

@@ -112,22 +112,6 @@ IM_BlockLoop:   lda zpSrcLo                     ;Store and increase block-
                 iny
                 cpy #MAX_BLK
                 bcc IM_BlockLoop
-
-        ; Set zone multicolors for the raster interrupt
-        ;
-        ; Parameters: zone
-        ; Returns: -
-        ; Modifies: A,Y
-
-SetZoneColors:  ldy #ZONEH_BG1                  ;Set zone multicolors
-                lda (zoneLo),y
-                sta Irq1_Bg1+1
-                iny
-                lda (zoneLo),y
-                sta Irq1_Bg2+1
-                iny
-                lda (zoneLo),y
-                sta Irq1_Bg3+1
                 rts
 
         ; Find the zone indicated by coordinates or number.
@@ -345,7 +329,16 @@ ULO_EnterDestDoor:
 CenterPlayer:   ldx actXH+ACTI_PLAYER
                 ldy actYH+ACTI_PLAYER
                 jsr FindZoneXY
-                ldy #ZONEH_MUSIC
+                ldy #ZONEH_BG1                  ;Set zone multicolors
+                lda (zoneLo),y
+                sta Irq1_Bg1+1
+                iny
+                lda (zoneLo),y
+                sta Irq1_Bg2+1
+                iny
+                lda (zoneLo),y
+                sta Irq1_Bg3+1
+                iny
                 lda (zoneLo),y
                 jsr PlaySong                    ;Play zone's music
                 jsr InitMap
