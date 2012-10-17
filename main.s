@@ -10,7 +10,7 @@ REDUCE_CONTROL_LATENCY = 1
                 org loaderCodeEnd
 
         ; Entry point. Jump to disposable init
-        
+
                 jmp InitAll
 
         ; Memory alignment of raster interrupt code is critical, so include first
@@ -28,44 +28,14 @@ randomAreaStart:
                 include level.s
                 include actor.s
                 include physics.s
+                include script.s
                 include player.s
                 include item.s
                 include weapon.s
                 include bullet.s
                 include ai.s
 
-        ; Test initialization code, will be removed
-
-Main:           ldy #C_COMMON                   ;Load the always resident sprites
-                jsr LoadSpriteFile
-                ldy #C_WEAPON
-                jsr LoadSpriteFile
-
-Restart:        lda #0
-                jsr LoadLevel
-                jsr ClearActors
-
-CreatePlayer:   ldy #ACTI_PLAYER
-                jsr GFA_Found
-                ldx #ACTI_PLAYER
-                lda #$00
-                sta actD,x
-                sta actYL,x
-                lda #6
-                sta actXH,x
-                lda #$80
-                sta actXL,x
-                lda #2
-                sta actYH,x
-                lda #ACT_PLAYER
-                sta actT,x
-                lda #GRP_HEROES
-                sta actGrp,x
-                jsr InitActor
-                lda #ORG_NONE                   ;Player has no leveldata origin
-                sta actLvlOrg,x
-                jsr InitPlayer
-                jsr CenterPlayer
+        ; Main loop
 
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors

@@ -258,8 +258,7 @@ SL_CSSMapY:     lda #$00
                     err
                 endif
 
-UpdateFrame:
-                if SHOW_FREE_RASTERTIME > 0
+UpdateFrame:    if SHOW_FREE_RASTERTIME > 0
                 dec $d020
                 endif
 UF_Wait:        lda targetFrames                ;Wait for NTSC delay if needed

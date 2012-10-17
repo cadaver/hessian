@@ -19,7 +19,7 @@ clean:
 	del 6?
 	del 7?
 
-hessian.d64: boot.prg loader.pak main.pak testmusic.pak testlev.pak common.pak weapon.pak player.pak
+hessian.d64: boot.prg loader.pak main.pak music00.pak script00.pak level00.pak common.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -73,23 +73,28 @@ sfx/death.sfx: sfx/death.ins
 	ins2nt2 sfx/death.ins sfx/death.sfx
 
 main.pak: actor.s actordata.s ai.s aidata.s bullet.s data.s file.s init.s item.s itemdata.s level.s macros.s \
-	main.s math.s memory.s panel.s paneldata.s physics.s player.s raster.s screen.s sound.s sounddata.s \
-	sprite.s  text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/explosion.sfx \
+	main.s math.s memory.s panel.s paneldata.s physics.s player.s raster.s screen.s script.s sound.s sounddata.s \
+	sprite.s text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/explosion.sfx \
 	sfx/throw.sfx sfx/melee.sfx  sfx/punch.sfx sfx/reload.sfx sfx/cockfast.sfx sfx/powerup.sfx sfx/select.sfx \
 	sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx
 	dasm main.s -omain.bin -smain.tbl -f3
+	symbols main.tbl mainsym.s
 	pack2 main.bin main.pak
 
-testmusic.pak: music/ninjatr2.d64
-	d642prg music/ninjatr2.d64 testmusic.bin music/testmusic.bin -h
-	pack2 music/testmusic.bin testmusic.pak
+script00.pak: script00.s memory.s mainsym.s
+	dasm script00.s -oscript00.bin -f3
+	pack2 script00.bin script00.pak
 
-testlev.pak: testlev.s bg/testlev.map bg/testlev.blk bg/testlev.chi bg/testlev.chc bg/testlev.chr bg/testlev.lva
-	dasm testlev.s -otestlev1.bin -f3
-	pack2 testlev1.bin testlev1.pak
-	pchunk2 bg/testlev.map testlev2.pak
-	pchunk2 bg/testlev.blk testlev3.pak
-	filejoin testlev1.pak+testlev2.pak+testlev3.pak testlev.pak
+music00.pak: music/ninjatr2.d64
+	d642prg music/ninjatr2.d64 testmusic.bin music00.bin -h
+	pack2 music00.bin music00.pak
+
+level00.pak: level00.s bg/testlev.map bg/testlev.blk bg/testlev.chi bg/testlev.chc bg/testlev.chr bg/testlev.lva
+	dasm level00.s -olevel00_1.bin -f3
+	pack2 level00_1.bin level00_1.pak
+	pchunk2 bg/testlev.map level00_2.pak
+	pchunk2 bg/testlev.blk level00_3.pak
+	filejoin level00_1.pak+level00_2.pak+level00_3.pak level00.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak

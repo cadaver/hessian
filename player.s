@@ -782,35 +782,6 @@ HD_LeftImpulse: lda temp8
 HD_NoDamageSource:
                 rts
 
-        ; Init player XP level, skills and inventory
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X
-
-InitPlayer:     lda #0                          ;TODO: move to loadable script code. This does
-                ldx #NUM_SKILLS-1               ;not need to be memory-resident all the time
-IP_XPSkillLoop: sta xpLo,x
-                sta plrSkills,x
-                dex
-                bpl IP_XPSkillLoop
-                stx lvlObjNum                   ;No levelobject found
-                ldx #MAX_INVENTORYITEMS-1
-IP_InvLoop:     sta invType,x
-                sta invCount,x
-                sta invMag,x
-                dex
-                bpl IP_InvLoop
-                sta itemIndex
-                sta lastReceivedXP
-                sta levelUp
-                lda #<FIRST_XPLIMIT
-                sta xpLimitLo
-                lda #1
-                sta xpLevel
-                sta invType                     ;1 = fists
-                jsr SetPanelRedrawItemAmmo
-
         ; Apply skill effects
         ;
         ; Parameters: -

@@ -540,7 +540,9 @@ UM_ResumeOrRetry:
                 bne UM_PauseMenuDone
                 pla
                 pla
-                jmp Restart
+                lda #<EP_RESTART                ;For now, restart whole game. TODO: implement checkpoint restart properly
+                ldy #>EP_RESTART
+                jmp ExecScript
 
         ; Menu redraw routines
 

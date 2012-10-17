@@ -180,7 +180,9 @@ InitRaster:     sei
 
         ; Initializations are complete. Start the main program
 
-                jmp Main
+                lda #<EP_TITLE                  ;Load and execute the title screen
+                ldy #>EP_TITLE
+                jmp ExecScript
 
         ; Scorepanel chars
 

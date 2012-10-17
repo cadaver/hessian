@@ -4,5 +4,6 @@ main.pak 01
 common.pak 02
 weapon.pak 03
 player.pak 04
-testmusic.pak 05
-testlev.pak 06
+music00.pak 05
+level00.pak 06
+script00.pak 07
