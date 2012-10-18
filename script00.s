@@ -29,10 +29,6 @@ CopyLogoLoop:   lda logoChars,x
                 lda #$00
                 sta Irq1_Bg1+1
                 sta scrollY
-                lda #$0e
-                sta Irq1_Bg2+1
-                lda #$0f
-                sta Irq1_Bg3+1
                 lda #$02
                 sta screen
                 lda #$0f
@@ -51,7 +47,7 @@ M               set 0
                 repeat 7
                 lda logoScreen+M*24,x
                 sta screen1+M*40+8+3*40,x
-                lda logoColors+M*24,x
+                lda #$00
                 sta colors+M*40+8+3*40,x
 M               set M+1
                 repend
@@ -61,10 +57,16 @@ M               set M+1
                 lda #$00                        ;Play the title song
                 jsr PlaySong
 
-LogoWait:       jsr FinishFrame_NoScroll
+TitleWait:      jsr FinishFrame_NoScroll
+                jsr FadeInLogo
                 jsr GetControls
                 jsr GetFireClick
-                bcc LogoWait
+                bcc TitleWait
+
+FadeOutWait:    jsr FinishFrame_NoScroll
+                jsr FadeOutLogo
+                lda logoFade
+                bne FadeOutWait
 
 RestartGame:    lda #0
                 jsr LoadLevel
@@ -116,6 +118,55 @@ CreatePlayer:   ldy #ACTI_PLAYER
 
 JumpToGame:     jsr CenterPlayer
                 jmp MainLoop
+
+FadeOutLogo:    lda logoFade
+                beq UpdateLogo
+                dec logoFade
+                bpl UpdateLogo
+
+FadeInLogo:     lda logoFade
+                cmp #15
+                bcs UpdateLogo
+                inc logoFade
+
+UpdateLogo:     jsr WaitBottom
+                lda logoFade
+                lsr
+                lsr
+                tax
+                lda logoFadeBg2Tbl,x
+                sta Irq1_Bg2+1
+                lda logoFadeBg3Tbl,x
+                sta Irq1_Bg3+1
+                lda logoFade
+                asl
+                and #$f8
+                sta temp1
+                ldx #23
+UpdateLogoColors:
+M               set 0
+                repeat 7
+                lda logoColors+M*24,x
+                and #$07
+                ora temp1
+                tay
+                lda logoFadeCharTbl,y
+                sta colors+M*40+8+3*40,x
+M               set M+1
+                repend
+                dex
+                bpl UpdateLogoColors
+                rts
+
+logoFade:       dc.b 0
+
+logoFadeBg2Tbl: dc.b $00,$00,$06,$0e
+logoFadeBg3Tbl: dc.b $00,$06,$0e,$03
+logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
+                dc.b $08,$0e,$08,$08,$08,$08,$08,$08
+                dc.b $08,$0b,$08,$0e,$08,$08,$08,$0b
+                dc.b $08,$09,$0a,$0b,$0c,$0d,$0e,$0f
+
 
 logoChars:      incbin bg/logo.chr
 logoScreen:     incbin bg/logoscr.bin
