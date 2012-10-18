@@ -81,7 +81,7 @@ main.pak: actor.s actordata.s ai.s aidata.s bullet.s data.s file.s init.s item.s
 	symbols main.tbl mainsym.s
 	pack2 main.bin main.pak
 
-script00.pak: script00.s memory.s mainsym.s
+script00.pak: script00.s memory.s mainsym.s bg/logo.chr bg/logoscr.bin bg/logocol.bin
 	dasm script00.s -oscript00.bin -f3
 	pack2 script00.bin script00.pak
 
