@@ -37,16 +37,14 @@ CopyLogoLoop:   lda logoChars,x
                 sta screen
                 lda #$0f
                 sta scrollX
-                ldx #39
+                ldx #$00
                 lda #$20
-ClearScreenLoop:
-M               set 0
-                repeat SCROLLROWS
-                sta screen1+M*40,x
-M               set M+1
-                repend
-                dex
-                bpl ClearScreenLoop
+ClearScreenLoop:sta screen1,x
+                sta screen1+$100,x
+                sta screen1+$200,x
+                sta screen1+$270,x
+                inx
+                bne ClearScreenLoop
                 ldx #23
 PrintLogoLoop:
 M               set 0

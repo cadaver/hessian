@@ -2,8 +2,6 @@ IRQ1_LINE       = 12
 IRQ3_LINE       = 221
 IRQ4_LINE       = 230
 
-PANEL_D018      = $8a
-
 PANEL_BG1       = $00
 PANEL_BG2       = $0b
 PANEL_BG3       = $0c

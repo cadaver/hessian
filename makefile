@@ -89,7 +89,7 @@ music00.pak: music/ninjatr2.d64
 	d642prg music/ninjatr2.d64 testmusic.bin music00.bin -h
 	pack2 music00.bin music00.pak
 
-level00.pak: level00.s bg/testlev.map bg/testlev.blk bg/testlev.chi bg/testlev.chc bg/testlev.chr bg/testlev.lva
+level00.pak: level00.s memory.s bg/testlev.map bg/testlev.blk bg/testlev.chi bg/testlev.chc bg/testlev.chr bg/testlev.lva
 	dasm level00.s -olevel00_1.bin -f3
 	pack2 level00_1.bin level00_1.pak
 	pchunk2 bg/testlev.map level00_2.pak

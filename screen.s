@@ -11,7 +11,9 @@ CI_SLOPE1       = 32
 CI_SLOPE2       = 64
 CI_SLOPE3       = 128
 
-OPTIMIZE_SPRITEIRQS = 0
+GAMESCR1_D018   = $2a
+GAMESCR2_D018   = $3a
+PANEL_D018      = $28
 
         ; Blank the gamescreen and turn off sprites
         ; (return to normal display by calling UpdateFrame)

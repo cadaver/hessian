@@ -99,7 +99,7 @@ d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
                 org nextSliceTbl+$80+42
                 dc.b $80+43,$80+44,0
 
-d018Tbl:        dc.b $8c,$9c,PANEL_D018
+d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,PANEL_D018
 
 coordTblLo:
 N               set -32
