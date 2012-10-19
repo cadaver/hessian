@@ -3,13 +3,13 @@
                 include memory.s
 
                 org lvlActX
-                incbin bg/testlev.lva
+                incbin bg/level00.lva
 
                 org lvlObjX
-                incbin bg/testlev.lvo
+                incbin bg/level00.lvo
                 
                 org lvlSpawnT
-                incbin bg/testlev.lvr
+                incbin bg/level00.lvr
 
                 org lvlCodeStart
                 
@@ -25,8 +25,8 @@ UL_Loop:        lda chars+54*8,x
 DoNothing:      rts
 
                 org chars
-                incbin bg/testlev.chr
-                incbin bg/testlev.chi
-                incbin bg/testlev.chc
+                incbin bg/level00.chr
+                incbin bg/level00.chi
+                incbin bg/level00.chc
 
 

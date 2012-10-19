@@ -778,13 +778,13 @@ tablBit:       dc.b 2,4,4                       ;Exomizer static tables
 tablOff:       dc.b 48,32,16
 
 scratch:        dc.b "S0:"
-fileName:       dc.b "01"                       ;Default fileName for the mainpart
+fileName:       dc.b "01"                       ;Default filename for the mainpart
 
 loaderCodeEnd:                                  ;Resident code ends here!
 
         ; Loader initialization
 
-InitLoader:     ldx #$ff                        ;Init stackpointer.
+InitLoader:     ldx #$ff                        ;Init stackpointer
                 txs
                 jsr CloseKernalFile             ;Close the file loaded from
                 sei
@@ -792,14 +792,23 @@ InitLoader:     ldx #$ff                        ;Init stackpointer.
                 sta $d07a                       ;SCPU to slow mode
                 lda #$7f                        ;Disable & acknowledge IRQ sources
                 sta $dc0d
-                ldy #$00
-                sty $d01a
-                sty $d015
-                sty $d020
-                sty messages                    ;Disable KERNAL messages
-                sty fileOpen                    ;Clear fileopen indicator
-                sty ntscDelay                   ;Assume NTSC mode
-                lda $dc0d
+                ldx #$00
+                stx $d01a
+                stx $d015
+                stx $d020
+                stx messages                    ;Disable KERNAL messages
+                stx fileOpen                    ;Clear fileopen indicator
+                stx ntscDelay                   ;Assume NTSC mode
+IL_DetectNtsc1: lda $d012                       ;Detect PAL/NTSC
+IL_DetectNtsc2: cmp $d012
+                beq IL_DetectNtsc2
+                bmi IL_DetectNtsc1
+                cmp #$20
+                bcc IL_IsNtsc
+                lda #$2c                        ;Adjust 2-bit fastload transfer
+                sta FL_Delay                    ;delay for PAL
+                inc ntscDelay                   ;Tell the main program we detected PAL
+IL_IsNtsc:      lda $dc0d
                 inc $d019
                 lda #<NMI                       ;Set NMI vector
                 sta $0318
@@ -813,22 +822,10 @@ InitLoader:     ldx #$ff                        ;Init stackpointer.
                 sta $dd0d                       ;Timer A interrupt source
                 lda #$01                        ;Timer A count ($0001)
                 sta $dd04
-                sty $dd05
+                stx $dd05
                 lda #%00011001                  ;Run Timer A in one-shot mode
                 sta $dd0e
-                jsr WaitBottom
-IL_DetectNtsc1: cpy $d012
-                bcs IL_DetectNtsc2
-                ldy $d012
-IL_DetectNtsc2: lda $d011
-                bmi IL_DetectNtsc1
-                cli
-                cpy #$20
-                bcc IL_IsNtsc
-                lda #$2c                        ;Adjust 2-bit fastload transfer
-                sta FL_Delay                    ;delay for PAL
-                inc ntscDelay                   ;Tell the main program we detected PAL
-IL_IsNtsc:      lda $dc01                       ;If space held down when starting,
+                lda $dc01                       ;If space held down when starting,
                 and #$10                        ;revert to slow (compatible) loading
                 beq IL_NoFastLoad
 

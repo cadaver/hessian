@@ -35,18 +35,20 @@ AUTODEACTDELAY  = 12
 InitLevel       = lvlCodeStart
 UpdateLevel     = lvlCodeStart+3
 
-        ; Load a level. TODO: add retry/error handling
+        ; Change current level. TODO: add retry/error handling
         ;
         ; Parameters: A Level number
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-LoadLevel:      sta levelNum
-                lda #$ff
-                sta autoDeactObjNum             ;Reset object auto-deactivation
-                lda #$00                        ;Assume zone 0 after loading
-                sta zoneNum                     ;a new level
-                sta Irq4_LevelUpdate+1          ;No level update while loading
+ChangeLevel:    cmp levelNum                    ;Check if level already loaded
+                beq CL_Done
+                sta levelNum
+                ldx #$ff
+                stx autoDeactObjNum             ;Reset object auto-deactivation
+                inx                             ;Assume zone 0 after loading
+                stx zoneNum                     ;a new level
+                stx Irq4_LevelUpdate+1          ;No level update while loading
                 ldx #F_LEVEL
                 jsr MakeFileName
                 jsr BlankScreen
@@ -67,7 +69,7 @@ LoadLevel:      sta levelNum
         ; Returns: -
         ; Modifies: A,X,Y,loader temp vars
 
-PostLoad:       
+PostLoad:
 InitMap:        lda zoneNum                     ;Map address might have changed
                 jsr FindZoneNum                 ;(dynamic memory), so re-find
                 lda limitU                      ;Startrow of zone
@@ -288,16 +290,20 @@ ULO_NoDoor:     and #OBJ_TYPEBITS               ;Check for side door
                 ldx actXL+ACTI_PLAYER
                 cmp limitL                      ;TODO: now side doors must be at
                 bne ULO_NotLeftSide             ;zone side boundaries. Permit other locations
-                txa
-                beq ULO_EnterDoor
+                cpx #$40
+                bcc ULO_EnterDoor
                 bne ULO_Done
 ULO_NotLeftSide:adc #$00
                 cmp limitR
                 bne ULO_Done
-                cpx #$ff
+                cpx #$c0
                 bcc ULO_Done
 
-ULO_EnterDoor:  lda lvlObjDL,y                  ;Get destination door. TODO: handle level change
+ULO_EnterDoor:  lda lvlObjDL,y                  ;Get destination door
+                pha
+                lda lvlObjDH,y
+                jsr ChangeLevel
+                pla
                 tay
 ULO_EnterDestDoor:
                 jsr BlankScreen
@@ -357,6 +363,7 @@ CenterPlayer:   ldx actXH+ACTI_PLAYER
                 bcs CP_NotOverLeft
 CP_OverLeft:    lda limitL
                 ldx #0
+                beq CP_NotOverRight
 CP_NotOverLeft: cmp temp1
                 bcc CP_NotOverRight
                 lda temp1
@@ -370,6 +377,7 @@ CP_NotOverRight:sta mapX
                 bcs CP_NotOverUp
 CP_OverUp:      lda limitU
                 ldy #0
+                beq CP_NotOverDown
 CP_NotOverUp:   cmp temp2
                 bcc CP_NotOverDown
                 lda temp2

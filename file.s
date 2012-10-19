@@ -9,7 +9,7 @@ C_FIRSTPURGEABLE = C_PLAYER
 F_SPRITE        = 2
 F_MUSIC         = 5
 F_LEVEL         = 6
-F_SCRIPT        = 7
+F_SCRIPT        = 8
 
 MAX_CHUNKFILES   = 32
 

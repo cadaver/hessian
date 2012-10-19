@@ -19,7 +19,7 @@ clean:
 	del 6?
 	del 7?
 
-hessian.d64: boot.prg loader.pak main.pak music00.pak script00.pak level00.pak common.pak weapon.pak player.pak
+hessian.d64: boot.prg loader.pak main.pak music00.pak script00.pak level00.pak level01.pak common.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -89,12 +89,19 @@ music00.pak: music/ninjatr2.d64
 	d642prg music/ninjatr2.d64 testmusic.bin music00.bin -h
 	pack2 music00.bin music00.pak
 
-level00.pak: level00.s memory.s bg/testlev.map bg/testlev.blk bg/testlev.chi bg/testlev.chc bg/testlev.chr bg/testlev.lva
+level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.chi bg/level00.chc bg/level00.chr bg/level00.lva
 	dasm level00.s -olevel00_1.bin -f3
 	pack2 level00_1.bin level00_1.pak
-	pchunk2 bg/testlev.map level00_2.pak
-	pchunk2 bg/testlev.blk level00_3.pak
+	pchunk2 bg/level00.map level00_2.pak
+	pchunk2 bg/level00.blk level00_3.pak
 	filejoin level00_1.pak+level00_2.pak+level00_3.pak level00.pak
+
+level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.chi bg/level01.chc bg/level01.chr bg/level01.lva
+	dasm level01.s -olevel01_1.bin -f3
+	pack2 level01_1.bin level01_1.pak
+	pchunk2 bg/level01.map level01_2.pak
+	pchunk2 bg/level01.blk level01_3.pak
+	filejoin level01_1.pak+level01_2.pak+level01_3.pak level01.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak

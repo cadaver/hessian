@@ -615,7 +615,7 @@ UM_RedrawLevelUpChoice:
                 bpl UM_RedrawCommon
                 ldy #$00
                 bpl UM_RedrawCommon
-   
+
         ; Levelup message. Also actually levels up the player character
 
 UM_RedrawLevelUpMsg:
@@ -748,13 +748,13 @@ MC_NormalDelay: stx menuMoveDelay
                 lsr
                 lsr
                 rts
-                
+
         ; Print message of received XP
         ;
         ; Parameters: A XP amount
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,loader temp vars
-        
+
 PrintXPMessage: jsr ConvertToBCD8
                 jsr ClearPanelText
                 lda #XP_TEXT_DURATION*2
@@ -854,7 +854,7 @@ PrintPanelChar: sta screen1+SCROLLROWS*40+40,x
                 lda #$01
                 sta colors+SCROLLROWS*40+40,x
                 inx
-                rts
+CL_Done:        rts
 
         ; Print a 3-digit BCD value to panel without leading zeroes
         ;
@@ -865,7 +865,7 @@ PrintPanelChar: sta screen1+SCROLLROWS*40+40,x
 Print3BCDDigitsNoZeroes:
                 lda temp8
                 bne PBCD_3DigitsOK
-                
+
         ; Print a 2-digit BCD value to panel without leading zeroes
         ;
         ; Parameters: temp7-temp8 value, X position

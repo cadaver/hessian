@@ -53,7 +53,7 @@ M               set M+1
                 repend
                 dex
                 bpl PrintLogoLoop
-
+                stx levelNum                    ;Leveldata was overwritten by logo
                 lda #$00                        ;Play the title song
                 jsr PlaySong
 
@@ -69,7 +69,7 @@ FadeOutWait:    jsr FinishFrame_NoScroll
                 bne FadeOutWait
 
 RestartGame:    lda #0
-                jsr LoadLevel
+                jsr ChangeLevel
                 jsr ClearActors
 
 InitPlayer:     lda #0
