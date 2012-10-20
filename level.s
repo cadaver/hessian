@@ -296,8 +296,8 @@ ULO_NoDoor:     and #OBJ_TYPEBITS               ;Check for side door
 ULO_NotLeftSide:adc #$00
                 cmp limitR
                 bne ULO_Done
-                cpx #$ff
-                bcc ULO_Done
+                inx
+                bne ULO_Done
 
 ULO_EnterDoor:  lda lvlObjDL,y                  ;Get destination door
                 pha
