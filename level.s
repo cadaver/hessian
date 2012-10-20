@@ -290,13 +290,13 @@ ULO_NoDoor:     and #OBJ_TYPEBITS               ;Check for side door
                 ldx actXL+ACTI_PLAYER
                 cmp limitL                      ;TODO: now side doors must be at
                 bne ULO_NotLeftSide             ;zone side boundaries. Permit other locations
-                cpx #$40
-                bcc ULO_EnterDoor
+                txa
+                beq ULO_EnterDoor
                 bne ULO_Done
 ULO_NotLeftSide:adc #$00
                 cmp limitR
                 bne ULO_Done
-                cpx #$c0
+                cpx #$ff
                 bcc ULO_Done
 
 ULO_EnterDoor:  lda lvlObjDL,y                  ;Get destination door

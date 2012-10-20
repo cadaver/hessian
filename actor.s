@@ -911,7 +911,7 @@ GCI_Common2:    lda actYL,x
                 lsr
                 sta zpBitsLo
 GCI_Common:     lda mapTblHi,y
-                beq GCI_Outside2
+                beq GCI_Outside
                 sta zpDestHi
                 lda mapTblLo,y
                 sta zpDestLo
@@ -921,7 +921,7 @@ GCI_Common:     lda mapTblHi,y
                 cpy limitR
                 bcs GCI_Outside
                 lda (zpDestLo),y                ;Get block from map
-GCI_OutsideDone:tay
+                tay
                 lda blkTblLo,y
                 sta zpDestLo
                 lda blkTblHi,y
@@ -937,9 +937,8 @@ GCI_OutsideDone:tay
                 tay
                 lda charInfo,y                  ;Get charinfo
                 rts
-GCI_Outside:    lda #$00                        ;Outside map block $00 is always returned
-GCI_Outside2:   sta zpBitsLo
-                beq GCI_OutsideDone
+GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle char if outside map
+                rts
 
         ; Get char collision info from 1 char above actor's pos (optimized)
         ;
