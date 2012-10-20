@@ -68,7 +68,9 @@ FadeOutWait:    jsr FinishFrame_NoScroll
                 lda logoFade
                 bne FadeOutWait
 
-RestartGame:    lda #0
+RestartGame:    lda #$ff                        ;Invalidate the loaded level
+                sta levelNum
+                lda #0
                 jsr ChangeLevel
                 jsr ClearActors
 
