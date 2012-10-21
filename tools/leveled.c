@@ -796,6 +796,10 @@ void zone_mainloop(void)
       updateall();
       updateallblocks();
     }
+    if (k == KEY_S)
+    {
+      zonebg1[zonenum] ^= 128;
+    }
     if (k == KEY_N)
     {
       zonemusic[zonenum]--;
@@ -1194,7 +1198,9 @@ void drawmap(void)
     printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "YPOS %02X", mapy+mousey/32);
     printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
-    sprintf(textbuffer, "COLORS %01X %01X %01X", zonebg1[zonenum], zonebg2[zonenum], zonebg3[zonenum]);
+    sprintf(textbuffer, "COLORS %01X %01X %01X", zonebg1[zonenum] & 15, zonebg2[zonenum], zonebg3[zonenum]);
+    if (zonebg1[zonenum] & 128)
+      strcat(textbuffer, " (NOSAVE)");
     printtext_color(textbuffer, 80,175,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "MUSIC %02X-%01X", zonemusic[zonenum] / 4, zonemusic[zonenum] % 4);
     printtext_color(textbuffer, 80,185,SPR_FONTS,COL_WHITE);
@@ -1756,7 +1762,7 @@ void drawgrid(void)
         for (x = 7; x >= 0; x--)
         {
           if (data & 1) v = (chcol[charnum]&15);
-          else v = zonebg1[zonenum];
+          else v = zonebg1[zonenum] & 15;
 
           gfx_drawsprite(x*5+xc*40,y*5+yc*40,0x00000001+v);
 
@@ -1776,8 +1782,8 @@ void drawgrid(void)
           switch (c)
           {
             case 0:
-            v = zonebg1[zonenum];
-            break;
+            v = zonebg1[zonenum] & 15;
+            break;                 
 
             case 1:
             v = zonebg2[zonenum];
@@ -1815,7 +1821,7 @@ void drawgrid(void)
             for (x = 7; x >= 0; x--)
             {
               if (data & 1) v = (chcol[240+yc*4+xc]&15);
-              else v = zonebg1[zonenum];
+              else v = zonebg1[zonenum] & 15;
 
               gfx_drawsprite(x*5+xc*40,y*5+yc*40,0x00000001+v);
               data >>= 1;
@@ -1834,8 +1840,8 @@ void drawgrid(void)
               switch (c)
               {
                 case 0:
-                v = zonebg1[zonenum];
-                break;
+                v = zonebg1[zonenum] & 15;
+                break;                 
 
                 case 1:
                 v = zonebg2[zonenum];
@@ -1916,7 +1922,7 @@ void drawgrid(void)
   v = COL_WHITE;
   if (ccolor == 3) v = COL_HIGHLIGHT;
   printtext_color("CHAR",170,95,SPR_FONTS,v);
-  drawcbar(220,50,zonebg1[zonenum]);
+  drawcbar(220,50,zonebg1[zonenum] & 15);
   drawcbar(220,65,zonebg2[zonenum]);
   drawcbar(220,80,zonebg3[zonenum]);
   drawcbar(220,95,chcol[charnum]&7);
@@ -2006,6 +2012,7 @@ void editchar(void)
 void changecol(void)
 {
   int y;
+  int old;
   if (colordelay < COLOR_DELAY) colordelay++;
   if (!mouseb) return;
   if ((mousex < 170) || (mousex >= 235)) return;
@@ -2025,8 +2032,10 @@ void changecol(void)
         switch(y/15)
         {
           case 0:
+          old = zonebg1[zonenum] & 128;
           zonebg1[zonenum]++;
           zonebg1[zonenum] &= 15;
+          zonebg1[zonenum] |= old;
           updateall();
           updateblock(blocknum);
           break;
@@ -2060,8 +2069,10 @@ void changecol(void)
         switch(y/15)
         {
           case 0:
+          old = zonebg1[zonenum] & 128;
           zonebg1[zonenum]--;
           zonebg1[zonenum] &= 15;
+          zonebg1[zonenum] |= old;
           updateall();
           updateblock(blocknum);
           break;
@@ -2383,7 +2394,7 @@ void updateblock(int c)
           for (x = 7; x >= 0; x--)
           {
             if (data & 1) v = (chcol[cnum]&15);
-            else v = zonebg1[zonenum];
+            else v = zonebg1[zonenum] & 15;
 
             destptr[y*32+x]=v;
 
@@ -2403,7 +2414,7 @@ void updateblock(int c)
             switch (chr)
             {
               case 0:
-              v = zonebg1[zonenum];
+              v = zonebg1[zonenum] & 15;
               break;
 
               case 1:
@@ -2447,7 +2458,7 @@ void updateimage(int c)
       for (x = 7; x >= 0; x--)
       {
         if (data & 1) v = (chcol[c]&15);
-        else v = zonebg1[zonenum];
+        else v = zonebg1[zonenum] & 15;
 
         destptr[y*256+x]=v;
 
@@ -2467,7 +2478,7 @@ void updateimage(int c)
         switch (b)
         {
           case 0:
-          v = zonebg1[zonenum];
+          v = zonebg1[zonenum] & 15;
           break;
 
           case 1:
