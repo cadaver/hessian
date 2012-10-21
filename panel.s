@@ -504,7 +504,6 @@ UM_PauseMenuExit:
                 beq SetMenuMode2
 
         ; Pause menu
-        
 
 UM_PauseMenuLeft:
                 tya
@@ -542,10 +541,9 @@ UM_ResumeOrRetry:
                 bne UM_PauseMenuDone
                 pla
                 pla
-                lda #<EP_RESTART                ;For now, restart whole game. TODO: implement checkpoint restart properly
-                ldy #>EP_RESTART
-                jmp ExecScript
-
+                jsr RestartCheckpoint
+                jmp MainLoop
+                
         ; Menu redraw routines
 
         ; None

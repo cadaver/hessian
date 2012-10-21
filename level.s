@@ -43,7 +43,7 @@ UpdateLevel     = lvlCodeStart+3
 
 ChangeLevel:    cmp levelNum                    ;Check if level already loaded
                 beq CL_Done
-                sta levelNum
+LoadLevel:      sta levelNum
                 ldx #$ff
                 stx autoDeactObjNum             ;Reset object auto-deactivation
                 inx                             ;Assume zone 0 after loading
@@ -299,7 +299,11 @@ ULO_NotLeftSide:adc #$00
                 inx
                 bne ULO_Done
 
-ULO_EnterDoor:  lda lvlObjDL,y                  ;Get destination door
+ULO_EnterDoor:  ldy #ZONEH_BG1
+                lda (zoneLo),y
+                sta temp1
+                ldy lvlObjNum
+                lda lvlObjDL,y                  ;Get destination door
                 pha
                 lda lvlObjDH,y
                 jsr ChangeLevel
@@ -324,6 +328,15 @@ ULO_EnterDestDoor:
                 sta actMB+ACTI_PLAYER
                 ldx #ACTI_PLAYER
                 jsr MH_StandAnim
+                ldx actXH+ACTI_PLAYER
+                ldy actYH+ACTI_PLAYER
+                jsr FindZoneXY
+                ldy #ZONEH_BG1
+                lda (zoneLo),y                  ;Check whether previous zone or this zone disable saving
+ULO_SaveCheck:  ora temp1
+                bmi ULO_SkipSave
+                jsr SaveCheckpoint
+ULO_SkipSave:
 
         ; Centers player on screen, redraws screen, and adds all actors from leveldata
         ;
@@ -386,4 +399,5 @@ CP_NotOverDown: sta mapY
                 stx blockX
                 sty blockY
                 jsr RedrawScreen
+                sty lvlObjNum                   ;Reset found levelobject (Y=$ff)
                 jmp UpdateAndAddAllActors

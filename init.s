@@ -14,8 +14,7 @@ InitAll:
 InitZP:         sta joystick,x
                 dex
                 bpl InitZP
-                stx levelNum                    ;No level loaded
-                
+
         ; Initialize one-time playroutine variables
 
                 sta $d415                       ;Filter lowbyte

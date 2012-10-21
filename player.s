@@ -782,11 +782,119 @@ HD_LeftImpulse: lda temp8
 HD_NoDamageSource:
                 rts
 
+        ; Give experience points to player, check for leveling
+        ;
+        ; Parameters: A XP amount
+        ; Returns: -
+        ; Modifies: A,loader temp vars
+
+GiveXP:         pha
+                stx zpSrcLo
+                sty zpSrcHi
+                ldx #<xpLo
+                jsr Add8
+                pla
+                clc
+                adc lastReceivedXP
+                bcs GXP_TooMuchXP               ;If last received XP overflows,
+                sta lastReceivedXP              ;disregard the latest addition
+GXP_TooMuchXP:  ldy #<xpLimitLo                 ;(should not happen)
+                jsr Cmp16
+                bcc GXP_Done
+                lda xpLevel
+                cmp #MAX_LEVEL
+                bcc GXP_NoMaxLevel
+                lda xpLimitLo                   ;Clamp XP on last level
+                sta xpLo
+                lda xpLimitHi
+                sta xpHi
+                bne GXP_Done
+GXP_NoMaxLevel: sta levelUp                     ;Mark pending levelup
+GXP_Done:       jmp PSnd_Done                   ;Hack: PlaySound ends similarly
+                ;ldx zpSrcLo
+                ;ldy zpSrcHi
+                ;rts
+
+        ; Save an in-memory checkpoint
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+        
+SaveCheckpoint: ldx #playerStateZPEnd-playerStateZPStart
+SCP_ZPState:    lda playerStateZPStart-1,x
+                sta saveStateZP-1,x
+                dex
+                bne SCP_ZPState
+                ldx #playerStateEnd-playerStateStart
+SCP_State:      lda playerStateStart-1,x
+                sta saveState-1,x
+                dex
+                bne SCP_State
+                lda levelNum
+                sta saveLevelNum
+                lda actXL+ACTI_PLAYER
+                sta saveXL
+                lda actXH+ACTI_PLAYER
+                sta saveXH
+                lda actYL+ACTI_PLAYER
+                sta saveYL
+                lda actYH+ACTI_PLAYER
+                sta saveYH
+                lda actT+ACTI_PLAYER
+                sta saveT
+                lda actD+ACTI_PLAYER
+                sta saveD
+                rts
+                
+        ; Restore an in-memory checkpoint
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+RestartCheckpoint:
+                ldx #playerStateZPEnd-playerStateZPStart
+RCP_ZPState:    lda saveStateZP-1,x
+                sta playerStateZPStart-1,x
+                dex
+                bne RCP_ZPState
+                ldx #playerStateEnd-playerStateStart
+RCP_State:      lda saveState-1,x
+                sta playerStateStart-1,x
+                dex
+                bne RCP_State
+RCP_CreatePlayer:
+                jsr ClearActors
+                lda saveLevelNum
+                jsr LoadLevel
+                ldy #ACTI_PLAYER
+                jsr GFA_Found
+                lda saveXL
+                sta actXL+ACTI_PLAYER
+                lda saveXH
+                sta actXH+ACTI_PLAYER
+                lda saveYL
+                sta actYL+ACTI_PLAYER
+                lda saveYH
+                sta actYH+ACTI_PLAYER
+                lda saveD
+                sta actD+ACTI_PLAYER
+                lda saveT
+                sta actT+ACTI_PLAYER
+                lda #ORG_NONE                   ;Player has no leveldata origin
+                sta actLvlOrg+ACTI_PLAYER
+                ldx #ACTI_PLAYER
+                stx lastReceivedXP
+                jsr InitActor
+                jsr SetPanelRedrawItemAmmo
+                jsr CenterPlayer
+
         ; Apply skill effects
         ;
         ; Parameters: -
         ; Returns: X=0
-        ; Modifies: A,X,Y
+        ; Modifies: A,X,Y,temp6-temp8
 
 ApplySkills:
 
@@ -844,47 +952,14 @@ ApplySkills:
                 ldx #itemDefaultMaxCount - itemMaxCount
 AS_AmmoLoop:    lda itemMaxCountAdd-1,x
                 ldy plrCarrying
-                stx temp1
-                ldx #<temp2
+                stx temp6
+                ldx #<temp7
                 jsr MulU
-                ldx temp1
+                ldx temp6
                 lda itemDefaultMaxCount-1,x
                 clc
-                adc temp2
+                adc temp7
                 sta itemMaxCount-1,x
                 dex
                 bne AS_AmmoLoop
                 rts
-
-        ; Give experience points to player, check for leveling
-        ;
-        ; Parameters: A XP amount
-        ; Returns: -
-        ; Modifies: A,loader temp vars
-
-GiveXP:         pha
-                stx zpSrcLo
-                sty zpSrcHi
-                ldx #<xpLo
-                jsr Add8
-                pla
-                clc
-                adc lastReceivedXP
-                bcs GXP_TooMuchXP               ;If last received XP overflows,
-                sta lastReceivedXP              ;disregard the latest addition
-GXP_TooMuchXP:  ldy #<xpLimitLo                 ;(should not happen)
-                jsr Cmp16
-                bcc GXP_Done
-                lda xpLevel
-                cmp #MAX_LEVEL
-                bcc GXP_NoMaxLevel
-                lda xpLimitLo                   ;Clamp XP on last level
-                sta xpLo
-                lda xpLimitHi
-                sta xpHi
-                bne GXP_Done
-GXP_NoMaxLevel: sta levelUp                     ;Mark pending levelup
-GXP_Done:       jmp PSnd_Done                   ;Hack: PlaySound ends similarly
-                ;ldx zpSrcLo
-                ;ldy zpSrcHi
-                ;rts

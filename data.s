@@ -246,6 +246,7 @@ actAIRoute:     ds.b MAX_COMPLEXACT,0
 
         ; Player state
 
+playerStateStart:
 invType:        ds.b MAX_INVENTORYITEMS,0
 invCount:       ds.b MAX_INVENTORYITEMS,0
 invMag:         ds.b MAX_INVENTORYITEMS,0
@@ -255,6 +256,21 @@ plrCarrying:    dc.b 0
 plrFirearms:    dc.b 0
 plrMelee:       dc.b 0
 plrVitality:    dc.b 0
+playerStateEnd:
+
+        ; In-memory checkpoint save
+        
+saveStateStart:
+saveStateZP:    ds.b playerStateZPEnd - playerStateZPStart,0
+saveState:      ds.b playerStateEnd - playerStateStart,0
+saveLevelNum:   dc.b 0
+saveXL:         dc.b 0
+saveXH:         dc.b 0
+saveYL:         dc.b 0
+saveYH:         dc.b 0
+saveT:          dc.b 0
+saveD:          dc.b 0
+saveStateEnd:
 
         ; Dynamic memory allocation area begins here
 

@@ -4,7 +4,6 @@
                 org scriptCodeStart
 
                 dc.w TitleScreen
-                dc.w RestartGame
 
 TitleScreen:    jsr BlankScreen
                 lda fileHi+C_COMMON             ;If not loaded yet, load the always
@@ -53,7 +52,6 @@ M               set M+1
                 repend
                 dex
                 bpl PrintLogoLoop
-                stx levelNum                    ;Leveldata was overwritten by logo
                 lda #$00                        ;Play the title song
                 jsr PlaySong
 
@@ -68,19 +66,13 @@ FadeOutWait:    jsr FinishFrame_NoScroll
                 lda logoFade
                 bne FadeOutWait
 
-RestartGame:    lda #$ff                        ;Invalidate the loaded level
-                sta levelNum
-                lda #0
-                jsr ChangeLevel
-                jsr ClearActors
-
+StartGame:
 InitPlayer:     lda #0
                 ldx #NUM_SKILLS-1
 IP_XPSkillLoop: sta xpLo,x
                 sta plrSkills,x
                 dex
                 bpl IP_XPSkillLoop
-                stx lvlObjNum                   ;No levelobject found
                 ldx #MAX_INVENTORYITEMS-1
 IP_InvLoop:     sta invType,x
                 sta invCount,x
@@ -88,37 +80,26 @@ IP_InvLoop:     sta invType,x
                 dex
                 bpl IP_InvLoop
                 sta itemIndex
-                sta lastReceivedXP
                 sta levelUp
                 lda #<FIRST_XPLIMIT
                 sta xpLimitLo
                 lda #1
                 sta xpLevel
                 sta invType                     ;1 = fists
-                jsr ApplySkills
-                jsr SetPanelRedrawItemAmmo
-
-CreatePlayer:   ldy #ACTI_PLAYER
-                jsr GFA_Found
-                ldx #ACTI_PLAYER
                 lda #$00
-                sta actD,x
-                sta actYL,x
-                lda #6
-                sta actXH,x
+                sta saveLevelNum                ;Set startposition & level
+                sta saveD
+                sta saveYL
                 lda #$80
-                sta actXL,x
+                sta saveXL
+                lda #6
+                sta saveXH
                 lda #2
-                sta actYH,x
+                sta saveYH
                 lda #ACT_PLAYER
-                sta actT,x
-                lda #GRP_HEROES
-                sta actGrp,x
-                jsr InitActor
-                lda #ORG_NONE                   ;Player has no leveldata origin
-                sta actLvlOrg,x
-
-JumpToGame:     jsr CenterPlayer
+                sta saveT
+                jsr RCP_CreatePlayer
+                jsr SaveCheckpoint              ;Save first checkpoint immediately
                 jmp MainLoop
 
 FadeOutLogo:    lda logoFade
