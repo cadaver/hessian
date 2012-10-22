@@ -528,3 +528,5 @@ logoScreen:     incbin bg/logoscr.bin
 logoColors:     incbin bg/logocol.bin
 
 saveStateBuffer:ds.b saveStateEnd-saveStateStart,0
+
+                CheckScriptEnd

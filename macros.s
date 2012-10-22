@@ -32,3 +32,9 @@ NEXT_VAR        set NEXT_VAR + {2}
                 mac skip2
                 dc.b $2c
                 endm
+                
+                mac CheckScriptEnd
+                if * > $fffa
+                    err
+                endif
+                endm
