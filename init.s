@@ -162,6 +162,7 @@ InitRaster:     sei
 
                 lda #<EP_TITLE                  ;Load and execute the title screen
                 ldy #>EP_TITLE
+                ldx #$00
                 jmp ExecScript
 
         ; Scorepanel chars

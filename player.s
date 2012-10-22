@@ -831,6 +831,11 @@ SCP_State:      lda playerStateStart-1,x
                 sta saveState-1,x
                 dex
                 bne SCP_State
+                ldx #15
+SCP_LevelName:  lda lvlName,x
+                sta saveLevelName,x
+                dex
+                bpl SCP_LevelName
                 lda levelNum
                 sta saveLevelNum
                 lda actXL+ACTI_PLAYER

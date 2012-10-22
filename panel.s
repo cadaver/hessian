@@ -534,7 +534,14 @@ UM_PauseMenuDone:
                 rts
 UM_PauseMenuAction:
                 tya
-                bne UM_PauseMenuDone            ;TODO: implement save
+                beq UM_ResumeOrRetry
+                pla
+                pla
+                lda #<EP_TITLE                  ;Execute titlescreen in "save" mode
+                ldy #>EP_TITLE
+                ldx #$01
+                jmp ExecScript
+
 UM_ResumeOrRetry:
                 jsr UM_PauseMenuExit
                 lda actHp+ACTI_PLAYER

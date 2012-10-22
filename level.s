@@ -333,14 +333,11 @@ ULO_NotLeftSide:adc #$00
                 beq ULO_EnterDoor
 ULO_Done:       rts
 
-ULO_EnterDoor:  ldy #ZONEH_BG1
-                lda (zoneLo),y
-                sta temp1
-                ldy lvlObjNum
+ULO_EnterDoor:  ldy lvlObjNum
                 lda lvlObjDL,y                  ;Get destination door
                 pha
                 lda lvlObjDH,y
-                jsr ChangeLevel
+                jsr ChangeLevel                 ;Load new level if necessary
                 pla
                 tay
 ULO_EnterDestDoor:
@@ -362,15 +359,7 @@ ULO_EnterDestDoor:
                 sta actMB+ACTI_PLAYER
                 ldx #ACTI_PLAYER
                 jsr MH_StandAnim
-                ldx actXH+ACTI_PLAYER
-                ldy actYH+ACTI_PLAYER
-                jsr FindZoneXY
-                ldy #ZONEH_BG1
-                lda (zoneLo),y                  ;Check whether previous zone or this zone disable saving
-ULO_SaveCheck:  ora temp1
-                bmi ULO_SkipSave
-                jsr SaveCheckpoint
-ULO_SkipSave:
+                jsr SaveCheckpoint              ;Save checkpoint now. TODO: check for save-disabled zone
 
         ; Centers player on screen, redraws screen, and adds all actors from leveldata
         ;

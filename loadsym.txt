@@ -2,7 +2,7 @@ OpenFile
 GetByte
 CloseFile
 LoadFile
-Savefile
+SaveFile
 Change01
 InitLoader
 InitFastLoad

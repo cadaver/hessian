@@ -258,11 +258,16 @@ plrMelee:       dc.b 0
 plrVitality:    dc.b 0
 playerStateEnd:
 
+                if playerStateEnd-playerStateStart > $100
+                    err
+                endif
+
         ; In-memory checkpoint save
-        
+
 saveStateStart:
 saveStateZP:    ds.b playerStateZPEnd - playerStateZPStart,0
 saveState:      ds.b playerStateEnd - playerStateStart,0
+saveLevelName:  ds.b 16,0
 saveLevelNum:   dc.b 0
 saveXL:         dc.b 0
 saveXH:         dc.b 0
@@ -271,6 +276,11 @@ saveYH:         dc.b 0
 saveT:          dc.b 0
 saveD:          dc.b 0
 saveStateEnd:
+
+        ; Other variables
+        
+mainMenuChoice: dc.b 0
+saveSlotChoice: dc.b 0
 
         ; Dynamic memory allocation area begins here
 
