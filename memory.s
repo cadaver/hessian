@@ -184,6 +184,7 @@ lvlObjDH        = $e700
 lvlSpawnT       = $e760
 lvlSpawnWpn     = $e770
 lvlCodeStart    = $e780
+lvlName         = $e7f0
 chars           = $e800
 charInfo        = $f000
 charColors      = $f100

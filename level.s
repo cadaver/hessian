@@ -168,6 +168,15 @@ FindZoneNum:    sta zoneNum
                 sta limitD
 IO_Done:        rts
 
+        ; Toggle a level object
+        ; 
+        ; Parameters: Y object number
+        ; Returns: -
+        ; Modifies: A,X,temp vars
+
+ToggleObject:   lda lvlObjB,y
+                bpl ActivateObject
+
         ; Inactivate a level object
         ; 
         ; Parameters: Y object number
@@ -214,14 +223,18 @@ AOD_Done:       rts
         ; Returns: -
         ; Modifies: A,X,temp vars
 
-ActivateObject: lda lvlObjB,y                 ;Make sure that is inactive
+ActivateObject: lda lvlObjB,y                   ;Make sure that is inactive
                 bmi AO_Done
+                and #OBJ_TYPEBITS               ;Check for object type
+                cmp #OBJTYPE_SWITCH             ;(TODO: use jumptable)
+                beq AO_Switch
+AO_Continue:    lda lvlObjB,y
                 ora #OBJ_ACTIVE
                 sta lvlObjB,y
-                and #OBJ_AUTODEACT            ;Enable auto-deactivation if necessary
+                and #OBJ_AUTODEACT              ;Enable auto-deactivation if necessary
                 beq AO_NoAutoDeact
-                lda autoDeactObjNum           ;If another object already deactivating,
-                bmi AO_NoPreviousAutoDeact    ;deactivate it immediately
+                lda autoDeactObjNum             ;If another object already deactivating,
+                bmi AO_NoPreviousAutoDeact      ;deactivate it immediately
                 sty temp2
                 tay
                 jsr InactivateObject
@@ -231,10 +244,30 @@ AO_NoPreviousAutoDeact:
                 lda #AUTODEACTDELAY
                 sta autoDeactObjCounter
 AO_NoAutoDeact: lda #$01
-                ldx lvlObjY,y                 ;Check for animation
+                ldx lvlObjY,y                   ;Check for animation
                 bmi AnimateObjectDelta
-ULO_Done:
 AO_Done:        rts
+
+AO_Switch:      sty temp1
+                ldx lvlObjDL,y
+                lda lvlObjDH,y                  ;Has requirement item?
+                beq AO_RequirementOK
+                sta temp3
+                jsr FindItem
+                bcs AO_RequirementOK
+                lda #<txtRequired
+                ldx #>txtRequired
+                ldy #INVENTORY_TEXT_DURATION
+                jsr PrintPanelText
+                lda temp3
+                jsr GetItemName
+                jmp ContinuePanelText
+AO_RequirementOK:
+                txa                             ;Get destination object and toggle it
+                tay
+                jsr ToggleObject
+                ldy temp1
+                bpl AO_Continue
 
         ; Update level objects. Handle operation, auto-deactivation and actually entering doors
         ;
@@ -297,7 +330,8 @@ ULO_NotLeftSide:adc #$00
                 cmp limitR
                 bne ULO_Done
                 inx
-                bne ULO_Done
+                beq ULO_EnterDoor
+ULO_Done:       rts
 
 ULO_EnterDoor:  ldy #ZONEH_BG1
                 lda (zoneLo),y

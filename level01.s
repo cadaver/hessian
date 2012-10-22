@@ -18,6 +18,9 @@ InitLevel:      jmp DoNothing
 UpdateLevel:    
 DoNothing:      rts
 
+                org lvlName
+                dc.b "SECRET CHAMBER",0
+
                 org chars
                 incbin bg/level01.chr
                 incbin bg/level01.chi

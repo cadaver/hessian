@@ -42,6 +42,7 @@ txtVitality:    dc.b "VITALITY",0
         ; Game messages
 
 txtPickedUp:    dc.b "GOT ",0
+txtRequired:    dc.b "NEED ",0
 txtInf:         dc.b "*INF"
 txtLoad:        dc.b "LOAD"
 txtXP:          dc.b "XP, "

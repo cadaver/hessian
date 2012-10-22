@@ -24,6 +24,9 @@ UL_Loop:        lda chars+54*8,x
                 sty chars+54*8
 DoNothing:      rts
 
+                org lvlName
+                dc.b "TEST COURSE",0
+
                 org chars
                 incbin bg/level00.chr
                 incbin bg/level00.chi
