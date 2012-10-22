@@ -9,6 +9,8 @@ NUMSAVES        = 5
 LOAD_GAME       = 0
 SAVE_GAME       = 1
 
+TITLE_MOVEDELAY = 8
+
                 org scriptCodeStart
 
                 dc.w TitleScreen
@@ -118,6 +120,8 @@ MainMenuLoop:   lda #11
                 sta mainMenuChoice
                 jsr GetFireClick
                 bcc MainMenuLoop
+                lda #SFX_SELECT
+                jsr PlaySfx
                 lda mainMenuChoice
                 bne LoadGame
                 jmp StartGame
@@ -157,6 +161,8 @@ LoadGameLoop:   lda #10
                 sta saveSlotChoice
                 jsr GetFireClick
                 bcc LoadGameLoop
+                lda #SFX_SELECT
+                jsr PlaySfx
                 lda saveSlotChoice
                 cmp #NUMSAVES
                 bcs LoadGameCancel              ;Cancel load/save (TODO: save needs confirm step as data will be lost)
@@ -463,30 +469,44 @@ RSF_NotEmpty:   rts
 TitleMenuControl:
                 tay
                 stx temp6
-                lda joystick
-                cmp prevJoy
-                beq TMC_NoMove
+                ldx moveDelay
+                beq TMC_NoDelay
+                dec moveDelay
+                rts
+TMC_NoDelay:    lda joystick
                 lsr
                 bcc TMC_NotUp
                 dey
-                bpl TMC_NoMove
+                bpl TMC_HasMove
                 ldy temp6
+TMC_HasMove:    lda #SFX_SELECT
+                jsr PlaySfx
+                ldx #TITLE_MOVEDELAY
+                lda joystick
+                cmp prevJoy
+                bne TMC_NormalDelay
+                dex
+                dex
+                dex
+TMC_NormalDelay:stx moveDelay
 TMC_NoMove:     tya
                 rts
 TMC_NotUp:      lsr
                 bcc TMC_NoMove
                 iny
                 cpy temp6
-                bcc TMC_NoMove
-                beq TMC_NoMove
+                bcc TMC_HasMove
+                beq TMC_HasMove
                 ldy #$00
-                beq TMC_NoMove
+                beq TMC_HasMove
 
 saveMode:       dc.b 0
 logoFade:       dc.b 0
 textFade:       dc.b 0
 logoFadeDir:    dc.b 1
 textFadeDir:    dc.b 1
+moveDelay:      dc.b 0
+
 txtNewGame:     dc.b "START NEW GAME",0
 txtLoadGame:    dc.b "CONTINUE GAME",0
 txtLoadSlot:    dc.b "CONTINUE FROM SAVE",0
