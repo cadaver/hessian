@@ -1,6 +1,8 @@
                 include macros.s
                 include mainsym.s
 
+        ; Script 0, title screen & game start/load/save
+
 LOGOSTARTROW    = 2
 TEXTSTARTROW    = 11
 NUMTEXTROWS     = 8
@@ -18,12 +20,7 @@ TITLE_MOVEDELAY = 8
 TitleScreen:    stx TitleScreenParam+1          ;Go to save screen (X>0) or main menu (X=0)
                 jsr BlankScreen
                 jsr ClearPanelText
-                lda #0                          ;Reset fade variables
-                sta logoFade
-                sta textFade
-                lda #1
-                sta logoFadeDir
-                sta textFadeDir
+                jsr InitScroll                  ;Make sure no scrolling
                 jsr ClearActors                 ;Reset sprites
                 jsr DrawActors
 
@@ -51,14 +48,19 @@ CopyLogoLoop:   lda logoChars,x
                 sta textChars+$500,x
                 inx
                 bne CopyLogoLoop
-                lda #$00
-                sta Irq1_Bg1+1
+                lda #$00                        ;Show panel chars in gamescreen & position
+                sta Irq1_Bg1+1                  ;the screen
                 sta scrollY
-                sta menuMode
+                sta menuMode                    ;Reset in-game menu mode
+                sta logoFade
+                sta textFade
                 lda #$02
                 sta screen
                 lda #$0f
                 sta scrollX
+                lda #1
+                sta logoFadeDir
+                sta textFadeDir
                 ldx #$00
                 lda #$20
 ClearScreenLoop:sta screen1,x
@@ -216,7 +218,7 @@ IP_InvLoop:     sta invType,x
                 sta xpLevel
                 sta invType                     ;1 = fists
                 lda #$00
-                sta saveLevelNum                ;Set startposition & level
+                sta levelNum                    ;Set startposition & level
                 sta saveD
                 sta saveYL
                 lda #$80
@@ -438,8 +440,8 @@ SaveDone:       inc temp8
                 ldx #>txtCancel
                 jmp PrintText
 GetSaveDescription:
-                lda #<(saveLevelName-saveStateStart+saveStateBuffer)
-                ldx #>(saveLevelName-saveStateStart+saveStateBuffer)
+                lda #<saveStateBuffer
+                ldx #>saveStateBuffer
                 jsr PrintText                   ;TODO: print level & XP
                 jmp SaveDone
 

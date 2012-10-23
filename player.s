@@ -819,9 +819,14 @@ GXP_Done:       jmp PSnd_Done                   ;Hack: PlaySound ends similarly
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,X,Y,temp vars
+        ; Modifies: A,X,Y
         
-SaveCheckpoint: ldx #playerStateZPEnd-playerStateZPStart
+SaveCheckpoint: ldx #15
+SCP_LevelName:  lda lvlName,x
+                sta saveLevelName,x
+                dex
+                bpl SCP_LevelName
+                ldx #playerStateZPEnd-playerStateZPStart
 SCP_ZPState:    lda playerStateZPStart-1,x
                 sta saveStateZP-1,x
                 dex
@@ -831,25 +836,24 @@ SCP_State:      lda playerStateStart-1,x
                 sta saveState-1,x
                 dex
                 bne SCP_State
-                ldx #15
-SCP_LevelName:  lda lvlName,x
-                sta saveLevelName,x
+                clc
+StoreLoadActorVars:
+                ldx #5
+                ldy #5*MAX_ACT
+SLAV_Loop:      bcc SLAV_Store
+                lda saveXL,x
+                sta actXL+ACTI_PLAYER,y
+                bcs SLAV_Next
+SLAV_Store:     lda actXL+ACTI_PLAYER,y
+                sta saveXL,x
+SLAV_Next:      php
+                tya
+                sec
+                sbc #MAX_ACT
+                tay
+                plp
                 dex
-                bpl SCP_LevelName
-                lda levelNum
-                sta saveLevelNum
-                lda actXL+ACTI_PLAYER
-                sta saveXL
-                lda actXH+ACTI_PLAYER
-                sta saveXH
-                lda actYL+ACTI_PLAYER
-                sta saveYL
-                lda actYH+ACTI_PLAYER
-                sta saveYH
-                lda actT+ACTI_PLAYER
-                sta saveT
-                lda actD+ACTI_PLAYER
-                sta saveD
+                bpl SLAV_Loop
                 rts
                 
         ; Restore an in-memory checkpoint
@@ -871,22 +875,12 @@ RCP_State:      lda saveState-1,x
                 bne RCP_State
 RCP_CreatePlayer:
                 jsr ClearActors
-                lda saveLevelNum
+                lda levelNum
                 jsr LoadLevel
                 ldy #ACTI_PLAYER
                 jsr GFA_Found
-                lda saveXL
-                sta actXL+ACTI_PLAYER
-                lda saveXH
-                sta actXH+ACTI_PLAYER
-                lda saveYL
-                sta actYL+ACTI_PLAYER
-                lda saveYH
-                sta actYH+ACTI_PLAYER
-                lda saveD
-                sta actD+ACTI_PLAYER
-                lda saveT
-                sta actT+ACTI_PLAYER
+                sec
+                jsr StoreLoadActorVars
                 lda #ORG_NONE                   ;Player has no leveldata origin
                 sta actLvlOrg+ACTI_PLAYER
                 ldx #ACTI_PLAYER

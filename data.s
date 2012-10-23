@@ -206,15 +206,15 @@ fileAge:        ds.b MAX_CHUNKFILES,0
 
         ; Actor variables
 
-actT:           ds.b MAX_ACT,0
-actF1:          ds.b MAX_ACT,0
-actFd:          ds.b MAX_ACT,0
-actC:           ds.b MAX_ACT,0
-actD:           ds.b MAX_ACT,0
 actXL:          ds.b MAX_ACT,0
 actXH:          ds.b MAX_ACT,0
 actYL:          ds.b MAX_ACT,0
 actYH:          ds.b MAX_ACT,0
+actT:           ds.b MAX_ACT,0
+actD:           ds.b MAX_ACT,0
+actF1:          ds.b MAX_ACT,0
+actFd:          ds.b MAX_ACT,0
+actC:           ds.b MAX_ACT,0
 actSX:          ds.b MAX_ACT,0
 actSY:          ds.b MAX_ACT,0
 actPrevXL:      ds.b MAX_ACT,0
@@ -265,10 +265,9 @@ playerStateEnd:
         ; In-memory checkpoint save
 
 saveStateStart:
+saveLevelName:  ds.b 16,0
 saveStateZP:    ds.b playerStateZPEnd - playerStateZPStart,0
 saveState:      ds.b playerStateEnd - playerStateStart,0
-saveLevelName:  ds.b 16,0
-saveLevelNum:   dc.b 0
 saveXL:         dc.b 0
 saveXH:         dc.b 0
 saveYL:         dc.b 0

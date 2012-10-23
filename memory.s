@@ -58,7 +58,6 @@ MAX_LVLOBJ      = 96
                 Var blockY
                 Var mapX
                 Var mapY
-                Var levelNum
                 Var zoneNum
                 Var zoneLo
                 Var zoneHi
@@ -107,7 +106,8 @@ MAX_LVLOBJ      = 96
                 Var healthRecharge
                 Var lastReceivedXP
 
-                Var itemIndex                   ;Player state
+                Var levelNum                    ;Player state
+                Var itemIndex
                 Var levelUp
                 Var xpLo
                 Var xpHi
@@ -115,7 +115,7 @@ MAX_LVLOBJ      = 96
                 Var xpLimitLo
                 Var xpLimitHi
 
-playerStateZPStart = itemIndex
+playerStateZPStart = levelNum
 playerStateZPEnd = xpLimitHi+1
 
                 VarRange sprOrder,MAX_SPR+1
