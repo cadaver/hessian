@@ -97,19 +97,19 @@ TitleScreenParam:
 MainMenu:       jsr FadeOutText
                 jsr ClearText
                 lda #TEXTSTARTROW+2
-                sta temp8
+                sta temp2
                 lda #<txtNewGame
                 ldx #>txtNewGame
                 jsr PrintTextCenter
-                inc temp8
-                inc temp8
+                inc temp2
+                inc temp2
                 lda #<txtLoadGame
                 ldx #>txtLoadGame
                 jsr PrintText
                 lda #1
                 sta textFadeDir
 MainMenuLoop:   lda #11
-                sta temp7
+                sta temp1
                 lda mainMenuChoice
                 asl
                 ldx #4
@@ -135,7 +135,7 @@ LoadOrSaveGame: sta saveMode
                 jsr FadeOutText
                 jsr ClearText
                 lda #TEXTSTARTROW
-                sta temp8
+                sta temp2
                 lda #<txtLoadSlot
                 ldx #>txtLoadSlot
                 ldy saveMode
@@ -143,15 +143,13 @@ LoadOrSaveGame: sta saveMode
                 lda #<txtSaveSlot
                 ldx #>txtSaveSlot
 LoadTextOK:     jsr PrintTextCenter
-                lda #12
-                sta temp7
                 lda #TEXTSTARTROW+2
-                sta temp8
+                sta temp2
                 jsr ScanSaves
                 lda #1
                 sta textFadeDir
-LoadGameLoop:   lda #10
-                sta temp7
+LoadGameLoop:   lda #3
+                sta temp1
                 lda saveSlotChoice
                 ldx #NUMSAVES+1
                 ldy #TEXTSTARTROW+2
@@ -354,9 +352,9 @@ M               set M+1
 
 PrintText:      sta zpSrcLo
                 stx zpSrcHi
-PTC_Done:       ldy temp8
+PTC_Done:       ldy temp2
                 jsr GetRowAddress
-                lda temp7
+                lda temp1
                 jsr Add8
                 ldy #$00
 PrintTextLoop:  lda (zpSrcLo),y
@@ -367,11 +365,11 @@ PrintTextLoop:  lda (zpSrcLo),y
 PrintTextDone:  rts
 
         ; Print centered text
-        
+
 PrintTextCenter:sta zpSrcLo
                 stx zpSrcHi
                 lda #20
-                sta temp7
+                sta temp1
                 ldy #$00
 PTC_Loop:       lda (zpSrcLo),y
                 beq PTC_Done
@@ -379,7 +377,7 @@ PTC_Loop:       lda (zpSrcLo),y
                 lda (zpSrcLo),y
                 beq PTC_Done
                 iny
-                dec temp7
+                dec temp1
                 bpl PTC_Loop
 
         ; Print choice arrow
@@ -388,7 +386,7 @@ DrawChoiceArrow:sta zpSrcLo
                 stx zpSrcHi
                 jsr GetRowAddress
                 ldx #0
-                ldy temp7
+                ldy temp1
 DCA_Loop:       lda #$20
                 cpx zpSrcLo
                 bne DCA_NoArrow
@@ -418,7 +416,7 @@ GetRowAddress:  lda #40
         ; Scan savegames and print their descriptions
 
 ScanSaves:      lda #0
-                sta temp6
+                sta temp3
                 ldx #1                          ;Always select "continue" in main menu after load/save
                 stx mainMenuChoice
                 ldx saveSlotChoice              ;If "cancel" selected, select first slot instead
@@ -431,26 +429,62 @@ ScanSaveLoop:   ldx #F_SAVE
                 lda #<saveStateBuffer
                 ldx #>saveStateBuffer
                 jsr ReadSaveFile
+                lda #5
+                sta temp1
                 bcs GetSaveDescription
                 lda #<txtEmpty
                 ldx #>txtEmpty
                 jsr PrintText
-SaveDone:       inc temp8
-                inc temp6
-                lda temp6
+SaveDone:       inc temp2
+                inc temp3
+                lda temp3
                 cmp #NUMSAVES
                 bcc ScanSaveLoop
                 lda #<txtCancel
                 ldx #>txtCancel
                 jmp PrintText
 GetSaveDescription:
-                lda #<saveStateBuffer
+                lda #<saveStateBuffer           ;Level name
                 ldx #>saveStateBuffer
-                jsr PrintText                   ;TODO: print level & XP
+                jsr PrintText
+                lda #$20                        ;Level / XP / XP limit
+                sta txtSaveLevel
+                sta txtSaveLevel+1
+                lda saveStateBuffer+21
+                jsr ConvertToBCD8
+                ldx #80
+                jsr PrintBCDDigitsNoZeroes
+CopyLevelText:  lda screen1+23*40-1,x
+                sta txtSaveLevel-81,x
+                dex
+                cpx #81
+                bcs CopyLevelText
+                lda saveStateBuffer+19
+                ldy saveStateBuffer+20
+                jsr ConvertToBCD16
+                ldx #80
+                jsr Print3BCDDigits
+                lda #"/"
+                sta screen1+25*40+3
+                lda saveStateBuffer+22
+                ldy saveStateBuffer+23
+                jsr ConvertToBCD16
+                ldx #84
+                jsr Print3BCDDigits
+CopyXPText:     lda screen1+23*40-1,x
+                sta txtSaveXP-81,x
+                dex
+                cpx #81
+                bcs CopyXPText
+                lda #22
+                sta temp1
+                lda #<txtSaveLevelAndXP
+                ldx #>txtSaveLevelAndXP
+                jsr PrintText
                 jmp SaveDone
 
         ; Read an opened savefile. C=1 if read to the end
-        
+
 ReadSaveFile:   sta zpDestLo
                 stx zpDestHi
                 ldy #$00
@@ -514,11 +548,15 @@ textFadeDir:    dc.b 1
 moveDelay:      dc.b 0
 
 txtNewGame:     dc.b "START NEW GAME",0
-txtLoadGame:    dc.b "LOAD SAVED GAME",0
-txtLoadSlot:    dc.b "SELECT GAME TO LOAD",0
-txtSaveSlot:    dc.b "SELECT SLOT FOR SAVE",0
+txtLoadGame:    dc.b "CONTINUE GAME",0
+txtLoadSlot:    dc.b "CONTINUE FROM SAVE",0
+txtSaveSlot:    dc.b "SAVE GAME TO SLOT",0
 txtEmpty:       dc.b "EMPTY SLOT",0
 txtCancel:      dc.b "CANCEL",0
+txtSaveLevelAndXP:
+                dc.b "LV."
+txtSaveLevel:   dc.b "   "
+txtSaveXP:      dc.b "   /   ",0,0
 
 logoFadeBg2Tbl: dc.b $00,$00,$06,$0e
 logoFadeBg3Tbl: dc.b $00,$06,$0e,$03
