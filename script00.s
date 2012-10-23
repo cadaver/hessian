@@ -177,7 +177,11 @@ LoadGameExec:   jsr OpenFile                    ;Load the savegame now
                 ldx #>saveStateStart
                 jsr ReadSaveFile
                 bcc LoadGameLoop                ;Fail
-                jsr RestartCheckpoint           ;Success, start loaded game
+                lda InitFastLoad+1              ;Fade out screen, unless in slowload mode
+                cmp #$01
+                beq LoadSkipFade
+                jsr FadeOutAll
+LoadSkipFade:   jsr RestartCheckpoint           ;Success, start loaded game
                 jmp MainLoop
 LoadGameCancel: jmp MainMenu
 
@@ -510,9 +514,9 @@ textFadeDir:    dc.b 1
 moveDelay:      dc.b 0
 
 txtNewGame:     dc.b "START NEW GAME",0
-txtLoadGame:    dc.b "CONTINUE GAME",0
-txtLoadSlot:    dc.b "CONTINUE FROM SAVE",0
-txtSaveSlot:    dc.b "PICK SLOT FOR SAVE",0
+txtLoadGame:    dc.b "LOAD SAVED GAME",0
+txtLoadSlot:    dc.b "SELECT GAME TO LOAD",0
+txtSaveSlot:    dc.b "SELECT SLOT FOR SAVE",0
 txtEmpty:       dc.b "EMPTY SLOT",0
 txtCancel:      dc.b "CANCEL",0
 
