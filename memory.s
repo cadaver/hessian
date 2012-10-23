@@ -105,6 +105,8 @@ MAX_LVLOBJ      = 96
                 Var displayedHealth
                 Var healthRecharge
                 Var lastReceivedXP
+                Var musicMode
+                Var soundMode
 
                 Var levelNum                    ;Player state
                 Var itemIndex

@@ -278,7 +278,6 @@ saveStateEnd:
 
         ; Other variables
         
-mainMenuChoice: dc.b 0
 saveSlotChoice: dc.b 0
 
         ; Dynamic memory allocation area begins here

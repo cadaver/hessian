@@ -22,6 +22,9 @@ InitZP:         sta joystick,x
                 sta ntFiltTime
                 lda #$7f
                 sta ntInitSong
+                lda #$01                        ;Music and sound FX on by default
+                sta musicMode
+                sta soundMode
 
         ; Check NTSC
 

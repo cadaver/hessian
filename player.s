@@ -810,7 +810,7 @@ GXP_TooMuchXP:  ldy #<xpLimitLo                 ;(should not happen)
                 sta xpHi
                 bne GXP_Done
 GXP_NoMaxLevel: sta levelUp                     ;Mark pending levelup
-GXP_Done:       jmp PSnd_Done                   ;Hack: PlaySound ends similarly
+GXP_Done:       jmp PSfx_Done                   ;Hack: PlaySfx ends similarly
                 ;ldx zpSrcLo
                 ;ldy zpSrcHi
                 ;rts

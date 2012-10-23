@@ -3,7 +3,7 @@
 
         ; Script 0, title screen & game start/load/save
 
-LOGOSTARTROW    = 2
+LOGOSTARTROW    = 1
 TEXTSTARTROW    = 11
 NUMTEXTROWS     = 8
 NUMSAVES        = 5
@@ -12,6 +12,12 @@ LOAD_GAME       = 0
 SAVE_GAME       = 1
 
 TITLE_MOVEDELAY = 8
+
+TITLE_PAGEDELAY = 500
+
+NUM_TITLEPAGES  = 2
+
+saveStateBuffer = screen2
 
                 org scriptCodeStart
 
@@ -60,7 +66,6 @@ CopyLogoLoop:   lda logoChars,x
                 sta scrollX
                 lda #1
                 sta logoFadeDir
-                sta textFadeDir
                 ldx #$00
                 lda #$20
 ClearScreenLoop:sta screen1,x
@@ -84,49 +89,129 @@ M               set M+1
                 repend
                 dex
                 bpl PrintLogoLoop
-                lda #$00                        ;Play the title song
+                lda #MUSIC_TITLE                        
                 jsr PlaySong
 
 TitleScreenParam:
-                lda #$00
-                beq MainMenu
-                jmp SaveGame
+                lda #0
+                beq TitleTexts
 
-        ; New game / load game choice
+        ; Save game
+
+SaveGame:       lda #SAVE_GAME
+                jmp LoadOrSaveGame
+SaveGameExec:   jsr FadeOutText
+                lda #<saveStateEnd
+                sta zpDestLo
+                lda #>saveStateEnd
+                sta zpDestHi
+                lda #<saveStateStart
+                ldx #>saveStateStart
+                jsr SaveFile
+
+        ; Title text display
+
+TitleTexts:     lda #0
+TitleNextPage:  sta titlePage
+                jsr FadeOutText
+                jsr ClearText
+                ldy titlePage
+                lda titlePageTblLo,y
+                ldx titlePageTblHi,y
+                jsr PrintPage
+TitleTextsLoop: jsr Update
+                jsr GetFireClick
+                bcs MainMenu
+                jsr TitlePageDelay
+                bcc TitleTextsLoop
+                lda titlePage
+                adc #$00
+                cmp #NUM_TITLEPAGES
+                bcc TitleNextPage
+                bcs TitleTexts
+
+        ; Main menu
         
 MainMenu:       jsr FadeOutText
                 jsr ClearText
-                lda #TEXTSTARTROW+2
-                sta temp2
-                lda #<txtNewGame
-                ldx #>txtNewGame
-                jsr PrintTextCenter
-                inc temp2
-                inc temp2
-                lda #<txtLoadGame
-                ldx #>txtLoadGame
-                jsr PrintText
-                lda #1
-                sta textFadeDir
+                lda #<txtMainMenu
+                ldx #>txtMainMenu
+                jsr PrintPage
 MainMenuLoop:   lda #11
                 sta temp1
                 lda mainMenuChoice
                 asl
-                ldx #4
-                ldy #TEXTSTARTROW+2
+                ldx #5
+                ldy #TEXTSTARTROW+1
                 jsr DrawChoiceArrow
                 jsr Update
                 lda mainMenuChoice
-                ldx #1
+                ldx #2
                 jsr TitleMenuControl
                 sta mainMenuChoice
                 jsr GetFireClick
+                bcs MainMenuSelect
+                jsr TitlePageDelayInteractive
                 bcc MainMenuLoop
+                jmp TitleTexts                  ;Page delay expired, return to title
+MainMenuSelect: lda #SFX_SELECT
+                jsr PlaySfx
+                ldx mainMenuChoice
+                lda mainMenuJumpTblLo,x
+                sta MainMenuJump+1
+                lda mainMenuJumpTblHi,x
+                sta MainMenuJump+2
+MainMenuJump:   jmp $0000
+
+        ; Options menu
+        
+Options:        lda #0
+                sta optionsMenuChoice
+                jsr FadeOutText
+                jsr ClearText
+RefreshOptions: lda musicMode
+                ldx #9
+                jsr CopyOnOffText
+                lda soundMode
+                ldx #23
+                jsr CopyOnOffText
+                lda #<txtOptions
+                ldx #>txtOptions
+                jsr PrintPage
+OptionsLoop:    lda #12
+                sta temp1
+                lda optionsMenuChoice
+                asl
+                ldx #5
+                ldy #TEXTSTARTROW+1
+                jsr DrawChoiceArrow
+                jsr Update
+                lda optionsMenuChoice
+                ldx #2
+                jsr TitleMenuControl
+                sta optionsMenuChoice
+                jsr GetFireClick
+                bcs OptionsSelect
+                jsr TitlePageDelayInteractive
+                bcc OptionsLoop
+                jmp TitleTexts                  ;Page delay expired, return to title
+OptionsSelect:  ldx optionsMenuChoice
+                cpx #2
+                bcs OptionsGoBack
+                lda musicMode,x
+                eor #$01
+                sta musicMode,x
                 lda #SFX_SELECT
                 jsr PlaySfx
-                lda mainMenuChoice
-                bne LoadGame
-                jmp StartGame
+                txa
+                bne OptionsNoSongReset
+                lda PS_CurrentSong+1            ;When music mode toggled, forcibly
+                jsr ReplaySong                  ;restart the last played song
+OptionsNoSongReset:
+                jmp RefreshOptions
+OptionsGoBack:  lda #SFX_SELECT
+                jsr PlaySfx
+                jmp MainMenu
 
         ; Load/save game
         
@@ -146,8 +231,7 @@ LoadTextOK:     jsr PrintTextCenter
                 lda #TEXTSTARTROW+2
                 sta temp2
                 jsr ScanSaves
-                lda #1
-                sta textFadeDir
+                jsr ResetPage
 LoadGameLoop:   lda #3
                 sta temp1
                 lda saveSlotChoice
@@ -169,7 +253,8 @@ LoadGameLoop:   lda #3
                 ldx #F_SAVE
                 jsr MakeFileName
                 lda saveMode
-                bne SaveGameExec
+                beq LoadGameExec
+                jmp SaveGameExec
 LoadGameExec:   jsr OpenFile                    ;Load the savegame now
                 lda #<saveStateStart
                 ldx #>saveStateStart
@@ -182,20 +267,6 @@ LoadGameExec:   jsr OpenFile                    ;Load the savegame now
 LoadSkipFade:   jsr RestartCheckpoint           ;Success, start loaded game
                 jmp MainLoop
 LoadGameCancel: jmp MainMenu
-
-        ; Save game
-
-SaveGame:       lda #SAVE_GAME
-                jmp LoadOrSaveGame
-SaveGameExec:   jsr FadeOutText
-                lda #<saveStateEnd
-                sta zpDestLo
-                lda #>saveStateEnd
-                sta zpDestHi
-                lda #<saveStateStart
-                ldx #>saveStateStart
-                jsr SaveFile
-                jmp MainMenu
 
         ; Start new game
 
@@ -314,19 +385,10 @@ M               set M+1
                 bpl UC_UpdateLogoLoop
 UC_LogoDone:    rts
 
-        ; Wait until logo faded out
- 
-FadeOutAll:     lda #-1
-                sta textFadeDir
-FadeOutLogo:    lda #-1
-                sta logoFadeDir
-FOL_Wait:       jsr Update
-                lda logoFade
-                bne FOL_Wait
-                rts
-
         ; Wait until text faded out
 
+FadeOutAll:     lda #-1
+                sta logoFadeDir
 FadeOutText:    lda #-1
                 sta textFadeDir
 FOT_Wait:       jsr Update
@@ -352,7 +414,8 @@ M               set M+1
 
 PrintText:      sta zpSrcLo
                 stx zpSrcHi
-PTC_Done:       ldy temp2
+PrintTextContinue:
+                ldy temp2
                 jsr GetRowAddress
                 lda temp1
                 jsr Add8
@@ -362,20 +425,24 @@ PrintTextLoop:  lda (zpSrcLo),y
                 sta (zpDestLo),y
                 iny
                 bne PrintTextLoop
-PrintTextDone:  rts
+PrintTextDone:  iny
+                tya
+                ldx #<zpSrcLo
+                jmp Add8
 
         ; Print centered text
 
 PrintTextCenter:sta zpSrcLo
                 stx zpSrcHi
+PrintTextCenterContinue:
                 lda #20
                 sta temp1
                 ldy #$00
 PTC_Loop:       lda (zpSrcLo),y
-                beq PTC_Done
+                beq PrintTextContinue
                 iny
                 lda (zpSrcLo),y
-                beq PTC_Done
+                beq PrintTextContinue
                 iny
                 dec temp1
                 bpl PTC_Loop
@@ -401,6 +468,18 @@ DCA_NoArrow:    sta (zpDestLo),y
 DCA_NextRowOK:  inx
                 cpx zpSrcHi
                 bcc DCA_Loop
+                rts
+
+        ; Copy "on" or "off" text
+
+CopyOnOffText:  tay
+COOT_Loop:      lda txtOnOff,y     
+                sta txtMusic,x
+                inx
+                iny
+                iny
+                cpy #6
+                bcc COOT_Loop
                 rts
 
         ; Get address of text row Y
@@ -540,15 +619,91 @@ TMC_NotUp:      lsr
                 ldy #$00
                 beq TMC_HasMove
 
+        ; Title delay counting
+
+TitlePageDelayInteractive:
+                lda joystick                    ;Reset delay if joystick moved
+                bne ResetTitlePageDelay
+TitlePageDelay: inc titlePageDelayLo
+                bne TPD_NotOver
+                inc titlePageDelayHi
+TPD_NotOver:    lda titlePageDelayHi
+                cmp #>TITLE_PAGEDELAY
+                bne TPD_Done
+                lda titlePageDelayLo
+                cmp #<TITLE_PAGEDELAY
+TPD_Done:       rts
+
+        ; Print page
+        
+PrintPage:      ldy #TEXTSTARTROW
+                sty temp2
+                jsr PrintTextCenter
+                inc temp2
+TitleRowLoop:   jsr PrintTextCenterContinue
+                inc temp2
+                lda temp2
+                cmp #TEXTSTARTROW+7
+                bcc TitleRowLoop
+
+        ; Reset title delay, set text to fade in
+
+ResetPage:      lda #1
+                sta textFadeDir
+ResetTitlePageDelay:
+                lda #0
+                sta titlePageDelayLo
+                sta titlePageDelayHi
+                rts
+
 saveMode:       dc.b 0
 logoFade:       dc.b 0
 textFade:       dc.b 0
 logoFadeDir:    dc.b 1
 textFadeDir:    dc.b 1
 moveDelay:      dc.b 0
+titlePage:      dc.b 0
+titlePageDelayLo:
+                dc.b 0
+titlePageDelayHi:
+                dc.b 0
+mainMenuChoice: dc.b 0
+optionsMenuChoice:
+                dc.b 0
 
-txtNewGame:     dc.b "START NEW GAME",0
-txtLoadGame:    dc.b "CONTINUE GAME",0
+txtCredits:     dc.b "A COVERT BITOPS PRODUCTION IN 2012",0
+                dc.b 0
+                dc.b 0
+                dc.b "CODE, GRAPHICS & AUDIO BY LASSE __RNI",0
+                dc.b 0
+                dc.b 0
+                dc.b "PRESS FIRE FOR MENU",0
+
+txtInstructions:dc.b "USE JOYSTICK IN PORT 2 AND KEYS",0
+                dc.b 0
+                dc.b ", .     SELECT ITEM",0
+                dc.b 0
+                dc.b "R       RELOAD     ",0
+                dc.b 0
+                dc.b "RUNSTOP PAUSE MENU ",0
+
+txtMainMenu:    dc.b 0
+                dc.b "START NEW GAME",0
+                dc.b 0
+                dc.b "CONTINUE GAME ",0
+                dc.b 0
+                dc.b "OPTIONS       ",0
+                dc.b 0
+
+txtOptions:     dc.b 0
+txtMusic:       dc.b "MUSIC       ",0
+                dc.b 0
+txtSound:       dc.b "SOUND FX    ",0
+                dc.b 0
+                dc.b "BACK        ",0
+                dc.b 0
+
+txtOnOff:       dc.b "O FOFN"
 txtLoadSlot:    dc.b "CONTINUE FROM SAVE",0
 txtSaveSlot:    dc.b "SAVE GAME TO SLOT",0
 txtEmpty:       dc.b "EMPTY SLOT",0
@@ -557,6 +712,22 @@ txtSaveLevelAndXP:
                 dc.b "LV."
 txtSaveLevel:   dc.b "   "
 txtSaveXP:      dc.b "   /   ",0,0
+
+mainMenuJumpTblLo:
+                dc.b <StartGame
+                dc.b <LoadGame
+                dc.b <Options
+
+mainMenuJumpTblHi:
+                dc.b >StartGame
+                dc.b >LoadGame
+                dc.b >Options
+                
+titlePageTblLo: dc.b <txtCredits
+                dc.b <txtInstructions
+
+titlePageTblHi: dc.b >txtCredits
+                dc.b >txtInstructions
 
 logoFadeBg2Tbl: dc.b $00,$00,$06,$0e
 logoFadeBg3Tbl: dc.b $00,$06,$0e,$03
@@ -570,7 +741,5 @@ textFadeTbl:    dc.b $00,$06,$03,$01
 logoChars:      incbin bg/logo.chr
 logoScreen:     incbin bg/logoscr.bin
 logoColors:     incbin bg/logocol.bin
-
-saveStateBuffer:ds.b saveStateEnd-saveStateStart,0
 
                 CheckScriptEnd

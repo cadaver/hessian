@@ -17,10 +17,8 @@ NT_FIRSTWAVE        = $09
 NT_SFXHRPARAM       = $00
 NT_SFXFIRSTWAVE     = $09
 
-        ; Hardcoded sound effect channel
-        ; TODO: rotate sound effect channel when music off
-
-CHN_SFX             = $00
+MUSIC_SILENCE       = $00
+MUSIC_TITLE         = $01
 
         ; Play a song. Load if necessary. Do not reinit if already playing
         ;
@@ -31,8 +29,11 @@ CHN_SFX             = $00
 PlaySong:
 PS_CurrentSong: cmp #$ff
                 beq PS_Done
-                sta PS_CurrentSong+1
-                pha
+ReplaySong:     sta PS_CurrentSong+1
+                ldx musicMode                   ;If music off, always select song 0 of file 0 (global silence)
+                bne PS_MusicOn
+                txa
+PS_MusicOn:     pha
                 lsr
                 lsr
 PS_LoadedMusic: cmp #$ff                        ;Check if music already loaded
@@ -103,24 +104,36 @@ IMD_Store:      sta PlayRoutine,y
 
 PlaySfx:        stx zpSrcLo
                 sty zpSrcHi
+                ldx soundMode                   ;Check for sounds disabled
+                beq PSfx_Done
                 tay
                 lda sfxTblLo,y
-                ldx sfxTblHi,y
-                ldy #CHN_SFX
                 sta zpBitsLo
+                ldx sfxTblHi,y
+PSfx_NextChn:   lda #0                          ;If not playing music, cycle all channels
+                ldy musicMode                   ;else use first channel only
+                bne PSfx_HasMusic
+                clc
+                adc #7
+                cmp #21
+                bcc PSfx_ChnNotOver
+PSfx_HasMusic:  lda #0
+PSfx_ChnNotOver:sta PSfx_NextChn+1
+                tay
+                lda zpBitsLo
                 cmp ntChnSfxLo,y
                 txa
                 sbc ntChnSfxHi,y
-                bpl PSnd_Ok
+                bpl PSfx_Ok
                 lda ntChnSfx,y
-                bne PSnd_Done
-PSnd_Ok:        lda #$01
+                bne PSfx_Done
+PSfx_Ok:        lda #$01
                 sta ntChnSfx,y
                 lda zpBitsLo
                 sta ntChnSfxLo,y
                 txa
                 sta ntChnSfxHi,y
-PSnd_Done:      ldx zpSrcLo
+PSfx_Done:      ldx zpSrcLo
                 ldy zpSrcHi
                 rts
 
