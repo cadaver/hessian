@@ -58,14 +58,10 @@ CopyLogoLoop:   lda logoChars,x
                 sta Irq1_Bg1+1                  ;the screen
                 sta scrollY
                 sta menuMode                    ;Reset in-game menu mode
-                sta logoFade
-                sta textFade
                 lda #$02
                 sta screen
                 lda #$0f
                 sta scrollX
-                lda #1
-                sta logoFadeDir
                 ldx #$00
                 lda #$20
 ClearScreenLoop:sta screen1,x
@@ -216,14 +212,14 @@ OptionsGoBack:  lda #SFX_SELECT
         ; Load/save game
         
 LoadGame:       lda #LOAD_GAME
-LoadOrSaveGame: sta saveMode
+LoadOrSaveGame: sta LoadOrSaveGameMode+1
                 jsr FadeOutText
                 jsr ClearText
                 lda #TEXTSTARTROW
                 sta temp2
                 lda #<txtLoadSlot
                 ldx #>txtLoadSlot
-                ldy saveMode
+                ldy LoadOrSaveGameMode+1
                 beq LoadTextOK
                 lda #<txtSaveSlot
                 ldx #>txtSaveSlot
@@ -252,7 +248,8 @@ LoadGameLoop:   lda #3
                 bcs LoadGameCancel              ;Cancel load/save (TODO: save needs confirm step as data will be lost)
                 ldx #F_SAVE
                 jsr MakeFileName
-                lda saveMode
+LoadOrSaveGameMode:
+                lda #$00
                 beq LoadGameExec
                 jmp SaveGameExec
 LoadGameExec:   jsr OpenFile                    ;Load the savegame now
@@ -265,7 +262,7 @@ LoadGameExec:   jsr OpenFile                    ;Load the savegame now
                 beq LoadSkipFade
                 jsr FadeOutAll
 LoadSkipFade:   jsr RestartCheckpoint           ;Success, start loaded game
-                jmp MainLoop
+                jmp StartMainLoop
 LoadGameCancel: jmp MainMenu
 
         ; Start new game
@@ -304,7 +301,7 @@ IP_InvLoop:     sta invType,x
                 sta saveT
                 jsr RCP_CreatePlayer
                 jsr SaveCheckpoint              ;Save first checkpoint immediately
-                jmp MainLoop
+                jmp StartMainLoop
 
         ; Update controls, text & logo fade
 
@@ -656,7 +653,6 @@ ResetTitlePageDelay:
                 sta titlePageDelayHi
                 rts
 
-saveMode:       dc.b 0
 logoFade:       dc.b 0
 textFade:       dc.b 0
 logoFadeDir:    dc.b 1

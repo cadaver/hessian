@@ -38,6 +38,8 @@ randomAreaStart:
 
         ; Main loop
 
+StartMainLoop:  ldx #$ff
+                txs
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors
                 jsr FinishFrame
