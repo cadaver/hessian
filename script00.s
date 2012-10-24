@@ -4,18 +4,18 @@
         ; Script 0, title screen & game start/load/save
 
 LOGOSTARTROW    = 1
-TEXTSTARTROW    = 11
+TEXTSTARTROW    = 12
 NUMTEXTROWS     = 8
 NUMSAVES        = 5
+NUMTITLEPAGES   = 2
 
 LOAD_GAME       = 0
 SAVE_GAME       = 1
 
 TITLE_MOVEDELAY = 8
-
 TITLE_PAGEDELAY = 500
 
-NUM_TITLEPAGES  = 2
+CHEATSTRINGLENGTH = 7
 
 saveStateBuffer = screen2
 
@@ -63,14 +63,19 @@ CopyLogoLoop:   lda logoChars,x
                 lda #$0f
                 sta scrollX
                 ldx #$00
-                lda #$20
-ClearScreenLoop:sta screen1,x
+ClearScreenLoop:lda #$20
+                sta screen1,x
                 sta screen1+$100,x
                 sta screen1+$200,x
                 sta screen1+$270,x
+                lda #$00
+                sta colors,x
+                sta colors+$100,x
+                sta colors+$200,x
+                sta colors+$270,x
                 inx
                 bne ClearScreenLoop
-                
+
         ; Print logo to screen
 
                 ldx #23
@@ -79,8 +84,6 @@ M               set 0
                 repeat 7
                 lda logoScreen+M*24,x
                 sta screen1+M*40+8+LOGOSTARTROW*40,x
-                lda #$00
-                sta colors+M*40+8+LOGOSTARTROW*40,x
 M               set M+1
                 repend
                 dex
@@ -122,7 +125,7 @@ TitleTextsLoop: jsr Update
                 bcc TitleTextsLoop
                 lda titlePage
                 adc #$00
-                cmp #NUM_TITLEPAGES
+                cmp #NUMTITLEPAGES
                 bcc TitleNextPage
                 bcs TitleTexts
 
@@ -308,7 +311,28 @@ IP_InvLoop:     sta invType,x
 Update:         jsr GetControls
                 jsr FinishFrame_NoScroll
                 jsr WaitBottom
-                lda textFadeDir
+                lda keyType
+                bmi UC_NoCheat
+                ldx cheatIndex
+                cmp cheatString,x
+                beq UC_CheatCharOK
+                ldx #$ff
+UC_CheatCharOK: inx
+                cpx #CHEATSTRINGLENGTH
+                bcc UC_CheatNotDone
+                ldx #$00
+                lda DA_HealthRechargeDelay      ;Transform LDY into RTS in player damage routine
+                eor #$c0
+                sta DA_HealthRechargeDelay
+                inc Irq1_Bg1+1
+                ldy #$10
+UC_Delay:       inx
+                bne UC_Delay
+                dey
+                bne UC_Delay
+                dec Irq1_Bg1+1
+UC_CheatNotDone:stx cheatIndex
+UC_NoCheat:     lda textFadeDir
                 beq UC_TextDone
                 clc
                 adc textFade
@@ -666,6 +690,7 @@ titlePageDelayHi:
 mainMenuChoice: dc.b 0
 optionsMenuChoice:
                 dc.b 0
+cheatIndex:     dc.b 0
 
 txtCredits:     dc.b "A COVERT BITOPS PRODUCTION IN 2012",0
                 dc.b 0
@@ -708,6 +733,8 @@ txtSaveLevelAndXP:
                 dc.b "LV."
 txtSaveLevel:   dc.b "   "
 txtSaveXP:      dc.b "   /   ",0,0
+
+cheatString:    dc.b KEY_T,KEY_A,KEY_C,KEY_G,KEY_N,KEY_O,KEY_L
 
 mainMenuJumpTblLo:
                 dc.b <StartGame
