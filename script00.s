@@ -263,7 +263,7 @@ LoadGameExec:   jsr OpenFile                    ;Load the savegame now
                 jsr FadeOutAll
 LoadSkipFade:   jsr RestartCheckpoint           ;Success, start loaded game
                 jmp StartMainLoop
-LoadGameCancel: jmp MainMenu
+LoadGameCancel: jmp TitleTexts
 
         ; Start new game
 
