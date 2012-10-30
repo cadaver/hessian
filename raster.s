@@ -71,7 +71,7 @@ Irq1_NoSprites: jmp Irq2_AllDone                ;If no sprites, go directly to t
 
 Irq2_SprIrqDone2:
                 jmp Irq2_SprIrqDone
-                
+
                 org ((*+$ff) & $ff00)
 
 Irq2_Spr0:      lda sortSprY,x

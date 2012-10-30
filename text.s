@@ -52,3 +52,8 @@ txtLevelUpLevel:dc.b "    PICK SKILL TO IMPROVE",0
 txtPauseResume: dc.b " RESUME GAME",0
 txtPauseRetry:  dc.b " CONTINUE   ",0
 txtPauseSave:   dc.b "  SAVE&EXIT",0
+
+        ; System messages
+
+txtFlipDisk:    dc.b "FLIP DISK & PRESS FIRE",0
+txtDiskError:   dc.b "IO ERROR, FIRE TO RETRY",0

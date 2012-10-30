@@ -18,6 +18,14 @@ clean:
 	del 5?
 	del 6?
 	del 7?
+	del 8?
+	del 9?
+	del a?
+	del b?
+	del c?
+	del d?
+	del e?
+	del f?
 
 hessian.d64: boot.prg loader.pak main.pak music00.pak script00.pak level00.pak level01.pak common.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12

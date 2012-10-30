@@ -74,7 +74,7 @@ KEY_NONE        = $ff
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,temp8
+        ; Modifies: A,zpSrcLo
 
 GetControls:
                 if REDUCE_CONTROL_LATENCY > 0
@@ -112,7 +112,7 @@ GC_RowFound:    tax
                 asl
                 asl
                 asl
-                sta temp8
+                sta zpSrcLo
                 txa
                 ldy #$07
 GC_ColLoop:     asl
@@ -120,7 +120,7 @@ GC_ColLoop:     asl
                 dey
                 bpl GC_ColLoop
 GC_KeyFound:    tya
-                ora temp8
+                ora zpSrcLo
                 cmp keyPress
                 beq GC_SameKey
                 sta keyType

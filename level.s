@@ -41,6 +41,9 @@ UpdateLevel     = lvlCodeStart+3
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
+LoadLevelError: jsr LFR_ErrorPrompt
+                jmp LoadLevelRetry
+
 ChangeLevel:    cmp levelNum                    ;Check if level already loaded
                 beq CL_Done
 LoadLevel:      sta levelNum
@@ -52,13 +55,16 @@ LoadLevel:      sta levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
                 jsr BlankScreen
-                lda #<lvlActX                   ;Load levelactors, chars & charinfo/colors
+LoadLevelRetry: lda #<lvlActX                   ;Load levelactors, chars & charinfo/colors
                 ldx #>lvlActX
                 jsr LoadFile
+                bcs LoadLevelError
                 ldy #C_MAP
                 jsr LoadAllocFile               ;Load MAP chunk
+                bcs LoadLevelError
                 ldy #C_BLOCKS
                 jsr LoadAllocFile               ;Load BLOCKS chunk
+                bcs LoadLevelError
                 jsr InitLevel
                 inc Irq4_LevelUpdate+1          ;Can update now
 

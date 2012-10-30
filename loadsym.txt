@@ -11,4 +11,5 @@ SilenceSID
 FL_MinSprY
 FL_MaxSprY
 fileName
+fileNumber
 loaderCodeEnd

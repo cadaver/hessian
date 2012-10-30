@@ -10,7 +10,7 @@ F_SPRITE        = $02
 F_MUSIC         = $05
 F_LEVEL         = $06
 F_SCRIPT        = $08
-F_SAVE          = $70
+F_SAVE          = $f0
 
 MAX_CHUNKFILES   = 32
 
@@ -24,6 +24,7 @@ MakeFileName:   stx zpSrcLo
                 clc
                 adc zpSrcLo
 MakeFileName_Direct:
+                sta fileNumber
                 pha
                 lsr
                 lsr
@@ -39,7 +40,39 @@ MFN_Sub:        and #$0f
                 bcc MFN_Number
                 adc #$06
 MFN_Number:     sta fileName,x
-                rts
+LFR_Success:
+LF_Error:       rts
+
+        ; Load a file while handling retry. The file is expected to be found; if not, the prompt
+        ; "flip the disk" is displayed.
+        ;
+        ; Parameters: A,X load address, filename
+        ; Returns: fileName
+        ; Modifies: A,X,Y,loader temp vars
+        
+LoadFileRetry:  sta LFR_AddressLo+1
+                stx LFR_AddressHi+1
+LFR_Again:      jsr LoadFile
+                bcc LFR_Success
+                jsr LFR_ErrorPrompt
+LFR_AddressLo:  lda #$00
+LFR_AddressHi:  ldx #$00
+                bne LFR_Again
+
+LFR_ErrorPrompt:cmp #$02
+                beq LFR_FlipDisk
+LFR_DiskError:  lda #<txtDiskError
+                ldx #>txtDiskError
+                bne LFR_MessageCommon
+LFR_FlipDisk:   lda #<txtFlipDisk
+                ldx #>txtFlipDisk
+LFR_MessageCommon:
+                ldy #INDEFINITE_TEXT_DURATION
+                jsr PrintPanelText
+LFR_WaitFire:   jsr GetControls
+                jsr GetFireClick
+                bcc LFR_WaitFire
+                jmp ClearPanelText
 
         ; Allocate & load a chunk-file. If no memory, purge unused files
         ;
@@ -47,8 +80,6 @@ MFN_Number:     sta fileName,x
         ; Returns: C=0 OK C=1 Error
         ; Modifies: A,X,Y,temp6-temp8,loader temp vars (chunk number stored to temp6)
 
-LF_Error:       jmp CloseFile                   ;In case of error, close the
-                                                ;file
 LoadAllocFile:  sty temp6
                 jsr OpenFile
 LoadAllocFile_FileOpen:

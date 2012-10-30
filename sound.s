@@ -45,7 +45,7 @@ PS_LoadedMusic: cmp #$ff                        ;Check if music already loaded
                 sta ntInitSong                  ;Silence during loading
                 lda #<musicData
                 ldx #>musicData
-                jsr LoadFile                    ;TODO: check for error
+                jsr LoadFileRetry
                 jsr PostLoad
 
         ; Initialize new music data

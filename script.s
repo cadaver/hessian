@@ -21,7 +21,7 @@ ES_LoadedScriptFile:
                 jsr MakeFileName
                 lda #<scriptCodeStart
                 ldx #>scriptCodeStart
-                jsr LoadFile                    ;TODO: check for error
+                jsr LoadFileRetry
                 jsr PostLoad
 ES_SameFile:    ldx temp1
                 lda scriptCodeStart,x

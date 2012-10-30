@@ -26,8 +26,12 @@ LoadSpriteFile: stx LSF_SaveX+1
                 sbc #C_FIRSTSPR
                 ldx #F_SPRITE
                 jsr MakeFileName
-                jsr LoadAllocFile               ;TODO: check for error
-                jsr PostLoad
+LSF_Retry:      jsr LoadAllocFile
+                bcc LSF_NoError
+                jsr LFR_ErrorPrompt
+                ldy temp6
+                bpl LSF_Retry
+LSF_NoError:    jsr PostLoad
                 ldy temp6                       ;LoadAllocFile puts chunk number to temp6
                 sty sprFileNum                  ;PurgeChunk clears sprFileNum, restore it now
                 lda fileHi,y

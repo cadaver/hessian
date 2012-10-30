@@ -17,11 +17,9 @@ tablHi          = depackBuffer + 104
 drvIdDrv0       = $12           ;Disk drive ID (1541 only)
 drvId           = $16           ;Disk ID (1541 only)
 drvFileTrk      = $0300
-drvFileSct      = $0380
 drvBuf          = $0400         ;Sector data buffer
 drvStart        = $0500
-drvFileLetter1  = $0680
-drvFileLetter2  = $0700
+drvFileSct      = $0680
 InitializeDrive = $d005         ;1541 only
 
                 org mainCodeStart
@@ -38,7 +36,7 @@ OF_Done:        rts
 
         ; Open file
         ;
-        ; Parameters: fileName
+        ; Parameters: fileName (slowload) / fileNumber (fastload)
         ; Returns: -
         ; Modifies: A,X,Y
 
@@ -46,13 +44,14 @@ OpenFile:       ldx fileOpen                    ;A file already open? If so, do 
                 bne OF_Done                     ;(allows chaining of files)
 FastOpen:       inx
                 stx fileOpen
-FL_SendOuter:   lda fileName,x
+FL_FileNumber:  lda #$01                        ;Default filenumber for the mainpart
+FL_StoreFileNumber:
                 sta loadTempReg
                 ldy #$08                        ;Bit counter
 FL_SendInner:   bit $dd00                       ;Wait for both DATA & CLK to go high
                 bpl FL_SendInner
                 bvc FL_SendInner
-                lsr loadTempReg
+                lsr loadTempReg                 ;Send one bit of filenumber
                 lda #$10
                 ora $dd00
                 bcc FL_ZeroBit
@@ -66,9 +65,7 @@ FL_SendAck:     bit $dd00
                 sta $dd00
                 dey
                 bne FL_SendInner
-                dex
-                bpl FL_SendOuter
-FL_PreDelay:    dex                             ;Wait to make sure the drive has also set
+FL_PreDelay:    inx                             ;Wait to make sure the drive has also set
                 bne FL_PreDelay                 ;lines high
 FL_FillBuffer:  ldx #$00
 FL_FillBufferWait:
@@ -149,7 +146,7 @@ GB_ReloadX:     ldx #$00
 
         ; Load file packed with Exomizer 2 forward mode
         ;
-        ; Parameters: A,X load address, fileName
+        ; Parameters: A,X load address, fileName / fileNumber
         ; Returns: C=0 if loaded OK, or C=1 and error code in A (see GetByte)
         ; Modifies: A,X,Y
 
@@ -423,7 +420,7 @@ skipcarry:
 
         ; Save file, then restart fastloader
         ;
-        ; Parameters: A,X startaddress, zpDest endaddress (first byte to not save)
+        ; Parameters: A,X startaddress, zpDest endaddress (first byte to not save), fileName / fileNumber
         ; Returns: -
         ; Modifies: A,X,Y
 
@@ -459,6 +456,11 @@ SF_Ok:          lda zpSrcLo
                 bne SF_Loop
                 jsr CloseKernalFile
                 dec fileOpen
+
+                ldx #$20                        ;Perform a delay loop to avoid erroneous 1581 drive LED
+SF_Delay:       jsr WaitBottom
+                dex
+                bpl SF_Delay
 
         ; Init fastloader
 
@@ -567,10 +569,9 @@ driveCode:
 
 DrvMain:        lda #IRQ_SPEED                  ;Speed up the controller a bit
                 sta $1c07                       ;(1541 only)
-DrvMain_Not1541:jsr DrvCacheDir                 ;Always cache on startup
+DrvMain_Not1541:
 DrvLoop:        cli
-                ldx #$01
-DrvNameLoop:    ldy #$08                        ;Bit counter
+                ldy #$08                        ;Filenumber bit counter
 DrvNameBitLoop:
 DrvSerialAcc1:  lda $1800
                 bpl DrvNoQuit                   ;Quit if ATN is low
@@ -582,7 +583,7 @@ DrvNoQuit:      and #$05                        ;Wait for CLK or DATA going low
                 lda #$02                        ;Pull the other line low to acknowledge
                 bcc DrvNameZero
                 lda #$08
-DrvNameZero:    ror drvFileName,x               ;Store the data bit
+DrvNameZero:    ror DrvFileName+1               ;Store the data bit
 DrvSerialAcc2:  sta $1800
 DrvNameWait:
 DrvSerialAcc3:  lda $1800                       ;Wait for either line going high
@@ -594,25 +595,14 @@ DrvSerialAcc4:  sta $1800                       ;Set CLK & DATA high
                 dey
                 bne DrvNameBitLoop              ;Loop until all bits have been received
                 sei                             ;Disable interrupts after first byte
-                dex
-                bpl DrvNameLoop
 DrvDirCached:   lda #$00                        ;Cache directory if necessary
-                bne DrvDirCacheOk
+                bne DrvCacheValid
                 jsr DrvCacheDir
-DrvDirCacheOk:
-DrvSearchName:  lda drvFileLetter1,y
-                cmp drvFileName
-                bne DrvSearchNext
-                lda drvFileLetter2,y
-                cmp drvFileName+1
-                beq DrvFound
-DrvSearchNext:  iny
-                cpy DrvDirCached+1
-                bcc DrvSearchName
-DrvFileNotFound:
-                lda #$00                        ;If file not found, reset caching
-                sta DrvDirCached+1              ;(might require diskside change)
-                ldx #$02                        ;Return code $02 = File not found
+DrvCacheValid:
+DrvFileName:    ldy #$00
+                ldx drvFileTrk,y
+                bne DrvFound
+DrvFileNotFound:ldx #$02                        ;Return code $02 = File not found
 DrvEndMark:     stx drvBuf+2                    ;Send endmark, return code in X
                 lda #$00
                 sta drvBuf
@@ -620,9 +610,10 @@ DrvEndMark:     stx drvBuf+2                    ;Send endmark, return code in X
                 beq DrvSendBlk
 
 DrvFound:       lda drvFileSct,y                ;File found, get starting T&S
-                ldx drvFileTrk,y
 DrvSectorLoop:  jsr DrvReadSector               ;Read the data sector
                 bcs DrvEndMark                  ;Quit if cannot read
+                lda DrvDirCached+1              ;If disk ID changed and dir cache invalidated,
+                beq DrvFileNotFound             ;treat as file not found error
 DrvSendBlk:     ldy #$00
                 ldx #$02
 DrvSendLoop:    lda drvBuf,y
@@ -720,7 +711,10 @@ DrvFdExec:      jsr $ff54                       ;FD2000 fix By Ninja
 DrvDelay18:     cmp ($00,x)
 DrvDelay12:     rts
 
-DrvCacheDir:
+DrvCacheDir:    tax                             ;A=0 here
+DrvClearCache:  sta drvFileTrk,x                ;Clear tracknumbers first
+                inx
+                bne DrvClearCache
 DrvDirTrk:      ldx $1000
 DrvDirSct:      lda $1000                       ;Read disk directory
 DrvDirLoop:     jsr DrvReadSector               ;Read sector
@@ -730,20 +724,24 @@ DrvNextFile:    lda drvBuf,y                    ;File type must be PRG
                 and #$83
                 cmp #$82
                 bne DrvSkipFile
-                lda drvBuf+5,y                  ;Must be two-letter fileName
+                lda drvBuf+5,y                  ;Must be two-letter filename
                 cmp #$a0
                 bne DrvSkipFile
-                ldx DrvDirCached+1
-                bmi DrvDirCacheDone             ;Can buffer max. 128 files
+                lda drvBuf+3,y                  ;Convert filename (assumed to be hexadecimal)
+                jsr DrvDecodeLetter             ;into an index number for the cache
+                asl
+                asl
+                asl
+                asl
+                sta DrvIndexOr+1
+                lda drvBuf+4,y
+                jsr DrvDecodeLetter
+DrvIndexOr:     ora #$00
+                tax
                 lda drvBuf+1,y
                 sta drvFileTrk,x
                 lda drvBuf+2,y
                 sta drvFileSct,x
-                lda drvBuf+3,y
-                sta drvFileLetter1,x
-                lda drvBuf+4,y
-                sta drvFileLetter2,x
-                inc DrvDirCached+1
 DrvSkipFile:    tya
                 clc
                 adc #$20
@@ -752,7 +750,15 @@ DrvSkipFile:    tya
                 lda drvBuf+1                    ;Go to next directory block, until no
                 ldx drvBuf                      ;more directory blocks
                 bne DrvDirLoop
-DrvDirCacheDone:
+DrvDirCacheDone:inc DrvDirCached+1
+                rts
+
+DrvDecodeLetter:sec
+                sbc #$30
+                cmp #$10
+                bcc DrvDecodeLetterDone
+                sbc #$07
+DrvDecodeLetterDone:
                 rts
 
 drvSendTbl:     dc.b $0f,$07,$0d,$05
@@ -764,9 +770,12 @@ drv1541DirSct  = drvSendTbl+7                   ;Byte $01
 drv1581DirSct  = drvSendTbl+5                   ;Byte $03
 
 drv1541DirTrk:  dc.b 18
-drvFileName:
 
 drvEnd:
+                if drvEnd > drvFileSct
+                    err
+                endif
+
                 rend
 
         ; Loader runtime data
@@ -779,6 +788,7 @@ tablOff:       dc.b 48,32,16
 
 scratch:        dc.b "S0:"
 fileName:       dc.b "01"                       ;Default filename for the mainpart
+fileNumber      = FL_FileNumber+1
 
 loaderCodeEnd:                                  ;Resident code ends here!
 
@@ -873,18 +883,24 @@ IL_DDSendMR:    lda ilMRString,x                ;Send M-R command (backwards)
                 bne IL_NoFastLoad               ;virtual device trap
 IL_NoSerial:    lda #$80                        ;Serial bus not used: switch to
                 sta InitFastLoad+1              ;"fake" IRQ-loading mode
-IL_NoFastLoad:  ldy #ilKernalLoadEnd-ilKernalLoadStart-1
+IL_NoFastLoad:  ldy #ilKernalGetByteStart-ilKernalOpenFileStart
 IL_CopyKernalLoad:
-                lda ilKernalLoadStart,y         ;Copy Kernal-based FileOpen / GetByte-
-                sta FastOpen,y                  ;routines if necessary
+                lda ilKernalOpenFileStart-1,y   ;Copy Kernal-based OpenFile / GetByte-
+                sta FL_StoreFileNumber-1,y      ;routines if necessary
                 dey
-                bpl IL_CopyKernalLoad
-                ldy #$02
+                bne IL_CopyKernalLoad
+                ldy #ilKernalGetByteEnd-ilKernalGetByteStart
 IL_CopyKernalLoad2:
-                lda ilGetByteJump,y
-                sta GB_Fast,y
+                lda ilKernalGetByteStart-1,y
+                sta FL_NoSprites-1,y
                 dey
-                bpl IL_CopyKernalLoad2
+                bne IL_CopyKernalLoad2
+                ldy #$03
+IL_CopyKernalLoad3:
+                lda ilGetByteJump-1,y
+                sta GB_Fast-1,y
+                dey
+                bne IL_CopyKernalLoad3
                 jmp IL_Done
 
 IL_FastLoadOK:  dec InitFastLoad+1              ;Use normal IRQ-loading
@@ -1017,17 +1033,22 @@ il1MHzEnd:
 
         ; Slow fileopen / getbyte routines
 
-ilKernalLoadStart:
+ilKernalOpenFileStart:
 
-                rorg FastOpen
+                rorg FL_StoreFileNumber
 
-SlowOpen:       inc fileOpen
-                jsr KernalOn
+SlowOpen:       jsr KernalOn
                 jsr SetFileName
                 ldy #$00                        ;A is $02 here
                 jsr SetLFSOpen
                 jsr ChkIn
                 jmp KernalOff                   ;Kernal off
+
+                rend
+                
+ilKernalGetByteStart:
+
+                rorg FL_NoSprites
 
 GB_Slow:        jsr KernalOnFast
                 jsr ChrIn
@@ -1035,6 +1056,7 @@ GB_Slow:        jsr KernalOnFast
                 bne GB_SlowEOF
                 jsr KernalOff
                 jmp GB_Done
+
 GB_SlowEOF:     sta loadTempReg
                 txa
                 and #$83
@@ -1045,17 +1067,16 @@ GB_SlowEOF:     sta loadTempReg
                 ldy bufferStatus
                 jsr KernalOff
                 jsr GB_Closed                   ;If nonzero returncode, return it
-                bne GB_ReloadX                  ;Else return last byte of file
-                lda loadTempReg
-                jmp GB_Done                     ;Note: this code must not grow, as otherwise
-                                                ;the fastload Y-coord compares set by the
-                                                ;raster interrupt overwrite it and it will crash
+                beq GB_LastByte                 ;Else return last byte of file
+                jmp GB_ReloadX
+GB_LastByte:    lda loadTempReg
+                jmp GB_Done
 
                 rend
 
-ilKernalLoadEnd:
+ilKernalGetByteEnd:
 
-ilGetByteJump: jmp GB_Slow
+ilGetByteJump:  jmp GB_Slow
 
 ilMRString:     dc.b 2,>drvReturn,<drvReturn,"R-M"
 

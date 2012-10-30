@@ -71,7 +71,7 @@ FinishFrame_NoScroll:
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,X,Y,loader temp vars
+        ; Modifies: A,X,Y,loader temp vars,temp vars
 
 UpdatePanel:    lda actHp+ACTI_PLAYER
                 cmp displayedHealth
