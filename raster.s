@@ -64,15 +64,17 @@ Irq1_D015:      lda #$00
                 sta $ffff
 Irq1_FirstSortSpr:
                 ldx #$00                        ;Go through the first sprite IRQ immediately
-                jmp Irq2_Spr0
+                bpl Irq2_Spr0
 Irq1_NoSprites: jmp Irq2_AllDone                ;If no sprites, go directly to the panel
+
+
 
         ;Raster interrupt 2. This is where sprite displaying happens
 
+                org ((*+$ff) & $ff00) - 3
+
 Irq2_SprIrqDone2:
                 jmp Irq2_SprIrqDone
-
-                org ((*+$ff) & $ff00)
 
 Irq2_Spr0:      lda sortSprY,x
                 sta $d00f

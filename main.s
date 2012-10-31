@@ -14,26 +14,24 @@ OPTIMIZE_SPRITEIRQS = 0
 
                 jmp InitAll
 
-        ; Memory alignment of raster interrupt code is critical, so include first
-
 randomAreaStart:
 
-                include raster.s
-                include sound.s
-                include input.s
-                include math.s
-                include file.s
                 include sprite.s
+                include sound.s                
+                include raster.s
                 include screen.s
-                include panel.s
-                include level.s
+                include input.s
+                include file.s
+                include math.s
                 include actor.s
                 include physics.s
-                include script.s
-                include player.s
-                include item.s
                 include weapon.s
                 include bullet.s
+                include player.s                
+                include item.s
+                include panel.s
+                include level.s
+                include script.s
                 include ai.s
 
         ; Main loop

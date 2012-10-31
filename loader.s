@@ -508,7 +508,6 @@ InitFastLoad:   lda #$01                        ;Need fastload?
 IFL_Begin:      sta loadTempReg                 ;Number of "packets" to send
                 stx zpSrcLo
                 sty zpSrcHi
-                jsr KernalOn
                 ldy #$00                        ;Init selfmodifying addresses
                 sty iflMWString+2
                 lda #>drvStart
