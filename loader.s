@@ -24,15 +24,51 @@ InitializeDrive = $d005         ;1541 only
 
                 org mainCodeStart
 
-        ; Close file by reading bytes until end
-        ;
-        ; Parameters: -
-        ; Returns: C=1, A=0 if no error, otherwise errorcode
-        ; Modifies: A
+        ; Kernal on/off switching and other Kernal related subroutines
 
-CloseFile:      jsr GetByte
-                bcc CloseFile
+KernalOn:       jsr WaitBottom
+                ldx InitFastLoad+1              ;In fake-IRQload mode IRQs continue,
+                bmi KernalOnFast                ;so no setup necessary
+                jsr SilenceSID
+                sta $d01a                       ;Raster IRQs off
+                sta $d015                       ;Sprites off
+                sta $d011                       ;Blank screen
+KernalOnFast:   ldx #$36
+                stx $01
+                rts
+
+WaitBottom:     lda $d011                       ;Wait until bottom of screen
+                bmi WaitBottom
+WB_Loop2:       lda $d011
+                bpl WB_Loop2
+                rts
+
+SilenceSID:     lda #$00
+                tax
+                jsr SS_Sub
+                inx
+SS_Sub:         sta $d400,x
+                sta $d407,x
+                sta $d40e,x
+                rts
+
+SetFileName:    lda #$02
+                ldx #<fileName
+                ldy #>fileName
+                jmp SetNam
+
+CloseKernalFile:lda #$02
+                jmp Close
+
+SetLFSOpen:     ldx fa
+                jsr SetLFS
+                jsr Open
+                ldx #$02
 OF_Done:        rts
+
+        ; NMI routine
+
+NMI:            rti
 
         ; Open file
         ;
@@ -470,8 +506,8 @@ InitFastLoad:   lda #$01                        ;Need fastload?
                 ldx #<driveCode
                 ldy #>driveCode
 IFL_Begin:      sta loadTempReg                 ;Number of "packets" to send
-                stx IFL_Lda+1
-                sty IFL_Lda+2
+                stx zpSrcLo
+                sty zpSrcHi
                 jsr KernalOn
                 ldy #$00                        ;Init selfmodifying addresses
                 sty iflMWString+2
@@ -483,12 +519,11 @@ IFL_SendMW:     lda iflMWString,x               ;Send M-W command (backwards)
                 dex
                 bpl IFL_SendMW
                 ldx #MW_LENGTH
-IFL_SendData:
-IFL_Lda:        lda driveCode,y                 ;Send one byte of drive code
+IFL_SendData:   lda (zpSrcLo),y                 ;Send one byte of drive code
                 jsr CIOut
                 iny
                 bne IFL_NotOver
-                inc IFL_Lda+2
+                inc zpSrcHi
 IFL_NotOver:    inc iflMWString+2               ;Also, move the M-W pointer forward
                 bne IFL_NotOver2
                 inc iflMWString+1
@@ -515,52 +550,6 @@ IFL_Quit:
 KernalOff:      ldx #$35
                 stx $01
                 rts
-
-        ; Kernal on/off switching and other Kernal related subroutines
-
-KernalOn:       jsr WaitBottom
-                ldx InitFastLoad+1              ;In fake-IRQload mode IRQs continue,
-                bmi KernalOnFast                ;so no setup necessary
-                jsr SilenceSID
-                sta $d01a                       ;Raster IRQs off
-                sta $d015                       ;Sprites off
-                sta $d011                       ;Blank screen
-KernalOnFast:   ldx #$36
-                stx $01
-                rts
-
-WaitBottom:     lda $d011                       ;Wait until bottom of screen
-                bmi WaitBottom
-WB_Loop2:       lda $d011
-                bpl WB_Loop2
-                rts
-
-SilenceSID:     lda #$00
-                tax
-                jsr SS_Sub
-                inx
-SS_Sub:         sta $d400,x
-                sta $d407,x
-                sta $d40e,x
-                rts
-
-SetFileName:    lda #$02
-                ldx #<fileName
-                ldy #>fileName
-                jmp SetNam
-
-CloseKernalFile:lda #$02
-                jmp Close
-
-SetLFSOpen:     ldx fa
-                jsr SetLFS
-                jsr Open
-                ldx #$02
-                rts
-
-        ; NMI routine
-
-NMI:            rti
 
         ; Diskdrive code
 
@@ -602,6 +591,7 @@ DrvCacheValid:
 DrvFileName:    ldy #$00
                 ldx drvFileTrk,y
                 bne DrvFound
+                stx DrvDirCached+1              ;If file not found, reset caching
 DrvFileNotFound:ldx #$02                        ;Return code $02 = File not found
 DrvEndMark:     stx drvBuf+2                    ;Send endmark, return code in X
                 lda #$00
@@ -1063,9 +1053,9 @@ GB_SlowEOF:     sta loadTempReg
                 sta loadBuffer+2
                 sty bufferStatus                ;Close may modify Y
                 jsr CloseKernalFile
-                dec fileOpen
                 ldy bufferStatus
                 jsr KernalOff
+                dec fileOpen
                 jsr GB_Closed                   ;If nonzero returncode, return it
                 beq GB_LastByte                 ;Else return last byte of file
                 jmp GB_ReloadX
