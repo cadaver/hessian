@@ -1,7 +1,7 @@
 SHOW_FREE_RASTERTIME = 0
 SHOW_COLORSCROLL_WAIT = 0
 REDUCE_CONTROL_LATENCY = 1
-OPTIMIZE_SPRITEIRQS = 0
+OPTIMIZE_SPRITEIRQS = 1
 
         ; Memory configuration & loader symbols
 
@@ -16,11 +16,11 @@ OPTIMIZE_SPRITEIRQS = 0
 
 randomAreaStart:
 
-                include sprite.s
-                include sound.s                
                 include raster.s
-                include screen.s
+                include sound.s
                 include input.s
+                include screen.s
+                include sprite.s
                 include file.s
                 include math.s
                 include actor.s

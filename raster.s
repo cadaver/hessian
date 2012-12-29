@@ -20,6 +20,7 @@ Irq1:           cld
                 sta $01                         ;Ensure IO memory is available
                 lda #$00
                 sta newFrame
+                sta $d07a                       ;SCPU back to slow mode
 Irq1_ScrollX:   lda #$17
                 sta $d016
 Irq1_ScrollY:   lda #$57                        ;Check if panel split IRQ needs to blank the
@@ -66,8 +67,6 @@ Irq1_FirstSortSpr:
                 ldx #$00                        ;Go through the first sprite IRQ immediately
                 bpl Irq2_Spr0
 Irq1_NoSprites: jmp Irq2_AllDone                ;If no sprites, go directly to the panel
-
-
 
         ;Raster interrupt 2. This is where sprite displaying happens
 
@@ -275,8 +274,10 @@ Irq4_TargetFramesOk:
 Irq4_LevelUpdate:lda #$00                       ;Animate level background?
                 beq Irq4_SkipFrame
                 jsr UpdateLevel
-Irq4_SkipFrame:
-                lda #IRQ1_LINE
+Irq4_SkipFrame: lda fileOpen                    ;If file not open, switch SCPU to turbo mode
+                bne Irq4_NoSCPU                 ;during the bottom of the screen to prevent
+                sta $d07b                       ;slowdown during heavy game logic
+Irq4_NoSCPU:    lda #IRQ1_LINE
                 sta $d012
                 lda #<Irq1
                 ldx #>Irq1

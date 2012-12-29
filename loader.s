@@ -78,8 +78,8 @@ NMI:            rti
 
 OpenFile:       ldx fileOpen                    ;A file already open? If so, do nothing
                 bne OF_Done                     ;(allows chaining of files)
-FastOpen:       inx
-                stx fileOpen
+FastOpen:       inc fileOpen
+                sta $d07a                       ;SCPU to slow mode
 FL_FileNumber:  lda #$01                        ;Default filenumber for the mainpart
 FL_StoreFileNumber:
                 sta loadTempReg
@@ -462,7 +462,8 @@ skipcarry:
 
 SaveFile:       sta zpSrcLo
                 stx zpSrcHi
-                inc fileOpen                    ;Set fileopen indicator as for example
+                inc fileOpen                    ;Set fileopen indicator, raster delays are to be expected
+                sta $d07a                       ;SCPU to slow mode
                 jsr KernalOn                    ;IDE64 delays are to be expected
                 lda #$05
                 ldx #<scratch
