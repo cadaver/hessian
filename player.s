@@ -238,6 +238,24 @@ MoveHuman:      lda actHp,x
                 beq MH_NoFallCheck
                 and #MB_LANDED/2                ;Falling damage applied right after landing
                 beq MH_NoFallDamage
+                lda temp3                       ;Possibility to reduce damage by rolling
+                and #AMF_ROLL
+                beq MH_NoRollSave
+                cpy #DAMAGING_FALL_DISTANCE-2   ;If fall is ridiculously low, do not allow the roll
+                bcc MH_NoRollSave
+                lda actD,x
+                asl
+                lda #JOY_DOWN|JOY_RIGHT
+                bcc MH_RollSaveRight
+                lda #JOY_DOWN|JOY_LEFT
+MH_RollSaveRight:
+                cmp actMoveCtrl,x
+                bne MH_NoRollSave
+                lda #FR_ROLL
+                sta actF1,x
+                clc
+                skip1
+MH_NoRollSave:  sec
                 tya
                 sbc #DAMAGING_FALL_DISTANCE
                 bcc MH_NoFallDamage

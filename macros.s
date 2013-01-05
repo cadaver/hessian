@@ -27,7 +27,11 @@ NEXT_VAR        set NEXT_VAR + {2}
                 org {1}
                 endm
 
-        ; BIT instruction for skipping the next 2-byte instruction
+        ; BIT instruction for skipping the next 1- or 2-byte instruction
+
+                mac skip1
+                dc.b $24
+                endm
 
                 mac skip2
                 dc.b $2c
