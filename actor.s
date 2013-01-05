@@ -65,6 +65,7 @@ AL_HALFSPEEDLEFT = 24                          ;Ladder jump / wallflip speed lef
 AF_NONE         = $00
 AF_ISHERO       = $01
 AF_INITONLYSIZE = $02
+AF_ISORGANIC    = $04
 AF_NOREMOVECHECK = $40
 AF_ISVILLAIN    = $80
 
@@ -74,10 +75,6 @@ AMF_CLIMB       = $04
 AMF_ROLL        = $08
 AMF_WALLFLIP    = $10
 AMF_NOFALLDAMAGE = $20
-
-GRP_NEUTRAL     = $00
-GRP_HEROES      = $01
-GRP_VILLAINS    = $80
 
 ADDACTOR_LEFT_LIMIT = 1
 ADDACTOR_TOP_LIMIT = 0
@@ -435,6 +432,7 @@ BCL_Loop:       lda actT,x                      ;Actor must exist and have nonze
                 lda actHp,x
                 beq BCL_Next
                 lda actGrp,x
+                and #AF_ISHERO|AF_ISVILLAIN
                 beq BCL_Next
                 bpl BCL_StoreHero
 BCL_StoreVillain:
@@ -1063,7 +1061,6 @@ InitActor:      jsr GetActorLogicData
                 sta actSizeD,x
                 pla
                 bcs IA_SkipGroupHealthColor
-                and #AF_ISVILLAIN|AF_ISHERO
                 sta actGrp,x
                 iny
                 lda (actLo),y
@@ -1167,6 +1164,10 @@ DA_HealthRechargeDelay:
 DA_PlayerDamageMod:
                 ldy #NO_MODIFY
                 jsr ModifyDamage
+                tay                             ;Never reduce damage to zero with the vitality
+                bne DA_NotZeroDamage            ;modifier
+                lda #$01
+DA_NotZeroDamage:     
                 ldy temp8
 DA_NotPlayer:   sta temp8
                 lda actHp,x                     ;First check that there is health

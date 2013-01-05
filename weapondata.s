@@ -11,6 +11,9 @@ DMG_GRENADE     = 16
 
 DMG_BULLETSTAYS = $80                           ;Bullet does not disappear after damage
                                                 ;(flamethrower etc.)
+DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
+DMGMOD_NOORGANIC = $80                          ;No organic damage
+DMGMOD_NONONORGANIC = $08                       ;No nonorganic damage
 
 SPDTBL_NORMAL   = 0
 SPDTBL_GRENADE  = 10
@@ -62,10 +65,12 @@ wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
                 dc.b 5                          ;Attack delay
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b DMG_FISTS                  ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 1                          ;Bullet time duration
                 dc.b 1                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_PUNCH                  ;Sound effect
+
 
 wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction
@@ -73,6 +78,7 @@ wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b 7                          ;Attack delay
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b DMG_KNIFE                  ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 1                          ;Bullet time duration
                 dc.b 1                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
@@ -90,6 +96,7 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b 7                          ;Attack delay
                 dc.b ACT_BULLET                 ;Bullet actor type
                 dc.b DMG_PISTOL                 ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 18                         ;Bullet time duration
                 dc.b 12                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
@@ -110,6 +117,7 @@ wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW ;Weapon bits
                 dc.b 15                         ;Attack delay
                 dc.b ACT_GRENADE                ;Bullet actor type
                 dc.b DMG_GRENADE                ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 30                         ;Bullet time duration
                 dc.b 6                          ;Bullet speed in pixels
                 dc.b SPDTBL_GRENADE             ;Bullet speed table offset

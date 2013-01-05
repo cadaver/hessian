@@ -131,7 +131,7 @@ actLogicTblHi:  dc.b >alPlayer
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
-                dc.b AF_ISHERO|AF_NOREMOVECHECK ;Actor flags
+                dc.b AF_ISHERO|AF_ISORGANIC|AF_NOREMOVECHECK ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
@@ -189,7 +189,7 @@ alExplosion:    dc.w MoveExplosion              ;Update routine
 
 alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
-                dc.b AF_ISVILLAIN               ;Actor flags
+                dc.b AF_ISVILLAIN|AF_ISORGANIC  ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down

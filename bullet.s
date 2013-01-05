@@ -68,20 +68,39 @@ CBC_GetNextVillain:
                 bcc CBC_GetNextVillain
 CBC_HasCollision:
                 sty tgtActIndex
-                lda actHp,x                     ;Damage target
+                lda actAuxData,x                ;Damage modifier
+                sta temp7
+                lda actHp,x                     ;Amount of damage
                 pha
                 and #$7f
+                sta temp8
                 ldx tgtActIndex
+                lda actGrp,x                    ;Check if target is organic
+                and #AF_ISORGANIC
+                beq CBC_NonOrganic
+CBC_Organic:    lda temp7
+                and #$0f
+                bpl CBC_Common
+CBC_NonOrganic: lda temp7
+                lsr
+                lsr
+                lsr
+                lsr
+CBC_Common:     tay
+                lda temp8
+                jsr ModifyDamage
+                tay
+                beq CBC_NoDamage
                 ldy actIndex
                 jsr DamageActor
-                ldx actIndex
+CBC_NoDamage:   ldx actIndex
                 pla
                 bmi CBC_BulletStays
                 ldy #$ff                        ;Destroy bullet without damage source
                 jmp DestroyActor
 CBC_BulletStays:lda #$80                        ;In bullet stays-mode, do damage only once
                 sta actHp,x
-                rts
+CBC_Done:       rts
 
 CBC_CheckHeroes:lda #<heroList
                 sta CBC_GetNextHero+1
@@ -137,7 +156,6 @@ MoveExplosion:  lda #1
                 cmp #5
                 bcc MExpl_NoRemove
                 jmp RemoveActor
-CBC_Done:
 MExpl_NoAnimation:
 MExpl_NoRemove: rts
 
@@ -194,6 +212,7 @@ RD_Loop:        lda actT,y
                 lda actHp,y
                 beq RD_Next
                 lda actGrp,y
+                and #AF_ISHERO|AF_ISVILLAIN
                 beq RD_Next
                 jsr CheckActorCollision
                 bcc RD_Next

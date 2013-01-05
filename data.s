@@ -230,6 +230,7 @@ actSizeD:       ds.b MAX_ACT,0
 actTime:        ds.b MAX_ACT,0
 actHp:          ds.b MAX_ACT,0
 actMB:          ds.b MAX_ACT,0
+actAuxData:     ds.b MAX_ACT,0
 actCtrl:        ds.b MAX_COMPLEXACT,0
 actMoveCtrl:    ds.b MAX_COMPLEXACT,0
 actPrevCtrl:    ds.b MAX_COMPLEXACT,0

@@ -11,19 +11,20 @@ WD_MAXAIM       = 2
 WD_ATTACKDELAY  = 3
 WD_BULLETTYPE   = 4
 WD_DAMAGE       = 5
-WD_DURATION     = 6
-WD_BULLETSPEED  = 7
-WD_SPEEDTABLEOFFSET = 8
-WD_SFX          = 9
-WD_IDLEFR       = 10
-WD_IDLEFRLEFT   = 11
-WD_PREPAREFR    = 12
-WD_PREPAREFRLEFT = 13
-WD_ATTACKFR     = 14
-WD_ATTACKFRLEFT = 19
-WD_RELOADDELAY  = 24
-WD_RELOADSFX    = 25
-WD_RELOADDONESFX = 26
+WD_DAMAGEMOD    = 6
+WD_DURATION     = 7
+WD_BULLETSPEED  = 8
+WD_SPEEDTABLEOFFSET = 9
+WD_SFX          = 10
+WD_IDLEFR       = 11
+WD_IDLEFRLEFT   = 12
+WD_PREPAREFR    = 13
+WD_PREPAREFRLEFT = 14
+WD_ATTACKFR     = 15
+WD_ATTACKFRLEFT = 20
+WD_RELOADDELAY  = 25
+WD_RELOADSFX    = 26
+WD_RELOADDONESFX = 27
 
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
@@ -264,6 +265,9 @@ AH_BulletFrameDone:
                 sta temp8
                 iny
                 lda (wpnLo),y
+                sta actAuxData,x                ;Damage mod nonorganic / organic
+                iny
+                lda (wpnLo),y
                 sta actTime,x
                 lda temp3
                 and #WDB_FLICKERBULLET
@@ -423,9 +427,7 @@ GBO_Fail:       pla
         ; Returns: A modified damage
         ; Modifies: A,Y,loader temp vars
 
-ModifyDamage:   ora #$00                        ;Zero in - zero out
-                beq MD_Zero
-                stx zpBitsLo
+ModifyDamage:   stx zpBitsLo
                 ldx #zpSrcLo
                 jsr MulU
                 lda zpSrcLo
@@ -435,7 +437,5 @@ ModifyDamage:   ora #$00                        ;Zero in - zero out
                 ror
                 lsr zpSrcHi
                 ror
-                bne MD_NotZero
-                lda #$01                        ;Never reduce to zero
-MD_NotZero:     ldx zpBitsLo
-MD_Zero:        rts
+                ldx zpBitsLo
+                rts
