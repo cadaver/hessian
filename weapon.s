@@ -106,7 +106,7 @@ AH_RedrawAmmoNoAttack:
 AH_NotReloading:bne AH_AmmoCheckOK
 AH_EmptyMagazine:
                 lda invCount,y                  ;Initiate reloading if mag empty and reserve left
-                beq AH_FirearmEmpty
+                beq AH_NoAttack2
                 lda actAttackD+ACTI_PLAYER      ;Do not start reloading before attack delay
                 bne AH_AmmoCheckOK              ;zero
                 lda #$ff
@@ -122,8 +122,6 @@ AH_ReloadDelayBonus:
                 jsr PlaySfx
                 jmp AH_RedrawAmmoNoAttack
 AH_NoAttack2:   jmp AH_NoAttack
-AH_FirearmEmpty:lda #$01                        ;If no bullets, set a constant attack delay to
-                sta actAttackD+ACTI_PLAYER      ;prevent firing but allow brandishing empty weapon
 AH_AmmoCheckOK: lda menuMode                    ;If player is in any menu mode, do not attack
                 bne AH_NoAttack2
 AH_NotPlayer:   lda actPrevCtrl,x               ;Require fire pressed also in previous controls

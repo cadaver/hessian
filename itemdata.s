@@ -8,6 +8,8 @@ ITEM_MEDKIT     = 5
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
 ITEM_FIRST_NONWEAPON = ITEM_MEDKIT
 
+MAG_INFINITE = $ff
+
 itemMaxCount:   dc.b 0
                 dc.b 0
                 dc.b 0
@@ -35,8 +37,8 @@ itemDefaultPickup:
                 dc.b 1
 
 itemMagazineSize:
-                dc.b $ff
-                dc.b $ff
+                dc.b MAG_INFINITE
+                dc.b MAG_INFINITE
                 dc.b 12
                 dc.b 0
                 dc.b 0

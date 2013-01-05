@@ -692,7 +692,7 @@ optionsMenuChoice:
                 dc.b 0
 cheatIndex:     dc.b 0
 
-txtCredits:     dc.b "A COVERT BITOPS PRODUCTION IN 2012",0
+txtCredits:     dc.b "A COVERT BITOPS PRODUCTION IN 2013",0
                 dc.b 0
                 dc.b 0
                 dc.b "CODE, GRAPHICS & AUDIO BY LASSE __RNI",0

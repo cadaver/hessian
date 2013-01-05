@@ -216,9 +216,8 @@ DA_NotNegative: sta invCount,y
                 bne DA_DecreaseDone
                 sty zpSrcLo
                 lda invType,y
-                tay
-                lda itemMagazineSize-1,y        ;If it's a consumable item, remove when ammo
-                bne DA_DecreaseDone             ;goes to zero
+                cmp #ITEM_FIRST_CONSUMABLE      ;If it's a consumable item, remove when ammo
+                bcc DA_DecreaseDone             ;goes to zero
                 ldy itemIndex
                 jmp RemoveItemByIndex
 SetPanelRedrawAmmo:
