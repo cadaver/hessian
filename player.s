@@ -357,6 +357,8 @@ MH_NoHitWall:   lda temp1
                 lda actCtrl,x                   ;When holding fire can not initiate jump
                 and #JOY_FIRE                   ;or grab a ladder
                 bne MH_NoNewJump
+                lda actFall,x                   ;If still in falling autoduck mode,
+                bne MH_NoNewJump                ;no new jump
                 lda actMoveCtrl,x               ;If on ground, can initiate a jump
                 and #JOY_UP                     ;except if in the middle of a roll
                 beq MH_NoNewJump
