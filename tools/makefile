@@ -1,4 +1,4 @@
-all: d642prg.exe filejoin.exe invert.exe lpack.exe ldepack.exe makedisk.exe pack2.exe pchunk2.exe mchunk.exe leveled.exe spred.exe symbols.exe ins2nt2.exe
+all: d642prg.exe filejoin.exe gt2nt2.exe invert.exe lpack.exe ldepack.exe makedisk.exe pack2.exe pchunk2.exe mchunk.exe leveled.exe spred.exe symbols.exe ins2nt2.exe
 
 clean:
 	del *.exe
@@ -30,6 +30,9 @@ d642prg.exe: d642prg.c
 
 filejoin.exe: filejoin.c
 	gcc filejoin.c -ofilejoin.exe
+
+gt2nt2.exe: gt2nt2.c fileio.c
+	gcc gt2nt2.c fileio.c -ogt2nt2.exe
 
 invert.exe: invert.c
 	gcc invert.c -oinvert.exe

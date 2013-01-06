@@ -1,0 +1,1006 @@
+#define CMD_DONOTHING 0
+#define CMD_PORTAUP 1
+#define CMD_PORTADOWN 2
+#define CMD_TONEPORTA 3
+#define CMD_VIBRATO 4
+#define CMD_SETAD 5
+#define CMD_SETSR 6
+#define CMD_SETWAVE 7
+#define CMD_SETWAVEPTR 8
+#define CMD_SETPULSEPTR 9
+#define CMD_SETFILTERPTR 10
+#define CMD_SETFILTERCTRL 11
+#define CMD_SETFILTERCUTOFF 12
+#define CMD_SETMASTERVOL 13
+#define CMD_FUNKTEMPO 14
+#define CMD_SETTEMPO 15
+
+#define MST_NOFINEVIB 0
+#define MST_FINEVIB 1
+#define MST_FUNKTEMPO 2
+#define MST_PORTAMENTO 3
+#define MST_RAW 4
+
+#define WTBL 0
+#define PTBL 1
+#define FTBL 2
+#define STBL 3
+
+#define MAX_FILT 64
+#define MAX_STR 32
+#define MAX_INSTR 64
+#define MAX_CHN 3
+#define MAX_PATT 208
+#define MAX_TABLES 4
+#define MAX_TABLELEN 255
+#define MAX_INSTRNAMELEN 16
+#define MAX_PATTROWS 128
+#define MAX_SONGLEN 254
+#define MAX_SONGS 32
+#define MAX_NOTES 96
+
+#define REPEAT 0xd0
+#define TRANSDOWN 0xe0
+#define TRANSUP 0xf0
+#define LOOPSONG 0xff
+
+#define ENDPATT 0xff
+#define INSTRCHG 0x00
+#define FX 0x40
+#define FXONLY 0x50
+#define FIRSTNOTE 0x60
+#define LASTNOTE 0xbc
+#define REST 0xbd
+#define KEYOFF 0xbe
+#define KEYON 0xbf
+#define OLDKEYOFF 0x5e
+#define OLDREST 0x5f
+
+#define WAVEDELAY 0x1
+#define WAVELASTDELAY 0xf
+#define WAVESILENT 0xe0
+#define WAVELASTSILENT 0xef
+#define WAVECMD 0xf0
+#define WAVELASTCMD 0xfe
+
+#define MAX_NTSONGS 16
+#define MAX_NTPATT 127
+#define MAX_NTCMD 127
+#define MAX_NTCMDNAMELEN 9
+#define MAX_NTPATTLEN 192
+#define MAX_NTSONGLEN 256
+#define MAX_NTTBLLEN 255
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "fileio.h"
+
+typedef struct
+{
+  unsigned char ad;
+  unsigned char sr;
+  unsigned char ptr[MAX_TABLES];
+  unsigned char vibdelay;
+  unsigned char gatetimer;
+  unsigned char firstwave;
+  char name[MAX_INSTRNAMELEN];
+} INSTR;
+
+INSTR instr[MAX_INSTR];
+unsigned char ltable[MAX_TABLES][MAX_TABLELEN];
+unsigned char rtable[MAX_TABLES][MAX_TABLELEN];
+unsigned char songorder[MAX_SONGS][MAX_CHN][MAX_SONGLEN+2];
+unsigned char pattern[MAX_PATT][MAX_PATTROWS*4+4];
+char songname[MAX_STR];
+char authorname[MAX_STR];
+char copyrightname[MAX_STR];
+int pattlen[MAX_PATT];
+int songlen[MAX_SONGS][MAX_CHN];
+int highestusedpattern;
+int highestusedinstr;
+int highestusedsong;
+int defaultpatternlength = 64;
+
+unsigned char ntwavetbl[MAX_NTTBLLEN+1];
+unsigned char ntnotetbl[MAX_NTTBLLEN+1];
+unsigned char ntpulsetimetbl[MAX_NTTBLLEN+1];
+unsigned char ntpulsespdtbl[MAX_NTTBLLEN+1];
+unsigned char ntfilttimetbl[MAX_NTTBLLEN+1];
+unsigned char ntfiltspdtbl[MAX_NTTBLLEN+1];
+
+unsigned char ntpatterns[MAX_NTPATT][MAX_NTPATTLEN];
+
+unsigned char nttracks[MAX_NTSONGS][MAX_NTSONGLEN];
+
+unsigned char ntcmdad[MAX_NTCMD];
+unsigned char ntcmdsr[MAX_NTCMD];
+unsigned char ntcmdwavepos[MAX_NTCMD];
+unsigned char ntcmdpulsepos[MAX_NTCMD];
+unsigned char ntcmdfiltpos[MAX_NTCMD];
+
+unsigned char ntcmdnames[MAX_NTCMD][MAX_NTCMDNAMELEN+1];
+
+unsigned char ntsonglen[MAX_NTSONGS][3];
+unsigned char nttbllen[3];
+unsigned char ntcmdlen;
+
+unsigned nthrparam = 0x0f;
+unsigned ntfirstwave = 0x09;
+
+void loadsong(const char* songfilename);
+void clearsong(int cs, int cp, int ci, int cf, int cn);
+void clearinstr(int num);
+void clearpattern(int num);
+void countpatternlengths(void);
+int makespeedtable(unsigned data, int mode, int makenew);
+void printsonginfo(void);
+void clearntsong();
+
+int main(int argc, const char** argv)
+{
+    if (argc < 2)
+    {
+        printf("Usage: gt2nt2 <input> <output>");
+        return 1;
+    }
+
+    loadsong(argv[1]);
+    printsonginfo();
+    clearntsong();
+}
+
+void loadsong(const char* songfilename)
+{
+  int c;
+  int ok = 0;
+  char ident[4];
+  FILE *handle;
+
+  handle = fopen(songfilename, "rb");
+
+  if (handle)
+  {
+    fread(ident, 4, 1, handle);
+    if ((!memcmp(ident, "GTS3", 4)) || (!memcmp(ident, "GTS4", 4)) || (!memcmp(ident, "GTS5", 4)))
+    {
+      int d;
+      int length;
+      int amount;
+      int loadsize;
+      clearsong(1,1,1,1,1);
+      ok = 1;
+
+      // Read infotexts
+      fread(songname, sizeof songname, 1, handle);
+      fread(authorname, sizeof authorname, 1, handle);
+      fread(copyrightname, sizeof copyrightname, 1, handle);
+
+      // Read songorderlists
+      amount = fread8(handle);
+      for (d = 0; d < amount; d++)
+      {
+        for (c = 0; c < MAX_CHN; c++)
+        {
+          length = fread8(handle);
+          loadsize = length;
+          loadsize++;
+          fread(songorder[d][c], loadsize, 1, handle);
+        }
+      }
+      // Read instruments
+      amount = fread8(handle);
+      for (c = 1; c <= amount; c++)
+      {
+        instr[c].ad = fread8(handle);
+        instr[c].sr = fread8(handle);
+        instr[c].ptr[WTBL] = fread8(handle);
+        instr[c].ptr[PTBL] = fread8(handle);
+        instr[c].ptr[FTBL] = fread8(handle);
+        instr[c].ptr[STBL] = fread8(handle);
+        instr[c].vibdelay = fread8(handle);
+        instr[c].gatetimer = fread8(handle);
+        instr[c].firstwave = fread8(handle);
+        fread(&instr[c].name, MAX_INSTRNAMELEN, 1, handle);
+      }
+      // Read tables
+      for (c = 0; c < MAX_TABLES; c++)
+      {
+        loadsize = fread8(handle);
+        fread(ltable[c], loadsize, 1, handle);
+        fread(rtable[c], loadsize, 1, handle);
+      }
+      // Read patterns
+      amount = fread8(handle);
+      for (c = 0; c < amount; c++)
+      {
+        length = fread8(handle) * 4;
+        fread(pattern[c], length, 1, handle);
+      }
+      countpatternlengths();
+    }
+
+    // Goattracker v2.xx (3-table) import
+    if (!memcmp(ident, "GTS2", 4))
+    {
+      int d;
+      int length;
+      int amount;
+      int loadsize;
+      clearsong(1,1,1,1,1);
+      ok = 1;
+
+      // Read infotexts
+      fread(songname, sizeof songname, 1, handle);
+      fread(authorname, sizeof authorname, 1, handle);
+      fread(copyrightname, sizeof copyrightname, 1, handle);
+
+      // Read songorderlists
+      amount = fread8(handle);
+      for (d = 0; d < amount; d++)
+      {
+        for (c = 0; c < MAX_CHN; c++)
+        {
+          length = fread8(handle);
+          loadsize = length;
+          loadsize++;
+          fread(songorder[d][c], loadsize, 1, handle);
+        }
+        highestusedsong = d;
+      }
+
+
+      // Read instruments
+      amount = fread8(handle);
+      for (c = 1; c <= amount; c++)
+      {
+        instr[c].ad = fread8(handle);
+        instr[c].sr = fread8(handle);
+        instr[c].ptr[WTBL] = fread8(handle);
+        instr[c].ptr[PTBL] = fread8(handle);
+        instr[c].ptr[FTBL] = fread8(handle);
+        instr[c].vibdelay = fread8(handle);
+        instr[c].ptr[STBL] = makespeedtable(fread8(handle), MST_FINEVIB, 0) + 1;
+        instr[c].gatetimer = fread8(handle);
+        instr[c].firstwave = fread8(handle);
+        fread(&instr[c].name, MAX_INSTRNAMELEN, 1, handle);
+      }
+      // Read tables
+      for (c = 0; c < MAX_TABLES-1; c++)
+      {
+        loadsize = fread8(handle);
+        fread(ltable[c], loadsize, 1, handle);
+        fread(rtable[c], loadsize, 1, handle);
+      }
+      // Read patterns
+      amount = fread8(handle);
+      for (c = 0; c < amount; c++)
+      {
+        int d;
+        length = fread8(handle) * 4;
+        fread(pattern[c], length, 1, handle);
+
+        // Convert speedtable-requiring commands
+        for (d = 0; d < length; d++)
+        {
+          switch (pattern[c][d*4+2])
+          {
+            case CMD_FUNKTEMPO:
+            pattern[c][d*4+3] = makespeedtable(pattern[c][d*4+3], MST_FUNKTEMPO, 0) + 1;
+            break;
+
+            case CMD_PORTAUP:
+            case CMD_PORTADOWN:
+            case CMD_TONEPORTA:
+            pattern[c][d*4+3] = makespeedtable(pattern[c][d*4+3], MST_PORTAMENTO, 0) + 1;
+            break;
+
+            case CMD_VIBRATO:
+            pattern[c][d*4+3] = makespeedtable(pattern[c][d*4+3], MST_FINEVIB, 0) + 1;
+            break;
+          }
+        }
+      }
+      countpatternlengths();
+    }
+    // Goattracker 1.xx import
+    if (!memcmp(ident, "GTS!", 4))
+    {
+      int d;
+      int length;
+      int amount;
+      int loadsize;
+      int fw = 0;
+      int fp = 0;
+      int ff = 0;
+      int fi = 0;
+      int numfilter = 0;
+      unsigned char filtertable[256];
+      unsigned char filtermap[64];
+      int arpmap[32][256];
+      unsigned char pulse[32], pulseadd[32], pulselimitlow[32], pulselimithigh[32];
+      int filterjumppos[64];
+
+      clearsong(1,1,1,1,1);
+      ok = 1;
+
+      // Read infotexts
+      fread(songname, sizeof songname, 1, handle);
+      fread(authorname, sizeof authorname, 1, handle);
+      fread(copyrightname, sizeof copyrightname, 1, handle);
+
+      // Read songorderlists
+      amount = fread8(handle);
+      for (d = 0; d < amount; d++)
+      {
+        for (c = 0; c < MAX_CHN; c++)
+        {
+          length = fread8(handle);
+          loadsize = length;
+          loadsize++;
+          fread(songorder[d][c], loadsize, 1, handle);
+        }
+      }
+
+      // Convert instruments
+      for (c = 1; c < 32; c++)
+      {
+        unsigned char wavelen;
+
+        instr[c].ad = fread8(handle);
+        instr[c].sr = fread8(handle);
+        pulse[c] = fread8(handle);
+        pulseadd[c] = fread8(handle);
+        pulselimitlow[c] = fread8(handle);
+        pulselimithigh[c] = fread8(handle);
+        instr[c].ptr[FTBL] = fread8(handle); // Will be converted later
+        if (instr[c].ptr[FTBL] > numfilter) numfilter = instr[c].ptr[FTBL];
+        if (pulse[c] & 1) instr[c].gatetimer |= 0x80; // "No hardrestart" flag
+        pulse[c] &= 0xfe;
+        wavelen = fread8(handle)/2;
+        fread(&instr[c].name, MAX_INSTRNAMELEN, 1, handle);
+        instr[c].ptr[WTBL] = fw+1;
+
+        // Convert wavetable
+        for (d = 0; d < wavelen; d++)
+        {
+          if (fw < MAX_TABLELEN)
+          {
+            ltable[WTBL][fw] = fread8(handle);
+            rtable[WTBL][fw] = fread8(handle);
+            if (ltable[WTBL][fw] == 0xff)
+              if (rtable[WTBL][fw]) rtable[WTBL][fw] += instr[c].ptr[WTBL]-1;
+            if ((ltable[WTBL][fw] >= 0x8) && (ltable[WTBL][fw] <= 0xf))
+              ltable[WTBL][fw] |= 0xe0;
+            fw++;
+          }
+          else
+          {
+            fread8(handle);
+            fread8(handle);
+          }
+        }
+
+        // Remove empty wavetable afterwards
+        if ((wavelen == 2) && (!ltable[WTBL][fw-2]) && (!rtable[WTBL][fw-2]))
+        {
+          instr[c].ptr[WTBL] = 0;
+          fw -= 2;
+          ltable[WTBL][fw] = 0;
+          rtable[WTBL][fw] = 0;
+          ltable[WTBL][fw+1] = 0;
+          rtable[WTBL][fw+1] = 0;
+        }
+
+        // Convert pulsetable
+        if (pulse[c])
+        {
+          int pulsetime, pulsedist, hlpos;
+
+          // Check for duplicate pulse settings
+          for (d = 1; d < c; d++)
+          {
+            if ((pulse[d] == pulse[c]) && (pulseadd[d] == pulseadd[c]) && (pulselimitlow[d] == pulselimitlow[c]) &&
+                (pulselimithigh[d] == pulselimithigh[c]))
+            {
+              instr[c].ptr[PTBL] = instr[d].ptr[PTBL];
+              goto PULSEDONE;
+            }
+          }
+
+          // Initial pulse setting
+          if (fp >= MAX_TABLELEN) goto PULSEDONE;
+          instr[c].ptr[PTBL] = fp+1;
+          ltable[PTBL][fp] = 0x80 | (pulse[c] >> 4);
+          rtable[PTBL][fp] = pulse[c] << 4;
+          fp++;
+
+          // Pulse modulation
+          if (pulseadd[c])
+          {
+            int startpulse = pulse[c]*16;
+            int currentpulse = pulse[c]*16;
+            // Phase 1: From startpos to high limit
+            pulsedist = pulselimithigh[c]*16 - currentpulse;
+            if (pulsedist > 0)
+            {
+              pulsetime = pulsedist/pulseadd[c];
+              currentpulse += pulsetime*pulseadd[c];
+              while (pulsetime)
+              {
+                int acttime = pulsetime;
+                if (acttime > 127) acttime = 127;
+                if (fp >= MAX_TABLELEN) goto PULSEDONE;
+                ltable[PTBL][fp] = acttime;
+                rtable[PTBL][fp] = pulseadd[c] / 2;
+                fp++;
+                pulsetime -= acttime;
+              }
+            }
+
+            hlpos = fp;
+            // Phase 2: from high limit to low limit
+            pulsedist = currentpulse - pulselimitlow[c]*16;
+            if (pulsedist > 0)
+            {
+              pulsetime = pulsedist/pulseadd[c];
+              currentpulse -= pulsetime*pulseadd[c];
+              while (pulsetime)
+              {
+                int acttime = pulsetime;
+                if (acttime > 127) acttime = 127;
+                if (fp >= MAX_TABLELEN) goto PULSEDONE;
+                ltable[PTBL][fp] = acttime;
+                rtable[PTBL][fp] = -(pulseadd[c] / 2);
+                fp++;
+                pulsetime -= acttime;
+              }
+            }
+
+            // Phase 3: from low limit back to startpos/high limit
+            if ((startpulse < pulselimithigh[c]*16) && (startpulse > currentpulse))
+            {
+              pulsedist = startpulse - currentpulse;
+              if (pulsedist > 0)
+              {
+                pulsetime = pulsedist/pulseadd[c];
+                while (pulsetime)
+                {
+                  int acttime = pulsetime;
+                  if (acttime > 127) acttime = 127;
+                  if (fp >= MAX_TABLELEN) goto PULSEDONE;
+                  ltable[PTBL][fp] = acttime;
+                  rtable[PTBL][fp] = pulseadd[c] / 2;
+                  fp++;
+                  pulsetime -= acttime;
+                }
+              }
+              // Pulse jump back to beginning
+              if (fp >= MAX_TABLELEN) goto PULSEDONE;
+              ltable[PTBL][fp] = 0xff;
+              rtable[PTBL][fp] = instr[c].ptr[PTBL] + 1;
+              fp++;
+            }
+            else
+            {
+              pulsedist = pulselimithigh[c]*16 - currentpulse;
+              if (pulsedist > 0)
+              {
+                pulsetime = pulsedist/pulseadd[c];
+                while (pulsetime)
+                {
+                  int acttime = pulsetime;
+                  if (acttime > 127) acttime = 127;
+                  if (fp >= MAX_TABLELEN) goto PULSEDONE;
+                  ltable[PTBL][fp] = acttime;
+                  rtable[PTBL][fp] = pulseadd[c] / 2;
+                  fp++;
+                  pulsetime -= acttime;
+                }
+              }
+              // Pulse jump back to beginning
+              if (fp >= MAX_TABLELEN) goto PULSEDONE;
+              ltable[PTBL][fp] = 0xff;
+              rtable[PTBL][fp] = hlpos + 1;
+              fp++;
+            }
+          }
+          else
+          {
+            // Pulse stopped
+            if (fp >= MAX_TABLELEN) goto PULSEDONE;
+            ltable[PTBL][fp] = 0xff;
+            rtable[PTBL][fp] = 0;
+            fp++;
+          }
+          PULSEDONE: {}
+        }
+      }
+      // Convert patterns
+      amount = fread8(handle);
+      for (c = 0; c < amount; c++)
+      {
+        length = fread8(handle);
+        for (d = 0; d < length/3; d++)
+        {
+          unsigned char note, cmd, data, instr;
+          note = fread8(handle);
+          cmd = fread8(handle);
+          data = fread8(handle);
+          instr = cmd >> 3;
+          cmd &= 7;
+
+          switch(note)
+          {
+            default:
+            note += FIRSTNOTE;
+            if (note > LASTNOTE) note = REST;
+            break;
+
+            case OLDKEYOFF:
+            note = KEYOFF;
+            break;
+
+            case OLDREST:
+            note = REST;
+            break;
+
+            case ENDPATT:
+            break;
+          }
+          switch(cmd)
+          {
+            case 5:
+            cmd = CMD_SETFILTERPTR;
+            if (data > numfilter) numfilter = data;
+            break;
+
+            case 7:
+            if (data < 0xf0)
+              cmd = CMD_SETTEMPO;
+            else
+            {
+              cmd = CMD_SETMASTERVOL;
+              data &= 0x0f;
+            }
+            break;
+          }
+          pattern[c][d*4] = note;
+          pattern[c][d*4+1] = instr;
+          pattern[c][d*4+2] = cmd;
+          pattern[c][d*4+3] = data;
+        }
+      }
+
+      fi = highestusedinstr + 1;
+
+      // Read filtertable
+      fread(filtertable, 256, 1, handle);
+
+      // Convert filtertable
+      for (c = 0; c < 64; c++)
+      {
+        filterjumppos[c] = -1;
+        filtermap[c] = 0;
+        if (filtertable[c*4+3] > numfilter) numfilter = filtertable[c*4+3];
+      }
+
+      if (numfilter > 63) numfilter = 63;
+
+      for (c = 1; c <= numfilter; c++)
+      {
+        filtermap[c] = ff+1;
+
+        if (filtertable[c*4]|filtertable[c*4+1]|filtertable[c*4+2]|filtertable[c*4+3])
+        {
+          // Filter set
+          if (filtertable[c*4])
+          {
+            ltable[FTBL][ff] = 0x80 + (filtertable[c*4+1] & 0x70);
+            rtable[FTBL][ff] = filtertable[c*4];
+            ff++;
+            if (filtertable[c*4+2])
+            {
+              ltable[FTBL][ff] = 0x00;
+              rtable[FTBL][ff] = filtertable[c*4+2];
+              ff++;
+            }
+          }
+          else
+          {
+            // Filter modulation
+            int time = filtertable[c*4+1];
+
+            while (time)
+            {
+              int acttime = time;
+              if (acttime > 127) acttime = 127;
+              ltable[FTBL][ff] = acttime;
+              rtable[FTBL][ff] = filtertable[c*4+2];
+              ff++;
+              time -= acttime;
+            }
+          }
+
+          // Jump to next step: unnecessary if follows directly
+          if (filtertable[c*4+3] != c+1)
+          {
+            filterjumppos[c] = ff;
+            ltable[FTBL][ff] = 0xff;
+            rtable[FTBL][ff] = filtertable[c*4+3]; // Fix the jump later
+            ff++;
+          }
+        }
+      }
+
+      // Now fix jumps as the filterstep mapping is known
+      for (c = 1; c <= numfilter; c++)
+      {
+        if (filterjumppos[c] != -1)
+          rtable[FTBL][filterjumppos[c]] = filtermap[rtable[FTBL][filterjumppos[c]]];
+      }
+
+      // Fix filterpointers in instruments
+      for (c = 1; c < 32; c++)
+        instr[c].ptr[FTBL] = filtermap[instr[c].ptr[FTBL]];
+
+      // Now fix pattern commands
+      memset(arpmap, 0, sizeof arpmap);
+      for (c = 0; c < MAX_PATT; c++)
+      {
+        unsigned char i = 0;
+        for (d = 0; d <= MAX_PATTROWS; d++)
+        {
+          if (pattern[c][d*4+1]) i = pattern[c][d*4+1];
+
+          // Convert portamento & vibrato
+          if (pattern[c][d*4+2] == CMD_PORTAUP)
+            pattern[c][d*4+3] = makespeedtable(pattern[c][d*4+3], MST_PORTAMENTO, 0) + 1;
+          if (pattern[c][d*4+2] == CMD_PORTADOWN)
+            pattern[c][d*4+3] = makespeedtable(pattern[c][d*4+3], MST_PORTAMENTO, 0) + 1;
+          if (pattern[c][d*4+2] == CMD_TONEPORTA)
+            pattern[c][d*4+3] = makespeedtable(pattern[c][d*4+3], MST_PORTAMENTO, 0) + 1;
+          if (pattern[c][d*4+2] == CMD_VIBRATO)
+            pattern[c][d*4+3] = makespeedtable(pattern[c][d*4+3], MST_NOFINEVIB, 0) + 1;
+
+          // Convert filterjump
+          if (pattern[c][d*4+2] == CMD_SETFILTERPTR)
+            pattern[c][d*4+3] = filtermap[pattern[c][d*4+3]];
+
+          // Convert funktempo
+          if ((pattern[c][d*4+2] == CMD_SETTEMPO) && (!pattern[c][d*4+3]))
+          {
+            pattern[c][d*4+2] = CMD_FUNKTEMPO;
+            pattern[c][d*4+3] = makespeedtable((filtertable[2] << 4) | (filtertable[3] & 0x0f), MST_FUNKTEMPO, 0) + 1;
+          }
+          // Convert arpeggio
+          if ((pattern[c][d*4+2] == CMD_DONOTHING) && (pattern[c][d*4+3]))
+          {
+            // Must be in conjunction with a note
+            if ((pattern[c][d*4] >= FIRSTNOTE) && (pattern[c][d*4] <= LASTNOTE))
+            {
+              unsigned char param = pattern[c][d*4+3];
+              if (i)
+              {
+                // Old arpeggio
+                if (arpmap[i][param])
+                {
+                  // As command, or as instrument?
+                  if (arpmap[i][param] < 256)
+                  {
+                    pattern[c][d*4+2] = CMD_SETWAVEPTR;
+                    pattern[c][d*4+3] = arpmap[i][param];
+                  }
+                  else
+                  {
+                    pattern[c][d*4+1] = arpmap[i][param] - 256;
+                    pattern[c][d*4+3] = 0;
+                  }
+                }
+                else
+                {
+                  int e;
+                  unsigned char arpstart;
+                  unsigned char arploop;
+
+                  // New arpeggio
+                  // Copy first the instrument's wavetable up to loop/end point
+                  arpstart = fw + 1;
+                  if (instr[i].ptr[WTBL])
+                  {
+                    for (e = instr[i].ptr[WTBL]-1;; e++)
+                    {
+                      if (ltable[WTBL][e] == 0xff) break;
+                      if (fw < MAX_TABLELEN)
+                      {
+                        ltable[WTBL][fw] = ltable[WTBL][e];
+                        fw++;
+                      }
+                    }
+                  }
+                  // Then make the arpeggio
+                  arploop = fw + 1;
+                  if (fw < MAX_TABLELEN-3)
+                  {
+                    ltable[WTBL][fw] = (param & 0x80) >> 7;
+                    rtable[WTBL][fw] = (param  & 0x70) >> 4;
+                    fw++;
+                    ltable[WTBL][fw] = (param & 0x80) >> 7;
+                    rtable[WTBL][fw] = (param & 0xf);
+                    fw++;
+                    ltable[WTBL][fw] = (param & 0x80) >> 7;
+                    rtable[WTBL][fw] = 0;
+                    fw++;
+                    ltable[WTBL][fw] = 0xff;
+                    rtable[WTBL][fw] = arploop;
+                    fw++;
+
+                    // Create new instrument if possible
+                    if (fi < MAX_INSTR)
+                    {
+                      arpmap[i][param] = fi + 256;
+                      instr[fi] = instr[i];
+                      instr[fi].ptr[WTBL] = arpstart;
+                      // Add arpeggio parameter to new instrument name
+                      if (strlen(instr[fi].name) < MAX_INSTRNAMELEN-3)
+                      {
+                        char arpname[8];
+                        sprintf(arpname, "0%02X", param&0x7f);
+                        strcat(instr[fi].name, arpname);
+                      }
+                      fi++;
+                    }
+                    else
+                    {
+                      arpmap[i][param] = arpstart;
+                    }
+                  }
+
+                  if (arpmap[i][param])
+                  {
+                    // As command, or as instrument?
+                    if (arpmap[i][param] < 256)
+                    {
+                      pattern[c][d*4+2] = CMD_SETWAVEPTR;
+                      pattern[c][d*4+3] = arpmap[i][param];
+                    }
+                    else
+                    {
+                      pattern[c][d*4+1] = arpmap[i][param] - 256;
+                      pattern[c][d*4+3] = 0;
+                    }
+                  }
+                }
+              }
+            }
+            // If arpeggio could not be converted, databyte zero
+            if (!pattern[c][d*4+2])
+              pattern[c][d*4+3] = 0;
+          }
+        }
+      }
+    }
+    fclose(handle);
+  }
+  if (ok)
+  {
+    // Convert pulsemodulation speed of < v2.4 songs
+    if (ident[3] < '4')
+    {
+      for (c = 0; c < MAX_TABLELEN; c++)
+      {
+        if ((ltable[PTBL][c] < 0x80) && (rtable[PTBL][c]))
+        {
+          int speed = ((signed char)rtable[PTBL][c]);
+          speed <<= 1;
+          if (speed > 127) speed = 127;
+          if (speed < -128) speed = -128;
+          rtable[PTBL][c] = speed;
+        }
+      }
+    }
+
+    // Convert old legato/nohr parameters
+    if (ident[3] < '5')
+    {
+        for (c = 1; c < MAX_INSTR; c++)
+        {
+            if (instr[c].firstwave >= 0x80)
+            {
+                instr[c].gatetimer |= 0x80;
+                instr[c].firstwave &= 0x7f;
+            }
+            if (!instr[c].firstwave) instr[c].gatetimer |= 0x40;
+        }
+    }
+  }
+}
+
+void clearsong(int cs, int cp, int ci, int ct, int cn)
+{
+  int c;
+
+  if (!(cs | cp | ci | ct | cn)) return;
+
+  for (c = 0; c < MAX_CHN; c++)
+  {
+    int d;
+    if (cs)
+    {
+      for (d = 0; d < MAX_SONGS; d++)
+      {
+        memset(&songorder[d][c][0], 0, MAX_SONGLEN+2);
+        if (!d)
+        {
+          songorder[d][c][0] = c;
+          songorder[d][c][1] = LOOPSONG;
+        }
+        else
+        {
+          songorder[d][c][0] = LOOPSONG;
+        }
+      }
+    }
+  }
+  if (cn)
+  {
+    memset(songname, 0, sizeof songname);
+    memset(authorname, 0, sizeof authorname);
+    memset(copyrightname, 0, sizeof copyrightname);
+  }
+  if (cp)
+  {
+    for (c = 0; c < MAX_PATT; c++)
+      clearpattern(c);
+  }
+  if (ci)
+  {
+    for (c = 0; c < MAX_INSTR; c++)
+      clearinstr(c);
+  }
+  if (ct == 1)
+  {
+    for (c = MAX_TABLES-1; c >= 0; c--)
+    {
+      memset(ltable[c], 0, MAX_TABLELEN);
+      memset(rtable[c], 0, MAX_TABLELEN);
+    }
+  }
+  countpatternlengths();
+}
+
+void clearpattern(int p)
+{
+  int c;
+
+  memset(pattern[p], 0, MAX_PATTROWS*4);
+  for (c = 0; c < defaultpatternlength; c++) pattern[p][c*4] = REST;
+  for (c = defaultpatternlength; c <= MAX_PATTROWS; c++) pattern[p][c*4] = ENDPATT;
+}
+
+void clearinstr(int num)
+{
+  memset(&instr[num], 0, sizeof(INSTR));
+  if (num)
+  {
+    instr[num].gatetimer = 2;
+    instr[num].firstwave = 0x9;
+  }
+}
+
+void countpatternlengths(void)
+{
+  int c, d, e;
+
+  highestusedpattern = 0;
+  highestusedinstr = 0;
+  for (c = 0; c < MAX_PATT; c++)
+  {
+    for (d = 0; d <= MAX_PATTROWS; d++)
+    {
+      if (pattern[c][d*4] == ENDPATT) break;
+      if ((pattern[c][d*4] != REST) || (pattern[c][d*4+1]) || (pattern[c][d*4+2]) || (pattern[c][d*4+3]))
+        highestusedpattern = c;
+      if (pattern[c][d*4+1] > highestusedinstr) highestusedinstr = pattern[c][d*4+1];
+    }
+    pattlen[c] = d;
+  }
+
+  for (e = 0; e < MAX_SONGS; e++)
+  {
+    for (c = 0; c < MAX_CHN; c++)
+    {
+      for (d = 0; d < MAX_SONGLEN; d++)
+      {
+        if (songorder[e][c][d] >= LOOPSONG) break;
+        if ((songorder[e][c][d] < REPEAT) && (songorder[e][c][d] > highestusedpattern))
+          highestusedpattern = songorder[e][c][d];
+      }
+      songlen[e][c] = d;
+    }
+  }
+}
+
+int makespeedtable(unsigned data, int mode, int makenew)
+{
+  int c;
+  unsigned char l = 0, r = 0;
+
+  if (!data) return -1;
+
+  switch (mode)
+  {
+    case MST_NOFINEVIB:
+    l = (data & 0xf0) >> 4;
+    r = (data & 0x0f) << 4;
+    break;
+
+    case MST_FINEVIB:
+    l = (data & 0x70) >> 4;
+    r = ((data & 0x0f) << 4) | ((data & 0x80) >> 4);
+    break;
+
+    case MST_FUNKTEMPO:
+    l = (data & 0xf0) >> 4;
+    r = data & 0x0f;
+    break;
+
+    case MST_PORTAMENTO:
+    l = (data << 2) >> 8;
+    r = (data << 2) & 0xff;
+    break;
+    
+    case MST_RAW:
+    r = data & 0xff;
+    l = data >> 8;
+    break;
+  }
+
+  if (makenew == 0)
+  {
+    for (c = 0; c < MAX_TABLELEN; c++)
+    {
+      if ((ltable[STBL][c] == l) && (rtable[STBL][c] == r))
+        return c;
+    }
+  }
+
+  for (c = 0; c < MAX_TABLELEN; c++)
+  {
+    if ((!ltable[STBL][c]) && (!rtable[STBL][c]))
+    {
+      ltable[STBL][c] = l;
+      rtable[STBL][c] = r;
+      return c;
+    }
+  }
+  return -1;
+}
+
+void printsonginfo(void)
+{
+    printf("Songs: %d Patterns: %d Instruments: %d", highestusedsong+1, highestusedpattern+1, highestusedinstr+1);
+}
+
+void clearntsong(void)
+{
+    memset(ntwavetbl, 0, sizeof ntwavetbl);
+    memset(ntnotetbl, 0, sizeof ntnotetbl);
+    memset(ntpulsetimetbl, 0, sizeof ntpulsetimetbl);
+    memset(ntpulsespdtbl, 0, sizeof ntpulsespdtbl);
+    memset(ntfilttimetbl, 0, sizeof ntfilttimetbl);
+    memset(ntfiltspdtbl, 0, sizeof ntfiltspdtbl);
+    memset(ntpatterns, 0, sizeof ntpatterns);
+    memset(nttracks, 0, sizeof nttracks);
+    memset(ntcmdad, 0, sizeof ntcmdad);
+    memset(ntcmdsr, 0, sizeof ntcmdsr);
+    memset(ntcmdwavepos, 0, sizeof ntcmdwavepos);
+    memset(ntcmdpulsepos, 0, sizeof ntcmdpulsepos);
+    memset(ntcmdfiltpos, 0, sizeof ntcmdfiltpos);
+    memset(ntsonglen, 0, sizeof ntsonglen);
+    memset(nttbllen, 0, sizeof nttbllen);
+    ntcmdlen = 0;
+}
