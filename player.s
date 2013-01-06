@@ -243,6 +243,11 @@ MoveHuman:      lda actHp,x
                 beq MH_NoRollSave
                 cpy #DAMAGING_FALL_DISTANCE-2   ;If fall is ridiculously low, do not allow the roll
                 bcc MH_NoRollSave
+                lda actSX,x
+                cmp #16                         ;Must have sufficient X-speed for roll
+                bcc MH_NoRollSave
+                cmp #-15
+                bcs MH_NoRollSave
                 lda actD,x
                 asl
                 lda #JOY_DOWN|JOY_RIGHT
