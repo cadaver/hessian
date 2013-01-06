@@ -256,8 +256,9 @@ MoveHuman:      lda actHp,x
 MH_RollSaveRight:
                 cmp actMoveCtrl,x
                 bne MH_NoRollSave
-                lda #FR_ROLL
-                sta actF1,x
+                lda #$01                        ;Reset prevctrl to allow to start roll
+                sta actPrevCtrl,x
+                sta actFall,x
                 clc
                 skip1
 MH_NoRollSave:  sec
@@ -271,8 +272,6 @@ MH_NoRollSave:  sec
                 ldy #$ff
                 jsr DamageActor
 MH_NoFallDamage:dec actFall,x
-                lda #$00
-                sta actMoveCtrl,x
 MH_NoFallCheck: lda actF1,x                     ;Check special movement states
                 cmp #FR_CLIMB
                 bcc MH_NotClimbing
