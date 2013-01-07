@@ -1362,31 +1362,32 @@ void convertsong(void)
                 notecolumn[c] = (note-FIRSTNOTE-12)*2+NT_FIRSTNOTE;
                 if (gtcmd == 0x3) // New note + toneportamento
                 {
-                    if (!gtcmddata)
-                        notecmd = instr | 0x80; // Legato only
-                    else
+                    int speed = 0x1eff;
+                    if (gtcmddata)
                     {
-                        int newslidepos = slidewavepos[gtcmddata];
-                        if (!newslidepos)
-                        {
-                            int speed = (ltable[STBL][gtcmddata-1] << 8) | rtable[STBL][gtcmddata-1];
-                            if (speed > 0x1eff)
-                                speed = 0x1eff;
-                            ntwavetbl[nttbllen[0]] = (speed >> 8) | 0xe0;
-                            ntnotetbl[nttbllen[0]] = speed & 0xff;
-                            newslidepos = slidewavepos[gtcmddata] = nttbllen[0];
-                            nttbllen[0]++;
-                        }
-                        notecmd = getorcreatecommand("slide", gtcmddata, 0, 0, newslidepos + 1, 0, 0) | 0x80;
-                        
-                        // Check if toneportamento duration change trick is needed
-                        if (c)
-                        {
-                            int lastnote = pattern[e][(c-1)*4];
-                            int lastcmd = pattern[e][(c-1)*4+2];
-                            if (lastnote >= FIRSTNOTE && lastnote <= LASTNOTE && (lastcmd == 0x1 || lastcmd == 0x2))
-                                toneportadur = 1;
-                        }
+                        speed = (ltable[STBL][gtcmddata-1] << 8) | rtable[STBL][gtcmddata-1];
+                        if (speed > 0x1eff)
+                            speed = 0x1eff;
+                    }
+
+                    int newslidepos = slidewavepos[gtcmddata];
+                    if (!newslidepos)
+                    {
+
+                        ntwavetbl[nttbllen[0]] = (speed >> 8) | 0xe0;
+                        ntnotetbl[nttbllen[0]] = speed & 0xff;
+                        newslidepos = slidewavepos[gtcmddata] = nttbllen[0];
+                        nttbllen[0]++;
+                    }
+                    notecmd = getorcreatecommand("slide", gtcmddata, 0, 0, newslidepos + 1, 0, 0) | 0x80;
+                    
+                    // Check if toneportamento duration change trick is needed (if previous tick uses porta up/down)
+                    if (c && gtcmddata)
+                    {
+                        int lastnote = pattern[e][(c-1)*4];
+                        int lastcmd = pattern[e][(c-1)*4+2];
+                        if (lastnote >= FIRSTNOTE && lastnote <= LASTNOTE && (lastcmd == 0x1 || lastcmd == 0x2))
+                            toneportadur = 1;
                     }
                 }
                 if (gtcmd == 0x5) // New note + AD modify
