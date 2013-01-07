@@ -80,6 +80,7 @@
 #define NT_DUR 0xc0
 #define NT_MAXDUR 65
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -110,6 +111,7 @@ char authorname[MAX_STR];
 char copyrightname[MAX_STR];
 int pattlen[MAX_PATT];
 int songlen[MAX_SONGS][MAX_CHN];
+int tbllen[MAX_TABLES];
 int highestusedpatt;
 int highestusedinstr;
 int highestusedsong;
@@ -235,6 +237,7 @@ void loadsong(const char* songfilename)
       for (c = 0; c < MAX_TABLES; c++)
       {
         loadsize = fread8(handle);
+        tbllen[c] = loadsize;
         fread(ltable[c], loadsize, 1, handle);
         fread(rtable[c], loadsize, 1, handle);
       }
@@ -297,6 +300,7 @@ void loadsong(const char* songfilename)
       for (c = 0; c < MAX_TABLES-1; c++)
       {
         loadsize = fread8(handle);
+        tbllen[c] = loadsize;
         fread(ltable[c], loadsize, 1, handle);
         fread(rtable[c], loadsize, 1, handle);
       }
@@ -807,6 +811,10 @@ void loadsong(const char* songfilename)
           }
         }
       }
+      
+      tbllen[WTBL] = fw;
+      tbllen[PTBL] = fp;
+      tbllen[FTBL] = ff;
     }
     fclose(handle);
 
@@ -1030,6 +1038,12 @@ void clearntsong(void)
 void convertsong(void)
 {
     int e,c;
+    unsigned char wavetblmap[256];
+    unsigned char filttblmap[256];
+    wavetblmap[0] = 0;
+    filttblmap[0] = 0;
+    unsigned char lastfiltparam = 0;
+    unsigned char lastcutoff = 0;
 
     if (highestusedpatt > 126)
     {
@@ -1050,6 +1064,7 @@ void convertsong(void)
         {
             int sp = -1;
             int len = 0;
+            int startdest = dest;
             unsigned char positionmap[256];
 
             while (1)
@@ -1067,7 +1082,7 @@ void convertsong(void)
                 while ((songorder[e][c][sp] >= REPEAT) && (songorder[e][c][sp] < TRANSDOWN))
                 {
                     positionmap[sp] = len;
-                    rep = songorder[e][c][sp++] - REPEAT;
+                    rep = songorder[e][c][sp++] - REPEAT + 1;
                 }
                 while (rep--)
                 {
@@ -1076,8 +1091,9 @@ void convertsong(void)
                     len++;
                 }
             }
+            sp++;
             nttracks[e][dest++] = 0;
-            nttracks[e][dest++] = positionmap[songorder[e][c][sp]];
+            nttracks[e][dest++] = positionmap[songorder[e][c][sp]] + startdest;
             len += 2;
             ntsonglen[e][c] = len;
         }
@@ -1086,6 +1102,131 @@ void convertsong(void)
             printf("Song %d's trackdata does not fit in 256 bytes\n", e+1);
             exit(1);
         }
+    }
+
+    // Convert tables. Note: more data will be added to tables as pattern commands are converted
+    printf("Converting tables\n");
+    for (c = 0; c < tbllen[WTBL]; c++)
+    {
+        unsigned char wave = ltable[WTBL][c];
+        unsigned char note = rtable[WTBL][c];
+        wavetblmap[c + 1] = nttbllen[0] + 1;
+
+        if (wave == 0xff)
+        {
+            ntwavetbl[nttbllen[0]] = 0xff;
+            ntnotetbl[nttbllen[0]] = note; // Jumps need to be fixed later when mapping is known
+            nttbllen[0]++;
+        }
+        else if (wave >= 0x10 && wave <= 0x8f)
+        {
+            ntwavetbl[nttbllen[0]] = wave;
+            ntnotetbl[nttbllen[0]] = note;
+            nttbllen[0]++;
+        }
+        else if (wave >= 0xe1 && wave <= 0xef)
+        {
+            ntwavetbl[nttbllen[0]] = wave - 0xe0;
+            ntnotetbl[nttbllen[0]] = note;
+            nttbllen[0]++;
+        }
+        else if (wave < 0x10)
+        {
+            ntwavetbl[nttbllen[0]] = wave + 0x90;
+            ntnotetbl[nttbllen[0]] = note;
+            nttbllen[0]++;
+        }
+    }
+    // Fix up jumps
+    for (c = 0; c < nttbllen[0]; c++)
+    {
+        if (ntwavetbl[c] == 0xff)
+            ntnotetbl[c] = wavetblmap[ntnotetbl[c]];
+    }
+
+    for (c = 0; c < tbllen[PTBL]; c++)
+    {
+        unsigned char time = ltable[PTBL][c];
+        unsigned char speed = rtable[PTBL][c];
+
+        if (time == 0xff)
+        {
+            ntpulsetimetbl[nttbllen[1]] = 0xff;
+            ntpulsespdtbl[nttbllen[1]] = speed;
+        }
+        else if (time < 0x80)
+        {
+            ntpulsetimetbl[nttbllen[1]] = time;
+            if (speed >= 0x80)
+                speed = (speed >> 4) | 0xf0;
+            else
+                speed = speed >> 4;
+            ntpulsespdtbl[nttbllen[1]] = speed;
+        }
+        else
+        {
+            ntpulsetimetbl[nttbllen[1]] = 0x80;
+            ntpulsespdtbl[nttbllen[1]] = ((time & 0xf) << 4) | (speed >> 4);
+        }
+        nttbllen[1]++;
+    }
+    
+    for (c = 0; c < tbllen[FTBL]; c++)
+    {
+        unsigned char time = ltable[FTBL][c];
+        unsigned char speed = rtable[FTBL][c];
+        filttblmap[c + 1] = nttbllen[2] + 1;
+
+        if (time == 0xff)
+        {
+            ntfilttimetbl[nttbllen[2]] = 0xff;
+            ntfiltspdtbl[nttbllen[2]] = speed; // Jumps need to be fixed later when mapping is known
+        }
+        else if (time > 0x00 && time < 0x80)
+        {
+            ntfilttimetbl[nttbllen[2]] = time;
+            ntfiltspdtbl[nttbllen[2]] = speed;
+            lastcutoff += time * speed;
+        }
+        else if (time == 0x00)
+        {
+            lastcutoff = speed;
+            ntfilttimetbl[nttbllen[2]] = lastfiltparam;
+            ntfiltspdtbl[nttbllen[2]] = lastcutoff;
+        }
+        else if (time >= 0x80 && time < 0xff)
+        {
+            lastfiltparam = (time & 0xf0) | (speed & 0xf);
+            if (ltable[FTBL][c+1] == 0x00)
+            {
+                lastcutoff = rtable[FTBL][c+1];
+                c++;
+            }
+            ntfilttimetbl[nttbllen[2]] = lastfiltparam;
+            ntfiltspdtbl[nttbllen[2]] = lastcutoff;
+        }
+        nttbllen[2]++;
+    }
+    // Fix up jumps
+    for (c = 0; c < nttbllen[2]; c++)
+    {
+        if (ntfilttimetbl[c] == 0xff)
+            ntfiltspdtbl[c] = filttblmap[ntfiltspdtbl[c]];
+    }
+    
+    // Convert instruments
+    printf("Converting instruments\n");
+    for (e = 1; e <= highestusedinstr; e++)
+    {
+        ntcmdad[e-1] = instr[e].ad;
+        ntcmdsr[e-1] = instr[e].sr;
+        ntcmdwavepos[e-1] = wavetblmap[instr[e].ptr[WTBL]];
+        ntcmdpulsepos[e-1] = instr[e].ptr[PTBL];
+        ntcmdfiltpos[e-1] = filttblmap[instr[e].ptr[FTBL]];
+        for (c = 0; c < MAX_NTCMDNAMELEN; c++)
+            ntcmdnames[e-1][c] = tolower(instr[e].name[c]);
+        // Todo: add instrument vibrato
+        ntcmdlen++;
     }
 
     // Convert patterns
@@ -1223,7 +1364,7 @@ void getpatttempos(void)
     // Simulates playroutine going through the songs
     for (e = 0; e <= highestusedsong; e++)
     {
-        printf("Playing through song %d to get pattern tempos & instruments\n", e+1);
+        printf("Determining tempo & instruments for song %d\n", e+1);
         int sp[3] = {-1,-1,-1};
         int pp[3] = {0xff,0xff,0xff};
         int pn[3] = {0,0,0};
