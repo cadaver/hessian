@@ -140,11 +140,11 @@ unsigned char ntsonglen[MAX_NTSONGS][3];
 unsigned char nttbllen[3];
 unsigned char ntcmdlen;
 
-unsigned char nthrparam = 0x0f;
+unsigned char nthrparam = 0x00;
 unsigned char ntfirstwave = 0x09;
 
 int prevwritebyte = 0x100;
-int blocklen = 0;
+int blocklen = 0;        
 FILE* out = 0;
 
 void loadsong(const char* songfilename);
@@ -157,6 +157,7 @@ void printsonginfo(void);
 void clearntsong(void);
 void convertsong(void);
 void getpatttempos(void);
+int getorcreatecommand(const char* name, unsigned char param, unsigned char ad, unsigned char sr, unsigned char wave, unsigned char pulse, unsigned char filt);
 void saventsong(const char* songfilename);
 void writeblock(unsigned char *adr, int len);
 void writebyte(unsigned char c);
@@ -1047,8 +1048,10 @@ void convertsong(void)
     unsigned char vibdelay[256];
     unsigned char vibparam[256];
     unsigned char vibwavepos[256];
-    unsigned char vibcmd[256];
+    unsigned char slidewavepos[256];
     int vibratos = 0;
+
+    memset(slidewavepos, 0, sizeof slidewavepos);
 
     if (highestusedpatt > 126)
     {
@@ -1218,7 +1221,7 @@ void convertsong(void)
         if (ntfilttimetbl[c] == 0xff)
             ntfiltspdtbl[c] = filttblmap[ntfiltspdtbl[c]];
     }
-    
+
     // Convert instruments
     printf("Converting instruments\n");
     for (e = 1; e <= highestusedinstr; e++)
@@ -1266,7 +1269,7 @@ void convertsong(void)
                 printf("Warning: instrument %d has both vibrato and a looping arpeggio, skipping vibrato\n", e+1);
                 continue;
             }
-            
+
             for (f = 0; f < vibratos; f++)
             {
                 if (vibdelay[f] == instr[e].vibdelay && vibparam[f] == instr[e].ptr[STBL])
@@ -1289,7 +1292,6 @@ void convertsong(void)
                 vibdelay[vibratos] = instr[e].vibdelay;
                 vibparam[vibratos] = instr[e].ptr[STBL];
                 vibwavepos[vibratos] = newvibwavepos;
-                vibcmd[vibratos] = 0; // No command so far
                 vibratos++;
             }
 
@@ -1336,12 +1338,14 @@ void convertsong(void)
         memset(cmdcolumn, 0, sizeof cmdcolumn);
         memset(durcolumn, 0, sizeof durcolumn);
         int pattlen = 0;
-        int lastinstr = -1;
+        int lastnotecmd = -1;
         int lastdur;
 
         for (c = 0; c < MAX_PATTROWS+1; c++)
         {
             int note = pattern[e][c*4];
+            int gtcmd = pattern[e][c*4+2];
+            int gtcmddata = pattern[e][c*4+3];
             if (note == ENDPATT)
             {
                 notecolumn[c] = NT_ENDPATT;
@@ -1350,20 +1354,131 @@ void convertsong(void)
             int instr = pattinstr[e][c];
             int dur = patttempo[e][c];
             int keyon = pattkeyon[e][c];
+            int toneportadur = 0;
 
             if (note >= FIRSTNOTE+12 && note <= LASTNOTE)
             {
+                int notecmd = instr;
                 notecolumn[c] = (note-FIRSTNOTE-12)*2+NT_FIRSTNOTE;
-                if (instr != lastinstr)
+                if (gtcmd == 0x3) // New note + toneportamento
                 {
-                    cmdcolumn[c] = instr;
-                    lastinstr = instr;
+                    if (!gtcmddata)
+                        notecmd = instr | 0x80; // Legato only
+                    else
+                    {
+                        int newslidepos = slidewavepos[gtcmddata];
+                        if (!newslidepos)
+                        {
+                            int speed = (ltable[STBL][gtcmddata-1] << 8) | rtable[STBL][gtcmddata-1];
+                            if (speed > 0x1eff)
+                                speed = 0x1eff;
+                            ntwavetbl[nttbllen[0]] = (speed >> 8) | 0xe0;
+                            ntnotetbl[nttbllen[0]] = speed & 0xff;
+                            newslidepos = slidewavepos[gtcmddata] = nttbllen[0];
+                            nttbllen[0]++;
+                        }
+                        notecmd = getorcreatecommand("slide", gtcmddata, 0, 0, newslidepos + 1, 0, 0) | 0x80;
+                        
+                        // Check if toneportamento duration change trick is needed
+                        if (c)
+                        {
+                            int lastnote = pattern[e][(c-1)*4];
+                            int lastcmd = pattern[e][(c-1)*4+2];
+                            if (lastnote >= FIRSTNOTE && lastnote <= LASTNOTE && (lastcmd == 0x1 || lastcmd == 0x2))
+                                toneportadur = 1;
+                        }
+                    }
+                }
+                if (gtcmd == 0x5) // New note + AD modify
+                    notecmd = getorcreatecommand("ad", gtcmddata, gtcmddata, ntcmdsr[instr-1], ntcmdwavepos[instr-1], ntcmdpulsepos[instr-1], ntcmdfiltpos[instr-1]);
+                else if (gtcmd == 0x6) // New note + SR modify
+                    notecmd = getorcreatecommand("sr", gtcmddata, ntcmdad[instr-1], gtcmddata, ntcmdwavepos[instr-1], ntcmdpulsepos[instr-1], ntcmdfiltpos[instr-1]);
+                else if (gtcmd == 0x8) // New note + waveptr modify
+                    notecmd = getorcreatecommand("wave", gtcmddata, ntcmdad[instr-1], ntcmdsr[instr-1], wavetblmap[gtcmddata], ntcmdpulsepos[instr-1], ntcmdfiltpos[instr-1]);
+                else if (gtcmd == 0x9) // New note + pulseptr modify
+                    notecmd = getorcreatecommand("pulse", gtcmddata, ntcmdad[instr-1], ntcmdsr[instr-1], ntcmdwavepos[instr-1], gtcmddata, ntcmdfiltpos[instr-1]);
+                else if (gtcmd == 0xa) // New note + filtptr modify
+                    notecmd = getorcreatecommand("filt", gtcmddata, ntcmdad[instr-1], ntcmdsr[instr-1], ntcmdwavepos[instr-1], ntcmdpulsepos[instr-1], filttblmap[gtcmddata]);
+
+                if (notecmd != lastnotecmd)
+                {
+                    cmdcolumn[c] = notecmd;
+                    lastnotecmd = notecmd;
                 }
             }
             else
+            {
                 notecolumn[c] = keyon ? NT_KEYON : NT_KEYOFF;
 
+                if ((gtcmd == 0x1 || gtcmd == 0x2) && gtcmddata && (c == 0 || pattern[e][(c-1)*4+2] != gtcmd)) // Portamento up/down
+                {
+                    int newslidepos = slidewavepos[gtcmddata];
+                    if (!newslidepos)
+                    {
+                        int speed = (ltable[STBL][gtcmddata-1] << 8) | rtable[STBL][gtcmddata-1];
+                        if (speed > 0x1eff)
+                            speed = 0x1eff;
+                        ntwavetbl[nttbllen[0]] = (speed >> 8) | 0xe0;
+                        ntnotetbl[nttbllen[0]] = speed & 0xff;
+                        newslidepos = slidewavepos[gtcmddata] = nttbllen[0];
+                        nttbllen[0]++;
+                    }
+                    notecolumn[c] = (gtcmd == 0x1) ? NT_LASTNOTE : NT_FIRSTNOTE; // Use a fake toneportamento target
+                    cmdcolumn[c] = getorcreatecommand("slide", gtcmddata, 0, 0, newslidepos + 1, 0, 0) | 0x80;
+                }
+                else if (gtcmd == 0x4 && gtcmddata && (c == 0 || pattern[e][(c-1)*4+2] != 0x4)) // Vibrato, take only the starting command
+                {
+                    int f;
+                    int newvibwavepos = nttbllen[0];
+                    int existingvib = 0;
+                    int srcpos = gtcmddata - 1;
+
+                    for (f = 0; f < vibratos; f++)
+                    {
+                        if (vibdelay[f] == 0 && vibparam[f] == gtcmddata)
+                        {
+                            existingvib = 1;
+                            newvibwavepos = vibwavepos[f];
+                        }
+                    }
+                    if (!existingvib)
+                    {
+                        ntwavetbl[nttbllen[0]] = ltable[STBL][srcpos] + 0xc0;
+                        ntnotetbl[nttbllen[0]] = rtable[STBL][srcpos];
+                        nttbllen[0]++;
+                        vibdelay[vibratos] = 0;
+                        vibparam[vibratos] = gtcmddata;
+                        vibwavepos[vibratos] = newvibwavepos;
+                        vibratos++;
+                    }
+                    cmdcolumn[c] = getorcreatecommand("vib", gtcmddata, 0, 0, newvibwavepos + 1, 0, 0) | 0x80;
+                }
+                else if (gtcmd == 0x5) // AD modify
+                    cmdcolumn[c] = getorcreatecommand("ad", gtcmddata, gtcmddata, ntcmdsr[instr-1], 0, 0, 0);
+                else if (gtcmd == 0x6) // SR modify
+                    cmdcolumn[c] = getorcreatecommand("sr", gtcmddata, ntcmdad[instr-1], gtcmddata, 0, 0, 0);
+                else if (gtcmd == 0x8) // Waveptr modify
+                    cmdcolumn[c] = getorcreatecommand("wave", gtcmddata, 0, 0, wavetblmap[gtcmddata], 0, 0) | 0x80;
+                else if (gtcmd == 0x9) // Pulseptr modify
+                    cmdcolumn[c] = getorcreatecommand("pulse", gtcmddata, 0, 0, 0, gtcmddata, 0) | 0x80;
+                else if (gtcmd == 0xa) // Filtptr modify
+                    cmdcolumn[c] = getorcreatecommand("filt", gtcmddata, 0, 0, 0, 0, filttblmap[gtcmddata]) | 0x80;
+
+                if (cmdcolumn[c])
+                    lastnotecmd = cmdcolumn[c];
+            }
+
             durcolumn[c] = dur;
+            
+            if (toneportadur)
+            {
+                int extradur = durcolumn[c-1] - 3;
+                if (extradur > 0 && (dur + extradur) <= NT_MAXDUR)
+                {
+                    durcolumn[c-1] -= extradur;
+                    durcolumn[c] += extradur;
+                }
+            }
         }
 
         // Merge rows where possible
@@ -1374,7 +1489,7 @@ void convertsong(void)
                 break;
             if (notecolumn[c+1] != NT_ENDPATT)
             {
-                if ((durcolumn[c] + durcolumn[c+1]) < NT_MAXDUR && cmdcolumn[c+1] == 0)
+                if ((durcolumn[c] + durcolumn[c+1]) <= NT_MAXDUR && cmdcolumn[c+1] == 0)
                 {
                     if (notecolumn[c] == NT_KEYOFF && notecolumn[c+1] == NT_KEYOFF)
                         merge = 1;
@@ -1554,15 +1669,46 @@ void getpatttempos(void)
     }
 }
 
+int getorcreatecommand(const char* name, unsigned char param, unsigned char ad, unsigned char sr, unsigned char wave, unsigned char pulse, unsigned char filt)
+{
+    int c;
+    for (c = 0; c < ntcmdlen; c++)
+    {
+        if (ntcmdad[c] == ad && ntcmdsr[c] == sr && ntcmdwavepos[c] == wave && ntcmdpulsepos[c] == pulse && ntcmdfiltpos[c] == filt)
+            return c + 1;
+    }
+    ntcmdad[ntcmdlen] = ad;
+    ntcmdsr[ntcmdlen] = sr;
+    ntcmdwavepos[ntcmdlen] = wave;
+    ntcmdpulsepos[ntcmdlen] = pulse;
+    ntcmdfiltpos[ntcmdlen] = filt;
+    sprintf(&ntcmdnames[ntcmdlen][0], "%s%02x", name, (int)param);
+    ntcmdlen++;
+    return ntcmdlen;
+}
+
 void saventsong(const char* songfilename)
 {
+    int c;
+
     out = fopen(songfilename, "wb");
     if (!out)
     {
         printf("Could not open destination file %s\n", songfilename);
         exit(1);
     }
-    
+
+    // Sanitate command names
+    for (c = 0; c < MAX_NTCMD; c++)
+    {
+        int d;
+        for (d = 0; d < MAX_NTCMDNAMELEN; d++)
+        {
+            if (!ntcmdnames[c][d])
+                ntcmdnames[c][d] = ' ';
+        }
+    }
+
     writebyte('N');
     writebyte('2');
     writeblock(ntwavetbl, sizeof ntwavetbl);
