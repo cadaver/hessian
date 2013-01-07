@@ -1076,7 +1076,7 @@ void convertsong(void)
                 while (songorder[e][c][sp] >= TRANSDOWN)
                 {
                     positionmap[sp] = len;
-                    nttracks[e][dest++] = songorder[e][c][sp++] - TRANSUP + 0xc0;
+                    nttracks[e][dest++] = ((songorder[e][c][sp++] - TRANSUP - 1) & 0x7f) | 0x80;
                     len++;
                 }
                 while ((songorder[e][c][sp] >= REPEAT) && (songorder[e][c][sp] < TRANSDOWN))
