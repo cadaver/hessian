@@ -71,7 +71,14 @@
 #define MAX_NTSONGLEN 256
 #define MAX_NTTBLLEN 255
 
-
+#define NT_ENDPATT 0x00
+#define NT_CMD 0x01
+#define NT_KEYON 0x02*2
+#define NT_KEYOFF 0x04*2
+#define NT_FIRSTNOTE 0x0c*2
+#define NT_LASTNOTE 0x5f*2
+#define NT_DUR 0xc0
+#define NT_MAXDUR 65
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,12 +102,15 @@ unsigned char ltable[MAX_TABLES][MAX_TABLELEN];
 unsigned char rtable[MAX_TABLES][MAX_TABLELEN];
 unsigned char songorder[MAX_SONGS][MAX_CHN][MAX_SONGLEN+2];
 unsigned char pattern[MAX_PATT][MAX_PATTROWS*4+4];
+unsigned char patttempo[MAX_PATT][MAX_PATTROWS];
+unsigned char pattinstr[MAX_PATT][MAX_PATTROWS];
+unsigned char pattkeyon[MAX_PATT][MAX_PATTROWS];
 char songname[MAX_STR];
 char authorname[MAX_STR];
 char copyrightname[MAX_STR];
 int pattlen[MAX_PATT];
 int songlen[MAX_SONGS][MAX_CHN];
-int highestusedpattern;
+int highestusedpatt;
 int highestusedinstr;
 int highestusedsong;
 int defaultpatternlength = 64;
@@ -128,8 +138,12 @@ unsigned char ntsonglen[MAX_NTSONGS][3];
 unsigned char nttbllen[3];
 unsigned char ntcmdlen;
 
-unsigned nthrparam = 0x0f;
-unsigned ntfirstwave = 0x09;
+unsigned char nthrparam = 0x0f;
+unsigned char ntfirstwave = 0x09;
+
+int prevwritebyte = 0x100;
+int blocklen = 0;
+FILE* out = 0;
 
 void loadsong(const char* songfilename);
 void clearsong(int cs, int cp, int ci, int cf, int cn);
@@ -138,11 +152,16 @@ void clearpattern(int num);
 void countpatternlengths(void);
 int makespeedtable(unsigned data, int mode, int makenew);
 void printsonginfo(void);
-void clearntsong();
+void clearntsong(void);
+void convertsong(void);
+void getpatttempos(void);
+void saventsong(const char* songfilename);
+void writeblock(unsigned char *adr, int len);
+void writebyte(unsigned char c);
 
 int main(int argc, const char** argv)
 {
-    if (argc < 2)
+    if (argc < 3)
     {
         printf("Usage: gt2nt2 <input> <output>");
         return 1;
@@ -151,19 +170,25 @@ int main(int argc, const char** argv)
     loadsong(argv[1]);
     printsonginfo();
     clearntsong();
+    convertsong();
+    saventsong(argv[2]);
 }
 
 void loadsong(const char* songfilename)
 {
-  int c;
-  int ok = 0;
-  char ident[4];
-  FILE *handle;
+    int c;
+    int ok = 0;
+    char ident[4];
+    FILE *handle;
 
-  handle = fopen(songfilename, "rb");
+    handle = fopen(songfilename, "rb");
 
-  if (handle)
-  {
+    if (!handle)
+    {
+        printf("Could not open input song %s\n", songfilename);
+        exit(1);
+    }
+
     fread(ident, 4, 1, handle);
     if ((!memcmp(ident, "GTS3", 4)) || (!memcmp(ident, "GTS4", 4)) || (!memcmp(ident, "GTS5", 4)))
     {
@@ -784,9 +809,7 @@ void loadsong(const char* songfilename)
       }
     }
     fclose(handle);
-  }
-  if (ok)
-  {
+
     // Convert pulsemodulation speed of < v2.4 songs
     if (ident[3] < '4')
     {
@@ -816,7 +839,6 @@ void loadsong(const char* songfilename)
             if (!instr[c].firstwave) instr[c].gatetimer |= 0x40;
         }
     }
-  }
 }
 
 void clearsong(int cs, int cp, int ci, int ct, int cn)
@@ -895,7 +917,7 @@ void countpatternlengths(void)
 {
   int c, d, e;
 
-  highestusedpattern = 0;
+  highestusedpatt = 0;
   highestusedinstr = 0;
   for (c = 0; c < MAX_PATT; c++)
   {
@@ -903,7 +925,7 @@ void countpatternlengths(void)
     {
       if (pattern[c][d*4] == ENDPATT) break;
       if ((pattern[c][d*4] != REST) || (pattern[c][d*4+1]) || (pattern[c][d*4+2]) || (pattern[c][d*4+3]))
-        highestusedpattern = c;
+        highestusedpatt = c;
       if (pattern[c][d*4+1] > highestusedinstr) highestusedinstr = pattern[c][d*4+1];
     }
     pattlen[c] = d;
@@ -916,8 +938,8 @@ void countpatternlengths(void)
       for (d = 0; d < MAX_SONGLEN; d++)
       {
         if (songorder[e][c][d] >= LOOPSONG) break;
-        if ((songorder[e][c][d] < REPEAT) && (songorder[e][c][d] > highestusedpattern))
-          highestusedpattern = songorder[e][c][d];
+        if ((songorder[e][c][d] < REPEAT) && (songorder[e][c][d] > highestusedpatt))
+          highestusedpatt = songorder[e][c][d];
       }
       songlen[e][c] = d;
     }
@@ -982,7 +1004,7 @@ int makespeedtable(unsigned data, int mode, int makenew)
 
 void printsonginfo(void)
 {
-    printf("Songs: %d Patterns: %d Instruments: %d", highestusedsong+1, highestusedpattern+1, highestusedinstr+1);
+    printf("Songs: %d Patterns: %d Instruments: %d\n", highestusedsong+1, highestusedpatt+1, highestusedinstr+1);
 }
 
 void clearntsong(void)
@@ -1003,4 +1025,371 @@ void clearntsong(void)
     memset(ntsonglen, 0, sizeof ntsonglen);
     memset(nttbllen, 0, sizeof nttbllen);
     ntcmdlen = 0;
+}
+
+void convertsong(void)
+{
+    int e,c;
+
+    if (highestusedpatt > 126)
+    {
+        printf("Ninjatracker supports max. 127 patterns\n");
+        exit(1);
+    }
+
+    getpatttempos();
+
+    // Convert trackdata
+    for (e = 0; e <= highestusedsong; e++)
+    {
+        printf("Converting trackdata for song %d\n", e+1);
+
+        int dest = 0;
+
+        for (c = 0; c < MAX_CHN; c++)
+        {
+            int sp = -1;
+            int len = 0;
+            unsigned char positionmap[256];
+
+            while (1)
+            {
+                int rep = 1;
+                sp++;
+                if (songorder[e][c][sp] >= LOOPSONG)
+                    break;
+                while (songorder[e][c][sp] >= TRANSDOWN)
+                {
+                    positionmap[sp] = len;
+                    nttracks[e][dest++] = songorder[e][c][sp++] - TRANSUP + 0xc0;
+                    len++;
+                }
+                while ((songorder[e][c][sp] >= REPEAT) && (songorder[e][c][sp] < TRANSDOWN))
+                {
+                    positionmap[sp] = len;
+                    rep = songorder[e][c][sp++] - REPEAT;
+                }
+                while (rep--)
+                {
+                    positionmap[sp] = len;
+                    nttracks[e][dest++] = songorder[e][c][sp] + 1;
+                    len++;
+                }
+            }
+            nttracks[e][dest++] = 0;
+            nttracks[e][dest++] = positionmap[songorder[e][c][sp]];
+            len += 2;
+            ntsonglen[e][c] = len;
+        }
+        if (dest > 256)
+        {
+            printf("Song %d's trackdata does not fit in 256 bytes\n", e+1);
+            exit(1);
+        }
+    }
+
+    // Convert patterns
+    printf("Converting patterns\n");
+    for (e = 0; e <= highestusedpatt; e++)
+    {
+        unsigned char notecolumn[MAX_PATTROWS+1];
+        unsigned char cmdcolumn[MAX_PATTROWS+1];
+        unsigned char durcolumn[MAX_PATTROWS+1];
+        memset(cmdcolumn, 0, sizeof cmdcolumn);
+        memset(durcolumn, 0, sizeof durcolumn);
+        int pattlen = 0;
+        int lastinstr = -1;
+        int lastdur;
+
+        for (c = 0; c < MAX_PATTROWS+1; c++)
+        {
+            int note = pattern[e][c*4];
+            if (note == ENDPATT)
+            {
+                notecolumn[c] = NT_ENDPATT;
+                break;
+            }
+            int instr = pattinstr[e][c];
+            int dur = patttempo[e][c];
+            int keyon = pattkeyon[e][c];
+
+            if (note >= FIRSTNOTE+12 && note <= LASTNOTE)
+            {
+                notecolumn[c] = (note-FIRSTNOTE-12)*2+NT_FIRSTNOTE;
+                if (instr != lastinstr)
+                {
+                    cmdcolumn[c] = instr;
+                    lastinstr = instr;
+                }
+            }
+            else
+                notecolumn[c] = keyon ? NT_KEYON : NT_KEYOFF;
+
+            durcolumn[c] = dur;
+        }
+
+        // Merge rows where possible
+        for (c = 0; c < MAX_PATTROWS+1;)
+        {
+            int merge = 0;
+            if (notecolumn[c] == NT_ENDPATT)
+                break;
+            if (notecolumn[c+1] != NT_ENDPATT)
+            {
+                if ((durcolumn[c] + durcolumn[c+1]) < NT_MAXDUR && cmdcolumn[c+1] == 0)
+                {
+                    if (notecolumn[c] == NT_KEYOFF && notecolumn[c+1] == NT_KEYOFF)
+                        merge = 1;
+                    else if (notecolumn[c] == NT_KEYON && notecolumn[c+1] == NT_KEYON)
+                        merge = 1;
+                    else if (notecolumn[c] >= NT_FIRSTNOTE && notecolumn[c] <= NT_LASTNOTE && notecolumn[c+1] == NT_KEYON)
+                        merge = 1;
+                }
+            }
+
+            if (merge)
+            {
+                int d;
+                durcolumn[c] += durcolumn[c+1];
+                for (d = c+1; d < MAX_PATTROWS; d++)
+                {
+                    notecolumn[d] = notecolumn[d+1];
+                    cmdcolumn[d] = cmdcolumn[d+1];
+                    durcolumn[d] = durcolumn[d+1];
+                }
+            }
+            else
+                c++;
+        }
+
+        // Clear unneeded durations
+        for (c = 0; c < MAX_PATTROWS+1; c++)
+        {
+            if (notecolumn[c] == NT_ENDPATT)
+                break;
+            if (c && durcolumn[c] == lastdur)
+                durcolumn[c] = 0;
+            if (durcolumn[c])
+                lastdur = durcolumn[c];
+        }
+
+        // Build the final patterndata
+        for (c = 0; c < MAX_PATTROWS+1; c++)
+        {
+            if (notecolumn[c] == NT_ENDPATT)
+            {
+                ntpatterns[e][pattlen++] = NT_ENDPATT;
+                break;
+            }
+            if (notecolumn[c] >= NT_FIRSTNOTE)
+            {
+                if (cmdcolumn[c])
+                {
+                    ntpatterns[e][pattlen++] = notecolumn[c] + NT_CMD;
+                    ntpatterns[e][pattlen++] = cmdcolumn[c];
+                }
+                else
+                    ntpatterns[e][pattlen++] = notecolumn[c];
+            }
+            else
+            {
+                if (cmdcolumn[c])
+                {
+                    ntpatterns[e][pattlen++] = notecolumn[c];
+                    ntpatterns[e][pattlen++] = cmdcolumn[c];
+                }
+                else
+                    ntpatterns[e][pattlen++] = notecolumn[c] | 0x2;
+            }
+            if (durcolumn[c])
+                ntpatterns[e][pattlen++] = 0x101 - durcolumn[c];
+        }
+
+        if (pattlen > MAX_NTPATTLEN)
+        {
+            printf("Pattern %d does not fit in 192 bytes when compressed\n", e);
+            exit(1);
+        }
+    }
+}
+
+void getpatttempos(void)
+{
+    int e,c;
+
+    memset(patttempo, 6, sizeof patttempo);
+    memset(pattinstr, 0, sizeof pattinstr);
+
+    // Simulates playroutine going through the songs
+    for (e = 0; e <= highestusedsong; e++)
+    {
+        printf("Playing through song %d to get pattern tempos & instruments\n", e+1);
+        int sp[3] = {-1,-1,-1};
+        int pp[3] = {0xff,0xff,0xff};
+        int pn[3] = {0,0,0};
+        int rep[3] = {0,0,0};
+        int stop[3] = {0,0,0};
+        int instr[3] = {1,1,1};
+        int tempo[3] = {6,6,6};
+        int tick[3] = {0,0,0};
+        int keyon[3] = {0,0,0};
+
+        while ((!stop[0])||(!stop[1])||(!stop[2]))
+        {
+            for (c = 0; c < MAX_CHN; c++)
+            {
+                if (!stop[c])
+                {
+                    if (pp[c] == 0xff)
+                    {
+                        if (!rep[c])
+                        {
+                            sp[c]++;
+                            if (songorder[e][c][sp[c]] >= LOOPSONG)
+                            {
+                                stop[c] = 1;
+                                break;
+                            }
+                            while (songorder[e][c][sp[c]] >= TRANSDOWN)
+                                sp[c]++;
+                            while ((songorder[e][c][sp[c]] >= REPEAT) && (songorder[e][c][sp[c]] < TRANSDOWN))
+                            {
+                                rep[c] = songorder[e][c][sp[c]] - REPEAT;
+                                sp[c]++;
+                            }
+                        }
+                        else
+                            rep[c]--;
+
+                        pn[c] = songorder[e][c][sp[c]];
+                        pp[c] = 0;
+                    }
+                    if (pattern[pn[c]][pp[c]*4] == ENDPATT)
+                        pp[c] = 0xff;
+                    else
+                    {
+                        int note = pattern[pn[c]][pp[c]*4];
+                        if (note >= FIRSTNOTE && note <= LASTNOTE)
+                            keyon[c] = 1;
+                        if (note == KEYON)
+                            keyon[c] = 1;
+                        if (note == KEYOFF)
+                            keyon[c] = 0;
+
+                        if (pattern[pn[c]][pp[c]*4+1])
+                            instr[c] = pattern[pn[c]][pp[c]*4+1];
+
+                        if ((pattern[pn[c]][pp[c]*4+2] == 0xf) && (!tick[c]))
+                        {
+                            int newtempo = pattern[pn[c]][pp[c]*4+3];
+                            if (newtempo < 0x80)
+                            {
+                                tempo[0] = newtempo;
+                                tempo[1] = newtempo;
+                                tempo[2] = newtempo;
+                            }
+                            else
+                                tempo[c] = newtempo & 0x7f;
+                        }
+                    }
+                }
+            }
+            for (c = 0; c < MAX_CHN; c++)
+            {
+                if (!stop[c])
+                {
+                    if (pp[c] != 0xff)
+                    {
+                        patttempo[pn[c]][pp[c]] = tempo[c];
+                        pattinstr[pn[c]][pp[c]] = instr[c];
+                        pattkeyon[pn[c]][pp[c]] = keyon[c];
+                        tick[c]++;
+                        if (tick[c] >= tempo[c])
+                        {
+                            tick[c] = 0;
+                            pp[c]++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void saventsong(const char* songfilename)
+{
+    out = fopen(songfilename, "wb");
+    if (!out)
+    {
+        printf("Could not open destination file %s\n", songfilename);
+        exit(1);
+    }
+    
+    writebyte('N');
+    writebyte('2');
+    writeblock(ntwavetbl, sizeof ntwavetbl);
+    writeblock(ntnotetbl, sizeof ntnotetbl);
+    writeblock(ntpulsetimetbl, sizeof ntpulsetimetbl);
+    writeblock(ntpulsespdtbl, sizeof ntpulsespdtbl);
+    writeblock(ntfilttimetbl, sizeof ntfilttimetbl);
+    writeblock(ntfiltspdtbl, sizeof ntfiltspdtbl);
+    writeblock(&ntpatterns[0][0], sizeof ntpatterns);
+    writeblock(&nttracks[0][0], sizeof nttracks);
+    writeblock(ntcmdad, sizeof ntcmdad);
+    writeblock(ntcmdsr, sizeof ntcmdsr);
+    writeblock(ntcmdwavepos, sizeof ntcmdwavepos);
+    writeblock(ntcmdpulsepos, sizeof ntcmdpulsepos);
+    writeblock(ntcmdfiltpos, sizeof ntcmdfiltpos);
+    writeblock(&ntcmdnames[0][0], sizeof ntcmdnames);
+    writeblock(&ntsonglen[0][0], sizeof ntsonglen);
+    writeblock(nttbllen, sizeof nttbllen);
+    writeblock(&ntcmdlen, sizeof ntcmdlen);
+    writeblock(&nthrparam, sizeof nthrparam);
+    writeblock(&ntfirstwave, sizeof ntfirstwave);
+    fclose(out);
+}
+
+void writeblock(unsigned char *adr, int len)
+{
+  while(len--)
+  {
+    writebyte(*adr);
+    adr++;
+  }
+}
+
+void writebyte(unsigned char c)
+{
+  if (prevwritebyte == c)
+  {
+    blocklen++;
+    if (blocklen == 255)
+    {
+      fputc(0xbf, out);
+      fputc(prevwritebyte, out);
+      fputc(blocklen, out);
+      blocklen = 0;
+    }
+  }
+  else
+  {
+    if (blocklen > 0)
+    {
+      fputc(0xbf, out);
+      fputc(prevwritebyte, out);
+      fputc(blocklen, out);
+      blocklen = 0;
+    }
+    if (c == 0xbf)
+    {
+      fputc(0xbf, out);
+      fputc(0xbf, out);
+      fputc(0x01, out);
+    }
+    else
+    {
+      fputc(c, out);
+    }
+    prevwritebyte = c;
+  }
 }
