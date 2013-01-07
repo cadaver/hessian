@@ -1044,6 +1044,11 @@ void convertsong(void)
     filttblmap[0] = 0;
     unsigned char lastfiltparam = 0;
     unsigned char lastcutoff = 0;
+    unsigned char vibdelay[256];
+    unsigned char vibparam[256];
+    unsigned char vibwavepos[256];
+    unsigned char vibcmd[256];
+    int vibratos = 0;
 
     if (highestusedpatt > 126)
     {
@@ -1225,8 +1230,100 @@ void convertsong(void)
         ntcmdfiltpos[e-1] = filttblmap[instr[e].ptr[FTBL]];
         for (c = 0; c < MAX_NTCMDNAMELEN; c++)
             ntcmdnames[e-1][c] = tolower(instr[e].name[c]);
-        // Todo: add instrument vibrato
         ntcmdlen++;
+    }
+    for (e = 1; e <= highestusedinstr; e++)
+    {
+        // Add instrument vibratos
+        if (instr[e].ptr[STBL] && instr[e].ptr[WTBL])
+        {
+            int srcpos = instr[e].ptr[STBL]-1;
+            int newvibwavepos = nttbllen[0];
+            int needcopy = 0;
+            int waveends = 0;
+            int f;
+            int existingvib = 0;
+
+            for (f = 1; f <= highestusedinstr; f++)
+            {
+                if (f != e && instr[f].ptr[WTBL] == instr[e].ptr[WTBL])
+                {
+                    needcopy = 1;
+                    break;
+                }
+            }
+            for (c = ntcmdwavepos[e-1]-1; c < 0x100; c++)
+            {
+                if (ntwavetbl[c] == 0xff)
+                {
+                    if (ntnotetbl[c] == 0x00)
+                        waveends = 1;
+                    break;
+                }
+            }
+            if (!waveends)
+            {
+                printf("Warning: instrument %d has both vibrato and a looping arpeggio, skipping vibrato\n", e+1);
+                continue;
+            }
+            
+            for (f = 0; f < vibratos; f++)
+            {
+                if (vibdelay[f] == instr[e].vibdelay && vibparam[f] == instr[e].ptr[STBL])
+                {
+                    existingvib = 1;
+                    newvibwavepos = vibwavepos[f];
+                }
+            }
+            if (!existingvib)
+            {
+                if (instr[e].vibdelay > 1 && instr[e].vibdelay < 0x30)
+                {
+                    ntwavetbl[nttbllen[0]] = instr[e].vibdelay + 0x90 - 2;
+                    ntnotetbl[nttbllen[0]] = 0;
+                    nttbllen[0]++;
+                }
+                ntwavetbl[nttbllen[0]] = ltable[STBL][srcpos] + 0xc0;
+                ntnotetbl[nttbllen[0]] = rtable[STBL][srcpos];
+                nttbllen[0]++;
+                vibdelay[vibratos] = instr[e].vibdelay;
+                vibparam[vibratos] = instr[e].ptr[STBL];
+                vibwavepos[vibratos] = newvibwavepos;
+                vibcmd[vibratos] = 0; // No command so far
+                vibratos++;
+            }
+
+            if (!needcopy)
+            {
+                for (c = ntcmdwavepos[e-1]-1; c < 0x100; c++)
+                {
+                    if (ntwavetbl[c] == 0xff)
+                    {
+                        if (ntnotetbl[c] == 0x00)
+                            ntnotetbl[c] = newvibwavepos + 1;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                int copywavepos = nttbllen[0];
+                for (c = ntcmdwavepos[e-1]-1; c < 0x100; c++)
+                {
+                    ntwavetbl[nttbllen[0]] = ntwavetbl[c];
+                    ntnotetbl[nttbllen[0]] = ntnotetbl[c];
+                    if (ntwavetbl[c] == 0xff)
+                    {
+                        ntnotetbl[nttbllen[0]] = newvibwavepos + 1;
+                        nttbllen[0]++;
+                        break;
+                    }
+                    else
+                        nttbllen[0]++;
+                }
+                ntcmdwavepos[e-1] = copywavepos + 1;
+            }
+        }
     }
 
     // Convert patterns
