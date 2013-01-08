@@ -27,7 +27,7 @@ clean:
 	del e?
 	del f?
 
-hessian.d64: boot.prg loader.pak main.pak music00.pak script00.pak level00.pak level01.pak common.pak weapon.pak player.pak
+hessian.d64: boot.prg loader.pak main.pak music00.pak script00.pak level00.pak level01.pak common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -47,6 +47,9 @@ loader.pak: kernal.s loader.s ldepack.s macros.s memory.s
 sfx/pistol.sfx: sfx/pistol.ins
 	ins2nt2 sfx/pistol.ins sfx/pistol.sfx
 
+sfx/shotgun.sfx: sfx/shotgun.ins
+	ins2nt2 sfx/shotgun.ins sfx/shotgun.sfx
+
 sfx/explosion.sfx: sfx/explosion.ins
 	ins2nt2 sfx/explosion.ins sfx/explosion.sfx
 
@@ -65,6 +68,9 @@ sfx/reload.sfx: sfx/reload.ins
 sfx/cockfast.sfx: sfx/cockfast.ins
 	ins2nt2 sfx/cockfast.ins sfx/cockfast.sfx
 
+sfx/cockshotgun.sfx: sfx/cockshotgun.ins
+	ins2nt2 sfx/cockshotgun.ins sfx/cockshotgun.sfx
+
 sfx/powerup.sfx: sfx/powerup.ins
 	ins2nt2 sfx/powerup.ins sfx/powerup.sfx
 
@@ -82,9 +88,9 @@ sfx/death.sfx: sfx/death.ins
 
 main.pak: actor.s actordata.s ai.s aidata.s bullet.s data.s file.s init.s item.s itemdata.s level.s macros.s \
 	main.s math.s memory.s panel.s paneldata.s physics.s player.s raster.s screen.s script.s sound.s sounddata.s \
-	sprite.s text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/explosion.sfx \
-	sfx/throw.sfx sfx/melee.sfx  sfx/punch.sfx sfx/reload.sfx sfx/cockfast.sfx sfx/powerup.sfx sfx/select.sfx \
-	sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx
+	sprite.s text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/shotgun.sfx sfx/explosion.sfx \
+	sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx \
+	sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx
 	dasm main.s -omain.bin -smain.tbl -f3
 	symbols main.tbl mainsym.s
 	pack2 main.bin main.pak
@@ -113,6 +119,9 @@ level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.chi bg/
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak
+
+item.pak: spr/item.spr
+	pchunk2 spr/item.spr item.pak
 
 weapon.pak: spr/weapon.spr
 	pchunk2 spr/weapon.spr weapon.pak

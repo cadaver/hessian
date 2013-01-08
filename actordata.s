@@ -3,9 +3,10 @@ ACT_PLAYER      = 1
 ACT_ITEM        = 2
 ACT_MELEEHIT    = 3
 ACT_BULLET      = 4
-ACT_GRENADE     = 5
-ACT_EXPLOSION   = 6
-ACT_ENEMY       = 7
+ACT_SHOTGUNBULLET = 5
+ACT_GRENADE     = 6
+ACT_EXPLOSION   = 7
+ACT_ENEMY       = 8
 
         ; Actor display data
 
@@ -15,6 +16,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adItem
                 dc.b <adMeleeHit
                 dc.b <adBullet
+                dc.b <adShotgunBullet
                 dc.b <adGrenade
                 dc.b <adExplosion
                 dc.b <adPlayer
@@ -23,6 +25,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
                 dc.b >adMeleeHit
                 dc.b >adBullet
+                dc.b >adShotgunBullet
                 dc.b >adGrenade
                 dc.b >adExplosion
                 dc.b >adPlayer
@@ -46,11 +49,19 @@ adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b 5,6,7,8,5
                 dc.b 5,8,7,6,5
 
+adShotgunBullet:dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 20                         ;Number of frames
+                dc.b 9,10,11,12,13              ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 9,16,15,14,13
+                dc.b 18,19,20,21
+
 adItem:         dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_WEAPON                   ;Spritefile number
+                dc.b C_ITEM                     ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
-itemFrames:     dc.b 11,11,12,13,14,15          ;Frametable (first all frames of sprite1, then sprite2)
+itemFrames:     dc.b 0,0,1,2,3,4,5              ;Frametable (first all frames of sprite1, then sprite2)
 
 adGrenade:      dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -117,6 +128,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alItem
                 dc.b <alMeleeHit
                 dc.b <alBullet
+                dc.b <alShotgunBullet
                 dc.b <alGrenade
                 dc.b <alExplosion
                 dc.b <alEnemy
@@ -125,6 +137,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
                 dc.b >alMeleeHit
                 dc.b >alBullet
+                dc.b >alShotgunBullet
                 dc.b >alGrenade
                 dc.b >alExplosion
                 dc.b >alEnemy
@@ -157,7 +170,7 @@ playerClimbSpeed:
 
 alItem:         dc.w MoveItem                   ;Update routine
                 dc.w RemoveActor                ;Destroy routine
-                dc.b AF_INITONLYSIZE            ;Actor flags                
+                dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 10                         ;Horizontal size
                 dc.b 7                          ;Size up
                 dc.b 0                          ;Size down
@@ -170,6 +183,13 @@ alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
                 dc.b 4                          ;Size down
 
 alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 4                          ;Horizontal size
+                dc.b 2                          ;Size up
+                dc.b 2                          ;Size down
+
+alShotgunBullet:dc.w MoveShotgunBullet          ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
@@ -193,7 +213,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
-                dc.b 12                         ;Initial health
+                dc.b 8                          ;Initial health
                 dc.b 2                          ;Color override
                 dc.b 50                         ;XP from kill
                 dc.b $07                        ;AI offense accumulator

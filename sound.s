@@ -495,12 +495,6 @@ Play_FreqAdd:   lda ntChnFreqLo,x
                 adc ntTemp1
                 jmp Play_StoreFreqHi
 
-        ;Sound effect hard restart
-
-Play_SfxHr:     lda #NT_SFXHRPARAM
-                sta $d406,x
-                bcc Play_WaveDone
-
 Play_SlideDown: sbc ntTemp2
                 tya
                 sbc ntTemp1
@@ -539,10 +533,15 @@ Play_SfxExec:   lda ntChnSfxLo,x
                 sta ntChnNewNote,x
                 sta ntChnGate,x
                 inc ntChnSfx,x
-                cpy #$02
+                cpy #$03
                 beq Play_SfxInit
-                bcc Play_SfxHr
-Play_SfxMain:   lda (ntTemp1),y
+                bcs Play_SfxMain
+Play_SfxHR:     sta $d405,x
+                lda #NT_SFXHRPARAM
+                sta $d406,x
+                jmp Play_WaveDone
+Play_SfxMain:   dey
+                lda (ntTemp1),y
                 beq Play_SfxEnd
 Play_SfxNoEnd:  asl
                 tay
@@ -551,6 +550,7 @@ Play_SfxNoEnd:  asl
                 lda ntFreqTbl-23,y
                 sta $d401,x
                 ldy ntChnSfx,x
+                dey
                 lda (ntTemp1),y
                 beq Play_SfxDone
                 cmp #$82
@@ -563,7 +563,8 @@ Play_SfxEnd:    sta ntChnSfx,x
                 sta ntChnWavePos,x
                 sta ntChnWaveOld,x
                 beq Play_SfxWaveChg
-Play_SfxInit:   lda (ntTemp1),y
+Play_SfxInit:   dey
+                lda (ntTemp1),y
                 sta $d402,x
                 sta $d403,x
                 dey

@@ -2,14 +2,15 @@ C_MAP           = 0
 C_BLOCKS        = 1
 C_FIRSTSPR      = 2
 C_COMMON        = 2
-C_WEAPON        = 3
-C_PLAYER        = 4
+C_ITEM          = 3
+C_WEAPON        = 4
+C_PLAYER        = 5
 C_FIRSTPURGEABLE = C_PLAYER
 
 F_SPRITE        = $02
-F_MUSIC         = $05
-F_LEVEL         = $06
-F_SCRIPT        = $08
+F_MUSIC         = $06
+F_LEVEL         = $07
+F_SCRIPT        = $09
 F_SAVE          = $f0
 
 MAX_CHUNKFILES   = 32

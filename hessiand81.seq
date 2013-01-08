@@ -12,6 +12,7 @@ write 05 @8:
 write 06 @8:
 write 07 @8:
 write 08 @8:
+write 09 @8:
 write f0 @8:
 write f1 @8:
 write f2 @8:

@@ -2,6 +2,35 @@ GRENADE_DMG_RADIUS = 48
 GRENADE_MAX_YSPEED = 6*8
 GRENADE_ACCEL   = 4
 
+        ; Shotgun bullet update routine. Expands collision and reduces damage as the
+        ; bullet moves
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveShotgunBullet:
+                lda actF1,x
+                cmp #$0a
+                bcs MSBlt_Cloud
+                lda actFd,x
+                beq MBltMF_FirstFrame
+                lda #$0a
+                bne MBltMF_Common
+MSBlt_Cloud:    inc actSizeH,x
+                inc actSizeU,x
+                inc actSizeD,x
+                dec actHp,x
+                bne MSBlt_DmgOk
+                inc actHp,x
+MSBlt_DmgOk:    cmp #$0d
+                bcs MSBlt_NoAnim
+                lda #$01
+                jsr AnimationDelay
+                bcc MSBlt_NoAnim
+                inc actF1,x
+MSBlt_NoAnim:   jmp MoveBullet
+
         ; Bullet update routine with muzzle flash as first frame
         ;
         ; Parameters: X actor index
@@ -19,7 +48,7 @@ MoveBulletMuzzleFlash:
                 cmp #$0a
                 bcs MoveBullet
                 adc #$0a
-                sta actF1,x
+MBltMF_Common:  sta actF1,x
                 jsr MoveBullet
                 jmp NoInterpolation             ;No interpolation on second frame
                                                 ;to prevent flash from appearing in different

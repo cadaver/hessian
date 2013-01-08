@@ -117,9 +117,9 @@ UP_HealthDone:  lda panelUpdateFlags
                 lda itemFrames,x
                 asl
                 tay
-                lda fileLo+C_WEAPON
+                lda fileLo+C_ITEM
                 sta zpBitsLo
-                lda fileHi+C_WEAPON
+                lda fileHi+C_ITEM
                 sta zpBitsHi
                 lda (zpBitsLo),y
                 sta zpSrcLo

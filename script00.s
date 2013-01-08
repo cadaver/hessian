@@ -36,6 +36,8 @@ TitleScreen:    stx TitleScreenParam+1          ;Go to save screen (X>0) or main
                 bne SpritesLoaded               ;resident sprites
                 ldy #C_COMMON
                 jsr LoadSpriteFile
+                ldy #C_ITEM
+                jsr LoadSpriteFile
                 ldy #C_WEAPON
                 jsr LoadSpriteFile
                 lda #HP_PLAYER                  ;Init health & fists item immediately

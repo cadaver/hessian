@@ -7,6 +7,7 @@ WPN_GRENADE     = 4
 DMG_FISTS       = 2
 DMG_KNIFE       = 3
 DMG_PISTOL      = 4
+DMG_SHOTGUN     = 9
 DMG_GRENADE     = 16
 
 DMG_BULLETSTAYS = $80                           ;Bullet does not disappear after damage
@@ -52,11 +53,13 @@ bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
 wpnTblLo:       dc.b <wdFists
                 dc.b <wdKnife
                 dc.b <wdPistol
+                dc.b <wdShotgun
                 dc.b <wdGrenade
 
 wpnTblHi:       dc.b >wdFists
                 dc.b >wdKnife
                 dc.b >wdPistol
+                dc.b >wdShotgun
                 dc.b >wdGrenade
 
 wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
@@ -110,6 +113,27 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b 25                         ;Reload delay
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKWEAPON             ;Reload finished sound
+
+wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
+                dc.b AIM_UP                     ;First aim direction
+                dc.b AIM_DOWN                   ;Last aim direction
+                dc.b 10                         ;Attack delay
+                dc.b ACT_SHOTGUNBULLET          ;Bullet actor type
+                dc.b DMG_SHOTGUN                ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b 10                         ;Bullet time duration
+                dc.b 14                         ;Bullet speed in pixels
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
+                dc.b SFX_SHOTGUN                ;Sound effect
+                dc.b 13                         ;Idle weapon frame (right)
+                dc.b 18                         ;Idle weapon frame (left)
+                dc.b 13                         ;Prepare weapon frame (right)
+                dc.b 18                         ;Prepare weapon frame (left)
+                dc.b 11,12,13,14,15             ;Attack weapon frames (right)
+                dc.b 16,17,18,19,20             ;Attack weapon frames (left)
+                dc.b 35                         ;Reload delay
+                dc.b SFX_RELOAD                 ;Reload sound
+                dc.b SFX_COCKSHOTGUN            ;Reload finished sound
 
 wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction

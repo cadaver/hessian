@@ -3,18 +3,21 @@
 itemNameLo:     dc.b <txtFists
                 dc.b <txtKnife
                 dc.b <txtPistol
+                dc.b <txtShotgun
                 dc.b <txtGrenade
                 dc.b <txtFirstAidKit
 
 itemNameHi:     dc.b >txtFists
                 dc.b >txtKnife
                 dc.b >txtPistol
+                dc.b >txtShotgun
                 dc.b >txtGrenade
                 dc.b >txtFirstAidKit
 
 txtFists:       dc.b "FISTS",0
 txtKnife:       dc.b "KNIFE",0
 txtPistol:      dc.b "PISTOL",0
+txtShotgun:     dc.b "SHOTGUN",0
 txtGrenade:     dc.b "GRENADES",0
 txtFirstAidKit: dc.b "MEDKIT",0
 
