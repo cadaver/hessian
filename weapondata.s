@@ -131,7 +131,7 @@ wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b 18                         ;Prepare weapon frame (left)
                 dc.b 11,12,13,14,15             ;Attack weapon frames (right)
                 dc.b 16,17,18,19,20             ;Attack weapon frames (left)
-                dc.b 35                         ;Reload delay
+                dc.b 30                         ;Reload delay
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKSHOTGUN            ;Reload finished sound
 

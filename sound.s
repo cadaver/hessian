@@ -14,8 +14,6 @@ NT_ADDLEGATOCMD     = $10
 NT_ADDPATT          = $14
 NT_HRPARAM          = $00
 NT_FIRSTWAVE        = $09
-NT_SFXHRPARAM       = $00
-NT_SFXFIRSTWAVE     = $09
 
 MUSIC_SILENCE       = $00
 MUSIC_TITLE         = $01
@@ -507,6 +505,12 @@ Play_FreqSub:   lda ntChnFreqLo,x
                 sbc ntTemp1
                 jmp Play_StoreFreqHi
 
+          ;Sound effect hard restart
+          
+Play_SfxHR:     lda #$00
+                sta $d406,x
+                beq Play_WaveDone
+
           ;Vibrato
 
 Play_Vibrato:   lda ntChnWaveTime,x
@@ -534,14 +538,8 @@ Play_SfxExec:   lda ntChnSfxLo,x
                 sta ntChnGate,x
                 inc ntChnSfx,x
                 cpy #$03
-                beq Play_SfxInit
-                bcs Play_SfxMain
-Play_SfxHR:     sta $d405,x
-                lda #NT_SFXHRPARAM
-                sta $d406,x
-                jmp Play_WaveDone
-Play_SfxMain:   dey
-                lda (ntTemp1),y
+                bcc Play_SfxHR
+Play_SfxMain:   lda (ntTemp1),y
                 beq Play_SfxEnd
 Play_SfxNoEnd:  asl
                 tay
@@ -550,7 +548,6 @@ Play_SfxNoEnd:  asl
                 lda ntFreqTbl-23,y
                 sta $d401,x
                 ldy ntChnSfx,x
-                dey
                 lda (ntTemp1),y
                 beq Play_SfxDone
                 cmp #$82
@@ -558,12 +555,7 @@ Play_SfxNoEnd:  asl
                 inc ntChnSfx,x
 Play_SfxWaveChg:sta ntChnWave,x
                 sta $d404,x
-Play_SfxDone:   rts
-Play_SfxEnd:    sta ntChnSfx,x
-                sta ntChnWavePos,x
-                sta ntChnWaveOld,x
-                beq Play_SfxWaveChg
-Play_SfxInit:   dey
+                ldy #$02
                 lda (ntTemp1),y
                 sta $d402,x
                 sta $d403,x
@@ -573,5 +565,9 @@ Play_SfxInit:   dey
                 dey
                 lda (ntTemp1),y
                 sta $d406,x
-                lda #NT_SFXFIRSTWAVE
-                bcs Play_SfxWaveChg
+Play_SfxDone:   rts
+Play_SfxEnd:    sta ntChnSfx,x
+                sta ntChnWavePos,x
+                sta ntChnWaveOld,x
+                beq Play_SfxWaveChg
+
