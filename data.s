@@ -237,7 +237,7 @@ actPrevCtrl:    ds.b MAX_COMPLEXACT,0
 actFall:        ds.b MAX_COMPLEXACT,0
 actFallL:       ds.b MAX_COMPLEXACT,0
 actF2:          ds.b MAX_COMPLEXACT,0
-actWpn:         ds.b MAX_COMPLEXACT,WPN_NONE
+actWpn:         ds.b MAX_COMPLEXACT,ITEM_NONE
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0
 actAIMode:      ds.b MAX_COMPLEXACT,0

@@ -1,17 +1,19 @@
 SFX_PISTOL          = $00
 SFX_SHOTGUN         = $01
-SFX_EXPLOSION       = $02
-SFX_THROW           = $03
-SFX_MELEE           = $04
-SFX_PUNCH           = $05
-SFX_RELOAD          = $06
-SFX_COCKWEAPON      = $07
-SFX_COCKSHOTGUN     = $08
-SFX_POWERUP         = $09
-SFX_SELECT          = $0a
-SFX_PICKUP          = $0b
-SFX_DAMAGE          = $0c
-SFX_DEATH           = $0d
+SFX_AUTORIFLE       = $02
+SFX_SNIPERRIFLE     = $03
+SFX_EXPLOSION       = $04
+SFX_THROW           = $05
+SFX_MELEE           = $06
+SFX_PUNCH           = $07
+SFX_RELOAD          = $08
+SFX_COCKWEAPON      = $09
+SFX_COCKSHOTGUN     = $0a
+SFX_POWERUP         = $0b
+SFX_SELECT          = $0c
+SFX_PICKUP          = $0d
+SFX_DAMAGE          = $0e
+SFX_DEATH           = $0f
 
         ; Music relocation tables
 
@@ -102,6 +104,8 @@ ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
 
 sfxTblLo:       dc.b <sfxPistol
                 dc.b <sfxShotgun
+                dc.b <sfxAutoRifle
+                dc.b <sfxSniperRifle
                 dc.b <sfxExplosion
                 dc.b <sfxThrow
                 dc.b <sfxMelee
@@ -117,6 +121,8 @@ sfxTblLo:       dc.b <sfxPistol
 
 sfxTblHi:       dc.b >sfxPistol
                 dc.b >sfxShotgun
+                dc.b >sfxAutoRifle
+                dc.b >sfxSniperRifle
                 dc.b >sfxExplosion
                 dc.b >sfxThrow
                 dc.b >sfxMelee
@@ -141,6 +147,8 @@ sfxMelee:       include sfx/melee.sfx
 sfxThrow:       include sfx/throw.sfx
 sfxDamage:      include sfx/damage.sfx
 sfxPistol:      include sfx/pistol.sfx
+sfxAutoRifle:   include sfx/autorifle.sfx
 sfxShotgun:     include sfx/shotgun.sfx
+sfxSniperRifle: include sfx/sniperrifle.sfx
 sfxDeath:       include sfx/death.sfx
 sfxExplosion:   include sfx/explosion.sfx

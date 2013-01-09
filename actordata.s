@@ -4,9 +4,10 @@ ACT_ITEM        = 2
 ACT_MELEEHIT    = 3
 ACT_BULLET      = 4
 ACT_SHOTGUNBULLET = 5
-ACT_GRENADE     = 6
-ACT_EXPLOSION   = 7
-ACT_ENEMY       = 8
+ACT_RIFLEBULLET = 6
+ACT_GRENADE     = 7
+ACT_EXPLOSION   = 8
+ACT_ENEMY       = 9
 
         ; Actor display data
 
@@ -17,6 +18,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adMeleeHit
                 dc.b <adBullet
                 dc.b <adShotgunBullet
+                dc.b <adRifleBullet
                 dc.b <adGrenade
                 dc.b <adExplosion
                 dc.b <adPlayer
@@ -26,6 +28,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adMeleeHit
                 dc.b >adBullet
                 dc.b >adShotgunBullet
+                dc.b >adRifleBullet
                 dc.b >adGrenade
                 dc.b >adExplosion
                 dc.b >adPlayer
@@ -52,16 +55,25 @@ adBullet:       dc.b ONESPRITE                  ;Number of sprites
 adShotgunBullet:dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
-                dc.b 20                         ;Number of frames
+                dc.b 14                         ;Number of frames
                 dc.b 9,10,11,12,13              ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 9,16,15,14,13
                 dc.b 18,19,20,21
+
+adRifleBullet:  dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 20                         ;Number of frames
+                dc.b 22,23,24,25,26             ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 22,29,28,27,26
+                dc.b 5,6,7,8,5
+                dc.b 5,8,7,6,5
 
 adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_ITEM                     ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
-itemFrames:     dc.b 0,0,1,2,3,4,5              ;Frametable (first all frames of sprite1, then sprite2)
+itemFrames:     dc.b 0,0,1,2,3,4,5,6,7          ;Frametable (first all frames of sprite1, then sprite2)
 
 adGrenade:      dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -129,6 +141,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alMeleeHit
                 dc.b <alBullet
                 dc.b <alShotgunBullet
+                dc.b <alBullet
                 dc.b <alGrenade
                 dc.b <alExplosion
                 dc.b <alEnemy
@@ -138,6 +151,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alMeleeHit
                 dc.b >alBullet
                 dc.b >alShotgunBullet
+                dc.b >alBullet
                 dc.b >alGrenade
                 dc.b >alExplosion
                 dc.b >alEnemy

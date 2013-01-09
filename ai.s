@@ -115,7 +115,7 @@ AI_XGreater:    cmp itemNPCMinDist-1,y          ;Check that weapon is effective
                 bcs AI_NoAttack2
                 lda temp8                       ;Check whether to attack horizontally, vertically or diagonally
                 beq AI_Horizontal
-                cpy #WPN_GRENADE                ;Grenade is a special case which does not require exact diagonal distance
+                cpy #ITEM_GRENADE               ;Grenade is a special case which does not require exact diagonal distance
                 bne AI_NoGrenade
 AI_Grenade:     lda temp6                       ;No vertical attack with grenade
                 beq AI_NoAttack2

@@ -167,7 +167,7 @@ MP_NoWeapon:    lda actCtrl+ACTI_PLAYER         ;If not holding a weapon, check
                 cmp #JOY_DOWN+JOY_FIRE
                 bne MP_NoItemUse
                 jsr UseItem
-MP_NoItemUse:   ldx #WPN_NONE
+MP_NoItemUse:   ldx #ITEM_NONE
 MP_WeaponOK:    stx actWpn+ACTI_PLAYER
                 ldx actIndex
 

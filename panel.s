@@ -129,7 +129,16 @@ UP_HealthDone:  lda panelUpdateFlags
                 ldy #SPRH_MASK
                 lda (zpSrcLo),y
                 sta zpBitBuf                    ;Slice bitmask
+                ldx #$03
                 ldy #SPRH_DATA
+UP_SkipSliceLoop:
+                lsr zpBitBuf
+                bcc UP_SkipEmpty
+                tya
+                adc #$06
+                tay
+UP_SkipEmpty:   dex
+                bne UP_SkipSliceLoop
                 ldx #$00
                 jsr UP_DrawSlice
                 lsr zpBitBuf
@@ -385,6 +394,12 @@ UM_NoCounter:   lda actHp+ACTI_PLAYER           ;Can also use , & . keys to sele
                 beq UM_MoveRight
                 cmp #KEY_R
                 beq UM_Reload
+                if ITEM_CHEAT>0
+                cmp #KEY_Z
+                beq UM_PrevItem
+                cmp #KEY_X
+                beq UM_NextItem
+                endif
 UM_KeyControlDone:
                 rts
 
@@ -440,6 +455,18 @@ UM_Reload:      ldx invType,y                   ;Do not reload if already full m
                 lda #$00                        ;Initiate reload by zeroing magazine
                 sta invMag,y
 UM_DontReload:  rts
+                if ITEM_CHEAT>0
+UM_PrevItem:    lda #$ff
+                skip2
+UM_NextItem:    lda #$01
+                clc
+                ldy itemIndex
+                adc invType,y
+                sta invType,y
+                lda #$ff
+                sta invCount,y
+                jmp SetPanelRedrawItemAmmo
+                endif
 
 RedrawInventory:ldx #MENU_INVENTORY
                 skip2
