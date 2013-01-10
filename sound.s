@@ -507,6 +507,7 @@ Play_FreqSub:   lda ntChnFreqLo,x
           ;Sound effect hard restart
           
 Play_SfxHR:     lda #$00
+                sta $d405,x
                 sta $d406,x
                 beq Play_WaveDone
 

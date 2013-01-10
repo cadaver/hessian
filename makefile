@@ -56,6 +56,9 @@ sfx/autorifle.sfx: sfx/autorifle.ins
 sfx/sniperrifle.sfx: sfx/sniperrifle.ins
 	ins2nt2 sfx/sniperrifle.ins sfx/sniperrifle.sfx
 
+sfx/minigun.sfx: sfx/minigun.ins
+	ins2nt2 sfx/minigun.ins sfx/minigun.sfx
+
 sfx/explosion.sfx: sfx/explosion.ins
 	ins2nt2 sfx/explosion.ins sfx/explosion.sfx
 
@@ -95,8 +98,8 @@ sfx/death.sfx: sfx/death.ins
 main.pak: actor.s actordata.s ai.s aidata.s bullet.s data.s file.s init.s item.s itemdata.s level.s macros.s \
 	main.s math.s memory.s panel.s paneldata.s physics.s player.s raster.s screen.s script.s sound.s sounddata.s \
 	sprite.s text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/shotgun.sfx sfx/autorifle.sfx \
-	sfx/sniperrifle.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx sfx/cockfast.sfx \
-	sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx
+	sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx\
+	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx
 	dasm main.s -omain.bin -smain.tbl -f3
 	symbols main.tbl mainsym.s
 	pack2 main.bin main.pak

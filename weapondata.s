@@ -1,7 +1,7 @@
 DMG_FISTS       = 2
 DMG_KNIFE       = 3
 DMG_PISTOL      = 4
-DMG_AUTORIFLE   = 5
+DMG_AUTORIFLE   = 4
 DMG_MINIGUN     = 4
 DMG_SHOTGUN     = 9
 DMG_SNIPERRIFLE = 12
@@ -168,7 +168,7 @@ wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_
                 dc.b 14                         ;Bullet time duration
                 dc.b 15                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
-                dc.b SFX_AUTORIFLE              ;Sound effect
+                dc.b SFX_MINIGUN                ;Sound effect
                 dc.b 42                         ;Idle weapon frame (right)
                 dc.b 45                         ;Idle weapon frame (left)
                 dc.b 42                         ;Prepare weapon frame (right)

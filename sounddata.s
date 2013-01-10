@@ -1,11 +1,11 @@
-SFX_PISTOL          = $00
-SFX_SHOTGUN         = $01
-SFX_AUTORIFLE       = $02
-SFX_SNIPERRIFLE     = $03
-SFX_EXPLOSION       = $04
-SFX_THROW           = $05
-SFX_MELEE           = $06
-SFX_PUNCH           = $07
+SFX_THROW           = $00
+SFX_MELEE           = $01
+SFX_PUNCH           = $02
+SFX_PISTOL          = $03
+SFX_SHOTGUN         = $04
+SFX_AUTORIFLE       = $05
+SFX_SNIPERRIFLE     = $06
+SFX_MINIGUN         = $07
 SFX_RELOAD          = $08
 SFX_COCKWEAPON      = $09
 SFX_COCKSHOTGUN     = $0a
@@ -14,6 +14,7 @@ SFX_SELECT          = $0c
 SFX_PICKUP          = $0d
 SFX_DAMAGE          = $0e
 SFX_DEATH           = $0f
+SFX_EXPLOSION       = $10
 
         ; Music relocation tables
 
@@ -102,14 +103,14 @@ ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
 
         ; Sound effect data
 
-sfxTblLo:       dc.b <sfxPistol
+sfxTblLo:       dc.b <sfxThrow
+                dc.b <sfxMelee
+                dc.b <sfxPunch
+                dc.b <sfxPistol
                 dc.b <sfxShotgun
                 dc.b <sfxAutoRifle
                 dc.b <sfxSniperRifle
-                dc.b <sfxExplosion
-                dc.b <sfxThrow
-                dc.b <sfxMelee
-                dc.b <sfxPunch
+                dc.b <sfxMinigun
                 dc.b <sfxReload
                 dc.b <sfxCockWeapon
                 dc.b <sfxCockShotgun
@@ -118,15 +119,16 @@ sfxTblLo:       dc.b <sfxPistol
                 dc.b <sfxPickup
                 dc.b <sfxDamage
                 dc.b <sfxDeath
+                dc.b <sfxExplosion
 
-sfxTblHi:       dc.b >sfxPistol
+sfxTblHi:       dc.b >sfxThrow
+                dc.b >sfxMelee
+                dc.b >sfxPunch
+                dc.b >sfxPistol
                 dc.b >sfxShotgun
                 dc.b >sfxAutoRifle
                 dc.b >sfxSniperRifle
-                dc.b >sfxExplosion
-                dc.b >sfxThrow
-                dc.b >sfxMelee
-                dc.b >sfxPunch
+                dc.b >sfxMinigun
                 dc.b >sfxReload
                 dc.b >sfxCockWeapon
                 dc.b >sfxCockShotgun
@@ -135,6 +137,7 @@ sfxTblHi:       dc.b >sfxPistol
                 dc.b >sfxPickup
                 dc.b >sfxDamage
                 dc.b >sfxDeath
+                dc.b >sfxExplosion
 
 sfxSelect:      include sfx/select.sfx
 sfxPickup:      include sfx/pickup.sfx
@@ -148,6 +151,7 @@ sfxThrow:       include sfx/throw.sfx
 sfxDamage:      include sfx/damage.sfx
 sfxPistol:      include sfx/pistol.sfx
 sfxAutoRifle:   include sfx/autorifle.sfx
+sfxMinigun:     include sfx/minigun.sfx
 sfxShotgun:     include sfx/shotgun.sfx
 sfxSniperRifle: include sfx/sniperrifle.sfx
 sfxDeath:       include sfx/death.sfx
