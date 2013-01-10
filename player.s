@@ -744,6 +744,8 @@ HumanDeath:     lda #SFX_DEATH
                 lda #FR_DIE
                 sta actF1,x
                 sta actF2,x
+                lda #$ff                        ;Hide weapon now
+                sta actWpnF,x
                 lda #DEATH_DISAPPEAR_DELAY
                 sta actTime,x
                 lda #DEATH_YSPEED

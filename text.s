@@ -6,6 +6,7 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtShotgun
                 dc.b <txtAutoRifle
                 dc.b <txtSniperRifle
+                dc.b <txtMinigun
                 dc.b <txtGrenade
                 dc.b <txtFirstAidKit
 
@@ -15,6 +16,7 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtShotgun
                 dc.b >txtAutoRifle
                 dc.b >txtSniperRifle
+                dc.b >txtMinigun
                 dc.b >txtGrenade
                 dc.b >txtFirstAidKit
 
@@ -24,6 +26,7 @@ txtPistol:      dc.b "PISTOL",0
 txtShotgun:     dc.b "SHOTGUN",0
 txtAutoRifle:   dc.b "AUTO RIFLE",0
 txtSniperRifle: dc.b "SNIPER RIFLE",0
+txtMinigun:     dc.b "MINIGUN",0
 txtGrenade:     dc.b "GRENADES",0
 txtFirstAidKit: dc.b "MEDKIT",0
 

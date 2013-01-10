@@ -177,7 +177,13 @@ UP_Firearm:     lda invMag,y                    ;Print rounds in magazine
 UP_MagCountOK:  ora #$30
                 sta screen1+SCROLLROWS*40+40+38
                 bne UP_SkipAmmo
-UP_Consumable:  lda #42
+UP_Consumable:  lda invType,y                   ;Draw the X for real consumables, but
+                cmp #ITEM_FIRST_CONSUMABLE      ;not for weapons such as the minigun
+                bcs UP_TrueConsumable           ;that don't have magazines
+                lda #32
+                skip2
+UP_TrueConsumable:
+                lda #42
                 sta screen1+SCROLLROWS*40+40+35
                 lda invCount,y
                 jsr ConvertToBCD8
@@ -463,7 +469,7 @@ UM_NextItem:    lda #$01
                 ldy itemIndex
                 adc invType,y
                 sta invType,y
-                lda #$ff
+                lda #100
                 sta invCount,y
                 jmp SetPanelRedrawItemAmmo
                 endif

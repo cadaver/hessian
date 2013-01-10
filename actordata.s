@@ -73,7 +73,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_ITEM                     ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
-itemFrames:     dc.b 0,0,1,2,3,4,5,6,7          ;Frametable (first all frames of sprite1, then sprite2)
+itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8        ;Frametable (first all frames of sprite1, then sprite2)
 
 adGrenade:      dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -206,9 +206,9 @@ alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
 alShotgunBullet:dc.w MoveShotgunBullet          ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 4                          ;Horizontal size
-                dc.b 2                          ;Size up
-                dc.b 2                          ;Size down
+                dc.b 3                          ;Horizontal size
+                dc.b 3                          ;Size up
+                dc.b 3                          ;Size down
 
 alGrenade:      dc.w MoveGrenade                ;Update routine
                 dc.w ExplodeActor               ;Destroy routine

@@ -17,17 +17,17 @@ MoveShotgunBullet:
                 beq MBltMF_FirstFrame
                 lda #$0a
                 bne MBltMF_Common
-MSBlt_Cloud:    inc actSizeH,x
-                inc actSizeU,x
-                inc actSizeD,x
-                dec actHp,x
-                bne MSBlt_DmgOk
-                inc actHp,x
-MSBlt_DmgOk:    cmp #$0d
+MSBlt_Cloud:    cmp #$0d
                 bcs MSBlt_NoAnim
-                lda #$01
+                lda #$02
                 jsr AnimationDelay
                 bcc MSBlt_NoAnim
+                lda actSizeH,x                  ;C=1, increase size by 2
+                adc #$01
+                sta actSizeH,x
+                sta actSizeU,x
+                sta actSizeD,x
+                dec actHp,x
                 inc actF1,x
 MSBlt_NoAnim:   jmp MoveBullet
 

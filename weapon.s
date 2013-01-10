@@ -32,6 +32,8 @@ WDB_BULLETDIRFRAME = 2
 WDB_FLICKERBULLET = 4
 WDB_THROW       = 8
 WDB_MELEE       = 16
+WDB_LOCKANIMATION = 64
+WDB_FIREFROMHIP = 128
 
 NO_MODIFY       = 8
 
@@ -53,6 +55,12 @@ AH_SetIdleWeaponFrame:
                 sta actF2,x
                 cmp #FR_ENTER
                 bcs AH_NoWeaponFrame
+                lda temp3                   ;Check for animation lock (for weapons with
+                and #WDB_LOCKANIMATION      ;backpack)
+                beq AH_NoLockAnimation
+                lda #FR_WALK+2
+                sta actF2,x
+AH_NoLockAnimation:
                 ldy #WD_IDLEFR
 AH_SetPrepareWeaponFrame:
                 lda temp3
@@ -155,7 +163,13 @@ AH_DirOk1:      iny
                 lda (wpnLo),y
 AH_DirOk2:      pha
                 clc
-                adc #FR_ATTACK
+                ldy temp3                       ;Check fire-from-hip animation mode
+                bpl AH_NormalAttack
+                tay
+                lda fromHipFrameTbl-1,y
+                skip2
+AH_NormalAttack:adc #FR_ATTACK
+AH_StoreAttackFrame:
                 sta actF2,x
                 pla
                 ldy actD,x

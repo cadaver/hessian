@@ -250,7 +250,6 @@ Play_CheckHr:   bmi Play_Rest
                 bne Play_Rest
                 lda #$fe
                 sta ntChnGate,x
-                sta $d405,x
                 lda #NT_HRPARAM
                 sta $d406,x
 Play_Rest:      iny
