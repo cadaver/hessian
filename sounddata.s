@@ -6,15 +6,17 @@ SFX_SHOTGUN         = $04
 SFX_AUTORIFLE       = $05
 SFX_SNIPERRIFLE     = $06
 SFX_MINIGUN         = $07
-SFX_RELOAD          = $08
-SFX_COCKWEAPON      = $09
-SFX_COCKSHOTGUN     = $0a
-SFX_POWERUP         = $0b
-SFX_SELECT          = $0c
-SFX_PICKUP          = $0d
-SFX_DAMAGE          = $0e
-SFX_DEATH           = $0f
-SFX_EXPLOSION       = $10
+SFX_FLAMETHROWER    = $08
+SFX_RELOAD          = $09
+SFX_COCKWEAPON      = $0a
+SFX_COCKSHOTGUN     = $0b
+SFX_IGNITEFLAME     = $0c
+SFX_POWERUP         = $0d
+SFX_SELECT          = $0e
+SFX_PICKUP          = $0f
+SFX_DAMAGE          = $10
+SFX_DEATH           = $11
+SFX_EXPLOSION       = $12
 
         ; Music relocation tables
 
@@ -111,9 +113,11 @@ sfxTblLo:       dc.b <sfxThrow
                 dc.b <sfxAutoRifle
                 dc.b <sfxSniperRifle
                 dc.b <sfxMinigun
+                dc.b <sfxFlamer
                 dc.b <sfxReload
                 dc.b <sfxCockWeapon
                 dc.b <sfxCockShotgun
+                dc.b <sfxReloadFlamer
                 dc.b <sfxPowerup
                 dc.b <sfxSelect
                 dc.b <sfxPickup
@@ -129,9 +133,11 @@ sfxTblHi:       dc.b >sfxThrow
                 dc.b >sfxAutoRifle
                 dc.b >sfxSniperRifle
                 dc.b >sfxMinigun
+                dc.b >sfxFlamer
                 dc.b >sfxReload
                 dc.b >sfxCockWeapon
                 dc.b >sfxCockShotgun
+                dc.b >sfxReloadFlamer
                 dc.b >sfxPowerup
                 dc.b >sfxSelect
                 dc.b >sfxPickup
@@ -141,6 +147,7 @@ sfxTblHi:       dc.b >sfxThrow
 
 sfxSelect:      include sfx/select.sfx
 sfxPickup:      include sfx/pickup.sfx
+sfxReloadFlamer:include sfx/reloadflamer.sfx
 sfxReload:      include sfx/reload.sfx
 sfxCockWeapon:  include sfx/cockfast.sfx
 sfxCockShotgun: include sfx/cockshotgun.sfx
@@ -149,6 +156,7 @@ sfxPunch:       include sfx/punch.sfx
 sfxMelee:       include sfx/melee.sfx
 sfxThrow:       include sfx/throw.sfx
 sfxDamage:      include sfx/damage.sfx
+sfxFlamer:      include sfx/flamer.sfx
 sfxPistol:      include sfx/pistol.sfx
 sfxAutoRifle:   include sfx/autorifle.sfx
 sfxMinigun:     include sfx/minigun.sfx

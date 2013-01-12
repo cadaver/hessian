@@ -54,6 +54,21 @@ MBltMF_Common:  sta actF1,x
                                                 ;to prevent flash from appearing in different
                                                 ;position dependent on flashing order
 
+        ; Flame update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveFlame:      lda #3
+                jsr AnimationDelay
+                bcc MoveBullet
+                lda actF1,x
+                cmp #$03
+                bcs MoveBullet
+                inc actF1,x
+                bcc MoveBullet
+
         ; Melee hit update routine
         ;
         ; Parameters: X actor index
@@ -127,8 +142,7 @@ CBC_NoDamage:   ldx actIndex
                 bmi CBC_BulletStays
                 ldy #$ff                        ;Destroy bullet without damage source
                 jmp DestroyActor
-CBC_BulletStays:lda #$80                        ;In bullet stays-mode, do damage only once
-                sta actHp,x
+CBC_BulletStays:
 CBC_Done:       rts
 
 CBC_CheckHeroes:lda #<heroList

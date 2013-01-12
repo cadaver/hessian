@@ -1,3 +1,6 @@
+DMG_BULLETSTAYS = $80                           ;Bullet does not disappear after damage
+                                                ;(flamethrower etc.)
+DMG_FLAMETHROWER = 1+DMG_BULLETSTAYS
 DMG_FISTS       = 2
 DMG_KNIFE       = 3
 DMG_PISTOL      = 4
@@ -7,8 +10,6 @@ DMG_SHOTGUN     = 9
 DMG_SNIPERRIFLE = 12
 DMG_GRENADE     = 16
 
-DMG_BULLETSTAYS = $80                           ;Bullet does not disappear after damage
-                                                ;(flamethrower etc.)
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
 DMGMOD_NOORGANIC = $80                          ;No organic damage
 DMGMOD_NONONORGANIC = $08                       ;No nonorganic damage
@@ -54,6 +55,7 @@ wpnTblLo:       dc.b <wdFists
                 dc.b <wdAutoRifle
                 dc.b <wdSniperRifle
                 dc.b <wdMinigun
+                dc.b <wdFlameThrower
                 dc.b <wdGrenade
 
 wpnTblHi:       dc.b >wdFists
@@ -63,6 +65,7 @@ wpnTblHi:       dc.b >wdFists
                 dc.b >wdAutoRifle
                 dc.b >wdSniperRifle
                 dc.b >wdMinigun
+                dc.b >wdFlameThrower
                 dc.b >wdGrenade
 
 wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
@@ -158,27 +161,6 @@ wdAutoRifle:    dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKWEAPON             ;Reload finished sound
 
-wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP ;Weapon bits
-                dc.b AIM_DIAGONALUP             ;First aim direction
-                dc.b AIM_DIAGONALDOWN           ;Last aim direction
-                dc.b 2                          ;Attack delay
-                dc.b ACT_RIFLEBULLET            ;Bullet actor type
-                dc.b DMG_MINIGUN                ;Bullet damage
-                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 14                         ;Bullet time duration
-                dc.b 15                         ;Bullet speed in pixels
-                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
-                dc.b SFX_MINIGUN                ;Sound effect
-                dc.b 42                         ;Idle weapon frame (right)
-                dc.b 45                         ;Idle weapon frame (left)
-                dc.b 42                         ;Prepare weapon frame (right)
-                dc.b 45                         ;Prepare weapon frame (left)
-                dc.b 41,41,42,43,43             ;Attack weapon frames (right)
-                dc.b 44,44,45,46,46             ;Attack weapon frames (left)
-                dc.b 30                         ;Reload delay
-                dc.b SFX_RELOAD                 ;Reload sound
-                dc.b SFX_COCKWEAPON             ;Reload finished sound
-
 wdSniperRifle:  dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN                   ;Last aim direction
@@ -199,6 +181,48 @@ wdSniperRifle:  dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b 35                         ;Reload delay
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKWEAPON             ;Reload finished sound
+
+wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP ;Weapon bits
+                dc.b AIM_DIAGONALUP             ;First aim direction
+                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b 2                          ;Attack delay
+                dc.b ACT_RIFLEBULLET            ;Bullet actor type
+                dc.b DMG_MINIGUN                ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b 14                         ;Bullet time duration
+                dc.b 15                         ;Bullet speed in pixels
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
+                dc.b SFX_MINIGUN                ;Sound effect
+                dc.b 42                         ;Idle weapon frame (right)
+                dc.b 45                         ;Idle weapon frame (left)
+                dc.b 42                         ;Prepare weapon frame (right)
+                dc.b 45                         ;Prepare weapon frame (left)
+                dc.b 41,41,42,43,43             ;Attack weapon frames (right)
+                dc.b 44,44,45,46,46             ;Attack weapon frames (left)
+                dc.b 30                         ;Reload delay
+                dc.b SFX_RELOAD                 ;Reload sound
+                dc.b SFX_COCKWEAPON             ;Reload finished sound
+                
+wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP ;Weapon bits
+                dc.b AIM_DIAGONALUP             ;First aim direction
+                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b 3                          ;Attack delay
+                dc.b ACT_FLAME                  ;Bullet actor type
+                dc.b DMG_FLAMETHROWER           ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b 15                         ;Bullet time duration
+                dc.b 8                          ;Bullet speed in pixels
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
+                dc.b SFX_FLAMETHROWER           ;Sound effect
+                dc.b 48                         ;Idle weapon frame (right)
+                dc.b 51                         ;Idle weapon frame (left)
+                dc.b 48                         ;Prepare weapon frame (right)
+                dc.b 51                         ;Prepare weapon frame (left)
+                dc.b 47,47,48,49,49             ;Attack weapon frames (right)
+                dc.b 50,50,51,52,52             ;Attack weapon frames (left)
+                dc.b 30                         ;Reload delay
+                dc.b SFX_RELOAD                 ;Reload sound
+                dc.b SFX_IGNITEFLAME            ;Reload finished sound
 
 wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction

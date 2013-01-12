@@ -94,12 +94,19 @@ sfx/damage.sfx: sfx/damage.ins
 
 sfx/death.sfx: sfx/death.ins
 	ins2nt2 sfx/death.ins sfx/death.sfx
+	
+sfx/flamer.sfx: sfx/flamer.ins
+	ins2nt2 sfx/flamer.ins sfx/flamer.sfx
+
+sfx/flamerreload.sfx: sfx/flamerreload.ins
+	ins2nt2 sfx/flamerreload.ins sfx/flamerreload.sfx
 
 main.pak: actor.s actordata.s ai.s aidata.s bullet.s data.s file.s init.s item.s itemdata.s level.s macros.s \
 	main.s math.s memory.s panel.s paneldata.s physics.s player.s raster.s screen.s script.s sound.s sounddata.s \
 	sprite.s text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/shotgun.sfx sfx/autorifle.sfx \
-	sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx\
-	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx
+	sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
+	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
+	sfx/flamer.sfx sfx/flamerreload.sfx
 	dasm main.s -omain.bin -smain.tbl -f3
 	symbols main.tbl mainsym.s
 	pack2 main.bin main.pak

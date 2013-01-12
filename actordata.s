@@ -5,9 +5,10 @@ ACT_MELEEHIT    = 3
 ACT_BULLET      = 4
 ACT_SHOTGUNBULLET = 5
 ACT_RIFLEBULLET = 6
-ACT_GRENADE     = 7
-ACT_EXPLOSION   = 8
-ACT_ENEMY       = 9
+ACT_FLAME       = 7
+ACT_GRENADE     = 8
+ACT_EXPLOSION   = 9
+ACT_ENEMY       = 10
 
         ; Actor display data
 
@@ -19,6 +20,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adBullet
                 dc.b <adShotgunBullet
                 dc.b <adRifleBullet
+                dc.b <adFlame
                 dc.b <adGrenade
                 dc.b <adExplosion
                 dc.b <adPlayer
@@ -29,6 +31,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adBullet
                 dc.b >adShotgunBullet
                 dc.b >adRifleBullet
+                dc.b >adFlame
                 dc.b >adGrenade
                 dc.b >adExplosion
                 dc.b >adPlayer
@@ -69,6 +72,12 @@ adRifleBullet:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b 5,6,7,8,5
                 dc.b 5,8,7,6,5
 
+adFlame:        dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 4                          ;Number of frames
+                dc.b 30,31,32,33                ;Frametable (first all frames of sprite1, then sprite2)
+
 adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_ITEM                     ;Spritefile number
                 dc.b 0                          ;Left frame add
@@ -100,7 +109,7 @@ humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,10,11,12,16,17,27,27,26,27,28,20,21,22,29
         ; Human Y-size reduce table based on animation
 
 humanSizeReduceTbl:
-                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,2,1,2,0,0,0,18,18,18,18,18,18
+                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18
 
         ; Item color flashing table
 
@@ -127,7 +136,7 @@ plrRechargeDelayTbl:
                 dc.b -HEALTH_RECHARGE_DELAY+20
                 dc.b -HEALTH_RECHARGE_DELAY+40
                 dc.b -HEALTH_RECHARGE_DELAY+60
-                
+
 plrRechargeRateTbl:
                 dc.b HEALTH_RECHARGE_RATE
                 dc.b HEALTH_RECHARGE_RATE-3
@@ -142,6 +151,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alBullet
                 dc.b <alShotgunBullet
                 dc.b <alBullet
+                dc.b <alFlame
                 dc.b <alGrenade
                 dc.b <alExplosion
                 dc.b <alEnemy
@@ -152,6 +162,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alBullet
                 dc.b >alShotgunBullet
                 dc.b >alBullet
+                dc.b >alFlame
                 dc.b >alGrenade
                 dc.b >alExplosion
                 dc.b >alEnemy
@@ -209,6 +220,13 @@ alShotgunBullet:dc.w MoveShotgunBullet          ;Update routine
                 dc.b 3                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
+
+alFlame:        dc.w MoveFlame                  ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 6                          ;Horizontal size
+                dc.b 6                          ;Size up
+                dc.b 4                          ;Size down
 
 alGrenade:      dc.w MoveGrenade                ;Update routine
                 dc.w ExplodeActor               ;Destroy routine

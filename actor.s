@@ -453,7 +453,7 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
                 sta villainList,y
                 ldx temp1
                 sta heroList,x
-                
+
                 lda menuMode                    ;If levelup or pausemenu in progress,
                 cmp #MENU_LEVELUPMSG            ;do not move actors
                 bcc CheckRoute
@@ -535,10 +535,10 @@ CR_NotOver:     stx CheckRoute+1
 
         ; Call update routines of all on-screen actors
 
-                ldx #$00                
+                ldx #$00
 UA_Loop:        ldy actT,x
                 beq UA_Next
-UA_NotZero:     stx actIndex                
+UA_NotZero:     stx actIndex
                 lda actLogicTblLo-1,y           ;Get actor logic structure address
                 sta actLo
                 lda actLogicTblHi-1,y
@@ -570,7 +570,7 @@ UA_Jump:        jsr $0000
 UA_Next:        inx
                 cpx #MAX_ACT
                 bcc UA_Loop
-                
+
         ; Interpolate actors' movement each second frame
 
 InterpolateActors:
@@ -1397,7 +1397,7 @@ GFA_Found:      lda #$00                        ;Reset animation & speed when fr
                 sta actFallL,y
                 sta actAIHelp,y
                 sta actAITarget,y
-                sta actAIRoute,y                
+                sta actAIRoute,y
                 lda #$ff
                 sta actWpnF,y
                 sta actAITarget,y               ;Start with no target
