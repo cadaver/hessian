@@ -102,7 +102,7 @@ CheckBulletCollisionsApplyDamage:
         ; Modifies: A,Y,tgtActIndex,temp variables
 
 CheckBulletCollisions:
-                ror temp8
+                ror temp7
                 lda actGrp,x
                 bmi CBC_CheckHeroes
 CBC_CheckVillains:
@@ -115,7 +115,7 @@ CBC_GetNextVillain:
                 jsr CheckActorCollision
                 bcc CBC_GetNextVillain
 CBC_HasCollision:
-                lda temp8
+                lda temp7
                 bmi CBC_ReportOnly
                 sty tgtActIndex
                 lda actAuxData,x                ;Damage modifier
