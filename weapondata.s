@@ -1,8 +1,8 @@
 DMG_BULLETSTAYS = $80                           ;Bullet does not disappear after damage
                                                 ;(flamethrower etc.)
-DMG_FLAMETHROWER = 1+DMG_BULLETSTAYS
 DMG_FISTS       = 2
 DMG_KNIFE       = 3
+DMG_FLAMETHROWER = 3
 DMG_PISTOL      = 4
 DMG_AUTORIFLE   = 4
 DMG_MINIGUN     = 4
@@ -206,10 +206,10 @@ wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_
 wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
                 dc.b AIM_DIAGONALDOWN           ;Last aim direction
-                dc.b 3                          ;Attack delay
+                dc.b 2                          ;Attack delay
                 dc.b ACT_FLAME                  ;Bullet actor type
                 dc.b DMG_FLAMETHROWER           ;Bullet damage
-                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b $68                        ;Damage modifier nonorganic/organic
                 dc.b 15                         ;Bullet time duration
                 dc.b 8                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset

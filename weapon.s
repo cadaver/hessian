@@ -435,11 +435,13 @@ GBO_Fail:       pla
 
         ; Modify damage
         ;
-        ; Parameters: A damage Y multiplier (8 = unmodified)
+        ; Parameters: A damage Y multiplier (8 = unmodified) or subtract (>= $80)
         ; Returns: A modified damage
         ; Modifies: A,Y,loader temp vars
 
-ModifyDamage:   stx zpBitsLo
+ModifyDamage:   cpy #$80
+                bcs MD_Subtract
+                stx zpBitsLo
                 ldx #zpSrcLo
                 jsr MulU
                 lda zpSrcLo
@@ -451,3 +453,11 @@ ModifyDamage:   stx zpBitsLo
                 ror
                 ldx zpBitsLo
                 rts
+MD_Subtract:    sty zpSrcLo
+                clc
+                adc zpSrcLo
+                bpl MD_SubtractNotOver          ;Do not allow to go below zero
+                lda #$00
+MD_SubtractNotOver:
+                rts
+

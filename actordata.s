@@ -175,6 +175,7 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b 0                          ;Size down
                 dc.b HP_PLAYER                  ;Initial health
                 dc.b 0                          ;Color override
+playerDmgModify:dc.b NO_MODIFY                  ;Damage modifier
                 dc.b 0                          ;XP from kill
                 dc.b $ff                        ;AI offense probability
                 dc.b $ff                        ;AI defense probability
@@ -247,6 +248,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b 0                          ;Size down
                 dc.b 8                          ;Initial health
                 dc.b 2                          ;Color override
+                dc.b NO_MODIFY                  ;Damage modifier
                 dc.b 50                         ;XP from kill
                 dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability

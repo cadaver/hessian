@@ -115,8 +115,6 @@ CBC_HasCollision:
                 lda actAuxData,x                ;Damage modifier
                 sta temp7
                 lda actHp,x                     ;Amount of damage
-                pha
-                and #$7f
                 sta temp8
                 ldx tgtActIndex
                 lda actGrp,x                    ;Check if target is organic
@@ -138,11 +136,8 @@ CBC_Common:     tay
                 ldy actIndex
                 jsr DamageActor
 CBC_NoDamage:   ldx actIndex
-                pla
-                bmi CBC_BulletStays
                 ldy #$ff                        ;Destroy bullet without damage source
                 jmp DestroyActor
-CBC_BulletStays:
 CBC_Done:       rts
 
 CBC_CheckHeroes:lda #<heroList

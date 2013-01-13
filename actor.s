@@ -46,21 +46,22 @@ AL_SIZEUP       = 6
 AL_SIZEDOWN     = 7
 AL_INITIALHP    = 8
 AL_COLOROVERRIDE = 9
-AL_KILLXP       = 10
-AL_OFFENSE      = 11
-AL_DEFENSE      = 12
-AL_MOVEFLAGS    = 13
-AL_MOVESPEED    = 14
-AL_GROUNDACCEL  = 15
-AL_INAIRACCEL   = 16
-AL_FALLACCEL    = 17                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 18                          ;Gravity acceleration in longjump
-AL_BRAKING      = 19
-AL_HEIGHT       = 20                           ;Height for headbump check, negative
-AL_JUMPSPEED    = 21                           ;Negative
-AL_CLIMBSPEED   = 22
-AL_HALFSPEEDRIGHT = 23                         ;Ladder jump / wallflip speed right
-AL_HALFSPEEDLEFT = 24                          ;Ladder jump / wallflip speed left
+AL_DMGMODIFY    = 10
+AL_KILLXP       = 11
+AL_OFFENSE      = 12
+AL_DEFENSE      = 13
+AL_MOVEFLAGS    = 14
+AL_MOVESPEED    = 15
+AL_GROUNDACCEL  = 16
+AL_INAIRACCEL   = 17
+AL_FALLACCEL    = 18                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 19                          ;Gravity acceleration in longjump
+AL_BRAKING      = 20
+AL_HEIGHT       = 21                           ;Height for headbump check, negative
+AL_JUMPSPEED    = 22                           ;Negative
+AL_CLIMBSPEED   = 23
+AL_HALFSPEEDRIGHT = 24                         ;Ladder jump / wallflip speed right
+AL_HALFSPEEDLEFT = 25                          ;Ladder jump / wallflip speed left
 
 AF_NONE         = $00
 AF_ISHERO       = $01
@@ -1153,23 +1154,27 @@ DA_Done:        rts
         ;
         ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or $ff if none
         ; Returns: -
-        ; Modifies: A,Y,temp8,loader temp regs if player,possibly other temp registers
+        ; Modifies: A,Y,temp7-temp8,possibly other temp registers
 
-DamageActor:    cpx #ACTI_PLAYER
+DamageActor:    sty temp7
+                sta temp8
+                cpx #ACTI_PLAYER
                 bne DA_NotPlayer
-                sty temp8
 DA_HealthRechargeDelay:
-                ldy #-HEALTH_RECHARGE_DELAY
+                ldy #-HEALTH_RECHARGE_DELAY     ;If player hit, reset health recharge timer
                 sty healthRecharge
-DA_PlayerDamageMod:
-                ldy #NO_MODIFY
+DA_NotPlayer:   jsr GetActorLogicData
+                ldy #AL_DMGMODIFY
+                lda (actLo),y
+                tay
+                lda temp8
                 jsr ModifyDamage
-                tay                             ;Never reduce damage to zero with the vitality
+                tay                             ;Never reduce damage to zero with the damage
                 bne DA_NotZeroDamage            ;modifier
                 lda #$01
-DA_NotZeroDamage:     
-                ldy temp8
-DA_NotPlayer:   sta temp8
+DA_NotZeroDamage:
+                ldy temp7
+                sta temp8
                 lda actHp,x                     ;First check that there is health
                 beq DA_Done                     ;(prevent destroy being called multiple times)
                 sec
@@ -1196,7 +1201,6 @@ DestroyActor:   sty temp8
                 lda #ORG_NONE                   ;If scrolled off the screen, do not return
                 sta actLvlOrg,x
                 jsr GetActorLogicData
-DestroyActorHasLogicData:
                 ldy #AL_DESTROYROUTINE
                 lda (actLo),y
                 sta DA_Jump+1

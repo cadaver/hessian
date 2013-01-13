@@ -963,7 +963,7 @@ ApplySkills:
 
                 ldx plrVitality
                 lda plrDamageModTbl,x
-                sta DA_PlayerDamageMod+1
+                sta playerDmgModify
                 lda plrRechargeDelayTbl,x
                 sta DA_HealthRechargeDelay+1
                 lda plrRechargeRateTbl,x
