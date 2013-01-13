@@ -1,5 +1,3 @@
-DMG_BULLETSTAYS = $80                           ;Bullet does not disappear after damage
-                                                ;(flamethrower etc.)
 DMG_FISTS       = 2
 DMG_KNIFE       = 3
 DMG_FLAMETHROWER = 3
@@ -8,6 +6,7 @@ DMG_AUTORIFLE   = 4
 DMG_MINIGUN     = 4
 DMG_SHOTGUN     = 9
 DMG_SNIPERRIFLE = 12
+DMG_LAUNCHERGRENADE = 14
 DMG_GRENADE     = 16
 
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
@@ -38,12 +37,12 @@ attackTbl:      dc.b AIM_NONE                   ;None
 
 bulletXSpdTbl:  dc.b 0,6,8,6,0                  ;Normal bullets
                 dc.b 0,-6,-8,-6,0
-                dc.b 0,8,8,8,0                  ;Grenades
-                dc.b 0,-8,-8,-8,0
+                dc.b 0,7,8,7,0                  ;Thrown grenade
+                dc.b 0,-7,-8,-7,0
 
 bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
                 dc.b -8,-6,0,6,8
-                dc.b -8,-7,-4,-1,0              ;Grenades
+                dc.b -8,-7,-4,-1,0              ;Thrown grenade
                 dc.b -8,-7,-4,-1,0
 
         ; Weapon data
@@ -56,6 +55,7 @@ wpnTblLo:       dc.b <wdFists
                 dc.b <wdSniperRifle
                 dc.b <wdMinigun
                 dc.b <wdFlameThrower
+                dc.b <wdGrenadeLauncher
                 dc.b <wdGrenade
 
 wpnTblHi:       dc.b >wdFists
@@ -66,6 +66,7 @@ wpnTblHi:       dc.b >wdFists
                 dc.b >wdSniperRifle
                 dc.b >wdMinigun
                 dc.b >wdFlameThrower
+                dc.b >wdGrenadeLauncher
                 dc.b >wdGrenade
 
 wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
@@ -203,7 +204,7 @@ wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKWEAPON             ;Reload finished sound
                 
-wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP ;Weapon bits
+wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
                 dc.b AIM_DIAGONALDOWN           ;Last aim direction
                 dc.b 2                          ;Attack delay
@@ -224,7 +225,29 @@ wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP ;Weapon
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_IGNITEFLAME            ;Reload finished sound
 
-wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW ;Weapon bits
+wdGrenadeLauncher:
+                dc.b WDB_NOSKILLBONUS           ;Weapon bits
+                dc.b AIM_UP                     ;First aim direction
+                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b 15                         ;Attack delay
+                dc.b ACT_LAUNCHERGRENADE        ;Bullet actor type
+                dc.b DMG_LAUNCHERGRENADE        ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b 25                         ;Bullet time duration
+                dc.b 7                          ;Bullet speed in pixels
+                dc.b SPDTBL_GRENADE             ;Bullet speed table offset
+                dc.b SFX_GRENADELAUNCHER        ;Sound effect
+                dc.b 55                         ;Idle weapon frame (right)
+                dc.b 59                         ;Idle weapon frame (left)
+                dc.b 55                         ;Prepare weapon frame (right)
+                dc.b 59                         ;Prepare weapon frame (left)
+                dc.b 53,54,55,56,56             ;Attack weapon frames (right)
+                dc.b 57,58,59,60,60             ;Attack weapon frames (left)
+                dc.b 35                         ;Reload delay
+                dc.b SFX_RELOAD                 ;Reload sound
+                dc.b SFX_COCKSHOTGUN            ;Reload finished sound
+
+wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
                 dc.b AIM_DIAGONALDOWN           ;Last aim direction
                 dc.b 15                         ;Attack delay

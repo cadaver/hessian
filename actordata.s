@@ -6,9 +6,10 @@ ACT_BULLET      = 4
 ACT_SHOTGUNBULLET = 5
 ACT_RIFLEBULLET = 6
 ACT_FLAME       = 7
-ACT_GRENADE     = 8
-ACT_EXPLOSION   = 9
-ACT_ENEMY       = 10
+ACT_LAUNCHERGRENADE = 8
+ACT_GRENADE     = 9
+ACT_EXPLOSION   = 10
+ACT_ENEMY       = 11
 
         ; Actor display data
 
@@ -21,6 +22,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adShotgunBullet
                 dc.b <adRifleBullet
                 dc.b <adFlame
+                dc.b <adLauncherGrenade
                 dc.b <adGrenade
                 dc.b <adExplosion
                 dc.b <adPlayer
@@ -32,6 +34,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adShotgunBullet
                 dc.b >adRifleBullet
                 dc.b >adFlame
+                dc.b >adLauncherGrenade
                 dc.b >adGrenade
                 dc.b >adExplosion
                 dc.b >adPlayer
@@ -45,6 +48,12 @@ adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 35                         ;Upper part left frame add
+
+adItem:         dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_ITEM                     ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 3                          ;Number of frames
+itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9      ;Frametable (first all frames of sprite1, then sprite2)
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -78,11 +87,13 @@ adFlame:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b 4                          ;Number of frames
                 dc.b 30,31,32,33                ;Frametable (first all frames of sprite1, then sprite2)
 
-adItem:         dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_ITEM                     ;Spritefile number
+adLauncherGrenade:
+                dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
-itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8        ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 34,35,36                   ;Frametable (first all frames of sprite1, then sprite2)
+
 
 adGrenade:      dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -152,6 +163,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alShotgunBullet
                 dc.b <alBullet
                 dc.b <alFlame
+                dc.b <alLauncherGrenade
                 dc.b <alGrenade
                 dc.b <alExplosion
                 dc.b <alEnemy
@@ -163,6 +175,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alShotgunBullet
                 dc.b >alBullet
                 dc.b >alFlame
+                dc.b >alLauncherGrenade
                 dc.b >alGrenade
                 dc.b >alExplosion
                 dc.b >alEnemy
@@ -227,6 +240,14 @@ alFlame:        dc.w MoveFlame                  ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 6                          ;Horizontal size
                 dc.b 6                          ;Size up
+                dc.b 4                          ;Size down
+
+alLauncherGrenade:
+                dc.w MoveLauncherGrenade        ;Update routine
+                dc.w ExplodeActor               ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 4                          ;Horizontal size
+                dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 
 alGrenade:      dc.w MoveGrenade                ;Update routine

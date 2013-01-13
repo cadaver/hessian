@@ -7,8 +7,9 @@ ITEM_AUTORIFLE  = 5
 ITEM_SNIPERRIFLE = 6
 ITEM_MINIGUN    = 7
 ITEM_FLAMETHROWER = 8
-ITEM_GRENADE    = 8
-ITEM_MEDKIT     = 9
+ITEM_GRENADELAUNCHER = 9
+ITEM_GRENADE    = 10
+ITEM_MEDKIT     = 11
 
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
 ITEM_FIRST_NONWEAPON = ITEM_MEDKIT
@@ -34,8 +35,9 @@ itemDefaultMaxCount:
                 dc.b 90
                 dc.b 20
                 dc.b 100
-                dc.b 60
-                dc.b 4
+                dc.b 120
+                dc.b 6
+                dc.b 5
                 dc.b 2
 
 itemMaxCountAdd:dc.b 0
@@ -46,6 +48,7 @@ itemMaxCountAdd:dc.b 0
                 dc.b 5
                 dc.b 50
                 dc.b 30
+                dc.b 3
                 dc.b 2
                 dc.b 1
 
@@ -59,6 +62,7 @@ itemDefaultPickup:
                 dc.b 100
                 dc.b 60
                 dc.b 2
+                dc.b 2
                 dc.b 1
 
 itemMagazineSize:
@@ -70,6 +74,7 @@ itemMagazineSize:
                 dc.b 5
                 dc.b 0
                 dc.b 60
+                dc.b 3
                 dc.b 0
                 dc.b 0
 
@@ -82,6 +87,7 @@ itemNPCMinDist: dc.b 0
                 dc.b 1
                 dc.b 1
                 dc.b 2
+                dc.b 2
 
 itemNPCMaxDist: dc.b 1
                 dc.b 1
@@ -90,6 +96,7 @@ itemNPCMaxDist: dc.b 1
                 dc.b 6
                 dc.b 7
                 dc.b 6
+                dc.b 5
                 dc.b 5
                 dc.b 6
 
@@ -103,6 +110,7 @@ itemNPCAttackLength:
                 dc.b -12/2
                 dc.b -12/2
                 dc.b -6/2
+                dc.b -6/2
 
 itemNPCAttackThreshold:
                 dc.b $08
@@ -113,5 +121,6 @@ itemNPCAttackThreshold:
                 dc.b $38
                 dc.b $30
                 dc.b $30
+                dc.b $40
                 dc.b $40
 

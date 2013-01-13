@@ -77,7 +77,7 @@ MoveFlame:      lda #3
 
 MoveMeleeHit:   dec actTime,x
                 bmi MBlt_Remove
-                jmp CheckBulletCollisions
+                jmp CheckBulletCollisionsApplyDamage
 
         ; Bullet update routine
         ;
@@ -92,13 +92,17 @@ MoveBullet:     dec actTime,x
                 and #CI_OBSTACLE
                 bne MBlt_Remove
 
+CheckBulletCollisionsApplyDamage:
+                clc
+
         ; Check bullet collisions
         ;
-        ; Parameters: X bullet actor index
-        ; Returns: -
+        ; Parameters: X bullet actor index, C=0 apply damage C=1 report collisions only
+        ; Returns: C=1 if collided (report mode)
         ; Modifies: A,Y,tgtActIndex,temp variables
 
 CheckBulletCollisions:
+                ror temp8
                 lda actGrp,x
                 bmi CBC_CheckHeroes
 CBC_CheckVillains:
@@ -111,6 +115,8 @@ CBC_GetNextVillain:
                 jsr CheckActorCollision
                 bcc CBC_GetNextVillain
 CBC_HasCollision:
+                lda temp8
+                bmi CBC_ReportOnly
                 sty tgtActIndex
                 lda actAuxData,x                ;Damage modifier
                 sta temp7
@@ -138,7 +144,8 @@ CBC_Common:     tay
 CBC_NoDamage:   ldx actIndex
                 ldy #$ff                        ;Destroy bullet without damage source
                 jmp DestroyActor
-CBC_Done:       rts
+CBC_Done:       clc
+CBC_ReportOnly: rts
 
 CBC_CheckHeroes:lda #<heroList
                 sta CBC_GetNextHero+1
@@ -155,15 +162,23 @@ CBC_GetNextHero:ldy heroList
         ; Returns: -
         ; Modifies: A
 
-ExplodeGrenade: lda #GRENADE_DMG_RADIUS         ;Expand grenade collision size for radius damage
+ExplodeGrenade: lda #2                          ;If there's ground (obstacle) below the grenade,
+                jsr GetCharInfoOffset           ;reduce blast radius in down direction, otherwise
+                lsr                             ;it is equal size
+                lsr
+                lda #GRENADE_DMG_RADIUS
+                bcc EGrn_FullDamageBelow
+                lsr
+                lsr
+EGrn_FullDamageBelow:
+                sta actSizeD,x
+                lda #GRENADE_DMG_RADIUS         ;Expand grenade collision size for radius damage
                 sta actSizeH,x
                 sta actSizeU,x
-                lda #GRENADE_DMG_RADIUS/2
-                sta actSizeD,x
                 lda #$00                        ;Clear the X-speed so that possible death impulse
                 sta actSX,x                     ;only depends on enemy's relative location to the
-                lda #DMG_GRENADE                ;grenade
-                jsr RadiusDamage                ;Grenade damage is fixed (no player skill bonus)
+                lda actHp,x                     ;grenade
+                jsr RadiusDamage
 
         ; Turn an actor into an explosion
         ;
@@ -196,6 +211,27 @@ MoveExplosion:  lda #1
                 jmp RemoveActor
 MExpl_NoAnimation:
 MExpl_NoRemove: rts
+
+        ; Grenade launcher grenade update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveLauncherGrenade:
+                lda #$02
+                jsr AnimationDelay
+                bcc MLG_NoAnimation
+                lda actF1,x
+                adc #$00
+                cmp #$03
+                bcc MLG_AnimNotOver
+                lda #$00
+MLG_AnimNotOver:sta actF1,x
+MLG_NoAnimation:
+                sec                             ;Explode if touches enemy
+                jsr CheckBulletCollisions
+                bcs ExplodeGrenade
 
         ; Grenade update routine
         ;
@@ -235,6 +271,8 @@ MGrn_NoHitWall: and #MB_HITCEILING              ;Halve X-speed when hit ceiling
 MGrn_StoreNewXSpeed:
                 sta actSX,x
 MGrn_Done:      rts
+
+
 
         ; Give radius damage to both heroes & villains. Prior to calling, expand the
         ; collision size of the source actor as necessary

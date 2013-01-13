@@ -32,6 +32,7 @@ WDB_BULLETDIRFRAME = 2
 WDB_FLICKERBULLET = 4
 WDB_THROW       = 8
 WDB_MELEE       = 16
+WDB_NOSKILLBONUS = 32
 WDB_LOCKANIMATION = 64
 WDB_FIREFROMHIP = 128
 
@@ -295,8 +296,9 @@ AH_NoBulletFlicker:
                 ldy itemIndex
                 lda #$01
                 jsr DecreaseAmmo
-                lda magazineSize
-                beq AH_PlayerMeleeBonus
+                lda temp3
+                and #WDB_NOSKILLBONUS
+                bne AH_NoPlayerBonus
 AH_PlayerFirearmBonus:
                 ldy #NO_MODIFY
                 skip2
@@ -307,6 +309,7 @@ AH_PlayerBonusCommon:
                 jsr ModifyDamage
                 ldy temp2
                 sta actHp,y
+AH_NoPlayerBonus:
 AH_NoAmmoDecrement:
                 ldy #WD_ATTACKDELAY
                 lda (wpnLo),y
