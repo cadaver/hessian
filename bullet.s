@@ -221,6 +221,9 @@ MExpl_NoRemove: rts
         ; Modifies: A,Y
 
 MoveLauncherGrenade:
+                lda actMB,x
+                lsr
+                bcs MLG_NoAnimation
                 lda #$02
                 jsr AnimationDelay
                 bcc MLG_NoAnimation

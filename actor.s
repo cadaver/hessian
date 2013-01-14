@@ -1162,6 +1162,10 @@ DamageActor:    sty temp7
                 sta temp8
                 cpx #ACTI_PLAYER
                 bne DA_NotPlayer
+                if GODMODE_CHEAT>0
+                lda actHp,x
+                bne DA_NotDead
+                endif
 DA_HealthRechargeDelay:
                 ldy #-HEALTH_RECHARGE_DELAY     ;If player hit, reset health recharge timer
                 sty healthRecharge

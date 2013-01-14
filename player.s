@@ -204,6 +204,11 @@ MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 jsr MoveWithGravity             ;Actually move & check collisions
                 lsr
                 bcs MH_DeathGrounded
+                and #MB_HITWALL/2               ;If hit wall, zero X-speed
+                beq MH_DeathNoHitWall
+                lda #$00
+                sta actSX,x
+MH_DeathNoHitWall:
                 lda #FR_DIE
                 ldy actSY,x
                 bmi MH_DeathSetFrame

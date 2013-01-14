@@ -15,8 +15,6 @@ SAVE_GAME       = 1
 TITLE_MOVEDELAY = 8
 TITLE_PAGEDELAY = 500
 
-CHEATSTRINGLENGTH = 7
-
 saveStateBuffer = screen2
 
                 org scriptCodeStart
@@ -90,7 +88,7 @@ M               set M+1
                 repend
                 dex
                 bpl PrintLogoLoop
-                lda #MUSIC_TITLE                        
+                lda #MUSIC_TITLE
                 jsr PlaySong
 
 TitleScreenParam:
@@ -313,28 +311,7 @@ IP_InvLoop:     sta invType,x
 Update:         jsr GetControls
                 jsr FinishFrame_NoScroll
                 jsr WaitBottom
-                lda keyType
-                bmi UC_NoCheat
-                ldx cheatIndex
-                cmp cheatString,x
-                beq UC_CheatCharOK
-                ldx #$ff
-UC_CheatCharOK: inx
-                cpx #CHEATSTRINGLENGTH
-                bcc UC_CheatNotDone
-                ldx #$00
-                lda DA_HealthRechargeDelay      ;Transform LDY into RTS in player damage routine
-                eor #$c0
-                sta DA_HealthRechargeDelay
-                inc Irq1_Bg1+1
-                ldy #$10
-UC_Delay:       inx
-                bne UC_Delay
-                dey
-                bne UC_Delay
-                dec Irq1_Bg1+1
-UC_CheatNotDone:stx cheatIndex
-UC_NoCheat:     lda textFadeDir
+                lda textFadeDir
                 beq UC_TextDone
                 clc
                 adc textFade
@@ -692,7 +669,6 @@ titlePageDelayHi:
 mainMenuChoice: dc.b 0
 optionsMenuChoice:
                 dc.b 0
-cheatIndex:     dc.b 0
 
 txtCredits:     dc.b "A COVERT BITOPS PRODUCTION IN 2013",0
                 dc.b 0
@@ -735,8 +711,6 @@ txtSaveLevelAndXP:
                 dc.b "LV."
 txtSaveLevel:   dc.b "   "
 txtSaveXP:      dc.b "   /   ",0,0
-
-cheatString:    dc.b KEY_T,KEY_A,KEY_C,KEY_G,KEY_N,KEY_O,KEY_L
 
 mainMenuJumpTblLo:
                 dc.b <StartGame

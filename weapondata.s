@@ -15,6 +15,7 @@ DMGMOD_NONONORGANIC = $08                       ;No nonorganic damage
 
 SPDTBL_NORMAL   = 0
 SPDTBL_GRENADE  = 10
+SPDTBL_LAUNCHER = 20
 
         ; Weapon/attack tables
 
@@ -39,11 +40,15 @@ bulletXSpdTbl:  dc.b 0,6,8,6,0                  ;Normal bullets
                 dc.b 0,-6,-8,-6,0
                 dc.b 0,7,8,7,0                  ;Thrown grenade
                 dc.b 0,-7,-8,-7,0
+                dc.b 0,7,8,7,0                  ;Launcher grenade
+                dc.b 0,-7,-8,-7,0
 
 bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
                 dc.b -8,-6,0,6,8
                 dc.b -8,-7,-4,-1,0              ;Thrown grenade
                 dc.b -8,-7,-4,-1,0
+                dc.b -8,-7,-3,2,0
+                dc.b -8,-7,-3,2,0
 
         ; Weapon data
 
@@ -235,7 +240,7 @@ wdGrenadeLauncher:
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 25                         ;Bullet time duration
                 dc.b 7                          ;Bullet speed in pixels
-                dc.b SPDTBL_GRENADE             ;Bullet speed table offset
+                dc.b SPDTBL_LAUNCHER            ;Bullet speed table offset
                 dc.b SFX_GRENADELAUNCHER        ;Sound effect
                 dc.b 55                         ;Idle weapon frame (right)
                 dc.b 59                         ;Idle weapon frame (left)

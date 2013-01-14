@@ -470,8 +470,11 @@ UM_NextItem:    lda #$01
                 ldy itemIndex
                 adc invType,y
                 sta invType,y
-                lda #100
+                tax
+                lda itemDefaultMaxCount-1,x
                 sta invCount,y
+                lda #$00
+                sta invMag,y
                 jmp SetPanelRedrawItemAmmo
                 endif
 

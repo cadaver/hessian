@@ -294,8 +294,10 @@ AH_NoBulletFlicker:
                 lda magazineSize
                 bmi AH_PlayerMeleeBonus
                 ldy itemIndex
+                if AMMO_CHEAT=0
                 lda #$01
                 jsr DecreaseAmmo
+                endif
                 lda temp3
                 and #WDB_NOSKILLBONUS
                 bne AH_NoPlayerBonus
