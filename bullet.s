@@ -27,7 +27,9 @@ MSBlt_Cloud:    cmp #$0d
                 sta actSizeH,x
                 sta actSizeU,x
                 sta actSizeD,x
-                dec actHp,x
+                lda actHp,x
+                sbc #$02                        ;C=0, decrease damage by 3
+                sta actHp,x
                 inc actF1,x
 MSBlt_NoAnim:   jmp MoveBullet
 

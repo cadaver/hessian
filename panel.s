@@ -74,6 +74,7 @@ FinishFrame_NoScroll:
         ; Modifies: A,X,Y,loader temp vars,temp vars
 
 UpdatePanel:    lda actHp+ACTI_PLAYER
+                lsr
                 cmp displayedHealth
                 beq UP_HealthDone
                 bcs UP_IncrementHealth
@@ -107,7 +108,7 @@ UP_EmptyCharsLoop:
                 sta screen1+SCROLLROWS*40+41,x
                 inx
 UP_EmptyCharsCmp:
-                cpx #HP_PLAYER/4
+                cpx #HP_PLAYER/8
                 bcc UP_EmptyCharsLoop
 UP_HealthDone:  lda panelUpdateFlags
                 lsr

@@ -1,13 +1,13 @@
-DMG_FISTS       = 2
-DMG_KNIFE       = 3
-DMG_FLAMETHROWER = 3
-DMG_PISTOL      = 4
-DMG_AUTORIFLE   = 4
-DMG_MINIGUN     = 4
-DMG_SHOTGUN     = 9
-DMG_SNIPERRIFLE = 12
-DMG_LAUNCHERGRENADE = 14
-DMG_GRENADE     = 16
+DMG_FISTS       = 3
+DMG_FLAMETHROWER = 5
+DMG_KNIFE       = 6
+DMG_MINIGUN     = 6
+DMG_AUTORIFLE   = 7
+DMG_PISTOL      = 8
+DMG_SHOTGUN     = 16
+DMG_SNIPERRIFLE = 20
+DMG_LAUNCHERGRENADE = 28
+DMG_GRENADE     = 32
 
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
 DMGMOD_NOORGANIC = $80                          ;No organic damage
@@ -123,7 +123,7 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
 wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN                   ;Last aim direction
-                dc.b 12                         ;Attack delay
+                dc.b 11                         ;Attack delay
                 dc.b ACT_SHOTGUNBULLET          ;Bullet actor type
                 dc.b DMG_SHOTGUN                ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
@@ -165,7 +165,7 @@ wdAutoRifle:    dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
 wdSniperRifle:  dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN                   ;Last aim direction
-                dc.b 15                         ;Attack delay
+                dc.b 14                         ;Attack delay
                 dc.b ACT_RIFLEBULLET            ;Bullet actor type
                 dc.b DMG_SNIPERRIFLE            ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
@@ -229,7 +229,7 @@ wdGrenadeLauncher:
                 dc.b WDB_NOSKILLBONUS           ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DIAGONALDOWN           ;Last aim direction
-                dc.b 15                         ;Attack delay
+                dc.b 14                         ;Attack delay
                 dc.b ACT_LAUNCHERGRENADE        ;Bullet actor type
                 dc.b DMG_LAUNCHERGRENADE        ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic

@@ -11,6 +11,9 @@ ACT_GRENADE     = 9
 ACT_EXPLOSION   = 10
 ACT_ENEMY       = 11
 
+HP_PLAYER       = 48
+HP_ENEMY        = 12
+
         ; Actor display data
 
 adMeleeHit      = $0000                         ;Not displayed
@@ -238,9 +241,9 @@ alShotgunBullet:dc.w MoveShotgunBullet          ;Update routine
 alFlame:        dc.w MoveFlame                  ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 6                          ;Horizontal size
-                dc.b 6                          ;Size up
-                dc.b 4                          ;Size down
+                dc.b 5                          ;Horizontal size
+                dc.b 5                          ;Size up
+                dc.b 3                          ;Size down
 
 alLauncherGrenade:
                 dc.w MoveLauncherGrenade        ;Update routine
@@ -267,10 +270,10 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
-                dc.b 8                          ;Initial health
+                dc.b HP_ENEMY                   ;Initial health
                 dc.b 2                          ;Color override
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.b 50                         ;XP from kill
+                dc.b 20                         ;XP from kill
                 dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move caps

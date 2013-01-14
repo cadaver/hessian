@@ -469,15 +469,17 @@ CheckRoute:     ldx #ACTI_FIRSTNPC
                 bmi CR_NoCheck2
                 lda actXH,x
                 sta temp1
-                lda actYL,x                     ;Check 1 block higher if standing on top
-                cmp #$80                        ;of a block
+                lda actMB,x                     ;If actor is grounded, check 1 block higher
+                eor #$01
+                lsr
                 lda actYH,x
                 sbc #$00
                 sta temp2
                 lda actXH,y
                 sta CR_CmpX+1
-                lda actYL,y
-                cmp #$80
+                lda actMB,y                     ;If actor is grounded, check 1 block higher
+                eor #$01
+                lsr
                 lda actYH,y
                 sbc #$00
                 sta CR_CmpY+1

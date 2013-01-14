@@ -5,7 +5,7 @@ ITEM_MAX_YSPEED = 6*8
 ITEM_SPAWN_OFFSET = -16*8
 
 MAX_INVENTORYITEMS = 16
-INITIAL_MAX_WEAPONS = 3
+INITIAL_MAX_WEAPONS = 2
 
 USEITEM_ATTACK_DELAY = 5                        ;Attack delay after using an item
 
@@ -152,6 +152,8 @@ AI_StoreItem:   lda zpSrcLo
                 sta invType,y
                 lda zpSrcHi
                 sta invCount,y
+                lda #$00
+                sta invMag,y
                 lda zpBitsLo                    ;If swapped a weapon, select the new weapon now
                 beq AI_Success
                 sty itemIndex

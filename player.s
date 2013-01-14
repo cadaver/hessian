@@ -36,8 +36,6 @@ INITIAL_GROUNDBRAKE = 6
 INITIAL_JUMPSPEED = 42
 INITIAL_CLIMBSPEED = 84
 
-HP_PLAYER       = 24
-
 LVLOBJSEARCH    = 24
 
         ; Player update routine
@@ -266,6 +264,7 @@ MH_NoRollSave:  sec
                 sbc #DAMAGING_FALL_DISTANCE
                 bcc MH_NoFallDamage
                 beq MH_NoFallDamage
+                asl
                 sta temp8
                 asl
                 adc temp8
@@ -460,10 +459,8 @@ MH_DoAutoTurn:  lda actSX,x
 MH_AutoTurnLeft:sta actD,x
                 tya
                 sta actMoveCtrl,x
-MH_NoAutoTurn:  ldy temp2                       ;If rolling, continue roll animation
-                bne MH_RollAnim
-                bcs MH_GroundAnim
-                lda temp3                       ;Check for increasing fall distance
+MH_NoAutoTurn:  bcs MH_NoIncFall                ;Check for increasing fall distance
+                lda temp3
                 and #AMF_NOFALLDAMAGE
                 bne MH_NoIncFall
                 lda actSY,x
@@ -473,7 +470,11 @@ MH_NoAutoTurn:  ldy temp2                       ;If rolling, continue roll anima
                 sta actFallL,x
                 bcc MH_NoIncFall
                 inc actFall,x
-MH_NoIncFall:   lda actSY,x                     ;Check for grabbing a ladder while
+                clc
+MH_NoIncFall:   ldy temp2                       ;If rolling, continue roll animation
+                bne MH_RollAnim
+                bcs MH_GroundAnim
+                lda actSY,x                     ;Check for grabbing a ladder while
                 bpl MH_GrabLadderOK             ;in midair
                 cmp #-2*8
                 bcc MH_JumpAnim

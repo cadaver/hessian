@@ -115,15 +115,13 @@ AI_XGreater:    cmp itemNPCMinDist-1,y          ;Check that weapon is effective
                 bcs AI_NoAttack2
                 lda temp8                       ;Check whether to attack horizontally, vertically or diagonally
                 beq AI_Horizontal
-                cpy #ITEM_GRENADE               ;Grenade is a special case which does not require exact diagonal distance
-                bne AI_NoGrenade
-AI_Grenade:     lda temp6                       ;No vertical attack with grenade
-                beq AI_NoAttack2
-                bne AI_Diagonal
-AI_NoGrenade:   lda temp6
+                lda temp6
                 beq AI_Vertical
-                cmp temp8
-                bne AI_NoAttack2
+                clc                             ;For diagonal attacks, allow 1 block of error
+                adc #$02
+                sbc temp8                       ;C=0, subtract one more
+                cmp #$03
+                bcs AI_NoAttack2
 AI_Diagonal:    lda temp5
                 bmi AI_DiagonalLeft
 AI_DiagonalRight:
@@ -138,10 +136,24 @@ AI_DiagonalLeft:lda #JOY_FIRE+JOY_LEFT+JOY_DOWN
                 lda #JOY_FIRE+JOY_LEFT+JOY_UP
                 bne AI_AttackDirOK
 AI_NoAttack2:   jmp AI_NoAttack
-AI_Vertical:    lda #JOY_FIRE+JOY_DOWN
-                ldy temp7
-                bpl AI_AttackDirOK
+AI_Vertical:    ldy actWpn,x
+                lda wpnTblLo-1,y
+                sta wpnLo
+                lda wpnTblHi-1,y
+                sta wpnHi
+                lda temp7
+                bpl AI_VerticalDown
+AI_VerticalUp:  ldy #WD_MINAIM                  ;Check that weapon can actually be fired up
+                lda (wpnLo),y
+                cmp #AIM_UP
+                bne AI_NoAttack2
                 lda #JOY_FIRE+JOY_UP
+                bne AI_AttackDirOK
+AI_VerticalDown:ldy #WD_MAXAIM                  ;Check that weapon can actually be fired down
+                lda (wpnLo),y
+                cmp #AIM_DOWN
+                bne AI_NoAttack2
+                lda #JOY_FIRE+JOY_DOWN
                 bne AI_AttackDirOK
 AI_Horizontal:  lda #JOY_FIRE+JOY_RIGHT
                 ldy temp5
