@@ -2,14 +2,15 @@ ACT_NONE        = 0
 ACT_PLAYER      = 1
 ACT_ITEM        = 2
 ACT_MELEEHIT    = 3
-ACT_BULLET      = 4
-ACT_SHOTGUNBULLET = 5
-ACT_RIFLEBULLET = 6
-ACT_FLAME       = 7
-ACT_LAUNCHERGRENADE = 8
-ACT_GRENADE     = 9
-ACT_EXPLOSION   = 10
-ACT_ENEMY       = 11
+ACT_LARGEMELEEHIT = 4
+ACT_BULLET      = 5
+ACT_SHOTGUNBULLET = 6
+ACT_RIFLEBULLET = 7
+ACT_FLAME       = 8
+ACT_LAUNCHERGRENADE = 9
+ACT_GRENADE     = 10
+ACT_EXPLOSION   = 11
+ACT_ENEMY       = 12
 
 HP_PLAYER       = 48
 HP_ENEMY        = 12
@@ -20,6 +21,7 @@ adMeleeHit      = $0000                         ;Not displayed
 
 actDispTblLo:   dc.b <adPlayer
                 dc.b <adItem
+                dc.b <adMeleeHit
                 dc.b <adMeleeHit
                 dc.b <adBullet
                 dc.b <adShotgunBullet
@@ -32,6 +34,7 @@ actDispTblLo:   dc.b <adPlayer
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
+                dc.b >adMeleeHit
                 dc.b >adMeleeHit
                 dc.b >adBullet
                 dc.b >adShotgunBullet
@@ -162,6 +165,7 @@ plrRechargeRateTbl:
 actLogicTblLo:  dc.b <alPlayer
                 dc.b <alItem
                 dc.b <alMeleeHit
+                dc.b <alLargeMeleeHit
                 dc.b <alBullet
                 dc.b <alShotgunBullet
                 dc.b <alBullet
@@ -174,6 +178,7 @@ actLogicTblLo:  dc.b <alPlayer
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
                 dc.b >alMeleeHit
+                dc.b >alLargeMeleeHit
                 dc.b >alBullet
                 dc.b >alShotgunBullet
                 dc.b >alBullet
@@ -221,6 +226,13 @@ alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
+                dc.b 4                          ;Size up
+                dc.b 4                          ;Size down
+
+alLargeMeleeHit:dc.w MoveMeleeHit               ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 8                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 

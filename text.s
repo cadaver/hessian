@@ -2,6 +2,7 @@
 
 itemNameLo:     dc.b <txtFists
                 dc.b <txtKnife
+                dc.b <txtBat
                 dc.b <txtPistol
                 dc.b <txtShotgun
                 dc.b <txtAutoRifle
@@ -14,6 +15,7 @@ itemNameLo:     dc.b <txtFists
 
 itemNameHi:     dc.b >txtFists
                 dc.b >txtKnife
+                dc.b >txtBat
                 dc.b >txtPistol
                 dc.b >txtShotgun
                 dc.b >txtAutoRifle
@@ -26,6 +28,7 @@ itemNameHi:     dc.b >txtFists
 
 txtFists:       dc.b "FISTS",0
 txtKnife:       dc.b "KNIFE",0
+txtBat:         dc.b "BAT",0
 txtPistol:      dc.b "PISTOL",0
 txtShotgun:     dc.b "SHOTGUN",0
 txtAutoRifle:   dc.b "AUTO RIFLE",0

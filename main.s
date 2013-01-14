@@ -4,7 +4,7 @@ REDUCE_CONTROL_LATENCY = 1
 OPTIMIZE_SPRITEIRQS = 1
 
 GODMODE_CHEAT = 0
-ITEM_CHEAT = 0
+ITEM_CHEAT = 1
 AMMO_CHEAT = 0
 
         ; Memory configuration & loader symbols
@@ -31,7 +31,7 @@ randomAreaStart:
                 include physics.s
                 include weapon.s
                 include bullet.s
-                include player.s                
+                include player.s
                 include item.s
                 include panel.s
                 include level.s

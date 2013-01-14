@@ -1,7 +1,8 @@
-DMG_FISTS       = 3
+DMG_FISTS       = 4
 DMG_FLAMETHROWER = 5
-DMG_KNIFE       = 6
 DMG_MINIGUN     = 6
+DMG_KNIFE       = 6
+DMG_BAT         = 7
 DMG_AUTORIFLE   = 7
 DMG_PISTOL      = 8
 DMG_SHOTGUN     = 16
@@ -12,6 +13,7 @@ DMG_GRENADE     = 32
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
 DMGMOD_NOORGANIC = $80                          ;No organic damage
 DMGMOD_NONONORGANIC = $08                       ;No nonorganic damage
+DMGMOD_NONORGANIC75 = $68                       ;Nonorganic receives 75% of damage
 
 SPDTBL_NORMAL   = 0
 SPDTBL_GRENADE  = 10
@@ -54,6 +56,7 @@ bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
 
 wpnTblLo:       dc.b <wdFists
                 dc.b <wdKnife
+                dc.b <wdBat
                 dc.b <wdPistol
                 dc.b <wdShotgun
                 dc.b <wdAutoRifle
@@ -65,6 +68,7 @@ wpnTblLo:       dc.b <wdFists
 
 wpnTblHi:       dc.b >wdFists
                 dc.b >wdKnife
+                dc.b >wdBat
                 dc.b >wdPistol
                 dc.b >wdShotgun
                 dc.b >wdAutoRifle
@@ -92,7 +96,7 @@ wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b 7                          ;Attack delay
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b DMG_KNIFE                  ;Bullet damage
-                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b DMGMOD_NONORGANIC75        ;Damage modifier nonorganic/organic
                 dc.b 1                          ;Bullet time duration
                 dc.b 1                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
@@ -103,6 +107,24 @@ wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b 10                         ;Prepare weapon frame (left)
                 dc.b 9,9,9,9,9                  ;Attack weapon frames (right)
                 dc.b 10,10,10                   ;Attack weapon frames (left)
+
+wdBat:          dc.b WDB_MELEE                  ;Weapon bits
+                dc.b AIM_DIAGONALUP             ;First aim direction
+                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b 9                          ;Attack delay
+                dc.b ACT_LARGEMELEEHIT          ;Bullet actor type
+                dc.b DMG_BAT                    ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b 1                          ;Bullet time duration
+                dc.b 1                          ;Bullet speed in pixels
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
+                dc.b SFX_MELEE                  ;Sound effect
+                dc.b 61                         ;Idle weapon frame (right)
+                dc.b 65                         ;Idle weapon frame (left)
+                dc.b 66                         ;Prepare weapon frame (right)
+                dc.b 62                         ;Prepare weapon frame (left)
+                dc.b 62,62,63,64,64             ;Attack weapon frames (right)
+                dc.b 66,66,67,68                ;Attack weapon frames (left)
 
 wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
@@ -215,7 +237,7 @@ wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOS
                 dc.b 2                          ;Attack delay
                 dc.b ACT_FLAME                  ;Bullet actor type
                 dc.b DMG_FLAMETHROWER           ;Bullet damage
-                dc.b $68                        ;Damage modifier nonorganic/organic
+                dc.b DMGMOD_NONORGANIC75        ;Damage modifier nonorganic/organic
                 dc.b 15                         ;Bullet time duration
                 dc.b 8                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
