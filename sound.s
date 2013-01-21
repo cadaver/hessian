@@ -512,6 +512,9 @@ Play_FreqSub:   lda ntChnFreqLo,x
 
           ;Sound effect hard restart
           
+Play_SfxHRFirstWave:
+                lda #NT_FIRSTWAVE
+                sta ntChnWave,x
 Play_SfxHR:     lda #$00
                 sta $d405,x
                 sta $d406,x
@@ -543,7 +546,8 @@ Play_SfxExec:   lda ntChnSfxLo,x
                 sta ntChnNewNote,x
                 sta ntChnGate,x
                 inc ntChnSfx,x
-                cpy #$03
+                cpy #$02
+                beq Play_SfxHRFirstWave
                 bcc Play_SfxHR
 Play_SfxMain:   lda (ntTemp1),y
                 beq Play_SfxEnd

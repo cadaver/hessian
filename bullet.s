@@ -210,6 +210,7 @@ MRckt_NoSmoke:  dec actTime,x
                 jsr MoveProjectile
                 and #CI_OBSTACLE
                 bne ExplodeGrenade
+MRckt_CheckEnemyCollisions:
                 sec                             ;Explode if touches enemy
                 jsr CheckBulletCollisions
                 bcs ExplodeGrenade
@@ -222,9 +223,6 @@ MRckt_NoSmoke:  dec actTime,x
         ; Modifies: A,Y
 
 MoveLauncherGrenade:
-                lda actMB,x
-                lsr
-                bcs MLG_NoAnimation
                 lda #$02
                 jsr AnimationDelay
                 bcc MLG_NoAnimation
@@ -235,48 +233,16 @@ MoveLauncherGrenade:
                 lda #$00
 MLG_AnimNotOver:sta actF1,x
 MLG_NoAnimation:
-                sec                             ;Explode if touches enemy
-                jsr CheckBulletCollisions
-                bcs ExplodeGrenade
-
-        ; Grenade update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MoveGrenade:    dec actTime,x
+                dec actTime,x
                 bmi ExplodeGrenade
-                lda #$00                        ;Grenade never stays grounded
-                sta actMB,x
-                lda actSY,x                     ;Store original Y-speed for bounce
-                sta temp1
                 lda #-1                         ;Ceiling check offset
                 sta temp4
                 lda #GRENADE_ACCEL
                 ldy #GRENADE_MAX_YSPEED
                 jsr MoveWithGravity
-                lsr
-                bcc MGrn_NoBounce
-                lda temp1                       ;Bounce: negate and halve velocity
-                jsr Negate8Asr8
-                sta actSY,x
-                lda #8                          ;Brake X-speed with each bounce
-                jsr BrakeActorX
-MGrn_NoBounce:  lda actMB,x
-                and #MB_HITWALL|MB_HITCEILING
-                cmp #MB_HITWALL
-                bne MGrn_NoHitWall
-                lda actSX,x
-                jsr Negate8Asr8
-                jmp MGrn_StoreNewXSpeed
-MGrn_NoHitWall: and #MB_HITCEILING              ;Halve X-speed when hit ceiling
-                beq MGrn_Done
-                lda actSX,x
-                jsr Asr8
-MGrn_StoreNewXSpeed:
-                sta actSX,x
-MGrn_Done:      rts
+                tay
+                beq MRckt_CheckEnemyCollisions
+                bne ExplodeGrenade              ;Explode on any wall/ground contact
 
         ; Explode grenade and do radius damage
         ;
@@ -316,6 +282,45 @@ ExplodeActor:   lda #$00
                 sta actT,x
                 lda #SFX_EXPLOSION
                 jmp PlaySfx
+
+        ; Grenade update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveGrenade:    dec actTime,x
+                bmi ExplodeGrenade
+                lda #$00                        ;Grenade never stays grounded
+                sta actMB,x
+                lda actSY,x                     ;Store original Y-speed for bounce
+                sta temp1
+                lda #-1                         ;Ceiling check offset
+                sta temp4
+                lda #GRENADE_ACCEL
+                ldy #GRENADE_MAX_YSPEED
+                jsr MoveWithGravity
+                lsr
+                bcc MGrn_NoBounce
+                lda temp1                       ;Bounce: negate and halve velocity
+                jsr Negate8Asr8
+                sta actSY,x
+                lda #8                          ;Brake X-speed with each bounce
+                jsr BrakeActorX
+MGrn_NoBounce:  lda actMB,x
+                and #MB_HITWALL|MB_HITCEILING
+                cmp #MB_HITWALL
+                bne MGrn_NoHitWall
+                lda actSX,x
+                jsr Negate8Asr8
+                jmp MGrn_StoreNewXSpeed
+MGrn_NoHitWall: and #MB_HITCEILING              ;Halve X-speed when hit ceiling
+                beq MGrn_Done
+                lda actSX,x
+                jsr Asr8
+MGrn_StoreNewXSpeed:
+                sta actSX,x
+MGrn_Done:      rts
 
         ; Give radius damage to both heroes & villains. Prior to calling, expand the
         ; collision size of the source actor as necessary

@@ -232,7 +232,7 @@ wdSniperRifle:  dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b 36,37,38,39,40             ;Attack weapon frames (left)
                 dc.b 35                         ;Reload delay
                 dc.b SFX_RELOAD                 ;Reload sound
-                dc.b SFX_COCKWEAPON             ;Reload finished sound
+                dc.b SFX_COCKSHOTGUN            ;Reload finished sound
 
 wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
@@ -274,7 +274,7 @@ wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOS
                 dc.b 47,47,48,49,49             ;Attack weapon frames (right)
                 dc.b 50,50,51,52,52             ;Attack weapon frames (left)
                 dc.b 30                         ;Reload delay
-                dc.b SFX_RELOAD                 ;Reload sound
+                dc.b SFX_COCKWEAPON             ;Reload sound
                 dc.b SFX_RELOADFLAMER           ;Reload finished sound
                 dc.b FR_WALK+2                  ;Lock animation upper body frame
 
@@ -319,7 +319,7 @@ wdBazooka:      dc.b WDB_BULLETDIRFRAME|WDB_NOSKILLBONUS|WDB_LOCKANIMATION ;Weap
                 dc.b 81,82,83,84,84             ;Attack weapon frames (left)
                 dc.b 20                         ;Reload delay
                 dc.b SFX_COCKSHOTGUN            ;Reload sound
-                dc.b SFX_RELOADFLAMER           ;Reload finished sound
+                dc.b SFX_RELOADBAZOOKA          ;Reload finished sound
                 dc.b FR_PREPARE+1               ;Lock animation upper body frame
 
 wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits

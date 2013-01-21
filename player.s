@@ -794,7 +794,6 @@ HumanDeath:     lda #SFX_DEATH
 HD_NoItem:      ldy temp4                      ;Check if has a damage source
                 bmi HD_NoDamageSource
                 lda actHp,y
-                asl
                 sta temp8
                 lda actSX,y                    ;Check if final attack came from right or left
                 bmi HD_LeftImpulse

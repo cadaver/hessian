@@ -1,18 +1,18 @@
 ACT_NONE        = 0
 ACT_PLAYER      = 1
-ACT_ITEM        = 2
-ACT_MELEEHIT    = 3
-ACT_LARGEMELEEHIT = 4
-ACT_BULLET      = 5
-ACT_SHOTGUNBULLET = 6
-ACT_RIFLEBULLET = 7
-ACT_FLAME       = 8
-ACT_LAUNCHERGRENADE = 9
-ACT_GRENADE     = 10
-ACT_ROCKET      = 11
-ACT_EXPLOSION   = 12
-ACT_SMOKETRAIL  = 13
-ACT_ENEMY       = 14
+ACT_TESTENEMY   = 2
+ACT_ITEM        = 3
+ACT_MELEEHIT    = 4
+ACT_LARGEMELEEHIT = 5
+ACT_BULLET      = 6
+ACT_SHOTGUNBULLET = 7
+ACT_RIFLEBULLET = 8
+ACT_FLAME       = 9
+ACT_LAUNCHERGRENADE = 10
+ACT_GRENADE     = 11
+ACT_ROCKET      = 12
+ACT_EXPLOSION   = 13
+ACT_SMOKETRAIL  = 14
 
 HP_PLAYER       = 48
 HP_ENEMY        = 12
@@ -23,6 +23,7 @@ adMeleeHit      = $0000                         ;Invisible
 adLargeMeleeHit = $0000
 
 actDispTblLo:   dc.b <adPlayer
+                dc.b <adPlayer
                 dc.b <adItem
                 dc.b <adMeleeHit
                 dc.b <adLargeMeleeHit
@@ -35,9 +36,9 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adRocket
                 dc.b <adExplosion
                 dc.b <adSmokeTrail
-                dc.b <adPlayer
 
 actDispTblHi:   dc.b >adPlayer
+                dc.b >adPlayer
                 dc.b >adItem
                 dc.b >adMeleeHit
                 dc.b >adLargeMeleeHit
@@ -50,7 +51,6 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adRocket
                 dc.b >adExplosion
                 dc.b >adSmokeTrail
-                dc.b >adPlayer
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_PLAYER                   ;Lower part spritefile number
@@ -183,6 +183,7 @@ plrRechargeRateTbl:
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
+                dc.b <alEnemy
                 dc.b <alItem
                 dc.b <alMeleeHit
                 dc.b <alLargeMeleeHit
@@ -195,9 +196,9 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alRocket
                 dc.b <alExplosion
                 dc.b <alSmokeTrail
-                dc.b <alEnemy
 
 actLogicTblHi:  dc.b >alPlayer
+                dc.b >alEnemy
                 dc.b >alItem
                 dc.b >alMeleeHit
                 dc.b >alLargeMeleeHit
@@ -210,7 +211,6 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alRocket
                 dc.b >alExplosion
                 dc.b >alSmokeTrail
-                dc.b >alEnemy
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
