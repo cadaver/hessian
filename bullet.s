@@ -78,8 +78,8 @@ MoveFlame:      lda #3
         ; Modifies: A,Y
 
 MoveMeleeHit:   dec actTime,x
-                bmi MBlt_Remove
-                jmp CheckBulletCollisionsApplyDamage
+                bpl CheckBulletCollisionsApplyDamage
+MBlt_Remove:    jmp RemoveActor
 
         ; Bullet update routine
         ;
@@ -87,7 +87,6 @@ MoveMeleeHit:   dec actTime,x
         ; Returns: -
         ; Modifies: A,Y
 
-MBlt_Remove:    jmp RemoveActor
 MoveBullet:     dec actTime,x
                 bmi MBlt_Remove
                 jsr MoveProjectile
