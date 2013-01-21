@@ -178,14 +178,7 @@ MP_PlayerMove:  jsr MoveHuman
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MH_DeathGrounded:
-                lda #DEATH_BRAKING
-                jsr BrakeActorX
-                lda #FR_DIE+2
-MH_DeathSetFrame:
-                sta actF1,x
-                sta actF2,x
-                bcc MH_DeathDone
+MH_DeathRemove: jmp RemoveActor
 MH_DeathCheckRemove:
                 dec actTime,x
                 bmi MH_DeathRemove
@@ -195,8 +188,23 @@ MH_DeathCheckRemove:
                 jsr GetFlickerColorOverride
                 ora actC,x
                 sta actC,x
+                rts
+MH_DeathGrounded:
+                lda #DEATH_BRAKING
+                jsr BrakeActorX
+                lda actF1,x
+                cmp #FR_DIE+2
+                bcs MH_DeathCheckRemove
+                lda #1
+                jsr AnimationDelay
+                bcc MH_DeathDone
+                lda actF1,x
+                adc #$00
+MH_DeathSetFrame:
+                sta actF1,x
+                sta actF2,x
 MH_DeathDone:   rts
-MH_DeathRemove: jmp RemoveActor
+
 MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 sta temp4
                 lda #DEATH_ACCEL

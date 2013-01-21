@@ -206,7 +206,7 @@ MoveRocket:     lda actTime,x
                 jsr GetFlickerColorOverride
                 sta actC,y
 MRckt_NoSmoke:  dec actTime,x
-                bmi ExplodeGrenade
+                bmi MRckt_Remove
                 jsr MoveProjectile
                 and #CI_OBSTACLE
                 bne ExplodeGrenade
@@ -215,6 +215,7 @@ MRckt_CheckEnemyCollisions:
                 jsr CheckBulletCollisions
                 bcs ExplodeGrenade
                 rts
+MRckt_Remove:   jmp RemoveActor
 
         ; Grenade launcher grenade update routine
         ;
