@@ -202,11 +202,7 @@ OptionsSelect:  ldx optionsMenuChoice
                 sta musicMode,x
                 lda #SFX_SELECT
                 jsr PlaySfx
-                txa
-                bne OptionsNoSongReset
-                lda PS_CurrentSong+1            ;When music mode toggled, forcibly
-                jsr ReplaySong                  ;restart the last played song
-OptionsNoSongReset:
+                jsr RestartSong
                 jmp RefreshOptions
 OptionsGoBack:  lda #SFX_SELECT
                 jsr PlaySfx

@@ -17,6 +17,8 @@ NT_FIRSTWAVE        = $09
 
 MUSIC_SILENCE       = $00
 MUSIC_TITLE         = $01
+                
+FIRST_INGAME_SONG   = $01
 
         ; Play a song. Load if necessary. Do not reinit if already playing
         ;
@@ -24,14 +26,18 @@ MUSIC_TITLE         = $01
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-PlaySong:
-PS_CurrentSong: cmp #$ff
-                beq PS_Done
-ReplaySong:     sta PS_CurrentSong+1
+RestartSong:    lda #$00
+PlaySong:       sta RestartSong+1
+                cmp #FIRST_INGAME_SONG          ;If title/intro music, always play even if music off
+                bcc PS_MusicOn
                 ldx musicMode                   ;If music off, always select song 0 of file 0 (global silence)
                 bne PS_MusicOn
                 txa
-PS_MusicOn:     pha
+PS_MusicOn:     sta PSfx_MusicCheck+1
+PS_CurrentSong: cmp #$ff
+                beq PS_Done
+                sta PS_CurrentSong+1
+                pha
                 lsr
                 lsr
 PS_LoadedMusic: cmp #$ff                        ;Check if music already loaded
@@ -109,7 +115,7 @@ PlaySfx:        stx zpSrcLo
                 sta zpBitsLo
                 ldx sfxTblHi,y
 PSfx_NextChn:   lda #0                          ;If not playing music, cycle all channels
-                ldy musicMode                   ;else use first channel only
+PSfx_MusicCheck:ldy #$00                        ;else use first channel only
                 bne PSfx_HasMusic
                 clc
                 adc #7
