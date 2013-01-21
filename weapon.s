@@ -25,6 +25,7 @@ WD_ATTACKFRLEFT = 20
 WD_RELOADDELAY  = 25
 WD_RELOADSFX    = 26
 WD_RELOADDONESFX = 27
+WD_LOCKANIMFRAME = 28
 
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
@@ -48,7 +49,7 @@ AH_NoAttack:    lda actAttackD,x
                 beq AH_SetIdleWeaponFrame
                 bpl AH_DecrementDelay      ;Break failed or incomplete melee attack
                 lda #$01
-                sta actAttackD,x    
+                sta actAttackD,x
 AH_DecrementDelay:
                 dec actAttackD,x
 AH_SetIdleWeaponFrame:
@@ -59,7 +60,8 @@ AH_SetIdleWeaponFrame:
                 lda temp3                   ;Check for animation lock (for weapons with
                 and #WDB_LOCKANIMATION      ;backpack)
                 beq AH_NoLockAnimation
-                lda #FR_WALK+2
+                ldy #WD_LOCKANIMFRAME
+                lda (wpnLo),y
                 sta actF2,x
 AH_NoLockAnimation:
                 ldy #WD_IDLEFR
@@ -79,6 +81,8 @@ AH_NoWeaponFrame:
                 rts
 
 AttackHuman:    ldy actWpn,x
+                beq AH_NoWeaponFrame
+                lda actHp+ACTI_PLAYER           ;No attacks if dead
                 beq AH_NoWeaponFrame
                 lda wpnTblLo-1,y
                 sta wpnLo
@@ -115,7 +119,7 @@ AH_RedrawAmmoNoAttack:
 AH_NotReloading:bne AH_AmmoCheckOK
 AH_EmptyMagazine:
                 lda invCount,y                  ;Initiate reloading if mag empty and reserve left
-                beq AH_NoAttack2
+                beq AH_FirearmEmpty
                 lda actAttackD+ACTI_PLAYER      ;Do not start reloading before attack delay
                 bne AH_AmmoCheckOK              ;zero
                 lda #$ff
@@ -131,6 +135,8 @@ AH_ReloadDelayBonus:
                 jsr PlaySfx
                 jmp AH_RedrawAmmoNoAttack
 AH_NoAttack2:   jmp AH_NoAttack
+AH_FirearmEmpty:lda #$01                        ;If no bullets, set a constant attack delay to
+                sta actAttackD+ACTI_PLAYER      ;prevent firing but allow brandishing empty weapon
 AH_AmmoCheckOK: lda menuMode                    ;If player is in any menu mode, do not attack
                 bne AH_NoAttack2
 AH_NotPlayer:   lda actPrevCtrl,x               ;Require fire pressed also in previous controls

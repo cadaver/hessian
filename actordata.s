@@ -9,40 +9,47 @@ ACT_RIFLEBULLET = 7
 ACT_FLAME       = 8
 ACT_LAUNCHERGRENADE = 9
 ACT_GRENADE     = 10
-ACT_EXPLOSION   = 11
-ACT_ENEMY       = 12
+ACT_ROCKET      = 11
+ACT_EXPLOSION   = 12
+ACT_SMOKETRAIL  = 13
+ACT_ENEMY       = 14
 
 HP_PLAYER       = 48
 HP_ENEMY        = 12
 
         ; Actor display data
 
-adMeleeHit      = $0000                         ;Not displayed
+adMeleeHit      = $0000                         ;Invisible
+adLargeMeleeHit = $0000
 
 actDispTblLo:   dc.b <adPlayer
                 dc.b <adItem
                 dc.b <adMeleeHit
-                dc.b <adMeleeHit
+                dc.b <adLargeMeleeHit
                 dc.b <adBullet
                 dc.b <adShotgunBullet
                 dc.b <adRifleBullet
                 dc.b <adFlame
                 dc.b <adLauncherGrenade
                 dc.b <adGrenade
+                dc.b <adRocket
                 dc.b <adExplosion
+                dc.b <adSmokeTrail
                 dc.b <adPlayer
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
                 dc.b >adMeleeHit
-                dc.b >adMeleeHit
+                dc.b >adLargeMeleeHit
                 dc.b >adBullet
                 dc.b >adShotgunBullet
                 dc.b >adRifleBullet
                 dc.b >adFlame
                 dc.b >adLauncherGrenade
                 dc.b >adGrenade
+                dc.b >adRocket
                 dc.b >adExplosion
+                dc.b >adSmokeTrail
                 dc.b >adPlayer
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
@@ -59,7 +66,8 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_ITEM                     ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
-itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9      ;Frametable (first all frames of sprite1, then sprite2)
+itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 11,12,13
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -100,18 +108,30 @@ adLauncherGrenade:
                 dc.b 3                          ;Number of frames
                 dc.b 34,35,36                   ;Frametable (first all frames of sprite1, then sprite2)
 
-
 adGrenade:      dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 1                          ;Number of frames
                 dc.b 17                         ;Frametable (first all frames of sprite1, then sprite2)
 
+adRocket:       dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 10                         ;Number of frames
+                dc.b 37,38,39,40,41             ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 37,44,43,42,41
+
 adExplosion:    dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 5                          ;Number of frames
                 dc.b 0,1,2,3,4                  ;Frametable (first all frames of sprite1, then sprite2)
+
+adSmokeTrail:   dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 2                          ;Number of frames
+                dc.b 45,46                      ;Frametable (first all frames of sprite1, then sprite2)
 
         ; Human actor upper part framenumbers
 
@@ -172,7 +192,9 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alFlame
                 dc.b <alLauncherGrenade
                 dc.b <alGrenade
+                dc.b <alRocket
                 dc.b <alExplosion
+                dc.b <alSmokeTrail
                 dc.b <alEnemy
 
 actLogicTblHi:  dc.b >alPlayer
@@ -185,7 +207,9 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alFlame
                 dc.b >alLauncherGrenade
                 dc.b >alGrenade
+                dc.b >alRocket
                 dc.b >alExplosion
+                dc.b >alSmokeTrail
                 dc.b >alEnemy
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
@@ -232,14 +256,14 @@ alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
 alLargeMeleeHit:dc.w MoveMeleeHit               ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 8                          ;Horizontal size
+                dc.b 6                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 
 alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 4                          ;Horizontal size
+                dc.b 2                          ;Horizontal size
                 dc.b 2                          ;Size up
                 dc.b 2                          ;Size down
 
@@ -272,7 +296,18 @@ alGrenade:      dc.w MoveGrenade                ;Update routine
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 
+alRocket:       dc.w MoveRocket                 ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 4                          ;Horizontal size
+                dc.b 4                          ;Size up
+                dc.b 4                          ;Size down
+
 alExplosion:    dc.w MoveExplosion              ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+
+alSmokeTrail:   dc.w MoveSmokeTrail             ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 

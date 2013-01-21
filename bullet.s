@@ -1,4 +1,4 @@
-GRENADE_DMG_RADIUS = 48
+GRENADE_DMG_RADIUS = 32
 GRENADE_MAX_YSPEED = 6*8
 GRENADE_ACCEL   = 4
 
@@ -158,44 +158,15 @@ CBC_GetNextHero:ldy heroList
                 bcc CBC_GetNextHero
                 bcs CBC_HasCollision
 
-        ; Explode grenade and do radius damage
+        ; Smoketrail update routine
         ;
         ; Parameters: X actor index
         ; Returns: -
-        ; Modifies: A
+        ; Modifies: A,Y
 
-ExplodeGrenade: lda #2                          ;If there's ground (obstacle) below the grenade,
-                jsr GetCharInfoOffset           ;reduce blast radius in down direction, otherwise
-                lsr                             ;it is equal size
-                lsr
-                lda #GRENADE_DMG_RADIUS
-                bcc EGrn_FullDamageBelow
-                lsr
-                lsr
-EGrn_FullDamageBelow:
-                sta actSizeD,x
-                lda #GRENADE_DMG_RADIUS         ;Expand grenade collision size for radius damage
-                sta actSizeH,x
-                sta actSizeU,x
-                lda #$00                        ;Clear the X-speed so that possible death impulse
-                sta actSX,x                     ;only depends on enemy's relative location to the
-                lda actHp,x                     ;grenade
-                jsr RadiusDamage
-
-        ; Turn an actor into an explosion
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A
-
-ExplodeActor:   lda #$00
-                sta actF1,x
-                sta actFd,x
-                sta actC,x                      ;Remove flashing
-                lda #ACT_EXPLOSION
-                sta actT,x
-                lda #SFX_EXPLOSION
-                jmp PlaySfx
+MoveSmokeTrail: lda #1
+                ldy #2
+                bne AnimateAndRemove
 
         ; Explosion update routine
         ;
@@ -204,15 +175,46 @@ ExplodeActor:   lda #$00
         ; Modifies: A,Y
 
 MoveExplosion:  lda #1
+                ldy #5
+AnimateAndRemove:
+                sty temp8
                 jsr AnimationDelay
                 bcc MExpl_NoAnimation
                 inc actF1,x
                 lda actF1,x
-                cmp #5
-                bcc MExpl_NoRemove
+                cmp temp8
+                bne MExpl_NoRemove
                 jmp RemoveActor
 MExpl_NoAnimation:
 MExpl_NoRemove: rts
+
+        ; Rocket update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveRocket:     lda actTime,x
+                lsr
+                bcc MRckt_NoSmoke
+                lda #ACTI_FIRSTEFFECT
+                ldy #ACTI_LASTEFFECT
+                jsr GetFreeActor
+                bcc MRckt_NoSmoke
+                lda #ACT_SMOKETRAIL
+                jsr SpawnActor
+                tya
+                jsr GetFlickerColorOverride
+                sta actC,y
+MRckt_NoSmoke:  dec actTime,x
+                bmi ExplodeGrenade
+                jsr MoveProjectile
+                and #CI_OBSTACLE
+                bne ExplodeGrenade
+                sec                             ;Explode if touches enemy
+                jsr CheckBulletCollisions
+                bcs ExplodeGrenade
+                rts
 
         ; Grenade launcher grenade update routine
         ;
@@ -277,7 +279,44 @@ MGrn_StoreNewXSpeed:
                 sta actSX,x
 MGrn_Done:      rts
 
+        ; Explode grenade and do radius damage
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A
 
+ExplodeGrenade: lda #2                          ;If there's ground (obstacle) below the grenade,
+                jsr GetCharInfoOffset           ;reduce blast radius in down direction, otherwise
+                lsr                             ;it is equal size
+                lsr
+                lda #GRENADE_DMG_RADIUS
+                bcc EGrn_FullDamageBelow
+                lsr
+                lsr
+EGrn_FullDamageBelow:
+                sta actSizeD,x
+                lda #GRENADE_DMG_RADIUS         ;Expand grenade collision size for radius damage
+                sta actSizeH,x
+                sta actSizeU,x
+                lda #$00                        ;Clear the X-speed so that possible death impulse
+                sta actSX,x                     ;only depends on enemy's relative location to the
+                lda actHp,x                     ;grenade
+                jsr RadiusDamage
+
+        ; Turn an actor into an explosion
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A
+
+ExplodeActor:   lda #$00
+                sta actF1,x
+                sta actFd,x
+                sta actC,x                      ;Remove flashing
+                lda #ACT_EXPLOSION
+                sta actT,x
+                lda #SFX_EXPLOSION
+                jmp PlaySfx
 
         ; Give radius damage to both heroes & villains. Prior to calling, expand the
         ; collision size of the source actor as necessary
@@ -306,5 +345,6 @@ RD_Damage:      lda #$00
                 ldy tgtActIndex
 RD_Next:        dey
                 bpl RD_Loop
-                rts
+MST_AnimDone:   rts
+
 

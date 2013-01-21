@@ -2,6 +2,7 @@
 
 itemNameLo:     dc.b <txtFists
                 dc.b <txtKnife
+                dc.b <txtNightstick
                 dc.b <txtBat
                 dc.b <txtPistol
                 dc.b <txtShotgun
@@ -10,11 +11,13 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtMinigun
                 dc.b <txtFlameThrower
                 dc.b <txtGrenadeLauncher
+                dc.b <txtBazooka
                 dc.b <txtGrenade
                 dc.b <txtFirstAidKit
 
 itemNameHi:     dc.b >txtFists
                 dc.b >txtKnife
+                dc.b >txtNightstick
                 dc.b >txtBat
                 dc.b >txtPistol
                 dc.b >txtShotgun
@@ -23,11 +26,14 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtMinigun
                 dc.b >txtFlameThrower
                 dc.b >txtGrenadeLauncher
+                dc.b >txtBazooka
                 dc.b >txtGrenade
                 dc.b >txtFirstAidKit
 
+
 txtFists:       dc.b "FISTS",0
 txtKnife:       dc.b "KNIFE",0
+txtNightstick:  dc.b "NIGHTSTICK",0
 txtBat:         dc.b "BAT",0
 txtPistol:      dc.b "PISTOL",0
 txtShotgun:     dc.b "SHOTGUN",0
@@ -36,6 +42,7 @@ txtSniperRifle: dc.b "SNIPER RIFLE",0
 txtMinigun:     dc.b "MINIGUN",0
 txtFlameThrower:dc.b "FLAMETHROWER",0
 txtGrenadeLauncher:dc.b "GRENADE LAUNCHER",0
+txtBazooka:     dc.b "BAZOOKA",0
 txtGrenade:     dc.b "GRENADES",0
 txtFirstAidKit: dc.b "MEDKIT",0
 

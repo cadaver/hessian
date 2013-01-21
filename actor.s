@@ -4,14 +4,14 @@ MAX_ACTY        = 9
 ACTI_PLAYER     = 0
 ACTI_FIRSTNPC   = 1
 ACTI_LASTNPC    = 6
-ACTI_FIRSTPLRBULLET = 7
-ACTI_LASTPLRBULLET = 11
-ACTI_FIRSTNPCBULLET = 12
-ACTI_LASTNPCBULLET = 16
-ACTI_FIRSTITEM  = 17
-ACTI_LASTITEM   = 21
-ACTI_FIRSTEFFECT = 22
-ACTI_LASTEFFECT = 23
+ACTI_FIRSTEFFECT = 7
+ACTI_LASTEFFECT = 9
+ACTI_FIRSTPLRBULLET = 10
+ACTI_LASTPLRBULLET = 14
+ACTI_FIRSTNPCBULLET = 15
+ACTI_LASTNPCBULLET = 19
+ACTI_FIRSTITEM  = 20
+ACTI_LASTITEM   = 24
 
 AD_NUMSPRITES   = 0
 AD_SPRFILE      = 1
@@ -1413,6 +1413,27 @@ GFA_Found:      lda #$00                        ;Reset animation & speed when fr
                 sta actAITarget,y               ;Start with no target
                 sec
 GFA_NotComplex: rts
+
+        ; Spawn an actor without offset
+        ;
+        ; Parameters: A actor type, X creating actor, Y destination actor index
+        ; Returns: -
+        ; Modifies: A
+
+SpawnActor:     sta actT,y
+                txa
+                sta actOrg,y                    ;Set origin actor
+                lda actGrp,x                    ;Copy origin group
+                sta actGrp,y
+                lda actXL,x
+                sta actXL,y
+                lda actXH,x
+                sta actXH,y
+                lda actYL,x
+                sta actYL,y
+                lda actYH,x
+                sta actYH,y
+                rts
 
         ; Spawn an actor with X & Y offset
         ;

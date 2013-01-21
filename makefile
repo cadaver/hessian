@@ -1,31 +1,31 @@
 all: hessian.d64 hessian.d81
 
 clean:
-	del *.bin
-	del music\*.bin
-	del sfx\*.sfx
-	del *.pak
-	del *.prg
-	del *.tbl
-	del *.d64
-	del *.d81
-	del hessian
-	del 0?
-	del 1?
-	del 2?
-	del 3?
-	del 4?
-	del 5?
-	del 6?
-	del 7?
-	del 8?
-	del 9?
-	del a?
-	del b?
-	del c?
-	del d?
-	del e?
-	del f?
+	-rm *.bin
+	-rm music/*.bin
+	-rm sfx/*.sfx
+	-rm *.pak
+	-rm *.prg
+	-rm *.tbl
+	-rm *.d64
+	-rm *.d81
+	-rm hessian
+	-rm 0?
+	-rm 1?
+	-rm 2?
+	-rm 3?
+	-rm 4?
+	-rm 5?
+	-rm 6?
+	-rm 7?
+	-rm 8?
+	-rm 9?
+	-rm a?
+	-rm b?
+	-rm c?
+	-rm d?
+	-rm e?
+	-rm f?
 
 hessian.d64: boot.prg loader.pak main.pak music00.pak script00.pak level00.pak level01.pak common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
@@ -104,12 +104,15 @@ sfx/flamerreload.sfx: sfx/flamerreload.ins
 sfx/launcher.sfx: sfx/launcher.ins
 	ins2nt2 sfx/launcher.ins sfx/launcher.sfx
 
+sfx/bazooka.sfx: sfx/bazooka.ins
+	ins2nt2 sfx/bazooka.ins sfx/bazooka.sfx
+
 main.pak: actor.s actordata.s ai.s aidata.s bullet.s data.s file.s init.s item.s itemdata.s level.s macros.s \
 	main.s math.s memory.s panel.s paneldata.s physics.s player.s raster.s screen.s script.s sound.s sounddata.s \
 	sprite.s text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/shotgun.sfx sfx/autorifle.sfx \
 	sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
-	sfx/flamer.sfx sfx/flamerreload.sfx sfx/launcher.sfx
+	sfx/flamer.sfx sfx/flamerreload.sfx sfx/launcher.sfx sfx/bazooka.sfx
 	dasm main.s -omain.bin -smain.tbl -f3
 	symbols main.tbl mainsym.s
 	pack2 main.bin main.pak

@@ -8,16 +8,17 @@ SFX_SNIPERRIFLE     = $06
 SFX_MINIGUN         = $07
 SFX_FLAMETHROWER    = $08
 SFX_GRENADELAUNCHER = $09
-SFX_RELOAD          = $0a
-SFX_COCKWEAPON      = $0b
-SFX_COCKSHOTGUN     = $0c
-SFX_IGNITEFLAME     = $0d
-SFX_POWERUP         = $0e
-SFX_SELECT          = $0f
-SFX_PICKUP          = $10
-SFX_DAMAGE          = $11
-SFX_DEATH           = $12
-SFX_EXPLOSION       = $13
+SFX_BAZOOKA         = $0a
+SFX_RELOAD          = $0b
+SFX_COCKWEAPON      = $0c
+SFX_COCKSHOTGUN     = $0d
+SFX_RELOADFLAMER    = $0e
+SFX_POWERUP         = $0f
+SFX_SELECT          = $10
+SFX_PICKUP          = $11
+SFX_DAMAGE          = $12
+SFX_DEATH           = $13
+SFX_EXPLOSION       = $14
 
         ; Music relocation tables
 
@@ -116,6 +117,7 @@ sfxTblLo:       dc.b <sfxThrow
                 dc.b <sfxMinigun
                 dc.b <sfxFlamer
                 dc.b <sfxLauncher
+                dc.b <sfxBazooka
                 dc.b <sfxReload
                 dc.b <sfxCockWeapon
                 dc.b <sfxCockShotgun
@@ -137,6 +139,7 @@ sfxTblHi:       dc.b >sfxThrow
                 dc.b >sfxMinigun
                 dc.b >sfxFlamer
                 dc.b >sfxLauncher
+                dc.b >sfxBazooka
                 dc.b >sfxReload
                 dc.b >sfxCockWeapon
                 dc.b >sfxCockShotgun
@@ -166,5 +169,6 @@ sfxMinigun:     include sfx/minigun.sfx
 sfxShotgun:     include sfx/shotgun.sfx
 sfxLauncher:    include sfx/launcher.sfx
 sfxSniperRifle: include sfx/sniperrifle.sfx
+sfxBazooka:     include sfx/bazooka.sfx
 sfxDeath:       include sfx/death.sfx
 sfxExplosion:   include sfx/explosion.sfx
