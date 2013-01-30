@@ -120,7 +120,7 @@ TitleNextPage:  sta titlePage
                 jsr PrintPage
 TitleTextsLoop: jsr Update
                 jsr GetFireClick
-                bcs MainMenu
+                bcs EnterMainMenu
                 jsr TitlePageDelay
                 bcc TitleTextsLoop
                 lda titlePage
@@ -129,6 +129,9 @@ TitleTextsLoop: jsr Update
                 bcc TitleNextPage
                 bcs TitleTexts
 
+EnterMainMenu:  lda #SFX_SELECT
+                jsr PlaySfx
+                
         ; Main menu
         
 MainMenu:       jsr FadeOutText

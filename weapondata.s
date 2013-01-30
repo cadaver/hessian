@@ -17,6 +17,7 @@ DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / or
 DMGMOD_NOORGANIC = $80                          ;No organic damage
 DMGMOD_NONONORGANIC = $08                       ;No nonorganic damage
 DMGMOD_NONORGANIC75 = $68                       ;Nonorganic receives 75% of damage
+DMGMOD_NONORGANIC12 = $18                       ;Nonorganic receives 12% of damage
 
 SPDTBL_NORMAL   = 0
 SPDTBL_GRENADE  = 10
@@ -287,7 +288,7 @@ wdSonicWaveGun: dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b 6                          ;Attack delay
                 dc.b ACT_SONICWAVE              ;Bullet actor type
                 dc.b DMG_SONICWAVE              ;Bullet damage
-                dc.b DMGMOD_NONONORGANIC        ;Damage modifier nonorganic/organic
+                dc.b DMGMOD_NONORGANIC12        ;Damage modifier nonorganic/organic
                 dc.b 14                         ;Bullet time duration
                 dc.b 14                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
