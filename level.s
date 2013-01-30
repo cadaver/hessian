@@ -376,16 +376,7 @@ ULO_EnterDestDoor:
 CenterPlayer:   ldx actXH+ACTI_PLAYER
                 ldy actYH+ACTI_PLAYER
                 jsr FindZoneXY
-                ldy #ZONEH_BG1                  ;Set zone multicolors
-                lda (zoneLo),y
-                sta Irq1_Bg1+1
-                iny
-                lda (zoneLo),y
-                sta Irq1_Bg2+1
-                iny
-                lda (zoneLo),y
-                sta Irq1_Bg3+1
-                iny
+                jsr SetZoneColors
                 lda (zoneLo),y
                 jsr PlaySong                    ;Play zone's music
                 jsr InitMap
@@ -430,3 +421,21 @@ CP_NotOverDown: sta mapY
                 jsr RedrawScreen
                 sty lvlObjNum                   ;Reset found levelobject (Y=$ff)
                 jmp UpdateAndAddAllActors
+
+        ; Set zone's multicolors
+        ;
+        ; Parameters: zoneLo,zoneHi
+        ; Returns: -
+        ; Modifies: A,Y
+
+SetZoneColors:  ldy #ZONEH_BG1                  ;Set zone multicolors
+                lda (zoneLo),y
+                sta Irq1_Bg1+1
+                iny
+                lda (zoneLo),y
+                sta Irq1_Bg2+1
+                iny
+                lda (zoneLo),y
+                sta Irq1_Bg3+1
+                iny
+                rts

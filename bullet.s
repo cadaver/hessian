@@ -119,27 +119,10 @@ CBC_HasCollision:
                 lda temp7
                 bmi CBC_ReportOnly
                 sty tgtActIndex
-                lda actAuxData,x                ;Damage modifier
-                sta temp7
-                lda actHp,x                     ;Amount of damage
-                sta temp8
-                ldx tgtActIndex
-                lda actGrp,x                    ;Check if target is organic
-                and #AF_ISORGANIC
-                beq CBC_NonOrganic
-CBC_Organic:    lda temp7
-                and #$0f
-                bpl CBC_Common
-CBC_NonOrganic: lda temp7
-                lsr
-                lsr
-                lsr
-                lsr
-CBC_Common:     tay
-                lda temp8
-                jsr ModifyDamage
+                jsr ModifyTargetDamage
                 tay
                 beq CBC_NoDamage
+                ldx tgtActIndex
                 ldy actIndex
                 jsr DamageActor
 CBC_NoDamage:   ldx actIndex
@@ -266,8 +249,7 @@ EGrn_FullDamageBelow:
                 sta actSizeU,x
                 lda #$00                        ;Clear the X-speed so that possible death impulse
                 sta actSX,x                     ;only depends on enemy's relative location to the
-                lda actHp,x                     ;grenade
-                jsr RadiusDamage
+                jsr RadiusDamage                ;grenade
 
         ; Turn an actor into an explosion
         ;
@@ -326,12 +308,11 @@ MGrn_Done:      rts
         ; Give radius damage to both heroes & villains. Prior to calling, expand the
         ; collision size of the source actor as necessary
         ;
-        ; Parameters: X source actor index (must also be in actIndex), A damage amount
+        ; Parameters: X source actor index (must also be in actIndex)
         ; Returns: -
         ; Modifies: A,Y,tgtActIndex,possibly other temp registers
 
-RadiusDamage:   sta RD_Damage+1
-                ldy #ACTI_LASTNPC
+RadiusDamage:   ldy #ACTI_LASTNPC
 RD_Loop:        lda actT,y
                 beq RD_Next
                 lda actHp,y
@@ -342,14 +323,43 @@ RD_Loop:        lda actT,y
                 jsr CheckActorCollision
                 bcc RD_Next
                 sty tgtActIndex
-RD_Damage:      lda #$00
+                jsr ModifyTargetDamage
+                tay
+                beq RD_SkipDamage
                 ldx tgtActIndex
                 ldy actIndex
                 jsr DamageActor
-                ldx actIndex
+RD_SkipDamage:  ldx actIndex
                 ldy tgtActIndex
 RD_Next:        dey
                 bpl RD_Loop
-MST_AnimDone:   rts
+MEMP_NoAnimation:
+                rts
 
-
+        ; EMP blast update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+        
+MoveEMP:        lda actTime,x                   ;Todo: should possibly not manipulate
+                cmp #$01                        ;background colors directly
+                bcc MEMP_ColorDone
+                beq MEMP_Restore
+                lda #$01
+                sta Irq1_Bg1+1
+                sta Irq1_Bg2+1
+                sta Irq1_Bg3+1
+                sta actTime,x
+                bne MEMP_ColorDone
+MEMP_Restore:   jsr SetZoneColors
+MEMP_ColorDone: jsr MoveProjectile
+                jsr RadiusDamage
+                lda #1
+                jsr AnimationDelay
+                bcc MEMP_NoAnimation
+                inc actF1,x
+                lda actF1,x
+                cmp #$04
+                bcc MEMP_NoAnimation
+                jmp RemoveActor

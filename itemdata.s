@@ -10,10 +10,11 @@ ITEM_SNIPERRIFLE = 8
 ITEM_MINIGUN    = 9
 ITEM_FLAMETHROWER = 10
 ITEM_SONICWAVEGUN = 11
-ITEM_GRENADELAUNCHER = 12
-ITEM_BAZOOKA    = 13
-ITEM_GRENADE    = 14
-ITEM_MEDKIT     = 15
+ITEM_EMPGENERATOR = 12
+ITEM_GRENADELAUNCHER = 13
+ITEM_BAZOOKA    = 14
+ITEM_GRENADE    = 15
+ITEM_MEDKIT     = 16
 
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
 ITEM_FIRST_NONWEAPON = ITEM_MEDKIT
@@ -31,6 +32,7 @@ itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Minigun
                 dc.b 0                          ;Flamethrower
                 dc.b 0                          ;Sonic wave gun
+                dc.b 0                          ;EMP generator
                 dc.b 0                          ;Grenade launcher
                 dc.b 0                          ;Bazooka
                 dc.b 0                          ;Grenade
@@ -48,6 +50,7 @@ itemDefaultMaxCount:
                 dc.b 100                        ;Minigun
                 dc.b 90                         ;Flamethrower
                 dc.b 30                         ;Sonic wave gun
+                dc.b 8                          ;EMP generator
                 dc.b 6                          ;Grenade launcher
                 dc.b 4                          ;Bazooka
                 dc.b 5                          ;Grenade
@@ -64,6 +67,7 @@ itemMaxCountAdd:dc.b 0                          ;Fists
                 dc.b 50                         ;Minigun
                 dc.b 30                         ;Flamethrower
                 dc.b 10                         ;Sonic wave gun
+                dc.b 4                          ;EMP generator
                 dc.b 3                          ;Grenade launcher
                 dc.b 2                          ;Bazooka
                 dc.b 2                          ;Grenade
@@ -81,6 +85,7 @@ itemDefaultPickup:
                 dc.b 50                         ;Minigun
                 dc.b 30                         ;Flamethrower
                 dc.b 5                          ;Sonic wave gun
+                dc.b 4                          ;EMP generator
                 dc.b 2                          ;Grenade launcher
                 dc.b 2                          ;Bazooka
                 dc.b 2                          ;Grenade
@@ -98,6 +103,7 @@ itemMagazineSize:
                 dc.b 0                          ;Minigun
                 dc.b 60                         ;Flamethrower
                 dc.b 10                         ;Sonic wave gun
+                dc.b 4                          ;EMP generator
                 dc.b 3                          ;Grenade launcher
                 dc.b 1                          ;Bazooka
                 dc.b 0                          ;Grenade
@@ -114,6 +120,7 @@ itemNPCMinDist: dc.b 0                          ;Fists
                 dc.b 1                          ;Minigun
                 dc.b 1                          ;Flamethrower
                 dc.b 1                          ;Sonic wave gun
+                dc.b 1                          ;EMP generator (not used by NPCs)
                 dc.b 2                          ;Grenade launcher
                 dc.b 3                          ;Bazooka
                 dc.b 2                          ;Grenade
@@ -129,6 +136,7 @@ itemNPCMaxDist: dc.b 1                          ;Fists
                 dc.b 6                          ;Minigun
                 dc.b 5                          ;Flamethrower
                 dc.b 6                          ;Sonic wave gun
+                dc.b 6                          ;EMP generator (not used by NPCs)
                 dc.b 5                          ;Grenade launcher
                 dc.b 7                          ;Bazooka
                 dc.b 6                          ;Grenade
@@ -145,6 +153,7 @@ itemNPCAttackLength:                            ;Note: stored as negative
                 dc.b -10/2                      ;Minigun
                 dc.b -10/2                      ;Flamethrower
                 dc.b -6/2                       ;Sonic wave gun
+                dc.b -6/2                       ;EMP generator (not used by NPCs)
                 dc.b -6/2                       ;Grenade launcher
                 dc.b -6/2                       ;Bazooka
                 dc.b -6/2                       ;Grenade
@@ -161,6 +170,7 @@ itemNPCAttackThreshold:
                 dc.b $30                        ;Minigun
                 dc.b $30                        ;Flamethrower
                 dc.b $28                        ;Sonic wave gun
+                dc.b $20                        ;EMP generator (not used by NPCs)
                 dc.b $40                        ;Grenade launcher
                 dc.b $50                        ;Bazooka
                 dc.b $40                        ;Grenade

@@ -1,26 +1,28 @@
 SFX_THROW           = $00
-SFX_MELEE           = $01
-SFX_PUNCH           = $02
-SFX_PISTOL          = $03
-SFX_SHOTGUN         = $04
-SFX_AUTORIFLE       = $05
-SFX_SNIPERRIFLE     = $06
-SFX_MINIGUN         = $07
-SFX_FLAMETHROWER    = $08
-SFX_SONICWAVE       = $09
-SFX_GRENADELAUNCHER = $0a
-SFX_BAZOOKA         = $0b
-SFX_RELOAD          = $0c
-SFX_COCKWEAPON      = $0d
-SFX_COCKSHOTGUN     = $0e
-SFX_RELOADFLAMER    = $0f
-SFX_RELOADBAZOOKA   = $10
-SFX_POWERUP         = $11
-SFX_SELECT          = $12
-SFX_PICKUP          = $13
-SFX_DAMAGE          = $14
-SFX_DEATH           = $15
-SFX_EXPLOSION       = $16
+SFX_PUNCH           = $01
+SFX_MELEE           = $02
+SFX_HEAVYMELEE      = $03
+SFX_PISTOL          = $04
+SFX_SHOTGUN         = $05
+SFX_AUTORIFLE       = $06
+SFX_SNIPERRIFLE     = $07
+SFX_MINIGUN         = $08
+SFX_FLAMETHROWER    = $09
+SFX_SONICWAVE       = $0a
+SFX_EMP             = $0b
+SFX_GRENADELAUNCHER = $0c
+SFX_BAZOOKA         = $0d
+SFX_RELOAD          = $0e
+SFX_COCKWEAPON      = $0f
+SFX_COCKSHOTGUN     = $10
+SFX_RELOADFLAMER    = $11
+SFX_RELOADBAZOOKA   = $12
+SFX_POWERUP         = $13
+SFX_SELECT          = $14
+SFX_PICKUP          = $15
+SFX_DAMAGE          = $16
+SFX_DEATH           = $17
+SFX_EXPLOSION       = $18
 
         ; Music relocation tables
 
@@ -110,8 +112,9 @@ ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
         ; Sound effect data
 
 sfxTblLo:       dc.b <sfxThrow
-                dc.b <sfxMelee
                 dc.b <sfxPunch
+                dc.b <sfxMelee
+                dc.b <sfxHeavyMelee
                 dc.b <sfxPistol
                 dc.b <sfxShotgun
                 dc.b <sfxAutoRifle
@@ -119,6 +122,7 @@ sfxTblLo:       dc.b <sfxThrow
                 dc.b <sfxMinigun
                 dc.b <sfxFlamer
                 dc.b <sfxSonicWave
+                dc.b <sfxEMP
                 dc.b <sfxLauncher
                 dc.b <sfxBazooka
                 dc.b <sfxReload
@@ -134,8 +138,9 @@ sfxTblLo:       dc.b <sfxThrow
                 dc.b <sfxExplosion
 
 sfxTblHi:       dc.b >sfxThrow
-                dc.b >sfxMelee
                 dc.b >sfxPunch
+                dc.b >sfxMelee
+                dc.b >sfxHeavyMelee
                 dc.b >sfxPistol
                 dc.b >sfxShotgun
                 dc.b >sfxAutoRifle
@@ -143,6 +148,7 @@ sfxTblHi:       dc.b >sfxThrow
                 dc.b >sfxMinigun
                 dc.b >sfxFlamer
                 dc.b >sfxSonicWave
+                dc.b >sfxEMP
                 dc.b >sfxLauncher
                 dc.b >sfxBazooka
                 dc.b >sfxReload
@@ -166,6 +172,7 @@ sfxCockShotgun: include sfx/cockshotgun.sfx
 sfxPowerup:     include sfx/powerup.sfx
 sfxPunch:       include sfx/punch.sfx
 sfxMelee:       include sfx/melee.sfx
+sfxHeavyMelee:  include sfx/heavymelee.sfx
 sfxThrow:       include sfx/throw.sfx
 sfxReloadBazooka:include sfx/reloadbazooka.sfx
 sfxDamage:      include sfx/damage.sfx
@@ -179,4 +186,5 @@ sfxLauncher:    include sfx/launcher.sfx
 sfxSniperRifle: include sfx/sniperrifle.sfx
 sfxBazooka:     include sfx/bazooka.sfx
 sfxDeath:       include sfx/death.sfx
+sfxEMP:         include sfx/emp.sfx
 sfxExplosion:   include sfx/explosion.sfx

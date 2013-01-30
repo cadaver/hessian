@@ -444,6 +444,31 @@ GBO_Fail:       pla
                 clc
                 rts
 
+        ; Modify damage based on whether target is organic/nonorganic
+        ;
+        ; Parameters: X bullet actor Y target actor
+        ; Returns: A modified damage
+        ; Modifies: A,Y,temp7,temp8,loader temp vars
+
+ModifyTargetDamage:
+                lda actAuxData,x                ;Damage modifier
+                sta temp7
+                lda actHp,x                     ;Amount of damage
+                sta temp8
+                lda actGrp,y                    ;Check if target is organic
+                and #AF_ISORGANIC
+                beq MTD_NonOrganic
+MTD_Organic:    lda temp7
+                and #$0f
+                bpl MTD_Common
+MTD_NonOrganic: lda temp7
+                lsr
+                lsr
+                lsr
+                lsr
+MTD_Common:     tay
+                lda temp8
+
         ; Modify damage
         ;
         ; Parameters: A damage Y multiplier (8 = unmodified) or subtract (>= $80)

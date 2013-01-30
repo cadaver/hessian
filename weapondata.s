@@ -12,6 +12,7 @@ DMG_SNIPERRIFLE = 20
 DMG_LAUNCHERGRENADE = 28
 DMG_GRENADE     = 32
 DMG_BAZOOKA     = 48
+DMG_EMP         = 4                             ;4 damage for 8 frames = 32 total
 
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
 DMGMOD_NOORGANIC = $80                          ;No organic damage
@@ -69,6 +70,7 @@ wpnTblLo:       dc.b <wdFists
                 dc.b <wdMinigun
                 dc.b <wdFlameThrower
                 dc.b <wdSonicWaveGun
+                dc.b <wdEMPGenerator
                 dc.b <wdGrenadeLauncher
                 dc.b <wdBazooka
                 dc.b <wdGrenade
@@ -84,6 +86,7 @@ wpnTblHi:       dc.b >wdFists
                 dc.b >wdMinigun
                 dc.b >wdFlameThrower
                 dc.b >wdSonicWaveGun
+                dc.b >wdEMPGenerator
                 dc.b >wdGrenadeLauncher
                 dc.b >wdBazooka
                 dc.b >wdGrenade
@@ -146,7 +149,7 @@ wdBat:          dc.b WDB_MELEE                  ;Weapon bits
                 dc.b 1                          ;Bullet time duration
                 dc.b 1                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
-                dc.b SFX_MELEE                  ;Sound effect
+                dc.b SFX_HEAVYMELEE             ;Sound effect
                 dc.b 61                         ;Idle weapon frame (right)
                 dc.b 65                         ;Idle weapon frame (left)
                 dc.b 66                         ;Prepare weapon frame (right)
@@ -299,7 +302,28 @@ wdSonicWaveGun: dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b 92                         ;Prepare weapon frame (left)
                 dc.b 85,86,87,88,89             ;Attack weapon frames (right)
                 dc.b 90,91,92,93,94             ;Attack weapon frames (left)
-                dc.b 30                         ;Reload delay
+                dc.b 25                         ;Reload delay
+                dc.b SFX_RELOAD                 ;Reload sound
+                dc.b SFX_POWERUP                ;Reload finished sound
+
+wdEMPGenerator: dc.b WDB_NONE|WDB_NOSKILLBONUS|WDB_FLICKERBULLET  ;Weapon bits
+                dc.b AIM_HORIZONTAL             ;First aim direction
+                dc.b AIM_HORIZONTAL             ;Last aim direction
+                dc.b 20                         ;Attack delay
+                dc.b ACT_EMP                    ;Bullet actor type
+                dc.b DMG_EMP                    ;Bullet damage
+                dc.b DMGMOD_NOORGANIC           ;Damage modifier nonorganic/organic
+                dc.b 8                          ;Bullet time duration
+                dc.b 4                          ;Bullet speed in pixels
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
+                dc.b SFX_EMP                    ;Sound effect
+                dc.b 95                         ;Idle weapon frame (right)
+                dc.b 96                         ;Idle weapon frame (left)
+                dc.b 95                         ;Prepare weapon frame (right)
+                dc.b 96                         ;Prepare weapon frame (left)
+                dc.b 95,95,95,95,95             ;Attack weapon frames (right)
+                dc.b 96,96,96,96,96             ;Attack weapon frames (left)
+                dc.b 25                         ;Reload delay
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_POWERUP                ;Reload finished sound
 
@@ -350,7 +374,7 @@ wdBazooka:      dc.b WDB_BULLETDIRFRAME|WDB_NOSKILLBONUS|WDB_LOCKANIMATION ;Weap
 wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
                 dc.b AIM_DIAGONALDOWN           ;Last aim direction
-                dc.b 15                         ;Attack delay
+                dc.b 18                         ;Attack delay
                 dc.b ACT_GRENADE                ;Bullet actor type
                 dc.b DMG_GRENADE                ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
