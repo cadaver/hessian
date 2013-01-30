@@ -6,6 +6,7 @@ DMG_MINIGUN     = 6
 DMG_BAT         = 7
 DMG_AUTORIFLE   = 7
 DMG_PISTOL      = 8
+DMG_SONICWAVE   = 10
 DMG_SHOTGUN     = 16
 DMG_SNIPERRIFLE = 20
 DMG_LAUNCHERGRENADE = 28
@@ -66,6 +67,7 @@ wpnTblLo:       dc.b <wdFists
                 dc.b <wdSniperRifle
                 dc.b <wdMinigun
                 dc.b <wdFlameThrower
+                dc.b <wdSonicWaveGun
                 dc.b <wdGrenadeLauncher
                 dc.b <wdBazooka
                 dc.b <wdGrenade
@@ -80,6 +82,7 @@ wpnTblHi:       dc.b >wdFists
                 dc.b >wdSniperRifle
                 dc.b >wdMinigun
                 dc.b >wdFlameThrower
+                dc.b >wdSonicWaveGun
                 dc.b >wdGrenadeLauncher
                 dc.b >wdBazooka
                 dc.b >wdGrenade
@@ -277,6 +280,27 @@ wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOS
                 dc.b SFX_COCKWEAPON             ;Reload sound
                 dc.b SFX_RELOADFLAMER           ;Reload finished sound
                 dc.b FR_WALK+2                  ;Lock animation upper body frame
+
+wdSonicWaveGun: dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
+                dc.b AIM_UP                     ;First aim direction
+                dc.b AIM_DOWN                   ;Last aim direction
+                dc.b 6                          ;Attack delay
+                dc.b ACT_SONICWAVE              ;Bullet actor type
+                dc.b DMG_SONICWAVE              ;Bullet damage
+                dc.b DMGMOD_NONONORGANIC        ;Damage modifier nonorganic/organic
+                dc.b 14                         ;Bullet time duration
+                dc.b 14                         ;Bullet speed in pixels
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
+                dc.b SFX_SONICWAVE              ;Sound effect
+                dc.b 87                         ;Idle weapon frame (right)
+                dc.b 92                         ;Idle weapon frame (left)
+                dc.b 87                         ;Prepare weapon frame (right)
+                dc.b 92                         ;Prepare weapon frame (left)
+                dc.b 85,86,87,88,89             ;Attack weapon frames (right)
+                dc.b 90,91,92,93,94             ;Attack weapon frames (left)
+                dc.b 30                         ;Reload delay
+                dc.b SFX_RELOAD                 ;Reload sound
+                dc.b SFX_POWERUP                ;Reload finished sound
 
 wdGrenadeLauncher:
                 dc.b WDB_NOSKILLBONUS           ;Weapon bits

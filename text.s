@@ -10,6 +10,7 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtSniperRifle
                 dc.b <txtMinigun
                 dc.b <txtFlameThrower
+                dc.b <txtSonicWaveGun
                 dc.b <txtGrenadeLauncher
                 dc.b <txtBazooka
                 dc.b <txtGrenade
@@ -25,6 +26,7 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtSniperRifle
                 dc.b >txtMinigun
                 dc.b >txtFlameThrower
+                dc.b >txtSonicWaveGun
                 dc.b >txtGrenadeLauncher
                 dc.b >txtBazooka
                 dc.b >txtGrenade
@@ -41,6 +43,7 @@ txtAutoRifle:   dc.b "AUTO RIFLE",0
 txtSniperRifle: dc.b "SNIPER RIFLE",0
 txtMinigun:     dc.b "MINIGUN",0
 txtFlameThrower:dc.b "FLAMETHROWER",0
+txtSonicWaveGun:dc.b "SONIC WAVE GUN",0
 txtGrenadeLauncher:dc.b "GRENADE LAUNCHER",0
 txtBazooka:     dc.b "BAZOOKA",0
 txtGrenade:     dc.b "GRENADES",0

@@ -9,10 +9,11 @@ ITEM_AUTORIFLE  = 7
 ITEM_SNIPERRIFLE = 8
 ITEM_MINIGUN    = 9
 ITEM_FLAMETHROWER = 10
-ITEM_GRENADELAUNCHER = 11
-ITEM_BAZOOKA    = 12
-ITEM_GRENADE    = 13
-ITEM_MEDKIT     = 14
+ITEM_SONICWAVEGUN = 11
+ITEM_GRENADELAUNCHER = 12
+ITEM_BAZOOKA    = 13
+ITEM_GRENADE    = 14
+ITEM_MEDKIT     = 15
 
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
 ITEM_FIRST_NONWEAPON = ITEM_MEDKIT
@@ -29,6 +30,7 @@ itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Sniper rifle
                 dc.b 0                          ;Minigun
                 dc.b 0                          ;Flamethrower
+                dc.b 0                          ;Sonic wave gun
                 dc.b 0                          ;Grenade launcher
                 dc.b 0                          ;Bazooka
                 dc.b 0                          ;Grenade
@@ -45,6 +47,7 @@ itemDefaultMaxCount:
                 dc.b 15                         ;Sniper rifle
                 dc.b 100                        ;Minigun
                 dc.b 90                         ;Flamethrower
+                dc.b 30                         ;Sonic wave gun
                 dc.b 6                          ;Grenade launcher
                 dc.b 4                          ;Bazooka
                 dc.b 5                          ;Grenade
@@ -60,6 +63,7 @@ itemMaxCountAdd:dc.b 0                          ;Fists
                 dc.b 5                          ;Sniper rifle
                 dc.b 50                         ;Minigun
                 dc.b 30                         ;Flamethrower
+                dc.b 10                         ;Sonic wave gun
                 dc.b 3                          ;Grenade launcher
                 dc.b 2                          ;Bazooka
                 dc.b 2                          ;Grenade
@@ -76,6 +80,7 @@ itemDefaultPickup:
                 dc.b 3                          ;Sniper rifle
                 dc.b 50                         ;Minigun
                 dc.b 30                         ;Flamethrower
+                dc.b 5                          ;Sonic wave gun
                 dc.b 2                          ;Grenade launcher
                 dc.b 2                          ;Bazooka
                 dc.b 2                          ;Grenade
@@ -92,6 +97,7 @@ itemMagazineSize:
                 dc.b 5                          ;Sniper rifle
                 dc.b 0                          ;Minigun
                 dc.b 60                         ;Flamethrower
+                dc.b 10                         ;Sonic wave gun
                 dc.b 3                          ;Grenade launcher
                 dc.b 1                          ;Bazooka
                 dc.b 0                          ;Grenade
@@ -107,6 +113,7 @@ itemNPCMinDist: dc.b 0                          ;Fists
                 dc.b 1                          ;Sniper rifle
                 dc.b 1                          ;Minigun
                 dc.b 1                          ;Flamethrower
+                dc.b 1                          ;Sonic wave gun
                 dc.b 2                          ;Grenade launcher
                 dc.b 3                          ;Bazooka
                 dc.b 2                          ;Grenade
@@ -121,6 +128,7 @@ itemNPCMaxDist: dc.b 1                          ;Fists
                 dc.b 7                          ;Sniper rifle
                 dc.b 6                          ;Minigun
                 dc.b 5                          ;Flamethrower
+                dc.b 6                          ;Sonic wave gun
                 dc.b 5                          ;Grenade launcher
                 dc.b 7                          ;Bazooka
                 dc.b 6                          ;Grenade
@@ -136,6 +144,7 @@ itemNPCAttackLength:                            ;Note: stored as negative
                 dc.b -6/2                       ;Sniper rifle
                 dc.b -10/2                      ;Minigun
                 dc.b -10/2                      ;Flamethrower
+                dc.b -6/2                       ;Sonic wave gun
                 dc.b -6/2                       ;Grenade launcher
                 dc.b -6/2                       ;Bazooka
                 dc.b -6/2                       ;Grenade
@@ -151,6 +160,7 @@ itemNPCAttackThreshold:
                 dc.b $38                        ;Sniper rifle
                 dc.b $30                        ;Minigun
                 dc.b $30                        ;Flamethrower
+                dc.b $28                        ;Sonic wave gun
                 dc.b $40                        ;Grenade launcher
                 dc.b $50                        ;Bazooka
                 dc.b $40                        ;Grenade

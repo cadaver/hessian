@@ -8,11 +8,12 @@ ACT_BULLET      = 6
 ACT_SHOTGUNBULLET = 7
 ACT_RIFLEBULLET = 8
 ACT_FLAME       = 9
-ACT_LAUNCHERGRENADE = 10
-ACT_GRENADE     = 11
-ACT_ROCKET      = 12
-ACT_EXPLOSION   = 13
-ACT_SMOKETRAIL  = 14
+ACT_SONICWAVE   = 10
+ACT_LAUNCHERGRENADE = 11
+ACT_GRENADE     = 12
+ACT_ROCKET      = 13
+ACT_EXPLOSION   = 14
+ACT_SMOKETRAIL  = 15
 
 HP_PLAYER       = 48
 HP_ENEMY        = 12
@@ -31,6 +32,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adShotgunBullet
                 dc.b <adRifleBullet
                 dc.b <adFlame
+                dc.b <adSonicWave
                 dc.b <adLauncherGrenade
                 dc.b <adGrenade
                 dc.b <adRocket
@@ -46,6 +48,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adShotgunBullet
                 dc.b >adRifleBullet
                 dc.b >adFlame
+                dc.b >adSonicWave
                 dc.b >adLauncherGrenade
                 dc.b >adGrenade
                 dc.b >adRocket
@@ -100,6 +103,13 @@ adFlame:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b 0                          ;Left frame add
                 dc.b 4                          ;Number of frames
                 dc.b 30,31,32,33                ;Frametable (first all frames of sprite1, then sprite2)
+
+adSonicWave:    dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 10                         ;Number of frames
+                dc.b 47,48,49,50,51             ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 47,54,53,52,51
 
 adLauncherGrenade:
                 dc.b ONESPRITE                  ;Number of sprites
@@ -191,6 +201,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alShotgunBullet
                 dc.b <alBullet
                 dc.b <alFlame
+                dc.b <alSonicWave
                 dc.b <alLauncherGrenade
                 dc.b <alGrenade
                 dc.b <alRocket
@@ -206,6 +217,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alShotgunBullet
                 dc.b >alBullet
                 dc.b >alFlame
+                dc.b >alSonicWave
                 dc.b >alLauncherGrenade
                 dc.b >alGrenade
                 dc.b >alRocket
@@ -280,6 +292,13 @@ alFlame:        dc.w MoveFlame                  ;Update routine
                 dc.b 5                          ;Horizontal size
                 dc.b 5                          ;Size up
                 dc.b 3                          ;Size down
+
+alSonicWave:    dc.w MoveBullet                 ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 8                          ;Size up
+                dc.b 8                          ;Size down
 
 alLauncherGrenade:
                 dc.w MoveLauncherGrenade        ;Update routine
