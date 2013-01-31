@@ -10,11 +10,13 @@ ACT_RIFLEBULLET = 8
 ACT_FLAME       = 9
 ACT_SONICWAVE   = 10
 ACT_EMP         = 11
-ACT_LAUNCHERGRENADE = 12
-ACT_GRENADE     = 13
-ACT_ROCKET      = 14
-ACT_EXPLOSION   = 15
-ACT_SMOKETRAIL  = 16
+ACT_LASER       = 12
+ACT_PLASMA      = 13
+ACT_LAUNCHERGRENADE = 14
+ACT_GRENADE     = 15
+ACT_ROCKET      = 16
+ACT_EXPLOSION   = 17
+ACT_SMOKETRAIL  = 18
 
 HP_PLAYER       = 48
 HP_ENEMY        = 12
@@ -35,6 +37,8 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adFlame
                 dc.b <adSonicWave
                 dc.b <adEMP
+                dc.b <adLaser
+                dc.b <adPlasma
                 dc.b <adLauncherGrenade
                 dc.b <adGrenade
                 dc.b <adRocket
@@ -52,6 +56,8 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adFlame
                 dc.b >adSonicWave
                 dc.b >adEMP
+                dc.b >adLaser
+                dc.b >adPlasma
                 dc.b >adLauncherGrenade
                 dc.b >adGrenade
                 dc.b >adRocket
@@ -73,7 +79,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 11,12,13,14,15
+                dc.b 11,12,13,14,15,16,17,18
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -119,6 +125,19 @@ adEMP:          dc.b ONESPRITE                  ;Number of sprites
                 dc.b 0                          ;Left frame add
                 dc.b 10                         ;Number of frames
                 dc.b 55,56,57,58                ;Frametable (first all frames of sprite1, then sprite2)
+
+adLaser:        dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 10                         ;Number of frames
+                dc.b 59,60,61,62,59             ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 59,62,61,60,59
+
+adPlasma:       dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 3                          ;Number of frames
+                dc.b 63,64,65                   ;Frametable (first all frames of sprite1, then sprite2)
 
 adLauncherGrenade:
                 dc.b ONESPRITE                  ;Number of sprites
@@ -212,6 +231,8 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alFlame
                 dc.b <alSonicWave
                 dc.b <alEMP
+                dc.b <alLaser
+                dc.b <alPlasma
                 dc.b <alLauncherGrenade
                 dc.b <alGrenade
                 dc.b <alRocket
@@ -229,6 +250,8 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alFlame
                 dc.b >alSonicWave
                 dc.b >alEMP
+                dc.b >alLaser
+                dc.b >alPlasma
                 dc.b >alLauncherGrenade
                 dc.b >alGrenade
                 dc.b >alRocket
@@ -317,6 +340,20 @@ alEMP:          dc.w MoveEMP                    ;Update routine
                 dc.b 128                        ;Horizontal size
                 dc.b 128                        ;Size up
                 dc.b 128                        ;Size down
+
+alLaser:        dc.w MoveBullet                 ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 3                          ;Horizontal size
+                dc.b 3                          ;Size up
+                dc.b 3                          ;Size down
+
+alPlasma:       dc.w MovePlasma                 ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 8                          ;Size up
+                dc.b 8                          ;Size down
 
 alLauncherGrenade:
                 dc.w MoveLauncherGrenade        ;Update routine

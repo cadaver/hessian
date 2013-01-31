@@ -850,8 +850,7 @@ AnimationDelay: sta AD_Cmp+1
 AD_Cmp:         cmp #$00
                 bcs AD_Over
                 adc #$01
-                sta actFd,x
-                rts
+                skip2
 AD_Over:        lda #$00
                 sta actFd,x
                 rts

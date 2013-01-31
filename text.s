@@ -12,9 +12,12 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtFlameThrower
                 dc.b <txtSonicWaveGun
                 dc.b <txtEMPGenerator
+                dc.b <txtLaserRifle
+                dc.b <txtPlasmaGun
                 dc.b <txtGrenadeLauncher
                 dc.b <txtBazooka
                 dc.b <txtGrenade
+                dc.b <txtHomingDrone
                 dc.b <txtFirstAidKit
 
 itemNameHi:     dc.b >txtFists
@@ -29,11 +32,13 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtFlameThrower
                 dc.b >txtSonicWaveGun
                 dc.b >txtEMPGenerator
+                dc.b >txtLaserRifle
+                dc.b >txtPlasmaGun
                 dc.b >txtGrenadeLauncher
                 dc.b >txtBazooka
                 dc.b >txtGrenade
+                dc.b >txtHomingDrone
                 dc.b >txtFirstAidKit
-
 
 txtFists:       dc.b "FISTS",0
 txtKnife:       dc.b "KNIFE",0
@@ -47,9 +52,12 @@ txtMinigun:     dc.b "MINIGUN",0
 txtFlameThrower:dc.b "FLAMETHROWER",0
 txtSonicWaveGun:dc.b "SONIC WAVE GUN",0
 txtEMPGenerator:dc.b "EMP GENERATOR",0
+txtLaserRifle:  dc.b "LASER RIFLE",0
+txtPlasmaGun:   dc.b "PLASMA GUN",0
 txtGrenadeLauncher:dc.b "GRENADE LAUNCHER",0
 txtBazooka:     dc.b "BAZOOKA",0
 txtGrenade:     dc.b "GRENADES",0
+txtHomingDrone: dc.b "HOMING DRONE",0
 txtFirstAidKit: dc.b "MEDKIT",0
 
         ; Skill names

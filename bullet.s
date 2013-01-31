@@ -323,8 +323,7 @@ RD_SkipDamage:  ldx actIndex
                 ldy tgtActIndex
 RD_Next:        dey
                 bpl RD_Loop
-MEMP_NoAnimation:
-                rts
+MEMP_NoAnim:    rts
 
         ; EMP blast update routine
         ;
@@ -347,9 +346,27 @@ MEMP_ColorDone: jsr MoveProjectile
                 jsr RadiusDamage
                 lda #1
                 jsr AnimationDelay
-                bcc MEMP_NoAnimation
+                bcc MEMP_NoAnim
                 inc actF1,x
                 lda actF1,x
                 cmp #$04
-                bcc MEMP_NoAnimation
+                bcc MEMP_NoAnim
                 jmp RemoveActor
+
+
+        ; Plasma update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MovePlasma:     lda #$02
+                jsr AnimationDelay
+                bcc MPls_NoAnim
+                lda actF1,x
+                adc #$00
+                cmp #$03
+                bcc MPls_AnimDone
+                lda #$00
+MPls_AnimDone:  sta actF1,x
+MPls_NoAnim:    jmp MoveBullet
