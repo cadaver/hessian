@@ -237,7 +237,7 @@ wdSniperRifle:  dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b 38                         ;Prepare weapon frame (left)
                 dc.b 31,32,33,34,35             ;Attack weapon frames (right)
                 dc.b 36,37,38,39,40             ;Attack weapon frames (left)
-                dc.b 35                         ;Reload delay
+                dc.b 30                         ;Reload delay
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKSHOTGUN            ;Reload finished sound
 
@@ -280,7 +280,7 @@ wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOS
                 dc.b 51                         ;Prepare weapon frame (left)
                 dc.b 47,47,48,49,49             ;Attack weapon frames (right)
                 dc.b 50,50,51,52,52             ;Attack weapon frames (left)
-                dc.b 30                         ;Reload delay
+                dc.b 35                         ;Reload delay
                 dc.b SFX_COCKWEAPON             ;Reload sound
                 dc.b SFX_RELOADFLAMER           ;Reload finished sound
                 dc.b FR_WALK+2                  ;Lock animation upper body frame
@@ -345,7 +345,7 @@ wdGrenadeLauncher:
                 dc.b 59                         ;Prepare weapon frame (left)
                 dc.b 53,54,55,56,56             ;Attack weapon frames (right)
                 dc.b 57,58,59,60,60             ;Attack weapon frames (left)
-                dc.b 35                         ;Reload delay
+                dc.b 30                         ;Reload delay
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKSHOTGUN            ;Reload finished sound
 

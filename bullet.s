@@ -13,13 +13,9 @@ MoveShotgunBullet:
                 lda actF1,x
                 cmp #$0a
                 bcs MSBlt_Cloud
-                lda actFd,x
-                beq MBltMF_FirstFrame
                 lda #$0a
-                bne MBltMF_Common
-MSBlt_Cloud:    cmp #$0d
-                bcs MSBlt_NoAnim
-                lda #$02
+                sta actF1,x
+MSBlt_Cloud:    lda #$02
                 jsr AnimationDelay
                 bcc MSBlt_NoAnim
                 lda actSizeH,x                  ;C=1, increase size by 2
@@ -39,13 +35,7 @@ MSBlt_NoAnim:   jmp MoveBullet
         ; Returns: -
         ; Modifies: A,Y
 
-MBltMF_FirstFrame:
-                inc actFd,x
-                rts
-
 MoveBulletMuzzleFlash:
-                lda actFd,x                     ;First frame: just show the muzzle flash
-                beq MBltMF_FirstFrame           ;and do not move
                 lda actF1,x
                 cmp #$0a
                 bcs MoveBullet

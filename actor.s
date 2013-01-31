@@ -4,14 +4,14 @@ MAX_ACTY        = 9
 ACTI_PLAYER     = 0
 ACTI_FIRSTNPC   = 1
 ACTI_LASTNPC    = 6
-ACTI_FIRSTEFFECT = 7
-ACTI_LASTEFFECT = 9
-ACTI_FIRSTPLRBULLET = 10
-ACTI_LASTPLRBULLET = 14
-ACTI_FIRSTNPCBULLET = 15
-ACTI_LASTNPCBULLET = 19
-ACTI_FIRSTITEM  = 20
-ACTI_LASTITEM   = 24
+ACTI_FIRSTPLRBULLET = 7
+ACTI_LASTPLRBULLET = 11
+ACTI_FIRSTNPCBULLET = 12
+ACTI_LASTNPCBULLET = 16
+ACTI_FIRSTITEM  = 17
+ACTI_LASTITEM   = 21
+ACTI_FIRSTEFFECT = 22
+ACTI_LASTEFFECT = 24
 
 AD_NUMSPRITES   = 0
 AD_SPRFILE      = 1
@@ -538,7 +538,7 @@ CR_NotOver:     stx CheckRoute+1
 
         ; Call update routines of all on-screen actors
 
-                ldx #$00
+                ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex
@@ -570,9 +570,8 @@ UA_NoRemove:    ldy #AL_UPDATEROUTINE
                 lda (actLo),y
                 sta UA_Jump+2
 UA_Jump:        jsr $0000
-UA_Next:        inx
-                cpx #MAX_ACT
-                bcc UA_Loop
+UA_Next:        dex
+                bpl UA_Loop
 
         ; Interpolate actors' movement each second frame
 
