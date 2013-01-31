@@ -10,7 +10,23 @@ TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
 
+        ; IRQ redirector when Kernal is on
+
+RedirectIrq:    ldx $01
+                lda #$35                        ;Note: this will necessarily have overhead,
+                sta $01                         ;which means that the sensitive IRQs like
+                lda #>RI_Return                 ;the panel-split should take extra advance
+                pha
+                lda #<RI_Return
+                pha
+                php
+                jmp ($fffe)
+RI_Return:      stx $01
+                jmp $ea81
+
         ; Raster interrupt 1. Show game screen
+
+Irq1_NoSprites: jmp Irq2_AllDone
 
 Irq1:           cld
                 sta irqSaveA
@@ -31,7 +47,7 @@ Irq1_ScrollY:   lda #$57                        ;Check if panel split IRQ needs 
                 bne Irq1_NoBadLine
                 ora #$40
 Irq1_NoBadLine: sta Irq3_D011+1
-Irq1_Screen:    lda #$a8
+Irq1_Screen:    lda #GAMESCR1_D018
                 sta $d018
 Irq1_Bg1:       lda #$06
                 sta $d021
@@ -65,15 +81,8 @@ Irq1_D015:      lda #$00
                 sta $ffff
 Irq1_FirstSortSpr:
                 ldx #$00                        ;Go through the first sprite IRQ immediately
-                bpl Irq2_Spr0
-Irq1_NoSprites: jmp Irq2_AllDone                ;If no sprites, go directly to the panel
 
         ;Raster interrupt 2. This is where sprite displaying happens
-
-                org ((*+$ff) & $ff00) - 3
-
-Irq2_SprIrqDone2:
-                jmp Irq2_SprIrqDone
 
 Irq2_Spr0:      lda sortSprY,x
                 sta $d00f
@@ -125,6 +134,7 @@ Irq2_Spr3Frame: sta screen1+$03fc
                 lda sortSprC,x
                 sta $d02b
                 bpl Irq2_ToSpr4
+Irq2_SprIrqDone2:
                 jmp Irq2_SprIrqDone
 Irq2_ToSpr4:    inx
 
@@ -180,6 +190,10 @@ Irq2_Spr7Frame: sta screen1+$03f8
                 bmi Irq2_SprIrqDone
                 inx
 Irq2_ToSpr0:    jmp Irq2_Spr0
+
+                if (Irq2_Spr0 & $ff00) != (Irq2_Spr7 & $ff00)
+                    err
+                endif
 
 Irq2_SprIrqDone:
                 ldy sprIrqLine,x                ;Get startline of next IRQ
@@ -327,17 +341,3 @@ N               set N+1
                 sta $01                         ;Restore $01 value
                 lda irqSaveA
                 rti
-
-        ; IRQ redirector when Kernal is on
-
-RedirectIrq:    ldx $01
-                lda #$35                        ;Note: this will necessarily have overhead,
-                sta $01                         ;which means that the sensitive IRQs like
-                lda #>RI_Return                 ;the panel-split should take extra advance
-                pha
-                lda #<RI_Return
-                pha
-                php
-                jmp ($fffe)
-RI_Return:      stx $01
-                jmp $ea81
