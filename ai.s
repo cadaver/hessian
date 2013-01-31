@@ -179,7 +179,7 @@ ValidateTarget: ldy actAITarget,x
                 beq VT_Invalidate
 VT_TargetOK:    rts
 VT_PickNew:     ldy #<heroList
-                lda actGrp,x
+                lda actFlags,x
                 bmi VT_BeginPick
                 ldy #<villainList
 VT_BeginPick:   sty VT_PickLoop+1

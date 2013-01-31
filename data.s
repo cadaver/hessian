@@ -221,7 +221,7 @@ actPrevXL:      ds.b MAX_ACT,0
 actPrevXH:      ds.b MAX_ACT,0
 actPrevYL:      ds.b MAX_ACT,0
 actPrevYH:      ds.b MAX_ACT,0
-actGrp:         ds.b MAX_ACT,0
+actFlags:       ds.b MAX_ACT,0
 actOrg:         ds.b MAX_ACT,0
 actLvlOrg:      ds.b MAX_ACT,0
 actSizeH:       ds.b MAX_ACT,0
@@ -230,7 +230,8 @@ actSizeD:       ds.b MAX_ACT,0
 actTime:        ds.b MAX_ACT,0
 actHp:          ds.b MAX_ACT,0
 actMB:          ds.b MAX_ACT,0
-actAuxData:     ds.b MAX_ACT,0
+actAuxData:     ds.b ACTI_FIRSTITEM,0           ;NPCs and bullets only
+actAITarget:    ds.b ACTI_FIRSTITEM,0           ;NPCs and bullets only
 actCtrl:        ds.b MAX_COMPLEXACT,0
 actMoveCtrl:    ds.b MAX_COMPLEXACT,0
 actPrevCtrl:    ds.b MAX_COMPLEXACT,0
@@ -242,7 +243,6 @@ actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0
 actAIMode:      ds.b MAX_COMPLEXACT,0
 actAIHelp:      ds.b MAX_COMPLEXACT,0
-actAITarget:    ds.b MAX_COMPLEXACT,0
 actAIRoute:     ds.b MAX_COMPLEXACT,0
 actLastAttacker:ds.b MAX_COMPLEXACT,0
 

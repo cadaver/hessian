@@ -94,7 +94,7 @@ CheckBulletCollisionsApplyDamage:
 
 CheckBulletCollisions:
                 ror temp7
-                lda actGrp,x
+                lda actFlags,x
                 bmi CBC_CheckHeroes
 CBC_CheckVillains:
                 lda #<villainList
@@ -307,7 +307,7 @@ RD_Loop:        lda actT,y
                 beq RD_Next
                 lda actHp,y
                 beq RD_Next
-                lda actGrp,y
+                lda actFlags,y
                 and #AF_ISHERO|AF_ISVILLAIN
                 beq RD_Next
                 jsr CheckActorCollision

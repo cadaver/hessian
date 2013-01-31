@@ -276,6 +276,12 @@ AH_BulletFrameDone:
                 lda temp7
                 sta actSY,x
                 jsr InitActor                   ;Set collision size
+                lda actIndex
+                sta actOrg,x                    ;Set origin actor for XP checks
+                tay
+                lda actFlags,y
+                and #AF_ISHERO|AF_ISVILLAIN     ;Copy group from attacker
+                sta actFlags,x
                 lda #ORG_NONE                   ;Bullets have no leveldata origin
                 sta actLvlOrg,x
                 ldy #WD_DAMAGE                  ;Set duration and damage
@@ -455,7 +461,7 @@ ModifyTargetDamage:
                 sta temp7
                 lda actHp,x                     ;Amount of damage
                 sta temp8
-                lda actGrp,y                    ;Check if target is organic
+                lda actFlags,y                  ;Check if target is organic
                 and #AF_ISORGANIC
                 beq MTD_NonOrganic
 MTD_Organic:    lda temp7

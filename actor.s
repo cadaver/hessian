@@ -432,7 +432,7 @@ BCL_Loop:       lda actT,x                      ;Actor must exist and have nonze
                 beq BCL_Next
                 lda actHp,x
                 beq BCL_Next
-                lda actGrp,x
+                lda actFlags,x
                 and #AF_ISHERO|AF_ISVILLAIN
                 beq BCL_Next
                 bpl BCL_StoreHero
@@ -546,8 +546,7 @@ UA_NotZero:     stx actIndex
                 sta actLo
                 lda actLogicTblHi-1,y
                 sta actHi
-                ldy #AL_ACTORFLAGS              ;Perform remove check?
-                lda (actLo),y
+                lda actFlags,x                  ;Perform remove check?
                 asl
                 bmi UA_NoRemove
                 lda actXH,x
@@ -1049,7 +1048,7 @@ GetActorLogicData:
 InitActor:      jsr GetActorLogicData
                 ldy #AL_ACTORFLAGS
                 lda (actLo),y
-                pha
+                sta actFlags,x
                 lsr
                 lsr
                 iny
@@ -1061,16 +1060,14 @@ InitActor:      jsr GetActorLogicData
                 iny
                 lda (actLo),y
                 sta actSizeD,x
-                pla
-                bcs IA_SkipGroupHealthColor
-                sta actGrp,x
+                bcs IA_SkipHealthColor
                 iny
                 lda (actLo),y
                 sta actHp,x
                 iny
                 lda (actLo),y
                 sta actC,x
-IA_SkipGroupHealthColor:
+IA_SkipHealthColor:
                 rts
 
         ; Check if two actors have collided. Actors further apart than 128 pixels
@@ -1420,10 +1417,6 @@ GFA_NotComplex: rts
         ; Modifies: A
 
 SpawnActor:     sta actT,y
-                txa
-                sta actOrg,y                    ;Set origin actor
-                lda actGrp,x                    ;Copy origin group
-                sta actGrp,y
                 lda actXL,x
                 sta actXL,y
                 lda actXH,x
@@ -1442,10 +1435,6 @@ SpawnActor:     sta actT,y
         ; Modifies: A
 
 SpawnWithOffset:sta actT,y
-                txa
-                sta actOrg,y                    ;Set origin actor
-                lda actGrp,x                    ;Copy origin group
-                sta actGrp,y
                 lda actXL,x
                 clc
                 adc temp5
