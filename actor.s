@@ -1199,6 +1199,7 @@ DA_NotDead:     sta actHp,x
         ; Modifies: A,Y,temp8,possibly other temp registers
 
 DestroyActor:   sty temp8
+                cpy #ACTI_FIRSTNPCBULLET
                 lda #ORG_NONE                   ;If scrolled off the screen, do not return
                 sta actLvlOrg,x
                 jsr GetActorLogicData
@@ -1208,14 +1209,11 @@ DestroyActor:   sty temp8
                 iny
                 lda (actLo),y
                 sta DA_Jump+2
-                ldy temp8                       ;Check if player is damage source and give XP
-                bmi DA_Jump                     ;in that case
-                lda actOrg,y
-                bne DA_Jump
+                bcs DA_NoXP                     ;Give XP if damage source is a player bullet
                 ldy #AL_KILLXP
                 lda (actLo),y
                 jsr GiveXP
-                ldy temp8
+DA_NoXP:        ldy temp8
 DA_Jump:        jmp $0000
 
         ; Add actor from leveldata

@@ -2,6 +2,85 @@ GRENADE_DMG_RADIUS = 32
 GRENADE_MAX_YSPEED = 6*8
 GRENADE_ACCEL   = 4
 
+        ; Check bullet collisions and optionally apply damage
+        ;
+        ; Parameters: X bullet actor index, C=0 apply damage and remove bullet
+        ;             (will not return if collided), C=1 only report collision
+        ; Returns: C=1 if collided, Y target actor
+        ; Modifies: A,Y,tgtActIndex,temp variables
+
+CheckBulletCollisionsApplyDamage:
+                clc
+CheckBulletCollisions:
+                ror temp7
+                lda actFlags,x
+                bmi CBC_CheckHeroes
+CBC_CheckVillains:
+                lda #<villainList
+                sta CBC_GetNextVillain+1
+CBC_GetNextVillain:
+                ldy villainList
+                bmi CBC_Done
+                inc CBC_GetNextVillain+1
+                jsr CheckActorCollision
+                bcc CBC_GetNextVillain
+CBC_HasCollision:
+                lda temp7
+                bmi CBC_ReportOnly
+                sty tgtActIndex
+                jsr ModifyTargetDamage
+                tay
+                beq CBC_NoDamage
+                ldx tgtActIndex
+                ldy actIndex
+                jsr DamageActor
+CBC_NoDamage:   ldx actIndex
+                ldy #$ff                        ;Destroy bullet with no damage source
+                pla
+                pla
+                jmp DestroyActor
+CBC_Done:       clc
+CBC_ReportOnly: rts
+
+CBC_CheckHeroes:lda #<heroList
+                sta CBC_GetNextHero+1
+CBC_GetNextHero:ldy heroList
+                bmi CBC_Done
+                inc CBC_GetNextHero+1
+                jsr CheckActorCollision
+                bcc CBC_GetNextHero
+                bcs CBC_HasCollision
+
+        ; Give radius damage to both heroes & villains. Prior to calling, expand the
+        ; collision size of the source actor as necessary
+        ;
+        ; Parameters: X source actor index (must also be in actIndex)
+        ; Returns: -
+        ; Modifies: A,Y,tgtActIndex,possibly other temp registers
+
+RadiusDamage:   ldy #ACTI_LASTNPC
+RD_Loop:        lda actT,y
+                beq RD_Next
+                lda actHp,y
+                beq RD_Next
+                lda actFlags,y
+                and #AF_ISHERO|AF_ISVILLAIN
+                beq RD_Next
+                jsr CheckActorCollision
+                bcc RD_Next
+                sty tgtActIndex
+                jsr ModifyTargetDamage
+                tay
+                beq RD_SkipDamage
+                ldx tgtActIndex
+                ldy actIndex
+                jsr DamageActor
+RD_SkipDamage:  ldx actIndex
+                ldy tgtActIndex
+RD_Next:        dey
+                bpl RD_Loop
+                rts
+
         ; Shotgun bullet update routine. Expands collision and reduces damage as the
         ; bullet moves
         ;
@@ -13,8 +92,9 @@ MoveShotgunBullet:
                 lda actF1,x
                 cmp #$0a
                 bcs MSBlt_Cloud
+                inc actFd,x
                 lda #$0a
-                sta actF1,x
+                bne MBltMF_Common
 MSBlt_Cloud:    lda #$02
                 jsr AnimationDelay
                 bcc MSBlt_NoAnim
@@ -42,9 +122,7 @@ MoveBulletMuzzleFlash:
                 adc #$0a
 MBltMF_Common:  sta actF1,x
                 jsr MoveBullet
-                jmp NoInterpolation             ;No interpolation on second frame
-                                                ;to prevent flash from appearing in different
-                                                ;position dependent on flashing order
+                jmp NoInterpolation             ;Prevent muzzle flash from interpolating
 
         ; Flame update routine
         ;
@@ -67,8 +145,7 @@ MoveFlame:      lda #3
         ; Returns: -
         ; Modifies: A,Y
 
-MoveMeleeHit:   dec actTime,x
-                bpl CheckBulletCollisionsApplyDamage
+MoveMeleeHit:   jsr CheckBulletCollisionsApplyDamage
 MBlt_Remove:    jmp RemoveActor
 
         ; Bullet update routine
@@ -77,58 +154,13 @@ MBlt_Remove:    jmp RemoveActor
         ; Returns: -
         ; Modifies: A,Y
 
-MoveBullet:     dec actTime,x
+MoveBullet:     jsr CheckBulletCollisionsApplyDamage
+                dec actTime,x
                 bmi MBlt_Remove
                 jsr MoveProjectile
                 and #CI_OBSTACLE
                 bne MBlt_Remove
-
-CheckBulletCollisionsApplyDamage:
-                clc
-
-        ; Check bullet collisions
-        ;
-        ; Parameters: X bullet actor index, C=0 apply damage C=1 report collisions only
-        ; Returns: C=1 if collided (report mode)
-        ; Modifies: A,Y,tgtActIndex,temp variables
-
-CheckBulletCollisions:
-                ror temp7
-                lda actFlags,x
-                bmi CBC_CheckHeroes
-CBC_CheckVillains:
-                lda #<villainList
-                sta CBC_GetNextVillain+1
-CBC_GetNextVillain:
-                ldy villainList
-                bmi CBC_Done
-                inc CBC_GetNextVillain+1
-                jsr CheckActorCollision
-                bcc CBC_GetNextVillain
-CBC_HasCollision:
-                lda temp7
-                bmi CBC_ReportOnly
-                sty tgtActIndex
-                jsr ModifyTargetDamage
-                tay
-                beq CBC_NoDamage
-                ldx tgtActIndex
-                ldy actIndex
-                jsr DamageActor
-CBC_NoDamage:   ldx actIndex
-                ldy #$ff                        ;Destroy bullet without damage source
-                jmp DestroyActor
-CBC_Done:       clc
-CBC_ReportOnly: rts
-
-CBC_CheckHeroes:lda #<heroList
-                sta CBC_GetNextHero+1
-CBC_GetNextHero:ldy heroList
-                bmi CBC_Done
-                inc CBC_GetNextHero+1
-                jsr CheckActorCollision
-                bcc CBC_GetNextHero
-                bcs CBC_HasCollision
+                rts
 
         ; Smoketrail update routine
         ;
@@ -178,15 +210,15 @@ MoveRocket:     lda actTime,x
                 tya
                 jsr GetFlickerColorOverride
                 sta actC,y
-MRckt_NoSmoke:  dec actTime,x
+MRckt_NoSmoke:  sec
+                jsr CheckBulletCollisions
+                bcs ExplodeGrenade
+                dec actTime,x
                 bmi MRckt_Remove
                 jsr MoveProjectile
                 and #CI_OBSTACLE
                 bne ExplodeGrenade
 MRckt_CheckEnemyCollisions:
-                sec                             ;Explode if touches enemy
-                jsr CheckBulletCollisions
-                bcs ExplodeGrenade
                 rts
 MRckt_Remove:   jmp RemoveActor
 
@@ -293,45 +325,16 @@ MGrn_NoHitWall: and #MB_HITCEILING              ;Halve X-speed when hit ceiling
                 jsr Asr8
 MGrn_StoreNewXSpeed:
                 sta actSX,x
+MEMP_NoAnim:
 MGrn_Done:      rts
-
-        ; Give radius damage to both heroes & villains. Prior to calling, expand the
-        ; collision size of the source actor as necessary
-        ;
-        ; Parameters: X source actor index (must also be in actIndex)
-        ; Returns: -
-        ; Modifies: A,Y,tgtActIndex,possibly other temp registers
-
-RadiusDamage:   ldy #ACTI_LASTNPC
-RD_Loop:        lda actT,y
-                beq RD_Next
-                lda actHp,y
-                beq RD_Next
-                lda actFlags,y
-                and #AF_ISHERO|AF_ISVILLAIN
-                beq RD_Next
-                jsr CheckActorCollision
-                bcc RD_Next
-                sty tgtActIndex
-                jsr ModifyTargetDamage
-                tay
-                beq RD_SkipDamage
-                ldx tgtActIndex
-                ldy actIndex
-                jsr DamageActor
-RD_SkipDamage:  ldx actIndex
-                ldy tgtActIndex
-RD_Next:        dey
-                bpl RD_Loop
-MEMP_NoAnim:    rts
 
         ; EMP blast update routine
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y
-        
-MoveEMP:        lda actTime,x                   ;Todo: should possibly not manipulate
+
+MoveEMP:        lda actTime,x                   ;TODO: should possibly not manipulate
                 cmp #$01                        ;background colors directly
                 bcc MEMP_ColorDone
                 beq MEMP_Restore
@@ -342,8 +345,8 @@ MoveEMP:        lda actTime,x                   ;Todo: should possibly not manip
                 sta actTime,x
                 bne MEMP_ColorDone
 MEMP_Restore:   jsr SetZoneColors
-MEMP_ColorDone: jsr MoveProjectile
-                jsr RadiusDamage
+MEMP_ColorDone: jsr RadiusDamage
+                jsr MoveProjectile
                 lda #1
                 jsr AnimationDelay
                 bcc MEMP_NoAnim
@@ -352,7 +355,6 @@ MEMP_ColorDone: jsr MoveProjectile
                 cmp #$04
                 bcc MEMP_NoAnim
                 jmp RemoveActor
-
 
         ; Plasma update routine
         ;

@@ -351,9 +351,9 @@ alLaser:        dc.w MoveBullet                 ;Update routine
 alPlasma:       dc.w MovePlasma                 ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 8                          ;Horizontal size
-                dc.b 8                          ;Size up
-                dc.b 8                          ;Size down
+                dc.b 7                          ;Horizontal size
+                dc.b 7                          ;Size up
+                dc.b 7                          ;Size down
 
 alLauncherGrenade:
                 dc.w MoveLauncherGrenade        ;Update routine

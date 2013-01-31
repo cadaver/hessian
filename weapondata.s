@@ -325,7 +325,7 @@ wdLaserRifle:   dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b 18                         ;Bullet time duration
                 dc.b 15                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
-                dc.b SFX_SONICWAVE              ;Sound effect
+                dc.b SFX_LASER                  ;Sound effect
                 dc.b 99                         ;Idle weapon frame (right)
                 dc.b 104                        ;Idle weapon frame (left)
                 dc.b 99                         ;Prepare weapon frame (right)
@@ -346,7 +346,7 @@ wdPlasmaGun:    dc.b WDB_FLICKERBULLET          ;Weapon bits
                 dc.b 21                         ;Bullet time duration
                 dc.b 13                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
-                dc.b SFX_SONICWAVE              ;Sound effect
+                dc.b SFX_PLASMA                 ;Sound effect
                 dc.b 109                        ;Idle weapon frame (right)
                 dc.b 114                        ;Idle weapon frame (left)
                 dc.b 109                        ;Prepare weapon frame (right)

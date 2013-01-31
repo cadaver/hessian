@@ -222,7 +222,6 @@ actPrevXH:      ds.b MAX_ACT,0
 actPrevYL:      ds.b MAX_ACT,0
 actPrevYH:      ds.b MAX_ACT,0
 actFlags:       ds.b MAX_ACT,0
-actOrg:         ds.b MAX_ACT,0
 actLvlOrg:      ds.b MAX_ACT,0
 actSizeH:       ds.b MAX_ACT,0
 actSizeU:       ds.b MAX_ACT,0

@@ -229,7 +229,7 @@ AH_MeleeAnimation:
 AH_SpawnBullet: jsr GetBulletOffset
                 bcc AH_CannotFire
                 txa                             ;Check whether to use player or NPC bullet actor
-                bne AH_IsPlayer                 ;indices
+                beq AH_IsPlayer                 ;indices
                 lda #ACTI_FIRSTNPCBULLET
                 ldy #ACTI_LASTNPCBULLET
                 bne AH_IsNpc
@@ -276,8 +276,6 @@ AH_BulletFrameDone:
                 lda temp7
                 sta actSY,x
                 jsr InitActor                   ;Set collision size
-                lda actIndex
-                sta actOrg,x                    ;Set origin actor for XP checks
                 tay
                 lda actFlags,y
                 and #AF_ISHERO|AF_ISVILLAIN     ;Copy group from attacker
