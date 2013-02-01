@@ -3,15 +3,15 @@ MAX_ACTY        = 9
 
 ACTI_PLAYER     = 0
 ACTI_FIRSTNPC   = 1
-ACTI_LASTNPC    = 6
-ACTI_FIRSTPLRBULLET = 7
-ACTI_LASTPLRBULLET = 11
-ACTI_FIRSTNPCBULLET = 12
-ACTI_LASTNPCBULLET = 16
-ACTI_FIRSTITEM  = 17
-ACTI_LASTITEM   = 21
-ACTI_FIRSTEFFECT = 22
-ACTI_LASTEFFECT = 24
+ACTI_LASTNPC    = 7
+ACTI_FIRSTPLRBULLET = 8
+ACTI_LASTPLRBULLET = 12
+ACTI_FIRSTNPCBULLET = 13
+ACTI_LASTNPCBULLET = 17
+ACTI_FIRSTITEM  = 18
+ACTI_LASTITEM   = 22
+ACTI_FIRSTEFFECT = 23
+ACTI_LASTEFFECT = 25
 
 AD_NUMSPRITES   = 0
 AD_SPRFILE      = 1
@@ -457,27 +457,12 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
 
                 lda menuMode                    ;If levelup or pausemenu in progress,
                 cmp #MENU_LEVELUPMSG            ;do not move actors
-                bcc CheckRoute
+                bcc UA_UpdateAll
 UA_SkipUpdate:  jmp InterpolateActors
-
-        ; Do route check for one AI actor at a time
-
-CheckRoute:     ldx #ACTI_FIRSTNPC
-                lda actT,x
-                beq CR_NoCheck
-                ldy actAITarget,x
-                bmi CR_NoCheck
-                jsr RouteCheck
-                sta actAIRoute,x
-CR_NoCheck:     inx
-                cpx #ACTI_LASTNPC+1
-                bcc CR_NotOver
-                ldx #ACTI_FIRSTNPC
-CR_NotOver:     stx CheckRoute+1
 
         ; Call update routines of all on-screen actors
 
-                ldx #MAX_ACT-1
+UA_UpdateAll:   ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex
@@ -1358,8 +1343,6 @@ GFA_Found:      lda #$00                        ;Reset animation & speed when fr
                 sta actFall,y
                 sta actFallL,y
                 sta actAIHelp,y
-                sta actAITarget,y
-                sta actAIRoute,y
                 lda #$ff
                 sta actWpnF,y
                 sta actAITarget,y               ;Start with no target
@@ -1451,8 +1434,8 @@ GAD_XDistPos:   sta temp6
         ; Check if there is obstacles between actors
         ;
         ; Parameters: X actor index, Y target actor index
-        ; Returns: A routecheck result ($01 = fail, $80 OK)
-        ; Modifies: A,Y,temp variables
+        ; Returns: C=1 route OK, C=0 route fail
+        ; Modifies: A,Y,temp1-temp3, loader temp variables
 
 RouteCheck:     lda actXH,x
                 sta temp1
@@ -1481,8 +1464,7 @@ RC_CmpX:        cpy #$00
 RC_CmpY:        cpy #$00
                 bcc RC_MoveDown
                 bne RC_MoveUp
-                lda #ROUTE_OK                   ;Route found
-                rts
+                rts                             ;C=1, route found
 RC_MoveRight:   iny
                 bcc RC_MoveXDone
 RC_MoveLeft:    dey
@@ -1514,5 +1496,5 @@ RC_MoveYDone2:  dec temp3
                 lda charInfo,y                  ;Get charinfo
                 and #CI_OBSTACLE
                 beq RC_Loop
-RC_NoRoute:     lda #ROUTE_FAIL                 ;Route not found
+RC_NoRoute:     clc                            ;Route not found
                 rts

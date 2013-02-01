@@ -13,6 +13,8 @@ ROUTE_OK        = $80
 
 NOTARGET        = $ff
 
+FINDTARGET_RETRIES = 2
+
 ATTACK_LEFT_CHARLIMIT = $01
 ATTACK_RIGHT_CHARLIMIT = $26
 
@@ -25,7 +27,7 @@ ATTACK_RIGHT_CHARLIMIT = $26
 MoveAIHuman:    lda actCtrl,x
                 sta actPrevCtrl,x
                 txa                             ;Skip even and odd actors on consecutive
-                eor CheckRoute+1                ;frames
+                eor DA_ItemFlashCounter+1       ;frames
                 lsr
                 bcs MA_SkipAI
                 ldy actAIMode,x
@@ -53,11 +55,9 @@ AI_NoAttack:    lda #$00
 
 AI_Sniper:      lda actTime,x                   ;Attack time left?
                 bmi AI_ContinueAttack
-                jsr ValidateTarget
-                tya
+                jsr FindTarget
+                ldy actAITarget,x               ;TODO: readd route-check to avoid firing into walls
                 bmi AI_GoIdle
-                lda actAIRoute,x
-                bpl AI_NoAttack
                 jsr GetActorDistance
                 lda temp5                       ;Always face the target when in line of sight
                 sta actD,x
@@ -165,34 +165,41 @@ AI_AttackDirOK: sta actCtrl,x
                 sta actTime,x
                 rts
 
-        ; Verify that target is valid, and/or pick next target
+        ; Validate existing AI target / find new target
         ;
         ; Parameters: X actor index
-        ; Returns: Y target, or $ff if none
-        ; Modifies: A,Y
+        ; Returns: actAITarget set to new value if necessary
+        ; Modifies: A,Y,temp regs
 
-ValidateTarget: ldy actAITarget,x
-                bmi VT_PickNew
+FindTarget:     ldy actAITarget,x
+                bmi FT_PickNew
                 lda actT,y
-                beq VT_Invalidate
+                beq FT_Invalidate
                 lda actHp,y
-                beq VT_Invalidate
-VT_TargetOK:    rts
-VT_PickNew:     ldy #<heroList
-                lda actFlags,x
-                bmi VT_BeginPick
-                ldy #<villainList
-VT_BeginPick:   sty VT_PickLoop+1
-                ldy #$00
-VT_PickLoop:    lda heroList,y
-                bmi VT_Invalidate
-                bpl VT_NewTargetFound           ;TODO: now always picks first target, randomize
-                iny
-                bpl VT_PickLoop
-VT_Invalidate:  lda #NOTARGET
-VT_NewTargetFound:
-                sta actAITarget,x
-                tay
-                lda #ROUTE_NOTCHECKED           ;Reset routecheck for new target
-                sta actAIRoute,x
+                beq FT_Invalidate
+FT_TargetOK:    rts
+FT_Invalidate:  lda #NOTARGET
+FT_StoreTarget: sta actAITarget,x
                 rts
+FT_PickNew:     lda #FINDTARGET_RETRIES
+                sta temp1
+FT_PickLoop:    jsr Random                  ;TODO: randomize within hero/villainlists
+                and #MAX_COMPLEXACT-1       ;TODO: take distance into account
+                tay
+                lda actT,y                  ;Must exist and be alive
+                beq FT_NextTarget
+                lda actHp,y
+                beq FT_NextTarget
+                lda actFlags,y
+                and #AF_ISHERO|AF_ISVILLAIN
+                beq FT_NextTarget
+                eor actFlags,x              ;Must be from opposite group
+                bmi FT_CheckRoute
+FT_NextTarget:  dec temp1
+                bne FT_PickLoop
+FT_NoRoute:     rts
+FT_CheckRoute:  sty tgtActIndex
+                jsr RouteCheck
+                bcc FT_NoRoute
+                lda tgtActIndex
+                bcs FT_StoreTarget

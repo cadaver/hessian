@@ -242,8 +242,6 @@ actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0
 actAIMode:      ds.b MAX_COMPLEXACT,0
 actAIHelp:      ds.b MAX_COMPLEXACT,0
-actAIRoute:     ds.b MAX_COMPLEXACT,0
-actLastAttacker:ds.b MAX_COMPLEXACT,0
 
         ; Player state
 

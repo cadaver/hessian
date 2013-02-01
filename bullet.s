@@ -389,10 +389,10 @@ MoveDrone:      lda actFd,x
                 lsr
                 and #$03
                 sta actF1,x
-                lda actAITarget,x
-                bmi MDrn_CheckTarget
-MDrn_HasTarget: tay
-                lda actSizeU,y
+                jsr FindTarget
+                ldy actAITarget,x
+                bmi MDrn_Idle
+MDrn_HasTarget: lda actSizeU,y
                 asl
                 adc actSizeU,y
                 bcs MDrn_MaxSize
@@ -431,49 +431,10 @@ MDrn_TargetAccXCommon:
 MDrn_TargetDown:
                 lda #DRONE_ATTACK_ACCEL
                 ldy #DRONE_MAXSPEED
-                bne MDrn_TargetAccYCommon
+                bne MDrn_AccCommon
 MDrn_TargetUp:  lda #-DRONE_ATTACK_ACCEL
                 ldy #-DRONE_MAXSPEED
-MDrn_TargetAccYCommon:
-                jmp MDrn_AccCommon
-
-MDrn_CheckTarget:
-                cmp #$80
-                bne MDrn_Idle
-                lda #$ff
-                sta actAITarget,x           ;Assume we don't find a target
-                sta temp4                   ;Best distance found so far
-                ldy #ACTI_LASTNPC
-MDrn_TargetLoop:lda actT,y                  ;Must exist and be alive
-                beq MDrn_NextTarget
-                lda actHp,y
-                beq MDrn_NextTarget
-                lda actFlags,y
-                and #AF_ISHERO|AF_ISVILLAIN
-                beq MDrn_NextTarget
-                eor actFlags,x              ;Must be from opposite group
-                bpl MDrn_NextTarget
-                jsr GetActorDistance
-                lda temp5                   ;Left/right facing must match throw direction
-                eor actSX,x
-                bmi MDrn_NextTarget
-                lda temp6
-                clc
-                adc temp8
-                cmp temp4
-                bcs MDrn_NextTarget         ;Farther away than best target found so far
-                sta temp5
-                sty temp6
-                jsr RouteCheck
-                ldy temp6
-                cmp #ROUTE_OK
-                bne MDrn_NextTarget         ;Must not be an obstacle in between
-                tya
-                sta actAITarget,x           ;Use this target if better not found
-                lda temp5
-                sta temp4                   ;Store new best distance so far
-MDrn_NextTarget:dey
-                bpl MDrn_TargetLoop
+                bne MDrn_AccCommon
 MDrn_Idle:      ldy actF1,x
                 iny
                 tya
@@ -485,7 +446,7 @@ MDrn_AccDown:   lda #DRONE_IDLE_ACCEL
 MDrn_AccUp:     lda #-DRONE_IDLE_ACCEL
                 ldy #-DRONE_MAXSPEED
 MDrn_AccCommon: jsr AccActorY
-MDrn_NoAnim:    jsr CheckBulletCollisionsApplyDamage
+                jsr CheckBulletCollisionsApplyDamage
                 dec actTime,x
                 bmi MDrn_Expire
                 jmp MoveFlyer
