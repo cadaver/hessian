@@ -16,6 +16,28 @@ MoveProjectile: lda actSX,x
                 jsr MoveActorY
                 jmp GetCharInfo
 
+        ; Move actor and stop at obstacles
+        ;
+        ; Parameters: X actor index
+        ; Returns: A charinfo
+        ; Modifies: A,Y,temp vars
+
+MoveFlyer:      lda actSX,x
+                jsr MoveActorX
+                jsr GetCharInfo
+                and #CI_OBSTACLE
+                beq MF_XMoveOK
+                lda actSX,x
+                jsr MoveActorXNeg
+MF_XMoveOK:     lda actSY,x
+                jsr MoveActorY
+                jsr GetCharInfo
+                and #CI_OBSTACLE
+                beq MF_YMoveOK
+                lda actSY,x
+                jmp MoveActorYNeg
+MF_YMoveOK:     rts
+
         ; Move actor with gravity and ground/wall collisions. Does not modify horizontal velocity
         ;
         ; Parameters: X actor index, A gravity acceleration (should be positive), Y speed limit,

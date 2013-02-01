@@ -422,7 +422,6 @@ wdBazooka:      dc.b WDB_BULLETDIRFRAME|WDB_NOSKILLBONUS|WDB_LOCKANIMATION ;Weap
                 dc.b SFX_RELOADBAZOOKA          ;Reload finished sound
                 dc.b FR_PREPARE+1               ;Lock animation upper body frame
 
-wdHomingDrone:
 wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
                 dc.b AIM_DIAGONALDOWN           ;Last aim direction
@@ -434,5 +433,17 @@ wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b 6                          ;Bullet speed in pixels
                 dc.b SPDTBL_GRENADE             ;Bullet speed table offset
                 dc.b SFX_THROW                  ;Sound effect
+
+wdHomingDrone:  dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
+                dc.b AIM_DIAGONALUP             ;First aim direction
+                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b 20                         ;Attack delay
+                dc.b ACT_DRONE                  ;Bullet actor type
+                dc.b DMG_DRONE                  ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b 50                         ;Bullet time duration
+                dc.b 4                          ;Bullet speed in pixels
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
+                dc.b SFX_DRONE                  ;Sound effect
 
 fromHipFrameTbl:dc.b FR_WALK+4,FR_WALK+2,FR_WALK

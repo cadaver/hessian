@@ -443,9 +443,7 @@ MH_NoLongJump:  lda (actLo),y
                 and #AIH_AUTOTURNLEDGE
                 beq MH_NoAutoJump
                 lda actSX,x
-                eor #$ff
-                adc #$00
-                jsr MoveActorX                  ;Back off from the ledge
+                jsr MoveActorXNeg               ;Back off from the ledge
                 lda #MB_GROUNDED
                 sta actMB,x                     ;Force grounded status
                 sta temp1

@@ -2,6 +2,10 @@ GRENADE_DMG_RADIUS = 32
 GRENADE_MAX_YSPEED = 6*8
 GRENADE_ACCEL   = 4
 
+DRONE_IDLE_ACCEL = 4
+DRONE_ATTACK_ACCEL = 6
+DRONE_MAXSPEED = 4*8
+
         ; Check bullet collisions and optionally apply damage
         ;
         ; Parameters: X bullet actor index, C=0 apply damage and remove bullet
@@ -372,3 +376,117 @@ MovePlasma:     lda #$02
                 lda #$00
 MPls_AnimDone:  sta actF1,x
 MPls_NoAnim:    jmp MoveBullet
+
+        ; Drone update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveDrone:      lda actFd,x
+                inc actFd,x
+                lsr
+                lsr
+                and #$03
+                sta actF1,x
+                lda actAITarget,x
+                bmi MDrn_CheckTarget
+MDrn_HasTarget: tay
+                lda actSizeU,y
+                asl
+                adc actSizeU,y
+                bcs MDrn_MaxSize
+                asl
+                bcc MDrn_NoMaxSize
+MDrn_MaxSize:   lda #$ff
+MDrn_NoMaxSize: clc                             ;Offset Y-check location by 3/4 of
+                adc actYL,x                     ;target's up size, up to 32 pixels
+                sta temp1
+                lda actYH,x
+                adc #$00
+                sta temp2
+                lda actYL,y
+                sec
+                sbc temp1
+                lda actYH,y
+                sbc temp2
+                sta temp7
+                bpl MDrn_YDistPos
+                eor #$ff
+MDrn_YDistPos:  sta temp8
+                jsr GetActorXDistance
+                lda temp5
+                bmi MDrn_TargetLeft
+MDrn_TargetRight:
+                lda #DRONE_ATTACK_ACCEL
+                ldy #DRONE_MAXSPEED
+                bne MDrn_TargetAccXCommon
+MDrn_TargetLeft:
+                lda #-DRONE_ATTACK_ACCEL
+                ldy #-DRONE_MAXSPEED
+MDrn_TargetAccXCommon:
+                jsr AccActorX
+                lda temp7
+                bmi MDrn_TargetUp
+MDrn_TargetDown:
+                lda #DRONE_ATTACK_ACCEL
+                ldy #DRONE_MAXSPEED
+                bne MDrn_TargetAccYCommon
+MDrn_TargetUp:  lda #-DRONE_ATTACK_ACCEL
+                ldy #-DRONE_MAXSPEED
+MDrn_TargetAccYCommon:
+                jmp MDrn_AccCommon
+
+MDrn_CheckTarget:
+                cmp #$80
+                bne MDrn_Idle
+                lda #$ff
+                sta actAITarget,x           ;Assume we don't find a target
+                sta temp4                   ;Best distance found so far
+                ldy #ACTI_LASTNPC
+MDrn_TargetLoop:lda actT,y                  ;Must exist and be alive
+                beq MDrn_NextTarget
+                lda actHp,y
+                beq MDrn_NextTarget
+                lda actFlags,y
+                and #AF_ISHERO|AF_ISVILLAIN
+                beq MDrn_NextTarget
+                eor actFlags,x              ;Must be from opposite group
+                bpl MDrn_NextTarget
+                jsr GetActorDistance
+                lda temp5                   ;Left/right facing must match throw direction
+                eor actSX,x
+                bmi MDrn_NextTarget
+                lda temp6
+                clc
+                adc temp8
+                cmp temp4
+                bcs MDrn_NextTarget         ;Farther away than best target found so far
+                sta temp5
+                sty temp6
+                jsr RouteCheck
+                ldy temp6
+                cmp #ROUTE_OK
+                bne MDrn_NextTarget         ;Must not be an obstacle in between
+                tya
+                sta actAITarget,x           ;Use this target if better not found
+                lda temp5
+                sta temp4                   ;Store new best distance so far
+MDrn_NextTarget:dey
+                bpl MDrn_TargetLoop
+MDrn_Idle:      ldy actF1,x
+                iny
+                tya
+                and #$02
+                beq MDrn_AccUp
+MDrn_AccDown:   lda #DRONE_IDLE_ACCEL
+                ldy #DRONE_MAXSPEED
+                bne MDrn_AccCommon
+MDrn_AccUp:     lda #-DRONE_IDLE_ACCEL
+                ldy #-DRONE_MAXSPEED
+MDrn_AccCommon: jsr AccActorY
+MDrn_NoAnim:    jsr CheckBulletCollisionsApplyDamage
+                dec actTime,x
+                bmi MDrn_Expire
+                jmp MoveFlyer
+MDrn_Expire:    jmp ExplodeActor                ;Explode harmlessly

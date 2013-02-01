@@ -276,12 +276,13 @@ AH_BulletFrameDone:
                 lda temp7
                 sta actSY,x
                 jsr InitActor                   ;Set collision size
-                tay
+                ldy actIndex
                 lda actFlags,y
                 and #AF_ISHERO|AF_ISVILLAIN     ;Copy group from attacker
                 sta actFlags,x
                 lda #ORG_NONE                   ;Bullets have no leveldata origin
                 sta actLvlOrg,x
+                sta actAITarget,x               ;Reset target for homing bullets
                 ldy #WD_DAMAGE                  ;Set duration and damage
                 lda (wpnLo),y
                 sta actHp,x

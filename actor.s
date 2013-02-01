@@ -464,72 +464,11 @@ UA_SkipUpdate:  jmp InterpolateActors
 
 CheckRoute:     ldx #ACTI_FIRSTNPC
                 lda actT,x
-                beq CR_NoCheck2
+                beq CR_NoCheck
                 ldy actAITarget,x
-                bmi CR_NoCheck2
-                lda actXH,x
-                sta temp1
-                lda actMB,x                     ;If actor is grounded, check 1 block higher
-                eor #$01
-                lsr
-                lda actYH,x
-                sbc #$00
-                sta temp2
-                lda actXH,y
-                sta CR_CmpX+1
-                lda actMB,y                     ;If actor is grounded, check 1 block higher
-                eor #$01
-                lsr
-                lda actYH,y
-                sbc #$00
-                sta CR_CmpY+1
-                sta CR_CmpY2+1
-                lda #MAX_ROUTE_STEPS
-                sta temp3
-CR_Loop:        ldy temp1
-CR_CmpX:        cpy #$00
-                bcc CR_MoveRight
-                bne CR_MoveLeft
-                ldy temp2
-CR_CmpY:        cpy #$00
-                bcc CR_MoveDown
-                bne CR_MoveUp
-                lda #ROUTE_OK                   ;Route found
-                bne CR_Done
-CR_NoCheck2:    jmp CR_NoCheck
-CR_MoveRight:   iny
-                bcc CR_MoveXDone
-CR_MoveLeft:    dey
-CR_MoveXDone:   sty temp1
-                ldy temp2
-CR_CmpY2:       cpy #$00
-                bcc CR_MoveDown
-                beq CR_MoveYDone2
-CR_MoveUp:      dey
-                bcs CR_MoveYDone
-CR_MoveDown:    iny
-CR_MoveYDone:   sty temp2
-CR_MoveYDone2:  dec temp3
-                beq CR_NoRoute
-                lda mapTblLo,y
-                sta zpDestLo
-                lda mapTblHi,y
-                sta zpDestHi
-                ldy temp1
-                lda (zpDestLo),y                ;Take block from map
-                tay
-                lda blkTblLo,y
-                sta zpDestLo
-                lda blkTblHi,y
-                sta zpDestHi
-                ldy #2*4+2
-                lda (zpDestLo),y                ;Get char from block (middle)
-                tay
-                lda charInfo,y                  ;Get charinfo
-                and #CI_OBSTACLE
-                beq CR_Loop
-CR_NoRoute:     lda #ROUTE_FAIL                 ;Route not found
-CR_Done:        sta actAIRoute,x
+                bmi CR_NoCheck
+                jsr RouteCheck
+                sta actAIRoute,x
 CR_NoCheck:     inx
                 cpx #ACTI_LASTNPC+1
                 bcc CR_NotOver
@@ -712,6 +651,16 @@ NoInterpolation:lda actXL,x
                 sta actPrevYH,x
                 rts
 
+        ; Move actor in negated X-direction
+        ;
+        ; Parameters: X actor index, A speed
+        ; Returns: -
+        ; Modifies: A
+
+MoveActorXNeg:  eor #$ff
+                clc
+                adc #$01
+
         ; Move actor in X-direction
         ;
         ; Parameters: X actor index, A speed
@@ -731,6 +680,16 @@ MAX_Neg:        clc
                 bcs MAX_NegOk
                 dec actXH,x
 MAX_NegOk:      rts
+
+        ; Move actor in negated Y-direction
+        ;
+        ; Parameters: X actor index, A speed
+        ; Returns: -
+        ; Modifies: A
+
+MoveActorYNeg:  eor #$ff
+                clc
+                adc #$01
 
         ; Move actor in Y-direction
         ;
@@ -1468,15 +1427,6 @@ GetFlickerColorOverride:
         ; Modifies: A
         
 GetActorDistance:
-                lda actXL,y
-                sec
-                sbc actXL,x
-                lda actXH,y
-                sbc actXH,x
-                sta temp5
-                bpl GAD_XDistPos
-                eor #$ff
-GAD_XDistPos:   sta temp6
                 lda actYL,y
                 sec
                 sbc actYL,x
@@ -1486,5 +1436,83 @@ GAD_XDistPos:   sta temp6
                 bpl GAD_YDistPos
                 eor #$ff
 GAD_YDistPos:   sta temp8
+GetActorXDistance:
+                lda actXL,y
+                sec
+                sbc actXL,x
+                lda actXH,y
+                sbc actXH,x
+                sta temp5
+                bpl GAD_XDistPos
+                eor #$ff
+GAD_XDistPos:   sta temp6
                 rts
                 
+        ; Check if there is obstacles between actors
+        ;
+        ; Parameters: X actor index, Y target actor index
+        ; Returns: A routecheck result ($01 = fail, $80 OK)
+        ; Modifies: A,Y,temp variables
+
+RouteCheck:     lda actXH,x
+                sta temp1
+                lda actMB,x                     ;If actor is grounded, check 1 block higher
+                eor #$01
+                lsr
+                lda actYH,x
+                sbc #$00
+                sta temp2
+                lda actXH,y
+                sta RC_CmpX+1
+                lda actMB,y                     ;If actor is grounded, check 1 block higher
+                eor #$01
+                lsr
+                lda actYH,y
+                sbc #$00
+                sta RC_CmpY+1
+                sta RC_CmpY2+1
+                lda #MAX_ROUTE_STEPS
+                sta temp3
+RC_Loop:        ldy temp1
+RC_CmpX:        cpy #$00
+                bcc RC_MoveRight
+                bne RC_MoveLeft
+                ldy temp2
+RC_CmpY:        cpy #$00
+                bcc RC_MoveDown
+                bne RC_MoveUp
+                lda #ROUTE_OK                   ;Route found
+                rts
+RC_MoveRight:   iny
+                bcc RC_MoveXDone
+RC_MoveLeft:    dey
+RC_MoveXDone:   sty temp1
+                ldy temp2
+RC_CmpY2:       cpy #$00
+                bcc RC_MoveDown
+                beq RC_MoveYDone2
+RC_MoveUp:      dey
+                bcs RC_MoveYDone
+RC_MoveDown:    iny
+RC_MoveYDone:   sty temp2
+RC_MoveYDone2:  dec temp3
+                beq RC_NoRoute
+                lda mapTblLo,y
+                sta zpDestLo
+                lda mapTblHi,y
+                sta zpDestHi
+                ldy temp1
+                lda (zpDestLo),y                ;Take block from map
+                tay
+                lda blkTblLo,y
+                sta zpDestLo
+                lda blkTblHi,y
+                sta zpDestHi
+                ldy #2*4+2
+                lda (zpDestLo),y                ;Get char from block (middle)
+                tay
+                lda charInfo,y                  ;Get charinfo
+                and #CI_OBSTACLE
+                beq RC_Loop
+RC_NoRoute:     lda #ROUTE_FAIL                 ;Route not found
+                rts
