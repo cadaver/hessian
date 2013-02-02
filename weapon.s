@@ -18,14 +18,14 @@ WD_SPEEDTABLEOFFSET = 9
 WD_SFX          = 10
 WD_IDLEFR       = 11
 WD_IDLEFRLEFT   = 12
-WD_PREPAREFR    = 13
-WD_PREPAREFRLEFT = 14
-WD_ATTACKFR     = 15
-WD_ATTACKFRLEFT = 20
-WD_RELOADDELAY  = 25
-WD_RELOADSFX    = 26
-WD_RELOADDONESFX = 27
-WD_LOCKANIMFRAME = 28
+WD_ATTACKFR     = 13
+WD_ATTACKFRLEFT = 14
+WD_PREPAREFR    = 15                            ;Melee weapons only
+WD_PREPAREFRLEFT = 16
+WD_RELOADDELAY  = 15                            ;Firearms only
+WD_RELOADSFX    = 16
+WD_RELOADDONESFX = 17
+WD_LOCKANIMFRAME = 18
 
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
@@ -168,7 +168,8 @@ AH_DirOk1:      iny
                 cmp (wpnLo),y
                 bcc AH_DirOk2
                 lda (wpnLo),y
-AH_DirOk2:      pha
+AH_DirOk2:      sta temp2                       ;Final aim direction
+                sta temp1
                 clc
                 ldy temp3                       ;Check fire-from-hip animation mode
                 bpl AH_NormalAttack
@@ -178,18 +179,19 @@ AH_DirOk2:      pha
 AH_NormalAttack:adc #FR_ATTACK
 AH_StoreAttackFrame:
                 sta actF2,x
-                pla
-                ldy actD,x
+                ldy #WD_ATTACKFR
+                lda actD,x
                 bpl AH_AimRight
+                iny
+                lda temp1
                 adc #5
-AH_AimRight:    sta temp1
-                adc #WD_ATTACKFR
-                tay
-                lda temp3
+                sta temp1
+AH_AimRight:    lda temp3
                 lsr
                 lda #$ff
                 bcs AH_NoWeaponFrame2
                 lda (wpnLo),y
+                adc temp2
 AH_NoWeaponFrame2:
                 sta actWpnF,x
                 lda actAttackD,x
