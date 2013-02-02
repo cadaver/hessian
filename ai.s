@@ -7,16 +7,7 @@ AIH_AUTOJUMPLEDGE = $04
 AIMODE_NONE     = 0
 AIMODE_SNIPER   = 1
 
-ROUTE_NOTCHECKED = $00
-ROUTE_FAIL      = $01
-ROUTE_OK        = $80
-
-NOTARGET        = $ff
-
-FINDTARGET_RETRIES = 2
-
-ATTACK_LEFT_CHARLIMIT = $01
-ATTACK_RIGHT_CHARLIMIT = $26
+NOTARGET        = $80
 
         ; AI character update routine
         ;
@@ -56,7 +47,7 @@ AI_NoAttack:    lda #$00
 AI_Sniper:      lda actTime,x                   ;Attack time left?
                 bmi AI_ContinueAttack
                 jsr FindTarget
-                ldy actAITarget,x               ;TODO: readd route-check to avoid firing into walls
+                ldy actAITarget,x
                 bmi AI_GoIdle
                 jsr GetActorDistance
                 lda temp5                       ;Always face the target when in line of sight
@@ -108,11 +99,6 @@ AI_XGreater:    cmp itemNPCMinDist-1,y          ;Check that weapon is effective
                 bcs AI_NoAttack
                 lda actAttackD,x
                 bne AI_NoAttack2
-                jsr GetActorCharCoordX          ;To not be unfair, require the enemy be on screen before firing
-                cmp #ATTACK_LEFT_CHARLIMIT
-                bcc AI_NoAttack2
-                cmp #ATTACK_RIGHT_CHARLIMIT+1
-                bcs AI_NoAttack2
                 lda temp8                       ;Check whether to attack horizontally, vertically or diagonally
                 beq AI_Horizontal
                 lda temp6
@@ -159,11 +145,20 @@ AI_Horizontal:  lda #JOY_FIRE+JOY_RIGHT
                 ldy temp5
                 bpl AI_AttackDirOK
                 lda #JOY_FIRE+JOY_LEFT
-AI_AttackDirOK: sta actCtrl,x
+AI_AttackDirOK: sta temp4
+                ldy actAITarget,x               ;Check line of sight before actually firing
+                jsr RouteCheck
+                bcc AI_AttackNoRoute
+                lda temp4
+                sta actCtrl,x
                 ldy actWpn,x
                 lda itemNPCAttackLength-1,y
+AI_AttackSetTime:
                 sta actTime,x
                 rts
+AI_AttackNoRoute:
+                lda #$00                        ;Clear aggression to avoid making repeated
+                beq AI_AttackSetTime            ;routechecks
 
         ; Validate existing AI target / find new target
         ;
@@ -180,26 +175,32 @@ FindTarget:     ldy actAITarget,x
 FT_TargetOK:    rts
 FT_Invalidate:  lda #NOTARGET
 FT_StoreTarget: sta actAITarget,x
-                rts
-FT_PickNew:     lda #FINDTARGET_RETRIES
-                sta temp1
-FT_PickLoop:    jsr Random                  ;TODO: randomize within hero/villainlists
-                and #MAX_COMPLEXACT-1       ;TODO: take distance into account
+FT_NoTarget:    rts
+FT_PickNew:     lda actFlags,x
+                bpl FT_PickVillain
+FT_PickHero:    ldy numHeroes
+                beq FT_NoTarget
+                jsr Random
+                and targetListAndTbl-1,y
+                cmp numHeroes
+                bcc FT_PickHeroOK
+                sbc numHeroes
+FT_PickHeroOK:  tay
+                lda heroList,y
+                bpl FT_TargetCommon
+FT_PickVillain: ldy numVillains
+                beq FT_NoTarget
+                jsr Random
+                and targetListAndTbl-1,y
+                cmp numVillains
+                bcc FT_PickVillainOK
+                sbc numVillains
+FT_PickVillainOK:
                 tay
-                lda actT,y                  ;Must exist and be alive
-                beq FT_NextTarget
-                lda actHp,y
-                beq FT_NextTarget
-                lda actFlags,y
-                and #AF_ISHERO|AF_ISVILLAIN
-                beq FT_NextTarget
-                eor actFlags,x              ;Must be from opposite group
-                bmi FT_CheckRoute
-FT_NextTarget:  dec temp1
-                bne FT_PickLoop
-FT_NoRoute:     rts
+                lda villainList,y
+FT_TargetCommon:tay
 FT_CheckRoute:  sty tgtActIndex
                 jsr RouteCheck
-                bcc FT_NoRoute
+                bcc FT_NoTarget
                 lda tgtActIndex
                 bcs FT_StoreTarget

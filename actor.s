@@ -454,6 +454,8 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
                 sta villainList,y
                 ldx temp1
                 sta heroList,x
+                stx numHeroes
+                sty numVillains
 
                 lda menuMode                    ;If levelup or pausemenu in progress,
                 cmp #MENU_LEVELUPMSG            ;do not move actors

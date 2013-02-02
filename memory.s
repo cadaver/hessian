@@ -93,7 +93,10 @@ MAX_LVLOBJ      = 96
                 Var actHi
                 Var tgtActIndex
                 Var addActorIndex
-                Var lvlObjNum
+                Var numHeroes
+                Var numVillains
+
+                Var lvlObjNum                   ;Level object variables
                 Var autoDeactObjNum
                 Var autoDeactObjCounter
 

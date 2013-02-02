@@ -22,10 +22,17 @@ InitZP:         sta joystick,x
                 sta ntFiltTime
                 lda #$7f
                 sta ntInitSong
+                if DISABLE_MUSIC>0
+                lda #$00
+                sta musicMode
+                lda #$01
+                sta soundMode
+                else
                 lda #$01                        ;Music and sound FX on by default
                 sta musicMode
                 sta soundMode
-
+                endif
+                
         ; Check NTSC
 
                 lda ntscDelay                   ;Check if loader part detected PAL or NTSC
