@@ -303,7 +303,8 @@ GASS_FlipAddressOk:
                 ldx zpBitBuf
                 ldy #SPRH_DATA
                 bcc GASS_FlipEmptySlice
-GASS_FlipFullSlice: lda (frameLo),y
+GASS_FlipFullSlice:
+                lda (frameLo),y
                 sta GASS_GetFlipped1+1
 GASS_GetFlipped1:
                 lda flipTbl
@@ -376,41 +377,8 @@ GASS_DepackDone:lda #$35                        ;Restore I/O registers
                 inx                             ;Increment sprite count
                 rts
 
-GASS_FullSlice: lda (frameLo),y
-GASS_FullSlice1:sta $1000,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice2:sta $1000+3,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice3:sta $1000+6,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice4:sta $1000+9,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice5:sta $1000+12,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice6:sta $1000+15,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice7:sta $1000+18,x
-                iny
-GASS_NextSlice: lda nextSliceTbl,x
+GASS_DepackDone2:
                 beq GASS_DepackDone
-                tax
-                lsr zpBitsLo
-                bcs GASS_FullSlice
-GASS_EmptySlice:lda #$00
-GASS_EmptySlice1:sta $1000,x
-GASS_EmptySlice2:sta $1000+3,x
-GASS_EmptySlice3:sta $1000+6,x
-GASS_EmptySlice4:sta $1000+9,x
-GASS_EmptySlice5:sta $1000+12,x
-GASS_EmptySlice6:sta $1000+15,x
-GASS_EmptySlice7:sta $1000+18,x
-                beq GASS_NextSlice
 
 GASS_NonFlipped:sta zpBitBuf
                 txa                             ;Calculate sprite address
@@ -445,4 +413,38 @@ GASS_AddressOk: ldy #SPRH_COLOR
                 ldx zpBitBuf
                 ldy #SPRH_DATA
                 bcc GASS_EmptySlice
-                jmp GASS_FullSlice
+GASS_FullSlice: lda (frameLo),y
+GASS_FullSlice1:sta $1000,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice2:sta $1000+3,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice3:sta $1000+6,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice4:sta $1000+9,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice5:sta $1000+12,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice6:sta $1000+15,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice7:sta $1000+18,x
+                iny
+GASS_NextSlice: lda nextSliceTbl,x
+                beq GASS_DepackDone2
+                tax
+                lsr zpBitsLo
+                bcs GASS_FullSlice
+GASS_EmptySlice:lda #$00
+GASS_EmptySlice1:sta $1000,x
+GASS_EmptySlice2:sta $1000+3,x
+GASS_EmptySlice3:sta $1000+6,x
+GASS_EmptySlice4:sta $1000+9,x
+GASS_EmptySlice5:sta $1000+12,x
+GASS_EmptySlice6:sta $1000+15,x
+GASS_EmptySlice7:sta $1000+18,x
+                beq GASS_NextSlice
