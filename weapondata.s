@@ -102,7 +102,7 @@ wpnTblHi:       dc.b >wdFists
 
 wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction
-                dc.b AIM_HORIZONTAL             ;Last aim direction
+                dc.b AIM_HORIZONTAL+1           ;First invalid aim direction
                 dc.b 5                          ;Attack delay
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b DMG_FISTS                  ;Bullet damage
@@ -114,7 +114,7 @@ wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
 
 wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction
-                dc.b AIM_HORIZONTAL             ;Last aim direction
+                dc.b AIM_HORIZONTAL+1           ;First invalid aim direction
                 dc.b 7                          ;Attack delay
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b DMG_KNIFE                  ;Bullet damage
@@ -132,7 +132,7 @@ wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
 
 wdNightstick:   dc.b WDB_MELEE                  ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
-                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 8                          ;Attack delay
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b DMG_NIGHTSTICK             ;Bullet damage
@@ -150,7 +150,7 @@ wdNightstick:   dc.b WDB_MELEE                  ;Weapon bits
 
 wdBat:          dc.b WDB_MELEE                  ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
-                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 9                          ;Attack delay
                 dc.b ACT_LARGEMELEEHIT          ;Bullet actor type
                 dc.b DMG_BAT                    ;Bullet damage
@@ -168,7 +168,7 @@ wdBat:          dc.b WDB_MELEE                  ;Weapon bits
 
 wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
-                dc.b AIM_DOWN                   ;Last aim direction
+                dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 7                          ;Attack delay
                 dc.b ACT_BULLET                 ;Bullet actor type
                 dc.b DMG_PISTOL                 ;Bullet damage
@@ -187,7 +187,7 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
 
 wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
-                dc.b AIM_DOWN                   ;Last aim direction
+                dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 11                         ;Attack delay
                 dc.b ACT_SHOTGUNBULLET          ;Bullet actor type
                 dc.b DMG_SHOTGUN                ;Bullet damage
@@ -206,7 +206,7 @@ wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
 
 wdAutoRifle:    dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
-                dc.b AIM_DOWN                   ;Last aim direction
+                dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 3                          ;Attack delay
                 dc.b ACT_RIFLEBULLET            ;Bullet actor type
                 dc.b DMG_AUTORIFLE              ;Bullet damage
@@ -225,7 +225,7 @@ wdAutoRifle:    dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
 
 wdSniperRifle:  dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
-                dc.b AIM_DOWN                   ;Last aim direction
+                dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 14                         ;Attack delay
                 dc.b ACT_RIFLEBULLET            ;Bullet actor type
                 dc.b DMG_SNIPERRIFLE            ;Bullet damage
@@ -244,7 +244,7 @@ wdSniperRifle:  dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
 
 wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
-                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 2                          ;Attack delay
                 dc.b ACT_RIFLEBULLET            ;Bullet actor type
                 dc.b DMG_MINIGUN                ;Bullet damage
@@ -264,7 +264,7 @@ wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_
 
 wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
-                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 2                          ;Attack delay
                 dc.b ACT_FLAME                  ;Bullet actor type
                 dc.b DMG_FLAMETHROWER           ;Bullet damage
@@ -284,7 +284,7 @@ wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOS
 
 wdSonicWaveGun: dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
-                dc.b AIM_DOWN                   ;Last aim direction
+                dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 6                          ;Attack delay
                 dc.b ACT_SONICWAVE              ;Bullet actor type
                 dc.b DMG_SONICWAVE              ;Bullet damage
@@ -303,7 +303,7 @@ wdSonicWaveGun: dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
 
 wdLaserRifle:   dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
-                dc.b AIM_DOWN                   ;Last aim direction
+                dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 7                          ;Attack delay
                 dc.b ACT_LASER                  ;Bullet actor type
                 dc.b DMG_LASER                  ;Bullet damage
@@ -322,7 +322,7 @@ wdLaserRifle:   dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
 
 wdPlasmaGun:    dc.b WDB_FLICKERBULLET          ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
-                dc.b AIM_DOWN                   ;Last aim direction
+                dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 8                          ;Attack delay
                 dc.b ACT_PLASMA                 ;Bullet actor type
                 dc.b DMG_PLASMA                 ;Bullet damage
@@ -341,7 +341,7 @@ wdPlasmaGun:    dc.b WDB_FLICKERBULLET          ;Weapon bits
 
 wdEMPGenerator: dc.b WDB_NONE|WDB_NOSKILLBONUS|WDB_FLICKERBULLET  ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction
-                dc.b AIM_HORIZONTAL             ;Last aim direction
+                dc.b AIM_HORIZONTAL+1           ;First invalid aim direction
                 dc.b 20                         ;Attack delay
                 dc.b ACT_EMP                    ;Bullet actor type
                 dc.b DMG_EMP                    ;Bullet damage
@@ -361,7 +361,7 @@ wdEMPGenerator: dc.b WDB_NONE|WDB_NOSKILLBONUS|WDB_FLICKERBULLET  ;Weapon bits
 wdGrenadeLauncher:
                 dc.b WDB_NOSKILLBONUS           ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
-                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 14                         ;Attack delay
                 dc.b ACT_LAUNCHERGRENADE        ;Bullet actor type
                 dc.b DMG_LAUNCHERGRENADE        ;Bullet damage
@@ -380,7 +380,7 @@ wdGrenadeLauncher:
 
 wdBazooka:      dc.b WDB_BULLETDIRFRAME|WDB_NOSKILLBONUS|WDB_LOCKANIMATION ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
-                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 19                         ;Attack delay
                 dc.b ACT_ROCKET                 ;Bullet actor type
                 dc.b DMG_BAZOOKA                ;Bullet damage
@@ -400,7 +400,7 @@ wdBazooka:      dc.b WDB_BULLETDIRFRAME|WDB_NOSKILLBONUS|WDB_LOCKANIMATION ;Weap
 
 wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
-                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 20                         ;Attack delay
                 dc.b ACT_GRENADE                ;Bullet actor type
                 dc.b DMG_GRENADE                ;Bullet damage
@@ -412,7 +412,7 @@ wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
 
 wdHomingDrone:  dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
-                dc.b AIM_DIAGONALDOWN           ;Last aim direction
+                dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 20                         ;Attack delay
                 dc.b ACT_DRONE                  ;Bullet actor type
                 dc.b DMG_DRONE                  ;Bullet damage

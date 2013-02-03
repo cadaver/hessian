@@ -52,10 +52,9 @@ GASS_DoNotAccept:
 GetAndStoreSprite:
                 cpx #MAX_SPR
                 bcs GASS_DoNotAccept
-                sta loadTempReg                 ;Framenumber with direction in high bit
+                sta zpBitsLo                    ;Framenumber with direction in high bit
                 asl
                 tay
-                sty zpBitsLo                    ;Save framenumber*2, direction to carry
                 lda #$00
                 rol
                 sta zpLenLo                     ;Sprite direction
@@ -163,13 +162,12 @@ GASS_DoNotAccept2:
 GetAndStoreLastSprite:
                 cpx #MAX_SPR
                 bcs GASS_DoNotAccept2
-                sta loadTempReg                 ;Framenumber with direction in high bit
+                sta zpBitsLo                    ;Framenumber with direction in high bit
                 asl
                 tay
-                sty zpBitsLo                    ;Save framenumber*2
                 lda #$00
                 rol
-                sta zpLenLo                     ;Save sprite direction
+                sta zpLenLo                     ;Sprite direction
                 lda (sprFileLo),y               ;Get sprite header address
                 sta frameLo
                 iny
@@ -255,7 +253,7 @@ GASS_NoOldSprite:
                 lda sprFileNum                  ;Save new file & frame numbers so that this mapping
                 sta cacheSprFile,x              ;can be cleared in the future
                 tay
-                lda loadTempReg
+                lda zpBitsLo
                 sta cacheSprFrame,x
                 lda GASS_CurrentFrame+1         ;Mark in use
                 sta cacheSprAge,x
@@ -268,7 +266,7 @@ GASS_NoOldSprite:
                 bne GASS_Flipped
                 jmp GASS_NonFlipped
 
-GASS_Flipped:   lda #8
+GASS_Flipped:   lda #$08
                 sta zpBitBuf
                 txa                             ;Calculate sprite address
                 lsr

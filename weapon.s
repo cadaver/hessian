@@ -84,8 +84,9 @@ AH_NoWeaponFrame:
 
 AttackHuman:    ldy actWpn,x
                 beq AH_NoWeaponFrame
-                lda actHp+ACTI_PLAYER           ;No attacks if dead
-                beq AH_NoWeaponFrame
+                lda actF1,x                     ;No attacks/weapon if dead
+                cmp #FR_DIE
+                bcs AH_NoWeaponFrame
                 lda wpnTblLo-1,y
                 sta wpnLo
                 lda wpnTblHi-1,y
@@ -141,15 +142,9 @@ AH_FirearmEmpty:lda #$01                        ;If no bullets, set a constant a
                 sta actAttackD+ACTI_PLAYER      ;prevent firing but allow brandishing empty weapon
 AH_AmmoCheckOK: lda menuMode                    ;If player is in any menu mode, do not attack
                 bne AH_NoAttack2
-AH_NotPlayer:   lda actPrevCtrl,x               ;Require fire pressed also in previous controls
-                and #JOY_FIRE                   ;to "debounce" erroneous attacks
-                beq AH_NoAttack2
-                lda actCtrl,x
+AH_NotPlayer:   lda actCtrl,x
                 cmp #JOY_FIRE
                 bcc AH_NoAttack2
-                ldy actF1,x
-                cpy #FR_DIE
-                bcs AH_NoAttack2
                 and #JOY_LEFT|JOY_RIGHT         ;If left/right attack, turn actor
                 beq AH_NoTurn2
                 lsr
@@ -163,15 +158,13 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 lda attackTbl,y
                 bmi AH_NoAttack2
                 ldy #WD_MINAIM                  ;Check that aim direction is OK for weapon
-                cmp (wpnLo),y                   ;in question, limit if necessary
-                bcs AH_DirOk1
-                lda (wpnLo),y
-AH_DirOk1:      iny
+                cmp (wpnLo),y                   ;in question
+                bcc AH_NoAttack2
+                iny
                 cmp (wpnLo),y
-                bcc AH_DirOk2
-                lda (wpnLo),y
-AH_DirOk2:      sta temp2                       ;Final aim direction
-                sta temp1
+                bcs AH_NoAttack2
+AH_DirOk2:      sta temp1                       ;Final aim direction
+                sta temp2
                 clc
                 ldy temp3                       ;Check fire-from-hip animation mode
                 bpl AH_NormalAttack
@@ -230,7 +223,10 @@ AH_MeleeAnimation:
                 bcc AH_MeleeFailed
                 bne AH_MeleeStrike              ;Show strike frame just before spawning bullet
 
-AH_SpawnBullet: jsr GetBulletOffset
+AH_SpawnBullet: lda actCtrl,x                   ;Require debounced input before actually firing
+                cmp actPrevCtrl,x               ;to prevent erroneous attack direction
+                bne AH_CannotFire
+                jsr GetBulletOffset
                 bcc AH_CannotFire
                 txa                             ;Check whether to use player or NPC bullet actor
                 beq AH_IsPlayer                 ;indices

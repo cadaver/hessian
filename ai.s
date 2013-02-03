@@ -122,24 +122,11 @@ AI_DiagonalLeft:lda #JOY_FIRE+JOY_LEFT+JOY_DOWN
                 lda #JOY_FIRE+JOY_LEFT+JOY_UP
                 bne AI_AttackDirOK
 AI_NoAttack2:   jmp AI_NoAttack
-AI_Vertical:    ldy actWpn,x
-                lda wpnTblLo-1,y
-                sta wpnLo
-                lda wpnTblHi-1,y
-                sta wpnHi
-                lda temp7
+AI_Vertical:    lda temp7
                 bpl AI_VerticalDown
-AI_VerticalUp:  ldy #WD_MINAIM                  ;Check that weapon can actually be fired up
-                lda (wpnLo),y
-                cmp #AIM_UP
-                bne AI_NoAttack2
-                lda #JOY_FIRE+JOY_UP
+AI_VerticalUp:  lda #JOY_FIRE+JOY_UP
                 bne AI_AttackDirOK
-AI_VerticalDown:ldy #WD_MAXAIM                  ;Check that weapon can actually be fired down
-                lda (wpnLo),y
-                cmp #AIM_DOWN
-                bne AI_NoAttack2
-                lda #JOY_FIRE+JOY_DOWN
+AI_VerticalDown:lda #JOY_FIRE+JOY_DOWN
                 bne AI_AttackDirOK
 AI_Horizontal:  lda #JOY_FIRE+JOY_RIGHT
                 ldy temp5

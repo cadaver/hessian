@@ -62,19 +62,34 @@ MP_CPSHasItem:  rts
 
 MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new controls
                 sta actPrevCtrl+ACTI_PLAYER
+                ldy actF1+ACTI_PLAYER
+                cpy #FR_DUCK+1
+                bne MP_NoDuckFirePrevent
+                cmp #JOY_DOWN                   ;Prevent fire+down immediately after ducking
+                bne MP_NoDuckFirePrevent        ;(need to release down direction first)
                 lda joystick
+                cmp #JOY_DOWN+JOY_FIRE
+                bne MP_NoDuckFirePrevent
+                ldy #$ff-JOY_FIRE
+                bne MP_StoreControlMask
+MP_NoDuckFirePrevent:
+                lda joystick
+                cmp #JOY_DOWN+JOY_FIRE
+                beq MP_ControlMask
+                ldy #$ff
+MP_StoreControlMask:
+                sty MP_ControlMask+1
+MP_ControlMask: and #$ff
                 sta actCtrl+ACTI_PLAYER
                 cmp #JOY_FIRE
                 bcc MP_NewMoveCtrl
                 and #$0f                        ;When fire held down, eliminate the opposite
                 tay                             ;directions from the previous move control
                 lda moveCtrlAndTbl,y
-                ldy actF1+ACTI_PLAYER           ;If holding a duck, keep the down direction
-                cpy #FR_DUCK                    ;regardless of joystick position
-                beq MP_Ducked
-                cpy #FR_DUCK+1
+                ldy actF1+ACTI_PLAYER
+                cpy #FR_DUCK+1                  ;When already ducked, keep the down control
                 bne MP_NotDucked
-MP_Ducked:      ora #JOY_DOWN
+                ora #JOY_DOWN
 MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
 MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
 
