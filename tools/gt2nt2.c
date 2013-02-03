@@ -106,6 +106,9 @@ unsigned char pattern[MAX_PATT][MAX_PATTROWS*4+4];
 unsigned char patttempo[MAX_PATT][MAX_PATTROWS];
 unsigned char pattinstr[MAX_PATT][MAX_PATTROWS];
 unsigned char pattkeyon[MAX_PATT][MAX_PATTROWS];
+unsigned char pattremaptempo[MAX_PATT];
+unsigned char pattremapsrc[MAX_PATT];
+unsigned char pattremapdest[MAX_PATT];
 char songname[MAX_STR];
 char authorname[MAX_STR];
 char copyrightname[MAX_STR];
@@ -116,6 +119,7 @@ int highestusedpatt;
 int highestusedinstr;
 int highestusedsong;
 int defaultpatternlength = 64;
+int remappedpatterns = 0;
 
 unsigned char ntwavetbl[MAX_NTTBLLEN+1];
 unsigned char ntnotetbl[MAX_NTTBLLEN+1];
@@ -144,7 +148,7 @@ unsigned char nthrparam = 0x00;
 unsigned char ntfirstwave = 0x09;
 
 int prevwritebyte = 0x100;
-int blocklen = 0;        
+int blocklen = 0;
 FILE* out = 0;
 
 void loadsong(const char* songfilename);
@@ -1055,7 +1059,7 @@ void convertsong(void)
 
     if (highestusedpatt > 126)
     {
-        printf("Ninjatracker supports max. 127 patterns\n");
+        printf("More than 127 patterns not supported\n");
         exit(1);
     }
 
@@ -1120,6 +1124,13 @@ void convertsong(void)
         unsigned char note = rtable[WTBL][c];
         wavetblmap[c + 1] = nttbllen[0] + 1;
 
+        if (wave < 0xf0 && note == 0x80)
+            printf("Warning: 'keep frequency unchanged' in wavetable is unsupported\n");
+        if (wave < 0xf0 && note >= 0x81 && note < 0x8c)
+            printf("Warning: wavetable has octave 0, can not be converted correctly\n");
+        if (wave >= 0xf0 && wave < 0xff)
+            printf("Warning: wavetable commands are unsupported\n");
+
         if (wave == 0xff)
         {
             ntwavetbl[nttbllen[0]] = 0xff;
@@ -1165,6 +1176,8 @@ void convertsong(void)
         else if (time < 0x80)
         {
             ntpulsetimetbl[nttbllen[1]] = time;
+            if (speed & 0xf)
+                printf("Warning: pulse modulation loses precision\n");
             if (speed >= 0x80)
                 speed = (speed >> 4) | 0xf0;
             else
@@ -1330,6 +1343,7 @@ void convertsong(void)
 
     // Convert patterns
     printf("Converting patterns\n");
+
     for (e = 0; e <= highestusedpatt; e++)
     {
         unsigned char notecolumn[MAX_PATTROWS+1];
@@ -1355,6 +1369,16 @@ void convertsong(void)
             int dur = patttempo[e][c];
             int keyon = pattkeyon[e][c];
             int toneportadur = 0;
+
+            // If tempo not determined, use default 6
+            if (!dur)
+                dur = 6;
+
+            if (note >= FIRSTNOTE && note <= FIRSTNOTE+11)
+                printf("Warning: octave 0 note can not be played\n");
+
+            if (gtcmd == 0x7 || gtcmd == 0xc || gtcmd == 0xd || gtcmd == 0xe)
+                printf("Warning: pattern command %X is unsupported\n", gtcmd);
 
             if (note >= FIRSTNOTE+12 && note <= LASTNOTE)
             {
@@ -1390,6 +1414,8 @@ void convertsong(void)
                             toneportadur = 1;
                     }
                 }
+                if (gtcmd == 0x4)
+                    printf("Warning: new note + vibrato on same row is unsupported\n");
                 if (gtcmd == 0x5) // New note + AD modify
                     notecmd = getorcreatecommand("ad", gtcmddata, gtcmddata, ntcmdsr[instr-1], ntcmdwavepos[instr-1], ntcmdpulsepos[instr-1], ntcmdfiltpos[instr-1]);
                 else if (gtcmd == 0x6) // New note + SR modify
@@ -1571,7 +1597,7 @@ void getpatttempos(void)
 {
     int e,c;
 
-    memset(patttempo, 6, sizeof patttempo);
+    memset(patttempo, 0, sizeof patttempo);
     memset(pattinstr, 0, sizeof pattinstr);
 
     // Simulates playroutine going through the songs
@@ -1654,6 +1680,40 @@ void getpatttempos(void)
                 {
                     if (pp[c] != 0xff)
                     {
+                        if (patttempo[pn[c]][pp[c]] != 0 && patttempo[pn[c]][pp[c]] != tempo[c])
+                        {
+                            // We have detected pattern playback with multiple tempos
+                            int f;
+                            int pattfound = 0;
+                            for (f = 0; f < remappedpatterns; f++)
+                            {
+                                if (pattremaptempo[f] == tempo[c] && pattremapsrc[f] == pn[c])
+                                {
+                                    pattfound = 1;
+                                    pn[c] = pattremapdest[f];
+                                    songorder[e][c][sp[c]] = pn[c];
+                                    break;
+                                }
+                            }
+
+                            if (!pattfound)
+                            {
+                                if (highestusedpatt >= MAX_PATT-1)
+                                {
+                                    printf("Not enough patterns free to perform tempo remapping");
+                                    exit(1);
+                                }
+                                printf("Remapping pattern %d to %d as it's played at multiple tempos\n", pn[c], highestusedpatt+1);
+                                memcpy(&pattern[highestusedpatt+1][0], &pattern[pn[c]][0], MAX_PATTROWS*4+4);
+                                pattremaptempo[remappedpatterns] = tempo[c];
+                                pattremapsrc[remappedpatterns] = pn[c];
+                                pattremapdest[remappedpatterns] = highestusedpatt+1;
+                                remappedpatterns++;
+                                pn[c] = highestusedpatt+1;
+                                songorder[e][c][sp[c]] = pn[c];
+                                highestusedpatt++;
+                            }
+                        }
                         patttempo[pn[c]][pp[c]] = tempo[c];
                         pattinstr[pn[c]][pp[c]] = instr[c];
                         pattkeyon[pn[c]][pp[c]] = keyon[c];
