@@ -3,15 +3,13 @@ MAX_ACTY        = 9
 
 ACTI_PLAYER     = 0
 ACTI_FIRSTNPC   = 1
-ACTI_LASTNPC    = 7
-ACTI_FIRSTPLRBULLET = 8
-ACTI_LASTPLRBULLET = 12
-ACTI_FIRSTNPCBULLET = 13
-ACTI_LASTNPCBULLET = 17
-ACTI_FIRSTITEM  = 18
-ACTI_LASTITEM   = 22
-ACTI_FIRSTEFFECT = 23
-ACTI_LASTEFFECT = 25
+ACTI_LASTNPC    = 6
+ACTI_FIRSTPLRBULLET = 7
+ACTI_LASTPLRBULLET = 11
+ACTI_FIRSTNPCBULLET = 12
+ACTI_LASTNPCBULLET = 16
+ACTI_FIRSTITEM  = 17
+ACTI_LASTITEM   = 21
 
 AD_NUMSPRITES   = 0
 AD_SPRFILE      = 1
@@ -97,19 +95,6 @@ DrawActors:     lda scrollX                     ;Save this frame's finescrolling
                 sta IA_PrevScrollX+1
                 lda scrollY
                 sta IA_PrevScrollY+1
-                inc DA_ItemFlashCounter+1
-DA_ItemFlashCounter:                            ;Get color override for items
-                lda #$00
-                lsr
-                lsr
-                and #$03
-                tax
-                lda itemFlashTbl,x
-                ldx #ACTI_LASTITEM-ACTI_FIRSTITEM
-DA_ItemFlashLoop:
-                sta actC+ACTI_FIRSTITEM,x
-                dex
-                bpl DA_ItemFlashLoop
                 ldx GASS_CurrentFrame+1
                 stx GASS_LastFrame+1
                 inx                             ;Increment framenumber for sprite cache
@@ -283,7 +268,8 @@ DA_SprFileLoaded2:
 DA_HumanFrame2: lda #$00
                 jsr GetAndStoreSprite
 DA_HumanWpnF:   lda #$00
-                bmi DA_HumanNoWeapon
+                cmp #NOWEAPONFRAME
+                beq DA_HumanNoWeapon
                 ldy #$0f                        ;No color override for the weapon sprite
                 sty GASS_ColorAnd+1
                 ldy #$00
@@ -460,11 +446,25 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
                 lda menuMode                    ;If levelup or pausemenu in progress,
                 cmp #MENU_LEVELUPMSG            ;do not move actors
                 bcc UA_UpdateAll
+                lda #$00
+                sta Irq4_LevelUpdate+1          ;Also stop level animation & scrolling
+                sta scrollSX
+                sta scrollSY
 UA_SkipUpdate:  jmp InterpolateActors
 
         ; Call update routines of all on-screen actors
 
-UA_UpdateAll:   ldx #MAX_ACT-1
+UA_UpdateAll:   inc UA_ItemFlashCounter+1
+UA_ItemFlashCounter:                            ;Get color override for items
+                lda #$00
+                lsr
+                lsr
+                and #$03
+                tax
+                lda itemFlashTbl,x
+                sta MoveItem_Color+1
+                sta Irq4_LevelUpdate+1          ;Can animate level
+                ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex
@@ -1345,7 +1345,7 @@ GFA_Found:      lda #$00                        ;Reset animation & speed when fr
                 sta actFall,y
                 sta actFallL,y
                 sta actAIHelp,y
-                lda #$ff
+                lda #NOWEAPONFRAME
                 sta actWpnF,y
                 sta actAITarget,y               ;Start with no target
                 sec

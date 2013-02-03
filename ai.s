@@ -18,7 +18,7 @@ NOTARGET        = $80
 MoveAIHuman:    lda actCtrl,x
                 sta actPrevCtrl,x
                 txa                             ;Skip even and odd actors on consecutive
-                eor DA_ItemFlashCounter+1       ;frames
+                eor UA_ItemFlashCounter+1       ;frames
                 lsr
                 bcs MA_SkipAI
                 ldy actAIMode,x

@@ -3,8 +3,8 @@
         ; Constants that affect the memory map
 
 MAX_SPR         = 24
-MAX_ACT         = 26
-MAX_COMPLEXACT  = 8
+MAX_ACT         = 22
+MAX_COMPLEXACT  = 7
 MAX_CACHESPRITES = 64
 MAX_MAPROWS     = 128
 MAX_BLK         = 192

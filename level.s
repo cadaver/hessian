@@ -66,7 +66,6 @@ LoadLevelRetry: lda #<lvlActX                   ;Load levelactors, chars & chari
                 jsr LoadAllocFile               ;Load BLOCKS chunk
                 bcs LoadLevelError
                 jsr InitLevel
-                inc Irq4_LevelUpdate+1          ;Can update now
 
         ; Calculate start addresses for each map-row (of current zone) and for each
         ; block, and set zone multicolors.

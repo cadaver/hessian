@@ -39,6 +39,8 @@ WDB_FIREFROMHIP = 128
 
 NO_MODIFY       = 8
 
+NOWEAPONFRAME   = $ff
+
         ; Actor attack routine
         ;
         ; Parameters: X actor index
@@ -76,7 +78,7 @@ AH_NoAttackRight:
                 lda (wpnLo),y
                 skip2
 AH_NoWeaponFrame:
-                lda #$ff
+                lda #NOWEAPONFRAME
                 sta actWpnF,x
                 rts
 
@@ -389,7 +391,8 @@ GBO_Humanoid:   jsr DA_GetHumanFrames
                 lda DA_HumanFrame2+1
                 jsr GBO_Sub
                 lda actWpnF,x                   ;If no weapon frame, spawn projectile from the hand
-                bmi GBO_Common
+                cmp #NOWEAPONFRAME
+                beq GBO_Common
                 ldy #C_WEAPON
                 jsr GBO_Sub
 GBO_Common:     lda #$00
@@ -424,6 +427,9 @@ GBO_Sub:        pha
                 pla
                 asl
                 tay
+                lda #$00
+                rol
+                sta zpLenLo                     ;Sprite direction
                 lda (zpSrcLo),y
                 sta frameLo
                 iny
@@ -436,10 +442,13 @@ GBO_Sub:        pha
                 sec
                 sbc (frameLo),y
                 sta temp7
-                dey
+                lda #SPRH_CONNECTSPOTX
+                ora zpLenLo
+                tay
                 lda temp5
                 clc
                 adc (frameLo),y
+                dey
                 dey
                 sec
                 sbc (frameLo),y

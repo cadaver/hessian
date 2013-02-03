@@ -8,11 +8,14 @@ EMPTYSPRITEFRAME = $83
 SPRH_MASK       = 0
 SPRH_COLOR      = 1
 SPRH_HOTSPOTX   = 2
-SPRH_CONNECTSPOTX = 3
-SPRH_HOTSPOTY   = 4
-SPRH_CONNECTSPOTY = 5
-SPRH_CACHEFRAME = 6
-SPRH_DATA       = 7
+SPRH_HOTSPOTXFLIP = 3
+SPRH_CONNECTSPOTX = 4
+SPRH_CONNECTSPOTXFLIP = 5
+SPRH_HOTSPOTY   = 6
+SPRH_CONNECTSPOTY = 7
+SPRH_CACHEFRAME = 8
+SPRH_CACHEFRAMEFLIP = 9
+SPRH_DATA       = 10
 
         ; Load a sprite file
         ;
@@ -49,20 +52,27 @@ GASS_DoNotAccept:
 GetAndStoreSprite:
                 cpx #MAX_SPR
                 bcs GASS_DoNotAccept
+                sta loadTempReg                 ;Framenumber with direction in high bit
                 asl
                 tay
-                sty zpBitsLo                    ;Save framenumber*2
+                sty zpBitsLo                    ;Save framenumber*2, direction to carry
+                lda #$00
+                rol
+                sta zpLenLo                     ;Sprite direction
                 lda (sprFileLo),y               ;Get sprite header address
                 sta frameLo
                 iny
                 lda (sprFileLo),y
                 sta frameHi
-                ldy #SPRH_HOTSPOTX
+                lda #SPRH_HOTSPOTX
+                ora zpLenLo
+                tay
                 lda temp1                       ;Subtract X-hotspot
                 sec
                 sbc (frameLo),y
-                iny
                 sta sprXL,x
+                iny
+                iny
                 lda temp2
                 sbc #$00
                 sta sprXH,x
@@ -83,7 +93,7 @@ GASS_CSXNeg:    adc sprXL,x
                 lda #$ff
 GASS_CSXCommon: adc sprXH,x
                 sta temp2
-                iny
+                ldy #SPRH_HOTSPOTY
                 lda temp3                       ;Subtract Y-hotspot
                 sec
                 sbc (frameLo),y
@@ -119,7 +129,7 @@ GASS_CSXNeg2:   adc sprXL,x
                 lda #$ff
 GASS_CSXCommon2:adc sprXH,x
                 sta temp2
-                iny                
+                ldy #SPRH_HOTSPOTY
                 lda temp3                       ;Subtract Y-hotspot
                 sec
                 sbc (frameLo),y
@@ -153,9 +163,13 @@ GASS_DoNotAccept2:
 GetAndStoreLastSprite:
                 cpx #MAX_SPR
                 bcs GASS_DoNotAccept2
+                sta loadTempReg                 ;Framenumber with direction in high bit
                 asl
                 tay
                 sty zpBitsLo                    ;Save framenumber*2
+                lda #$00
+                rol
+                sta zpLenLo                     ;Save sprite direction
                 lda (sprFileLo),y               ;Get sprite header address
                 sta frameLo
                 iny
@@ -163,7 +177,9 @@ GetAndStoreLastSprite:
                 sta frameHi
                 lda temp4                       ;Optimization: check Y high without actually
                 bne GASS_DoNotAccept2           ;subtracting the hotspot from it
-                ldy #SPRH_HOTSPOTX
+                lda #SPRH_HOTSPOTX
+                ora zpLenLo
+                tay
                 lda temp1                       ;Subtract X-hotspot
                 sec
                 sbc (frameLo),y
@@ -188,7 +204,9 @@ GASS_Accept:    lda actIndex                    ;Sprite was accepted: store acto
 GASS_ColorAnd:  and #$00
 GASS_ColorOr:   ora #$00
                 sta sprC,x                      ;Store color
-                ldy #SPRH_CACHEFRAME
+                lda #SPRH_CACHEFRAME
+                ora zpLenLo
+                tay
                 lda (frameLo),y                 ;Check if already cached
                 beq GASS_CacheSprite
                 sta sprF,x
@@ -219,13 +237,17 @@ GASS_Found:     ldy cacheSprFile,x              ;Clear the old cache mapping if 
                 sta zpSrcHi
                 lda fileLo,y
                 sta zpSrcLo
-                ldy cacheSprFrame,x
+                lda cacheSprFrame,x
+                asl
+                tay
                 lda (zpSrcLo),y
                 sta zpDestLo
                 iny
                 lda (zpSrcLo),y
                 sta zpDestHi
-                ldy #SPRH_CACHEFRAME
+                lda #SPRH_CACHEFRAME
+                adc #$00
+                tay
                 lda #$00
                 sta (zpDestLo),y
 GASS_NoOldSprite:
@@ -233,13 +255,164 @@ GASS_NoOldSprite:
                 lda sprFileNum                  ;Save new file & frame numbers so that this mapping
                 sta cacheSprFile,x              ;can be cleared in the future
                 tay
-                lda #$00
-                sta fileAge,y                   ;Reset file age, only done when depacking a new sprite
-                sta zpBitBuf
-                lda zpBitsLo
+                lda loadTempReg
                 sta cacheSprFrame,x
                 lda GASS_CurrentFrame+1         ;Mark in use
                 sta cacheSprAge,x
+                lda #$34                        ;Need access to RAM under the I/O area
+                sta irqSave01
+                sta $01
+                lda #$00
+                sta fileAge,y                   ;Reset file age, only done when depacking a new sprite
+                ldy zpLenLo                     ;Use normal or flipped routine?
+                bne GASS_Flipped
+                jmp GASS_NonFlipped
+
+GASS_Flipped:   lda #8
+                sta zpBitBuf
+                txa                             ;Calculate sprite address
+                lsr
+                ror zpBitBuf
+                lsr
+                ror zpBitBuf
+                ora #>spriteCache
+                cmp GASS_FlipFullSlice1+2           ;Modify STA-instructions as necessary
+                beq GASS_FlipAddressOk
+                sta GASS_FlipFullSlice1+2
+                sta GASS_FlipFullSlice2+2
+                sta GASS_FlipFullSlice3+2
+                sta GASS_FlipFullSlice4+2
+                sta GASS_FlipFullSlice5+2
+                sta GASS_FlipFullSlice6+2
+                sta GASS_FlipFullSlice7+2
+                sta GASS_FlipEmptySlice1+2
+                sta GASS_FlipEmptySlice2+2
+                sta GASS_FlipEmptySlice3+2
+                sta GASS_FlipEmptySlice4+2
+                sta GASS_FlipEmptySlice5+2
+                sta GASS_FlipEmptySlice6+2
+                sta GASS_FlipEmptySlice7+2
+GASS_FlipAddressOk:
+                ldy #SPRH_COLOR
+                lda (frameLo),y                 ;Get slice bitmask high bit
+                asl
+                dey
+                lda (frameLo),y                 ;Get rest of the bits
+                ror
+                sta zpBitsLo                    ;C=1 if first slice has data
+                ldx zpBitBuf
+                ldy #SPRH_DATA
+                bcc GASS_FlipEmptySlice
+GASS_FlipFullSlice: lda (frameLo),y
+                sta GASS_GetFlipped1+1
+GASS_GetFlipped1:
+                lda flipTbl
+GASS_FlipFullSlice1:sta $1000,x
+                iny
+                lda (frameLo),y
+                sta GASS_GetFlipped2+1
+GASS_GetFlipped2:
+                lda flipTbl
+GASS_FlipFullSlice2:sta $1000+3,x
+                iny
+                lda (frameLo),y
+                sta GASS_GetFlipped3+1
+GASS_GetFlipped3:
+                lda flipTbl
+GASS_FlipFullSlice3:sta $1000+6,x
+                iny
+                lda (frameLo),y
+                sta GASS_GetFlipped4+1
+GASS_GetFlipped4:
+                lda flipTbl
+GASS_FlipFullSlice4:sta $1000+9,x
+                iny
+                lda (frameLo),y
+                sta GASS_GetFlipped5+1
+GASS_GetFlipped5:
+                lda flipTbl
+GASS_FlipFullSlice5:sta $1000+12,x
+                iny
+                lda (frameLo),y
+                sta GASS_GetFlipped6+1
+GASS_GetFlipped6:
+                lda flipTbl
+GASS_FlipFullSlice6:sta $1000+15,x
+                iny
+                lda (frameLo),y
+                sta GASS_GetFlipped7+1
+GASS_GetFlipped7:
+                lda flipTbl
+GASS_FlipFullSlice7:sta $1000+18,x
+                iny
+GASS_FlipNextSlice:
+                lda flipNextSliceTbl,x
+                beq GASS_DepackDone
+                tax
+                dex
+                lsr zpBitsLo
+                bcs GASS_FlipFullSlice
+GASS_FlipEmptySlice:lda #$00
+GASS_FlipEmptySlice1:sta $1000,x
+GASS_FlipEmptySlice2:sta $1000+3,x
+GASS_FlipEmptySlice3:sta $1000+6,x
+GASS_FlipEmptySlice4:sta $1000+9,x
+GASS_FlipEmptySlice5:sta $1000+12,x
+GASS_FlipEmptySlice6:sta $1000+15,x
+GASS_FlipEmptySlice7:sta $1000+18,x
+                beq GASS_FlipNextSlice
+
+GASS_DepackDone:lda #$35                        ;Restore I/O registers
+                sta irqSave01
+                sta $01
+                lda #SPRH_CACHEFRAME
+                ora zpLenLo
+                tay
+                lda GASS_CachePos+1             ;Store the used frame into the header for next time
+                ora #FIRSTCACHEFRAME
+                sta (frameLo),y
+                ldx zpBitsHi
+                sta sprF,x
+                inx                             ;Increment sprite count
+                rts
+
+GASS_FullSlice: lda (frameLo),y
+GASS_FullSlice1:sta $1000,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice2:sta $1000+3,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice3:sta $1000+6,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice4:sta $1000+9,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice5:sta $1000+12,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice6:sta $1000+15,x
+                iny
+                lda (frameLo),y
+GASS_FullSlice7:sta $1000+18,x
+                iny
+GASS_NextSlice: lda nextSliceTbl,x
+                beq GASS_DepackDone
+                tax
+                lsr zpBitsLo
+                bcs GASS_FullSlice
+GASS_EmptySlice:lda #$00
+GASS_EmptySlice1:sta $1000,x
+GASS_EmptySlice2:sta $1000+3,x
+GASS_EmptySlice3:sta $1000+6,x
+GASS_EmptySlice4:sta $1000+9,x
+GASS_EmptySlice5:sta $1000+12,x
+GASS_EmptySlice6:sta $1000+15,x
+GASS_EmptySlice7:sta $1000+18,x
+                beq GASS_NextSlice
+
+GASS_NonFlipped:sta zpBitBuf
                 txa                             ;Calculate sprite address
                 lsr
                 ror zpBitBuf
@@ -262,10 +435,7 @@ GASS_NoOldSprite:
                 sta GASS_EmptySlice5+2
                 sta GASS_EmptySlice6+2
                 sta GASS_EmptySlice7+2
-GASS_AddressOk: lda #$34                        ;Need access to RAM under the I/O area
-                sta irqSave01
-                sta $01
-                ldy #SPRH_COLOR
+GASS_AddressOk: ldy #SPRH_COLOR
                 lda (frameLo),y                 ;Get slice bitmask high bit
                 asl
                 dey
@@ -275,54 +445,4 @@ GASS_AddressOk: lda #$34                        ;Need access to RAM under the I/
                 ldx zpBitBuf
                 ldy #SPRH_DATA
                 bcc GASS_EmptySlice
-GASS_FullSlice: lda (frameLo),y
-GASS_FullSlice1:sta $1000,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice2:sta $1000+3,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice3:sta $1000+6,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice4:sta $1000+9,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice5:sta $1000+12,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice6:sta $1000+15,x
-                iny
-                lda (frameLo),y
-GASS_FullSlice7:sta $1000+18,x
-                iny
-                lda nextSliceTbl,x
-                beq GASS_DepackDone
-                tax
-                lsr zpBitsLo
-                bcs GASS_FullSlice
-GASS_EmptySlice:lda #$00
-GASS_EmptySlice1:sta $1000,x
-GASS_EmptySlice2:sta $1000+3,x
-GASS_EmptySlice3:sta $1000+6,x
-GASS_EmptySlice4:sta $1000+9,x
-GASS_EmptySlice5:sta $1000+12,x
-GASS_EmptySlice6:sta $1000+15,x
-GASS_EmptySlice7:sta $1000+18,x
-                lda nextSliceTbl,x
-                beq GASS_DepackDone
-                tax
-                lsr zpBitsLo
-                bcs GASS_FullSlice
-                bcc GASS_EmptySlice
-GASS_DepackDone:lda #$35                        ;Restore I/O registers
-                sta irqSave01
-                sta $01
-                ldy #SPRH_CACHEFRAME
-                lda GASS_CachePos+1             ;Store the used frame into the header for next time
-                ora #FIRSTCACHEFRAME
-                sta (frameLo),y
-                ldx zpBitsHi
-                sta sprF,x
-                inx                             ;Increment sprite count
-                rts
+                jmp GASS_FullSlice

@@ -69,7 +69,7 @@ actDispTblHi:   dc.b >adPlayer
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_PLAYER                   ;Lower part spritefile number
-                dc.b 40                         ;Lower part base spritenumber
+                dc.b 22                         ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 28                         ;Lower part left frame add
                 dc.b C_PLAYER                   ;Upper part spritefile number
@@ -88,85 +88,85 @@ adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 20                         ;Number of frames
-                dc.b 9,10,11,12,13              ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 9,16,15,14,13
-                dc.b 5,6,7,8,5
-                dc.b 5,8,7,6,5
+                dc.b 8,9,10,11,12               ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 8,$80+9,$80+10,$80+11,12
+                dc.b 5,6,7,$80+6,5
+                dc.b 5,$80+6,7,6,5
 
 adShotgunBullet:dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 14                         ;Number of frames
-                dc.b 9,10,11,12,13              ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 9,16,15,14,13
-                dc.b 18,19,20,21
+                dc.b 8,9,10,11,12               ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 8,$80+9,$80+10,$80+11,12
+                dc.b 14,15,16,17
 
 adRifleBullet:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 20                         ;Number of frames
-                dc.b 22,23,24,25,26             ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 22,29,28,27,26
-                dc.b 5,6,7,8,5
-                dc.b 5,8,7,6,5
+                dc.b 18,19,20,21,22             ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 18,$80+19,$80+20,$80+21,22
+                dc.b 5,6,7,$80+6,5
+                dc.b 5,$80+6,7,6,5
 
 adFlame:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 4                          ;Number of frames
-                dc.b 30,31,32,33                ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 23,24,25,26                ;Frametable (first all frames of sprite1, then sprite2)
 
 adSonicWave:    dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 10                         ;Number of frames
-                dc.b 47,48,49,50,51             ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 47,54,53,52,51
+                dc.b 37,38,39,40,41             ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 37,$80+38,$80+39,$80+40,41
 
 adEMP:          dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 10                         ;Number of frames
-                dc.b 55,56,57,58                ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 42,43,44,45                ;Frametable (first all frames of sprite1, then sprite2)
 
 adLaser:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 10                         ;Number of frames
-                dc.b 59,60,61,62,59             ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 59,62,61,60,59
+                dc.b 46,47,48,$80+47,46         ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 46,$80+47,48,47,46
 
 adPlasma:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
-                dc.b 63,64,65                   ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 49,50,51                   ;Frametable (first all frames of sprite1, then sprite2)
 
 adLauncherGrenade:
                 dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
-                dc.b 34,35,36                   ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 27,28,29                   ;Frametable (first all frames of sprite1, then sprite2)
 
 adGrenade:      dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 1                          ;Number of frames
-                dc.b 17                         ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 13                         ;Frametable (first all frames of sprite1, then sprite2)
 
 adRocket:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 10                         ;Number of frames
-                dc.b 37,38,39,40,41             ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 37,44,43,42,41
+                dc.b 30,31,32,33,34             ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 30,$80+31,$80+32,$80+33,34
 
 adDrone:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 4                          ;Number of frames
-                dc.b 66,67,68,67                ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 52,53,54,53                ;Frametable (first all frames of sprite1, then sprite2)
 
 adExplosion:    dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -178,24 +178,24 @@ adSmokeTrail:   dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 2                          ;Number of frames
-                dc.b 45,46                      ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 35,36                      ;Frametable (first all frames of sprite1, then sprite2)
 
         ; Human actor upper part framenumbers
 
-humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,27,25,24,25,26,6,20,21,28,29,30,31,32,33,6,7,8,9,10,11,12
-                dc.b 4,3,3,4,4,5,5,4,4,5,4,3,3,3,27,25,24,25,26,13,22,23,34,35,36,37,38,39,13,14,15,16,17,18,19
+humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,3,4,5,6,7,8,9
+                dc.b $80+1,$80+0,$80+0,$80+1,$80+1,$80+2,$80+2,$80+1,$80+1,$80+2,$80+1,$80+0,$80+0,$80+0,$80+15,$80+13,$80+12,$80+13,$80+14,$80+3,$80+10,$80+11,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9
 
         ; Human actor lower part framenumbers
 
-humanLowerFrTbl:dc.b 0,1,2,3,4,1,2,3,4,10,11,12,16,17,27,27,26,27,28,20,21,22,29,30,31,32,33,34
-                dc.b 5,6,7,8,9,6,7,8,9,13,14,15,18,19,27,27,26,27,28,23,24,25,35,36,37,38,39,40
+humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9,14,14,13,14,15,$80+10,$80+11,$80+12,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21
+                dc.b 0,1,2,3,4,1,2,3,4,5,6,7,8,9,14,14,13,14,15,10,11,12,16,17,18,19,20,21
 
         ; Human Y-size reduce table based on animation
 
 humanSizeReduceTbl:
                 dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18
 
-        ; Item color flashing table
+        ; Item actor color flashing
 
 itemFlashTbl:   dc.b 10,7,1,7
 

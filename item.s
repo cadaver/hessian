@@ -234,7 +234,10 @@ DA_DecreaseDone:lda panelUpdateFlags
         ; Returns: -
         ; Modifies: A,Y
 
-MoveItem:       lda actMB,x                     ;Skip movement if grounded and stationary
+MoveItem:       
+MoveItem_Color: lda #$00                        ;Color override for items
+                sta actC,x
+                lda actMB,x                     ;Skip movement if grounded and stationary
                 lsr
                 bcs MoveItem_Done
                 lda actSY,x                     ;Store original Y-speed for bounce

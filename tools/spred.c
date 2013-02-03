@@ -31,11 +31,25 @@ typedef struct
   unsigned char slicemask;
   unsigned char color;
   signed char hotspotx;
+  signed char fliphotspotx;
+  signed char connectspotx;
+  signed char flipconnectspotx;
+  signed char hotspoty;
+  signed char connectspoty;
+  unsigned char cacheframe;
+  unsigned char flipcacheframe;
+} SPRHEADER;
+
+typedef struct
+{
+  unsigned char slicemask;
+  unsigned char color;
+  signed char hotspotx;
   signed char connectspotx;
   signed char hotspoty;
   signed char connectspoty;
   unsigned char cacheframe;
-} SPRHEADER;
+} OLDSPRHEADER;
 
 typedef struct
 {
@@ -46,7 +60,7 @@ typedef struct
   signed char connectspotx;
   signed char reverseconnectspotx;
   signed char connectspoty;
-} OLDSPRHEADER;
+} OLDSPRHEADER2;
 
 unsigned char magx[256];
 int sliceoffset[] = {0,1,2,21,22,23,42,43,44};
@@ -437,7 +451,7 @@ void loadspr(void)
       if (r == 1)
       {
         int frameindex = 0;
-        int oldformat = 0;
+        int format = 0;
         int length;
         int frame;
         FILE *handle;
@@ -455,13 +469,15 @@ void loadspr(void)
           fseek(handle, 3, SEEK_SET);
           offset1 = freadle16(handle);
           offset2 = freadle16(handle);
-          while (offset2 - offset1 > 8)
+          while (offset2 - offset1 > 10)
             offset2 -= 7;
-          if (offset2 - offset1 > 7)
-            oldformat = 1;
+          if (offset2 - offset1 == 8)
+            format = 2;
+          if (offset2 - offset1 == 7)
+            format = 1;
         }
 
-        if (!oldformat)
+        if (format == 0)
         {
           for (;;)
           {
@@ -469,19 +485,22 @@ void loadspr(void)
             int slice;
             int slicemask = 0;
             Uint16 offset;
-  
+
             fseek(handle, frameindex*2+3, SEEK_SET);
             offset = freadle16(handle);
             offset += 3;
             fseek(handle, offset, SEEK_SET);
-  
+
             tempheader.slicemask = fread8(handle);
             tempheader.color = fread8(handle);
             tempheader.hotspotx = fread8(handle);
+            tempheader.fliphotspotx = fread8(handle);
             tempheader.connectspotx = fread8(handle);
+            tempheader.flipconnectspotx = fread8(handle);
             tempheader.hotspoty = fread8(handle);
             tempheader.connectspoty = fread8(handle);
             tempheader.cacheframe = fread8(handle);
+            tempheader.flipcacheframe = fread8(handle);
 
             hotspotx[frame] = tempheader.hotspotx;
             hotspoty[frame] = tempheader.hotspoty;
@@ -489,9 +508,9 @@ void loadspr(void)
             connectspoty[frame] = tempheader.connectspoty;
             magx[frame] = (tempheader.color & 16) >> 4;
             spritedata[frame*64+63] = tempheader.color & 15;
-  
+
             slicemask = ((int)tempheader.slicemask) | (((int)tempheader.color & 128) << 1);
-  
+
             for (slice = 0; slice < 9; slice++)
             {
               if (slicemask & (1 << slice))
@@ -517,19 +536,75 @@ void loadspr(void)
             if (frame > 255) break;
           }
         }
-        else
+        if (format == 1)
         {
           for (;;)
           {
-            OLDSPRHEADER tempheader;            
+            SPRHEADER tempheader;
             int slice;
+            int slicemask = 0;
             Uint16 offset;
-  
+
             fseek(handle, frameindex*2+3, SEEK_SET);
             offset = freadle16(handle);
             offset += 3;
             fseek(handle, offset, SEEK_SET);
-  
+
+            tempheader.slicemask = fread8(handle);
+            tempheader.color = fread8(handle);
+            tempheader.hotspotx = fread8(handle);
+            tempheader.connectspotx = fread8(handle);
+            tempheader.hotspoty = fread8(handle);
+            tempheader.connectspoty = fread8(handle);
+            tempheader.cacheframe = fread8(handle);
+
+            hotspotx[frame] = tempheader.hotspotx;
+            hotspoty[frame] = tempheader.hotspoty;
+            connectspotx[frame] = tempheader.connectspotx;
+            connectspoty[frame] = tempheader.connectspoty;
+            magx[frame] = (tempheader.color & 16) >> 4;
+            spritedata[frame*64+63] = tempheader.color & 15;
+
+            slicemask = ((int)tempheader.slicemask) | (((int)tempheader.color & 128) << 1);
+
+            for (slice = 0; slice < 9; slice++)
+            {
+              if (slicemask & (1 << slice))
+              {
+                int slicey;
+                for (slicey = 0; slicey < 7; slicey++)
+                {
+                  spritedata[frame * 64 + sliceoffset[slice] + slicey * 3] = fread8(handle);
+                }
+              }
+              else
+              {
+                int slicey;
+                for (slicey = 0; slicey < 7; slicey++)
+                {
+                  spritedata[frame * 64 + sliceoffset[slice] + slicey * 3] = 0;
+                }
+              }
+            }
+            frameindex++;
+            frame++;
+            if (ftell(handle) >= length) break;
+            if (frame > 255) break;
+          }
+        }
+        if (format == 2)
+        {
+          for (;;)
+          {
+            OLDSPRHEADER2 tempheader;
+            int slice;
+            Uint16 offset;
+
+            fseek(handle, frameindex*2+3, SEEK_SET);
+            offset = freadle16(handle);
+            offset += 3;
+            fseek(handle, offset, SEEK_SET);
+
             tempheader.slicemask = freadle16(handle);
             tempheader.hotspotx = fread8(handle);
             tempheader.reversehotspotx = fread8(handle);
@@ -537,7 +612,7 @@ void loadspr(void)
             tempheader.connectspotx = fread8(handle);
             tempheader.reverseconnectspotx = fread8(handle);
             tempheader.connectspoty = fread8(handle);
-  
+
             spritedata[frame*64+63] = tempheader.slicemask >> 9;
             hotspotx[frame] = tempheader.hotspotx;
             hotspoty[frame] = tempheader.hotspoty;
@@ -545,7 +620,7 @@ void loadspr(void)
             connectspoty[frame] = tempheader.connectspoty;
             magx[frame] = spritedata[frame*64+63] >> 4;
             spritedata[frame*64+63] &= 15;
-  
+
             for (slice = 0; slice < 9; slice++)
             {
               if (tempheader.slicemask & (1 << slice))
@@ -722,17 +797,24 @@ void savespr(void)
           tempheader.color |= (slicemask & 0x100) >> 1;
           tempheader.color |= magx[frame+c] << 4;
           tempheader.hotspotx = hotspotx[frame+c];
+          tempheader.fliphotspotx = 22 - tempheader.hotspotx;
           tempheader.hotspoty = hotspoty[frame+c];
           tempheader.connectspotx = connectspotx[frame+c];
+          tempheader.flipconnectspotx = 22 - tempheader.connectspotx;
           tempheader.connectspoty = connectspoty[frame+c];
           tempheader.cacheframe = 0;
+          tempheader.flipcacheframe = 0;
+
           fwrite8(handle, tempheader.slicemask);
           fwrite8(handle, tempheader.color);
           fwrite8(handle, tempheader.hotspotx);
+          fwrite8(handle, tempheader.fliphotspotx);
           fwrite8(handle, tempheader.connectspotx);
+          fwrite8(handle, tempheader.flipconnectspotx);
           fwrite8(handle, tempheader.hotspoty);
           fwrite8(handle, tempheader.connectspoty);
           fwrite8(handle, tempheader.cacheframe);
+          fwrite8(handle, tempheader.flipcacheframe);
 
           datasize += sizeof(SPRHEADER);
           for (slice = 0; slice < 9; slice++)

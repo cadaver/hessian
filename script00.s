@@ -308,7 +308,7 @@ IP_InvLoop:     sta invType,x
         ; Update controls, text & logo fade
 
 Update:         jsr GetControls
-                jsr FinishFrame_NoScroll
+                jsr FinishFrame
                 jsr WaitBottom
                 lda textFadeDir
                 beq UC_TextDone

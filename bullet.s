@@ -205,8 +205,8 @@ MExpl_NoRemove: rts
 MoveRocket:     lda actTime,x
                 lsr
                 bcc MRckt_NoSmoke
-                lda #ACTI_FIRSTEFFECT
-                ldy #ACTI_LASTEFFECT
+                lda #ACTI_FIRSTNPCBULLET
+                ldy #ACTI_LASTITEM
                 jsr GetFreeActor
                 bcc MRckt_NoSmoke
                 lda #ACT_SMOKETRAIL
