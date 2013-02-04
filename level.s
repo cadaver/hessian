@@ -229,11 +229,29 @@ AOD_Done:       rts
         ; Modifies: A,X,temp vars
 
 ActivateObject: lda lvlObjB,y                   ;Make sure that is inactive
-                bmi AO_Done
-                and #OBJ_TYPEBITS               ;Check for object type
-                cmp #OBJTYPE_SWITCH             ;(TODO: use jumptable)
+                bmi AOD_Done
+                sty AO_NoOperation+1            ;Store object number in case action
+                and #OBJ_TYPEBITS               ;code destroys it
+                cmp #OBJTYPE_SCRIPT             ;Check for action to perform
+                beq AO_Script
+                cmp #OBJTYPE_SWITCH
                 beq AO_Switch
-AO_Continue:    lda lvlObjB,y
+                cmp #OBJTYPE_REVEAL
+                beq AO_Reveal
+                bne AO_NoOperation
+
+        ; Script execution
+        
+AO_Script:      ldx lvlObjDL,y
+                lda lvlObjDH,y
+                tay
+                txa
+                jsr ExecScript
+
+        ; No operation / object animation
+
+AO_NoOperation: ldy #$00
+                lda lvlObjB,y
                 ora #OBJ_ACTIVE
                 sta lvlObjB,y
                 and #OBJ_AUTODEACT              ;Enable auto-deactivation if necessary
@@ -253,8 +271,9 @@ AO_NoAutoDeact: lda #$01
                 bmi AnimateObjectDelta
 AO_Done:        rts
 
-AO_Switch:      sty temp1
-                ldx lvlObjDL,y
+         ; Switch, activate another object
+
+AO_Switch:      ldx lvlObjDL,y
                 lda lvlObjDH,y                  ;Has requirement item?
                 beq AO_RequirementOK
                 sta temp3
@@ -271,8 +290,37 @@ AO_RequirementOK:
                 txa                             ;Get destination object and toggle it
                 tay
                 jsr ToggleObject
-                ldy temp1
-                bpl AO_Continue
+                jmp AO_NoOperation
+
+        ; Reveal hidden items (weapon closet)
+
+AO_Reveal:      lda lvlObjX,y
+                sta AO_RevealXCmp+1
+                lda lvlObjY,y
+                and #$7f
+                sta AO_RevealYCmpHi+1
+                tax
+                dex
+                stx AO_RevealYCmpLo+1
+                ldx #MAX_LVLACT-1
+AO_RevealLoop:  lda lvlActT,x
+                beq AO_RevealNext
+                lda lvlActX,x
+AO_RevealXCmp:  cmp #$00
+                bne AO_RevealNext
+                lda lvlActY,x
+                and #$7f
+AO_RevealYCmpLo:cmp #$00
+                beq AO_DoReveal
+AO_RevealYCmpHi:cmp #$00
+                bne AO_RevealNext
+AO_DoReveal:    sta lvlActY,x
+                lda #$00                        ;Hack: search and add all actors
+                sta addActorIndex               ;on next frame to make sure the
+                sta UA_AAEndCmp+1               ;revealed actor is added as soon
+AO_RevealNext:  dex                             ;as possible
+                bpl AO_RevealLoop
+                jmp AO_NoOperation
 
         ; Update level objects. Handle operation, auto-deactivation and actually entering doors
         ;
