@@ -1294,26 +1294,7 @@ RA_StoreCommon: sta lvlActWpn,y
 RemoveActor:    lda #ACT_NONE
                 sta actT,x
                 sta actHp,x                     ;Clear hitpoints so that bullet collision can not cause damage to an
-FGA_Found:
 RA_Done:        rts                             ;actor removed on the same frame (outdated collision list)
-
-        ; Find leveldata position for global actor
-        ;
-        ; Parameters: -
-        ; Returns: N=0 success, Y has valid index. N=1 failed
-        ; Modifies: A,Y
-
-FindGlobalActorLevelDataPos:
-                ldy #ORG_GLOBAL
-FGA_Loop:       lda lvlActT,y                   ;Look for empty space in leveldata
-                beq FGA_Found
-                dey
-                bpl FGA_Loop
-                if SHOW_LEVELDATA_ERRORS>0
-                inc $d020                       ;Error, no room for global actor (fatal error)
-                tya
-                endif
-                rts
 
         ; Remove all actors except player back to leveldata
         ;
@@ -1527,4 +1508,171 @@ RC_MoveYDone2:  dec temp3
                 and #CI_OBSTACLE
                 beq RC_Loop
 RC_NoRoute:     clc                            ;Route not found
+                rts
+
+        ; Find NPC actor from screen by type
+        ;
+        ; Parameters: A actor type
+        ; Returns: C=1 actor found, index in X, C=0 not found
+        ; Modifies: A,x
+        
+FindActor:      ldx #ACTI_LASTNPC
+FA_Loop:        cmp actT,x
+                beq FA_Found
+                dex
+                bpl FA_Loop
+                clc
+FA_Found:       rts
+
+        ; Find leveldata position for global actor
+        ;
+        ; Parameters: -
+        ; Returns: N=0 success, Y has valid index. N=1 failed
+        ; Modifies: A,Y
+
+FindGlobalActorLevelDataPos:
+                ldy #ORG_GLOBAL
+FGA_Loop:       lda lvlActT,y                   ;Look for empty space in leveldata
+                beq FGA_Found
+                dey
+                bpl FGA_Loop
+                if SHOW_LEVELDATA_ERRORS>0
+                inc $d020                       ;Error, no room for global actor (fatal error)
+                tya
+                endif
+FGA_Found:      rts
+
+        ; Move global actor to leveldata
+        ;
+        ; Parameters: X global actor index
+        ; Returns: Y positive, new leveldataindex or Y negative if failed
+        ; Modifies: A,Y
+
+GlobalToLevel:  jsr FindGlobalActorLevelDataPos
+                bmi GTL_Fail
+                lda globalActX,x
+                sta lvlActX,y
+                lda globalActY,x
+                sta lvlActY,y
+                lda globalActF,x
+                ora #GLOBAL_ACTOR_BIT
+                sta lvlActF,y
+                lda globalActT,x
+                sta lvlActT,y
+                lda globalActWpn,x
+                sta lvlActWpn,y
+                lda #$00
+                sta globalActT,x
+GTL_Fail:       rts
+
+        ; Move leveldata actor to globals
+        ;
+        ; Parameters: X leveldata actor index
+        ; Returns: Y positive, new globalindex or Y negative if failed
+        ; Modifies: A,Y
+
+LevelToGlobal:  ldy #MAX_GLOBALACT-1
+LTG_SearchEmptyGlobal:
+                lda globalActT,y
+                beq LTG_SearchGlobalFound
+                dey
+                bpl LTG_SearchEmptyGlobal
+                if SHOW_LEVELDATA_ERRORS>0
+                inc $d020                       ;Error, no room for global actor (fatal error)
+                endif
+                rts
+LTG_SearchGlobalFound:
+                lda levelNum
+                sta globalActLvl,y
+                lda lvlActX,x
+                sta globalActX,y
+                lda lvlActY,x
+                sta globalActY,y
+                lda lvlActF,x
+                sta globalActF,y
+                lda lvlActWpn,x
+                sta globalActWpn,y
+                lda lvlActT,x
+                sta globalActT,y
+                rts
+
+        ; Create a global actor
+        ;
+        ; Parameters: A actor type, temp1 new Xpos, temp2 new Ypos, temp3 new level
+        ;             temp4 new finepos+AImode temp5 new dir+weapon
+        ; Returns: C=1 success, C=0 no room
+        ; Modifies: A,X,Y,temp6
+
+CreateGlobalActor:
+                sta temp6
+                ldx #MAX_GLOBALACT-1
+CGA_FindEmpty:  lda globalActT,x
+                beq CGA_FoundEmpty
+                dex
+                bpl CGA_FindEmpty
+                clc
+                rts
+CGA_FoundEmpty: lda temp6
+                sta globalActT,x
+                bne MGA_FoundInGlobals
+
+        ; Move a global actor. If on screen, will be removed
+        ;
+        ; Parameters: A actor type, temp1 new Xpos, temp2 new Ypos, temp3 new level
+        ;             temp4 new finepos+AImode temp5 new dir+weapon (weapon $7f = unchanged)
+        ; Returns: C=1 success, C=0 not found or no room
+        ; Modifies: A,X,Y,temp6
+
+MoveGlobalActor:sta temp6
+                jsr FindActor
+                bcc MGA_NotOnScreen
+                jsr RemoveLevelActor
+MGA_NotOnScreen:ldx #MAX_GLOBALACT-1
+MGA_GlobalActorLoop:
+                lda globalActT,x
+                cmp temp4
+                beq MGA_FoundInGlobals
+                dex
+                bpl MGA_GlobalActorLoop
+                ldx #MAX_LVLACT-1
+MGA_LevelDataLoop:
+                lda lvlActT,x
+                cmp temp4
+                beq MGA_FoundInLevelData
+                dex
+                bpl MGA_LevelDataLoop
+                clc                             ;Not found anywhere
+                rts
+MGA_FoundInGlobals:
+                lda temp1
+                sta globalActX,x
+                lda temp2
+                sta globalActY,x
+                lda temp4
+                sta globalActF,x
+                lda temp5
+                and #$80
+                sta temp6
+                lda temp5
+                and #$7f
+                cmp #$7f
+                bcc MGA_NewWeapon
+                lda globalActWpn,x
+                and #$7f
+MGA_NewWeapon:  ora temp6
+                sta globalActWpn,x
+                lda temp3
+                sta globalActLvl,x
+                cmp levelNum                    ;If on same level, move to leveldata now
+                bne MGA_NotSameLevel
+                jsr GlobalToLevel
+MGA_NotSameLevel:
+                sec
+                rts
+MGA_FoundInLevelData:
+                jsr LevelToGlobal               ;If found in leveldata, move to globals,
+                tya                             ;then move back if necessary
+                tax
+                bpl MGA_FoundInGlobals
+                clc                             ;Failed to put to globals (actor lost)
                 rts

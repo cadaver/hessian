@@ -54,33 +54,9 @@ CL_LevelDataLoop:
                 beq CL_ActorGone
                 lda lvlActF,x                   ;Belongs to global list?
                 and #GLOBAL_ACTOR_BIT
-                beq CL_NotGlobal
-                ldy #MAX_GLOBALACT-1
-CL_SearchEmptyGlobal:
-                lda globalActT,y
-                beq CL_SearchGlobalFound
-                dey
-                bpl CL_SearchEmptyGlobal
-                if SHOW_LEVELDATA_ERRORS>0
-                inc $d020
-                jmp CL_NotGlobal
-                else
-                bmi CL_NotGlobal                ;Failed to find empty spot for global actor (fatal error)
-                endif
-CL_SearchGlobalFound:
-                lda levelNum
-                sta globalActLvl,y
-                lda lvlActX,x
-                sta globalActX,y
-                lda lvlActY,x
-                sta globalActY,y
-                lda lvlActF,x
-                sta globalActF,y
-                lda lvlActWpn,x
-                sta globalActWpn,y
-                lda lvlActT,x
-                sta globalActT,y
-                bne CL_NotGlobal
+                beq CL_NextActor
+                jsr LevelToGlobal
+                jmp CL_NextActor
 CL_ActorGone:   txa                             ;Actor gone, clear bit from the state
                 lsr
                 lsr
@@ -89,7 +65,7 @@ CL_ActorGone:   txa                             ;Actor gone, clear bit from the 
                 lda (zpDestLo),y
                 and temp1
                 sta (zpDestLo),y
-CL_NotGlobal:   sec
+CL_NextActor:   sec
                 rol temp1
                 bcs CL_BitNotOver
                 dec temp1
@@ -144,26 +120,12 @@ RGA_IsAlive:    asl temp1
 RGA_BitNotOver: inx
                 bpl RemoveGoneActors
                 ldx #MAX_GLOBALACT-1
-AddGlobalActors:lda globalActT,x
+AddGlobalActors:lda globalActT,x                ;Then add actors from the global list
                 beq AGA_Next
                 lda globalActLvl,x
                 cmp levelNum
                 bne AGA_Next
-                jsr FindGlobalActorLevelDataPos
-                bmi AGA_Next
-                lda globalActX,x
-                sta lvlActX,y
-                lda globalActY,x
-                sta lvlActY,y
-                lda globalActF,x
-                ora #GLOBAL_ACTOR_BIT
-                sta lvlActF,y
-                lda globalActT,x
-                sta lvlActT,y
-                lda globalActWpn,x
-                sta lvlActWpn,y
-                lda #$00
-                sta globalActT,x
+                jsr GlobalToLevel
 AGA_Next:       dex
                 bpl AddGlobalActors
 

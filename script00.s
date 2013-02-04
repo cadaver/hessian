@@ -293,7 +293,7 @@ IP_InitGlobalActors:
                 tax
                 lda #$ff
 IP_InitLevelData:
-                sta lvlActBits,x
+                sta lvlActBits,x                ;Assume all actors exist at start
                 sta lvlActBits+MAX_LEVELS*16-256,x
                 inx
                 bne IP_InitLevelData
