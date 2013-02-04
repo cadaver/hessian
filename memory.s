@@ -8,8 +8,10 @@ MAX_COMPLEXACT  = 7
 MAX_CACHESPRITES = 64
 MAX_MAPROWS     = 128
 MAX_BLK         = 192
+MAX_LEVELS      = 24
 MAX_LVLACT      = 128
 MAX_LVLOBJ      = 96
+MAX_GLOBALACT   = 16
 
         ; Zeropage variables
 

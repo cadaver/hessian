@@ -270,20 +270,33 @@ LoadGameCancel: jmp TitleTexts
         ; Start new game
 
 StartGame:      jsr FadeOutAll
-InitPlayer:     lda #0
+InitPlayer:     lda #$00
                 ldx #NUM_SKILLS-1
-IP_XPSkillLoop: sta xpLo,x
+IP_InitSkillsXP:sta xpLo,x
                 sta plrSkills,x
                 dex
-                bpl IP_XPSkillLoop
+                bpl IP_InitSkillsXP
                 ldx #MAX_INVENTORYITEMS-1
-IP_InvLoop:     sta invType,x
+IP_InitInventory:
+                sta invType,x
                 sta invCount,x
                 sta invMag,x
                 dex
-                bpl IP_InvLoop
+                bpl IP_InitInventory
                 sta itemIndex
                 sta levelUp
+                ldx #MAX_GLOBALACT-1
+IP_InitGlobalActors:
+                sta globalActT,x
+                dex
+                bpl IP_InitGlobalActors
+                tax
+                lda #$ff
+IP_InitLevelData:
+                sta lvlActBits,x
+                sta lvlActBits+MAX_LEVELS*16-256,x
+                inx
+                bne IP_InitLevelData
                 lda #<FIRST_XPLIMIT
                 sta xpLimitLo
                 lda #1

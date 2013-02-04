@@ -81,7 +81,10 @@ ADDACTOR_RIGHT_LIMIT = 12
 ADDACTOR_BOTTOM_LIMIT = 8
 
 ORG_NONE        = $80                           ;No leveldata origin
-                                                ;TODO: differentiate between persistent/nonpersistent
+ORG_GLOBAL      = $7f                           ;Store to global actor table
+
+GLOBAL_ACTOR_BIT = $08
+
 DEFAULT_PICKUP  = $ff
 
         ; Draw actors as sprites
@@ -1192,6 +1195,7 @@ ALA_Common:     lda lvlActX,x
                 sta actYH,y
                 lda lvlActF,x
                 pha
+                pha
                 and #$c0
                 sta actYL,y
                 pla
@@ -1199,7 +1203,12 @@ ALA_Common:     lda lvlActX,x
                 asl
                 and #$c0
                 sta actXL,y
-                txa                             ;Store leveldata origin
+                pla
+                and #GLOBAL_ACTOR_BIT
+                beq ALA_NotGlobal
+                lda #ORG_GLOBAL
+                skip1
+ALA_NotGlobal:  txa                             ;Store leveldata origin
                 sta actLvlOrg,y
                 lda #$00                        ;Remove from leveldata
                 sta lvlActT,x
@@ -1236,18 +1245,16 @@ ALA_NoDefaultPickup:
 RemoveLevelActor:
                 lda actT,x
                 beq RA_Done
+                lda #$00
                 ldy actLvlOrg,x                 ;Has leveldata origin?
                 bmi RemoveActor
-                sty RA_EndCmp+1
-RA_Search:      lda lvlActT,y                   ;Look for empty space in leveldata
-                beq RA_Found
-                iny
-                bpl RA_EndCmp
-                ldy #$00
-RA_EndCmp:      cpy #$00                        ;Keep searching until looped back
-                bne RA_Search                   ;to the beginning
-                beq RemoveActor
-RA_Found:       lda actXH,x                     ;Store block coordinates
+                cpy #ORG_GLOBAL                 ;Global actor?
+                bne RA_Found                    ;Else store directly to original pos
+                jsr FindGlobalActorLevelDataPos
+                bmi RemoveActor
+RA_FoundGlobal: lda #GLOBAL_ACTOR_BIT
+RA_Found:       sta RA_SkipAIMode+1
+                lda actXH,x                     ;Store block coordinates
                 sta lvlActX,y
                 lda actYH,x
                 sta lvlActY,y
@@ -1262,7 +1269,8 @@ RA_Found:       lda actXH,x                     ;Store block coordinates
                 cpx #MAX_COMPLEXACT
                 bcs RA_SkipAIMode
                 ora actAIMode,x
-RA_SkipAIMode:  sta lvlActF,y
+RA_SkipAIMode:  ora #$00                        ;Add the global actor bit as necessary
+                sta lvlActF,y
                 lda actT,x                      ;Store actor type differently if
                 cmp #ACT_ITEM                   ;item or NPC
                 bne RA_StoreNPC
@@ -1286,7 +1294,26 @@ RA_StoreCommon: sta lvlActWpn,y
 RemoveActor:    lda #ACT_NONE
                 sta actT,x
                 sta actHp,x                     ;Clear hitpoints so that bullet collision can not cause damage to an
+FGA_Found:
 RA_Done:        rts                             ;actor removed on the same frame (outdated collision list)
+
+        ; Find leveldata position for global actor
+        ;
+        ; Parameters: -
+        ; Returns: N=0 success, Y has valid index. N=1 failed
+        ; Modifies: A,Y
+
+FindGlobalActorLevelDataPos:
+                ldy #ORG_GLOBAL
+FGA_Loop:       lda lvlActT,y                   ;Look for empty space in leveldata
+                beq FGA_Found
+                dey
+                bpl FGA_Loop
+                if SHOW_LEVELDATA_ERRORS>0
+                inc $d020                       ;Error, no room for global actor (fatal error)
+                tya
+                endif
+                rts
 
         ; Remove all actors except player back to leveldata
         ;
@@ -1326,7 +1353,9 @@ GFA_Loop:       lda actT,y
 GFA_Cmp:        cpy #$00
                 bcs GFA_Loop
                 rts
-GFA_Found:      lda #$00                        ;Reset animation & speed when free actor found
+GFA_Found:      lda #ORG_NONE                   ;By default is not stored to leveldata
+                sta actLvlOrg,y
+                lda #$00                        ;Reset most actor variables
                 sta actF1,y
                 sta actFd,y
                 sta actSX,y
@@ -1340,7 +1369,6 @@ GFA_Found:      lda #$00                        ;Reset animation & speed when fr
                 sta actCtrl,y
                 sta actMoveCtrl,y
                 sta actPrevCtrl,y
-                sta actWpn,y
                 sta actAttackD,y
                 sta actFall,y
                 sta actFallL,y

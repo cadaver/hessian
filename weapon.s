@@ -280,8 +280,6 @@ AH_BulletFrameDone:
                 lda actFlags,y
                 and #AF_ISHERO|AF_ISVILLAIN     ;Copy group from attacker
                 sta actFlags,x
-                lda #ORG_NONE                   ;Bullets have no leveldata origin
-                sta actLvlOrg,x
                 sta actAITarget,x               ;Reset target for homing bullets
                 ldy #WD_DAMAGE                  ;Set duration and damage
                 lda (wpnLo),y

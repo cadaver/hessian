@@ -35,17 +35,78 @@ AUTODEACTDELAY  = 12
 InitLevel       = lvlCodeStart
 UpdateLevel     = lvlCodeStart+3
 
-        ; Change current level. TODO: add retry/error handling
+        ; Change current level and return actors to global list / remove from state if necessary
+        ; Note: actors must have been removed from screen, or else they will go permanently missing!
         ;
         ; Parameters: A Level number
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
+ChangeLevel:    cmp levelNum                    ;Check if level already loaded
+                beq CL_Done
+                pha
+                jsr GetLevelActorBits
+                lda #$fe
+                sta temp1
+                ldx #$00
+CL_LevelDataLoop:
+                lda lvlActT,x                   ;Actor still alive?
+                beq CL_ActorGone
+                lda lvlActF,x                   ;Belongs to global list?
+                and #GLOBAL_ACTOR_BIT
+                beq CL_NotGlobal
+                ldy #MAX_GLOBALACT-1
+CL_SearchEmptyGlobal:
+                lda globalActT,y
+                beq CL_SearchGlobalFound
+                dey
+                bpl CL_SearchEmptyGlobal
+                if SHOW_LEVELDATA_ERRORS>0
+                inc $d020
+                jmp CL_NotGlobal
+                else
+                bmi CL_NotGlobal                ;Failed to find empty spot for global actor (fatal error)
+                endif
+CL_SearchGlobalFound:
+                lda levelNum
+                sta globalActLvl,y
+                lda lvlActX,x
+                sta globalActX,y
+                lda lvlActY,x
+                sta globalActY,y
+                lda lvlActF,x
+                sta globalActF,y
+                lda lvlActWpn,x
+                sta globalActWpn,y
+                lda lvlActT,x
+                sta globalActT,y
+                bne CL_NotGlobal
+CL_ActorGone:   txa                             ;Actor gone, clear bit from the state
+                lsr
+                lsr
+                lsr
+                tay
+                lda (zpDestLo),y
+                and temp1
+                sta (zpDestLo),y
+CL_NotGlobal:   sec
+                rol temp1
+                bcs CL_BitNotOver
+                dec temp1
+CL_BitNotOver:  inx
+                bpl CL_LevelDataLoop
+                pla
+                jmp LoadLevel
+
 LoadLevelError: jsr LFR_ErrorPrompt
                 jmp LoadLevelRetry
 
-ChangeLevel:    cmp levelNum                    ;Check if level already loaded
-                beq CL_Done
+        ; Load a new level without processing actor removal
+        ;
+        ; Parameters: A Level number
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
 LoadLevel:      sta levelNum
                 ldx #$ff
                 stx autoDeactObjNum             ;Reset object auto-deactivation
@@ -66,6 +127,45 @@ LoadLevelRetry: lda #<lvlActX                   ;Load levelactors, chars & chari
                 jsr LoadAllocFile               ;Load BLOCKS chunk
                 bcs LoadLevelError
                 jsr InitLevel
+                jsr GetLevelActorBits
+                lda #$01
+                sta temp1
+                ldx #$00                        ;After loading the level, remove actors that
+                ldy #$00                        ;no longer exist
+RemoveGoneActors:
+                lda (zpDestLo),y
+                and temp1
+                bne RGA_IsAlive
+                sta lvlActT,x
+RGA_IsAlive:    asl temp1
+                bne RGA_BitNotOver
+                inc temp1
+                iny
+RGA_BitNotOver: inx
+                bpl RemoveGoneActors
+                ldx #MAX_GLOBALACT-1
+AddGlobalActors:lda globalActT,x
+                beq AGA_Next
+                lda globalActLvl,x
+                cmp levelNum
+                bne AGA_Next
+                jsr FindGlobalActorLevelDataPos
+                bmi AGA_Next
+                lda globalActX,x
+                sta lvlActX,y
+                lda globalActY,x
+                sta lvlActY,y
+                lda globalActF,x
+                ora #GLOBAL_ACTOR_BIT
+                sta lvlActF,y
+                lda globalActT,x
+                sta lvlActT,y
+                lda globalActWpn,x
+                sta lvlActWpn,y
+                lda #$00
+                sta globalActT,x
+AGA_Next:       dex
+                bpl AddGlobalActors
 
         ; Calculate start addresses for each map-row (of current zone) and for each
         ; block, and set zone multicolors.
@@ -119,6 +219,24 @@ IM_BlockLoop:   lda zpSrcLo                     ;Store and increase block-
                 cpy #MAX_BLK
                 bcc IM_BlockLoop
                 rts
+
+        ; Get address of levelactor-bits according to current level
+        ;
+        ; Parameters: levelNum
+        ; Returns: bits address in zpDestLo
+        ; Modifies: A,X,Y,loader temp vars
+
+GetLevelActorBits:
+                lda levelNum
+                ldy #16
+                ldx #<zpDestLo
+                jsr MulU
+                lda #<lvlActBits
+                ldy #>lvlActBits
+                sta zpSrcLo
+                sty zpSrcHi
+                ldy #<zpSrcLo
+                jmp Add16
 
         ; Find the zone indicated by coordinates or number.
         ;
@@ -386,14 +504,14 @@ ULO_NotLeftSide:adc #$00
                 beq ULO_EnterDoor
 ULO_Done:       rts
 
-ULO_EnterDoor:  ldy lvlObjNum
+ULO_EnterDoor:  jsr RemoveLevelActors           ;Remove all actors except player back to leveldata
+                ldy lvlObjNum
                 lda lvlObjDL,y                  ;Get destination door
                 pha
                 lda lvlObjDH,y
                 jsr ChangeLevel                 ;Load new level if necessary
                 pla
                 tay
-ULO_EnterDestDoor:
                 jsr BlankScreen
                 jsr ActivateObject              ;Activate the door that was entered. Also side-doors
                 lda #$80                        ;will get activated but this should not matter

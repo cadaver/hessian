@@ -824,12 +824,10 @@ HumanDeath:     lda #SFX_DEATH
                 lda #ACTI_FIRSTITEM             ;quest items if necessary
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
-                bcc HD_NoItem                   ;TODO: if item is important, it needs to be
-                lda #$00                        ;stored directly to leveldata if no room
+                bcc HD_NoItem
+                lda #$00
                 sta temp5
                 sta temp6
-                sta actLvlOrg,y                 ;Set leveldata origin. TODO: use a "last found empty spot"
-                                                ;variable to optimize returning the actor to leveldata
                 lda #<ITEM_SPAWN_OFFSET
                 sta temp7
                 lda #>ITEM_SPAWN_OFFSET
@@ -906,7 +904,7 @@ GXP_Done:       jmp PSfx_Done                   ;Hack: PlaySfx ends similarly
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,X,Y
+        ; Modifies: A,X,Y, temp regs
         
 SaveCheckpoint: ldx #15
 SCP_LevelName:  lda lvlName,x
@@ -918,11 +916,13 @@ SCP_ZPState:    lda playerStateZPStart-1,x
                 sta saveStateZP-1,x
                 dex
                 bne SCP_ZPState
-                ldx #playerStateEnd-playerStateStart
-SCP_State:      lda playerStateStart-1,x
-                sta saveState-1,x
-                dex
-                bne SCP_State
+                lda #<playerStateStart
+                sta zpSrcLo
+                lda #>playerStateStart
+                sta zpSrcHi
+                lda #<saveState
+                ldx #>saveState
+                jsr SaveState_CopyMemory
                 clc
 StoreLoadActorVars:
                 ldx #5
@@ -955,11 +955,13 @@ RCP_ZPState:    lda saveStateZP-1,x
                 sta playerStateZPStart-1,x
                 dex
                 bne RCP_ZPState
-                ldx #playerStateEnd-playerStateStart
-RCP_State:      lda saveState-1,x
-                sta playerStateStart-1,x
-                dex
-                bne RCP_State
+                lda #<saveState
+                sta zpSrcLo
+                lda #>saveState
+                sta zpSrcHi
+                lda #<playerStateStart
+                ldx #>playerStateStart
+                jsr SaveState_CopyMemory
 RCP_CreatePlayer:
                 jsr ClearActors
                 lda levelNum
@@ -968,8 +970,6 @@ RCP_CreatePlayer:
                 jsr GFA_Found
                 sec
                 jsr StoreLoadActorVars
-                lda #ORG_NONE                   ;Player has no leveldata origin
-                sta actLvlOrg+ACTI_PLAYER
                 ldx #ACTI_PLAYER
                 stx lastReceivedXP
                 jsr InitActor

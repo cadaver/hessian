@@ -28,7 +28,9 @@ TP_PickupSuccess:
                 sta actF1,x                     ;Store type/ammo after swap
                 lda zpBitsHi
                 sta actHp,x
-                jmp TP_PrintItemName
+                lda #ORG_NONE                   ;After swapping, the item can no longer be
+                sta actLvlOrg,x                 ;persistently stored to leveldata, so it will
+                jmp TP_PrintItemName            ;disappear as soon as it's off screen
 TP_NoSwap:      jsr RemoveActor                 ;If not swapped, remove
 TP_PrintItemName:
                 lda #<txtPickedUp

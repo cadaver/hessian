@@ -294,7 +294,7 @@ actAttackD:     ds.b MAX_COMPLEXACT,0
 actAIMode:      ds.b MAX_COMPLEXACT,0
 actAIHelp:      ds.b MAX_COMPLEXACT,0
 
-        ; Player state
+        ; Player/world state
 
 playerStateStart:
 invType:        ds.b MAX_INVENTORYITEMS,0
@@ -306,11 +306,14 @@ plrCarrying:    dc.b 0
 plrFirearms:    dc.b 0
 plrMelee:       dc.b 0
 plrVitality:    dc.b 0
+lvlActBits:     ds.b MAX_LEVELS*16,0
+globalActLvl:   ds.b MAX_GLOBALACT,0
+globalActX:     ds.b MAX_GLOBALACT,0
+globalActY:     ds.b MAX_GLOBALACT,0
+globalActF:     ds.b MAX_GLOBALACT,0
+globalActT:     ds.b MAX_GLOBALACT,0
+globalActWpn:   ds.b MAX_GLOBALACT,0
 playerStateEnd:
-
-                if playerStateEnd-playerStateStart > $100
-                    err
-                endif
 
         ; In-memory checkpoint save
 
