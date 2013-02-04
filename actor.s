@@ -1176,7 +1176,7 @@ ALA_IsNPC:      lda #ACTI_FIRSTNPC
                 jsr GetFreeActor
                 bcc ALA_Fail
                 lda lvlActF,x
-                and #$0f
+                and #$07
                 sta actAIMode,y
                 lda lvlActT,x
                 sta actT,y

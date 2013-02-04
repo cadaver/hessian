@@ -65,7 +65,7 @@ unsigned char zonemusic[NUMZONES];
 
 char *actorname[256];
 char *itemname[256];
-char *modename[16];
+char *modename[8];
 
 unsigned char *modetext[] = {
   "NONE",
@@ -222,7 +222,7 @@ int main (int argc, char *argv[])
 
   for (c = 0; c < 256; c++) actorname[c] = " ";
   for (c = 0; c < 256; c++) itemname[c] = " ";
-  for (c = 0; c < 16; c++) modename[c] = " ";
+  for (c = 0; c < 8; c++) modename[c] = " ";
   levelname[0] = 0;
   names = fopen("names.txt", "rt");
   if (!names) goto NONAMES;
@@ -249,7 +249,7 @@ int main (int argc, char *argv[])
     if (strlen(itemname[c]) > 1) itemname[c][strlen(itemname[c])-1] = 0; /* Delete newline */
     if (!strcmp(itemname[c], "end")) break;
   }
-  for (c = 0; c < 16; c++)
+  for (c = 0; c < 8; c++)
   {
     modename[c] = malloc(80);
     modename[c][0] = 0;
@@ -419,18 +419,18 @@ void level_mainloop(void)
         {
           if (k == KEY_M)
           {
-            int mode = lvlactf[actindex] & 0xf;
+            int mode = lvlactf[actindex] & 0x7;
             mode++;
-            mode &= 0xf;
-            lvlactf[actindex] &= 0xf0;
+            mode &= 0x7;
+            lvlactf[actindex] &= 0xf8;
             lvlactf[actindex] |= mode;
           }
           if (k == KEY_N)
           {
-            int mode = lvlactf[actindex] & 0xf;
+            int mode = lvlactf[actindex] & 0x7;
             mode--;
-            mode &= 0xf;
-            lvlactf[actindex] &= 0xf0;
+            mode &= 0x7;
+            lvlactf[actindex] &= 0xf8;
             lvlactf[actindex] |= mode;
           }
           if (k == KEY_D) // Dir
@@ -1249,7 +1249,7 @@ void drawmap(void)
           if (lvlactw[a] & 128) sprintf(textbuffer, "LEFT");
           else sprintf(textbuffer, "RIGHT");
           printtext_color(textbuffer, 256,165,SPR_FONTS,COL_WHITE);
-          sprintf(textbuffer, "MODE:%01X (%s)", lvlactf[a] & 0xf, modename[lvlactf[a] & 0xf]);
+          sprintf(textbuffer, "MODE:%1X (%s)", lvlactf[a] & 0xf, modename[lvlactf[a] & 0x7]);
           printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
           sprintf(textbuffer, "WPN:%02X (%s)", lvlactw[a] & 0x7f, itemname[lvlactw[a] & 0x7f]);
           printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
