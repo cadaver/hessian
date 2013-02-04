@@ -308,10 +308,11 @@ AOD_Done:       rts
         ; Returns: -
         ; Modifies: A,X,temp vars
 
-ActivateObject: lda lvlObjB,y                   ;Make sure that is inactive
+ActivateObject: tya
+                pha
+                lda lvlObjB,y                   ;Make sure that is inactive
                 bmi AOD_Done
-                sty AO_NoOperation+1            ;Store object number in case action
-                and #OBJ_TYPEBITS               ;code destroys it
+                and #OBJ_TYPEBITS
                 cmp #OBJTYPE_SCRIPT             ;Check for action to perform
                 beq AO_Script
                 cmp #OBJTYPE_SWITCH
@@ -330,7 +331,8 @@ AO_Script:      ldx lvlObjDL,y
 
         ; No operation / object animation
 
-AO_NoOperation: ldy #$00
+AO_NoOperation: pla
+                tay
                 lda lvlObjB,y
                 ora #OBJ_ACTIVE
                 sta lvlObjB,y
