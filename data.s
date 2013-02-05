@@ -203,42 +203,6 @@ keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
 d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 
-        ; Playroutine variables
-
-ntChnPattPos:   dc.b 0
-ntChnCounter:   dc.b 0
-ntChnNewNote:   dc.b 0
-ntChnWavePos:   dc.b 0
-ntChnPulsePos:  dc.b 0
-ntChnWave:      dc.b 0
-ntChnPulse:     dc.b 0
-
-                dc.b 0,0,0,0,0,0,0
-                dc.b 0,0,0,0,0,0,0
-
-ntChnGate:      dc.b $fe
-ntChnTrans:     dc.b $ff
-ntChnCmd:       dc.b $01
-ntChnSongPos:   dc.b 0
-ntChnPattNum:   dc.b 0
-ntChnDuration:  dc.b 0
-ntChnNote:      dc.b 0
-
-                dc.b $fe,$ff,$01,0,0,0,0
-                dc.b $fe,$ff,$01,0,0,0,0
-
-ntChnFreqLo:    dc.b 0
-ntChnFreqHi:    dc.b 0
-ntChnWaveTime:  dc.b 0
-ntChnPulseTime: dc.b 0
-ntChnSfx:       dc.b 0
-ntChnSfxLo:     dc.b 0
-ntChnSfxHi:
-ntChnWaveOld:   dc.b 0
-
-                dc.b 0,0,0,0,0,0,0
-                dc.b 0,0,0,0,0,0,0
-
         ; Chunk-file memory allocation variables
 
 fileLo:         ds.b MAX_CHUNKFILES,0

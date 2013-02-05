@@ -209,4 +209,5 @@ sortSprD010     = $f2e0
 sortSprF        = $f310
 sortSprC        = $f340
 sprIrqLine      = $f370
-scriptCodeStart = $f3a0
+playRoutineVars = $f3a0
+scriptCodeStart = $f3e0

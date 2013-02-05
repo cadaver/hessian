@@ -15,11 +15,23 @@ InitZP:         sta joystick,x
                 dex
                 bpl InitZP
 
-        ; Initialize one-time playroutine variables
+        ; Initialize playroutine variables
 
+                ldx #3*21-1
+InitPlayRoutine:sta ntChnPattPos,x
+                dex
+                bpl InitPlayRoutine
                 sta $d415                       ;Filter lowbyte
                 sta ntFiltPos
                 sta ntFiltTime
+                lda #$fe
+                sta ntChnGate
+                sta ntChnGate+7
+                sta ntChnGate+14
+                lda #$ff
+                sta ntChnTrans
+                sta ntChnTrans+7
+                sta ntChnTrans+14
                 lda #$7f
                 sta ntInitSong
                 if DISABLE_MUSIC>0

@@ -20,6 +20,31 @@ MUSIC_TITLE         = $01
                 
 FIRST_INGAME_SONG   = $01
 
+ntChnPattPos    = playRoutineVars+0
+ntChnCounter    = playRoutineVars+1
+ntChnNewNote    = playRoutineVars+2
+ntChnWavePos    = playRoutineVars+3
+ntChnPulsePos   = playRoutineVars+4
+ntChnWave       = playRoutineVars+5
+ntChnPulse      = playRoutineVars+6
+
+ntChnGate       = playRoutineVars+21
+ntChnTrans      = playRoutineVars+22
+ntChnCmd        = playRoutineVars+23
+ntChnSongPos    = playRoutineVars+24
+ntChnPattNum    = playRoutineVars+25
+ntChnDuration   = playRoutineVars+26
+ntChnNote       = playRoutineVars+27
+
+ntChnFreqLo     = playRoutineVars+42
+ntChnFreqHi     = playRoutineVars+43
+ntChnWaveTime   = playRoutineVars+44
+ntChnPulseTime  = playRoutineVars+45
+ntChnSfx        = playRoutineVars+46
+ntChnSfxLo      = playRoutineVars+47
+ntChnSfxHi      = playRoutineVars+48
+ntChnWaveOld    = playRoutineVars+48
+
         ; Play a song. Load if necessary. Do not reinit if already playing
         ;
         ; Parameters: A song number, $00-$03 in first file, $04-$07 in second etc.
