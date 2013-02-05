@@ -1,4 +1,4 @@
-all: d642prg.exe filejoin.exe gt2nt2.exe invert.exe lpack.exe ldepack.exe makedisk.exe pack2.exe pchunk2.exe mchunk.exe leveled.exe spred.exe symbols.exe ins2nt2.exe
+all: d642prg.exe filejoin.exe gfxconv.exe gt2nt2.exe invert.exe lpack.exe ldepack.exe makedisk.exe pack2.exe pchunk2.exe pic2chr.exe mchunk.exe leveled.exe spred.exe symbols.exe ins2nt2.exe
 
 clean:
 	del *.exe
@@ -21,6 +21,12 @@ bmeconv.exe: bmeconv.c fileio.c
 
 datafile.exe: datafile.c fileio.c
 	gcc datafile.c fileio.c -odatafile.exe
+
+gfxconv.exe: gfxconv.c fileio.c
+	gcc gfxconv.c fileio.c -ogfxconv.exe
+
+pic2chr.exe: pic2chr.c fileio.c
+	gcc pic2chr.c fileio.c -opic2chr.exe
 
 dat2inc.exe: dat2inc.c
 	gcc dat2inc.c -odat2inc.exe

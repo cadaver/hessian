@@ -29,8 +29,6 @@ TitleScreen:    stx TitleScreenParam+1          ;Go to save screen (X>0) or main
                 jsr BlankScreen
                 jsr ClearPanelText
                 jsr InitScroll                  ;Make sure no scrolling
-                jsr ClearActors                 ;Reset sprites
-                jsr DrawActors
 
         ; Load the always resident sprites
 
@@ -92,7 +90,7 @@ M               set M+1
                 jsr PlaySong
 
 TitleScreenParam:
-                lda #0
+                lda #$00
                 beq TitleTexts
 
         ; Save game
@@ -786,3 +784,4 @@ logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
 textFadeTbl:    dc.b $00,$06,$03,$01
 
                 CheckScriptEnd
+

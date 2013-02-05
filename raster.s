@@ -1,6 +1,7 @@
 IRQ1_LINE       = 12
 IRQ3_LINE       = 221
 IRQ4_LINE       = 230
+IRQ5_LINE       = 158
 
 PANEL_BG1       = $00
 PANEL_BG2       = $0b
@@ -10,23 +11,18 @@ TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
 
-        ; IRQ redirector when Kernal is on
-
-RedirectIrq:    ldx $01
-                lda #$35                        ;Note: this will necessarily have overhead,
-                sta $01                         ;which means that the sensitive IRQs like
-                lda #>RI_Return                 ;the panel-split should take extra advance
-                pha
-                lda #<RI_Return
-                pha
-                php
-                jmp ($fffe)
-RI_Return:      stx $01
-                jmp $ea81
-
         ; Raster interrupt 1. Show game screen
 
-Irq1_NoSprites: jmp Irq2_AllDone
+Irq1_SetupBitmapSplit:
+                lda #IRQ5_LINE
+                sta $d012
+                dec $d019
+                lda #<Irq5
+                ldx #>Irq5
+                jmp SetNextIrq
+Irq1_NoSprites: cpx #$30                        ;In bitmap mode?
+                bcs Irq1_SetupBitmapSplit
+                jmp Irq2_AllDone
 
 Irq1:           cld
                 sta irqSaveA
@@ -46,7 +42,8 @@ Irq1_ScrollY:   lda #$57                        ;Check if panel split IRQ needs 
                 cpx #$16
                 bne Irq1_NoBadLine
                 ora #$40
-Irq1_NoBadLine: sta Irq3_D011+1
+Irq1_NoBadLine: and #$df
+                sta Irq3_D011+1
 Irq1_Screen:    lda #GAMESCR1_D018
                 sta $d018
 Irq1_Bg1:       lda #$06
@@ -341,3 +338,36 @@ N               set N+1
                 sta $01                         ;Restore $01 value
                 lda irqSaveA
                 rti
+
+        ; Raster interrupt 5. Text screen split after bitmap display
+
+Irq5:           cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+                pha
+                pla
+                pha
+                pla
+                pha
+                pla
+                lda $d011
+                and #$df
+                sta $d011
+                jmp Irq2_AllDone
+
+        ; IRQ redirector when Kernal is on
+
+RedirectIrq:    ldx $01
+                lda #$35                        ;Note: this will necessarily have overhead,
+                sta $01                         ;which means that the sensitive IRQs like
+                lda #>RI_Return                 ;the panel-split should take extra advance
+                pha
+                lda #<RI_Return
+                pha
+                php
+                jmp ($fffe)
+RI_Return:      stx $01
+                jmp $ea81

@@ -185,10 +185,7 @@ GetLevelDataActorBits:
                 jsr MulU
                 lda #<lvlDataActBits
                 ldy #>lvlDataActBits
-                sta zpSrcLo
-                sty zpSrcHi
-                ldy #<zpSrcLo
-                jmp Add16
+                jmp Add16Immediate
 
         ; Update leveldata actors' existence bits in the current level
         ;

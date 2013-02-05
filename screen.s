@@ -472,7 +472,11 @@ UF_WaitDone:
                 ldx screen
                 lda d018Tbl,x
                 sta Irq1_Screen+1
-                lda screenFrameTbl,x
+                cpx #$02                        ;If textscreen, do not show sprites
+                bcc UF_ShowSprites
+                lda #$00
+                beq UF_NoSprites2
+UF_ShowSprites: lda screenFrameTbl,x
                 sta Irq1_ScreenFrame+1
                 tya                             ;Check which sprites are on
                 sec
@@ -481,8 +485,8 @@ UF_WaitDone:
                 bcc UF_NotMoreThan8
                 lda #$08
 UF_NotMoreThan8:tax
-                lda d015Tbl,x
-                sta Irq1_D015+1
+				lda d015Tbl,x
+UF_NoSprites2:  sta Irq1_D015+1
                 beq UF_NoSprites
                 ldx firstSortSpr                ;Find out sprite Y-range for the fastloader
                 stx Irq1_FirstSortSpr+1

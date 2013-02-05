@@ -26,6 +26,20 @@ Add16:          lda $00,x
                 sta $01,x
                 rts
 
+        ; Add an immediate 16-bit value
+        ;
+        ; Parameters: X destination zeropage base, A,Y value to be added
+        ; Returns: zeropage result
+        ; Modifies: A
+
+Add16Immediate: clc
+                adc $00,x
+                sta $00,x
+                tya
+                adc $01,x
+                sta $01,x
+                rts
+
         ; Subtract a 8-bit value from a 16-bit value
         ;
         ; Parameters: A value to be subtracted, X zeropage base

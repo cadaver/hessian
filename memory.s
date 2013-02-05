@@ -8,7 +8,7 @@ MAX_COMPLEXACT  = 7
 MAX_CACHESPRITES = 64
 MAX_MAPROWS     = 128
 MAX_BLK         = 192
-MAX_LEVELS      = 22
+MAX_LEVELS      = 21
 MAX_LVLACT      = 96
 MAX_LVLDATAACT  = 80
 MAX_LVLOBJ      = 128
@@ -161,9 +161,9 @@ playerStateZPEnd = xpLimitHi+1
 depackCodeStart = $0100
 
 sprF            = $0100
-sprC            = $0100+MAX_SPR
-sprAct          = $0100+MAX_SPR*2
-cacheSprAge     = $0100+MAX_SPR*3
+sprC            = $0118
+sprAct          = $0130
+cacheSprAge     = $0148
 cacheSprFile    = $0200
 cacheSprFrame   = $02a7
 
