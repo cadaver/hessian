@@ -152,14 +152,16 @@ level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.chi bg/
 	pack2 level00_1.bin level00_1.pak
 	pchunk2 bg/level00.map level00_2.pak
 	pchunk2 bg/level00.blk level00_3.pak
-	filejoin level00_1.pak+bg/level00.lva+level00_2.pak+level00_3.pak level00.pak
+	pack2 bg/level00.lva level00_4.pak
+	filejoin level00_1.pak+level00_2.pak+level00_3.pak+level00_4.pak level00.pak
 
 level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.chi bg/level01.chc bg/level01.chr bg/level01.lva
 	dasm level01.s -olevel01_1.bin -f3
 	pack2 level01_1.bin level01_1.pak
 	pchunk2 bg/level01.map level01_2.pak
 	pchunk2 bg/level01.blk level01_3.pak
-	filejoin level01_1.pak+bg/level01.lva+level01_2.pak+level01_3.pak level01.pak
+	pack2 bg/level01.lva level01_4.pak
+	filejoin level01_1.pak+level01_2.pak+level01_3.pak+level01_4.pak level01.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak

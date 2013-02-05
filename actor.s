@@ -1251,7 +1251,6 @@ RemoveLevelActor:
                 ldy actLvlDataPos,x             ;Should be persisted?
                 bmi RemoveActor
                 jsr GetLevelActorIndex
-                bcc RemoveActor
                 lda actXH,x                     ;Store block coordinates
                 sta lvlActX,y
                 lda actYH,x
@@ -1521,12 +1520,13 @@ FA_Loop:        cmp actT,x
                 dex
                 bpl FA_Loop
                 clc
+GLAI_Found:
 FA_Found:       rts
 
         ; Get a free index from levelactortable. May overwrite a temp-actor
         ;
         ; Parameters: Y search startpos
-        ; Returns: C=1 free index found, returned in Y, C=0 not found
+        ; Returns: Y free index
         ; Modifies: A,Y
 
 GetLevelActorIndex:
@@ -1543,13 +1543,21 @@ GLAI_NotFound:  dey
 GLAI_NoWrap:
 GLAI_CheckFail: cpy #$00                        ;Fail if reach startpos
                 bne GLAI_Loop
-                clc
+                if SHOW_LEVELDATA_ERRORS>0
+                inc $d020
+                endif
                 rts
-GLAI_Found:     sty nextTempLvlActIndex         ;Store next index for new search
+
+        ; Get the next leveldata index for a temp actor. Note: does not confirm it is free
+        ;
+        ; Parameters: -
+        ; Returns: nextTempLvlActIndex updated, also returned in A
+        ; Modifies: A,Y
+
+GetNextTempLevelActorIndex:
                 dec nextTempLvlActIndex
-                bpl GLAI_NextIndexOK
+                bpl GNTLAI_NoWrap
                 lda #MAX_LVLACT-1
                 sta nextTempLvlActIndex
-GLAI_NextIndexOK:
-                sec
+GNTLAI_NoWrap:  lda nextTempLvlActIndex
                 rts

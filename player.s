@@ -825,7 +825,7 @@ HumanDeath:     lda #SFX_DEATH
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
                 bcc HD_NoItem
-                lda nextTempLvlActIndex         ;Make the item a temporary persisted actor
+                jsr GetNextTempLevelActorIndex  ;Make the item a temporary persisted actor
                 sta actLvlDataPos,y             ;TODO: important quest items should not be temporary
                 lda #ORG_TEMP
                 ora levelNum
@@ -905,13 +905,14 @@ GXP_Done:       jmp PSfx_Done                   ;Hack: PlaySfx ends similarly
                 ;ldy zpSrcHi
                 ;rts
 
-        ; Save an in-memory checkpoint
+        ; Save an in-memory checkpoint. All actors must be removed from screen at this point
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,X,Y, temp regs
+        ; Modifies: A,X,Y,temp regs
         
-SaveCheckpoint: ldx #15
+SaveCheckpoint: jsr UpdateLevelDataActorBits
+                ldx #15
 SCP_LevelName:  lda lvlName,x
                 sta saveLevelName,x
                 dex

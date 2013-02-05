@@ -20,7 +20,7 @@ int main(int argc, char **argv)
   out = fopen(argv[2], "wb");
   if (!out)
   {
-    printf("Destination open error\n");
+    printf("Could not open output file %s\n", argv[2]);
     return 1;
   }
 
@@ -50,7 +50,12 @@ int main(int argc, char **argv)
         fclose(in);
         memset(filename, 0, sizeof filename);
       }
-      else return 1;
+      else
+      {
+        printf("Could not open input file %s\n", filename);
+        fclose(out);
+        return 1;
+      }
     }
   }
   fclose(out);

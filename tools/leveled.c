@@ -2698,14 +2698,16 @@ void loadalldata(void)
       handle = open(ib2, O_RDONLY | O_BINARY);
       if (handle != -1)
       {
-        for (c = 0; c < NUMLVLACT; c++)
-        {
-            read(handle, &lvlactx[c], 1);
-            read(handle, &lvlacty[c], 1);
-            read(handle, &lvlactf[c], 1);
-            read(handle, &lvlactt[c], 1);
-            read(handle, &lvlactw[c], 1);
-        }
+        int numobj;
+        // Handle legacy formats / changing object count
+        length = lseek(handle, 0, SEEK_END);
+        lseek(handle, 0, SEEK_SET);
+        numobj = length / 5;
+        read(handle, &lvlactx[0], numobj);
+        read(handle, &lvlacty[0], numobj);
+        read(handle, &lvlactf[0], numobj);
+        read(handle, &lvlactt[0], numobj);
+        read(handle, &lvlactw[0], numobj);
         close(handle);
       }
 
@@ -2943,14 +2945,11 @@ void savealldata(void)
       handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
       if (handle != -1)
       {
-        for (c = 0; c < NUMLVLACT; c++)
-        {
-          write(handle, &lvlactx[c], 1);
-          write(handle, &lvlacty[c], 1);
-          write(handle, &lvlactf[c], 1);
-          write(handle, &lvlactt[c], 1);
-          write(handle, &lvlactw[c], 1);
-        }
+        write(handle, &lvlactx[0], NUMLVLACT);
+        write(handle, &lvlacty[0], NUMLVLACT);
+        write(handle, &lvlactf[0], NUMLVLACT);
+        write(handle, &lvlactt[0], NUMLVLACT);
+        write(handle, &lvlactw[0], NUMLVLACT);
         close(handle);
       }
 

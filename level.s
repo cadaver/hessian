@@ -26,14 +26,16 @@ OBJTYPE_SWITCH  = $08
 OBJTYPE_REVEAL  = $0c
 OBJTYPE_SCRIPT  = $10
 OBJTYPE_SIDEDOOR = $14
-OBJTYPE_SPAWNG  = $18
-OBJTYPE_SPAWNA  = $1c
+OBJTYPE_SPAWN   = $18
 
 DOORENTRYDELAY  = 5
 AUTODEACTDELAY  = 12
 
 InitLevel       = lvlCodeStart
 UpdateLevel     = lvlCodeStart+3
+
+LoadLevelError: jsr LFR_ErrorPrompt
+                jmp LoadLevelRetry
 
         ; Change current level and remove leveldata-actors back into statebits
         ; Note: actors must have been removed from screen, or else they will go permanently missing!
@@ -45,32 +47,8 @@ UpdateLevel     = lvlCodeStart+3
 ChangeLevel:    cmp levelNum                    ;Check if level already loaded
                 beq CL_Done
                 pha
-                jsr GetLevelActorBits
-                ldy #MAX_LVLDATAACT/8-1         ;Assume leveldata actors are all gone
-                lda #$00
-CL_ClearStateBits:
-                sta (zpDestLo),y
-                dey
-                bpl CL_ClearStateBits
-                tax
-CL_LevelDataLoop:
-                lda lvlActT,x
-                beq CL_NextActor
-                lda lvlActOrg,x                 ;Check actor type
-                bpl CL_NextActor                ;Leave global/temp untouched
-                and #$7f
-                jsr DecodeBit
-                ora (zpDestLo),y
-                sta (zpDestLo),y
-                lda #$00
-                sta lvlActT,x                   ;Free up the slot
-CL_NextActor:   inx
-                bpl CL_LevelDataLoop
+                jsr UpdateLevelDataActorBits
                 pla
-                jmp LoadLevel
-
-LoadLevelError: jsr LFR_ErrorPrompt
-                jmp LoadLevelRetry
 
         ; Load a new level without processing actor removal
         ;
@@ -87,52 +65,60 @@ LoadLevel:      sta levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
                 jsr BlankScreen
+                ldx #MAX_LVLACT-1
+LL_PurgeOldLevelDataActors:
+                lda lvlActOrg,x                 ;Remove the current leveldata actors
+                bpl LL_PurgeNext                ;to make room for new
+                lda #$00
+                sta lvlActT,x
+LL_PurgeNext:   dex
+                bpl LL_PurgeOldLevelDataActors
 LoadLevelRetry: lda #<lvlObjX                   ;Load levelobjects, chars & charinfo/colors
                 ldx #>lvlObjX
                 jsr LoadFile
                 bcs LoadLevelError
-                jsr GetLevelActorBits
-                ldx #$00                        ;Then load levelactors
-LoadLevelActors:ldy #$00
-LLA_ReadOneActor:
-                jsr GetByte
-                bcs LoadLevelError
-                sta temp1,y
-                iny
-                cpy #$05
-                bne LLA_ReadOneActor
-                lda temp4                       ;Slot occupied in leveldata?
-                beq LLA_NextActor
-                txa
-                jsr DecodeBit
-                and (zpDestLo),y                ;Check state, whether actor still exists
-                beq LLA_NextActor
-                ldy nextTempLvlActIndex
-                jsr GetLevelActorIndex          ;Get a free actorindex, may overwrite a temp-actor
-                bcc LLA_NextActor               ;Should not fail, but check to be sure
-                lda temp1
-                sta lvlActX,y
-                lda temp2
-                sta lvlActY,y
-                lda temp3
-                sta lvlActF,y
-                lda temp4
-                sta lvlActT,y
-                lda temp5
-                sta lvlActWpn,y
-                txa
-                ora #ORG_LEVELDATA
-                sta lvlActOrg,y
-LLA_NextActor:  inx
-                cpx #MAX_LVLDATAACT
-                bne LoadLevelActors
                 ldy #C_MAP
                 jsr LoadAllocFile               ;Load MAP chunk
                 bcs LoadLevelError
                 ldy #C_BLOCKS
                 jsr LoadAllocFile               ;Load BLOCKS chunk
                 bcs LoadLevelError
-                jsr InitLevel
+                lda #<lvlDataActX
+                ldx #>lvlDataActX
+                jsr LoadFile
+                bcs LoadLevelError
+                jsr GetLevelDataActorBits
+                ldx #MAX_LVLDATAACT-1
+LL_CopyLevelDataActors:
+                lda lvlDataActT,x               ;Slot occupied in leveldata?
+                beq LL_NextLevelDataActor
+                txa
+                jsr DecodeBit
+                and (zpDestLo),y                ;Check state, whether actor still exists
+                beq LL_NextLevelDataActor
+                jsr GetNextTempLevelActorIndex  ;It's actually not a temp actor, but use the same
+                tay                             ;FIFO indexing scheme
+                jsr GetLevelActorIndex
+                lda lvlDataActX,x
+                sta lvlActX,y
+                lda lvlDataActY,x
+                sta lvlActY,y
+                lda lvlDataActF,x
+                sta lvlActF,y
+                lda lvlDataActT,x
+                sta lvlActT,y
+                lda lvlDataActWpn,x
+                sta lvlActWpn,y
+                txa                             ;Store the index in leveldata
+                ora #ORG_LEVELDATA
+                sta lvlActOrg,y
+LL_NextLevelDataActor:
+                dex
+                bpl LL_CopyLevelDataActors
+                                                ;TODO: at this point item actors at REVEAL-type
+                                                ;objects should be re-hidden, as all level objects
+                                                ;have been reset to deactivated state
+LL_Common:      jsr InitLevel
 
         ; Calculate start addresses for each map-row (of current zone) and for each
         ; block, and set zone multicolors.
@@ -193,7 +179,7 @@ IM_BlockLoop:   lda zpSrcLo                     ;Store and increase block-
         ; Returns: bits address in zpDestLo
         ; Modifies: A,X,Y,loader temp vars
 
-GetLevelActorBits:
+GetLevelDataActorBits:
                 lda levelNum
                 ldy #MAX_LVLDATAACT/8
                 ldx #<zpDestLo
@@ -204,6 +190,34 @@ GetLevelActorBits:
                 sty zpSrcHi
                 ldy #<zpSrcLo
                 jmp Add16
+
+        ; Update leveldata actors' existence bits in the current level
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,loader temp vars
+        
+UpdateLevelDataActorBits:
+                jsr GetLevelDataActorBits
+                ldy #MAX_LVLDATAACT/8-1         ;Assume leveldata actors are all gone
+                lda #$00
+ULD_ClearStateBits:
+                sta (zpDestLo),y
+                dey
+                bpl ULD_ClearStateBits
+                tax
+ULD_LevelDataLoop:
+                lda lvlActT,x
+                beq ULD_NextActor
+                lda lvlActOrg,x                  ;Check persistence mode, must be leveldata
+                bpl ULD_NextActor
+                and #$7f
+                jsr DecodeBit
+                ora (zpDestLo),y
+                sta (zpDestLo),y
+ULD_NextActor:  inx
+                bpl ULD_LevelDataLoop
+                rts
 
         ; Find the zone indicated by coordinates or number.
         ;

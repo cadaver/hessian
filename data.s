@@ -239,15 +239,6 @@ ntChnWaveOld:   dc.b 0
                 dc.b 0,0,0,0,0,0,0
                 dc.b 0,0,0,0,0,0,0
 
-        ; Sprite variables
-
-sortSprY:       ds.b MAX_SPR*2,0
-sortSprX:       ds.b MAX_SPR*2,0
-sortSprD010:    ds.b MAX_SPR*2,0
-sortSprF:       ds.b MAX_SPR*2,0
-sortSprC:       ds.b MAX_SPR*2,0
-sprIrqLine:     ds.b MAX_SPR*2,0
-
         ; Chunk-file memory allocation variables
 
 fileLo:         ds.b MAX_CHUNKFILES,0
