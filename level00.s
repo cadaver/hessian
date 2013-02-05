@@ -2,17 +2,17 @@
 
                 include memory.s
 
-                org lvlActX
-                incbin bg/level00.lva
-
                 org lvlObjX
                 incbin bg/level00.lvo
                 
                 org lvlSpawnT
                 incbin bg/level00.lvr
 
+                org lvlName
+                dc.b "TEST COURSE",0
+
                 org lvlCodeStart
-                
+
 InitLevel:      jmp DoNothing
 
 UpdateLevel:    ldx #$06
@@ -24,12 +24,12 @@ UL_Loop:        lda chars+54*8,x
                 sty chars+54*8
 DoNothing:      rts
 
-                org lvlName
-                dc.b "TEST COURSE",0
-
-                org chars
-                incbin bg/level00.chr
+                org charInfo
                 incbin bg/level00.chi
                 incbin bg/level00.chc
+                
+                org chars
+                incbin bg/level00.chr
+
 
 

@@ -38,6 +38,7 @@ randomAreaStart:
                 include item.s
                 include panel.s
                 include level.s
+                include plot.s
                 include script.s
                 include ai.s
 

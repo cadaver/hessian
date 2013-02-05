@@ -14,8 +14,8 @@
 
 #define COLOR_DELAY 10
 #define NUMZONES 128
-#define NUMLVLOBJ 96
-#define NUMLVLACT 128
+#define NUMLVLOBJ 128
+#define NUMLVLACT 80
 
 #define NUMRANDOMACT 16
 
@@ -65,7 +65,7 @@ unsigned char zonemusic[NUMZONES];
 
 char *actorname[256];
 char *itemname[256];
-char *modename[8];
+char *modename[16];
 
 unsigned char *modetext[] = {
   "NONE",
@@ -222,7 +222,7 @@ int main (int argc, char *argv[])
 
   for (c = 0; c < 256; c++) actorname[c] = " ";
   for (c = 0; c < 256; c++) itemname[c] = " ";
-  for (c = 0; c < 8; c++) modename[c] = " ";
+  for (c = 0; c < 16; c++) modename[c] = " ";
   levelname[0] = 0;
   names = fopen("names.txt", "rt");
   if (!names) goto NONAMES;
@@ -249,7 +249,7 @@ int main (int argc, char *argv[])
     if (strlen(itemname[c]) > 1) itemname[c][strlen(itemname[c])-1] = 0; /* Delete newline */
     if (!strcmp(itemname[c], "end")) break;
   }
-  for (c = 0; c < 8; c++)
+  for (c = 0; c < 16; c++)
   {
     modename[c] = malloc(80);
     modename[c][0] = 0;
@@ -419,18 +419,18 @@ void level_mainloop(void)
         {
           if (k == KEY_M)
           {
-            int mode = lvlactf[actindex] & 0x7;
+            int mode = lvlactf[actindex] & 0xf;
             mode++;
-            mode &= 0x7;
-            lvlactf[actindex] &= 0xf8;
+            mode &= 0xf;
+            lvlactf[actindex] &= 0xf0;
             lvlactf[actindex] |= mode;
           }
           if (k == KEY_N)
           {
-            int mode = lvlactf[actindex] & 0x7;
+            int mode = lvlactf[actindex] & 0xf;
             mode--;
-            mode &= 0x7;
-            lvlactf[actindex] &= 0xf8;
+            mode &= 0xf;
+            lvlactf[actindex] &= 0xf0;
             lvlactf[actindex] |= mode;
           }
           if (k == KEY_D) // Dir
@@ -1249,7 +1249,7 @@ void drawmap(void)
           if (lvlactw[a] & 128) sprintf(textbuffer, "LEFT");
           else sprintf(textbuffer, "RIGHT");
           printtext_color(textbuffer, 256,165,SPR_FONTS,COL_WHITE);
-          sprintf(textbuffer, "MODE:%1X (%s)", lvlactf[a] & 0xf, modename[lvlactf[a] & 0x7]);
+          sprintf(textbuffer, "MODE:%1X (%s)", lvlactf[a] & 0xf, modename[lvlactf[a] & 0xf]);
           printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
           sprintf(textbuffer, "WPN:%02X (%s)", lvlactw[a] & 0x7f, itemname[lvlactw[a] & 0x7f]);
           printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
@@ -2672,11 +2672,16 @@ void loadalldata(void)
       handle = open(ib2, O_RDONLY | O_BINARY);
       if (handle != -1)
       {
-        read(handle, &lvlobjx[0], NUMLVLOBJ);
-        read(handle, &lvlobjy[0], NUMLVLOBJ);
-        read(handle, &lvlobjb[0], NUMLVLOBJ);
-        read(handle, &lvlobjd1[0], NUMLVLOBJ);
-        read(handle, &lvlobjd2[0], NUMLVLOBJ);
+        int numobj;
+        // Handle legacy formats / changing object count
+        length = lseek(handle, 0, SEEK_END);
+        lseek(handle, 0, SEEK_SET);
+        numobj = length / 5;
+        read(handle, &lvlobjx[0], numobj);
+        read(handle, &lvlobjy[0], numobj);
+        read(handle, &lvlobjb[0], numobj);
+        read(handle, &lvlobjd1[0], numobj);
+        read(handle, &lvlobjd2[0], numobj);
         close(handle);
       }
       
@@ -2693,11 +2698,14 @@ void loadalldata(void)
       handle = open(ib2, O_RDONLY | O_BINARY);
       if (handle != -1)
       {
-        read(handle, &lvlactx[0], NUMLVLACT);
-        read(handle, &lvlacty[0], NUMLVLACT);
-        read(handle, &lvlactf[0], NUMLVLACT);
-        read(handle, &lvlactt[0], NUMLVLACT);
-        read(handle, &lvlactw[0], NUMLVLACT);
+        for (c = 0; c < NUMLVLACT; c++)
+        {
+            read(handle, &lvlactx[c], 1);
+            read(handle, &lvlacty[c], 1);
+            read(handle, &lvlactf[c], 1);
+            read(handle, &lvlactt[c], 1);
+            read(handle, &lvlactw[c], 1);
+        }
         close(handle);
       }
 
@@ -2935,11 +2943,14 @@ void savealldata(void)
       handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
       if (handle != -1)
       {
-        write(handle, &lvlactx[0], NUMLVLACT);
-        write(handle, &lvlacty[0], NUMLVLACT);
-        write(handle, &lvlactf[0], NUMLVLACT);
-        write(handle, &lvlactt[0], NUMLVLACT);
-        write(handle, &lvlactw[0], NUMLVLACT);
+        for (c = 0; c < NUMLVLACT; c++)
+        {
+          write(handle, &lvlactx[c], 1);
+          write(handle, &lvlacty[c], 1);
+          write(handle, &lvlactf[c], 1);
+          write(handle, &lvlactt[c], 1);
+          write(handle, &lvlactw[c], 1);
+        }
         close(handle);
       }
 

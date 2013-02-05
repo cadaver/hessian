@@ -285,17 +285,20 @@ IP_InitInventory:
                 bpl IP_InitInventory
                 sta itemIndex
                 sta levelUp
-                ldx #MAX_GLOBALACT-1
-IP_InitGlobalActors:
-                sta globalActT,x
+                ldx #MAX_PLOTBITS/8-1
+IP_InitPlotBits:sta plotBits,x
                 dex
-                bpl IP_InitGlobalActors
-                tax
+                bpl IP_InitPlotBits
+                ldx #MAX_LVLACT-1
+IP_InitLevelActors:
+                sta lvlActT,x
+                dex
+                bpl IP_InitLevelActors
+                ldx #MAX_LEVELS*MAX_LVLDATAACT/8
                 lda #$ff
 IP_InitLevelData:
-                sta lvlActBits,x                ;Assume all actors exist at start
-                sta lvlActBits+MAX_LEVELS*16-256,x
-                inx
+                sta lvlDataActBits-1,x          ;Assume all leveldata-actors exist at start
+                dex
                 bne IP_InitLevelData
                 lda #<FIRST_XPLIMIT
                 sta xpLimitLo

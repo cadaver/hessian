@@ -80,10 +80,12 @@ ADDACTOR_TOP_LIMIT = 0
 ADDACTOR_RIGHT_LIMIT = 12
 ADDACTOR_BOTTOM_LIMIT = 8
 
-ORG_NONE        = $80                           ;No leveldata origin
-ORG_GLOBAL      = $7f                           ;Store to global actor table
+ORG_GLOBAL      = $00                           ;Global important actor
+ORG_TEMP        = $40                           ;Temporary actor, may be overwritten by global or leveldata
+ORG_LEVELDATA   = $80                           ;Leveldata actor, added/removed at level change
+ORG_LEVELNUM    = $3f
 
-GLOBAL_ACTOR_BIT = $08
+POS_NOTPERSISTENT = $ff
 
 DEFAULT_PICKUP  = $ff
 
@@ -392,7 +394,12 @@ AddActors:      ldx addActorIndex
 UA_AddActorsLoop:
                 lda lvlActT,x
                 beq UA_AASkip
-                lda lvlActX,x
+                lda lvlActOrg,x                 ;Must be either a current level's leveldata actor,
+                bmi UA_LevelOK                  ;or a global/temp actor with matching level
+                and #ORG_LEVELNUM
+                cmp levelNum
+                bne UA_AASkip
+UA_LevelOK:     lda lvlActX,x
 UA_AALeftCheck: cmp #$00
                 bcc UA_AASkip
 UA_AARightCheck:cmp #$00
@@ -1149,8 +1156,8 @@ DA_NotDead:     sta actHp,x
 
 DestroyActor:   sty temp8
                 cpy #ACTI_FIRSTNPCBULLET
-                lda #ORG_NONE                   ;If scrolled off the screen, do not return
-                sta actLvlOrg,x
+                lda #POS_NOTPERSISTENT          ;Destroyed actor does not need to persist any more
+                sta actLvlDataPos,x
                 jsr GetActorLogicData
                 ldy #AL_DESTROYROUTINE
                 lda (actLo),y
@@ -1179,7 +1186,7 @@ ALA_IsNPC:      lda #ACTI_FIRSTNPC
                 jsr GetFreeActor
                 bcc ALA_Fail
                 lda lvlActF,x
-                and #$07
+                and #$0f
                 sta actAIMode,y
                 lda lvlActT,x
                 sta actT,y
@@ -1195,7 +1202,6 @@ ALA_Common:     lda lvlActX,x
                 sta actYH,y
                 lda lvlActF,x
                 pha
-                pha
                 and #$c0
                 sta actYL,y
                 pla
@@ -1203,13 +1209,10 @@ ALA_Common:     lda lvlActX,x
                 asl
                 and #$c0
                 sta actXL,y
-                pla
-                and #GLOBAL_ACTOR_BIT
-                beq ALA_NotGlobal
-                lda #ORG_GLOBAL
-                skip1
-ALA_NotGlobal:  txa                             ;Store leveldata origin
-                sta actLvlOrg,y
+                txa                             ;Store index, ideally same index will be used for removal
+                sta actLvlDataPos,y
+                lda lvlActOrg,x                 ;Store the persistence mode (leveldata/global/temp)
+                sta actLvlDataOrg,y
                 lda #$00                        ;Remove from leveldata
                 sta lvlActT,x
                 tya
@@ -1245,19 +1248,16 @@ ALA_NoDefaultPickup:
 RemoveLevelActor:
                 lda actT,x
                 beq RA_Done
-                lda #$00
-                ldy actLvlOrg,x                 ;Has leveldata origin?
+                ldy actLvlDataPos,x             ;Should be persisted?
                 bmi RemoveActor
-                cpy #ORG_GLOBAL                 ;Global actor?
-                bne RA_Found                    ;Else store directly to original pos
-                jsr FindGlobalActorLevelDataPos
-                bmi RemoveActor
-RA_FoundGlobal: lda #GLOBAL_ACTOR_BIT
-RA_Found:       sta RA_SkipAIMode+1
+                jsr GetLevelActorIndex
+                bcc RemoveActor
                 lda actXH,x                     ;Store block coordinates
                 sta lvlActX,y
                 lda actYH,x
                 sta lvlActY,y
+                lda actLvlDataOrg,x             ;Store levelnumber / persistence mode
+                sta lvlActOrg,y
                 lda actXL,x                     ;Store char coordinates
                 and #$c0
                 lsr
@@ -1269,8 +1269,7 @@ RA_Found:       sta RA_SkipAIMode+1
                 cpx #MAX_COMPLEXACT
                 bcs RA_SkipAIMode
                 ora actAIMode,x
-RA_SkipAIMode:  ora #$00                        ;Add the global actor bit as necessary
-                sta lvlActF,y
+RA_SkipAIMode:  sta lvlActF,y
                 lda actT,x                      ;Store actor type differently if
                 cmp #ACT_ITEM                   ;item or NPC
                 bne RA_StoreNPC
@@ -1334,8 +1333,8 @@ GFA_Loop:       lda actT,y
 GFA_Cmp:        cpy #$00
                 bcs GFA_Loop
                 rts
-GFA_Found:      lda #ORG_NONE                   ;By default is not stored to leveldata
-                sta actLvlOrg,y
+GFA_Found:      lda #POS_NOTPERSISTENT           ;By default is not stored to leveldata
+                sta actLvlDataPos,y
                 lda #$00                        ;Reset most actor variables
                 sta actF1,y
                 sta actFd,y
@@ -1514,7 +1513,7 @@ RC_NoRoute:     clc                            ;Route not found
         ;
         ; Parameters: A actor type
         ; Returns: C=1 actor found, index in X, C=0 not found
-        ; Modifies: A,x
+        ; Modifies: A,X
         
 FindActor:      ldx #ACTI_LASTNPC
 FA_Loop:        cmp actT,x
@@ -1524,155 +1523,33 @@ FA_Loop:        cmp actT,x
                 clc
 FA_Found:       rts
 
-        ; Find leveldata position for global actor
+        ; Get a free index from levelactortable. May overwrite a temp-actor
         ;
-        ; Parameters: -
-        ; Returns: N=0 success, Y has valid index. N=1 failed
+        ; Parameters: Y search startpos
+        ; Returns: C=1 free index found, returned in Y, C=0 not found
         ; Modifies: A,Y
 
-FindGlobalActorLevelDataPos:
-                ldy #ORG_GLOBAL
-FGA_Loop:       lda lvlActT,y                   ;Look for empty space in leveldata
-                beq FGA_Found
-                dey
-                bpl FGA_Loop
-                if SHOW_LEVELDATA_ERRORS>0
-                inc $d020                       ;Error, no room for global actor (fatal error)
-                tya
-                endif
-FGA_Found:      rts
-
-        ; Move global actor to leveldata
-        ;
-        ; Parameters: X global actor index
-        ; Returns: Y positive, new leveldataindex or Y negative if failed
-        ; Modifies: A,Y
-
-GlobalToLevel:  jsr FindGlobalActorLevelDataPos
-                bmi GTL_Fail
-                lda globalActX,x
-                sta lvlActX,y
-                lda globalActY,x
-                sta lvlActY,y
-                lda globalActF,x
-                ora #GLOBAL_ACTOR_BIT
-                sta lvlActF,y
-                lda globalActT,x
-                sta lvlActT,y
-                lda globalActWpn,x
-                sta lvlActWpn,y
-                lda #$00
-                sta globalActT,x
-GTL_Fail:       rts
-
-        ; Move leveldata actor to globals
-        ;
-        ; Parameters: X leveldata actor index
-        ; Returns: Y positive, new globalindex or Y negative if failed
-        ; Modifies: A,Y
-
-LevelToGlobal:  ldy #MAX_GLOBALACT-1
-LTG_SearchEmptyGlobal:
-                lda globalActT,y
-                beq LTG_SearchGlobalFound
-                dey
-                bpl LTG_SearchEmptyGlobal
-                if SHOW_LEVELDATA_ERRORS>0
-                inc $d020                       ;Error, no room for global actor (fatal error)
-                endif
-                rts
-LTG_SearchGlobalFound:
-                lda levelNum
-                sta globalActLvl,y
-                lda lvlActX,x
-                sta globalActX,y
-                lda lvlActY,x
-                sta globalActY,y
-                lda lvlActF,x
-                sta globalActF,y
-                lda lvlActWpn,x
-                sta globalActWpn,y
-                lda lvlActT,x
-                sta globalActT,y
-                rts
-
-        ; Create a global actor
-        ;
-        ; Parameters: A actor type, temp1 new Xpos, temp2 new Ypos, temp3 new level
-        ;             temp4 new finepos+AImode temp5 new dir+weapon
-        ; Returns: C=1 success, C=0 no room
-        ; Modifies: A,X,Y,temp6
-
-CreateGlobalActor:
-                sta temp6
-                ldx #MAX_GLOBALACT-1
-CGA_FindEmpty:  lda globalActT,x
-                beq CGA_FoundEmpty
-                dex
-                bpl CGA_FindEmpty
+GetLevelActorIndex:
+                sty GLAI_CheckFail+1
+GLAI_Loop:      lda lvlActT,y
+                beq GLAI_Found
+                lda lvlActOrg,y
+                bmi GLAI_NotFound               ;Can't overwrite a leveldata-actor
+                and #ORG_TEMP                   ;or an important global actor
+                bne GLAI_Found
+GLAI_NotFound:  dey
+                bpl GLAI_NoWrap
+                ldy #MAX_LVLACT-1
+GLAI_NoWrap:
+GLAI_CheckFail: cpy #$00                        ;Fail if reach startpos
+                bne GLAI_Loop
                 clc
                 rts
-CGA_FoundEmpty: lda temp6
-                sta globalActT,x
-                bne MGA_FoundInGlobals
-
-        ; Move a global actor. If on screen, will be removed
-        ;
-        ; Parameters: A actor type, temp1 new Xpos, temp2 new Ypos, temp3 new level
-        ;             temp4 new finepos+AImode temp5 new dir+weapon (weapon $7f = unchanged)
-        ; Returns: C=1 success, C=0 not found or no room
-        ; Modifies: A,X,Y,temp6
-
-MoveGlobalActor:sta temp6
-                jsr FindActor
-                bcc MGA_NotOnScreen
-                jsr RemoveLevelActor
-MGA_NotOnScreen:ldx #MAX_GLOBALACT-1
-MGA_GlobalActorLoop:
-                lda globalActT,x
-                cmp temp4
-                beq MGA_FoundInGlobals
-                dex
-                bpl MGA_GlobalActorLoop
-                ldx #MAX_LVLACT-1
-MGA_LevelDataLoop:
-                lda lvlActT,x
-                cmp temp4
-                beq MGA_FoundInLevelData
-                dex
-                bpl MGA_LevelDataLoop
-                clc                             ;Not found anywhere
-                rts
-MGA_FoundInGlobals:
-                lda temp1
-                sta globalActX,x
-                lda temp2
-                sta globalActY,x
-                lda temp4
-                sta globalActF,x
-                lda temp5
-                and #$80
-                sta temp6
-                lda temp5
-                and #$7f
-                cmp #$7f
-                bcc MGA_NewWeapon
-                lda globalActWpn,x
-                and #$7f
-MGA_NewWeapon:  ora temp6
-                sta globalActWpn,x
-                lda temp3
-                sta globalActLvl,x
-                cmp levelNum                    ;If on same level, move to leveldata now
-                bne MGA_NotSameLevel
-                jsr GlobalToLevel
-MGA_NotSameLevel:
+GLAI_Found:     sty nextTempLvlActIndex         ;Store next index for new search
+                dec nextTempLvlActIndex
+                bpl GLAI_NextIndexOK
+                lda #MAX_LVLACT-1
+                sta nextTempLvlActIndex
+GLAI_NextIndexOK:
                 sec
-                rts
-MGA_FoundInLevelData:
-                jsr LevelToGlobal               ;If found in leveldata, move to globals,
-                tya                             ;then move back if necessary
-                tax
-                bpl MGA_FoundInGlobals
-                clc                             ;Failed to put to globals (actor lost)
                 rts

@@ -273,7 +273,8 @@ actPrevXH:      ds.b MAX_ACT,0
 actPrevYL:      ds.b MAX_ACT,0
 actPrevYH:      ds.b MAX_ACT,0
 actFlags:       ds.b MAX_ACT,0
-actLvlOrg:      ds.b MAX_ACT,0
+actLvlDataPos:  ds.b MAX_ACT,0
+actLvlDataOrg:  ds.b MAX_ACT,0
 actSizeH:       ds.b MAX_ACT,0
 actSizeU:       ds.b MAX_ACT,0
 actSizeD:       ds.b MAX_ACT,0
@@ -306,13 +307,14 @@ plrCarrying:    dc.b 0
 plrFirearms:    dc.b 0
 plrMelee:       dc.b 0
 plrVitality:    dc.b 0
-lvlActBits:     ds.b MAX_LEVELS*16,0
-globalActLvl:   ds.b MAX_GLOBALACT,0
-globalActX:     ds.b MAX_GLOBALACT,0
-globalActY:     ds.b MAX_GLOBALACT,0
-globalActF:     ds.b MAX_GLOBALACT,0
-globalActT:     ds.b MAX_GLOBALACT,0
-globalActWpn:   ds.b MAX_GLOBALACT,0
+plotBits:       ds.b MAX_PLOTBITS/8
+lvlDataActBits: ds.b MAX_LEVELS*MAX_LVLDATAACT/8,0
+lvlActX:        ds.b MAX_LVLACT,0
+lvlActY:        ds.b MAX_LVLACT,0
+lvlActF:        ds.b MAX_LVLACT,0
+lvlActT:        ds.b MAX_LVLACT,0
+lvlActWpn:      ds.b MAX_LVLACT,0
+lvlActOrg:      ds.b MAX_LVLACT,0
 playerStateEnd:
 
         ; In-memory checkpoint save

@@ -35,7 +35,7 @@ AUTODEACTDELAY  = 12
 InitLevel       = lvlCodeStart
 UpdateLevel     = lvlCodeStart+3
 
-        ; Change current level and return actors to global list / remove from state if necessary
+        ; Change current level and remove leveldata-actors back into statebits
         ; Note: actors must have been removed from screen, or else they will go permanently missing!
         ;
         ; Parameters: A Level number
@@ -46,30 +46,25 @@ ChangeLevel:    cmp levelNum                    ;Check if level already loaded
                 beq CL_Done
                 pha
                 jsr GetLevelActorBits
-                lda #$fe
-                sta temp1
-                ldx #$00
-CL_LevelDataLoop:
-                lda lvlActT,x                   ;Actor still alive?
-                beq CL_ActorGone
-                lda lvlActF,x                   ;Belongs to global list?
-                and #GLOBAL_ACTOR_BIT
-                beq CL_NextActor
-                jsr LevelToGlobal
-                jmp CL_NextActor
-CL_ActorGone:   txa                             ;Actor gone, clear bit from the state
-                lsr
-                lsr
-                lsr
-                tay
-                lda (zpDestLo),y
-                and temp1
+                ldy #MAX_LVLDATAACT/8-1         ;Assume leveldata actors are all gone
+                lda #$00
+CL_ClearStateBits:
                 sta (zpDestLo),y
-CL_NextActor:   sec
-                rol temp1
-                bcs CL_BitNotOver
-                dec temp1
-CL_BitNotOver:  inx
+                dey
+                bpl CL_ClearStateBits
+                tax
+CL_LevelDataLoop:
+                lda lvlActT,x
+                beq CL_NextActor
+                lda lvlActOrg,x                 ;Check actor type
+                bpl CL_NextActor                ;Leave global/temp untouched
+                and #$7f
+                jsr DecodeBit
+                ora (zpDestLo),y
+                sta (zpDestLo),y
+                lda #$00
+                sta lvlActT,x                   ;Free up the slot
+CL_NextActor:   inx
                 bpl CL_LevelDataLoop
                 pla
                 jmp LoadLevel
@@ -92,10 +87,45 @@ LoadLevel:      sta levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
                 jsr BlankScreen
-LoadLevelRetry: lda #<lvlActX                   ;Load levelactors, chars & charinfo/colors
-                ldx #>lvlActX
+LoadLevelRetry: lda #<lvlObjX                   ;Load levelobjects, chars & charinfo/colors
+                ldx #>lvlObjX
                 jsr LoadFile
                 bcs LoadLevelError
+                jsr GetLevelActorBits
+                ldx #$00                        ;Then load levelactors
+LoadLevelActors:ldy #$00
+LLA_ReadOneActor:
+                jsr GetByte
+                bcs LoadLevelError
+                sta temp1,y
+                iny
+                cpy #$05
+                bne LLA_ReadOneActor
+                lda temp4                       ;Slot occupied in leveldata?
+                beq LLA_NextActor
+                txa
+                jsr DecodeBit
+                and (zpDestLo),y                ;Check state, whether actor still exists
+                beq LLA_NextActor
+                ldy nextTempLvlActIndex
+                jsr GetLevelActorIndex          ;Get a free actorindex, may overwrite a temp-actor
+                bcc LLA_NextActor               ;Should not fail, but check to be sure
+                lda temp1
+                sta lvlActX,y
+                lda temp2
+                sta lvlActY,y
+                lda temp3
+                sta lvlActF,y
+                lda temp4
+                sta lvlActT,y
+                lda temp5
+                sta lvlActWpn,y
+                txa
+                ora #ORG_LEVELDATA
+                sta lvlActOrg,y
+LLA_NextActor:  inx
+                cpx #MAX_LVLDATAACT
+                bne LoadLevelActors
                 ldy #C_MAP
                 jsr LoadAllocFile               ;Load MAP chunk
                 bcs LoadLevelError
@@ -103,31 +133,6 @@ LoadLevelRetry: lda #<lvlActX                   ;Load levelactors, chars & chari
                 jsr LoadAllocFile               ;Load BLOCKS chunk
                 bcs LoadLevelError
                 jsr InitLevel
-                jsr GetLevelActorBits
-                lda #$01
-                sta temp1
-                ldx #$00                        ;After loading the level, remove actors that
-                ldy #$00                        ;no longer exist
-RemoveGoneActors:
-                lda (zpDestLo),y
-                and temp1
-                bne RGA_IsAlive
-                sta lvlActT,x
-RGA_IsAlive:    asl temp1
-                bne RGA_BitNotOver
-                inc temp1
-                iny
-RGA_BitNotOver: inx
-                bpl RemoveGoneActors
-                ldx #MAX_GLOBALACT-1
-AddGlobalActors:lda globalActT,x                ;Then add actors from the global list
-                beq AGA_Next
-                lda globalActLvl,x
-                cmp levelNum
-                bne AGA_Next
-                jsr GlobalToLevel
-AGA_Next:       dex
-                bpl AddGlobalActors
 
         ; Calculate start addresses for each map-row (of current zone) and for each
         ; block, and set zone multicolors.
@@ -190,11 +195,11 @@ IM_BlockLoop:   lda zpSrcLo                     ;Store and increase block-
 
 GetLevelActorBits:
                 lda levelNum
-                ldy #16
+                ldy #MAX_LVLDATAACT/8
                 ldx #<zpDestLo
                 jsr MulU
-                lda #<lvlActBits
-                ldy #>lvlActBits
+                lda #<lvlDataActBits
+                ldy #>lvlDataActBits
                 sta zpSrcLo
                 sty zpSrcHi
                 ldy #<zpSrcLo
@@ -387,6 +392,12 @@ AO_Reveal:      lda lvlObjX,y
                 ldx #MAX_LVLACT-1
 AO_RevealLoop:  lda lvlActT,x
                 beq AO_RevealNext
+                lda lvlActOrg,x                 ;Check whether is a leveldata actor,
+                bmi AO_RevealLevelOK            ;or is global/temp which belongs to the current level
+                and #ORG_LEVELNUM
+                cmp levelNum
+                bne AO_RevealNext
+AO_RevealLevelOK:
                 lda lvlActX,x
 AO_RevealXCmp:  cmp #$00
                 bne AO_RevealNext

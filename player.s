@@ -825,6 +825,11 @@ HumanDeath:     lda #SFX_DEATH
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
                 bcc HD_NoItem
+                lda nextTempLvlActIndex         ;Make the item a temporary persisted actor
+                sta actLvlDataPos,y             ;TODO: important quest items should not be temporary
+                lda #ORG_TEMP
+                ora levelNum
+                sta actLvlDataOrg,y
                 lda #$00
                 sta temp5
                 sta temp6

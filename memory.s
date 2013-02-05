@@ -9,9 +9,10 @@ MAX_CACHESPRITES = 64
 MAX_MAPROWS     = 128
 MAX_BLK         = 192
 MAX_LEVELS      = 22
-MAX_LVLACT      = 128
-MAX_LVLOBJ      = 96
-MAX_GLOBALACT   = 16
+MAX_LVLACT      = 96
+MAX_LVLDATAACT  = 80
+MAX_LVLOBJ      = 128
+MAX_PLOTBITS    = 64
 
         ; Zeropage variables
 
@@ -95,6 +96,7 @@ MAX_GLOBALACT   = 16
                 Var actHi
                 Var tgtActIndex
                 Var addActorIndex
+                Var nextTempLvlActIndex
                 Var numHeroes
                 Var numVillains
 
@@ -178,27 +180,22 @@ sprAndTbl       = screen2+1016-MAX_SPR*2
 spriteCache     = $d000
 colors          = $d800
 textChars       = $e000
-lvlActX         = $e300
-lvlActY         = $e380
-lvlActF         = $e400
-lvlActT         = $e480
-lvlActWpn       = $e500
-lvlObjX         = $e580
-lvlObjY         = $e5e0
-lvlObjB         = $e640
-lvlObjDL        = $e6a0
-lvlObjDH        = $e700
-lvlSpawnT       = $e760
-lvlSpawnWpn     = $e770
-lvlCodeStart    = $e780
-lvlName         = $e7f0
+lvlObjX         = $e300
+lvlObjY         = $e380
+lvlObjB         = $e400
+lvlObjDL        = $e480
+lvlObjDH        = $e500
+lvlSpawnT       = $e580
+lvlSpawnWpn     = $e590
+lvlName         = $e5a0
+lvlCodeStart    = $e5b0
+charInfo        = $e600
+charColors      = $e700
 chars           = $e800
-charInfo        = $f000
-charColors      = $f100
-mapTblLo        = $f200
-mapTblHi        = $f280
+mapTblLo        = $f000
+mapTblHi        = $f080
 loadBuffer      = mapTblLo
-blkTblLo        = $f300
-blkTblHi        = $f3c0
+blkTblLo        = $f100
+blkTblHi        = $f1c0
 depackBuffer    = blkTblLo + 1
-scriptCodeStart = $f480
+scriptCodeStart = $f380
