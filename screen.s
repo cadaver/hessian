@@ -201,11 +201,11 @@ SL_ScrAddYNotHigher:
                 lda scrAdd
                 cmp #$02                        ;If speed 2, then must use that on both axes
                 bcc SL_ScrAddOk
-                cpx #$02
-                bcs SL_XSpeedOk
+                cpx #$01
+                bne SL_XSpeedOk
                 asl scrollCSX
-SL_XSpeedOk:    cpy #$02
-                bcs SL_ScrAddOk
+SL_XSpeedOk:    cpy #$01
+                bne SL_ScrAddOk
                 asl scrollCSY
 SL_ScrAddOk:
 SL_CalcSprSub:
