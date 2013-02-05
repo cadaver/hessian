@@ -784,4 +784,3 @@ logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
 textFadeTbl:    dc.b $00,$06,$03,$01
 
                 CheckScriptEnd
-

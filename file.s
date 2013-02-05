@@ -237,7 +237,7 @@ PF_FindSizeSkip:dex
                 iny
                 sty zpBitBuf
                 ldy #$00
-PF_ShiftMemory: lda (zpSrcLo),y                 ;TODO: refactor to use CopyMemory
+PF_ShiftMemory: lda (zpSrcLo),y
                 sta (zpDestLo),y
                 iny
                 bne PF_ShiftMemory
@@ -282,36 +282,31 @@ PF_RelocNext:   dey
                 sta fileHi,y                    ;Mark chunk not in memory
                 rts
 
+SaveState_CopyMemory:
+                ldy #<(playerStateEnd-playerStateStart)
+                sty zpBitsLo
+                ldy #>(playerStateEnd-playerStateStart)
+                sty zpBitsHi
+                
         ; Copy a block of memory
         ;
         ; Parameters: A,X: destination, zpSrcLo,Hi source zpBitsLo,Hi amount of bytes
         ; Returns: -
         ; Modifies: A,X,Y,loader temp vars
 
-SaveState_CopyMemory:
-                ldy #<(playerStateEnd-playerStateStart)
-                sty zpBitsLo
-                ldy #>(playerStateEnd-playerStateStart)
-                sty zpBitsHi
 CopyMemory:     sta zpDestLo
                 stx zpDestHi
+                ldx zpBitsLo
+                inx
                 ldy #$00
-                ldx zpBitsHi
-                beq CM_LastBytes
 CM_Loop:        lda (zpSrcLo),y
                 sta (zpDestLo),y
                 iny
-                bne CM_Loop
+                bne CM_NotOver
                 inc zpSrcHi
                 inc zpDestHi
-                dex
+CM_NotOver:     dex
                 bne CM_Loop
-CM_LastBytes:   ldx zpBitsLo
-                beq CM_Done
-CM_LastBytesLoop:
-                lda (zpSrcLo),y
-                sta (zpDestLo),y
-                iny
-                dex
-                bne CM_LastBytesLoop
-CM_Done:        rts
+                dec zpBitsHi
+                bpl CM_Loop
+                rts

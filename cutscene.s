@@ -41,11 +41,12 @@ DrawToBitmap:   stx temp1
                 jsr MulU
                 lda temp1
                 jsr Add8
-                lda zpDestLo
-                sta temp1
-                sta temp3
+                sta temp1                       ;temp1 = screen data dest address
+                sta temp3                       ;temp3 = color data dest address
                 lda zpDestHi
+                ora #>screen1
                 sta temp2
+                adc #>(colors-screen1)
                 sta temp4
                 lda zpBitsLo
                 ldy zpBitsHi
@@ -63,7 +64,6 @@ DB_MulLoop:     asl zpDestLo
                 dey
                 bne DB_MulLoop
                 lda zpSrcLo
-                clc
                 adc temp7
                 sta actLo                       ;actLo = screen data address
                 lda zpSrcHi
@@ -75,18 +75,11 @@ DB_MulLoop:     asl zpDestLo
                 lda actHi
                 adc temp6
                 sta wpnHi
-                lda zpDestHi
-                adc #>textChars
-                sta zpDestHi
-                lda temp2                       ;temp1 = screen data dest address
-                adc #>screen1
-                sta temp2
-                lda temp4                       ;temp3 = color data dest address
-                adc #>colors
-                sta temp4
 DB_RowLoop:     lda zpDestLo
                 sta temp5                       ;temp5 = bitmap data dest address
                 lda zpDestHi
+                clc
+                adc #>textChars
                 sta temp6
                 lda #$00
                 sta temp7
