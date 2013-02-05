@@ -36,7 +36,11 @@ BS_Common:      ldx #$00
         ; Returns: -
         ; Modifies: A,X,Y
 
-ScrollLogic:    lda scrAdd                      ;If speed is zero, look out
+ScrollLogic:    if SHOW_STACKPOINTER>0
+                tsx
+                stx $d020
+                endif
+                lda scrAdd                      ;If speed is zero, look out
                 beq SL_GetNewSpeed              ;for a new speed-setting
                 clc
                 adc scrCounter                  ;Update workcounter

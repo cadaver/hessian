@@ -36,7 +36,7 @@ INITIAL_GROUNDBRAKE = 6
 INITIAL_JUMPSPEED = 42
 INITIAL_CLIMBSPEED = 84
 
-LVLOBJSEARCH    = 24
+LVLOBJSEARCH    = 32
 
         ; Player update routine
         ;
@@ -164,7 +164,7 @@ MPCO_NotOver:   stx MPCO_Start+1
                 txa
                 adc #LVLOBJSEARCH
                 sta MPCO_EndCmp+1
-                bpl MPCO_Done
+                bcc MPCO_Done
 MPCO_Found:     stx lvlObjNum
 MPCO_Done:
 

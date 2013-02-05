@@ -327,21 +327,22 @@ AOD_Done:       rts
         ; Returns: -
         ; Modifies: A,X,temp vars
 
-ActivateObject: tya
-                pha
-                lda lvlObjB,y                   ;Make sure that is inactive
-                bmi AOD_Done
+ActivateObject: lda lvlObjB,y                   ;Make sure that is inactive
+                bmi AO_Done
                 and #OBJ_TYPEBITS
-                cmp #OBJTYPE_SCRIPT             ;Check for action to perform
+                tax
+                tya
+                pha
+                cpx #OBJTYPE_SCRIPT             ;Check for action to perform
                 beq AO_Script
-                cmp #OBJTYPE_SWITCH
+                cpx #OBJTYPE_SWITCH
                 beq AO_Switch
-                cmp #OBJTYPE_REVEAL
+                cpx #OBJTYPE_REVEAL
                 beq AO_Reveal
                 bne AO_NoOperation
 
         ; Script execution
-        
+
 AO_Script:      ldx lvlObjDL,y
                 lda lvlObjDH,y
                 tay
