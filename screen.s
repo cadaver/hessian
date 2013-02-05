@@ -28,6 +28,7 @@ BlankScreen:    jsr WaitBottom
 BS_Common:      ldx #$00
                 stx Irq1_D015+1
                 stx Irq1_MaxSprY+1
+                stx Irq4_LevelUpdate+1          ;Stop any level animation
                 rts
 
         ; Perform scrolling logic

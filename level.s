@@ -61,7 +61,6 @@ LoadLevel:      sta levelNum
                 stx autoDeactObjNum             ;Reset object auto-deactivation
                 inx                             ;Assume zone 0 after loading
                 stx zoneNum                     ;a new level
-                stx Irq4_LevelUpdate+1          ;No level update while loading
                 ldx #F_LEVEL
                 jsr MakeFileName
                 jsr BlankScreen

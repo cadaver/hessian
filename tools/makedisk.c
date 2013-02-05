@@ -339,7 +339,7 @@ int writefile(char *dosname, char *c64name)
                                 {
                                         unsigned char ch;
 
-                                        if (d < strlen(c64name)) ch = c64name[d];
+                                        if (d < strlen(c64name)) ch = toupper(c64name[d]);
                                         else ch = 0xa0;
                                         if (ch == '_') ch = 0x20;
                                         /* Special filename to cut the directory listing */

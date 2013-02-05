@@ -7,10 +7,11 @@ C_WEAPON        = 4
 C_PLAYER        = 5
 C_FIRSTPURGEABLE = C_PLAYER
 
-F_SPRITE        = $02
-F_MUSIC         = $06
-F_LEVEL         = $07
-F_SCRIPT        = $09
+F_LOGO          = $02
+F_SPRITE        = $03
+F_MUSIC         = $07
+F_LEVEL         = $08
+F_SCRIPT        = $0a
 F_SAVE          = $f0
 
 MAX_CHUNKFILES   = 32

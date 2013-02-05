@@ -7,7 +7,7 @@ LOGOSTARTROW    = 1
 TEXTSTARTROW    = 12
 NUMTEXTROWS     = 8
 NUMSAVES        = 5
-NUMTITLEPAGES   = 2
+NUMTITLEPAGES   = 5
 
 LOAD_GAME       = 0
 SAVE_GAME       = 1
@@ -16,6 +16,10 @@ TITLE_MOVEDELAY = 8
 TITLE_PAGEDELAY = 500
 
 saveStateBuffer = screen2
+
+logoChars       = textChars + $300
+logoScreen      = textChars + $300+608
+logoColors      = textChars + $300+608+168
 
                 org scriptCodeStart
 
@@ -43,17 +47,13 @@ TitleScreen:    stx TitleScreenParam+1          ;Go to save screen (X>0) or main
                 lda #ITEM_FISTS                 ;the panel looks nice
                 sta invType
 
-        ; Copy logo chars & clear screen
+        ; Load logo chars & clear screen
 
-SpritesLoaded:  ldx #$00
-CopyLogoLoop:   lda logoChars,x
-                sta textChars+$300,x
-                lda logoChars+$100,x
-                sta textChars+$400,x
-                lda logoChars+$200,x
-                sta textChars+$500,x
-                inx
-                bne CopyLogoLoop
+SpritesLoaded:  lda #F_LOGO
+                jsr MakeFileName_Direct
+                lda #<logoChars
+                ldx #>logoChars
+                jsr LoadFileRetry
                 lda #$00                        ;Show panel chars in gamescreen & position
                 sta Irq1_Bg1+1                  ;the screen
                 sta scrollY
@@ -701,6 +701,33 @@ txtInstructions:dc.b "USE JOYSTICK IN PORT 2 AND KEYS",0
                 dc.b 0
                 dc.b "RUNSTOP PAUSE MENU ",0
 
+txtInstructions2:
+                dc.b "MOVEMENT CONTROLS (NO FIRE PRESSED)",0
+                dc.b 0
+                dc.b "JUMP  JUMP/CLIMB UP/ACTIVATE  JUMP",0
+                dc.b 0
+                dc.b "GO LEFT   +   GO RIGHT",0
+                dc.b 0
+                dc.b "ROLL  DUCK/CLIMB DOWN/PICKUP  ROLL",0
+
+txtInstructions3:
+                dc.b "TO ATTACK, PRESS FIRE AND DIRECTION",0
+                dc.b 0
+                dc.b "HOLD FIRE FOR INVENTORY, THEN PRESS LEFT",0
+                dc.b "OR RIGHT TO SELECT ITEMS, DOWN TO RELOAD",0
+                dc.b "OR USE ITEM, AND UP TO VIEW SKILLS",0
+                dc.b 0
+                dc.b "HOLD FIRE LONGER FOR PAUSE MENU",0
+
+txtInstructions4:
+                dc.b "SKILLS (GAIN EXPERIENCE TO ADVANCE)",0
+                dc.b 0
+                dc.b "AGILITY   TURN/CLIMB FASTER, JUMP HIGHER",0
+                dc.b "CARRYING  CARRY MORE WEAPONS + AMMO     ",0
+                dc.b "FIREARMS  MORE DAMAGE AND FASTER RELOAD ",0
+                dc.b "MELEE     MORE MELEE DAMAGE             ",0
+                dc.b "VITALITY  RESIST DAMAGE, RECOVER FASTER ",0
+
 txtMainMenu:    dc.b 0
                 dc.b "START NEW GAME",0
                 dc.b 0
@@ -739,9 +766,15 @@ mainMenuJumpTblHi:
                 
 titlePageTblLo: dc.b <txtCredits
                 dc.b <txtInstructions
+                dc.b <txtInstructions2
+                dc.b <txtInstructions3
+                dc.b <txtInstructions4
 
 titlePageTblHi: dc.b >txtCredits
                 dc.b >txtInstructions
+                dc.b >txtInstructions2
+                dc.b >txtInstructions3
+                dc.b >txtInstructions4
 
 logoFadeBg2Tbl: dc.b $00,$00,$06,$0e
 logoFadeBg3Tbl: dc.b $00,$06,$0e,$03
@@ -751,9 +784,5 @@ logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
                 dc.b $08,$09,$0a,$0b,$0c,$0d,$0e,$0f
 
 textFadeTbl:    dc.b $00,$06,$03,$01
-
-logoChars:      incbin bg/logo.chr
-logoScreen:     incbin bg/logoscr.bin
-logoColors:     incbin bg/logocol.bin
 
                 CheckScriptEnd
