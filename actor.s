@@ -1519,9 +1519,27 @@ FA_Loop:        cmp actT,x
                 beq FA_Found
                 dex
                 bpl FA_Loop
-                clc
+FA_NotFound:    clc
 GLAI_Found:
 FA_Found:       rts
+
+        ; Find NPC actor from leveldata for state editing. If on screen, will be removed first
+        ;
+        ; Parameters: A actor type
+        ; Returns: C=1 actor found, index in Y, C=0 not found
+        ; Modifies: A,X,Y
+
+FindLevelActor: sta FLA_Cmp+1
+                jsr FindActor
+                bcc FLA_NotOnScreen
+                jsr RemoveLevelActor
+FLA_NotOnScreen:ldy #MAX_LVLACT-1
+FLA_Loop:       lda lvlActT,y
+FLA_Cmp:        cmp #$00
+                beq FA_Found
+                dey
+                bpl FLA_Loop
+                bmi FA_NotFound
 
         ; Get a free index from levelactortable. May overwrite a temp-actor
         ;
