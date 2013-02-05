@@ -1,6 +1,8 @@
 MAX_ACTX        = 14
 MAX_ACTY        = 9
 
+MAX_SPAWNED_ACTORS = 3
+
 ACTI_PLAYER     = 0
 ACTI_FIRSTNPC   = 1
 ACTI_LASTNPC    = 6
@@ -46,20 +48,21 @@ AL_INITIALHP    = 8
 AL_COLOROVERRIDE = 9
 AL_DMGMODIFY    = 10
 AL_KILLXP       = 11
-AL_OFFENSE      = 12
-AL_DEFENSE      = 13
-AL_MOVEFLAGS    = 14
-AL_MOVESPEED    = 15
-AL_GROUNDACCEL  = 16
-AL_INAIRACCEL   = 17
-AL_FALLACCEL    = 18                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 19                          ;Gravity acceleration in longjump
-AL_BRAKING      = 20
-AL_HEIGHT       = 21                           ;Height for headbump check, negative
-AL_JUMPSPEED    = 22                           ;Negative
-AL_CLIMBSPEED   = 23
-AL_HALFSPEEDRIGHT = 24                         ;Ladder jump / wallflip speed right
-AL_HALFSPEEDLEFT = 25                          ;Ladder jump / wallflip speed left
+AL_SPAWNAIMODE  = 12
+AL_OFFENSE      = 13
+AL_DEFENSE      = 14
+AL_MOVEFLAGS    = 15
+AL_MOVESPEED    = 16
+AL_GROUNDACCEL  = 17
+AL_INAIRACCEL   = 18
+AL_FALLACCEL    = 19                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 20                          ;Gravity acceleration in longjump
+AL_BRAKING      = 21
+AL_HEIGHT       = 22                           ;Height for headbump check, negative
+AL_JUMPSPEED    = 23                           ;Negative
+AL_CLIMBSPEED   = 24
+AL_HALFSPEEDRIGHT = 25                         ;Ladder jump / wallflip speed right
+AL_HALFSPEEDLEFT = 26                          ;Ladder jump / wallflip speed left
 
 AF_NONE         = $00
 AF_ISHERO       = $01
@@ -88,6 +91,9 @@ ORG_LEVELNUM    = $3f
 POS_NOTPERSISTENT = $ff
 
 DEFAULT_PICKUP  = $ff
+
+LVLOBJSEARCH    = MAX_LVLOBJ/8
+LVLACTSEARCH    = MAX_LVLACT/8
 
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
@@ -341,9 +347,11 @@ UpdateAndAddAllActors:
 
 UpdateActors:   lda addActorIndex
                 clc
-                adc #MAX_LVLACT/8               ;To account for max. scrolling speed, check
-                and #MAX_LVLACT-1               ;all level actors in space of 8 logic frames
-                sta UA_AAEndCmp+1
+                adc #LVLOBJSEARCH               ;To account for max. scrolling speed, check
+                cmp #MAX_LVLACT                 ;all level actors in space of 8 logic frames
+                bcc UA_EndCmpOK
+                lda #$00
+UA_EndCmpOK:    sta UA_AAEndCmp+1
 
         ; Calculate border coordinates for adding/removing actors
 
@@ -357,6 +365,7 @@ GAB_LeftOK1:    cmp limitL
                 lda limitL
 GAB_LeftOK2:    sta UA_RALeftCheck+1            ;Left border
                 sta UA_AALeftCheck+1
+                sta UA_SpawnerLeftCheck+1
                 lda mapX
                 clc
                 adc #ADDACTOR_RIGHT_LIMIT
@@ -367,6 +376,7 @@ GAB_RightOK1:   cmp limitR
                 lda limitR
 GAB_RightOK2:   sta UA_RARightCheck+1           ;Right border
                 sta UA_AARightCheck+1
+                sta UA_SpawnerRightCheck+1
                 lda mapY
                 ;sec
                 ;sbc #ADDACTOR_TOP_LIMIT
@@ -377,6 +387,7 @@ GAB_TopOK1:     cmp limitU
                 lda limitU
 GAB_TopOK2:     sta UA_RATopCheck+1             ;Top border
                 sta UA_AATopCheck+1
+                sta UA_SpawnerTopCheck+1
                 lda mapY
                 clc
                 adc #ADDACTOR_BOTTOM_LIMIT
@@ -387,6 +398,7 @@ GAB_BottomOK1:  cmp limitD
                 lda limitD
 GAB_BottomOK2:  sta UA_RABottomCheck+1          ;Bottom border
                 sta UA_AABottomCheck+1
+                sta UA_SpawnerBottomCheck+1
 
         ; Add actors from leveldata to screen
 
@@ -417,6 +429,45 @@ UA_AASkip:      inx
 UA_AAEndCmp:    cpx #$00
                 bne UA_AddActorsLoop
                 stx addActorIndex
+
+        ; Process spawners
+
+                lda spawnerIndex
+                tax
+                clc
+                adc #LVLOBJSEARCH/2
+                sta UA_SpawnerEndCmp+1
+UA_SpawnerLoop: lda lvlObjB,x
+                and #OBJ_TYPEBITS
+                cmp #OBJTYPE_SPAWN
+                bne UA_SpawnerNext
+                lda lvlObjX,x
+UA_SpawnerLeftCheck:
+                cmp #$00
+                bcc UA_SpawnerNext
+UA_SpawnerRightCheck:
+                cmp #$00
+                bcs UA_SpawnerNext
+                lda lvlObjY,x
+                and #$7f
+UA_SpawnerTopCheck:
+                cmp #$00
+                bcc UA_SpawnerNext
+UA_SpawnerBottomCheck:
+                cmp #$00
+                bcs UA_SpawnerNext
+                jsr Random
+                cmp lvlObjDL,x
+                bcs UA_SpawnerNext
+                stx temp1
+                jsr AttemptSpawn
+                ldx temp1
+UA_SpawnerNext: inx
+UA_SpawnerEndCmp:cpx #$00
+                bne UA_SpawnerLoop
+                txa
+                and #MAX_LVLOBJ-1
+                sta spawnerIndex
 
         ; Build hero/villain lists for bullet collision
 
@@ -1172,6 +1223,104 @@ DestroyActor:   sty temp8
 DA_NoXP:        ldy temp8
 DA_Jump:        jmp $0000
 
+        ; Attempt to spawn an actor to level from a spawner object
+        ;
+        ; Parameters: A random parameter for actor type, X spawner object index
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+AttemptSpawn:   sta temp2
+                lda lvlObjDH,x
+                lsr
+                lsr
+                lsr
+                lsr
+                sta temp3
+                lda lvlObjDH,x
+                and #$0f
+                and temp2
+                clc
+                adc temp3
+                sta temp2                       ;Spawntable-index
+                lda #ACTI_FIRSTNPC              ;Do not use all NPC slots for spawned actors
+                ldy #ACTI_FIRSTNPC+MAX_SPAWNED_ACTORS-1
+                jsr GetFreeActor
+                bcc AS_Done
+                ldx temp2
+                lda #$80
+                sta actXL,y                     ;Center into the upper edge of the block
+                lda #$00
+                sta actYL,y
+                lda lvlSpawnT,x
+                sta actT,y
+                lda lvlSpawnWpn,x
+                pha
+                and #$3f
+                sta actWpn,y
+                pla
+                asl
+                bcs AS_InAir
+AS_Ground:      lda #CI_GROUND
+AS_SideCommon:  sta temp3
+                jsr Random
+                pha
+                and #$07
+                cmp #$06
+                bcc AS_CoordOK
+                sbc #$04
+                clc
+AS_CoordOK:     adc UA_SpawnerTopCheck+1
+                sta actYH,y
+                pla
+                asl
+                bcc AS_GroundRight
+AS_GroundLeft:  lda UA_SpawnerLeftCheck+1
+                sta actXH,y
+                lda #$00
+                beq AS_GroundStoreDir
+AS_GroundRight: ldx UA_SpawnerRightCheck+1
+                dex
+                txa
+                sta actXH,y
+                lda #$80
+AS_GroundStoreDir:
+                sta actD,y
+AS_CheckBackground:
+                tya
+                tax
+                jsr InitActor
+                ldy #AL_SPAWNAIMODE
+                lda (actLo),y                   ;Set default AI mode for actor type in question
+                sta actAIMode,x
+                jsr GetCharInfo
+                and #CI_GROUND|CI_OBSTACLE
+                cmp temp3
+                beq AS_SpawnOK
+                jmp RemoveActor                 ;Spawned into wrong background type, remove
+AS_Done:
+AS_SpawnOK:     rts
+AS_InAir:       asl
+                lda #$00
+                bcc AS_SideCommon
+AS_InAirTop:    sta temp3
+                jsr Random                      ;When spawned from top, randomize char position also
+                asl
+                and #$c0
+                sta actXL,y
+                ror
+                sta actD,y                      ;Randomize direction
+                jsr Random
+                and #$0f
+                cmp #$0a
+                bcc AS_InAirCoordOK
+                sbc #$07
+AS_InAirCoordOK:sec
+                adc UA_SpawnerLeftCheck+1
+                sta actXH,y
+                lda UA_SpawnerTopCheck+1
+                sta actYH,y
+                jmp AS_CheckBackground
+
         ; Add actor from leveldata
         ;
         ; Parameters: X leveldata index
@@ -1518,10 +1667,30 @@ FindActor:      ldx #ACTI_LASTNPC
 FA_Loop:        cmp actT,x
                 beq FA_Found
                 dex
-                bpl FA_Loop
+                bne FA_Loop
 FA_NotFound:    clc
-GLAI_Found:
 FA_Found:       rts
+
+        ; Find item actor from screen by type
+        ;
+        ; Parameters: A item type
+        ; Returns: C=1 actor found, index in Y, C=0 not found
+        ; Modifies: A,X
+
+FindItemActor:  sta FIA_Cmp+1
+                ldy #ACTI_FIRSTITEM
+FIA_Loop:       lda actT,y
+                cmp #ACT_ITEM
+                bne FIA_Next
+                lda actF1,y
+FIA_Cmp:        cmp #$00
+                beq FIA_Found
+FIA_Next:       iny
+                cpy #ACTI_LASTITEM+1
+                bcc FIA_Loop
+FIA_NotFound:   clc
+FIA_Found:      
+GLAI_Found:     rts
 
         ; Find NPC actor from leveldata for state editing. If on screen, will be removed first
         ;
@@ -1536,10 +1705,10 @@ FindLevelActor: sta FLA_Cmp+1
 FLA_NotOnScreen:ldy #MAX_LVLACT-1
 FLA_Loop:       lda lvlActT,y
 FLA_Cmp:        cmp #$00
-                beq FA_Found
+                beq FIA_Found
                 dey
                 bpl FLA_Loop
-                bmi FA_NotFound
+                bmi FIA_NotFound
 
         ; Get a free index from levelactortable. May overwrite a temp-actor
         ;

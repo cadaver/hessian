@@ -103,6 +103,7 @@ MAX_PLOTBITS    = 64
                 Var lvlObjNum                   ;Level object variables
                 Var autoDeactObjNum
                 Var autoDeactObjCounter
+                Var spawnerIndex
 
                 Var wpnLo                       ;Weapon variables
                 Var wpnHi

@@ -36,8 +36,6 @@ INITIAL_GROUNDBRAKE = 6
 INITIAL_JUMPSPEED = 42
 INITIAL_CLIMBSPEED = 84
 
-LVLOBJSEARCH    = 32
-
         ; Player update routine
         ;
         ; Parameters: X actor index
@@ -821,7 +819,11 @@ HumanDeath:     lda #SFX_DEATH
                 beq HD_NoItem
                 lda actWpn,x                    ;Check if should spawn the weapon item
                 beq HD_NoItem                   ;TODO: spawn other items like medkits or
-                lda #ACTI_FIRSTITEM             ;quest items if necessary
+                cmp #ITEM_FIRST_FIREARM         ;Melee weapons are a nuisance if dropped many times
+                bcs HD_ItemTypeOK               ;as only one can be picked up, check for existence first
+                jsr FindItemActor
+                bcs HD_NoItem
+HD_ItemTypeOK:  lda #ACTI_FIRSTITEM             ;quest items if necessary
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
                 bcc HD_NoItem

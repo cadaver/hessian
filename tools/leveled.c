@@ -67,21 +67,27 @@ char *actorname[256];
 char *itemname[256];
 char *modename[16];
 
-unsigned char *modetext[] = {
+char *modetext[] = {
   "NONE",
   "TRIG",
   "MAN.",
   "MAN.AD"};
 
-unsigned char *actiontext[] = {
+char *actiontext[] = {
   "NONE",
   "DOOR",
   "SWITCH",
   "REVEAL",
   "SCRIPT",
   "SIDEDOOR",
-  "SPAWN G",
-  "SPAWN A"};
+  "SPAWN",
+  "UNUSED"};
+
+char *spawnmodename[] = {
+  "GROUND",
+  "GROUND",
+  "AIR-SIDE",
+  "AIR-TOP"};
 
 unsigned char slopetbl[] = {
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,   // Slope 0
@@ -333,24 +339,30 @@ void level_mainloop(void)
       break;
     }
 
-    if (k == KEY_L) randomeditmode ^= 1;
+    if (k == KEY_R) randomeditmode ^= 1;
 
     if (randomeditmode)
     {
+      int wpn;
       if (k == KEY_DOWN) randomactnum++;
       if (k == KEY_UP) randomactnum--;
       randomactnum &= NUMRANDOMACT-1;
+      if (k == KEY_Z) randomactt[randomactnum]--;
+      if (k == KEY_X) randomactt[randomactnum]++;
       if (k == KEY_1) randomactt[randomactnum]--;
       if (k == KEY_2) randomactt[randomactnum]++;
       if (k == KEY_3) randomactt[randomactnum] -= 16;
       if (k == KEY_4) randomactt[randomactnum] += 16;
       randomactt[randomactnum] &= 0x7f;
 
-      if (k == KEY_Q) randomactw[randomactnum]--;
-      if (k == KEY_W) randomactw[randomactnum]++;
-      if (k == KEY_Z) randomactw[randomactnum] -= 16;
-      if (k == KEY_X) randomactw[randomactnum] += 16;
-      randomactw[randomactnum] &= 0x7f;
+      wpn = randomactw[randomactnum] & 0x3f;
+      if (k == KEY_Q) wpn--;
+      if (k == KEY_W) wpn++;
+      randomactw[randomactnum] &= 0xc0;
+      randomactw[randomactnum] |= wpn & 0x3f;
+
+      if (k == KEY_M)
+        randomactw[randomactnum] += 0x40;
     }
     else
     {
@@ -580,13 +592,13 @@ void level_mainloop(void)
                 lvlobjb[objindex] &= 0xe3;
                 lvlobjb[objindex] |= (a << 2);
               }
-              // Spawnpoint default values: add 0, and 15
-              if ((lvlobjb[objindex] & 0x1c) >= 0x1c)
+              // Spawnpoint default values: add 0, and 15, half probability
+              if ((lvlobjb[objindex] & 0x1c) == 0x18)
               {
                 if ((!lvlobjd1[objindex]) && (!lvlobjd2[objindex]))
                 {
-                  lvlobjd2[objindex] = 0;
-                  lvlobjd1[objindex] = 0xf;
+                  lvlobjd1[objindex] = 0x80;
+                  lvlobjd2[objindex] = 0xf;
                 }
               }
 
@@ -1224,15 +1236,15 @@ void drawmap(void)
       int sp = 0;
       for (c = 0; c < NUMRANDOMACT; c++)
       {
-        sprintf(textbuffer, "%01X: T%02X (%s) W%02X (%s)", c, randomactt[c], actorname[randomactt[c]], randomactw[c], itemname[randomactw[c]]);
+        sprintf(textbuffer, "%01X: T%02X (%s) W%02X (%s) %s", c, randomactt[c], actorname[randomactt[c]], randomactw[c] & 0x3f, itemname[randomactw[c] & 0x3f], spawnmodename[randomactw[c] >> 6]);
         if (c != randomactnum) printtext_color(textbuffer, 0,10*c,SPR_FONTS,COL_WHITE);
         else printtext_color(textbuffer,0,10*c,SPR_FONTS,COL_HIGHLIGHT);
       }
       for (c = 0; c < NUMLVLOBJ; c++)
       {
-        if ((lvlobjb[c] & 0x1c) >= 0x18) sp++;
+        if ((lvlobjb[c] & 0x1c) == 0x18) sp++;
       }
-      sprintf(textbuffer, "SPAWNPOINTS IN LEVEL: %d", sp);
+      sprintf(textbuffer, "SPAWNERS IN LEVEL: %d", sp);
       printtext_color(textbuffer,0,175,SPR_FONTS,COL_WHITE);
     }
     else
