@@ -7,6 +7,7 @@ SCRCENTER_Y     = 13
 CI_GROUND       = 1                             ;Char info bits
 CI_OBSTACLE     = 2
 CI_CLIMB        = 4
+CI_WATER        = 8
 CI_SLOPE1       = 32
 CI_SLOPE2       = 64
 CI_SLOPE3       = 128
