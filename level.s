@@ -419,10 +419,8 @@ AO_RevealYCmpLo:cmp #$00
 AO_RevealYCmpHi:cmp #$00
                 bne AO_RevealNext
 AO_DoReveal:    sta lvlActY,x
-                lda #$00                        ;Hack: search and add all actors
-                sta addActorIndex               ;on next frame to make sure the
-                sta UA_AAEndCmp+1               ;revealed actor is added as soon
-AO_RevealNext:  dex                             ;as possible
+                jsr AddAllActorsNextFrame       ;Hack: add all actors next frame
+AO_RevealNext:  dex                             ;to reveal the item as quickly as possible
                 bpl AO_RevealLoop
                 jmp AO_NoOperation
 
@@ -528,6 +526,7 @@ CenterPlayer:   ldx actXH+ACTI_PLAYER
                 ldy actYH+ACTI_PLAYER
                 jsr FindZoneXY
                 jsr SetZoneColors
+                iny
                 lda (zoneLo),y
                 jsr PlaySong                    ;Play zone's music
                 jsr InitMap
@@ -571,7 +570,8 @@ CP_NotOverDown: sta mapY
                 sty blockY
                 jsr RedrawScreen
                 sty lvlObjNum                   ;Reset found levelobject (Y=$ff)
-                jmp UpdateAndAddAllActors
+                jsr AddAllActorsNextFrame
+                jmp UpdateActors
 
         ; Set zone's multicolors
         ;
@@ -588,5 +588,4 @@ SetZoneColors:  ldy #ZONEH_BG1                  ;Set zone multicolors
                 iny
                 lda (zoneLo),y
                 sta Irq1_Bg3+1
-                iny
                 rts

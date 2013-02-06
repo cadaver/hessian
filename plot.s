@@ -16,8 +16,7 @@ GetPlotBit:     jsr DecodeBit
 
 SetPlotBit:     jsr DecodeBit
                 ora plotBits,y
-                sta plotBits,y
-                rts
+                bne CPB_Store
 
         ; Clear a plotbit
         ;
@@ -28,7 +27,7 @@ SetPlotBit:     jsr DecodeBit
 ClearPlotBit:   jsr DecodeBit
                 eor #$ff
                 and plotBits,y
-                sta plotBits,y
+CPB_Store:      sta plotBits,y
                 rts
 
         ; Turn a number into a byte offset into a bit-table and a bitmask

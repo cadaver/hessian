@@ -324,18 +324,18 @@ DA_HumanRight1: ldy #ADH_BASEINDEX
                 sta DA_HumanFrame1+1
 UA_Skip:        rts
 
-        ; Add all actors to screen and update them once before drawing. Call before
-        ; entering the main loop after moving to another area or loading a level
+        ; Set all actors to be added on next frame
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,X,Y,temp vars,actor temp vars
+        ; Modifies: A
 
-UpdateAndAddAllActors:
+AddAllActorsNextFrame:
                 lda #$00
                 sta addActorIndex
+                lda #MAX_LVLACT
                 sta UA_AAEndCmp+1
-                beq GetActorBorders
+                rts
 
         ; Update actors. Build first collision lists for bullet collisions. Also add
         ; and remove actors from/to leveldata when crossing the screen edges. Followed
@@ -345,13 +345,7 @@ UpdateAndAddAllActors:
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-UpdateActors:   lda addActorIndex
-                clc
-                adc #LVLOBJSEARCH               ;To account for max. scrolling speed, check
-                cmp #MAX_LVLACT                 ;all level actors in space of 8 logic frames
-                bcc UA_EndCmpOK
-                lda #$00
-UA_EndCmpOK:    sta UA_AAEndCmp+1
+UpdateActors:
 
         ; Calculate border coordinates for adding/removing actors
 
@@ -424,19 +418,20 @@ UA_AABottomCheck:
                 bcs UA_AASkip
                 jsr AddLevelActor
 UA_AASkip:      inx
-                bpl UA_AAEndCmp
-                ldx #$00
-UA_AAEndCmp:    cpx #$00
+UA_AAEndCmp:    cpx #LVLACTSEARCH
                 bne UA_AddActorsLoop
-                stx addActorIndex
+                cpx #MAX_LVLACT
+                bcc UA_IndexNotOver
+                ldx #$00
+                clc
+UA_IndexNotOver:stx addActorIndex
+                txa
+                adc #LVLACTSEARCH
+                sta UA_AAEndCmp+1
 
         ; Process spawners
 
-                lda spawnerIndex
-                tax
-                clc
-                adc #LVLOBJSEARCH/2
-                sta UA_SpawnerEndCmp+1
+                ldx spawnerIndex
 UA_SpawnerLoop: lda lvlObjB,x
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_SPAWN
@@ -463,11 +458,13 @@ UA_SpawnerBottomCheck:
                 jsr AttemptSpawn
                 ldx temp1
 UA_SpawnerNext: inx
-UA_SpawnerEndCmp:cpx #$00
+UA_SpawnerEndCmp:cpx #LVLOBJSEARCH/2
                 bne UA_SpawnerLoop
                 txa
                 and #MAX_LVLOBJ-1
                 sta spawnerIndex
+                adc #LVLOBJSEARCH/2-1
+                sta UA_SpawnerEndCmp+1
 
         ; Build hero/villain lists for bullet collision
 
