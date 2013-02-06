@@ -9,19 +9,13 @@
                 incbin bg/level00.lvr
 
                 org lvlName
-                dc.b "TEST COURSE",0
+                dc.b "GHOST SHIP",0
 
                 org lvlCodeStart
 
 InitLevel:      jmp DoNothing
 
-UpdateLevel:    ldx #$06
-                ldy chars+54*8+7
-UL_Loop:        lda chars+54*8,x
-                sta chars+54*8+1,x
-                dex
-                bpl UL_Loop
-                sty chars+54*8
+UpdateLevel:    
 DoNothing:      rts
 
                 org charInfo

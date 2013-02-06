@@ -306,12 +306,13 @@ IP_InitLevelData:
                 lda #$00
                 sta levelNum                    ;Set startposition & level
                 sta saveD
+                lda #$c0
                 sta saveYL
                 lda #$80
                 sta saveXL
-                lda #6
+                lda #$06
                 sta saveXH
-                lda #2
+                lda #$0b
                 sta saveYH
                 lda #ACT_PLAYER
                 sta saveT

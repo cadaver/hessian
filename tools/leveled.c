@@ -1047,10 +1047,6 @@ void map_mainloop(void)
       {
         int c;
         updateallblocks();
-        for (c = 240; c < 256; c++)
-        {
-          if (charused[c]) goto NOBLOCKMODE;
-        }
         for (c = 0; c < 16; c++)
         {
           copychar(blockdata[16*blocknum+c], 240+c);
@@ -1065,7 +1061,6 @@ void map_mainloop(void)
         editmode = EM_CHARS;
         frommap = 1;
         break;
-        NOBLOCKMODE: {}
       }
     }
 
@@ -1436,10 +1431,6 @@ void char_mainloop(void)
       {
         int c;
         updateallblocks();
-        for (c = 240; c < 256; c++)
-        {
-          if (charused[c]) goto NOBLOCKMODE;
-        }
         for (c = 0; c < 16; c++)
         {
           copychar(blockdata[16*blocknum+c], 240+c);
@@ -1452,8 +1443,6 @@ void char_mainloop(void)
         updateall();
         updateallblocks();
         frommap = 0;
-        NOBLOCKMODE:
-        {}
       }
     }
 
@@ -2308,7 +2297,7 @@ void removeunusedblocks(void)
   {
     if (!blockused[c])
     {
-      memset(&blockdata[16*c], 32, 16);
+      memset(&blockdata[16*c], 0, 16);
     }
   }
   updateallblocks();
