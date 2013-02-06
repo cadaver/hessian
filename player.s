@@ -695,6 +695,8 @@ MH_InitClimb:   lda #$80
                 lda #$00
                 sta actSX,x
                 sta actSY,x
+                sta actFall,x
+                sta actFallL,x
                 jmp NoInterpolation
 
 MH_Climbing:    ldy #AL_CLIMBSPEED
