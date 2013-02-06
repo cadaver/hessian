@@ -31,8 +31,7 @@ OBJTYPE_SPAWN   = $18
 DOORENTRYDELAY  = 5
 AUTODEACTDELAY  = 12
 
-InitLevel       = lvlCodeStart
-UpdateLevel     = lvlCodeStart+3
+UpdateLevel     = lvlCodeStart
 
 LoadLevelError: jsr LFR_ErrorPrompt
                 jmp LoadLevelRetry
@@ -117,7 +116,6 @@ LL_NextLevelDataActor:
                                                 ;TODO: at this point item actors at REVEAL-type
                                                 ;objects should be re-hidden, as all level objects
                                                 ;have been reset to deactivated state
-LL_Common:      jsr InitLevel
 
         ; Calculate start addresses for each map-row (of current zone) and for each
         ; block, and set zone multicolors.

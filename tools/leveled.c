@@ -1492,6 +1492,12 @@ void char_mainloop(void)
       updateblock(blocknum);
       updateimage(charnum);
     }
+    if (k == KEY_F)
+    {
+      chcol[charnum] ^= 64;
+      updateblock(blocknum);
+      updateimage(charnum);
+    }
     if (k == KEY_V)
     {
       int y,x;
@@ -1902,6 +1908,10 @@ void drawgrid(void)
     {
       printtext_color("NOPATH",64,95,SPR_FONTS,COL_WHITE);
     }
+    if (chcol[charnum] & 64)
+    {
+      printtext_color("FIXED",64,95,SPR_FONTS,COL_WHITE);
+    }
   }
   else
   {
@@ -2054,10 +2064,10 @@ void changecol(void)
           break;
           case 3:
           {
-            unsigned char highbit = chcol[charnum] & 128;
+            unsigned char highbits = chcol[charnum] & 0xc0;
             chcol[charnum]++;
             chcol[charnum] &= 15;
-            chcol[charnum] |= highbit;
+            chcol[charnum] |= highbits;
           }
           updateimage(charnum);
           updateblock(blocknum);
@@ -2091,10 +2101,10 @@ void changecol(void)
           break;
           case 3:
           {
-            unsigned char highbit = chcol[charnum] & 128;
+            unsigned char highbits = chcol[charnum] & 0xc0;
             chcol[charnum]--;
             chcol[charnum] &= 15;
-            chcol[charnum] |= highbit;
+            chcol[charnum] |= highbits;
           }
           updateimage(charnum);
           updateblock(blocknum);
@@ -2228,7 +2238,7 @@ void updateallblocks(void)
     int d;
     for (d = 0; d < 16; d++)
     {
-      if ((blockdata[c*16+d]) && (blockdata[c*16+d] != 32)) goto FOUND;
+      if (blockdata[c*16+d]) goto FOUND;
     }
   }
   FOUND:
@@ -2280,6 +2290,8 @@ int findsamechar(int c, int d)
   {
     if (chardata[c*8+e] != chardata[d*8+e]) return 0;
   }
+  if (chcol[c] & 64) return 0; // No-optimize flag, is not duplicate
+  if (chcol[d] & 64) return 0; // No-optimize flag, is not duplicate
   if (chcol[c] != chcol[d]) return 0;
   if (chinfo[c] != chinfo[d]) return 0;
   return 1;
@@ -2292,6 +2304,16 @@ void removeunusedblocks(void)
   for (c = 0; c < mapsx * mapsy; c++)
   {
     blockused[mapdata[c]] = 1;
+  }
+  for (c = 255; c > 0; c--)
+  {
+    int d;
+    for (d = 0; d < 16; d++)
+    {
+      // If block uses a no-optimize char, consider it always used
+      if (chcol[blockdata[c*16+d]] & 64)
+        blockused[mapdata[c]] = 1;
+    }
   }
   for (c = 0; c < 256; c++)
   {
@@ -2309,7 +2331,7 @@ void removeunusedchars(void)
   updateallblocks();
   for (c = 0; c < 256; c++)
   {
-    if (!charused[c])
+    if (!charused[c] && !(chcol[c] & 64))
     {
       int e;
       for (e = 0; e < 8; e++)
@@ -2343,6 +2365,8 @@ void optimizechars(void)
   for (d = 1; d < 256; d++)
   {
     int v = 0;
+    if (chcol[d] & 64)
+      continue;
     for (c = 0; c < 8; c++) v += chardata[d*8+c];
     if (v)
     {

@@ -13,10 +13,7 @@
 
                 org lvlCodeStart
 
-InitLevel:      jmp DoNothing
-
-UpdateLevel:
-DoNothing:      rts
+UpdateLevel:    rts
 
                 org charInfo
                 incbin bg/level01.chi
