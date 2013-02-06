@@ -4,48 +4,47 @@
 
                 org lvlObjX
                 incbin bg/level00.lvo
-                
+
                 org lvlSpawnT
                 incbin bg/level00.lvr
-
-                org lvlName
-                dc.b "GHOST SHIP",0
 
                 org lvlCodeStart
 
 UpdateLevel:    inc UL_Delay+1
 UL_Delay:       lda #$00
                 and #$03
-                bne UL_NoAnim1
+                bne UL_NoWaterAnim
                 ldx #$00
-                lda #$03
-                jsr UL_AnimSub
-UL_NoAnim1:     lda UL_Delay+1
-                and #$07
-                bne UL_NoAnim2
-                ldx #$04
-                lda #$07
-UL_AnimSub:     sta UL_AnimCmp+1
-UL_AnimLoop:    lda chars+78*8,x
+UL_WaterLoop:   lda chars+78*8,x
                 asl
-                tay
                 rol chars+77*8,x
-                tya
+                adc #$00
+                asl
+                rol chars+77*8,x
                 adc #$00
                 sta chars+78*8,x
-
-                lda chars+78*8,x
-                asl
-                tay
-                rol chars+77*8,x
-                tya
-                adc #$00
-                sta chars+78*8,x
-
                 inx
-UL_AnimCmp:     cpx #$00
-                bcc UL_AnimLoop
-UL_NoAnim2:     rts
+                cpx #$08
+                bcc UL_WaterLoop
+UL_NoWaterAnim: lda UL_Delay+1
+                and #$01
+                beq UL_NoRainAnim
+                ldx #$06
+                lda chars+112*8+7
+                pha
+                lda chars+113*8+7
+                pha
+UL_RainLoop:    lda chars+112*8,x
+                sta chars+112*8+1,x
+                lda chars+113*8,x
+                sta chars+113*8+1,x
+                dex
+                bpl UL_RainLoop
+                pla
+                sta chars+113*8
+                pla
+                sta chars+112*8
+UL_NoRainAnim:  rts
 
                 org charInfo
                 incbin bg/level00.chi
@@ -53,3 +52,6 @@ UL_NoAnim2:     rts
 
                 org chars
                 incbin bg/level00.chr
+
+                org lvlName
+                dc.b "GHOST SHIP",0

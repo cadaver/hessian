@@ -8,9 +8,6 @@
                 org lvlSpawnT
                 incbin bg/level01.lvr
 
-                org lvlName
-                dc.b "SECRET CHAMBER",0
-
                 org lvlCodeStart
 
 UpdateLevel:    rts
@@ -21,3 +18,6 @@ UpdateLevel:    rts
 
                 org chars
                 incbin bg/level01.chr
+
+                org lvlName
+                dc.b "SECRET CHAMBER",0
