@@ -5,28 +5,23 @@
                 org lvlObjX
                 incbin bg/level00.lvo
 
-                org lvlSpawnT
-                incbin bg/level00.lvr
-
                 org lvlCodeStart
 
 UpdateLevel:    inc UL_Delay+1
 UL_Delay:       lda #$00
+                tay
                 and #$03
-                bne UL_NoWaterAnim
+                bne UL_NoWaterAnim1
                 ldx #$00
-UL_WaterLoop:   lda chars+78*8,x
-                asl
-                rol chars+77*8,x
-                adc #$00
-                asl
-                rol chars+77*8,x
-                adc #$00
-                sta chars+78*8,x
-                inx
-                cpx #$08
-                bcc UL_WaterLoop
-UL_NoWaterAnim: lda UL_Delay+1
+                lda #$03
+                jsr UL_WaterSub
+UL_NoWaterAnim1:tya
+                and #$07
+                bne UL_NoWaterAnim2
+                ldx #$04
+                lda #$07
+                jsr UL_WaterSub
+UL_NoWaterAnim2:tya
                 and #$01
                 beq UL_NoRainAnim
                 ldx #$06
@@ -46,12 +41,29 @@ UL_RainLoop:    lda chars+112*8,x
                 sta chars+112*8
 UL_NoRainAnim:  rts
 
+UL_WaterSub:    sta UL_WaterCmp+1
+UL_WaterLoop:   lda chars+78*8,x
+                asl
+                rol chars+77*8,x
+                adc #$00
+                asl
+                rol chars+77*8,x
+                adc #$00
+                sta chars+78*8,x
+                inx
+UL_WaterCmp:    cpx #$00
+                bcc UL_WaterLoop
+                rts
+
                 org charInfo
                 incbin bg/level00.chi
                 incbin bg/level00.chc
 
                 org chars
                 incbin bg/level00.chr
+
+                org lvlSpawnT
+                incbin bg/level00.lvr
 
                 org lvlName
                 dc.b "GHOST SHIP",0

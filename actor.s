@@ -1239,7 +1239,12 @@ AttemptSpawn:   sta temp2
                 clc
                 adc temp3
                 sta temp2                       ;Spawntable-index
-                lda #ACTI_FIRSTNPC              ;Do not use all NPC slots for spawned actors
+                tax
+                lda lvlSpawnPlot,x              ;Requires a plotbit to spawn?
+                bmi AS_NoPlotBit
+                jsr GetPlotBit
+                beq AS_Done
+AS_NoPlotBit:   lda #ACTI_FIRSTNPC              ;Do not use all NPC slots for spawned actors
                 ldy #ACTI_FIRSTNPC+MAX_SPAWNED_ACTORS-1
                 jsr GetFreeActor
                 bcc AS_Done

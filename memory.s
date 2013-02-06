@@ -96,7 +96,6 @@ MAX_PLOTBITS    = 64
                 Var actHi
                 Var tgtActIndex
                 Var addActorIndex
-                Var nextTempLvlActIndex
                 Var numHeroes
                 Var numVillains
 
@@ -117,6 +116,7 @@ MAX_PLOTBITS    = 64
                 Var soundMode
 
                 Var levelNum                    ;Player state
+                Var nextTempLvlActIndex
                 Var itemIndex
                 Var levelUp
                 Var xpLo
@@ -191,24 +191,25 @@ lvlObjY         = $e380
 lvlObjB         = $e400
 lvlObjDL        = $e480
 lvlObjDH        = $e500
-lvlSpawnT       = $e580
-lvlSpawnWpn     = $e590
-lvlCodeStart    = $e5a0
+lvlCodeStart    = $e580
 charInfo        = $e600
 charColors      = $e700
 chars           = $e800
-lvlName         = $f000                         ;16 bytes free for level extra data
-playRoutineVars = $f020
-sortSprY        = $f060
-sortSprX        = $f090
-sortSprD010     = $f0c0
-sortSprF        = $f0f0
-sortSprC        = $f120
-sprIrqLine      = $f150
-mapTblLo        = $f180
-mapTblHi        = $f200
+lvlSpawnT       = $f000
+lvlSpawnWpn     = $f010
+lvlSpawnPlot    = $f020
+lvlName         = $f030
+playRoutineVars = $f040
+mapTblLo        = $f080
+mapTblHi        = $f100
 loadBuffer      = mapTblLo
-blkTblLo        = $f280
-blkTblHi        = $f340
+blkTblLo        = $f180
+blkTblHi        = $f240
 depackBuffer    = blkTblLo + 1
-scriptCodeStart = $f400
+sortSprY        = $f300
+sortSprX        = $f330
+sortSprD010     = $f360
+sortSprF        = $f390
+sortSprC        = $f3c0
+sprIrqLine      = $f3f0
+scriptCodeStart = $f420

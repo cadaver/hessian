@@ -45,6 +45,7 @@ unsigned char lvlobjd2[NUMLVLOBJ];
 
 unsigned char randomactt[NUMRANDOMACT];
 unsigned char randomactw[NUMRANDOMACT];
+unsigned char randomactp[NUMRANDOMACT];
 
 unsigned char lvlactx[NUMLVLACT];
 unsigned char lvlacty[NUMLVLACT];
@@ -360,6 +361,9 @@ void level_mainloop(void)
       if (k == KEY_W) wpn++;
       randomactw[randomactnum] &= 0xc0;
       randomactw[randomactnum] |= wpn & 0x3f;
+
+      if (k == KEY_A) randomactp[randomactnum]--;
+      if (k == KEY_S) randomactp[randomactnum]++;
 
       if (k == KEY_M)
         randomactw[randomactnum] += 0x40;
@@ -1231,7 +1235,7 @@ void drawmap(void)
       int sp = 0;
       for (c = 0; c < NUMRANDOMACT; c++)
       {
-        sprintf(textbuffer, "%01X: T%02X (%s) W%02X (%s) %s", c, randomactt[c], actorname[randomactt[c]], randomactw[c] & 0x3f, itemname[randomactw[c] & 0x3f], spawnmodename[randomactw[c] >> 6]);
+        sprintf(textbuffer, "%01X: T%02X (%s) W%02X (%s) P%02X %s", c, randomactt[c], actorname[randomactt[c]], randomactw[c] & 0x3f, itemname[randomactw[c] & 0x3f], randomactp[c], spawnmodename[randomactw[c] >> 6]);
         if (c != randomactnum) printtext_color(textbuffer, 0,10*c,SPR_FONTS,COL_WHITE);
         else printtext_color(textbuffer,0,10*c,SPR_FONTS,COL_HIGHLIGHT);
       }
@@ -2218,6 +2222,7 @@ int initchars(void)
   }
   memset(randomactt,0,NUMRANDOMACT);
   memset(randomactw,0,NUMRANDOMACT);
+  memset(randomactp,0xff,NUMRANDOMACT);
   updateall();
   updateallblocks();
   return 1;
@@ -2756,6 +2761,7 @@ void loadalldata(void)
       {
         randomactt[c] = 0;
         randomactw[c] = 0;
+        randomactp[c] = 0xff;
       }
       strcpy(ib2, ib1);
       strcat(ib2, ".lvr");
@@ -2764,6 +2770,7 @@ void loadalldata(void)
       {
         read(handle, randomactt, NUMRANDOMACT);
         read(handle, randomactw, NUMRANDOMACT);
+        read(handle, randomactp, NUMRANDOMACT);
       }
       close(handle);
 
@@ -2889,6 +2896,7 @@ void savealldata(void)
       {
         write(handle, randomactt, NUMRANDOMACT);
         write(handle, randomactw, NUMRANDOMACT);
+        write(handle, randomactp, NUMRANDOMACT);
       }
       close(handle);
 

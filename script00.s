@@ -269,11 +269,10 @@ LoadGameCancel: jmp TitleTexts
 
 StartGame:      jsr FadeOutAll
 InitPlayer:     lda #$00
-                ldx #NUM_SKILLS-1
-IP_InitSkillsXP:sta xpLo,x
-                sta plrSkills,x
+                ldx #playerStateZPEnd-playerStateZPStart-1
+IP_InitZPState: sta playerStateZPStart,x
                 dex
-                bpl IP_InitSkillsXP
+                bpl IP_InitZPState
                 ldx #MAX_INVENTORYITEMS-1
 IP_InitInventory:
                 sta invType,x
@@ -303,8 +302,7 @@ IP_InitLevelData:
                 lda #1
                 sta xpLevel
                 sta invType                     ;1 = fists
-                lda #$00
-                sta levelNum                    ;Set startposition & level
+                lda #$00                        ;Set startposition
                 sta saveD
                 lda #$c0
                 sta saveYL
