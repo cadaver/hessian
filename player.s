@@ -52,7 +52,8 @@ MP_CheckPickupSub:
                 ldy #ACTI_FIRSTITEM
 MP_CheckPickupSub2:
                 lda actT,y
-                beq MP_CPSNoItem
+                cmp #ACT_ITEM
+                bne MP_CPSNoItem
                 jsr CheckActorCollision
                 bcs MP_CPSHasItem
 MP_CPSNoItem:   iny
