@@ -4,8 +4,9 @@
                 include actordata.s
                 include itemdata.s
                 include weapondata.s
-                include sounddata.s
+                include leveldata.s
                 include aidata.s
+                include sounddata.s
 
                 org (* + $ff) & $ff00
                 
@@ -256,7 +257,7 @@ plrFirearms:    dc.b 0
 plrMelee:       dc.b 0
 plrVitality:    dc.b 0
 plotBits:       ds.b MAX_PLOTBITS/8,0
-lvlDataActBits: ds.b MAX_LEVELS*MAX_LVLDATAACT/8,0
+lvlDataActBits: ds.b LVLDATAACTTOTALSIZE,0
 lvlActX:        ds.b MAX_LVLACT,0
 lvlActY:        ds.b MAX_LVLACT,0
 lvlActF:        ds.b MAX_LVLACT,0

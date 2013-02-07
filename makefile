@@ -128,7 +128,10 @@ sfx/plasma.sfx: sfx/plasma.ins
 sfx/drone.sfx: sfx/drone.ins
 	ins2nt2 sfx/drone.ins sfx/drone.sfx
 
-main.pak: actor.s actordata.s ai.s aidata.s bullet.s cutscene.s data.s file.s init.s item.s itemdata.s level.s macros.s \
+levelactors.s: bg/level00.lva bg/level01.lva
+	countobj
+
+main.pak: actor.s actordata.s ai.s aidata.s bullet.s cutscene.s data.s file.s init.s item.s itemdata.s level.s levelactors.s macros.s \
 	main.s math.s memory.s panel.s paneldata.s physics.s player.s plot.s raster.s screen.s script.s sound.s sounddata.s \
 	sprite.s text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/shotgun.sfx sfx/autorifle.sfx \
 	sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \

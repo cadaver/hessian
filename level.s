@@ -174,16 +174,18 @@ IM_BlockLoop:   lda zpSrcLo                     ;Store and increase block-
         ;
         ; Parameters: levelNum
         ; Returns: bits address in zpDestLo
-        ; Modifies: A,X,Y,loader temp vars
+        ; Modifies: A,X,loader temp vars
 
 GetLevelDataActorBits:
-                lda levelNum
-                ldy #MAX_LVLDATAACT/8
-                ldx #<zpDestLo
-                jsr MulU
+                ldx levelNum
                 lda #<lvlDataActBits
-                ldy #>lvlDataActBits
-                jmp Add16Immediate
+                clc
+                adc lvlDataActBitsStart,x
+                sta zpDestLo
+                lda #>lvlDataActBits
+                adc #$00
+                sta zpDestHi
+                rts
 
         ; Update leveldata actors' existence bits in the current level
         ;
@@ -193,7 +195,8 @@ GetLevelDataActorBits:
         
 UpdateLevelDataActorBits:
                 jsr GetLevelDataActorBits
-                ldy #MAX_LVLDATAACT/8-1         ;Assume leveldata actors are all gone
+                ldy lvlDataActBitsLen,x         ;Assume leveldata actors are all gone
+                dey
                 lda #$00
 ULD_ClearStateBits:
                 sta (zpDestLo),y

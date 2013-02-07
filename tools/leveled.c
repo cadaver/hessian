@@ -15,7 +15,7 @@
 #define COLOR_DELAY 10
 #define NUMZONES 128
 #define NUMLVLOBJ 128
-#define NUMLVLACT 80
+#define NUMLVLACT 96
 
 #define NUMRANDOMACT 16
 

@@ -281,10 +281,22 @@ Irq4_NoNtscDelay:
                 bcs Irq4_TargetFramesOk         ;Delay will not be used when the update
                 inc targetFrames                ;is already lagging behind
 Irq4_TargetFramesOk:
+                if SHOW_PLAYROUTINE_TIME>0
+                    dec $d020
+                endif
                 jsr PlayRoutine                 ;Play music/sound effects
+                if SHOW_PLAYROUTINE_TIME>0
+                    inc $d020
+                endif
 Irq4_LevelUpdate:lda #$00                       ;Animate level background?
                 beq Irq4_SkipFrame
+                if SHOW_LEVELUPDATE_TIME>0
+                    dec $d020
+                endif
                 jsr UpdateLevel
+                if SHOW_LEVELUPDATE_TIME>0
+                    inc $d020
+                endif
 Irq4_SkipFrame: lda fileOpen                    ;If file not open, switch SCPU to turbo mode
                 bne Irq4_NoSCPU                 ;during the bottom of the screen to prevent
                 sta $d07b                       ;slowdown during heavy game logic

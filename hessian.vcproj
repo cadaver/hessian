@@ -89,6 +89,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\cutscene.s"
+				>
+			</File>
+			<File
 				RelativePath=".\data.s"
 				>
 			</File>
@@ -122,6 +126,22 @@
 			</File>
 			<File
 				RelativePath=".\level.s"
+				>
+			</File>
+			<File
+				RelativePath=".\level00.s"
+				>
+			</File>
+			<File
+				RelativePath=".\level01.s"
+				>
+			</File>
+			<File
+				RelativePath=".\levelactors.s"
+				>
+			</File>
+			<File
+				RelativePath=".\leveldata.s"
 				>
 			</File>
 			<File
@@ -161,11 +181,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\plot.s"
+				>
+			</File>
+			<File
 				RelativePath=".\raster.s"
 				>
 			</File>
 			<File
 				RelativePath=".\screen.s"
+				>
+			</File>
+			<File
+				RelativePath=".\script.s"
+				>
+			</File>
+			<File
+				RelativePath=".\script00.s"
 				>
 			</File>
 			<File

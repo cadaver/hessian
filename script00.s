@@ -291,7 +291,7 @@ IP_InitLevelActors:
                 sta lvlActT,x
                 dex
                 bpl IP_InitLevelActors
-                ldx #MAX_LEVELS*MAX_LVLDATAACT/8
+                ldx #LVLDATAACTTOTALSIZE
                 lda #$ff
 IP_InitLevelData:
                 sta lvlDataActBits-1,x          ;Assume all leveldata-actors exist at start

@@ -252,14 +252,14 @@ SL_CSSMapY:     lda #$00
 
 UpdateFrame:    lda #$01                        ;Re-enable raster IRQs after loading/saving
                 sta $d01a
-                if SHOW_FREE_RASTERTIME > 0
+                if SHOW_FREE_TIME > 0
                 dec $d020
                 endif
 UF_Wait:        lda targetFrames                ;Wait for NTSC delay if needed
                 beq UF_Wait
                 lda newFrame                    ;Wait until sprite IRQs are done with the current sprites
                 bmi UF_Wait
-                if SHOW_FREE_RASTERTIME > 0
+                if SHOW_FREE_TIME > 0
                 inc $d020
                 endif
                 dec targetFrames               
@@ -429,7 +429,7 @@ SSpr_FinalEndMark:
                 sta sprIrqLine-1,y
 
 SSpr_AllDone:
-                if SHOW_FREE_RASTERTIME > 0
+                if SHOW_FREE_TIME > 0
                 dec $d020
                 endif
 UF_WaitPrevFrame:
@@ -459,7 +459,7 @@ UF_WaitNormal:  lda $d011                       ;If no colorshift, just need to 
                 cmp #IRQ1_LINE-$05
                 bcs UF_WaitNormal
 UF_WaitDone:    
-                if SHOW_FREE_RASTERTIME > 0
+                if SHOW_FREE_TIME > 0
                 inc $d020
                 endif
                 lda scrollX                     ;Copy scrolling and screen number
