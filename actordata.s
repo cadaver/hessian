@@ -69,13 +69,13 @@ actDispTblHi:   dc.b >adPlayer
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_PLAYER                   ;Lower part spritefile number
-                dc.b 22                         ;Lower part base spritenumber
+                dc.b 25                         ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
-                dc.b 28                         ;Lower part left frame add
+                dc.b 32                         ;Lower part left frame add
                 dc.b C_PLAYER                   ;Upper part spritefile number
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable
-                dc.b 35                         ;Upper part left frame add
+                dc.b 39                         ;Upper part left frame add
 
 adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_ITEM                     ;Spritefile number
@@ -182,18 +182,18 @@ adSmokeTrail:   dc.b ONESPRITE                  ;Number of sprites
 
         ; Human actor upper part framenumbers
 
-humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,3,4,5,6,7,8,9
-                dc.b $80+1,$80+0,$80+0,$80+1,$80+1,$80+2,$80+2,$80+1,$80+1,$80+2,$80+1,$80+0,$80+0,$80+0,15,13,12,13,14,$80+3,$80+10,$80+11,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9
+humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,22,23,24,23,3,4,5,6,7,8,9
+                dc.b $80+1,$80+0,$80+0,$80+1,$80+1,$80+2,$80+2,$80+1,$80+1,$80+2,$80+1,$80+0,$80+0,$80+0,15,13,12,13,14,$80+3,$80+10,$80+11,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+22,$80+23,$80+24,$80+23,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9
 
         ; Human actor lower part framenumbers
 
-humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9,14,14,13,14,15,$80+10,$80+11,$80+12,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21
-                dc.b 0,1,2,3,4,1,2,3,4,5,6,7,8,9,14,14,13,14,15,10,11,12,16,17,18,19,20,21
+humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9,14,14,13,14,15,$80+10,$80+11,$80+12,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+2,$80+3,$80+4,$80+3
+                dc.b 0,1,2,3,4,1,2,3,4,5,6,7,8,9,14,14,13,14,15,10,11,12,16,17,18,19,20,21,2,3,4,3
 
         ; Human Y-size reduce table based on animation
 
 humanSizeReduceTbl:
-                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18
+                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,4,4,4,4
 
         ; Item actor color flashing
 
@@ -282,7 +282,7 @@ playerDmgModify:dc.b NO_MODIFY                  ;Damage modifier
                 dc.b AIMODE_SNIPER              ;AI mode when spawned randomly
                 dc.b $ff                        ;AI offense probability
                 dc.b $ff                        ;AI defense probability
-                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move flags
+                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP|AMF_SWIM ;Move flags
                 dc.b 4*8                        ;Max. movement speed
 playerGroundAcc:dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
 playerInAirAcc: dc.b INITIAL_INAIRACC           ;In air movement acceleration
@@ -296,6 +296,9 @@ playerClimbSpeed:
                 dc.b INITIAL_CLIMBSPEED         ;Climbing speed
                 dc.b 2*8                        ;Ladder jump / wallflip speed right
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
+playerSwimSpeed:dc.b 2*8
+playerSwimAcc:  dc.b INITIAL_GROUNDACC
+playerDrownTimer:dc.b INITIAL_DROWNINGTIMER
 
 alItem:         dc.w MoveItem                   ;Update routine
                 dc.w RemoveActor                ;Destroy routine

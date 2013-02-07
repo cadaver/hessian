@@ -1,8 +1,9 @@
 MB_GROUNDED    = 1
-MB_LANDED      = 2
-MB_HITWALL     = 4
-MB_HITCEILING  = 8
-MB_STARTFALLING = 16
+MB_INWATER      = 2
+MB_LANDED      = 4
+MB_HITWALL     = 8
+MB_HITCEILING  = 16
+MB_STARTFALLING = 32
 
         ; Move actor in a straight line and return charinfo from final position
         ;
@@ -18,20 +19,23 @@ MoveProjectile: lda actSX,x
 
         ; Move actor and stop at obstacles
         ;
-        ; Parameters: X actor index
+        ; Parameters: X actor index, A offset position for obstacles
         ; Returns: A charinfo
         ; Modifies: A,Y,temp vars
 
-MoveFlyer:      lda actSX,x
+MoveFlyer:      sta temp5
+                lda actSX,x
                 jsr MoveActorX
-                jsr GetCharInfo
+                lda temp5
+                jsr GetCharInfoOffset
                 and #CI_OBSTACLE
                 beq MF_XMoveOK
                 lda actSX,x
                 jsr MoveActorXNeg
 MF_XMoveOK:     lda actSY,x
                 jsr MoveActorY
-                jsr GetCharInfo
+                lda temp5
+                jsr GetCharInfoOffset
                 and #CI_OBSTACLE
                 beq MF_YMoveOK
                 lda actSY,x
@@ -139,6 +143,12 @@ MWG_NoLanding:  lda temp5
 MWG_CheckLanding:
                 jsr GetCharInfo                 ;Get charinfo at actor pos
                 tay
+                and #CI_WATER
+                beq MWG_NotInWater
+                lda temp5
+                ora #MB_INWATER
+                sta temp5
+MWG_NotInWater: tya
                 lsr                             ;Hit ground?
                 bcc MWG_CheckCharCrossY         ;If not directly, check also possible char crossing
                 tya

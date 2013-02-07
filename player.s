@@ -6,8 +6,9 @@ FR_ENTER        = 14
 FR_CLIMB        = 15
 FR_DIE          = 19
 FR_ROLL         = 22
-FR_PREPARE      = 28
-FR_ATTACK       = 30
+FR_SWIM         = 28
+FR_PREPARE      = 32
+FR_ATTACK       = 34
 
 HEALTH_RECHARGE_DELAY = 75
 HEALTH_RECHARGE_RATE = 25
@@ -18,6 +19,7 @@ DEATH_HEIGHT    = -3                            ;Ceiling check height for dead b
 DEATH_YSPEED    = -5*8
 DEATH_MAX_XSPEED = 6*8
 DEATH_ACCEL     = 6
+DEATH_FLOAT_ACCEL = -5
 DEATH_BRAKING   = 6
 
 HUMAN_MAX_YSPEED = 6*8
@@ -35,6 +37,7 @@ INITIAL_INAIRACC = 2
 INITIAL_GROUNDBRAKE = 6
 INITIAL_JUMPSPEED = 42
 INITIAL_CLIMBSPEED = 84
+INITIAL_DROWNINGTIMER = 12
 
         ; Player update routine
         ;
@@ -260,6 +263,7 @@ MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 lda #DEATH_ACCEL
                 ldy #HUMAN_MAX_YSPEED
                 jsr MoveWithGravity             ;Actually move & check collisions
+                tay
                 lsr
                 bcs MH_DeathGrounded
                 and #MB_HITWALL/2               ;If hit wall, zero X-speed
@@ -267,13 +271,28 @@ MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 lda #$00
                 sta actSX,x
 MH_DeathNoHitWall:
-                lda #FR_DIE
+                lda actSY,x
+                bmi MH_DeathNoFloat
+                lda #-3
+                jsr GetCharInfoOffset
+                and #CI_WATER
+                beq MH_DeathNoFloat
+                lda actSY,x
+                clc
+                adc #DEATH_FLOAT_ACCEL
+                sta actSY,x
+MH_DeathNoFloat:lda #FR_DIE
                 ldy actSY,x
                 bmi MH_DeathSetFrame
                 lda #FR_DIE+1
                 bne MH_DeathSetFrame
 
-MoveHuman:      lda actHp,x
+MoveHuman:      lda actYH,x                     ;Remove immediately if fallen off the map
+                cmp limitD
+                beq MH_LimitOK
+                bcc MH_LimitOK
+                jmp RemoveActor
+MH_LimitOK:     lda actHp,x
                 beq MH_DeathAnim
                 lda actD,x
                 sta MH_OldDir+1
@@ -331,15 +350,18 @@ MH_NoRollSave:  sec
                 sta temp8
                 asl
                 adc temp8
-                ldy #$ff
+                ldy #NODAMAGESRC
                 jsr DamageActor
 MH_NoFallDamage:dec actFall,x
 MH_NoFallCheck: lda actF1,x                     ;Check special movement states
                 cmp #FR_CLIMB
                 bcc MH_NotClimbing
                 cmp #FR_ROLL
-                bcs MH_Rolling
+                bcs MH_RollOrSwim
                 jmp MH_Climbing
+MH_RollOrSwim:  cmp #FR_SWIM
+                bcc MH_Rolling
+                jmp MH_Swimming
 MH_Rolling:     inc temp2
                 lda actD,x
                 bmi MH_AccLeft
@@ -464,10 +486,8 @@ MH_NoInitClimbUp:
 MH_StartJump:   ldy #AL_JUMPSPEED
                 lda (actLo),y
                 sta actSY,x
-                lda #$00                        ;Reset grounded bit manually for immediate
-                sta actMB,x                     ;jump physics
-                sta actFall,x
-                sta actFallL,x
+                jsr MH_ResetFall
+                sta actMB,x                     ;Reset grounded bit manually for immediate jump physics
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 lda (actLo),y
                 sta temp4
@@ -482,7 +502,17 @@ MH_NoLongJump:  lda (actLo),y
                 ldy #HUMAN_MAX_YSPEED
                 jsr MoveWithGravity             ;Actually move & check collisions
                 sta temp1                       ;Updated move flags to temp1
-                cmp #MB_STARTFALLING
+                ldy temp3                       ;If actor can swim, check for entering water
+                bpl MH_NoSwimStart
+                and #MB_INWATER
+                beq MH_NoSwimStart2
+                lda #-3                          ;Must actually be deep in water before swimming kicks in
+                jsr GetCharInfoOffset
+                and #CI_WATER
+                beq MH_NoSwimStart2
+                jmp MH_InitSwim
+MH_NoSwimStart2:lda temp1
+MH_NoSwimStart: cmp #MB_STARTFALLING
                 bcc MH_NoFallStart
                 lda #$00
                 sta actFall,x
@@ -692,12 +722,19 @@ MH_InitClimb:   lda #$80
                 adc #$00
                 sta actF1,x
                 sta actF2,x
-                lda #$00
+                jsr MH_ResetFall
                 sta actSX,x
                 sta actSY,x
+                jmp NoInterpolation
+
+MH_ResetFall:   lda #$00
                 sta actFall,x
                 sta actFallL,x
-                jmp NoInterpolation
+                rts
+
+MH_InitSwim:    jsr MH_ResetFall                ;Falling counter used for drowning damage, reset
+                lda #FR_SWIM
+                jmp MH_AnimDone
 
 MH_Climbing:    ldy #AL_CLIMBSPEED
                 lda (actLo),y
@@ -796,6 +833,99 @@ MH_ClimbAnimDown:
                 tya
                 jsr MoveActorY
                 jmp NoInterpolation
+
+MH_Swimming:    ldy #AL_BRAKING                 ;When grounded and not moving, brake X-speed
+                lda (actLo),y
+                sta temp6
+                ldy #AL_SWIMSPEED
+                lda (actLo),y
+                sta temp4
+                iny
+                lda (actLo),y
+                sta temp5
+                lda actMoveCtrl,x
+                cmp #JOY_RIGHT
+                bcc MH_SwimNotRight
+                lda temp5
+                ldy temp4
+                jsr AccActorX
+                lda #$00
+                sta actD,x
+                bpl MH_SwimHorizDone
+MH_SwimNotRight:cmp #JOY_LEFT
+                bcc MH_SwimNotLeft
+                lda temp5
+                ldy temp4
+                jsr AccActorXNeg
+                lda #$80
+                sta actD,x
+                bmi MH_SwimHorizDone
+MH_SwimNotLeft: lda temp6
+                jsr BrakeActorX
+MH_SwimHorizDone:
+                lda actMoveCtrl,x
+                lsr
+                bcc MH_SwimNotUp
+                lda temp5
+                ldy temp4
+                jsr AccActorYNeg
+                jmp MH_SwimVertDone
+MH_SwimNotUp:   lsr
+                bcc MH_SwimNotDown
+                lda temp5
+                ldy temp4
+                jsr AccActorY
+                jmp MH_SwimVertDone
+MH_SwimNotDown: lda temp6
+                jsr BrakeActorY
+MH_SwimVertDone:lda actSY,x
+                bpl MH_NotSwimmingUp
+                lda #-4                         ;If no water above, can not swim further up
+                jsr GetCharInfoOffset
+                tay
+                and #CI_WATER
+                bne MH_NotSwimmingUp
+                lda #$00
+                sta actSY,x
+                lda actMoveCtrl,x               ;If joystick held up, exit if ground above
+                lsr
+                bcc MH_NotSwimmingUp
+                tya
+                lsr
+                bcc MH_NotSwimmingUp
+                dec actYH,x
+                lda actYL,x
+                and #$c0
+                sta actYL,x
+                jsr MH_ResetFall
+                sta actSY,x
+                jsr NoInterpolation
+                lda #FR_DUCK+1
+                jmp MH_AnimDone
+MH_NotSwimmingUp:
+                lda #-1                         ;Use middle of player for obstacle check
+                jsr MoveFlyer
+                ldy #AL_DROWNINGTIMER
+                lda actFallL,x
+                clc
+                adc (actLo),y
+                sta actFallL,x
+                bcc MH_NotDrowning
+                lda #-4
+                jsr GetCharInfoOffset
+                and #CI_WATER
+                beq MH_NotDrowning              ;Take slow damage if head under water
+                lda #1
+                ldy #NODAMAGESRC_QUIET
+                jsr DamageActor
+MH_NotDrowning: lda #$03
+                jsr AnimationDelay
+                lda actF1,x
+                adc #$00
+                cmp #FR_SWIM+4
+                bcc MH_SwimAnimDone
+                lda #FR_SWIM
+MH_SwimAnimDone:jmp MH_AnimDone
 
         ; Humanoid character destroy routine
         ;

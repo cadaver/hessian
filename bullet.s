@@ -39,7 +39,7 @@ CBC_HasCollision:
                 ldy actIndex
                 jsr DamageActor
 CBC_NoDamage:   ldx actIndex
-                ldy #$ff                        ;Destroy bullet with no damage source
+                ldy #NODAMAGESRC                ;Destroy bullet with no damage source
                 pla
                 pla
                 jmp DestroyActor
@@ -449,5 +449,6 @@ MDrn_AccCommon: jsr AccActorY
                 jsr CheckBulletCollisionsApplyDamage
                 dec actTime,x
                 bmi MDrn_Expire
+                lda #$00
                 jmp MoveFlyer
 MDrn_Expire:    jmp ExplodeActor                ;Explode harmlessly

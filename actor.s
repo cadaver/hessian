@@ -63,6 +63,9 @@ AL_JUMPSPEED    = 23                           ;Negative
 AL_CLIMBSPEED   = 24
 AL_HALFSPEEDRIGHT = 25                         ;Ladder jump / wallflip speed right
 AL_HALFSPEEDLEFT = 26                          ;Ladder jump / wallflip speed left
+AL_SWIMSPEED    = 27
+AL_SWIMACCEL    = 28
+AL_DROWNINGTIMER = 29
 
 AF_NONE         = $00
 AF_ISHERO       = $01
@@ -77,6 +80,7 @@ AMF_CLIMB       = $04
 AMF_ROLL        = $08
 AMF_WALLFLIP    = $10
 AMF_NOFALLDAMAGE = $20
+AMF_SWIM        = $80
 
 ADDACTOR_LEFT_LIMIT = 1
 ADDACTOR_TOP_LIMIT = 0
@@ -94,6 +98,9 @@ DEFAULT_PICKUP  = $ff
 
 LVLOBJSEARCH    = MAX_LVLOBJ/8
 LVLACTSEARCH    = MAX_LVLACT/8
+
+NODAMAGESRC     = $80
+NODAMAGESRC_QUIET = $ff
 
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
@@ -797,6 +804,24 @@ AAX_AccLimit:   tya
 AAX_AccDone:    sta actSX,x
                 rts
 
+        ; Accelerate actor in Y-direction with negative acceleration & speed limit
+        ;
+        ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit
+        ; Returns:
+        ; Modifies: A,temp8
+
+AccActorYNeg:   sta temp8
+                tya
+                eor #$ff
+                tay
+                iny
+                lda actSY,x
+                sec
+                sbc temp8
+                sty temp8
+                bmi AAY_SpeedNeg
+                bpl AAY_SpeedPos
+
         ; Accelerate actor in Y-direction
         ;
         ; Parameters: X actor index, A acceleration, Y speed limit
@@ -833,15 +858,34 @@ BrakeActorX:    sta temp8
 BAct_XPos:      sec
                 sbc temp8
                 bpl BAct_XDone
-                lda #$00
+BAct_XZero:     lda #$00
 BAct_XDone:     sta actSX,x
 BAct_XDone2:    rts
 BAct_XNeg:      clc
                 adc temp8
                 bmi BAct_XDone
-                lda #$00
-                sta actSX,x
-                rts
+                bpl BAct_XZero
+
+        ; Brake Y-speed of an actor towards zero
+        ;
+        ; Parameters: X Actor index, A deceleration (always positive)
+        ; Returns: -
+        ; Modifies: A, temp8
+
+BrakeActorY:    sta temp8
+                lda actSY,x
+                beq BAct_YDone2
+                bmi BAct_YNeg
+BAct_YPos:      sec
+                sbc temp8
+                bpl BAct_YDone
+BAct_YZero:     lda #$00
+BAct_YDone:     sta actSY,x
+BAct_YDone2:    rts
+BAct_YNeg:      clc
+                adc temp8
+                bmi BAct_YDone
+                bpl BAct_YZero
 
         ; Process actor's animation delay
         ;
@@ -1153,7 +1197,8 @@ DA_Done:        rts
 
         ; Damage actor, and destroy if health goes to zero
         ;
-        ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or $ff if none
+        ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or >=$80 if none ($ff
+        ;             for quiet damage: no flashing, no sound)
         ; Returns: -
         ; Modifies: A,Y,temp7-temp8,possibly other temp registers
 
@@ -1188,17 +1233,20 @@ DA_Sub:         sbc temp8
                 lda #$00
 DA_NotDead:     sta actHp,x
                 php
+                lda temp7
+                cmp #NODAMAGESRC_QUIET
+                beq DA_QuietDamage
                 lda actC,x                      ;Flash actor as a sign of damage
                 ora #$f0
                 sta actC,x
                 lda #SFX_DAMAGE
                 jsr PlaySfx
-                plp
+DA_QuietDamage: plp
                 bne DA_Done
 
         ; Call destroy routine of an actor
         ;
-        ; Parameters: X actor index, Y damage source actor if applicable or $ff if none
+        ; Parameters: X actor index, Y damage source actor if applicable or >=$80 if none
         ; Returns: -
         ; Modifies: A,Y,temp8,possibly other temp registers
 
