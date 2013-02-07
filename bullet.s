@@ -162,7 +162,7 @@ MoveBullet:     jsr CheckBulletCollisionsApplyDamage
                 dec actTime,x
                 bmi MBlt_Remove
                 jsr MoveProjectile
-                and #CI_OBSTACLE|CI_WATER
+                and #CI_OBSTACLE
                 bne MBlt_Remove
                 rts
 
@@ -194,6 +194,7 @@ AnimateAndRemove:
                 bne MExpl_NoRemove
                 jmp RemoveActor
 MExpl_NoAnimation:
+MBlt_Done:
 MExpl_NoRemove: rts
 
         ; Rocket update routine
@@ -220,7 +221,7 @@ MRckt_NoSmoke:  sec
                 dec actTime,x
                 bmi MRckt_Remove
                 jsr MoveProjectile
-                and #CI_OBSTACLE|CI_WATER
+                and #CI_OBSTACLE
                 bne ExplodeGrenade
 MRckt_CheckEnemyCollisions:
                 rts
@@ -250,7 +251,7 @@ MLG_NoAnimation:
                 lda #GRENADE_ACCEL
                 ldy #GRENADE_MAX_YSPEED
                 jsr MoveWithGravityAndFloat
-                tay
+                and #MB_HITWALL|MB_HITCEILING|MB_LANDED
                 beq MRckt_CheckEnemyCollisions
                 bne ExplodeGrenade              ;Explode on any wall/ground contact
 
