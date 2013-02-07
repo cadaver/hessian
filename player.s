@@ -37,7 +37,10 @@ INITIAL_INAIRACC = 2
 INITIAL_GROUNDBRAKE = 6
 INITIAL_JUMPSPEED = 42
 INITIAL_CLIMBSPEED = 84
-INITIAL_DROWNINGTIMER = 12
+INITIAL_DROWNINGTIMER = 4
+
+SWIMMING_IDLE_ACC = -2
+SWIMMING_IDLE_YSPEED = -4
 
         ; Player update routine
         ;
@@ -501,17 +504,31 @@ MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
 MH_NoLongJump:  lda (actLo),y
                 ldy #HUMAN_MAX_YSPEED
                 jsr MoveWithGravity             ;Actually move & check collisions
-                sta temp1                       ;Updated move flags to temp1
+                sta temp4                       ;Updated move flags to temp4
                 ldy temp3                       ;If actor can swim, check for entering water
                 bpl MH_NoSwimStart
                 and #MB_INWATER
                 beq MH_NoSwimStart2
-                lda #-3                          ;Must actually be deep in water before swimming kicks in
+                lda temp1                       ;If just entered water, create a splash
+                and #MB_INWATER
+                bne MH_NoSplash
+                lda #ACTI_FIRSTNPCBULLET
+                ldy #ACTI_LASTITEM
+                jsr GetFreeActor
+                bcc MH_NoSplash
+                lda #ACT_WATERSPLASH
+                jsr SpawnActor
+                lda actYL,y
+                and #$c0
+                sta actYL,y
+                lda #SFX_SPLASH
+                jsr PlaySfx
+MH_NoSplash:    lda #-3                          ;Must actually be deep in water before swimming kicks in
                 jsr GetCharInfoOffset
                 and #CI_WATER
                 beq MH_NoSwimStart2
                 jmp MH_InitSwim
-MH_NoSwimStart2:lda temp1
+MH_NoSwimStart2:lda temp4
 MH_NoSwimStart: cmp #MB_STARTFALLING
                 bcc MH_NoFallStart
                 lda #$00
@@ -526,13 +543,13 @@ MH_NoSwimStart: cmp #MB_STARTFALLING
                 jsr MoveActorXNeg               ;Back off from the ledge
                 lda #MB_GROUNDED
                 sta actMB,x                     ;Force grounded status
-                sta temp1
+                sta temp4
                 sec
                 bne MH_DoAutoTurn
 MH_AutoJump:    ldy #AL_JUMPSPEED
                 lda (actLo),y
                 sta actSY,x
-MH_NoAutoJump:  lda temp1
+MH_NoAutoJump:  lda temp4
 MH_NoFallStart: lsr                             ;Grounded bit to carry
                 and #MB_HITWALL/2
                 beq MH_NoAutoTurn
@@ -602,7 +619,7 @@ MH_RollAnim:    lda #$01
                 adc #$00
                 cmp #FR_ROLL+6                  ;Transition from roll to low duck
                 bcc MH_RollAnimDone
-                lda temp1                       ;If rolling and falling, transition
+                lda temp4                       ;If rolling and falling, transition
                 lsr                             ;to jump instead
                 bcs MH_RollToDuck
 MH_RollToJump:  lda #FR_JUMP+2
@@ -682,7 +699,7 @@ MH_DuckStandUpAnim:
                 cmp #FR_DUCK
                 bcc MH_StandAnim
                 bcs MH_AnimDone
-MH_StandOrWalk: lda temp1
+MH_StandOrWalk: lda temp4
                 and #MB_HITWALL
                 bne MH_StandAnim
 MH_WalkAnim:    lda actMoveCtrl,x
@@ -781,7 +798,7 @@ MH_ClimbDown:   jsr GetCharInfo
 MH_ClimbDone:   rts
 
 MH_ClimbUp:     jsr GetCharInfo4Above
-                sta temp1
+                sta temp4
                 and #CI_OBSTACLE
                 bne MH_ClimbUpNoJump
                 lda actMoveCtrl,x               ;Check for exiting the ladder
@@ -810,7 +827,7 @@ MH_ClimbUpNoJump:
                 lda actYL,x
                 and #$20
                 bne MH_ClimbUpOk
-                lda temp1
+                lda temp4
                 and #CI_CLIMB
                 beq MH_ClimbDone
 MH_ClimbUpOk:   ldy #-4*8
@@ -834,10 +851,7 @@ MH_ClimbAnimDown:
                 jsr MoveActorY
                 jmp NoInterpolation
 
-MH_Swimming:    ldy #AL_BRAKING                 ;When grounded and not moving, brake X-speed
-                lda (actLo),y
-                sta temp6
-                ldy #AL_SWIMSPEED
+MH_Swimming:    ldy #AL_SWIMSPEED
                 lda (actLo),y
                 sta temp4
                 iny
@@ -860,7 +874,7 @@ MH_SwimNotRight:cmp #JOY_LEFT
                 lda #$80
                 sta actD,x
                 bmi MH_SwimHorizDone
-MH_SwimNotLeft: lda temp6
+MH_SwimNotLeft: lda temp5
                 jsr BrakeActorX
 MH_SwimHorizDone:
                 lda actMoveCtrl,x
@@ -876,8 +890,9 @@ MH_SwimNotUp:   lsr
                 ldy temp4
                 jsr AccActorY
                 jmp MH_SwimVertDone
-MH_SwimNotDown: lda temp6
-                jsr BrakeActorY
+MH_SwimNotDown: lda #SWIMMING_IDLE_ACC
+                ldy #SWIMMING_IDLE_YSPEED
+                jsr AccActorY
 MH_SwimVertDone:lda actSY,x
                 bpl MH_NotSwimmingUp
                 lda #-4                         ;If no water above, can not swim further up
@@ -905,20 +920,25 @@ MH_SwimVertDone:lda actSY,x
 MH_NotSwimmingUp:
                 lda #-1                         ;Use middle of player for obstacle check
                 jsr MoveFlyer
-                ldy #AL_DROWNINGTIMER
-                lda actFallL,x
-                clc
-                adc (actLo),y
-                sta actFallL,x
-                bcc MH_NotDrowning
                 lda #-4
                 jsr GetCharInfoOffset
+                ldy actFallL,x
                 and #CI_WATER
-                beq MH_NotDrowning              ;Take slow damage if head under water
+                bne MH_NoDrowningTimerReset
+                ldy #$00
+MH_NoDrowningTimerReset:
+                tya
+                clc
+                ldy #AL_DROWNINGTIMER
+                clc
+                adc (actLo),y
+                bcc MH_NotDrowning
                 lda #1
                 ldy #NODAMAGESRC_QUIET
                 jsr DamageActor
-MH_NotDrowning: lda #$03
+                lda #$c0                        ;Drowning damage is faster after initial delay
+MH_NotDrowning: sta actFallL,x
+                lda #$03
                 jsr AnimationDelay
                 lda actF1,x
                 adc #$00
@@ -1131,6 +1151,8 @@ ApplySkills:
                 clc
                 adc #INITIAL_GROUNDACC
                 sta playerGroundAcc
+                lsr
+                sta playerSwimAcc
                 txa
                 adc #INITIAL_INAIRACC
                 sta playerInAirAcc
@@ -1160,7 +1182,7 @@ ApplySkills:
                 lda plrWeaponBonusTbl,x
                 sta AH_PlayerMeleeBonus+1
 
-        ; Vitality: damage reduction, faster health recharge
+        ; Vitality: damage reduction, slower drowning, faster health recharge
 
                 ldx plrVitality
                 lda plrDamageModTbl,x
@@ -1169,6 +1191,8 @@ ApplySkills:
                 sta DA_HealthRechargeDelay+1
                 lda plrRechargeRateTbl,x
                 sta MP_HealthRechargeRate+1
+                lda plrDrowningTimerTbl,x
+                sta playerDrowningTimer
 
         ; Carrying: more weapons in inventory and higher ammo limit
 

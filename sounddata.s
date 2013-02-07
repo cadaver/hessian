@@ -23,9 +23,10 @@ SFX_RELOADBAZOOKA   = $15
 SFX_POWERUP         = $16
 SFX_SELECT          = $17
 SFX_PICKUP          = $18
-SFX_DAMAGE          = $19
-SFX_DEATH           = $1a
-SFX_EXPLOSION       = $1b
+SFX_SPLASH          = $19
+SFX_DAMAGE          = $1a
+SFX_DEATH           = $1b
+SFX_EXPLOSION       = $1c
 
         ; Music relocation tables
 
@@ -139,6 +140,7 @@ sfxTblLo:       dc.b <sfxThrow
                 dc.b <sfxPowerup
                 dc.b <sfxSelect
                 dc.b <sfxPickup
+                dc.b <sfxSplash
                 dc.b <sfxDamage
                 dc.b <sfxDeath
                 dc.b <sfxExplosion
@@ -168,6 +170,7 @@ sfxTblHi:       dc.b >sfxThrow
                 dc.b >sfxPowerup
                 dc.b >sfxSelect
                 dc.b >sfxPickup
+                dc.b >sfxSplash
                 dc.b >sfxDamage
                 dc.b >sfxDeath
                 dc.b >sfxExplosion
@@ -184,6 +187,7 @@ sfxMelee:       include sfx/melee.sfx
 sfxHeavyMelee:  include sfx/heavymelee.sfx
 sfxThrow:       include sfx/throw.sfx
 sfxReloadBazooka:include sfx/reloadbazooka.sfx
+sfxSplash:      include sfx/splash.sfx
 sfxDamage:      include sfx/damage.sfx
 sfxDrone:       include sfx/drone.sfx
 sfxFlamer:      include sfx/flamer.sfx

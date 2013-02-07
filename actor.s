@@ -866,27 +866,6 @@ BAct_XNeg:      clc
                 bmi BAct_XDone
                 bpl BAct_XZero
 
-        ; Brake Y-speed of an actor towards zero
-        ;
-        ; Parameters: X Actor index, A deceleration (always positive)
-        ; Returns: -
-        ; Modifies: A, temp8
-
-BrakeActorY:    sta temp8
-                lda actSY,x
-                beq BAct_YDone2
-                bmi BAct_YNeg
-BAct_YPos:      sec
-                sbc temp8
-                bpl BAct_YDone
-BAct_YZero:     lda #$00
-BAct_YDone:     sta actSY,x
-BAct_YDone2:    rts
-BAct_YNeg:      clc
-                adc temp8
-                bmi BAct_YDone
-                bpl BAct_YZero
-
         ; Process actor's animation delay
         ;
         ; Parameters: X actor index, A animation speed-1 (in frames)

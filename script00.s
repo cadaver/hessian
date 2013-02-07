@@ -308,7 +308,7 @@ IP_InitLevelData:
                 sta saveYL
                 lda #$80
                 sta saveXL
-                lda #$06
+                lda #$07
                 sta saveXH
                 lda #$0b
                 sta saveYH

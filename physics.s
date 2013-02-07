@@ -25,6 +25,7 @@ MoveProjectile: lda actSX,x
 
 MoveFlyer:      sta temp5
                 lda actSX,x
+                beq MF_XMoveOK
                 jsr MoveActorX
                 lda temp5
                 jsr GetCharInfoOffset
@@ -32,7 +33,10 @@ MoveFlyer:      sta temp5
                 beq MF_XMoveOK
                 lda actSX,x
                 jsr MoveActorXNeg
+                lda #$00
+                sta actSX,x
 MF_XMoveOK:     lda actSY,x
+                beq MF_YMoveOK
                 jsr MoveActorY
                 lda temp5
                 jsr GetCharInfoOffset
@@ -40,6 +44,8 @@ MF_XMoveOK:     lda actSY,x
                 beq MF_YMoveOK
                 lda actSY,x
                 jmp MoveActorYNeg
+                lda #$00
+                sta actSY,x
 MF_YMoveOK:     rts
 
         ; Move actor with gravity and ground/wall collisions. Does not modify horizontal velocity

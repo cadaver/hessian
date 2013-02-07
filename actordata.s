@@ -18,6 +18,7 @@ ACT_ROCKET      = 16
 ACT_DRONE       = 17
 ACT_EXPLOSION   = 18
 ACT_SMOKETRAIL  = 19
+ACT_WATERSPLASH = 20
 
 HP_PLAYER       = 48
 HP_ENEMY        = 12
@@ -46,6 +47,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adDrone
                 dc.b <adExplosion
                 dc.b <adSmokeTrail
+                dc.b <adWaterSplash
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adPlayer
@@ -66,6 +68,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adDrone
                 dc.b >adExplosion
                 dc.b >adSmokeTrail
+                dc.b >adWaterSplash
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_PLAYER                   ;Lower part spritefile number
@@ -180,6 +183,12 @@ adSmokeTrail:   dc.b ONESPRITE                  ;Number of sprites
                 dc.b 2                          ;Number of frames
                 dc.b 35,36                      ;Frametable (first all frames of sprite1, then sprite2)
 
+adWaterSplash:  dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 5                          ;Number of frames
+                dc.b 55,56,57,58,59             ;Frametable (first all frames of sprite1, then sprite2)
+
         ; Human actor upper part framenumbers
 
 humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,22,23,24,23,3,4,5,6,7,8,9
@@ -227,6 +236,15 @@ plrRechargeRateTbl:
                 dc.b HEALTH_RECHARGE_RATE-6
                 dc.b HEALTH_RECHARGE_RATE-9
 
+        ; Player drowning speed according to vitality skill
+
+plrDrowningTimerTbl:
+                dc.b INITIAL_DROWNINGTIMER
+                dc.b INITIAL_DROWNINGTIMER-1
+                dc.b INITIAL_DROWNINGTIMER-2
+                dc.b INITIAL_DROWNINGTIMER-3
+
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -248,6 +266,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alDrone
                 dc.b <alExplosion
                 dc.b <alSmokeTrail
+                dc.b <alExplosion
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alEnemy
@@ -268,6 +287,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alDrone
                 dc.b >alExplosion
                 dc.b >alSmokeTrail
+                dc.b >alExplosion
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
@@ -297,8 +317,9 @@ playerClimbSpeed:
                 dc.b 2*8                        ;Ladder jump / wallflip speed right
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
 playerSwimSpeed:dc.b 2*8
-playerSwimAcc:  dc.b INITIAL_GROUNDACC
-playerDrownTimer:dc.b INITIAL_DROWNINGTIMER
+playerSwimAcc:  dc.b INITIAL_GROUNDACC/2
+playerDrowningTimer:
+                dc.b INITIAL_DROWNINGTIMER
 
 alItem:         dc.w MoveItem                   ;Update routine
                 dc.w RemoveActor                ;Destroy routine

@@ -128,6 +128,9 @@ sfx/plasma.sfx: sfx/plasma.ins
 sfx/drone.sfx: sfx/drone.ins
 	ins2nt2 sfx/drone.ins sfx/drone.sfx
 
+sfx/splash.sfx: sfx/splash.ins
+	ins2nt2 sfx/splash.ins sfx/splash.sfx
+
 levelactors.s: bg/level00.lva bg/level01.lva
 	countobj
 
@@ -137,7 +140,7 @@ main.pak: actor.s actordata.s ai.s aidata.s bullet.s cutscene.s data.s file.s in
 	sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
 	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/sonicwave.sfx \
-	sfx/heavymelee.sfx sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/drone.sfx
+	sfx/heavymelee.sfx sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/drone.sfx sfx/splash.sfx
 	dasm main.s -omain.bin -smain.tbl -f3
 	symbols main.tbl mainsym.s
 	pack2 main.bin main.pak
