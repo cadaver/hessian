@@ -6,7 +6,7 @@ MB_HITCEILING  = 16
 MB_STARTFALLING = 32
 
 WATER_XBRAKING  = 3
-WATER_YBRAKING  = 6
+WATER_YBRAKING  = 5
 
         ; Move actor in a straight line and return charinfo from final position
         ;
@@ -40,16 +40,17 @@ MoveFlyer:      sta temp5
                 lda #$00
                 sta actSX,x
 MF_XMoveOK:     lda actSY,x
-                beq MF_YMoveOK
                 jsr MoveActorY
                 jsr GetCharInfo
+                sta temp8
                 and temp6
                 beq MF_YMoveOK
                 lda actSY,x
                 jmp MoveActorYNeg
                 lda #$00
                 sta actSY,x
-MF_YMoveOK:     rts
+MF_YMoveOK:     lda temp8
+                rts
 
         ; Move actor with gravity and ground/wall collisions,
         ; float in water and create splash when first hitting water

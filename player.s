@@ -497,7 +497,7 @@ MH_NoSplash:    lda temp3                       ;If actor can't swim, kill insta
                 pla
                 sta actSY,x
                 rts
-MH_CanSwim:     lda #-3                         ;Must be deep in water before
+MH_CanSwim:     lda #-1                         ;Must be deep in water before
                 jsr GetCharInfoOffset           ;swimming kicks in
                 and #CI_WATER
                 beq MH_NoWater
@@ -824,10 +824,7 @@ MH_ClimbAnimDown:
                 jsr MoveActorY
                 jmp NoInterpolation
 
-MH_Swimming:    lda #-4
-                jsr GetCharInfo4Above
-                sta temp1
-                ldy #AL_SWIMSPEED
+MH_Swimming:    ldy #AL_SWIMSPEED
                 lda (actLo),y
                 sta temp4
                 iny
@@ -869,20 +866,26 @@ MH_SwimNotUp:   lsr
 MH_SwimNotDown: lda temp5
                 jsr BrakeActorY
 MH_SwimVertDone:lda actSY,x
-                bpl MH_NotSwimmingUp
-                lda temp1
+                bne MH_NotStationary
+                lda #-1                         ;If Y-speed stationary, rise up slowly
+                sta actSY,x
+MH_NotStationary:
+                bpl MH_NotSwimmingUp            ;When going up, make sure there's water above
+                lda #-2
+                jsr GetCharInfoOffset
                 tay
                 and #CI_WATER
-                bne MH_NotSwimmingUp
+                bne MH_HasWaterAbove
                 lda #$00
                 sta actSY,x
                 lda actMoveCtrl,x               ;If joystick held up, exit if ground above
                 lsr
-                bcc MH_NotSwimmingUp
+                bcc MH_NotExitingWater
                 tya
                 lsr
-                bcc MH_NotSwimmingUp
-                dec actYH,x
+                bcc MH_NotExitingWater
+                lda #-16*8
+                jsr MoveActorY
                 lda actYL,x
                 and #$c0
                 sta actYL,x
@@ -893,12 +896,15 @@ MH_SwimVertDone:lda actSY,x
                 jsr NoInterpolation
                 lda #FR_DUCK+1
                 jmp MH_AnimDone
+MH_NotExitingWater:
+MH_HasWaterAbove:
 MH_NotSwimmingUp:
-                lda #-2                         ;Use middle of player for side obstacle check
+                lda #-1                         ;Use middle of player for side obstacle check
                 ldy #CI_GROUND|CI_OBSTACLE
                 jsr MoveFlyer
+                lda #-3
+                jsr GetCharInfoOffset           ;Check for drowning damage (head under water)
                 ldy actFallL,x
-                lda temp1                       ;Check for drowning damage (head under water)
                 and #CI_WATER
                 bne MH_NoDrowningTimerReset
                 ldy #$00
@@ -1132,7 +1138,7 @@ ApplySkills:
                 clc
                 adc #INITIAL_GROUNDACC
                 sta playerGroundAcc
-                lsr
+                sbc #2-1                        ;C=0, subtract one more
                 sta playerSwimAcc
                 txa
                 adc #INITIAL_INAIRACC

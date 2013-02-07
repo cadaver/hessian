@@ -19,6 +19,7 @@ ACT_DRONE       = 17
 ACT_EXPLOSION   = 18
 ACT_SMOKETRAIL  = 19
 ACT_WATERSPLASH = 20
+ACT_SMALLSPLASH = 21
 
 HP_PLAYER       = 48
 HP_ENEMY        = 12
@@ -48,6 +49,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adExplosion
                 dc.b <adSmokeTrail
                 dc.b <adWaterSplash
+                dc.b <adSmallSplash
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adPlayer
@@ -69,6 +71,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adExplosion
                 dc.b >adSmokeTrail
                 dc.b >adWaterSplash
+                dc.b >adSmallSplash
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_PLAYER                   ;Lower part spritefile number
@@ -189,6 +192,12 @@ adWaterSplash:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b 5                          ;Number of frames
                 dc.b 55,56,57,58,59             ;Frametable (first all frames of sprite1, then sprite2)
 
+adSmallSplash:  dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 3                          ;Number of frames
+                dc.b 60,61,62                   ;Frametable (first all frames of sprite1, then sprite2)
+
         ; Human actor upper part framenumbers
 
 humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,22,23,24,23,3,4,5,6,7,8,9
@@ -196,13 +205,13 @@ humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18
 
         ; Human actor lower part framenumbers
 
-humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9,14,14,13,14,15,$80+10,$80+11,$80+12,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+2,$80+3,$80+4,$80+3
-                dc.b 0,1,2,3,4,1,2,3,4,5,6,7,8,9,14,14,13,14,15,10,11,12,16,17,18,19,20,21,2,3,4,3
+humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9,14,14,13,14,15,$80+10,$80+11,$80+12,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+22,$80+23,$80+24,$80+23
+                dc.b 0,1,2,3,4,1,2,3,4,5,6,7,8,9,14,14,13,14,15,10,11,12,16,17,18,19,20,21,22,23,24,23
 
         ; Human Y-size reduce table based on animation
 
 humanSizeReduceTbl:
-                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,4,4,4,4
+                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,10,10,10,10
 
         ; Item actor color flashing
 
@@ -266,7 +275,8 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alDrone
                 dc.b <alExplosion
                 dc.b <alSmokeTrail
-                dc.b <alExplosion
+                dc.b <alWaterSplash
+                dc.b <alSmallSplash
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alEnemy
@@ -287,7 +297,8 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alDrone
                 dc.b >alExplosion
                 dc.b >alSmokeTrail
-                dc.b >alExplosion
+                dc.b >alWaterSplash
+                dc.b >alSmallSplash
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
@@ -413,11 +424,16 @@ alRocket:       dc.w MoveRocket                 ;Update routine
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 
+alWaterSplash:
 alExplosion:    dc.w MoveExplosion              ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
 alSmokeTrail:   dc.w MoveSmokeTrail             ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+
+alSmallSplash:  dc.w MoveSmallSplash            ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 

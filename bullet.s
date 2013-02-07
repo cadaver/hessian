@@ -85,6 +85,49 @@ RD_Next:        dey
                 bpl RD_Loop
                 rts
 
+
+        ; Smoketrail update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveSmokeTrail: lda #1
+                ldy #2
+                bne AnimateAndRemove
+
+        ; Small water splash update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveSmallSplash:lda #1
+                ldy #3
+                bne AnimateAndRemove
+
+        ; Explosion / large water splash update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveWaterSplash:
+MoveExplosion:  lda #1
+                ldy #5
+AnimateAndRemove:
+                sty temp8
+                jsr AnimationDelay
+                bcc MExpl_NoAnimation
+                inc actF1,x
+                lda actF1,x
+                cmp temp8
+                bne MExpl_NoRemove
+                jmp RemoveActor
+MExpl_NoAnimation:
+MRckt_Done:
+MExpl_NoRemove: rts
+
         ; Shotgun bullet update routine. Expands collision and reduces damage as the
         ; bullet moves
         ;
@@ -152,7 +195,7 @@ MoveFlame:      lda #3
 MoveMeleeHit:   jsr CheckBulletCollisionsApplyDamage
 MBlt_Remove:    jmp RemoveActor
 
-        ; Bullet update routine
+        ; Bullet update routine. Remove if hit obstacle, splash if hit water
         ;
         ; Parameters: X actor index
         ; Returns: -
@@ -162,40 +205,35 @@ MoveBullet:     jsr CheckBulletCollisionsApplyDamage
                 dec actTime,x
                 bmi MBlt_Remove
                 jsr MoveProjectile
-                and #CI_OBSTACLE
-                bne MBlt_Remove
-                rts
-
-        ; Smoketrail update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MoveSmokeTrail: lda #1
-                ldy #2
-                bne AnimateAndRemove
-
-        ; Explosion update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MoveExplosion:  lda #1
-                ldy #5
-AnimateAndRemove:
-                sty temp8
-                jsr AnimationDelay
-                bcc MExpl_NoAnimation
-                inc actF1,x
-                lda actF1,x
-                cmp temp8
-                bne MExpl_NoRemove
-                jmp RemoveActor
-MExpl_NoAnimation:
-MBlt_Done:
-MExpl_NoRemove: rts
+                and #CI_OBSTACLE|CI_WATER
+                beq MBlt_Done
+                cmp #CI_OBSTACLE
+                beq MBlt_Remove
+MBlt_HitWater:  lda #-1                         ;If water 1 already char above, move upward
+                jsr GetCharInfoOffset           ;(bullets may move faster than 8 pixels/frame)
+                and #CI_WATER
+                beq MBlt_NoWaterAbove
+                lda #-8*8
+                jsr MoveActorY
+MBlt_NoWaterAbove:
+                lda actYL,x
+                and #$c0
+                sta actYL,x
+                lda actSX,x
+                jsr Asr8
+                jsr MoveActorXNeg               ;Move actor halfway back in X-dir
+                jsr NoInterpolation
+                lda actT,x
+                cmp #ACT_SONICWAVE
+                bcs MBlt_LargeSplash
+                lda #ACT_SMALLSPLASH
+                bne MBlt_SplashOK
+MBlt_LargeSplash:
+                lda #SFX_SPLASH
+                jsr PlaySfx
+                lda #ACT_WATERSPLASH
+MBlt_SplashOK:  jmp TransformBullet
+MBlt_Done:      rts
 
         ; Rocket update routine
         ;
@@ -215,17 +253,20 @@ MoveRocket:     lda actTime,x
                 tya
                 jsr GetFlickerColorOverride
                 sta actC,y
-MRckt_NoSmoke:  sec
-                jsr CheckBulletCollisions
-                bcs ExplodeGrenade
-                dec actTime,x
+MRckt_NoSmoke:  dec actTime,x
                 bmi MRckt_Remove
                 jsr MoveProjectile
-                and #CI_OBSTACLE
-                bne ExplodeGrenade
-MRckt_CheckEnemyCollisions:
-                rts
+                and #CI_OBSTACLE|CI_WATER
+                beq MRckt_CheckEnemyCollisions
+                and #CI_WATER
+                bne MBlt_HitWater
+                jmp ExplodeGrenade
 MRckt_Remove:   jmp RemoveActor
+MRckt_CheckEnemyCollisions:
+                sec
+                jsr CheckBulletCollisions
+                bcs ExplodeGrenade
+                rts
 
         ; Grenade launcher grenade update routine
         ;
@@ -250,10 +291,14 @@ MLG_NoAnimation:
                 sta temp4
                 lda #GRENADE_ACCEL
                 ldy #GRENADE_MAX_YSPEED
-                jsr MoveWithGravityAndFloat
+                jsr MoveWithGravity
+                tay
+                and #MB_INWATER
+                bne MGrn_HitWater
+                tya
                 and #MB_HITWALL|MB_HITCEILING|MB_LANDED
-                beq MRckt_CheckEnemyCollisions
                 bne ExplodeGrenade              ;Explode on any wall/ground contact
+                beq MRckt_CheckEnemyCollisions
 
         ; Explode grenade and do radius damage
         ;
@@ -284,14 +329,15 @@ EGrn_FullDamageBelow:
         ; Returns: -
         ; Modifies: A
 
-ExplodeActor:   lda #$00
+ExplodeActor:   lda #SFX_EXPLOSION
+                jsr PlaySfx
+                lda #ACT_EXPLOSION
+TransformBullet:sta actT,x
+                lda #$00
                 sta actF1,x
                 sta actFd,x
                 sta actC,x                      ;Remove flashing
-                lda #ACT_EXPLOSION
-                sta actT,x
-                lda #SFX_EXPLOSION
-                jmp PlaySfx
+                rts
 
         ; Grenade update routine
         ;
@@ -299,6 +345,7 @@ ExplodeActor:   lda #$00
         ; Returns: -
         ; Modifies: A,Y
 
+MGrn_HitWater:  jmp MBlt_HitWater
 MoveGrenade:    dec actTime,x
                 bmi ExplodeGrenade
                 lda actMB,x
@@ -310,7 +357,7 @@ MoveGrenade:    dec actTime,x
                 sta temp4
                 lda #GRENADE_ACCEL
                 ldy #GRENADE_MAX_YSPEED
-                jsr MoveWithGravityAndFloat
+                jsr MoveWithGravity
                 lsr
                 bcc MGrn_NoBounce
                 lda temp1                       ;Bounce: negate and halve velocity
@@ -319,6 +366,10 @@ MoveGrenade:    dec actTime,x
                 lda #8                          ;Brake X-speed with each bounce
                 jsr BrakeActorX
 MGrn_NoBounce:  lda actMB,x
+                tay
+                and #MB_INWATER
+                bne MGrn_HitWater
+                tya
                 and #MB_HITWALL|MB_HITCEILING
                 cmp #MB_HITWALL
                 bne MGrn_NoHitWall
@@ -453,5 +504,9 @@ MDrn_AccCommon: jsr AccActorY
                 bmi MDrn_Expire
                 lda #$00
                 ldy #CI_OBSTACLE
-                jmp MoveFlyer
+                jsr MoveFlyer                   ;If hit water, terminate by splashing
+                and #CI_WATER
+                beq MDrn_Done
+                jmp MBlt_HitWater
+MDrn_Done:      rts
 MDrn_Expire:    jmp ExplodeActor                ;Explode harmlessly
