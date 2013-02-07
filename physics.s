@@ -5,6 +5,9 @@ MB_HITWALL     = 8
 MB_HITCEILING  = 16
 MB_STARTFALLING = 32
 
+WATER_XBRAKING  = 3
+WATER_YBRAKING  = 6
+
         ; Move actor in a straight line and return charinfo from final position
         ;
         ; Parameters: X actor index
@@ -19,17 +22,18 @@ MoveProjectile: lda actSX,x
 
         ; Move actor and stop at obstacles
         ;
-        ; Parameters: X actor index, A offset position for obstacles
+        ; Parameters: X actor index, A offset position for side obstacles, Y obstacle bits
         ; Returns: A charinfo
         ; Modifies: A,Y,temp vars
 
 MoveFlyer:      sta temp5
+                sty temp6
                 lda actSX,x
                 beq MF_XMoveOK
                 jsr MoveActorX
                 lda temp5
                 jsr GetCharInfoOffset
-                and #CI_OBSTACLE
+                and temp6
                 beq MF_XMoveOK
                 lda actSX,x
                 jsr MoveActorXNeg
@@ -38,15 +42,43 @@ MoveFlyer:      sta temp5
 MF_XMoveOK:     lda actSY,x
                 beq MF_YMoveOK
                 jsr MoveActorY
-                lda temp5
-                jsr GetCharInfoOffset
-                and #CI_OBSTACLE
+                jsr GetCharInfo
+                and temp6
                 beq MF_YMoveOK
                 lda actSY,x
                 jmp MoveActorYNeg
                 lda #$00
                 sta actSY,x
 MF_YMoveOK:     rts
+
+        ; Move actor with gravity and ground/wall collisions,
+        ; float in water and create splash when first hitting water
+        ;
+        ; Parameters: X actor index, A gravity acceleration (should be positive), Y speed limit,
+        ;             temp4 vertical char offset (negative) for ceiling check
+        ; Returns: actMB updated, also returned in A
+        ; Modifies: A,Y,temp4-temp8
+
+MoveWithGravityAndFloat:
+                pha
+                lda actMB,x
+                sta MWGF_OldFlags+1             ;Store old flags
+                pla
+                jsr MoveWithGravity
+                and #MB_INWATER
+                beq MWGF_NoWater
+MWGF_OldFlags:  lda #$00
+                and #MB_INWATER
+                bne MWGF_NoSplash
+                lda actSY,x
+                bmi MWGF_NoSplash
+                jsr CreateSplash
+MWGF_NoSplash:  lda #WATER_XBRAKING
+                jsr BrakeActorX
+                lda #WATER_YBRAKING
+                jsr BrakeActorY
+MWGF_NoWater:   lda actMB,x
+                rts
 
         ; Move actor with gravity and ground/wall collisions. Does not modify horizontal velocity
         ;
@@ -56,10 +88,11 @@ MF_YMoveOK:     rts
         ; Modifies: A,Y,temp5-temp8
 
 MoveWithGravity:sta temp6
-                lda actMB,x                     ;Only retain the grounded flag
-                and #MB_GROUNDED
+                lda actMB,x                     ;Only retain the grounded & water flag
+                and #MB_GROUNDED|MB_INWATER
                 sta temp5
-                bne MWG_NoYMove                 ;If not grounded, move in Y-dir first
+                lsr
+                bcs MWG_NoYMove                 ;If not grounded, move in Y-dir first
                 sty temp7
                 lda actSY,x                     ;Add Y-acceleration (simplified version of
                 clc                             ;AccActorY)
@@ -114,7 +147,13 @@ MWG_NoXMove:    lda temp5                       ;Do in air or grounded collision
 MWG_InAir:      lda actSY,x                     ;Check landing or ceiling hit?
                 bpl MWG_CheckLanding
 MWG_CheckCeiling:
-                lda temp4
+                jsr GetCharInfo
+                and #CI_WATER
+                beq MWG_NoWater2
+                lda temp5
+                ora #MB_INWATER
+                sta temp5
+MWG_NoWater2:   lda temp4
                 jsr GetCharInfoOffset
                 and #CI_OBSTACLE
                 beq MWG_NoCeiling

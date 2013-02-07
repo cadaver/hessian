@@ -162,7 +162,7 @@ MoveBullet:     jsr CheckBulletCollisionsApplyDamage
                 dec actTime,x
                 bmi MBlt_Remove
                 jsr MoveProjectile
-                and #CI_OBSTACLE
+                and #CI_OBSTACLE|CI_WATER
                 bne MBlt_Remove
                 rts
 
@@ -220,7 +220,7 @@ MRckt_NoSmoke:  sec
                 dec actTime,x
                 bmi MRckt_Remove
                 jsr MoveProjectile
-                and #CI_OBSTACLE
+                and #CI_OBSTACLE|CI_WATER
                 bne ExplodeGrenade
 MRckt_CheckEnemyCollisions:
                 rts
@@ -249,7 +249,7 @@ MLG_NoAnimation:
                 sta temp4
                 lda #GRENADE_ACCEL
                 ldy #GRENADE_MAX_YSPEED
-                jsr MoveWithGravity
+                jsr MoveWithGravityAndFloat
                 tay
                 beq MRckt_CheckEnemyCollisions
                 bne ExplodeGrenade              ;Explode on any wall/ground contact
@@ -300,7 +300,8 @@ ExplodeActor:   lda #$00
 
 MoveGrenade:    dec actTime,x
                 bmi ExplodeGrenade
-                lda #$00                        ;Grenade never stays grounded
+                lda actMB,x
+                and #$ff-MB_GROUNDED            ;Grenade never stays grounded
                 sta actMB,x
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
@@ -308,7 +309,7 @@ MoveGrenade:    dec actTime,x
                 sta temp4
                 lda #GRENADE_ACCEL
                 ldy #GRENADE_MAX_YSPEED
-                jsr MoveWithGravity
+                jsr MoveWithGravityAndFloat
                 lsr
                 bcc MGrn_NoBounce
                 lda temp1                       ;Bounce: negate and halve velocity
@@ -450,5 +451,6 @@ MDrn_AccCommon: jsr AccActorY
                 dec actTime,x
                 bmi MDrn_Expire
                 lda #$00
+                ldy #CI_OBSTACLE
                 jmp MoveFlyer
 MDrn_Expire:    jmp ExplodeActor                ;Explode harmlessly

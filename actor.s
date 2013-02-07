@@ -866,6 +866,27 @@ BAct_XNeg:      clc
                 bmi BAct_XDone
                 bpl BAct_XZero
 
+        ; Brake Y-speed of an actor towards zero
+        ;
+        ; Parameters: X Actor index, A deceleration (always positive)
+        ; Returns: -
+        ; Modifies: A, temp8
+
+BrakeActorY:    sta temp8
+                lda actSY,x
+                beq BAct_YDone2
+                bmi BAct_YNeg
+BAct_YPos:      sec
+                sbc temp8
+                bpl BAct_YDone
+BAct_YZero:     lda #$00
+BAct_YDone:     sta actSY,x
+BAct_YDone2:    rts
+BAct_YNeg:      clc
+                adc temp8
+                bmi BAct_YDone
+                bpl BAct_YZero
+
         ; Process actor's animation delay
         ;
         ; Parameters: X actor index, A animation speed-1 (in frames)
@@ -1169,16 +1190,17 @@ CAC_YNeg:       lsr
                 bcs CAC_HasCollision2
                 adc actSizeU,y
                 rts
+DA_Done:
 CAC_HasCollision:
                 sec
 CAC_HasCollision2:
-DA_Done:        rts
+                rts
 
         ; Damage actor, and destroy if health goes to zero
         ;
         ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or >=$80 if none ($ff
         ;             for quiet damage: no flashing, no sound)
-        ; Returns: -
+        ; Returns: C=1 if actor is alive, C=0 if killed
         ; Modifies: A,Y,temp7-temp8,possibly other temp registers
 
 DamageActor:    sty temp7
@@ -1226,11 +1248,13 @@ DA_QuietDamage: plp
         ; Call destroy routine of an actor
         ;
         ; Parameters: X actor index, Y damage source actor if applicable or >=$80 if none
-        ; Returns: -
+        ; Returns: C=0
         ; Modifies: A,Y,temp8,possibly other temp registers
 
 DestroyActor:   sty temp8
                 cpy #ACTI_FIRSTNPCBULLET
+                lda #$00                        ;Make sure health is zero, some death routines
+                sta actHp,x                     ;(eg. human) need this
                 lda #POS_NOTPERSISTENT          ;Destroyed actor does not need to persist any more
                 sta actLvlDataPos,x
                 jsr GetActorLogicData
@@ -1245,8 +1269,10 @@ DestroyActor:   sty temp8
                 lda (actLo),y
                 jsr GiveXP
 DA_NoXP:        ldy temp8
-DA_Jump:        jmp $0000
-
+DA_Jump:        jsr $0000
+                clc
+                rts
+                
         ; Attempt to spawn an actor to level from a spawner object
         ;
         ; Parameters: A random parameter for actor type, X spawner object index
