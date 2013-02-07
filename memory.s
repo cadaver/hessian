@@ -116,7 +116,6 @@ MAX_PLOTBITS    = 64
                 Var soundMode
 
                 Var levelNum                    ;Player state
-                Var nextTempLvlActIndex
                 Var itemIndex
                 Var levelUp
                 Var xpLo
@@ -124,9 +123,10 @@ MAX_PLOTBITS    = 64
                 Var xpLevel
                 Var xpLimitLo
                 Var xpLimitHi
+                Var nextTempLvlActIndex
 
 playerStateZPStart = levelNum
-playerStateZPEnd = xpLimitHi+1
+playerStateZPEnd = nextTempLvlActIndex+1
 
                 VarRange sprOrder,MAX_SPR+1
                 VarRange sprY,MAX_SPR+1
