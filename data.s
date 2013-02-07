@@ -203,13 +203,6 @@ keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
 d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 
-        ; Chunk-file memory allocation variables
-
-fileLo:         ds.b MAX_CHUNKFILES,0
-fileHi:         ds.b MAX_CHUNKFILES,0
-fileNumObjects: ds.b MAX_CHUNKFILES,0
-fileAge:        ds.b MAX_CHUNKFILES,0
-
         ; Actor variables
 
 actXL:          ds.b MAX_ACT,0

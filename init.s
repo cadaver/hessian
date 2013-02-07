@@ -15,6 +15,16 @@ InitZP:         sta joystick,x
                 dex
                 bpl InitZP
 
+        ; Initialize dynamic memory allocation
+
+                ldx #MAX_CHUNKFILES-1
+InitChunkFiles: sta fileLo,x
+                sta fileHi,x
+                sta fileNumObjects
+                sta fileAge,x
+                dex
+                bpl InitChunkFiles
+
         ; Initialize playroutine variables
 
                 ldx #3*21-1
@@ -44,18 +54,19 @@ InitPlayRoutine:sta ntChnPattPos,x
                 sta musicMode
                 sta soundMode
                 endif
-                
+
+                lda #<fileAreaStart
+                sta freeMemLo
+                lda #>fileAreaStart
+                sta freeMemHi
+
         ; Check NTSC
 
                 lda ntscDelay                   ;Check if loader part detected PAL or NTSC
                 beq IsNTSC
                 lda #$a5                        ;In PAL mode, disable NTSC delay counting
                 sta Irq4_NtscDelay              ;(replace DEC with LDA)
-IsNTSC:         lda #<fileAreaStart             ;Initialize dynamic memory allocator
-                sta freeMemLo
-                lda #>fileAreaStart
-                sta freeMemHi
-                jsr InitScroll
+IsNTSC:         jsr InitScroll
 
         ; Initialize panel text printing
 
