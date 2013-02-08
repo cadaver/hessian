@@ -32,7 +32,6 @@ randomAreaStart:
                 include input.s
                 include screen.s
                 include sprite.s
-                include cutscene.s
                 include file.s
                 include math.s
                 include actor.s

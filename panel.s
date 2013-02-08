@@ -246,7 +246,7 @@ UP_DrawSliceLoop:
                 beq UP_EmptySlice
                 lda (zpSrcLo),y
                 iny
-UP_EmptySlice:  sta textChars+23*8,x
+UP_EmptySlice:  sta textChars+35*8,x
                 inx
                 cpx zpDestLo
                 bcc UP_DrawSliceLoop

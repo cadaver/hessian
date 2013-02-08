@@ -15,33 +15,11 @@ InitZP:         sta joystick,x
                 dex
                 bpl InitZP
 
-        ; Initialize dynamic memory allocation
+        ; Initialize playroutine
 
-                ldx #MAX_CHUNKFILES-1
-InitChunkFiles: sta fileLo,x
-                sta fileHi,x
-                sta fileNumObjects
-                sta fileAge,x
-                dex
-                bpl InitChunkFiles
-
-        ; Initialize playroutine variables
-
-                ldx #3*21-1
-InitPlayRoutine:sta ntChnPattPos,x
-                dex
-                bpl InitPlayRoutine
                 sta $d415                       ;Filter lowbyte
                 sta ntFiltPos
                 sta ntFiltTime
-                lda #$fe
-                sta ntChnGate
-                sta ntChnGate+7
-                sta ntChnGate+14
-                lda #$ff
-                sta ntChnTrans
-                sta ntChnTrans+7
-                sta ntChnTrans+14
                 lda #$7f
                 sta ntInitSong
                 if DISABLE_MUSIC>0
@@ -205,7 +183,7 @@ textCharsCopy:  incbin bg/scorescr.chr
         ; Scorepanel borders
 
 scorePanel:     dc.b 0,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,4
-                dc.b 5,"      ",6, "                        ",5,23,24,"    ",6
+                dc.b 5,"      ",6, "                        ",5,35,36,"    ",6
                 dc.b 7,8,8,8,8,8,9,10,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,11,8,8,8,8,8,9,12
 
 scorePanelColors:

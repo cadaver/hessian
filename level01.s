@@ -2,8 +2,8 @@
 
                 include memory.s
 
-                org lvlObjX
-                incbin bg/level01.lvo
+                org lvlName
+                dc.b "SECRET CHAMBER",0
 
                 org lvlCodeStart
 
@@ -16,8 +16,6 @@ UpdateLevel:    rts
                 org chars
                 incbin bg/level01.chr
 
-                org lvlSpawnT
-                incbin bg/level01.lvr
+                org lvlDataActX
+                incbin bg/level01.lva
 
-                org lvlName
-                dc.b "SECRET CHAMBER",0

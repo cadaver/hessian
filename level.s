@@ -71,8 +71,12 @@ LL_PurgeOldLevelDataActors:
                 sta lvlActT,x
 LL_PurgeNext:   dex
                 bpl LL_PurgeOldLevelDataActors
-LoadLevelRetry: lda #<lvlObjX                   ;Load levelobjects, chars & charinfo/colors
+LoadLevelRetry: lda #<lvlObjX                   ;Load level objects & spawners
                 ldx #>lvlObjX
+                jsr LoadFile
+                bcs LoadLevelError
+                lda #<lvlName                   ;Load level graphics, animation code &
+                ldx #>lvlName                   ;level actors
                 jsr LoadFile
                 bcs LoadLevelError
                 ldy #C_MAP
@@ -81,12 +85,8 @@ LoadLevelRetry: lda #<lvlObjX                   ;Load levelobjects, chars & char
                 ldy #C_BLOCKS
                 jsr LoadAllocFile               ;Load BLOCKS chunk
                 bcs LoadLevelError
-                lda #<lvlDataActX
-                ldx #>lvlDataActX
-                jsr LoadFile
-                bcs LoadLevelError
                 jsr GetLevelDataActorBits
-                ldx #MAX_LVLDATAACT-1
+                ldx #MAX_LVLDATAACT-1           ;Copy level actors
 LL_CopyLevelDataActors:
                 lda lvlDataActT,x               ;Slot occupied in leveldata?
                 beq LL_NextLevelDataActor

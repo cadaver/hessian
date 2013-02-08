@@ -17,9 +17,9 @@ TITLE_PAGEDELAY = 500
 
 saveStateBuffer = screen2
 
-logoChars       = textChars + $300
-logoScreen      = textChars + $300+608
-logoColors      = textChars + $300+608+168
+logoStart       = chars
+logoScreen      = chars+608
+logoColors      = chars+608+168
 
                 org scriptCodeStart
 
@@ -49,15 +49,15 @@ TitleScreen:    stx TitleScreenParam+1          ;Go to save screen (X>0) or main
 
 SpritesLoaded:  lda #F_LOGO
                 jsr MakeFileName_Direct
-                lda #<logoChars
-                ldx #>logoChars
+                lda #<logoStart
+                ldx #>logoStart
                 jsr LoadFileRetry
                 lda #$00                        ;Show panel chars in gamescreen & position
                 sta Irq1_Bg1+1                  ;the screen
                 sta scrollY
                 sta menuMode                    ;Reset in-game menu mode
-                lda #$02
-                sta screen
+                lda #$03
+                sta screen                      ;Set split screen mode
                 lda #$0f
                 sta scrollX
                 ldx #$00

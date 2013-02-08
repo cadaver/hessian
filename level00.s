@@ -2,8 +2,8 @@
 
                 include memory.s
 
-                org lvlObjX
-                incbin bg/level00.lvo
+                org lvlName
+                dc.b "GHOST SHIP",0
 
                 org lvlCodeStart
 
@@ -62,8 +62,5 @@ UL_WaterCmp:    cpx #$00
                 org chars
                 incbin bg/level00.chr
 
-                org lvlSpawnT
-                incbin bg/level00.lvr
-
-                org lvlName
-                dc.b "GHOST SHIP",0
+                org lvlDataActX
+                incbin bg/level00.lva

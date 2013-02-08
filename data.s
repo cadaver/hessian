@@ -1,15 +1,13 @@
+        ; Script code area
+
+scriptCodeStart:ds.b SCRIPTAREASIZE,0
+
         ; Game data
 
-                include paneldata.s
-                include actordata.s
-                include itemdata.s
-                include weapondata.s
-                include leveldata.s
-                include aidata.s
-                include sounddata.s
-
                 org (* + $ff) & $ff00
-                
+
+scriptCodeEnd:
+
         ; Sprite cache / depacking tables
 
         ; Next slice lowbyte table for sprite depacking. Interleaved with data to not waste memory,
@@ -130,7 +128,7 @@ colorJumpTblLo: dc.b <SW_ShiftColorsUp
                 dc.b <SW_ShiftColorsDown
                 dc.b <SW_ShiftColorsDown
 
-d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,PANEL_D018
+d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,PANEL_D018,GAMESCR1_D018+1
 
                 org nextSliceTbl+$c0+21
                 dc.b $c0+22,$c0+23,$c0+42
@@ -204,6 +202,68 @@ keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
 d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 
+        ; Data with non-critical alignmen
+
+                include paneldata.s
+                include actordata.s
+                include itemdata.s
+                include weapondata.s
+                include leveldata.s
+                include aidata.s
+                include sounddata.s
+
+        ; Playroutine variables
+
+ntChnPattPos:   dc.b 0
+ntChnCounter:   dc.b 0
+ntChnNewNote:   dc.b 0
+ntChnWavePos:   dc.b 0
+ntChnPulsePos:  dc.b 0
+ntChnWave:      dc.b 0
+ntChnPulse:     dc.b 0
+
+                dc.b 0,0,0,0,0,0,0
+                dc.b 0,0,0,0,0,0,0
+
+ntChnGate:      dc.b $fe
+ntChnTrans:     dc.b $ff
+ntChnCmd:       dc.b $01
+ntChnSongPos:   dc.b 0
+ntChnPattNum:   dc.b 0
+ntChnDuration:  dc.b 0
+ntChnNote:      dc.b 0
+
+                dc.b $fe,$ff,$01,0,0,0,0
+                dc.b $fe,$ff,$01,0,0,0,0
+
+ntChnFreqLo:    dc.b 0
+ntChnFreqHi:    dc.b 0
+ntChnWaveTime:  dc.b 0
+ntChnPulseTime: dc.b 0
+ntChnSfx:       dc.b 0
+ntChnSfxLo:     dc.b 0
+ntChnSfxHi:
+ntChnWaveOld:   dc.b 0
+
+                dc.b 0,0,0,0,0,0,0
+                dc.b 0,0,0,0,0,0,0
+
+        ; Sprite variables
+
+sortSprY:       ds.b MAX_SPR*2,0
+sortSprX:       ds.b MAX_SPR*2,0
+sortSprD010:    ds.b MAX_SPR*2,0
+sortSprF:       ds.b MAX_SPR*2,0
+sortSprC:       ds.b MAX_SPR*2,0
+sprIrqLine:     ds.b MAX_SPR*2,0
+
+        ; Chunk-file memory allocation variables
+
+fileLo:         ds.b MAX_CHUNKFILES,0
+fileHi:         ds.b MAX_CHUNKFILES,0
+fileNumObjects: ds.b MAX_CHUNKFILES,0
+fileAge:        ds.b MAX_CHUNKFILES,0
+
         ; Actor variables
 
 actXL:          ds.b MAX_ACT,0
@@ -243,6 +303,17 @@ actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0
 actAIMode:      ds.b MAX_COMPLEXACT,0
 actAIHelp:      ds.b MAX_COMPLEXACT,0
+
+        ; Level objects and spawner data (not saved)
+
+lvlObjX:        ds.b MAX_LVLOBJ,0
+lvlObjY:        ds.b MAX_LVLOBJ,0
+lvlObjB:        ds.b MAX_LVLOBJ,0
+lvlObjDL:       ds.b MAX_LVLOBJ,0
+lvlObjDH:       ds.b MAX_LVLOBJ,0
+lvlSpawnT:      ds.b MAX_SPAWNERS,0
+lvlSpawnWpn:    ds.b MAX_SPAWNERS,0
+lvlSpawnPlot:   ds.b MAX_SPAWNERS,0
 
         ; Player/world state
 

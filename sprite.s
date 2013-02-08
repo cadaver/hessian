@@ -1,6 +1,6 @@
 MAX_SPRX        = 335
 MIN_SPRY        = 34
-MAX_SPRY        = 221
+MAX_SPRY        = 222
 
 FIRSTCACHEFRAME = $40
 EMPTYSPRITEFRAME = $83

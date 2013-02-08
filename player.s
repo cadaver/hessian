@@ -156,15 +156,12 @@ MPCO_SubY:      sbc #$00
 MPCO_Next:      inx
 MPCO_EndCmp:    cpx #LVLOBJSEARCH
                 bcc MPCO_Loop
-                cpx #MAX_LVLOBJ
-                bcc MPCO_NotOver
-                ldx #$ff
-                stx lvlObjNum                   ;No object found
-                inx
-                clc
-MPCO_NotOver:   stx MPCO_Start+1
                 txa
-                adc #LVLOBJSEARCH
+                bpl MPCO_NotOver
+                and #MAX_LVLOBJ-1               ;List wrapped, set negative object index
+                stx lvlObjNum                   ;(at no object)
+MPCO_NotOver:   sta MPCO_Start+1
+                adc #LVLOBJSEARCH-1             ;C=1, add one more
                 sta MPCO_EndCmp+1
                 bcc MPCO_Done
 MPCO_Found:     stx lvlObjNum
@@ -497,6 +494,7 @@ MH_NoLongJump:  lda (actLo),y
                 beq MH_NoWater
                 lda temp3                       ;If actor can't swim, kill instantly
                 bmi MH_CanSwim                  ;but retain the unmodified Y-speed
+                LDY #NODAMAGESRC
                 jmp DestroyActor
 MH_CanSwim:     lda #-1                         ;Must be deep in water before
                 jsr GetCharInfoOffset           ;swimming kicks in

@@ -12,9 +12,9 @@ CI_SLOPE1       = 32
 CI_SLOPE2       = 64
 CI_SLOPE3       = 128
 
-GAMESCR1_D018   = $2a
-GAMESCR2_D018   = $3a
-PANEL_D018      = $28
+GAMESCR1_D018   = $da
+GAMESCR2_D018   = $ca
+PANEL_D018      = $d8
 
         ; Blank the gamescreen and turn off sprites
         ; (return to normal display by calling UpdateFrame)
@@ -473,7 +473,7 @@ UF_WaitDone:
                 ldx screen
                 lda d018Tbl,x
                 sta Irq1_Screen+1
-                cpx #$02                        ;If textscreen, do not show sprites
+                cpx #$02                        ;If textscreen or split mode, do not show sprites
                 bcc UF_ShowSprites
                 lda #$00
                 beq UF_NoSprites2

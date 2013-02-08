@@ -145,11 +145,13 @@ main.pak: actor.s actordata.s ai.s aidata.s bullet.s cutscene.s data.s file.s in
 	symbols main.tbl mainsym.s
 	pack2 main.bin main.pak
 
-logo.pak: bg/logo.chr bg/logoscr.bin bg/logocol.bin
-	filejoin bg/logo.chr+bg/logoscr.bin+bg/logocol.bin logo.bin
+logo.pak: pics/logo.iff
+	pic2chr pics/logo.iff logo.chr /m14 /n15 /x24 /y7 /c /s
+	pic2chr pics/logo.iff logoscr.dat /m14 /n15 /x24 /y7 /t
+	filejoin logo.chr+logoscr.dat logo.bin
 	pack2 logo.bin logo.pak
 
-script00.pak: script00.s memory.s mainsym.s bg/logo.chr bg/logoscr.bin bg/logocol.bin
+script00.pak: script00.s memory.s mainsym.s
 	dasm script00.s -oscript00.bin -f3
 	pack2 script00.bin script00.pak
 
@@ -158,19 +160,21 @@ music00.pak: music/ninjatr2.d64
 	pack2 music00.bin music00.pak
 
 level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.chi bg/level00.chc bg/level00.chr bg/level00.lva
-	dasm level00.s -olevel00_1.bin -f3
+	filejoin bg/level00.lvo+bg/level00.lvr level00_1.bin
 	pack2 level00_1.bin level00_1.pak
-	pchunk2 bg/level00.map level00_2.pak
-	pchunk2 bg/level00.blk level00_3.pak
-	pack2 bg/level00.lva level00_4.pak
+	dasm level00.s -olevel00_2.bin -f3
+	pack2 level00_2.bin level00_2.pak
+	pchunk2 bg/level00.map level00_3.pak
+	pchunk2 bg/level00.blk level00_4.pak
 	filejoin level00_1.pak+level00_2.pak+level00_3.pak+level00_4.pak level00.pak
 
 level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.chi bg/level01.chc bg/level01.chr bg/level01.lva
-	dasm level01.s -olevel01_1.bin -f3
+	filejoin bg/level01.lvo+bg/level01.lvr level01_1.bin
 	pack2 level01_1.bin level01_1.pak
-	pchunk2 bg/level01.map level01_2.pak
-	pchunk2 bg/level01.blk level01_3.pak
-	pack2 bg/level01.lva level01_4.pak
+	dasm level01.s -olevel01_2.bin -f3
+	pack2 level01_2.bin level01_2.pak
+	pchunk2 bg/level01.map level01_3.pak
+	pchunk2 bg/level01.blk level01_4.pak
 	filejoin level01_1.pak+level01_2.pak+level01_3.pak+level01_4.pak level01.pak
 
 common.pak: spr/common.spr

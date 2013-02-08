@@ -1,7 +1,7 @@
 IRQ1_LINE       = 12
 IRQ3_LINE       = 221
 IRQ4_LINE       = 230
-IRQ5_LINE       = 158
+IRQ5_LINE       = 150
 
 PANEL_BG1       = $00
 PANEL_BG2       = $0b
@@ -13,15 +13,15 @@ TEXT_BG3        = $0c
 
         ; Raster interrupt 1. Show game screen
 
-Irq1_SetupBitmapSplit:
+Irq1_SetupTextscreenSplit:
                 lda #IRQ5_LINE
                 sta $d012
                 dec $d019
                 lda #<Irq5
                 ldx #>Irq5
                 jmp SetNextIrq
-Irq1_NoSprites: cpx #$30                        ;In bitmap mode?
-                bcs Irq1_SetupBitmapSplit
+Irq1_NoSprites: cpy #GAMESCR1_D018+1            ;Use split mode?
+                beq Irq1_SetupTextscreenSplit
                 jmp Irq2_AllDone
 
 Irq1:           cld
@@ -33,29 +33,31 @@ Irq1:           cld
                 lda #$00
                 sta newFrame
                 sta $d07a                       ;SCPU back to slow mode
+Irq1_MinSprY:   lda #$00
+                sta FL_MinSprY+1
+Irq1_MaxSprY:   ldy #$00
+                sty FL_MaxSprY+1
 Irq1_ScrollX:   lda #$17
                 sta $d016
 Irq1_ScrollY:   lda #$57                        ;Check if panel split IRQ needs to blank the
                 sta $d011                       ;screen early due to badline
                 tax
                 ora #$07
+                cpy #IRQ3_LINE
+                bcs Irq1_SpritesAtSplit
                 cpx #$16
                 bne Irq1_NoBadLine
+Irq1_SpritesAtSplit:
                 ora #$40
-Irq1_NoBadLine: and #$df
-                sta Irq3_D011+1
-Irq1_Screen:    lda #GAMESCR1_D018
-                sta $d018
+Irq1_NoBadLine: sta Irq3_D011+1
+Irq1_Screen:    ldy #GAMESCR1_D018
+                sty $d018
 Irq1_Bg1:       lda #$06
                 sta $d021
 Irq1_Bg2:       lda #$0b
                 sta $d022
 Irq1_Bg3:       lda #$0c
                 sta $d023
-Irq1_MinSprY:   lda #$00
-                sta FL_MinSprY+1
-Irq1_MaxSprY:   lda #$00
-                sta FL_MaxSprY+1
 Irq1_ScreenFrame:
                 lda #$00                        ;Ensure sprite frames are loaded to the
                 cmp Irq2_Spr0Frame+2            ;correct screen
@@ -314,24 +316,18 @@ Irq3:           sta irqSaveA
 Irq3_Wait:      lda $d012
                 cmp #IRQ3_LINE+1
                 bcc Irq3_Wait
-                bit $00
+                nop
                 nop
 Irq3_D011:      lda #$57                        ;Stabilize Y-scrolling
                 sta $d011                       ;immediately
                 cmp #$57
-                beq Irq3_BadLine
-                nop
-                pha
-                pla
-                pha
-                pla
-                pha
-                pla
-                pha
-                pla
-Irq3_BadLine:   lda #$57
+                beq Irq3_NoDelay
+                lda #$07
+Irq3_Delay:     sbc #$01
+                bne Irq3_Delay
+                lda #$57
                 sta $d011
-                lda #PANEL_D018                 ;Set panelscreen screen ptr.
+Irq3_NoDelay:   lda #PANEL_D018                 ;Set panelscreen screen ptr.
                 sta $d018
                 lda #EMPTYSPRITEFRAME           ;Set empty spriteframe
 N               set 0
@@ -351,7 +347,7 @@ N               set N+1
                 lda irqSaveA
                 rti
 
-        ; Raster interrupt 5. Text screen split after bitmap display
+        ; Raster interrupt 5. Text screen split
 
 Irq5:           cld
                 sta irqSaveA
@@ -359,15 +355,11 @@ Irq5:           cld
                 sty irqSaveY
                 lda #$35                        ;Ensure IO memory is available
                 sta $01
-                pha
-                pla
-                pha
-                pla
-                pha
-                pla
-                lda $d011
-                and #$df
-                sta $d011
+                ldx #$05
+Irq5_Delay:     dex
+                bpl Irq5_Delay
+                lda #PANEL_D018
+                sta $d018
                 jmp Irq2_AllDone
 
         ; IRQ redirector when Kernal is on
