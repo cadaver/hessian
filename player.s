@@ -491,12 +491,7 @@ MH_NoLongJump:  lda (actLo),y
                 jsr CreateSplash
 MH_NoSplash:    lda temp3                       ;If actor can't swim, kill instantly
                 bmi MH_CanSwim                  ;but retain the unmodified Y-speed
-                lda actSY,x
-                pha
-                jsr DestroyActor
-                pla
-                sta actSY,x
-                rts
+                jmp DestroyActor
 MH_CanSwim:     lda #-1                         ;Must be deep in water before
                 jsr GetCharInfoOffset           ;swimming kicks in
                 and #CI_WATER
@@ -944,9 +939,13 @@ HumanDeath:     lda #SFX_DEATH
                 sta actF2,x
                 lda #DEATH_DISAPPEAR_DELAY
                 sta actTime,x
+                lda actMB,x                     ;If in water, do not modify Y-speed
+                tay
+                and #MB_INWATER
+                bne HD_NoYSpeed
                 lda #DEATH_YSPEED
                 sta actSY,x
-                lda actMB,x
+HD_NoYSpeed:    tya
                 and #$ff-MB_GROUNDED
                 sta actMB,x                     ;Not grounded anymore
                 lda #$00
@@ -958,12 +957,12 @@ HumanDeath:     lda #SFX_DEATH
                 txa                             ;Player dropping weapon is unnecessary
                 beq HD_NoItem
                 lda actWpn,x                    ;Check if should spawn the weapon item
-                beq HD_NoItem                   ;TODO: spawn other items like medkits or
+                beq HD_NoItem                   ;TODO: spawn other items like medkits or quest items if necessary
                 cmp #ITEM_FIRST_FIREARM         ;Melee weapons are a nuisance if dropped many times
                 bcs HD_ItemTypeOK               ;as only one can be picked up, check for existence first
                 jsr FindItemActor
                 bcs HD_NoItem
-HD_ItemTypeOK:  lda #ACTI_FIRSTITEM             ;quest items if necessary
+HD_ItemTypeOK:  lda #ACTI_FIRSTITEM
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
                 bcc HD_NoItem
