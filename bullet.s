@@ -6,86 +6,6 @@ DRONE_IDLE_ACCEL = 4
 DRONE_ATTACK_ACCEL = 6
 DRONE_MAXSPEED = 4*8
 
-        ; Check bullet collisions and optionally apply damage
-        ;
-        ; Parameters: X bullet actor index, C=0 apply damage and remove bullet
-        ;             (will not return if collided), C=1 only report collision
-        ; Returns: C=1 if collided, Y target actor
-        ; Modifies: A,Y,tgtActIndex,temp variables
-
-CheckBulletCollisionsApplyDamage:
-                clc
-CheckBulletCollisions:
-                ror temp7
-                lda actFlags,x
-                bmi CBC_CheckHeroes
-CBC_CheckVillains:
-                lda #<villainList
-                sta CBC_GetNextVillain+1
-CBC_GetNextVillain:
-                ldy villainList
-                bmi CBC_Done
-                inc CBC_GetNextVillain+1
-                jsr CheckActorCollision
-                bcc CBC_GetNextVillain
-CBC_HasCollision:
-                lda temp7
-                bmi CBC_ReportOnly
-                sty tgtActIndex
-                jsr ModifyTargetDamage
-                tay
-                beq CBC_NoDamage
-                ldx tgtActIndex
-                ldy actIndex
-                jsr DamageActor
-CBC_NoDamage:   ldx actIndex
-                ldy #NODAMAGESRC                ;Destroy bullet with no damage source
-                pla
-                pla
-                jmp DestroyActor
-CBC_Done:       clc
-CBC_ReportOnly: rts
-
-CBC_CheckHeroes:lda #<heroList
-                sta CBC_GetNextHero+1
-CBC_GetNextHero:ldy heroList
-                bmi CBC_Done
-                inc CBC_GetNextHero+1
-                jsr CheckActorCollision
-                bcc CBC_GetNextHero
-                bcs CBC_HasCollision
-
-        ; Give radius damage to both heroes & villains. Prior to calling, expand the
-        ; collision size of the source actor as necessary
-        ;
-        ; Parameters: X source actor index (must also be in actIndex)
-        ; Returns: -
-        ; Modifies: A,Y,tgtActIndex,possibly other temp registers
-
-RadiusDamage:   ldy #ACTI_LASTNPC
-RD_Loop:        lda actT,y
-                beq RD_Next
-                lda actHp,y
-                beq RD_Next
-                lda actFlags,y
-                and #AF_ISHERO|AF_ISVILLAIN
-                beq RD_Next
-                jsr CheckActorCollision
-                bcc RD_Next
-                sty tgtActIndex
-                jsr ModifyTargetDamage
-                tay
-                beq RD_SkipDamage
-                ldx tgtActIndex
-                ldy actIndex
-                jsr DamageActor
-RD_SkipDamage:  ldx actIndex
-                ldy tgtActIndex
-RD_Next:        dey
-                bpl RD_Loop
-                rts
-
-
         ; Smoketrail update routine
         ;
         ; Parameters: X actor index
@@ -128,48 +48,14 @@ MExpl_NoAnimation:
 MRckt_Done:
 MExpl_NoRemove: rts
 
-        ; Shotgun bullet update routine. Expands collision and reduces damage as the
-        ; bullet moves
+        ; Melee hit update routine
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y
 
-MoveShotgunBullet:
-                lda actF1,x
-                cmp #$0a
-                bcs MSBlt_Cloud
-                inc actFd,x
-                lda #$0a
-                bne MBltMF_Common
-MSBlt_Cloud:    lda #$02
-                jsr AnimationDelay
-                bcc MSBlt_NoAnim
-                lda actSizeH,x                  ;C=1, increase size by 2
-                adc #$01
-                sta actSizeH,x
-                sta actSizeU,x
-                sta actSizeD,x
-                lda actHp,x
-                sbc #$02                        ;C=0, decrease damage by 3
-                sta actHp,x
-                inc actF1,x
-MSBlt_NoAnim:   jmp MoveBullet
-
-        ; Bullet update routine with muzzle flash as first frame
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MoveBulletMuzzleFlash:
-                lda actF1,x
-                cmp #$0a
-                bcs MoveBullet
-                adc #$0a
-MBltMF_Common:  sta actF1,x
-                jsr MoveBullet
-                jmp NoInterpolation             ;Prevent muzzle flash from interpolating
+MoveMeleeHit:   jsr CheckBulletCollisionsApplyDamage
+                jmp RemoveActor
 
         ; Flame update routine
         ;
@@ -186,16 +72,51 @@ MoveFlame:      lda #3
                 inc actF1,x
                 bcc MoveBullet
 
-        ; Melee hit update routine
+        ; Bullet update routine with muzzle flash as first frame
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y
 
-MoveMeleeHit:   jsr CheckBulletCollisionsApplyDamage
-MBlt_Remove:    jmp RemoveActor
+MoveBulletMuzzleFlash:
+                lda actF1,x
+                cmp #$0a
+                bcs MoveBullet
+                adc #$0a
+MBltMF_Common:  sta actF1,x
+                jsr MoveBullet
+                jmp NoInterpolation             ;Prevent muzzle flash from interpolating
 
-        ; Bullet update routine. Remove if hit obstacle, splash if hit water
+        ; Shotgun bullet update routine. Expands collision and reduces damage as the
+        ; bullet moves
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveShotgunBullet:
+                lda actF1,x
+                cmp #$0a
+                bcs MSBlt_Cloud
+                inc actFd,x
+                lda #$0a
+                bne MBltMF_Common
+MBlt_Remove:    jmp RemoveActor
+MSBlt_Cloud:    lda #$02
+                jsr AnimationDelay
+                bcc MSBlt_NoAnim
+                lda actSizeH,x                  ;C=1, increase size by 2
+                adc #$01
+                sta actSizeH,x
+                sta actSizeU,x
+                sta actSizeD,x
+                lda actHp,x
+                sbc #$02                        ;C=0, decrease damage by 3
+                sta actHp,x
+                inc actF1,x
+MSBlt_NoAnim:   
+
+        ; Bullet update routine. Check collisions, then move
         ;
         ; Parameters: X actor index
         ; Returns: -
@@ -204,18 +125,42 @@ MBlt_Remove:    jmp RemoveActor
 MoveBullet:     jsr CheckBulletCollisionsApplyDamage
                 dec actTime,x
                 bmi MBlt_Remove
-                jsr MoveProjectile
-                and #CI_OBSTACLE|CI_WATER
-                beq MBlt_Done
-                cmp #CI_OBSTACLE
-                beq MBlt_Remove
-MBlt_HitWater:  lda #-1                         ;If water 1 already char above, move upward
+
+        ; Move actor in a straight line and return charinfo from final position.
+        ; If hit water, transform into a splash and do not return
+        ; If hit an obstacle, call the destruct routine and do not return
+        ;
+        ; Parameters: X actor index
+        ; Returns: A charinfo
+        ; Modifies: A,Y,temp vars
+
+MoveProjectile: lda actSX,x
+                jsr MoveActorX
+                lda actSY,x
+                jsr MoveActorY
+                jsr GetCharInfo
+                tay
+                and #CI_WATER|CI_OBSTACLE
+                beq MProj_Done
+                cmp #CI_WATER
+                beq MProj_HitWater
+MProj_HitObstacle:
+                pla                             ;Discard return address
+                pla
+                ldy #NODAMAGESRC                ;Destroy actor without specific damage source 
+                jmp DestroyActor
+MProj_Done:     tya
+                rts
+MProj_HitWater: pla                             ;Discard return address
+                pla
+MProj_HitWater_Common:
+                lda #-1                         ;If water 1 already char above, move upward
                 jsr GetCharInfoOffset           ;(bullets may move faster than 8 pixels/frame)
                 and #CI_WATER
-                beq MBlt_NoWaterAbove
+                beq MProj_NoWaterAbove
                 lda #-8*8
                 jsr MoveActorY
-MBlt_NoWaterAbove:
+MProj_NoWaterAbove:
                 lda actYL,x
                 and #$c0
                 sta actYL,x
@@ -225,15 +170,14 @@ MBlt_NoWaterAbove:
                 jsr NoInterpolation
                 lda actT,x
                 cmp #ACT_SONICWAVE
-                bcs MBlt_LargeSplash
+                bcs MProj_LargeSplash
                 lda #ACT_SMALLSPLASH
-                bne MBlt_SplashOK
-MBlt_LargeSplash:
+                bne MProj_SplashOK
+MProj_LargeSplash:
                 lda #SFX_SPLASH
                 jsr PlaySfx
                 lda #ACT_WATERSPLASH
-MBlt_SplashOK:  jmp TransformBullet
-MBlt_Done:      rts
+MProj_SplashOK: jmp TransformBullet
 
         ; Rocket update routine
         ;
@@ -241,6 +185,7 @@ MBlt_Done:      rts
         ; Returns: -
         ; Modifies: A,Y
 
+MRckt_Remove:   jmp RemoveActor
 MoveRocket:     lda actTime,x
                 lsr
                 bcc MRckt_NoSmoke
@@ -253,20 +198,12 @@ MoveRocket:     lda actTime,x
                 tya
                 jsr GetFlickerColorOverride
                 sta actC,y
-MRckt_NoSmoke:  dec actTime,x
-                bmi MRckt_Remove
-                jsr MoveProjectile
-                and #CI_OBSTACLE|CI_WATER
-                beq MRckt_CheckEnemyCollisions
-                and #CI_WATER
-                bne MBlt_HitWater
-                jmp ExplodeGrenade
-MRckt_Remove:   jmp RemoveActor
-MRckt_CheckEnemyCollisions:
-                sec
+MRckt_NoSmoke:  sec
                 jsr CheckBulletCollisions
                 bcs ExplodeGrenade
-                rts
+                dec actTime,x
+                bmi MRckt_Remove
+                jmp MoveProjectile
 
         ; Grenade launcher grenade update routine
         ;
@@ -285,6 +222,9 @@ MoveLauncherGrenade:
                 lda #$00
 MLG_AnimNotOver:sta actF1,x
 MLG_NoAnimation:
+                sec
+                jsr CheckBulletCollisions
+                bcs ExplodeGrenade
                 dec actTime,x
                 bmi ExplodeGrenade
                 lda #-1                         ;Ceiling check offset
@@ -298,7 +238,7 @@ MLG_NoAnimation:
                 tya
                 and #MB_HITWALL|MB_HITCEILING|MB_LANDED
                 bne ExplodeGrenade              ;Explode on any wall/ground contact
-                beq MRckt_CheckEnemyCollisions
+                rts
 
         ; Explode grenade and do radius damage
         ;
@@ -345,7 +285,7 @@ TransformBullet:sta actT,x
         ; Returns: -
         ; Modifies: A,Y
 
-MGrn_HitWater:  jmp MBlt_HitWater
+MGrn_HitWater:  jmp MProj_HitWater_Common
 MoveGrenade:    dec actTime,x
                 bmi ExplodeGrenade
                 lda actMB,x
@@ -507,6 +447,86 @@ MDrn_AccCommon: jsr AccActorY
                 jsr MoveFlyer                   ;If hit water, terminate by splashing
                 and #CI_WATER
                 beq MDrn_Done
-                jmp MBlt_HitWater
+                jmp MProj_HitWater_Common
 MDrn_Done:      rts
 MDrn_Expire:    jmp ExplodeActor                ;Explode harmlessly
+
+        ; Check bullet collisions and optionally apply damage
+        ;
+        ; Parameters: X bullet actor index, C=0 apply damage and remove bullet
+        ;             (will not return if collided), C=1 only report collision
+        ; Returns: C=1 if collided, Y target actor
+        ; Modifies: A,Y,tgtActIndex,temp variables
+
+CheckBulletCollisionsApplyDamage:
+                clc
+CheckBulletCollisions:
+                ror temp7
+                lda actFlags,x
+                bmi CBC_CheckHeroes
+CBC_CheckVillains:
+                lda #<villainList
+                sta CBC_GetNextVillain+1
+CBC_GetNextVillain:
+                ldy villainList
+                bmi CBC_Done
+                inc CBC_GetNextVillain+1
+                jsr CheckActorCollision
+                bcc CBC_GetNextVillain
+CBC_HasCollision:
+                lda temp7
+                bmi CBC_ReportOnly
+                sty tgtActIndex
+                jsr ModifyTargetDamage
+                tay
+                beq CBC_NoDamage
+                ldx tgtActIndex
+                ldy actIndex
+                jsr DamageActor
+CBC_NoDamage:   ldx actIndex
+                ldy #NODAMAGESRC                ;Destroy bullet with no damage source
+                pla
+                pla
+                jmp DestroyActor
+CBC_Done:       clc
+CBC_ReportOnly: rts
+
+CBC_CheckHeroes:lda #<heroList
+                sta CBC_GetNextHero+1
+CBC_GetNextHero:ldy heroList
+                bmi CBC_Done
+                inc CBC_GetNextHero+1
+                jsr CheckActorCollision
+                bcc CBC_GetNextHero
+                bcs CBC_HasCollision
+
+        ; Give radius damage to both heroes & villains. Prior to calling, expand the
+        ; collision size of the source actor as necessary
+        ;
+        ; Parameters: X source actor index (must also be in actIndex)
+        ; Returns: -
+        ; Modifies: A,Y,tgtActIndex,possibly other temp registers
+
+RadiusDamage:   ldy #ACTI_LASTNPC
+RD_Loop:        lda actT,y
+                beq RD_Next
+                lda actHp,y
+                beq RD_Next
+                lda actFlags,y
+                and #AF_ISHERO|AF_ISVILLAIN
+                beq RD_Next
+                jsr CheckActorCollision
+                bcc RD_Next
+                sty tgtActIndex
+                jsr ModifyTargetDamage
+                tay
+                beq RD_SkipDamage
+                ldx tgtActIndex
+                ldy actIndex
+                jsr DamageActor
+RD_SkipDamage:  ldx actIndex
+                ldy tgtActIndex
+RD_Next:        dey
+                bpl RD_Loop
+                rts
+

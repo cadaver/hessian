@@ -404,21 +404,21 @@ alPlasma:       dc.w MovePlasma                 ;Update routine
 
 alLauncherGrenade:
                 dc.w MoveLauncherGrenade        ;Update routine
-                dc.w ExplodeActor               ;Destroy routine
+                dc.w ExplodeGrenade             ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 3                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
 
 alGrenade:      dc.w MoveGrenade                ;Update routine
-                dc.w ExplodeActor               ;Destroy routine
+                dc.w ExplodeGrenade             ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 3                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
 
 alRocket:       dc.w MoveRocket                 ;Update routine
-                dc.w RemoveActor                ;Destroy routine
+                dc.w ExplodeGrenade             ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 4                          ;Size up

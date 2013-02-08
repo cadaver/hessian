@@ -1253,8 +1253,6 @@ DA_QuietDamage: plp
 
 DestroyActor:   sty temp8
                 cpy #ACTI_FIRSTNPCBULLET
-                lda #$00                        ;Make sure health is zero, some death routines
-                sta actHp,x                     ;(eg. human) need this
                 lda #POS_NOTPERSISTENT          ;Destroyed actor does not need to persist any more
                 sta actLvlDataPos,x
                 jsr GetActorLogicData

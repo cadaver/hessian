@@ -8,18 +8,6 @@ MB_STARTFALLING = 32
 WATER_XBRAKING  = 3
 WATER_YBRAKING  = 5
 
-        ; Move actor in a straight line and return charinfo from final position
-        ;
-        ; Parameters: X actor index
-        ; Returns: A charinfo
-        ; Modifies: A,Y,temp vars
-
-MoveProjectile: lda actSX,x
-                jsr MoveActorX
-                lda actSY,x
-                jsr MoveActorY
-                jmp GetCharInfo
-
         ; Move actor and stop at obstacles
         ;
         ; Parameters: X actor index, A offset position for side obstacles, Y obstacle bits

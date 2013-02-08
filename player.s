@@ -951,6 +951,7 @@ HumanDeath:     lda #SFX_DEATH
                 sta actMB,x                     ;Not grounded anymore
                 lda #$00
                 sta actFd,x
+                sta actHp,x                     ;Make sure HP is 0 or the death will not work correctly
                 sta actAIMode,x                 ;Reset any ongoing AI
                 stx temp3
                 sty temp4
