@@ -202,7 +202,7 @@ keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
 d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 
-        ; Data with non-critical alignmen
+        ; Data with non-critical alignment
 
                 include paneldata.s
                 include actordata.s
@@ -211,6 +211,7 @@ d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
                 include leveldata.s
                 include aidata.s
                 include sounddata.s
+                include text.s
 
         ; Playroutine variables
 
