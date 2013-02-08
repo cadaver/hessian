@@ -43,8 +43,8 @@ Irq1_ScrollY:   lda #$57                        ;Check if panel split IRQ needs 
                 sta $d011                       ;screen early due to badline
                 tax
                 ora #$07
-                cpy #IRQ3_LINE
-                bcs Irq1_SpritesAtSplit
+                ;cpy #IRQ3_LINE
+                ;bcs Irq1_SpritesAtSplit
                 cpx #$16
                 bne Irq1_NoBadLine
 Irq1_SpritesAtSplit:
