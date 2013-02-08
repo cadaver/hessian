@@ -128,8 +128,8 @@ MWG_XSpeedNeg:  cmp actSY,x
                 bcc MWG_NoLanding
                 tya
                 and #$e0
+                beq MWG_NoLanding               ;If no slope, can't be a landing
                 sta temp6
-                beq MWG_HitGround2
                 eor actSX,x                     ;If it's a diagonal slope, verify that X-speed
                 bpl MWG_HitGround2              ;is actually against it
 MWG_NoLanding:  lda temp5
