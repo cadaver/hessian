@@ -1,17 +1,21 @@
 MAX_ACTX        = 14
 MAX_ACTY        = 9
 
-MAX_SPAWNED_ACTORS = 3
-
 ACTI_PLAYER     = 0
 ACTI_FIRSTNPC   = 1
 ACTI_LASTNPC    = 6
-ACTI_FIRSTPLRBULLET = 7
-ACTI_LASTPLRBULLET = 11
-ACTI_FIRSTNPCBULLET = 12
-ACTI_LASTNPCBULLET = 16
-ACTI_FIRSTITEM  = 17
-ACTI_LASTITEM   = 21
+ACTI_FIRSTITEM  = 7
+ACTI_LASTITEM   = 11
+ACTI_FIRSTPLRBULLET = 12
+ACTI_LASTPLRBULLET = 16
+ACTI_FIRSTNPCBULLET = 17
+ACTI_LASTNPCBULLET = 21
+
+ACTI_FIRSTEFFECT = ACTI_LASTPLRBULLET
+ACTI_LASTEFFECT = ACTI_FIRSTNPCBULLET+1
+
+MAX_SPAWNEDACT = 3
+MAX_PERSISTENTACT = ACTI_LASTITEM+1
 
 AD_NUMSPRITES   = 0
 AD_SPRFILE      = 1
@@ -1253,8 +1257,6 @@ DA_QuietDamage: plp
 
 DestroyActor:   sty temp8
                 cpy #ACTI_FIRSTNPCBULLET
-                lda #POS_NOTPERSISTENT          ;Destroyed actor does not need to persist any more
-                sta actLvlDataPos,x
                 jsr GetActorLogicData
                 ldy #AL_DESTROYROUTINE
                 lda (actLo),y
@@ -1270,7 +1272,7 @@ DA_NoXP:        ldy temp8
 DA_Jump:        jsr $0000
                 clc
                 rts
-                
+
         ; Attempt to spawn an actor to level from a spawner object
         ;
         ; Parameters: A random parameter for actor type, X spawner object index
@@ -1296,12 +1298,13 @@ AttemptSpawn:   sta temp2
                 jsr GetPlotBit
                 beq AS_Done
 AS_NoPlotBit:   lda #ACTI_FIRSTNPC              ;Do not use all NPC slots for spawned actors
-                ldy #ACTI_FIRSTNPC+MAX_SPAWNED_ACTORS-1
+                ldy #ACTI_FIRSTNPC+MAX_SPAWNEDACT-1
                 jsr GetFreeActor
                 bcc AS_Done
                 ldx temp2
                 lda #$80
                 sta actXL,y                     ;Center into the upper edge of the block
+                sta actLvlDataPos,y             ;Mark as nonpersistent
                 lda #$00
                 sta actYL,y
                 lda lvlSpawnT,x
@@ -1448,9 +1451,9 @@ ALA_NoDefaultPickup:
         ; Modifies: A,Y,zpSrcLo
 
 RemoveLevelActor:
-                lda actT,x
-                beq RA_Done
-                ldy actLvlDataPos,x             ;Should be persisted?
+                cpx #MAX_PERSISTENTACT          ;Should be persisted?
+                bcs RemoveActor
+                ldy actLvlDataPos,x
                 bmi RemoveActor
                 jsr GetLevelActorIndex
                 lda actXH,x                     ;Store block coordinates
@@ -1502,9 +1505,11 @@ RA_Done:        rts                             ;actor removed on the same frame
         ; Returns: -
         ; Modifies: A,X
 
-RemoveLevelActors:ldx #MAX_ACT-1
-RAA_Loop:       jsr RemoveLevelActor
-                dex
+RemoveLevelActors:ldx #MAX_PERSISTENTACT-1
+RAA_Loop:       lda actT,x
+                beq RAA_Next
+                jsr RemoveLevelActor
+RAA_Next:       dex
                 bne RAA_Loop
                 rts
 
@@ -1534,9 +1539,7 @@ GFA_Loop:       lda actT,y
 GFA_Cmp:        cpy #$00
                 bcs GFA_Loop
                 rts
-GFA_Found:      lda #POS_NOTPERSISTENT           ;By default is not stored to leveldata
-                sta actLvlDataPos,y
-                lda #$00                        ;Reset most actor variables
+GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actF1,y
                 sta actFd,y
                 sta actSX,y

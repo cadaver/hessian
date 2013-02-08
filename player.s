@@ -50,8 +50,7 @@ MP_CheckPickupSub:
                 ldy #ACTI_FIRSTITEM
 MP_CheckPickupSub2:
                 lda actT,y
-                cmp #ACT_ITEM
-                bne MP_CPSNoItem
+                beq MP_CPSNoItem
                 jsr CheckActorCollision
                 bcs MP_CPSHasItem
 MP_CPSNoItem:   iny
@@ -948,6 +947,8 @@ HumanDeath:     stx temp3
                 sta actF2,x
                 lda #DEATH_DISAPPEAR_DELAY
                 sta actTime,x
+                lda #POS_NOTPERSISTENT          ;Bodies are supposed to eventually vanish, so mark as
+                sta actLvlDataPos,x             ;nonpersistent if goes off the screen
                 lda actMB,x                     ;If in water, do not modify Y-speed
                 tay
                 and #MB_INWATER
@@ -1214,8 +1215,8 @@ CS_NoFreeActor: rts
         ; Returns: -
         ; Modifies: A,Y
 
-CreateSplash:   lda #ACTI_FIRSTNPCBULLET
-                ldy #ACTI_LASTITEM
+CreateSplash:   lda #ACTI_FIRSTEFFECT
+                ldy #ACTI_LASTEFFECT
                 jsr GetFreeActor
                 bcc CS_NoFreeActor
                 lda #ACT_WATERSPLASH

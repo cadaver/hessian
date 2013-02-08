@@ -189,8 +189,8 @@ MRckt_Remove:   jmp RemoveActor
 MoveRocket:     lda actTime,x
                 lsr
                 bcc MRckt_NoSmoke
-                lda #ACTI_FIRSTNPCBULLET
-                ldy #ACTI_LASTITEM
+                lda #ACTI_FIRSTEFFECT
+                ldy #ACTI_LASTEFFECT
                 jsr GetFreeActor
                 bcc MRckt_NoSmoke
                 lda #ACT_SMOKETRAIL
