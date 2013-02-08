@@ -20,7 +20,7 @@ DEATH_ACCEL     = 5
 DEATH_YSPEED    = -5*8
 DEATH_MAX_XSPEED = 6*8
 DEATH_BRAKING   = 6
-DEATH_WATER_BUOYANCY = 4
+DEATH_WATER_YBRAKING = 7
 DEATH_WATER_BRAKING = 2
 
 HUMAN_MAX_YSPEED = 6*8
@@ -246,14 +246,13 @@ MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 lda #$00
                 sta actSX,x
 MH_DeathNoHitWall:
-                tya                             ;If in water, counteract gravity
-                and #MB_INWATER                 ;and brake X-speed
+                tya                             ;If in water, brake X & Y speeds
+                and #MB_INWATER
                 beq MH_NotInWater
-                lda actSY,x
-                sbc #DEATH_WATER_BUOYANCY
-                sta actSY,x
                 lda #DEATH_WATER_BRAKING
                 jsr BrakeActorX
+                lda #DEATH_WATER_YBRAKING
+                jsr BrakeActorY
 MH_NotInWater:  lda #$06
                 ldy #FR_DIE+1
                 bne MH_DeathAnimDelay
@@ -940,7 +939,9 @@ MH_Drowned:     rts
         ; Returns: -
         ; Modifies: A,temp3-temp8
 
-HumanDeath:     lda #SFX_DEATH
+HumanDeath:     stx temp3
+                sty temp4
+                lda #SFX_DEATH
                 jsr PlaySfx
                 lda #FR_DIE
                 sta actF1,x
@@ -960,8 +961,6 @@ HD_NoYSpeed:    tya
                 sta actFd,x
                 sta actHp,x                     ;Make sure HP is 0 or the death will not work correctly
                 sta actAIMode,x                 ;Reset any ongoing AI
-                stx temp3
-                sty temp4
                 txa                             ;Player dropping weapon is unnecessary
                 beq HD_NoItem
                 lda actWpn,x                    ;Check if should spawn the weapon item
