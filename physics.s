@@ -5,9 +5,6 @@ MB_HITWALL     = 8
 MB_HITCEILING  = 16
 MB_STARTFALLING = 32
 
-WATER_XBRAKING  = 3
-WATER_YBRAKING  = 5
-
         ; Move actor and stop at obstacles
         ;
         ; Parameters: X actor index, A offset position for side obstacles, Y obstacle bits
@@ -38,35 +35,6 @@ MF_XMoveOK:     lda actSY,x
                 lda #$00
                 sta actSY,x
 MF_YMoveOK:     lda temp8
-                rts
-
-        ; Move actor with gravity and ground/wall collisions,
-        ; float in water and create splash when first hitting water
-        ;
-        ; Parameters: X actor index, A gravity acceleration (should be positive), Y speed limit,
-        ;             temp4 vertical char offset (negative) for ceiling check
-        ; Returns: actMB updated, also returned in A
-        ; Modifies: A,Y,temp4-temp8
-
-MoveWithGravityAndFloat:
-                pha
-                lda actMB,x
-                sta MWGF_OldFlags+1             ;Store old flags
-                pla
-                jsr MoveWithGravity
-                and #MB_INWATER
-                beq MWGF_NoWater
-MWGF_OldFlags:  lda #$00
-                and #MB_INWATER
-                bne MWGF_NoSplash
-                lda actSY,x
-                bmi MWGF_NoSplash
-                jsr CreateSplash
-MWGF_NoSplash:  lda #WATER_XBRAKING
-                jsr BrakeActorX
-                lda #WATER_YBRAKING
-                jsr BrakeActorY
-MWGF_NoWater:   lda actMB,x
                 rts
 
         ; Move actor with gravity and ground/wall collisions. Does not modify horizontal velocity
@@ -136,13 +104,7 @@ MWG_NoXMove:    lda temp5                       ;Do in air or grounded collision
 MWG_InAir:      lda actSY,x                     ;Check landing or ceiling hit?
                 bpl MWG_CheckLanding
 MWG_CheckCeiling:
-                jsr GetCharInfo
-                and #CI_WATER
-                beq MWG_NoWater2
-                lda temp5
-                ora #MB_INWATER
-                sta temp5
-MWG_NoWater2:   lda temp4
+                lda temp4
                 jsr GetCharInfoOffset
                 and #CI_OBSTACLE
                 beq MWG_NoCeiling
@@ -180,8 +142,15 @@ MWG_CheckLanding:
                 and #CI_WATER
                 beq MWG_NotInWater
                 lda temp5
+                and #MB_INWATER
+                bne MWG_AlreadyInWater
+                sty temp8
+                jsr CreateSplash
+                ldy temp8
+                lda temp5
                 ora #MB_INWATER
                 sta temp5
+MWG_AlreadyInWater:
 MWG_NotInWater: tya
                 lsr                             ;Hit ground?
                 bcc MWG_CheckCharCrossY         ;If not directly, check also possible char crossing

@@ -285,7 +285,7 @@ TransformBullet:sta actT,x
         ; Returns: -
         ; Modifies: A,Y
 
-MGrn_HitWater:  jmp MProj_HitWater_Common
+MGrn_HitWater:  jmp RemoveActor                 ;MoveWithGravity already created splash, just remove
 MoveGrenade:    dec actTime,x
                 bmi ExplodeGrenade
                 lda actMB,x

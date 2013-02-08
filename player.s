@@ -16,9 +16,12 @@ HEALTH_RECHARGE_RATE = 25
 DEATH_DISAPPEAR_DELAY = 75
 DEATH_FLICKER_DELAY = 25
 DEATH_HEIGHT    = -3                            ;Ceiling check height for dead bodies
+DEATH_ACCEL     = 5
 DEATH_YSPEED    = -5*8
 DEATH_MAX_XSPEED = 6*8
 DEATH_BRAKING   = 6
+DEATH_WATER_BUOYANCY = 4
+DEATH_WATER_BRAKING = 2
 
 HUMAN_MAX_YSPEED = 6*8
 
@@ -232,9 +235,10 @@ SP_NotDown2:    stx scrollSY
 
 MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 sta temp4
-                lda #GRENADE_ACCEL
+                lda #DEATH_ACCEL
                 ldy #HUMAN_MAX_YSPEED
-                jsr MoveWithGravityAndFloat     ;Actually move & check collisions
+                jsr MoveWithGravity
+                tay
                 lsr
                 bcs MH_DeathGrounded            ;If grounded, animate faster
                 and #MB_HITWALL/2               ;If hit wall, zero X-speed
@@ -242,7 +246,15 @@ MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 lda #$00
                 sta actSX,x
 MH_DeathNoHitWall:
-                lda #$06
+                tya                             ;If in water, counteract gravity
+                and #MB_INWATER                 ;and brake X-speed
+                beq MH_NotInWater
+                lda actSY,x
+                sbc #DEATH_WATER_BUOYANCY
+                sta actSY,x
+                lda #DEATH_WATER_BRAKING
+                jsr BrakeActorX
+MH_NotInWater:  lda #$06
                 ldy #FR_DIE+1
                 bne MH_DeathAnimDelay
 MH_DeathGrounded:
@@ -485,11 +497,7 @@ MH_NoLongJump:  lda (actLo),y
                 jsr MoveWithGravity             ;Actually move & check collisions
                 and #MB_INWATER
                 beq MH_NoWater
-                lda temp1                       ;If was not already in water, create splash
-                and #MB_INWATER
-                bne MH_NoSplash
-                jsr CreateSplash
-MH_NoSplash:    lda temp3                       ;If actor can't swim, kill instantly
+                lda temp3                       ;If actor can't swim, kill instantly
                 bmi MH_CanSwim                  ;but retain the unmodified Y-speed
                 jmp DestroyActor
 MH_CanSwim:     lda #-1                         ;Must be deep in water before
