@@ -38,7 +38,13 @@ INITIAL_INAIRACC = 2
 INITIAL_GROUNDBRAKE = 6
 INITIAL_JUMPSPEED = 42
 INITIAL_CLIMBSPEED = 84
-INITIAL_DROWNINGTIMER = 4
+INITIAL_DROWNINGTIMER = 5
+INITIAL_HEALTHRECHARGETIMER = 2
+
+DROWNINGTIMER_RESET = $a8
+HEALTHRECHARGETIMER_RESET = $e0
+
+EASY_DMGMULTIPLIER_REDUCE = 2
 
         ; Player update routine
         ;
@@ -101,12 +107,11 @@ MP_CheckHealth: lda actHp+ACTI_PLAYER           ;Restore health if not dead and 
 MP_NotDead:     cmp #HP_PLAYER
                 bcs MP_CheckPickup
                 lda healthRecharge
-                adc #$01
 MP_HealthRechargeRate:
-                cmp #HEALTH_RECHARGE_RATE
-                bne MP_NoRecharge
+                adc #INITIAL_HEALTHRECHARGETIMER
+                bcc MP_NoRecharge
                 inc actHp+ACTI_PLAYER
-                lda #$00
+                lda #HEALTHRECHARGETIMER_RESET  ;Recharge faster after first unit
 MP_NoRecharge:  sta healthRecharge
 
 MP_CheckPickup: jsr MP_CheckPickupSub           ;Check for item pickup / name display
@@ -909,7 +914,6 @@ MH_NotSwimmingUp:
                 ldy #$00
 MH_NoDrowningTimerReset:
                 tya
-                clc
                 ldy #AL_DROWNINGTIMER
                 clc
                 adc (actLo),y
@@ -918,7 +922,7 @@ MH_NoDrowningTimerReset:
                 ldy #NODAMAGESRC_QUIET
                 jsr DamageActor
                 bcc MH_Drowned
-                lda #$c0                        ;Drowning damage is faster after initial delay
+                lda #DROWNINGTIMER_RESET        ;Drowning damage is faster after initial delay
 MH_NotDrowning: sta actFallL,x
                 lda #$03
                 jsr AnimationDelay
@@ -1095,7 +1099,7 @@ SLAV_Next:      php
                 dex
                 bpl SLAV_Loop
                 rts
-                
+
         ; Restore an in-memory checkpoint
         ;
         ; Parameters: -
@@ -1143,30 +1147,31 @@ ApplySkills:
                 txa
                 clc
                 adc #INITIAL_GROUNDACC
-                sta playerGroundAcc
-                sbc #2-1                        ;C=0, subtract one more
-                sta playerSwimAcc
+                sta plrGroundAcc
+                sbc #3-1                        ;C=0, subtract one more
+                sta plrSwimAcc
                 txa
                 adc #INITIAL_INAIRACC
-                sta playerInAirAcc
+                sta plrInAirAcc
                 txa
                 asl
                 adc plrAgility
                 asl
                 adc #INITIAL_CLIMBSPEED
-                sta playerClimbSpeed
+                sta plrClimbSpeed
                 txa
                 asl
                 eor #$ff
                 adc #1-INITIAL_JUMPSPEED
-                sta playerJumpSpeed
+                sta plrJumpSpeed
 
         ; Firearms: damage bonus and faster reloading
 
                 ldx plrFirearms
                 lda plrWeaponBonusTbl,x
                 sta AH_PlayerFirearmBonus+1
-                lda plrReloadBonusTbl,x
+                lda #NO_MODIFY
+                sbc plrFirearms                 ;C=1 here
                 sta AH_ReloadDelayBonus+1
 
         ; Melee: damage bonus
@@ -1177,15 +1182,19 @@ ApplySkills:
 
         ; Vitality: damage reduction, slower drowning, faster health recharge
 
-                ldx plrVitality
-                lda plrDamageModTbl,x
-                sta playerDmgModify
-                lda plrRechargeDelayTbl,x
-                sta DA_HealthRechargeDelay+1
-                lda plrRechargeRateTbl,x
+                lda #INITIAL_DROWNINGTIMER
+                sec
+                sbc plrVitality
+                sta plrDrowningTimer
+                adc #NO_MODIFY-INITIAL_DROWNINGTIMER-1
+                ldy difficulty                  ;On Easy level damage multiplier is lower
+                bne AS_NormalLevel
+                sbc #EASY_DMGMULTIPLIER_REDUCE-1 ;C=0, subtract one less
+AS_NormalLevel: sta plrDmgModify
+                lda plrVitality
+                clc
+                adc #INITIAL_HEALTHRECHARGETIMER
                 sta MP_HealthRechargeRate+1
-                lda plrDrowningTimerTbl,x
-                sta playerDrowningTimer
 
         ; Carrying: more weapons in inventory and higher ammo limit
 

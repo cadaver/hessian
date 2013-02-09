@@ -222,38 +222,6 @@ itemFlashTbl:   dc.b 10,7,1,7
 plrWeaponBonusTbl:
                 dc.b 8,10,12,14
 
-        ; Player reload time mod according to weapon skill
-
-plrReloadBonusTbl:
-                dc.b 8,6,5,4
-
-        ; Player damage mod according to vitality skill
-
-plrDamageModTbl:dc.b 8,7,6,5
-
-        ; Player health recharge delay according to vitality skill
-
-plrRechargeDelayTbl:
-                dc.b -HEALTH_RECHARGE_DELAY
-                dc.b -HEALTH_RECHARGE_DELAY+20
-                dc.b -HEALTH_RECHARGE_DELAY+40
-                dc.b -HEALTH_RECHARGE_DELAY+60
-
-plrRechargeRateTbl:
-                dc.b HEALTH_RECHARGE_RATE
-                dc.b HEALTH_RECHARGE_RATE-3
-                dc.b HEALTH_RECHARGE_RATE-6
-                dc.b HEALTH_RECHARGE_RATE-9
-
-        ; Player drowning speed according to vitality skill
-
-plrDrowningTimerTbl:
-                dc.b INITIAL_DROWNINGTIMER
-                dc.b INITIAL_DROWNINGTIMER-1
-                dc.b INITIAL_DROWNINGTIMER-2
-                dc.b INITIAL_DROWNINGTIMER-3
-
-
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -308,29 +276,27 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b 0                          ;Size down
                 dc.b HP_PLAYER                  ;Initial health
                 dc.b 0                          ;Color override
-playerDmgModify:dc.b NO_MODIFY                  ;Damage modifier
+plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
                 dc.b 0                          ;XP from kill
-                dc.b AIMODE_SNIPER              ;AI mode when spawned randomly
+                dc.b AIMODE_NONE                ;AI mode when spawned randomly
                 dc.b $ff                        ;AI offense probability
                 dc.b $ff                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP|AMF_SWIM ;Move flags
                 dc.b 4*8                        ;Max. movement speed
-playerGroundAcc:dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
-playerInAirAcc: dc.b INITIAL_INAIRACC           ;In air movement acceleration
+plrGroundAcc:   dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
+plrInAirAcc:    dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
                 dc.b 4                          ;Long jump gravity acceleration
-playerGroundBrake:
-                dc.b INITIAL_GROUNDBRAKE        ;Ground braking
+plrGroundBrake:dc.b INITIAL_GROUNDBRAKE        ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
-playerJumpSpeed:dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
-playerClimbSpeed:
-                dc.b INITIAL_CLIMBSPEED         ;Climbing speed
+plrJumpSpeed:   dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
+plrClimbSpeed:  dc.b INITIAL_CLIMBSPEED         ;Climbing speed
                 dc.b 2*8                        ;Ladder jump / wallflip speed right
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
-playerSwimSpeed:dc.b 2*8
-playerSwimAcc:  dc.b INITIAL_GROUNDACC/2
-playerDrowningTimer:
-                dc.b INITIAL_DROWNINGTIMER
+plrSwimSpeed:   dc.b 2*8                        ;Swimming speed
+plrSwimAcc:     dc.b INITIAL_GROUNDACC/2        ;Swimming acceleration
+plrDrowningTimer:
+                dc.b INITIAL_DROWNINGTIMER      ;Drowning rate when underwater
 
 alItem:         dc.w MoveItem                   ;Update routine
                 dc.w RemoveActor                ;Destroy routine

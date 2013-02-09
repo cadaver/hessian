@@ -442,7 +442,7 @@ UA_IndexNotOver:stx addActorIndex
 
         ; Process spawners
 
-                ldx spawnerIndex
+UA_SpawnerIndex:ldx #$00
 UA_SpawnerLoop: lda lvlObjB,x
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_SPAWN
@@ -473,7 +473,7 @@ UA_SpawnerEndCmp:cpx #LVLOBJSEARCH/2
                 bne UA_SpawnerLoop
                 txa
                 and #MAX_LVLOBJ-1
-                sta spawnerIndex
+                sta UA_SpawnerIndex+1
                 adc #LVLOBJSEARCH/2-1           ;C=1, add one more
                 sta UA_SpawnerEndCmp+1
 
@@ -1215,9 +1215,7 @@ DamageActor:    sty temp7
                 lda actHp,x
                 bne DA_NotDead
                 endif
-DA_HealthRechargeDelay:
-                ldy #-HEALTH_RECHARGE_DELAY     ;If player hit, reset health recharge timer
-                sty healthRecharge
+                stx healthRecharge              ;If player hit, reset health recharge timer
 DA_NotPlayer:   jsr GetActorLogicData
                 ldy #AL_DMGMODIFY
                 lda (actLo),y

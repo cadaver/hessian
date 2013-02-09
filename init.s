@@ -32,6 +32,7 @@ InitZP:         sta joystick,x
                 sta musicMode
                 sta soundMode
                 endif
+                sta difficulty                  ;Default to Hard difficulty
 
                 lda #<fileAreaStart
                 sta freeMemLo

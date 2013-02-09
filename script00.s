@@ -164,30 +164,40 @@ MainMenuSelect: lda #SFX_SELECT
 MainMenuJump:   jmp $0000
 
         ; Options menu
-        
+
 Options:        lda #0
                 sta optionsMenuChoice
                 jsr FadeOutText
                 jsr ClearText
-RefreshOptions: lda musicMode
-                ldx #9
-                jsr CopyOnOffText
-                lda soundMode
-                ldx #23
-                jsr CopyOnOffText
                 lda #<txtOptions
                 ldx #>txtOptions
                 jsr PrintPage
-OptionsLoop:    lda #12
+RefreshOptions: lda #23
+                sta temp1
+                lda #<txtEasy
+                ldx #>txtEasy
+                ldy difficulty
+                beq EasyDifficulty
+                lda #<txtHard
+                ldx #>txtHard
+EasyDifficulty: ldy #TEXTSTARTROW
+                jsr PrintOnOffCommon
+                lda musicMode
+                ldy #TEXTSTARTROW+2
+                jsr PrintOnOff
+                lda soundMode
+                ldy #TEXTSTARTROW+4
+                jsr PrintOnOff
+OptionsLoop:    lda #11
                 sta temp1
                 lda optionsMenuChoice
                 asl
-                ldx #5
-                ldy #TEXTSTARTROW+1
+                ldx #7
+                ldy #TEXTSTARTROW
                 jsr DrawChoiceArrow
                 jsr Update
                 lda optionsMenuChoice
-                ldx #2
+                ldx #3
                 jsr TitleMenuControl
                 sta optionsMenuChoice
                 jsr GetFireClick
@@ -196,11 +206,11 @@ OptionsLoop:    lda #12
                 bcc OptionsLoop
                 jmp TitleTexts                  ;Page delay expired, return to title
 OptionsSelect:  ldx optionsMenuChoice
-                cpx #2
+                cpx #3
                 bcs OptionsGoBack
-                lda musicMode,x
+                lda difficulty,x
                 eor #$01
-                sta musicMode,x
+                sta difficulty,x
                 lda #SFX_SELECT
                 jsr PlaySfx
                 jsr RestartSong
@@ -267,10 +277,10 @@ LoadGameCancel: jmp TitleTexts
 
         ; Start new game
 
-StartGame:      jsr FadeOutAll
+StartNewGame:   jsr FadeOutAll
 InitPlayer:     lda #$00
-                ldx #playerStateZPEnd-playerStateZPStart-1
-IP_InitZPState: sta playerStateZPStart,x
+                ldx #difficulty-levelNum-1
+IP_InitZPState: sta levelNum,x
                 dex
                 bpl IP_InitZPState
                 ldx #MAX_INVENTORYITEMS-1
@@ -299,8 +309,20 @@ IP_InitLevelData:
                 bne IP_InitLevelData
                 lda #<FIRST_XPLIMIT
                 sta xpLimitLo
+                #if SKILL_CHEAT>0
+                lda #3
+                ldx #4
+IP_SkillCheatLoop:
+                sta plrAgility,x
+                dex
+                bpl IP_SkillCheatLoop
+                lda #MAX_LEVEL
+                sta xpLevel
+                lda #ITEM_FISTS
+                else
                 lda #1
                 sta xpLevel
+                endif
                 sta invType                     ;1 = fists
                 lda #$00                        ;Set startposition
                 sta saveD
@@ -420,7 +442,17 @@ M               set M+1
                 repend
                 dex
                 bpl ClearTextLoop
-                rts
+
+        ; Print on/off texts for the options
+
+PrintOnOff:     cmp #$01
+                lda #<txtOff
+                ldx #>txtOff
+                bcc PrintOnOffCommon
+                lda #<txtOn
+                ldx #>txtOn
+PrintOnOffCommon:
+                sty temp2
 
         ; Print null-terminated text
 
@@ -439,7 +471,7 @@ PrintTextLoop:  lda (zpSrcLo),y
                 bne PrintTextLoop
 PrintTextDone:  iny
                 tya
-                ldx #<zpSrcLo
+                ldx #zpSrcLo
                 jmp Add8
 
         ; Print centered text
@@ -451,6 +483,7 @@ PrintTextCenterContinue:
                 sta temp1
                 ldy #$00
 PTC_Loop:       lda (zpSrcLo),y
+                bmi PTC_SetAbsolute
                 beq PrintTextContinue
                 iny
                 lda (zpSrcLo),y
@@ -458,9 +491,13 @@ PTC_Loop:       lda (zpSrcLo),y
                 iny
                 dec temp1
                 bpl PTC_Loop
+PTC_SetAbsolute:and #$7f
+                sta temp1
+                jsr PrintTextDone               ;Skip the negative byte, then print normally
+                jmp PrintTextContinue
 
         ; Print choice arrow
-        
+
 DrawChoiceArrow:sta zpSrcLo
                 stx zpSrcHi
                 jsr GetRowAddress
@@ -482,22 +519,10 @@ DCA_NextRowOK:  inx
                 bcc DCA_Loop
                 rts
 
-        ; Copy "on" or "off" text
-
-CopyOnOffText:  tay
-COOT_Loop:      lda txtOnOff,y     
-                sta txtMusic,x
-                inx
-                iny
-                iny
-                cpy #6
-                bcc COOT_Loop
-                rts
-
         ; Get address of text row Y
 
 GetRowAddress:  lda #40
-                ldx #<zpDestLo
+                ldx #zpDestLo
                 jsr MulU
                 lda zpDestHi
                 ora #>screen1
@@ -694,9 +719,9 @@ txtInstructions:dc.b "USE JOYSTICK IN PORT 2 AND KEYS",0
                 dc.b 0
                 dc.b ", .     SELECT ITEM",0
                 dc.b 0
-                dc.b "R       RELOAD     ",0
+                dc.b $80+11,"R       RELOAD",0
                 dc.b 0
-                dc.b "RUNSTOP PAUSE MENU ",0
+                dc.b "RUNSTOP PAUSE MENU",0
 
 txtInstructions2:
                 dc.b "MOVEMENT CONTROLS (NO FIRE PRESSED)",0
@@ -719,29 +744,32 @@ txtInstructions3:
 txtInstructions4:
                 dc.b "SKILLS (GAIN EXPERIENCE TO ADVANCE)",0
                 dc.b 0
-                dc.b "AGILITY   TURN/CLIMB FASTER, JUMP HIGHER",0
-                dc.b "CARRYING  CARRY MORE WEAPONS + AMMO     ",0
-                dc.b "FIREARMS  MORE DAMAGE AND FASTER RELOAD ",0
-                dc.b "MELEE     MORE MELEE DAMAGE             ",0
-                dc.b "VITALITY  RESIST DAMAGE, RECOVER FASTER ",0
+                dc.b $80,"AGILITY   TURN/CLIMB FASTER, JUMP HIGHER",0
+                dc.b $80,"CARRYING  CARRY MORE WEAPONS + AMMO",0
+                dc.b $80,"FIREARMS  MORE DAMAGE AND FASTER RELOAD",0
+                dc.b $80,"MELEE     MORE MELEE DAMAGE",0
+                dc.b $80,"VITALITY  RESIST DAMAGE, RECOVER FASTER",0
 
 txtMainMenu:    dc.b 0
-                dc.b "START NEW GAME",0
+                dc.b $80+13,"START NEW GAME",0
                 dc.b 0
-                dc.b "CONTINUE GAME ",0
+                dc.b $80+13,"CONTINUE GAME",0
                 dc.b 0
-                dc.b "OPTIONS       ",0
-                dc.b 0
-
-txtOptions:     dc.b 0
-txtMusic:       dc.b "MUSIC       ",0
-                dc.b 0
-txtSound:       dc.b "SOUND FX    ",0
-                dc.b 0
-                dc.b "BACK        ",0
+                dc.b $80+13,"OPTIONS",0
                 dc.b 0
 
-txtOnOff:       dc.b "O FOFN"
+txtOptions:     dc.b $80+13,"GAME MODE",0
+                dc.b 0
+                dc.b $80+13,"MUSIC",0
+                dc.b 0
+                dc.b $80+13,"SOUND FX",0
+                dc.b 0
+                dc.b $80+13,"BACK",0
+
+txtEasy:        dc.b "EASY",0
+txtHard:        dc.b "HARD",0
+txtOn:          dc.b "ON ",0
+txtOff:         dc.b "OFF",0
 txtLoadSlot:    dc.b "CONTINUE FROM SAVE",0
 txtSaveSlot:    dc.b "SAVE GAME TO SLOT",0
 txtEmpty:       dc.b "EMPTY SLOT",0
@@ -752,15 +780,15 @@ txtSaveLevel:   dc.b "   "
 txtSaveXP:      dc.b "   /   ",0,0
 
 mainMenuJumpTblLo:
-                dc.b <StartGame
+                dc.b <StartNewGame
                 dc.b <LoadGame
                 dc.b <Options
 
 mainMenuJumpTblHi:
-                dc.b >StartGame
+                dc.b >StartNewGame
                 dc.b >LoadGame
                 dc.b >Options
-                
+
 titlePageTblLo: dc.b <txtCredits
                 dc.b <txtInstructions
                 dc.b <txtInstructions2

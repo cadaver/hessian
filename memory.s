@@ -63,6 +63,7 @@ SCRIPTAREASIZE  = 10*256
                 Var blockY
                 Var mapX
                 Var mapY
+                Var mapSizeX
                 Var zoneNum
                 Var zoneLo
                 Var zoneHi
@@ -70,7 +71,6 @@ SCRIPTAREASIZE  = 10*256
                 Var limitR
                 Var limitU
                 Var limitD
-                Var mapSizeX
 
                 Var firstSortSpr                ;Sprite multiplexing variables
 
@@ -104,7 +104,6 @@ SCRIPTAREASIZE  = 10*256
                 Var lvlObjNum                   ;Level object variables
                 Var autoDeactObjNum
                 Var autoDeactObjCounter
-                Var spawnerIndex
 
                 Var wpnLo                       ;Weapon variables
                 Var wpnHi
@@ -114,11 +113,9 @@ SCRIPTAREASIZE  = 10*256
                 Var displayedHealth
                 Var healthRecharge
                 Var lastReceivedXP
-                Var musicMode
-                Var soundMode
 
-                Var levelNum                    ;Player state
-                Var itemIndex
+                Var levelNum                    ;Player state and game options
+                Var itemIndex                   ;(included in savegames)
                 Var levelUp
                 Var xpLo
                 Var xpHi
@@ -126,9 +123,12 @@ SCRIPTAREASIZE  = 10*256
                 Var xpLimitLo
                 Var xpLimitHi
                 Var nextTempLvlActIndex
+                Var difficulty
+                Var musicMode
+                Var soundMode
 
 playerStateZPStart = levelNum
-playerStateZPEnd = nextTempLvlActIndex+1
+playerStateZPEnd = soundMode+1
 
                 VarRange sprOrder,MAX_SPR+1
                 VarRange sprY,MAX_SPR+1
