@@ -114,8 +114,12 @@ SCRIPTAREASIZE  = 10*256
                 Var healthRecharge
                 Var lastReceivedXP
 
-                Var levelNum                    ;Player state and game options
-                Var itemIndex                   ;(included in savegames)
+                Var difficulty                  ;Game options
+                Var musicMode
+                Var soundMode
+
+                Var levelNum                    ;Player state
+                Var itemIndex
                 Var levelUp
                 Var xpLo
                 Var xpHi
@@ -123,12 +127,9 @@ SCRIPTAREASIZE  = 10*256
                 Var xpLimitLo
                 Var xpLimitHi
                 Var nextTempLvlActIndex
-                Var difficulty
-                Var musicMode
-                Var soundMode
 
 playerStateZPStart = levelNum
-playerStateZPEnd = soundMode+1
+playerStateZPEnd = nextTempLvlActIndex+1
 
                 VarRange sprOrder,MAX_SPR+1
                 VarRange sprY,MAX_SPR+1

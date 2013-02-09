@@ -271,7 +271,7 @@ LoadGameExec:   jsr OpenFile                    ;Load the savegame now
                 cmp #$01
                 beq LoadSkipFade
                 jsr FadeOutAll
-LoadSkipFade:   jsr RestartCheckpoint           ;Success, start loaded game
+LoadSkipFade:   jsr RestartCheckpoint           ;Success, start loaded game, use actors from savestate
                 jmp StartMainLoop
 LoadGameCancel: jmp TitleTexts
 
@@ -336,6 +336,7 @@ IP_SkillCheatLoop:
                 sta saveYH
                 lda #ACT_PLAYER
                 sta saveT
+                sec                             ;Load first level's actors from disk
                 jsr RCP_CreatePlayer
                 jsr SaveCheckpoint              ;Save first checkpoint immediately
                 jmp StartMainLoop

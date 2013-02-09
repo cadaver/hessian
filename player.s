@@ -1062,8 +1062,7 @@ GXP_Done:       jmp PSfx_Done                   ;Hack: PlaySfx ends similarly
         ; Returns: -
         ; Modifies: A,X,Y,temp regs
         
-SaveCheckpoint: jsr UpdateLevelDataActorBits
-                ldx #15
+SaveCheckpoint: ldx #15
 SCP_LevelName:  lda lvlName,x
                 sta saveLvlName,x
                 dex
@@ -1119,9 +1118,9 @@ RCP_ZPState:    lda saveStateZP-1,x
                 lda #<playerStateStart
                 ldx #>playerStateStart
                 jsr SaveState_CopyMemory
+                clc                             ;Savestate has all actors, do not load from disk
 RCP_CreatePlayer:
                 jsr ClearActors
-                lda levelNum
                 jsr LoadLevel
                 ldy #ACTI_PLAYER
                 jsr GFA_Found
