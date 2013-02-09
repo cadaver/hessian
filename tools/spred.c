@@ -107,6 +107,7 @@ void mouseupdate(void);
 int initsprites(void);
 void drawgrid(void);
 void clearspr(void);
+int confirmquit(void);
 void loadspr(void);
 void loadoldspr(void);
 void savespr(void);
@@ -179,7 +180,10 @@ void mainloop(void)
     }
     if (k == 256) k = 0;
     ascii = kbd_getascii();
-    if (ascii == 27) break;
+    if (ascii == 27)
+    {
+        if (confirmquit()) break;
+    }
     if (k == KEY_W)
     {
       magx[sprnum] ^= 1;
@@ -418,6 +422,25 @@ void clearspr(void)
 {
   unsigned char *ptr = &spritedata[sprnum*64];
   memset(ptr, 0, 63);
+}
+
+int confirmquit(void)
+{
+    for (;;)
+    {
+        int k;
+        win_getspeed(70);
+        gfx_fillscreen(254);
+        printtext_center_color("PRESS Y TO CONFIRM QUIT",90,SPR_FONTS,COL_WHITE);
+        printtext_center_color("UNSAVED DATA WILL BE LOST",100,SPR_FONTS,COL_WHITE);
+        gfx_updatepage();
+        k = kbd_getascii();
+        if (k)
+        {
+            if (k == 'y') return 1;
+            else return 0;
+        }
+    }
 }
 
 void loadspr(void)

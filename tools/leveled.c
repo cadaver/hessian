@@ -156,9 +156,7 @@ int mapsy = 128;
 char levelname[80];
 
 Uint8 *chardata;
-Uint8 *imagedata;
 Uint8 *blockdata;
-Uint8 *blockimage;
 Uint8 *mapdata;
 
 int actfound = 0;
@@ -169,14 +167,12 @@ unsigned char actnum = 1;
 unsigned char frommap = 0;
 
 int initchars(void);
-void updateimage(int c);
 int findzone(int x, int y);
 void gotopos(int x, int y);
 void updatezone(int z);
 void updateallzones(void);
-void updateall(void);
-void updateallblocks(void);
-void updateblock(int c);
+void findusedblocksandchars(void);
+void confirmquit(void);
 void loadchars(void);
 void savechars(void);
 void loadblocks(void);
@@ -197,6 +193,7 @@ void level_mainloop(void);
 void zone_mainloop(void);
 void drawimage(void);
 void drawblock(int x, int y, int num);
+void drawchar(int x, int y, int num);
 void mouseupdate(void);
 void handle_int(int a);
 void drawmap(void);
@@ -296,7 +293,7 @@ void gotopos(int x, int y)
 
 void level_mainloop(void)
 {
-  updateallblocks();
+  findusedblocksandchars();
 
   for (;;)
   {
@@ -310,7 +307,7 @@ void level_mainloop(void)
     mouseupdate();
     if (ascii == 27)
     {
-      editmode = EM_QUIT;
+      confirmquit();
       break;
     }
     if (k == KEY_TAB)
@@ -767,7 +764,7 @@ void level_mainloop(void)
 
 void zone_mainloop(void)
 {
-  updateallblocks();
+  findusedblocksandchars();
 
   for (;;)
   {
@@ -781,7 +778,7 @@ void zone_mainloop(void)
     mouseupdate();
     if (ascii == 27)
     {
-      editmode = EM_QUIT;
+      confirmquit();
       break;
     }
     if (k == KEY_TAB)
@@ -802,15 +799,11 @@ void zone_mainloop(void)
     {
       zonenum--;
       if (zonenum < 0) zonenum = NUMZONES-1;
-      updateall();
-      updateallblocks();
     }
     if ((k == KEY_2) || (k == KEY_X))
     {
       zonenum++;
       if (zonenum >= NUMZONES) zonenum = 0;
-      updateall();
-      updateallblocks();
     }
     if (k == KEY_S)
     {
@@ -876,8 +869,6 @@ void zone_mainloop(void)
         if (findzone(x,y) < NUMZONES)
         {
           zonenum = findzone(x,y);
-          updateall();
-          updateallblocks();
         }
       }
       if (mouseb == 2)
@@ -908,7 +899,7 @@ void zone_mainloop(void)
 
 void map_mainloop(void)
 {
-  updateallblocks();
+  findusedblocksandchars();
 
   for (;;)
   {
@@ -918,7 +909,7 @@ void map_mainloop(void)
     mouseupdate();
     if (ascii == 27)
     {
-      editmode = EM_QUIT;
+      confirmquit();
       break;
     }
     if (k == KEY_TAB)
@@ -960,12 +951,10 @@ void map_mainloop(void)
     if ((k == KEY_Z) && (blocknum > 0))
     {
       blocknum--;
-      updateall();
     }
     if ((k == KEY_X) && (blocknum < BLOCKS-1))
     {
       blocknum++;
-      updateall();
     }
     if (k == KEY_F)
     {
@@ -1033,8 +1022,6 @@ void map_mainloop(void)
     if (k == KEY_W)
     {
       memcpy(&blockdata[blocknum*16],bcopybuffer,16);
-      updateall();
-      updateblock(blocknum);
     }
 
     if ((k == KEY_G) || (ascii == 13))
@@ -1042,7 +1029,6 @@ void map_mainloop(void)
       if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
       {
         blocknum=mapdata[mapx+mousex/32+(mapy+mousey/32)*255];
-        updateall();
       }
     }
     if (ascii == 13)
@@ -1050,7 +1036,7 @@ void map_mainloop(void)
       optimizechars();
       {
         int c;
-        updateallblocks();
+        findusedblocksandchars();
         for (c = 0; c < 16; c++)
         {
           copychar(blockdata[16*blocknum+c], 240+c);
@@ -1060,8 +1046,7 @@ void map_mainloop(void)
         blockeditnum = blocknum;
         oldchar = charnum;
         charnum = 240;
-        updateall();
-        updateallblocks();
+        findusedblocksandchars();
         editmode = EM_CHARS;
         frommap = 1;
         break;
@@ -1415,7 +1400,7 @@ void char_mainloop(void)
     mouseupdate();
     if (ascii == 27)
     {
-      editmode = EM_QUIT;
+      confirmquit();
       break;
     }
     if (ascii == 13)
@@ -1434,7 +1419,7 @@ void char_mainloop(void)
       else
       {
         int c;
-        updateallblocks();
+        findusedblocksandchars();
         for (c = 0; c < 16; c++)
         {
           copychar(blockdata[16*blocknum+c], 240+c);
@@ -1444,8 +1429,7 @@ void char_mainloop(void)
         blockeditnum = blocknum;
         oldchar = charnum;
         charnum = 240;
-        updateall();
-        updateallblocks();
+        findusedblocksandchars();
         frommap = 0;
       }
     }
@@ -1464,8 +1448,6 @@ void char_mainloop(void)
     {
       memset(&chardata[charnum*8],0,8);
       chinfo[charnum]=0;
-      updateimage(charnum);
-      updateblock(blocknum);
     }
     if (k == KEY_1) chinfo[charnum] ^= 1;
     if (k == KEY_2) chinfo[charnum] ^= 2;
@@ -1486,21 +1468,16 @@ void char_mainloop(void)
       int c;
       for (c = 0; c < 256; c++)
         chcol[c] ^= 8;
-      updateall();
-      updateallblocks();
+      findusedblocksandchars();
     }
 
     if (k == KEY_M)
     {
       chcol[charnum] ^= 8;
-      updateblock(blocknum);
-      updateimage(charnum);
     }
     if (k == KEY_F)
     {
       chcol[charnum] ^= 64;
-      updateblock(blocknum);
-      updateimage(charnum);
     }
     if (k == KEY_V)
     {
@@ -1517,8 +1494,6 @@ void char_mainloop(void)
           chardata[charnum*8+y] |= (bit << (x*2));
         }
       }
-      updateimage(charnum);
-      updateblock(blocknum);
     }
 
     if (k == KEY_R)
@@ -1528,8 +1503,6 @@ void char_mainloop(void)
       {
         chardata[charnum*8+y] ^= 0xff;
       }
-      updateimage(charnum);
-      updateblock(blocknum);
     }
 
     if (k == KEY_B)
@@ -1547,8 +1520,6 @@ void char_mainloop(void)
           chardata[charnum*8+y] |= (bit << (x*2));
         }
       }
-      updateimage(charnum);
-      updateblock(blocknum);
     }
     if (k == KEY_N)
     {
@@ -1565,8 +1536,6 @@ void char_mainloop(void)
           chardata[charnum*8+y] |= (bit << (x*2));
         }
       }
-      updateimage(charnum);
-      updateblock(blocknum);
     }
 
     if ((k == KEY_COMMA) && (charnum > 0)) charnum--;
@@ -1577,14 +1546,10 @@ void char_mainloop(void)
       if ((k == KEY_Z) && (blocknum > 0))
       {
         blocknum--;
-        updateall();
-        updateblock(blocknum);
       }
       if ((k == KEY_X) && (blocknum < BLOCKS-1))
       {
         blocknum++;
-        updateall();
-        updateblock(blocknum);
       }
     }
     if (k == KEY_P)
@@ -1598,8 +1563,6 @@ void char_mainloop(void)
       memcpy(&chardata[charnum*8],copybuffer,8);
       chcol[charnum] = copychcol;
       chinfo[charnum] = copychinfo;
-      updateimage(charnum);
-      updateblock(blocknum);
     }
     if (k == KEY_Q)
     {
@@ -1608,8 +1571,6 @@ void char_mainloop(void)
     if (k == KEY_W)
     {
       memcpy(&blockdata[blocknum*16],bcopybuffer,16);
-      updateall();
-      updateblock(blocknum);
     }
 
     if (!blockeditmode)
@@ -1635,7 +1596,7 @@ void char_mainloop(void)
         break;
       }
     }
-   
+
     if (k == KEY_F1) loadchars();
     if (k == KEY_F2) savechars();
     if (k == KEY_F3) loadblocks();
@@ -1697,8 +1658,6 @@ void scrollcharleft(void)
     }
     c--;
   }
-  updateimage(charnum);
-  updateblock(blocknum);
 }
 
 void scrollcharright(void)
@@ -1722,8 +1681,6 @@ void scrollcharright(void)
     }
     c--;
   }
-  updateimage(charnum);
-  updateblock(blocknum);
 }
 
 void scrollcharup(void)
@@ -1736,8 +1693,6 @@ void scrollcharup(void)
     ptr[y]=ptr[y+1];
   }
   ptr[7]=vara1;
-  updateimage(charnum);
-  updateblock(blocknum);
 }
 
 void scrollchardown(void)
@@ -1750,8 +1705,6 @@ void scrollchardown(void)
     ptr[y+1]=ptr[y];
   }
   ptr[0]=vara1;
-  updateimage(charnum);
-  updateblock(blocknum);
 }
 
 
@@ -1965,7 +1918,6 @@ void editblock(void)
   if ((mousey < 0) || (mousey >= 8*4)) return;
   bptr = &blockdata[blocknum*16+(mousey/8)*4+((mousex-170)/8)];
   *bptr = charnum;
-  updateblock(blocknum);
 }
 
 void editchar(void)
@@ -2020,8 +1972,6 @@ void editchar(void)
       ptr[y] &= ~(3 << bit);
     }
   }
-  updateimage(charnum);
-  updateblock(blocknum);
 }
 
 void changecol(void)
@@ -2051,20 +2001,14 @@ void changecol(void)
           zonebg1[zonenum]++;
           zonebg1[zonenum] &= 15;
           zonebg1[zonenum] |= old;
-          updateall();
-          updateblock(blocknum);
           break;
           case 1:
           zonebg2[zonenum]++;
           zonebg2[zonenum] &= 15;
-          updateall();
-          updateblock(blocknum);
           break;
           case 2:
           zonebg3[zonenum]++;
           zonebg3[zonenum] &= 15;
-          updateall();
-          updateblock(blocknum);
           break;
           case 3:
           {
@@ -2073,8 +2017,6 @@ void changecol(void)
             chcol[charnum] &= 15;
             chcol[charnum] |= highbits;
           }
-          updateimage(charnum);
-          updateblock(blocknum);
           break;
         }
         colordelay = 0;
@@ -2088,20 +2030,14 @@ void changecol(void)
           zonebg1[zonenum]--;
           zonebg1[zonenum] &= 15;
           zonebg1[zonenum] |= old;
-          updateall();
-          updateblock(blocknum);
           break;
           case 1:
           zonebg2[zonenum]--;
           zonebg2[zonenum] &= 15;
-          updateall();
-          updateblock(blocknum);
           break;
           case 2:
           zonebg3[zonenum]--;
           zonebg3[zonenum] &= 15;
-          updateall();
-          updateblock(blocknum);
           break;
           case 3:
           {
@@ -2110,8 +2046,6 @@ void changecol(void)
             chcol[charnum] &= 15;
             chcol[charnum] |= highbits;
           }
-          updateimage(charnum);
-          updateblock(blocknum);
           break;
         }
         colordelay = 0;
@@ -2183,14 +2117,10 @@ int initchars(void)
   if (!chardata) return 0;
   memset(chardata,0,2048);
   memset(chinfo,0,256);
-  imagedata = malloc(8*8*256);
-  if (!imagedata) return 0;
   blockdata = malloc(4096);
   memset(blockdata,0,4096);
   memset(chcol,9,256);
   if (!blockdata) return 0;
-  blockimage = malloc(32*32*BLOCKS);
-  if (!blockimage) return 0;
   for (c = 0; c < NUMZONES; c++)
   {
     zonex[c] = 0;
@@ -2222,22 +2152,14 @@ int initchars(void)
   }
   memset(randomactt,0,NUMRANDOMACT);
   memset(randomactw,0,NUMRANDOMACT);
-  memset(randomactp,0xff,NUMRANDOMACT);
-  updateall();
-  updateallblocks();
+  memset(randomactp,0xff,NUMRANDOMACT);;
+  findusedblocksandchars();
   return 1;
 }
 
-void updateall(void)
+void findusedblocksandchars(void)
 {
   int c;
-  for (c = 0; c < 256; c++) updateimage(c);
-}
-
-void updateallblocks(void)
-{
-  int c;
-  for (c = 0; c < BLOCKS; c++) updateblock(c);
   for (c = 255; c > 0; c--)
   {
     int d;
@@ -2327,13 +2249,13 @@ void removeunusedblocks(void)
       memset(&blockdata[16*c], 0, 16);
     }
   }
-  updateallblocks();
+  findusedblocksandchars();
 }
 
 void removeunusedchars(void)
 {
   int c;
-  updateallblocks();
+  findusedblocksandchars();
   for (c = 0; c < 256; c++)
   {
     if (!charused[c] && !(chcol[c] & 64))
@@ -2387,150 +2309,7 @@ void optimizechars(void)
       }
     }
   }
-  updateall();
-  updateallblocks();
-}
-
-void updateblock(int c)
-{
-  Uint8 *blockptr = &blockdata[c*16];
-  int bx,by,y,x,v = 0,e;
-
-  for (e = 255; e > 0; e--)
-  {
-    int d;
-    for (d = 0; d < 16; d++)
-    {
-      if ((blockdata[e*16+d]) && (blockdata[e*16+d] != 32)) goto FOUND;
-    }
-  }
-  FOUND:
-  maxusedblocks = e+1;
-
-  for (by=0; by<4; by++)
-  {
-    for (bx=0; bx<4; bx++)
-    {
-      int cnum = *blockptr++;
-      Uint8 *ptr = &chardata[cnum*8];
-      Uint8 *destptr = &blockimage[c*32*32+bx*8+by*256];
-
-      if ((chcol[cnum]&15) < 8)
-      {
-        for (y = 0; y < 8; y++)
-        {
-          unsigned data = *ptr;
-
-          for (x = 7; x >= 0; x--)
-          {
-            if (data & 1) v = (chcol[cnum]&15);
-            else v = zonebg1[zonenum] & 15;
-
-            destptr[y*32+x]=v;
-
-            data >>= 1;
-          }
-          ptr++;
-        }
-      }
-      else
-      {
-        for (y = 0; y < 8; y++)
-        {
-          unsigned data = *ptr;
-          for (x = 3; x >= 0; x--)
-          {
-            char chr = data & 3;
-            switch (chr)
-            {
-              case 0:
-              v = zonebg1[zonenum] & 15;
-              break;
-
-              case 1:
-              v = zonebg2[zonenum];
-              break;
-
-              case 2:
-              v = zonebg3[zonenum];
-              break;
-
-              case 3:
-              v = (chcol[cnum]&15)-8;
-              break;
-
-            }
-            destptr[y*32+x*2]=v;
-            destptr[y*32+x*2+1]=v;
-            data >>= 2;
-          }
-          ptr++;
-        }
-      }
-    }
-  }
-}
-
-void updateimage(int c)
-{
-  Uint8 *destptr = &imagedata[(c&31)*8+(c/32)*2048];
-
-  Uint8 *ptr = &chardata[c*8];
-  char v = 0;
-  int x,y;
-
-  if ((chcol[c]&15) < 8)
-  {
-    for (y = 0; y < 8; y++)
-    {
-      unsigned data = *ptr;
-
-      for (x = 7; x >= 0; x--)
-      {
-        if (data & 1) v = (chcol[c]&15);
-        else v = zonebg1[zonenum] & 15;
-
-        destptr[y*256+x]=v;
-
-        data >>= 1;
-      }
-      ptr++;
-    }
-  }
-  else
-  {
-    for (y = 0; y < 8; y++)
-    {
-      unsigned data = *ptr;
-      for (x = 3; x >= 0; x--)
-      {
-        char b = data & 3;
-        switch (b)
-        {
-          case 0:
-          v = zonebg1[zonenum] & 15;
-          break;
-
-          case 1:
-          v = zonebg2[zonenum];
-          break;
-
-          case 2:
-          v = zonebg3[zonenum];
-          break;
-
-          case 3:
-          v = (chcol[c]&15)-8;
-          break;
-
-        }
-        destptr[y*256+x*2]=v;
-        destptr[y*256+x*2+1]=v;
-        data >>= 2;
-      }
-      ptr++;
-    }
-  }
+  findusedblocksandchars();
 }
 
 void initstuff(void)
@@ -2634,8 +2413,7 @@ void loadalldata(void)
       {
         read(handle, chinfo, 256);
         close(handle);
-        updateall();
-        updateallblocks();
+        findusedblocksandchars();
       }
       memset(blockdata,0,4096);
       memset(chcol,9,256);
@@ -2647,8 +2425,7 @@ void loadalldata(void)
         lseek(handle, 3, SEEK_SET); // Skip chunk header
         read(handle, blockdata, BLOCKS*16);
         close(handle);
-        updateall();
-        updateallblocks();
+        findusedblocksandchars();
       }
       strcpy(ib2, ib1);
       strcat(ib2, ".chc");
@@ -2657,8 +2434,7 @@ void loadalldata(void)
       {
         read(handle, &chcol, 256);
         close(handle);
-        updateall();
-        updateallblocks();
+        findusedblocksandchars();
       }
       strcpy(levelname, ib1);
       strcpy(ib2, ib1);
@@ -2685,8 +2461,7 @@ void loadalldata(void)
       {
         read(handle, &chardata[0], 256*8);
         close(handle);
-        updateall();
-        updateallblocks();
+        findusedblocksandchars();
       }
 
       for (c = 0; c < NUMLVLOBJ; c++)
@@ -2813,8 +2588,7 @@ void loadalldata(void)
         }
         close(handle);
       }
-      updateall();
-      updateallblocks();
+      findusedblocksandchars();
       return;
     }
   }
@@ -2824,6 +2598,8 @@ void savealldata(void)
 {
   char ib1[80];
   strcpy(ib1, levelname);
+
+  findusedblocksandchars();
 
   for (;;)
   {
@@ -2851,7 +2627,6 @@ void savealldata(void)
       }
 
       if (firstnum < strlen(ib1)) levelnum = atoi(&ib1[firstnum]);
-
 
       strcpy(levelname, ib1);
       strcpy(ib2, ib1);
@@ -3064,8 +2839,7 @@ void loadblocks(void)
 
         close(handle);
         optimizechars();
-        updateall();
-        updateallblocks();
+        findusedblocksandchars();
         return;
       }
     }
@@ -3203,8 +2977,7 @@ void loadcharsinfo(void)
         read(handle, chinfo, 256);
         read(handle, chardata, 2048);
         close(handle);
-        updateall();
-        updateallblocks();
+        findusedblocksandchars();
         return;
       }
     }
@@ -3238,6 +3011,26 @@ void savecharsinfo(void)
       }
     }
   }
+}
+
+void confirmquit(void)
+{
+    for (;;)
+    {
+        int k;
+        win_getspeed(70);
+        gfx_fillscreen(254);
+        printtext_center_color("PRESS Y TO CONFIRM QUIT",90,SPR_FONTS,COL_WHITE);
+        printtext_center_color("UNSAVED DATA WILL BE LOST",100,SPR_FONTS,COL_WHITE);
+        gfx_updatepage();
+        k = kbd_getascii();
+        if (k)
+        {
+            if (k == 'y')
+                editmode = EM_QUIT;
+            return;
+        }
+    }
 }
 
 void loadchars(void)
@@ -3283,8 +3076,7 @@ void loadchars(void)
         if (handle == -1) return;
         read(handle, &chardata[frame*8], maxbytes);
         close(handle);
-        updateall();
-        updateallblocks();
+        findusedblocksandchars();
         return;
       }
     }
@@ -3371,22 +3163,92 @@ void handle_int(int a)
 
 void drawimage(void)
 {
-  int c;
+    int c, x, y;
 
-  for (c = 0; c < 64; c++)
+    c = 0;
+    for (y = 0; y < 8; y++)
+    {
+        for (x = 0; x < 32; x++)
+        {
+            drawchar(x*8+32, y*8+128, c);
+            c++;
+        }
+    }
+}
+
+void drawchar(int dx, int dy, int c)
+{
+  Uint8 *destptr = &gfx_vscreen[dy*320 + dx];
+  Uint8 *ptr = &chardata[c*8];
+  char v = 0;
+  int x,y;
+
+  if ((chcol[c]&15) < 8)
   {
-    memcpy(&gfx_vscreen[(128 + c) * 320 + 32], &imagedata[256*c], 256);
+    for (y = 0; y < 8; y++)
+    {
+      unsigned data = *ptr;
+
+      for (x = 7; x >= 0; x--)
+      {
+        if (data & 1) v = (chcol[c]&15);
+        else v = zonebg1[zonenum] & 15;
+
+        destptr[y*320+x]=v;
+
+        data >>= 1;
+      }
+      ptr++;
+    }
+  }
+  else
+  {
+    for (y = 0; y < 8; y++)
+    {
+      unsigned data = *ptr;
+      for (x = 3; x >= 0; x--)
+      {
+        char b = data & 3;
+        switch (b)
+        {
+          case 0:
+          v = zonebg1[zonenum] & 15;
+          break;
+
+          case 1:
+          v = zonebg2[zonenum];
+          break;
+
+          case 2:
+          v = zonebg3[zonenum];
+          break;
+
+          case 3:
+          v = (chcol[c]&15)-8;
+          break;
+
+        }
+        destptr[y*320+x*2]=v;
+        destptr[y*320+x*2+1]=v;
+        data >>= 2;
+      }
+      ptr++;
+    }
   }
 }
 
 void drawblock(int x, int y, int num)
 {
-  int c;
+    int c;
+    int xb, yb;
 
-  for (c = 0; c < 32; c++)
-  {
-    memcpy(&gfx_vscreen[(y + c) * 320 + x], &blockimage[1024*num+c*32], 32);
-  }
+    for (yb = 0; yb < 4; yb++)
+    {
+        for (xb = 0; xb < 4; xb++)
+        {
+            drawchar(x+xb*8, y+yb*8, blockdata[num*16+yb*4+xb]);
+        }
+    }
 }
 
 int findzone(int x, int y)
