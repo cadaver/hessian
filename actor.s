@@ -1497,33 +1497,6 @@ RemoveActor:    lda #ACT_NONE
                 sta actHp,x                     ;Clear hitpoints so that bullet collision can not cause damage to an
 RA_Done:        rts                             ;actor removed on the same frame (outdated collision list)
 
-        ; Remove all actors except player back to leveldata
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X
-
-RemoveLevelActors:ldx #MAX_PERSISTENTACT-1
-RAA_Loop:       lda actT,x
-                beq RAA_Next
-                jsr RemoveLevelActor
-RAA_Next:       dex
-                bne RAA_Loop
-                rts
-
-        ; Clear all actors without returning them to leveldata
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X
-
-ClearActors:    ldx #MAX_ACT-1
-CA_Loop:        lda #ACT_NONE
-                sta actT,x
-                dex
-                bpl CA_Loop
-                rts
-
         ; Get a free actor
         ;
         ; Parameters: A first actor index to check (do not pass 0 here), Y last actor index to check

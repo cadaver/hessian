@@ -1120,7 +1120,11 @@ RCP_ZPState:    lda saveStateZP-1,x
                 jsr SaveState_CopyMemory
                 clc                             ;Savestate has all actors, do not load from disk
 RCP_CreatePlayer:
-                jsr ClearActors
+                ldx #MAX_ACT-1                  ;Clear all actors when starting game
+RCP_ClearActorLoop:
+                jsr RemoveActor
+                dex
+                bpl RCP_ClearActorLoop
                 jsr LoadLevel
                 ldy #ACTI_PLAYER
                 jsr GFA_Found

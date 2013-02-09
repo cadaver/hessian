@@ -485,7 +485,14 @@ ULO_NotLeftSide:adc #$00
                 beq ULO_EnterDoor
 ULO_Done:       rts
 
-ULO_EnterDoor:  jsr RemoveLevelActors           ;Remove all actors except player back to leveldata
+ULO_EnterDoor:  ldx #MAX_ACT-1                  ;When entering a door, remove all actors except player
+ULO_ClearActorLoop:                             ;back to leveldata
+                lda actT,x
+                beq ULO_ClearActorNext
+                jsr RemoveLevelActor
+ULO_ClearActorNext:
+                dex
+                bne ULO_ClearActorLoop
                 ldy lvlObjNum
                 lda lvlObjDL,y                  ;Get destination door
                 pha
