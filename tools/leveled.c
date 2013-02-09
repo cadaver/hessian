@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include "bme.h"
 #include "editio.h"
+#include "stb_image_write.h"
 
 #define MAPCOPYSIZE 4096
 
@@ -190,6 +191,7 @@ void loadcharsinfo(void);
 void savecharsinfo(void);
 void loadalldata(void);
 void savealldata(void);
+void exportmap(void);
 void scrollcharleft(void);
 void scrollcharright(void);
 void scrollcharup(void);
@@ -767,6 +769,7 @@ void level_mainloop(void)
     if (k == KEY_F4) saveblocks();
     if (k == KEY_F9) loadalldata();
     if (k == KEY_F10) savealldata();
+    if (k == KEY_F11) exportmap();
 
     gfx_fillscreen(254);
     drawmap();
@@ -871,7 +874,8 @@ void zone_mainloop(void)
     if (k == KEY_F4) saveblocks();
     if (k == KEY_F9) loadalldata();
     if (k == KEY_F10) savealldata();
-
+    if (k == KEY_F11) exportmap();
+    
     if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
     {
       int x = mapx+mousex/32;
@@ -1130,7 +1134,8 @@ void map_mainloop(void)
     if (k == KEY_F4) saveblocks();
     if (k == KEY_F9) loadalldata();
     if (k == KEY_F10) savealldata();
-
+    if (k == KEY_F11) exportmap();
+    
     if (mouseb & 1)
     {
       if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
@@ -1716,6 +1721,7 @@ void char_mainloop(void)
     if (k == KEY_F4) saveblocks();    
     if (k == KEY_F9) loadalldata();
     if (k == KEY_F10) savealldata();
+    if (k == KEY_F11) exportmap();
     if (k == KEY_LEFT) scrollcharleft();
     if (k == KEY_RIGHT) scrollcharright();
     if (k == KEY_UP) scrollcharup();
@@ -2827,6 +2833,76 @@ void loadalldata(void)
         close(handle);
       }
       findusedblocksandchars();
+      return;
+    }
+  }
+}
+
+void exportmap(void)
+{
+  char ib1[80];
+  strcpy(ib1, levelname);
+
+  updateallzones();
+
+  for (;;)
+  {
+    int r;
+
+    win_getspeed(70);
+    gfx_fillscreen(254);
+
+    printtext_center_color("EXPORT ZONE MAPS TO:",90,SPR_FONTS,COL_WHITE);
+    printtext_center_color(ib1,100,SPR_FONTS,COL_HIGHLIGHT);
+    gfx_updatepage();
+
+    r = inputtext(ib1, 80);
+    if (r == -1) return;
+    if (r == 1)
+    {
+      char filename[256];
+      int c;
+      for (c = 0; c < NUMZONES; c++)
+      {
+        if (zonex[c] || zoney[c])
+        {
+          int sizex = (zoner[c]-zonel[c])*32;
+          int sizey = (zoned[c]-zoneu[c])*32;
+          unsigned char* image = malloc(sizey*sizex*3);
+          if (image)
+          {
+            int xb, yb;
+            sprintf(filename, "%s_%d.png", ib1, c+1);
+            for (yb = 0; yb < sizey / 32; yb++)
+            {
+                for (xb = 0; xb < sizex / 32; xb++)
+                {
+                    int x, y;
+                    drawblock(0, 0, mapdata[(zoneu[c]+yb)*mapsx+zonel[c]+xb]);
+                    for (y = 0; y < 32; y++)
+                    {
+                        for (x = 0; x < 32; x++)
+                        {
+                            int r,g,b;
+                            r = gfx_palette[gfx_vscreen[y*320+x]*3] * 4;
+                            g = gfx_palette[gfx_vscreen[y*320+x]*3+1] * 4;
+                            b = gfx_palette[gfx_vscreen[y*320+x]*3+2] * 4;
+                            if (r > 255) r = 255;
+                            if (g > 255) g = 255;
+                            if (b > 255) b = 255;
+
+                            image[((yb*32+y)*sizex+(xb*32+x))*3] = r;
+                            image[((yb*32+y)*sizex+(xb*32+x))*3+1] = g;
+                            image[((yb*32+y)*sizex+(xb*32+x))*3+2] = b;
+                        }
+                    }
+                }
+            }
+            stbi_write_png(filename, sizex, sizey, 3, image, 0);
+            free(image);
+          }
+        }
+      }
       return;
     }
   }

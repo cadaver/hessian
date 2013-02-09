@@ -64,8 +64,8 @@ pack2.exe: pack2.c
 mchunk.exe: mchunk.c
 	gcc mchunk.c -omchunk.exe
 
-leveled.exe: leveled.c editdata.c
-	gcc leveled.c editdata.c libbme.a -oleveled.exe -lmingw32 -lSDLmain -lSDL
+leveled.exe: leveled.c editdata.c stb_image_write.c
+	gcc leveled.c editdata.c stb_image_write.c libbme.a -oleveled.exe -lmingw32 -lSDLmain -lSDL
 
 spred.exe: spred.c fileio.c editdata.c
 	gcc spred.c editdata.c fileio.c libbme.a -ospred.exe -lmingw32 -lSDLmain -lSDL
