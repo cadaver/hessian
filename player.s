@@ -1065,7 +1065,7 @@ GXP_Done:       jmp PSfx_Done                   ;Hack: PlaySfx ends similarly
 SaveCheckpoint: jsr UpdateLevelDataActorBits
                 ldx #15
 SCP_LevelName:  lda lvlName,x
-                sta saveLevelName,x
+                sta saveLvlName,x
                 dex
                 bpl SCP_LevelName
                 ldx #playerStateZPEnd-playerStateZPStart

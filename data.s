@@ -341,7 +341,7 @@ playerStateEnd:
         ; In-memory checkpoint save
 
 saveStateStart:
-saveLevelName:  ds.b 16,0
+saveLvlName:    ds.b 16,0
 saveStateZP:    ds.b playerStateZPEnd - playerStateZPStart,0
 saveState:      ds.b playerStateEnd - playerStateStart,0
 saveXL:         dc.b 0

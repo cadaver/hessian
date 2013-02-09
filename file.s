@@ -297,7 +297,6 @@ SaveState_CopyMemory:
 CopyMemory:     sta zpDestLo
                 stx zpDestHi
                 ldx zpBitsLo
-                inx
                 ldy #$00
 CM_Loop:        lda (zpSrcLo),y
                 sta (zpDestLo),y

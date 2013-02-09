@@ -1,7 +1,7 @@
 IRQ1_LINE       = 12
 IRQ3_LINE       = 221
 IRQ4_LINE       = 230
-IRQ5_LINE       = 150
+IRQ5_LINE       = 147
 
 PANEL_BG1       = $00
 PANEL_BG2       = $0b
@@ -355,9 +355,9 @@ Irq5:           cld
                 sty irqSaveY
                 lda #$35                        ;Ensure IO memory is available
                 sta $01
-                ldx #$05
-Irq5_Delay:     dex
-                bpl Irq5_Delay
+Irq5_Wait:      lda $d012
+                cmp #IRQ5_LINE+3
+                bcc Irq5_Wait
                 lda #PANEL_D018
                 sta $d018
                 jmp Irq2_AllDone
