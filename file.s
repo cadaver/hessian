@@ -42,16 +42,16 @@ MFN_Sub:        and #$0f
                 bcc MFN_Number
                 adc #$06
 MFN_Number:     sta fileName,x
-LFR_Success:
 LF_Error:       rts
 
         ; Load a file while handling retry. The file is expected to be found; if not, the prompt
-        ; "flip the disk" is displayed.
+        ; "flip the disk" is displayed. PostLoad is called automatically after to reinit map/block-
+        ; tables
         ;
         ; Parameters: A,X load address, filename
         ; Returns: fileName
         ; Modifies: A,X,Y,loader temp vars
-        
+
 LoadFileRetry:  sta LFR_AddressLo+1
                 stx LFR_AddressHi+1
 LFR_Again:      jsr LoadFile
@@ -60,6 +60,7 @@ LFR_Again:      jsr LoadFile
 LFR_AddressLo:  lda #$00
 LFR_AddressHi:  ldx #$00
                 bne LFR_Again
+LFR_Success:    jmp PostLoad
 
 LFR_ErrorPrompt:cmp #$02
                 beq LFR_FlipDisk

@@ -50,7 +50,6 @@ PS_LoadedMusic: cmp #$ff                        ;Check if music already loaded
                 lda #<musicData
                 ldx #>musicData
                 jsr LoadFileRetry
-                jsr PostLoad
 
         ; Initialize new music data
         ;

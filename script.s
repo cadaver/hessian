@@ -22,7 +22,6 @@ ES_LoadedScriptFile:
                 lda #<scriptCodeStart
                 ldx #>scriptCodeStart
                 jsr LoadFileRetry
-                jsr PostLoad
 ES_SameFile:    ldx temp1
                 lda scriptCodeStart,x
                 sta ES_ScriptJump+1
