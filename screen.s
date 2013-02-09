@@ -486,7 +486,7 @@ UF_ShowSprites: lda screenFrameTbl,x
                 bcc UF_NotMoreThan8
                 lda #$08
 UF_NotMoreThan8:tax
-				lda d015Tbl,x
+                lda d015Tbl,x
 UF_NoSprites2:  sta Irq1_D015+1
                 beq UF_NoSprites
                 ldx firstSortSpr                ;Find out sprite Y-range for the fastloader

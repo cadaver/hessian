@@ -279,8 +279,8 @@ LoadGameCancel: jmp TitleTexts
 
 StartNewGame:   jsr FadeOutAll
 InitPlayer:     lda #$00
-                ldx #difficulty-levelNum-1
-IP_InitZPState: sta levelNum,x
+                ldx #playerStateZPEnd-playerStateZPStart-1
+IP_InitZPState: sta playerStateZPStart,x
                 dex
                 bpl IP_InitZPState
                 ldx #MAX_INVENTORYITEMS-1
@@ -290,8 +290,6 @@ IP_InitInventory:
                 sta invMag,x
                 dex
                 bpl IP_InitInventory
-                sta itemIndex
-                sta levelUp
                 ldx #MAX_PLOTBITS/8-1
 IP_InitPlotBits:sta plotBits,x
                 dex
