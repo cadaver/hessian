@@ -113,6 +113,7 @@ unsigned char chinfo[256];
 unsigned char charused[256];
 unsigned char blockused[256];
 unsigned char mapcopybuffer[MAPCOPYSIZE];
+unsigned char finemapcopybuffer[MAPCOPYSIZE];
 unsigned char ascii;
 int k;
 int blockeditmode = 0;
@@ -129,8 +130,14 @@ int dataeditflash = 0;
 int markx1, markx2, marky1, marky2;
 int markmode = 0;
 
+int finemarkx1, finemarkx2, finemarky1, finemarky2;
+int finemarkmode = 0;
+
 int mapcopyx = 0;
 int mapcopyy = 0;
+
+int finemapcopyx = 0;
+int finemapcopyy = 0;
 
 int maxusedblocks = 0;
 int colordelay = 0;
@@ -171,6 +178,8 @@ int findzone(int x, int y);
 void gotopos(int x, int y);
 void updatezone(int z);
 void updateallzones(void);
+void endblockeditmode();
+void initblockeditmode(int frommap);
 void findusedblocksandchars(void);
 void confirmquit(void);
 void loadchars(void);
@@ -208,9 +217,13 @@ void editmain(void);
 void copychar(int c, int d);
 void transferchar(int c, int d);
 int findsamechar(int c, int d);
+int findsameblock(int c, int d);
+void transferblock(int c, int d);
+void copyblock(int c, int d);
 void removeunusedchars(void);
 void removeunusedblocks(void);
 void optimizechars(void);
+void optimizeblocks(void);
 
 extern unsigned char datafile[];
 
@@ -963,7 +976,40 @@ void map_mainloop(void)
 
     if (k == KEY_P)
     {
-      if (markmode == 2)
+      if (finemarkmode == 2)
+      {
+          int x,y;
+          int i = 0;
+          for (y = finemarky1; y <= finemarky2; y++)
+          {
+              for (x = finemarkx1; x <= finemarkx2; x++)
+              {
+                  if (i >= MAPCOPYSIZE)
+                    break;
+                  int yb = y >> 2;
+                  int xb = x >> 2;
+                  int yc = y & 3;
+                  int xc = x & 3;
+                  int b = mapdata[yb*mapsx+xb];
+                  finemapcopybuffer[i] = blockdata[b*16+yc*4+xc];
+                  i++;
+              }
+          }
+          if (i <= MAPCOPYSIZE)
+          {
+              finemapcopyx = finemarkx2-finemarkx1+1;
+              finemapcopyy = finemarky2-finemarky1+1;
+              mapcopyx = 0;
+              mapcopyy = 0;
+              finemarkmode = 0;
+          }
+          else
+          {
+              finemapcopyx = 0;
+              finemapcopyy = 0;
+          }
+      }
+      else if (markmode == 2)
       {
         int x,y;
         int i = 0;
@@ -985,6 +1031,8 @@ void map_mainloop(void)
         {
           mapcopyx = markx2-markx1+1;
           mapcopyy = marky2-marky1+1;
+          finemapcopyx = 0;
+          finemapcopyy = 0;
           markmode = 0;
         }
         else
@@ -1013,6 +1061,45 @@ void map_mainloop(void)
           }
         }
       }
+      if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160) &&
+          (finemapcopyx) && (finemapcopyy))
+      {
+        int x,y;
+        int i = 0;
+        int newblocks;
+
+        findusedblocksandchars();
+
+        newblocks = maxusedblocks;
+
+        for (y = 0; y < finemapcopyy; y++)
+        {
+            for (x = 0; x < finemapcopyx; x++)
+            {
+                int rx = x + mapx*4 + mousex/8;
+                int ry = y + mapy*4 + mousey/8;
+
+                int xb = rx >> 2;
+                int yb = ry >> 2;
+                int xc = rx & 3;
+                int yc = ry & 3;
+
+                int b = mapdata[yb*mapsx+xb];
+                if (b < maxusedblocks && newblocks < 256)
+                {
+                    copyblock(b, newblocks);
+                    mapdata[yb*mapsx+xb] = newblocks;
+                    b = newblocks;
+                    newblocks++;
+                }
+
+                blockdata[b*16+yc*4+xc] = finemapcopybuffer[i];
+                i++;
+            }
+        }
+
+        optimizeblocks();
+      }
     }
 
     if (k == KEY_Q)
@@ -1033,24 +1120,8 @@ void map_mainloop(void)
     }
     if (ascii == 13)
     {
-      optimizechars();
-      {
-        int c;
-        findusedblocksandchars();
-        for (c = 0; c < 16; c++)
-        {
-          copychar(blockdata[16*blocknum+c], 240+c);
-          blockdata[16*blocknum+c] = 240+c;
-        }
-        blockeditmode = 1;
-        blockeditnum = blocknum;
-        oldchar = charnum;
-        charnum = 240;
-        findusedblocksandchars();
-        editmode = EM_CHARS;
-        frommap = 1;
-        break;
-      }
+      initblockeditmode(1);
+      break;
     }
 
     if (k == KEY_F1) loadchars();
@@ -1072,6 +1143,7 @@ void map_mainloop(void)
     {
       if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
       {
+        finemarkmode = 0;
         switch(markmode)
         {
           case 0:
@@ -1100,6 +1172,39 @@ void map_mainloop(void)
       }
     }
 
+    if (k == KEY_M)
+    {
+      if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
+      {
+        markmode = 0;
+        switch(finemarkmode)
+        {
+          case 0:
+          finemarkx1 = mapx*4+mousex/8;
+          finemarky1 = mapy*4+mousey/8;
+          finemarkmode = 1;
+          break;
+
+          case 1:
+          finemarkx2 = mapx*4+mousex/8;
+          finemarky2 = mapy*4+mousey/8;
+          if ((finemarkx2 >= finemarkx1) && (finemarky2 >= finemarky1))
+          {
+            finemarkmode = 2;
+          }
+          else
+          {
+            finemarkx1 = finemarkx2;
+            finemarky1 = finemarky2;
+          }
+          break;
+
+          case 2:
+          finemarkmode = 0;
+        }
+      }
+    }
+
     gfx_fillscreen(254);
     drawmap();
     gfx_drawsprite(mousex, mousey, 0x00000021);
@@ -1121,6 +1226,31 @@ void drawmap(void)
   if (editmode == EM_MAP)
   {
     int l,r,u,d;
+
+    if (finemarkmode)
+    {
+      l = finemarkx1 - mapx*4;
+      u = finemarky1 - mapy*4;
+      if ((l >= 0) && (u >= 0) && (l < 40) && (u < 20))
+      {
+        gfx_line(l*8,u*8,l*8+7,u*8,1);
+        gfx_line(l*8,u*8+1,l*8+7,u*8+1,1);
+        gfx_line(l*8,u*8,l*8,u*8+7,1);
+        gfx_line(l*8+1,u*8,l*8+1,u*8+7,1);
+      }
+    }
+    if (finemarkmode == 2)
+    {
+      r = finemarkx2 - mapx*4;
+      d = finemarky2 - mapy*4;
+      if ((r >= 0) && (d >= 0) && (r < 40) && (d < 20))
+      {
+        gfx_line(r*8+6,d*8,r*8+6,d*8+7,1);
+        gfx_line(r*8+7,d*8,r*8+7,d*8+7,1);
+        gfx_line(r*8,d*8+6,r*8+7,d*8+6,1);
+        gfx_line(r*8,d*8+7,r*8+7,d*8+7,1);
+      }
+    }
 
     if (markmode)
     {
@@ -1385,9 +1515,7 @@ void char_mainloop(void)
 {
   if ((blockeditmode) && (blocknum != blockeditnum))
   {
-    optimizechars();
-    blockeditmode = 0;
-    charnum = oldchar;
+    endblockeditmode();
   }
   for (;;)
   {
@@ -1405,32 +1533,13 @@ void char_mainloop(void)
     }
     if (ascii == 13)
     {
-      optimizechars();
       if (blockeditmode)
       {
-        blockeditmode = 0;
-        charnum = oldchar;
-        if (frommap)
-        {
-          editmode = EM_MAP;
-          break;
-        }
+        endblockeditmode();
       }
       else
       {
-        int c;
-        findusedblocksandchars();
-        for (c = 0; c < 16; c++)
-        {
-          copychar(blockdata[16*blocknum+c], 240+c);
-          blockdata[16*blocknum+c] = 240+c;
-        }
-        blockeditmode = 1;
-        blockeditnum = blocknum;
-        oldchar = charnum;
-        charnum = 240;
-        findusedblocksandchars();
-        frommap = 0;
+        initblockeditmode(0);
       }
     }
 
@@ -1441,7 +1550,11 @@ void char_mainloop(void)
       break;
     }
 
-    if (k == KEY_O) optimizechars();
+    if (k == KEY_O)
+    {
+      optimizechars();
+      optimizeblocks();
+    }
     if (k == KEY_U) removeunusedchars();
     if (k == KEY_Y) removeunusedblocks();
     if (k == KEY_C)
@@ -1747,7 +1860,7 @@ void drawgrid(void)
           {
             case 0:
             v = zonebg1[zonenum] & 15;
-            break;                 
+            break;
 
             case 1:
             v = zonebg2[zonenum];
@@ -1775,8 +1888,9 @@ void drawgrid(void)
     {
       for (xc = 0; xc < 4; xc++)
       {
-        ptr = &chardata[(240+yc*4+xc)*8];
-        if ((chcol[240+yc*4+xc]&15) < 8)
+        int ch = blockdata[blocknum*16+yc*4+xc];
+        ptr = &chardata[ch * 8];
+        if ((chcol[ch]&15) < 8)
         {
           for (y = 0; y < 8; y++)
           {
@@ -1784,7 +1898,7 @@ void drawgrid(void)
 
             for (x = 7; x >= 0; x--)
             {
-              if (data & 1) v = (chcol[240+yc*4+xc]&15);
+              if (data & 1) v = (chcol[ch]&15);
               else v = zonebg1[zonenum] & 15;
 
               gfx_drawsprite(x*5+xc*40,y*5+yc*40,0x00000001+v);
@@ -1805,7 +1919,7 @@ void drawgrid(void)
               {
                 case 0:
                 v = zonebg1[zonenum] & 15;
-                break;                 
+                break;
 
                 case 1:
                 v = zonebg2[zonenum];
@@ -1816,7 +1930,7 @@ void drawgrid(void)
                 break;
 
                 case 3:
-                v = (chcol[240+yc*4+xc]&15)-8;
+                v = (chcol[ch]&15)-8;
                 break;
 
               }
@@ -1826,7 +1940,7 @@ void drawgrid(void)
             ptr++;
           }
         }
-        if ((charnum == 240+yc*4+xc) && (flash<16))
+        if ((charnum == ch) && (flash<16))
         {
           gfx_line(xc*40-1,yc*40-1, xc*40+39, yc*40-1, 1);
           gfx_line(xc*40+39,yc*40-1, xc*40+39, yc*40+39, 1);
@@ -1935,7 +2049,7 @@ void editchar(void)
   {
     if ((mousex < 0) || (mousex >= 32*5)) return;
     if ((mousey < 0) || (mousey >= 32*5)) return;
-    charnum = 240 + mousex / 40 + (mousey / 40) * 4;
+    charnum = blockdata[blocknum*16 + mousex / 40 + (mousey / 40) * 4];
   }
 
   ptr = &chardata[charnum*8];
@@ -2157,6 +2271,51 @@ int initchars(void)
   return 1;
 }
 
+void endblockeditmode()
+{
+  if (blockeditmode)
+  {
+    optimizechars();
+    blockeditmode = 0;
+    charnum = oldchar;
+    if (frommap)
+      editmode = EM_MAP;
+  }
+}
+
+void initblockeditmode(int fm)
+{
+    optimizechars();
+
+    int c,d;
+    int e = 255;
+    int forceunique = win_keystate[KEY_LEFTSHIFT] | win_keystate[KEY_RIGHTSHIFT];
+
+    findusedblocksandchars();
+
+    for (c = 0; c < 16; c++)
+    {
+      // Ensure all chars are unique
+      for (d = 0; d < c; d++)
+      {
+        if (forceunique || blockdata[16*blocknum+d] == blockdata[16*blocknum+c])
+        {
+          copychar(blockdata[16*blocknum+c], e);
+          blockdata[16*blocknum+c] = e;
+          e--;
+          break;
+        }
+      }
+    }
+    blockeditmode = 1;
+    blockeditnum = blocknum;
+    oldchar = charnum;
+    charnum = blockdata[16*blocknum+c];
+    findusedblocksandchars();
+    editmode = EM_CHARS;
+    frommap = fm;
+}
+
 void findusedblocksandchars(void)
 {
   int c;
@@ -2197,6 +2356,32 @@ void transferchar(int c, int d)
 
 }
 
+void transferblock(int c, int d)
+{
+  int e;
+  if (c == d) return;
+  for (e = 0; e < 16; e++)
+  {
+    blockdata[d*16+e] = blockdata[c*16+e];
+    blockdata[c*16+e] = 0;
+  }
+  for (e = 0; e < mapsx * mapsy; e++)
+  {
+    if (mapdata[e] == c)
+      mapdata[e] = d;
+  }
+}
+
+void copyblock(int c, int d)
+{
+  int e;
+  if (c == d) return;
+  for (e = 0; e < 16; e++)
+  {
+    blockdata[d*16+e] = blockdata[c*16+e];
+  }
+}
+
 void copychar(int c, int d)
 {
   int e;
@@ -2221,6 +2406,17 @@ int findsamechar(int c, int d)
   if (chcol[d] & 64) return 0; // No-optimize flag, is not duplicate
   if (chcol[c] != chcol[d]) return 0;
   if (chinfo[c] != chinfo[d]) return 0;
+  return 1;
+}
+
+int findsameblock(int c, int d)
+{
+  int e;
+  if (c == d) return 0;
+  for (e = 0; e < 16; e++)
+  {
+    if (blockdata[c*16+e] != blockdata[d*16+e]) return 0;
+  }
   return 1;
 }
 
@@ -2249,6 +2445,7 @@ void removeunusedblocks(void)
       memset(&blockdata[16*c], 0, 16);
     }
   }
+  optimizeblocks();
   findusedblocksandchars();
 }
 
@@ -2270,6 +2467,47 @@ void removeunusedchars(void)
     }
   }
   optimizechars();
+}
+
+void optimizeblocks(void)
+{
+  int c,d;
+  for (c = 0; c < 256; c++) blockused[c] = 1;
+
+  for (d = 1; d < 256; d++)
+  {
+    for (c = 0; c < d; c++)
+    {
+      if (findsameblock(d,c))
+      {
+        transferblock(d,c);
+        blockused[d] = 0;
+        blockused[c] = 1;
+        break;
+      }
+    }
+  }
+
+  for (d = 1; d < 256; d++)
+  {
+    int v = 0;
+    for (c = 0; c < 16; c++) v += blockdata[d*16+c];
+    if (v)
+    {
+      for (c = 0; c < d; c++)
+      {
+        if (!blockused[c])
+        {
+          transferblock(d,c);
+          blockused[d] = 0;
+          blockused[c] = 1;
+          break;
+        }
+      }
+    }
+  }
+
+  findusedblocksandchars();
 }
 
 void optimizechars(void)
@@ -2599,6 +2837,7 @@ void savealldata(void)
   char ib1[80];
   strcpy(ib1, levelname);
 
+  endblockeditmode();
   findusedblocksandchars();
 
   for (;;)
