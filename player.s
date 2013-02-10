@@ -501,9 +501,8 @@ MH_NoLongJump:  lda (actLo),y
                 bmi MH_CanSwim                  ;but retain the unmodified Y-speed
                 LDY #NODAMAGESRC
                 jmp DestroyActor
-MH_CanSwim:     lda #-1                         ;Must be deep in water before
-                jsr GetCharInfoOffset           ;swimming kicks in
-                and #CI_WATER
+MH_CanSwim:     jsr GetCharInfo1Above           ;Must be deep in water before
+                and #CI_WATER                   ;swimming kicks in
                 beq MH_NoWater
                 jmp MH_InitSwim
 MH_NoWater:     lda actMB,x

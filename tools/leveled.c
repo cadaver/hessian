@@ -2410,15 +2410,25 @@ void copychar(int c, int d)
 int findsamechar(int c, int d)
 {
   int e;
+  int charcolorused = 0;
   if (c == d) return 0;
+
   for (e = 0; e < 8; e++)
   {
-    if (chardata[c*8+e] != chardata[d*8+e]) return 0;
+    int v = chardata[c*8+e];
+    if (v != chardata[d*8+e]) return 0;
+    if ((v & 0xc0) == 0xc0) charcolorused = 1;
+    if ((v & 0x30) == 0x30) charcolorused = 1;
+    if ((v & 0x0c) == 0x0c) charcolorused = 1;
+    if ((v & 0x03) == 0x03) charcolorused = 1;
   }
+
+  if (chinfo[c] != chinfo[d]) return 0;
   if (chcol[c] & 64) return 0; // No-optimize flag, is not duplicate
   if (chcol[d] & 64) return 0; // No-optimize flag, is not duplicate
-  if (chcol[c] != chcol[d]) return 0;
-  if (chinfo[c] != chinfo[d]) return 0;
+  if (chcol[c] < 8 && chcol[c] != chcol[d]) return 0;
+  if (chcol[c] >= 8 && charcolorused && chcol[c] != chcol[d]) return 0;
+
   return 1;
 }
 
@@ -2441,6 +2451,17 @@ void removeunusedblocks(void)
   {
     blockused[mapdata[c]] = 1;
   }
+  // Check for possibly animating levelobjects, mark blocks+1 used
+  for (c = 0; c < NUMLVLOBJ; c++)
+  {
+    if ((lvlobjx[c]) || (lvlobjy[c]))
+    {
+      blockused[mapdata[lvlobjx[c] + mapsx * (lvlobjy[c] & 0x7f)] + 1] = 1;
+      if ((lvlobjb[objindex] & 64) && ((lvlobjy[c] & 0x7f) > 0))
+        blockused[mapdata[lvlobjx[c] + mapsx * ((lvlobjy[c] & 0x7f)-1)] + 1] = 1;
+    }
+  }
+
   for (c = 255; c > 0; c--)
   {
     int d;

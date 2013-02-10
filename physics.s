@@ -212,14 +212,14 @@ MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground
                 tay                             ;crossed a char vertically while on a slope, so may need
                 lsr                             ;to adjust position either up or down, or the ground might
                 bcs MWG_FinalizeGround          ;actually have disintegrated)
-                jsr GetCharInfo1Above           ;Check first above
-                tay
-                lsr
-                bcs MWG_FinalizeGroundAbove
-                jsr GetCharInfo1Below           ;Then below
+                jsr GetCharInfo1Below           ;Check first below
                 tay
                 lsr
                 bcs MWG_FinalizeGroundBelow
+                jsr GetCharInfo1Above           ;Then above
+                tay
+                lsr
+                bcs MWG_FinalizeGroundAbove
                 lda temp5                       ;Start falling
                 and #$ff-MB_GROUNDED
                 ora #MB_STARTFALLING
