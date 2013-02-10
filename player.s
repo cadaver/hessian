@@ -36,7 +36,7 @@ NUM_SKILLS      = 5
 INITIAL_GROUNDACC = 6
 INITIAL_INAIRACC = 2
 INITIAL_GROUNDBRAKE = 6
-INITIAL_JUMPSPEED = 42
+INITIAL_JUMPSPEED = 40
 INITIAL_CLIMBSPEED = 84
 INITIAL_DROWNINGTIMER = 5
 INITIAL_HEALTHRECHARGETIMER = 2
@@ -1153,7 +1153,7 @@ ApplySkills:
                 sbc #3-1                        ;C=0, subtract one more
                 sta plrSwimAcc
                 txa
-                adc #INITIAL_INAIRACC
+                adc #INITIAL_INAIRACC-1         ;C=1, add one more
                 sta plrInAirAcc
                 txa
                 asl
