@@ -1525,6 +1525,8 @@ void char_mainloop(void)
   for (;;)
   {
     int s;
+    int shiftdown = win_keystate[KEY_LEFTSHIFT] | win_keystate[KEY_RIGHTSHIFT];
+    int ctrldown = win_keystate[KEY_CTRL];
     s = win_getspeed(70);
     flash += s;
     flash &= 31;
@@ -1567,14 +1569,35 @@ void char_mainloop(void)
       memset(&chardata[charnum*8],0,8);
       chinfo[charnum]=0;
     }
-    if (k == KEY_1) chinfo[charnum] ^= 1;
-    if (k == KEY_2) chinfo[charnum] ^= 2;
-    if (k == KEY_3) chinfo[charnum] ^= 4;
-    if (k == KEY_4) chinfo[charnum] ^= 8;
-    if (k == KEY_5) chinfo[charnum] ^= 16;
-    if (k == KEY_6) chinfo[charnum] ^= 32;
-    if (k == KEY_7) chinfo[charnum] ^= 64;
-    if (k == KEY_8) chinfo[charnum] ^= 128;
+    if (!shiftdown && !ctrldown)
+    {
+      if (k == KEY_1) chinfo[charnum] ^= 1;
+      if (k == KEY_2) chinfo[charnum] ^= 2;
+      if (k == KEY_3) chinfo[charnum] ^= 4;
+      if (k == KEY_4) chinfo[charnum] ^= 8;
+      if (k == KEY_5) chinfo[charnum] ^= 16;
+      if (k == KEY_6) chinfo[charnum] ^= 32;
+      if (k == KEY_7) chinfo[charnum] ^= 64;
+      if (k == KEY_8) chinfo[charnum] ^= 128;
+    }
+    else if (ctrldown)
+    {
+      if (k == KEY_0) { chcol[charnum] &= 0xf8; chcol[charnum] |= 0x0; }
+      if (k == KEY_1) { chcol[charnum] &= 0xf8; chcol[charnum] |= 0x1; }
+      if (k == KEY_2) { chcol[charnum] &= 0xf8; chcol[charnum] |= 0x2; }
+      if (k == KEY_3) { chcol[charnum] &= 0xf8; chcol[charnum] |= 0x3; }
+      if (k == KEY_4) { chcol[charnum] &= 0xf8; chcol[charnum] |= 0x4; }
+      if (k == KEY_5) { chcol[charnum] &= 0xf8; chcol[charnum] |= 0x5; }
+      if (k == KEY_6) { chcol[charnum] &= 0xf8; chcol[charnum] |= 0x6; }
+      if (k == KEY_7) { chcol[charnum] &= 0xf8; chcol[charnum] |= 0x7; }
+    }
+    else if (shiftdown)
+    {
+        if (k == KEY_1) ccolor = 0;
+        if (k == KEY_2) ccolor = 1;
+        if (k == KEY_3) ccolor = 2;
+        if (k == KEY_4) ccolor = 3;
+    }
     if (k == KEY_S)
     {
       // Edit slope bits
@@ -2302,16 +2325,25 @@ void initblockeditmode(int fm)
 
     int c,d;
     int e = 255;
-    int globaledit = win_keystate[KEY_LEFTSHIFT] | win_keystate[KEY_RIGHTSHIFT];
+    int nocopy = win_keystate[KEY_LEFTSHIFT] | win_keystate[KEY_RIGHTSHIFT];
 
     findusedblocksandchars();
 
-    for (c = 0; c < 16; c++)
+    for (c = 240; c < 256; c++)
     {
-      // Unless explicitly disabled, ensure all chars are unique
-      for (d = 0; d < c; d++)
+      if (charused[c])
       {
-        if (globaledit == 0 || blockdata[16*blocknum+d] == blockdata[16*blocknum+c])
+        nocopy = 1;
+        break;
+      }
+    }
+
+    if (!nocopy)
+    {
+      for (c = 0; c < 16; c++)
+      {
+        // Unless explicitly disabled, ensure all chars are unique
+        for (d = 0; d < c; d++)
         {
           copychar(blockdata[16*blocknum+c], e);
           blockdata[16*blocknum+c] = e;
@@ -2320,6 +2352,7 @@ void initblockeditmode(int fm)
         }
       }
     }
+
     blockeditmode = 1;
     blockeditnum = blocknum;
     oldchar = charnum;
@@ -2832,7 +2865,9 @@ void loadalldata(void)
         int y,x;
 
         for (c = 0; c < activezones; c++)
+        {
             zoneoffsets[c] = readle16(handle) + 3;
+        }
 
         for (c = 0; c < activezones; c++)
         {

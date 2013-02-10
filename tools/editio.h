@@ -11,21 +11,21 @@
 
 unsigned char read8(int handle)
 {
-    char bytes[1];
+    unsigned char bytes[1];
     read(handle, bytes, 1);
     return bytes[0];
 }
 
 unsigned short readle16(int handle)
 {
-    char bytes[2];
+    unsigned char bytes[2];
     read(handle, bytes, 2);
     return ((unsigned short)bytes[0]) | (((unsigned short)bytes[1]) << 8);
 }
 
 void write8(int handle, unsigned data)
 {
-  char bytes[1];
+  unsigned char bytes[1];
 
   bytes[0] = data;
   write(handle, bytes, 1);
@@ -33,7 +33,7 @@ void write8(int handle, unsigned data)
 
 void writele16(int handle, unsigned data)
 {
-  char bytes[2];
+  unsigned char bytes[2];
 
   bytes[0] = data;
   bytes[1] = data >> 8;
@@ -42,7 +42,7 @@ void writele16(int handle, unsigned data)
 
 void writele32(int handle, unsigned data)
 {
-  char bytes[4];
+  unsigned char bytes[4];
 
   bytes[0] = data;
   bytes[1] = data >> 8;

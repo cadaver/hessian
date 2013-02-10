@@ -1029,8 +1029,8 @@ InitScroll:     lda #$00
         ; Update block outside the current zone. No need to update on screen, but must find out
         ; the destination zone first. Note: nonexistent map position causes undefined behaviour
 
-UB_OutsideZone: lda zoneNum                     ;TODO: test this codepath
-                sta temp4
+UB_OutsideZone: lda zoneNum
+                sta zpBitBuf
                 jsr FindZoneXY
                 lda temp8
                 sec
@@ -1045,16 +1045,11 @@ UB_OutsideZone: lda zoneNum                     ;TODO: test this codepath
                 lda temp7
                 sec
                 sbc limitL
-                tay
-                lda (zpDestLo),y
-                clc
-                and temp6
-                adc temp5
-                sta (zpDestLo),y
-UB_RestoreZone: lda temp4
+                jsr UB_Apply
+UB_RestoreZone: lda zpBitBuf
                 jmp FindZoneNum
 
-        ; Animate a block on the map by deltavalue. If on screen, refresh it immediately. 
+        ; Animate a block on the map by deltavalue. If on screen, refresh it immediately.
         ; Note: call only in between ScrollLogic & UpdateFrame
         ;
         ; Parameters: A block deltavalue, X horizontal map coordinate, Y vertical map coordinate
@@ -1067,12 +1062,12 @@ UpdateBlockDelta:
                 sta temp6
                 bne UB_Common
 
-        ; Update a block on the map. If on screen, refresh it immediately. 
+        ; Update a block on the map. If on screen, refresh it immediately.
         ; Note: call only in between ScrollLogic & UpdateFrame
         ;
         ; Parameters: A new block, X horizontal map coordinate, Y vertical map coordinate
         ; Returns: -
-        ; Modifies: A,X,Y,temp vars
+        ; Modifies: A,X,Y,temp5-temp8,loader temp vars
 
 UpdateBlock:    sta temp5
                 lda #$00
@@ -1092,12 +1087,7 @@ UB_InsideZone:  lda mapTblLo,y
                 lda mapTblHi,y
                 sta zpDestHi
                 txa
-                tay
-                lda (zpDestLo),y
-                clc
-                and temp6
-                adc temp5
-                sta (zpDestLo),y
+                jsr UB_Apply
                 tay
                 lda blkTblLo,y
                 sta UB_Lda+1
@@ -1234,4 +1224,12 @@ UB_NotOver:     asl
                 asl
                 rol zpDestHi
                 sta zpDestLo
+                rts
+
+UB_Apply:       tay
+                lda (zpDestLo),y
+                clc
+                and temp6
+                adc temp5
+                sta (zpDestLo),y
                 rts
