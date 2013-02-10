@@ -1713,6 +1713,13 @@ void char_mainloop(void)
         editmode = EM_LEVEL;
         break;
       }
+      if (k == KEY_G)
+      {
+        if ((mousex >= 170) && (mousex < 170+32) && (mousey >= 0) && (mousey < 32))
+        {
+          charnum = blockdata[blocknum * 16 + mousey / 8 * 4 + (mousex - 170) / 8];
+        }
+      }
     }
 
     if (k == KEY_F1) loadchars();
@@ -2295,16 +2302,16 @@ void initblockeditmode(int fm)
 
     int c,d;
     int e = 255;
-    int forceunique = win_keystate[KEY_LEFTSHIFT] | win_keystate[KEY_RIGHTSHIFT];
+    int globaledit = win_keystate[KEY_LEFTSHIFT] | win_keystate[KEY_RIGHTSHIFT];
 
     findusedblocksandchars();
 
     for (c = 0; c < 16; c++)
     {
-      // Ensure all chars are unique
+      // Unless explicitly disabled, ensure all chars are unique
       for (d = 0; d < c; d++)
       {
-        if (forceunique || blockdata[16*blocknum+d] == blockdata[16*blocknum+c])
+        if (globaledit == 0 || blockdata[16*blocknum+d] == blockdata[16*blocknum+c])
         {
           copychar(blockdata[16*blocknum+c], e);
           blockdata[16*blocknum+c] = e;
