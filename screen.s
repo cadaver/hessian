@@ -1030,7 +1030,7 @@ InitScroll:     lda #$00
         ; the destination zone first. Note: nonexistent map position causes undefined behaviour
 
 UB_OutsideZone: lda zoneNum
-                sta zpBitBuf
+                sta loadTempReg
                 jsr FindZoneXY
                 lda temp8
                 sec
@@ -1046,7 +1046,7 @@ UB_OutsideZone: lda zoneNum
                 sec
                 sbc limitL
                 jsr UB_Apply
-UB_RestoreZone: lda zpBitBuf
+UB_RestoreZone: lda loadTempReg
                 jmp FindZoneNum
 
         ; Animate a block on the map by deltavalue. If on screen, refresh it immediately.

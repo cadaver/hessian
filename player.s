@@ -144,12 +144,31 @@ MP_SkipItemName:lda actCtrl+ACTI_PLAYER
                 ldy MP_CheckPickupSub+1
                 jsr TryPickup
 
-MP_CheckObject: lda actXH+ACTI_PLAYER
-                sta MPCO_CmpX+1
-                ldy actYH+ACTI_PLAYER
+MP_CheckObject: ldx actXH+ACTI_PLAYER           ;Rescan objects whenever player
+                ldy actYH+ACTI_PLAYER           ;block position changes
+                lda lvlObjNum
+MPCO_LastCheckX:cpx #$00
+                bne MPCO_Rescan
+MPCO_LastCheckY:cpy #$00
+                beq MPCO_NoRescan
+MPCO_Rescan:    lda #$80                        ;Start from beginning
+MPCO_NoRescan:  stx MPCO_LastCheckX+1
+                sty MPCO_LastCheckY+1
+                cmp #$ff
+                beq MPCO_Done
+                cmp #$80
+                bcc MPCO_Done
+                stx MPCO_CmpX+1
+                ldx actYL+ACTI_PLAYER           ;If player stands on top of a block
+                cpx #$40                        ;check 1 block above
+                bcs MPCO_NotAtTop
                 dey
-                sty MPCO_SubY+1
-MPCO_Start:     ldx #$00
+MPCO_NotAtTop:  sty MPCO_SubY+1
+                and #$7f
+                tax
+                clc
+                adc #LVLOBJSEARCH
+                sta MPCO_EndCmp+1
 MPCO_Loop:      lda lvlObjX,x
 MPCO_CmpX:      cmp #$00
                 bne MPCO_Next
@@ -161,14 +180,12 @@ MPCO_SubY:      sbc #$00
 MPCO_Next:      inx
 MPCO_EndCmp:    cpx #LVLOBJSEARCH
                 bcc MPCO_Loop
-                txa
-                bpl MPCO_NotOver
-                and #MAX_LVLOBJ-1               ;List wrapped, set negative object index
-                stx lvlObjNum                   ;(at no object)
-MPCO_NotOver:   sta MPCO_Start+1
-                adc #LVLOBJSEARCH-1             ;C=1, add one more
-                sta MPCO_EndCmp+1
-                bcc MPCO_Done
+                cpx #MAX_LVLOBJ
+                bcc MPCO_NotOver
+                ldx #$ff                        ;If search finished with no object,
+MPCO_NotOver:   txa                             ;no need to rescan until moved
+                ora #$80
+                tax
 MPCO_Found:     stx lvlObjNum
 MPCO_Done:
 
@@ -459,8 +476,14 @@ MH_NoHitWall:   lda temp1
                 cmp actPrevCtrl,x
                 beq MH_NoOperate
                 inc ULO_OperateFlag+1
+                lda actF1,x
+                cmp #FR_ENTER
+                beq MH_OperateNoDelayReset
+                lda #$00
+                sta actFd,x
                 lda #FR_ENTER
                 sta actF1,x
+MH_OperateNoDelayReset:
                 sta actF2,x
                 bne MH_NoNewJump
 MH_NoOperate:   lda temp3

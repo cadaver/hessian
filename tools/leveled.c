@@ -548,16 +548,8 @@ void level_mainloop(void)
                 switch((lvlobjb[objindex] & 0x1c) >> 2)
                 {
                   case 1:
-                  case 2:
+                  case 5:
                   if (lvlobjd2[objindex] == levelnum)
-                  {
-                    int tgt = lvlobjd1[objindex];
-                    if (tgt < NUMLVLOBJ)
-                      gotopos(lvlobjx[tgt], lvlobjy[tgt] & 0x7f);
-                  }
-                  break;
-
-                  case 4:
                   {
                     int tgt = lvlobjd1[objindex];
                     if (tgt < NUMLVLOBJ)
@@ -2472,6 +2464,27 @@ int findsameblock(int c, int d)
   for (e = 0; e < 16; e++)
   {
     if (blockdata[c*16+e] != blockdata[d*16+e]) return 0;
+  }
+
+  // If block is used in animating levelobject, do not consider same
+  for (c = 0; c < NUMLVLOBJ; c++)
+  {
+    if ((lvlobjx[c]) || (lvlobjy[c]))
+    {
+      int lvlobjblk = mapdata[lvlobjx[c] + mapsx * (lvlobjy[c] & 0x7f)];
+      if (lvlobjblk == c) return 0;
+      if (lvlobjblk+1 == c) return 0;
+      if (lvlobjblk == d) return 0;
+      if (lvlobjblk+1 == d) return 0;
+      if ((lvlobjb[objindex] & 64) && ((lvlobjy[c] & 0x7f) > 0))
+      {
+        lvlobjblk = mapdata[lvlobjx[c] + mapsx * ((lvlobjy[c] & 0x7f)-1)];
+        if (lvlobjblk == c) return 0;
+        if (lvlobjblk+1 == c) return 0;
+        if (lvlobjblk == d) return 0;
+        if (lvlobjblk+1 == d) return 0;
+      }
+    }
   }
   return 1;
 }

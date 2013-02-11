@@ -80,8 +80,7 @@ LoadLevel:      ror                             ;C to high bit
                 sta LL_ActorMode+1
                 ldx #$ff
                 stx autoDeactObjNum             ;Reset object auto-deactivation
-                inx                             ;Assume zone 0 after loading
-                stx zoneNum                     ;a new level
+                stx MPCO_LastCheckY+1           ;Reset object search
                 lda levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
@@ -218,6 +217,8 @@ GetLevelDataActorBits:
         ; Returns: zoneNum, zoneLo-zoneHi
         ; Modifies: A,X,Y,loader temp vars
 
+FindPlayerZone: ldx actXH+ACTI_PLAYER
+                ldy actYH+ACTI_PLAYER
 FindZoneXY:     sty zpBitBuf
                 lda #$00
 FZXY_Loop:      jsr FindZoneNum
@@ -469,19 +470,17 @@ ULO_NoOperate:  lda lvlObjB,y
 ULO_NoDoor:     and #OBJ_TYPEBITS               ;Check for side door
                 cmp #OBJTYPE_SIDEDOOR
                 bne ULO_Done
+                jsr GetZoneCenterX
+                ldx actXL+ACTI_PLAYER
                 lda actXH+ACTI_PLAYER
                 cmp lvlObjX,y
                 bne ULO_Done
-                ldx actXL+ACTI_PLAYER
-                cmp limitL                      ;TODO: now side doors must be at
-                bne ULO_NotLeftSide             ;zone side boundaries. Permit other locations
+                cmp temp8                       ;If player is on right side of zone,
+                bcs ULO_RightSide               ;assume door is also on right side
                 txa
                 beq ULO_EnterDoor
                 bne ULO_Done
-ULO_NotLeftSide:adc #$00
-                cmp limitR
-                bne ULO_Done
-                inx
+ULO_RightSide:  inx
                 beq ULO_EnterDoor
 ULO_Done:       rts
 
@@ -516,7 +515,17 @@ ULO_ClearActorNext:
                 stx actYH+ACTI_PLAYER
                 lda #MB_GROUNDED
                 sta actMB+ACTI_PLAYER
-                ldx #ACTI_PLAYER
+                lda lvlObjB,y
+                and #OBJ_TYPEBITS               ;Check for side door, must set right direction
+                cmp #OBJTYPE_SIDEDOOR
+                bne ULO_NoDirection
+                jsr FindPlayerZone
+                jsr GetZoneCenterX
+                lda actXH+ACTI_PLAYER
+                cmp temp8
+                ror
+                sta actD+ACTI_PLAYER
+ULO_NoDirection:ldx #ACTI_PLAYER
                 jsr MH_StandAnim
                 jsr SaveCheckpoint              ;Save checkpoint now. TODO: check for save-disabled zone
 
@@ -526,9 +535,7 @@ ULO_ClearActorNext:
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-CenterPlayer:   ldx actXH+ACTI_PLAYER
-                ldy actYH+ACTI_PLAYER
-                jsr FindZoneXY
+CenterPlayer:   jsr FindPlayerZone
                 jsr SetZoneColors
                 iny
                 lda (zoneLo),y
@@ -600,4 +607,17 @@ SetZoneColors:  ldy #ZONEH_BG1                  ;Set zone multicolors
                 iny
                 lda (zoneLo),y
                 sta Irq1_Bg3+1
+                rts
+
+        ; Calculate horizontal centerpoint of zone
+        ;
+        ; Parameters: -
+        ; Returns: A zone center, also stored in temp8
+        ; Modifies: A, temp8
+
+GetZoneCenterX: lda limitL
+                clc
+                adc limitR
+                lsr
+                sta temp8
                 rts

@@ -100,8 +100,9 @@ POS_NOTPERSISTENT = $ff
 
 DEFAULT_PICKUP  = $ff
 
-LVLOBJSEARCH    = 16
+LVLOBJSEARCH    = 32
 LVLACTSEARCH    = 32
+SPAWNERSEARCH   = 16
 
 NODAMAGESRC     = $80
 NODAMAGESRC_QUIET = $ff
@@ -469,12 +470,12 @@ UA_SpawnerBottomCheck:
                 jsr AttemptSpawn
                 ldx temp1
 UA_SpawnerNext: inx
-UA_SpawnerEndCmp:cpx #LVLOBJSEARCH/2
+UA_SpawnerEndCmp:cpx #SPAWNERSEARCH
                 bne UA_SpawnerLoop
                 txa
                 and #MAX_LVLOBJ-1
                 sta UA_SpawnerIndex+1
-                adc #LVLOBJSEARCH/2-1           ;C=1, add one more
+                adc #SPAWNERSEARCH/2-1           ;C=1, add one more
                 sta UA_SpawnerEndCmp+1
 
         ; Build hero/villain lists for bullet collision
