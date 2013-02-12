@@ -749,6 +749,12 @@ MH_ResetFall:   lda #$00
                 rts
 
 MH_InitSwim:    jsr MH_ResetFall                ;Falling counter used for drowning damage, reset
+                lda actSY,x
+                bmi MH_SwimNoYSpeedMod          ;If falling down, reduce speed when hit water
+                ldy #6
+                jsr ModifyDamage                ;Hack: modifydamage used for multiplying Y-speed
+                sta actSY,x
+MH_SwimNoYSpeedMod:
                 lda #FR_SWIM
                 jmp MH_AnimDone
 
