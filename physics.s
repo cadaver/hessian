@@ -212,29 +212,14 @@ MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground
                 tay                             ;crossed a char vertically while on a slope, so may need
                 lsr                             ;to adjust position either up or down, or the ground might
                 bcs MWG_FinalizeGround          ;actually have disintegrated)
-                cpx #MAX_COMPLEXACT
-                bcs MWG_NoStairControl          ;Player/NPC can change below/above priority
-                lda actMoveCtrl,x
-                lsr
-                bcc MWG_NoStairControl
-                jsr GetCharInfo1Above           ;If up direction held, check first above
+                jsr GetCharInfo1Above           ;Check first above
                 tay
                 lsr
                 bcs MWG_FinalizeGroundAbove
-                jsr GetCharInfo1Below           ;Then above
+                jsr GetCharInfo1Below           ;Then below
                 tay
                 lsr
                 bcs MWG_FinalizeGroundBelow
-                bcc MWG_StartFalling
-MWG_NoStairControl:
-                jsr GetCharInfo1Below           ;Check first below
-                tay
-                lsr
-                bcs MWG_FinalizeGroundBelow
-                jsr GetCharInfo1Above           ;Then above
-                tay
-                lsr
-                bcs MWG_FinalizeGroundAbove
 MWG_StartFalling:
                 lda temp5                       ;Start falling
                 and #$ff-MB_GROUNDED
