@@ -120,6 +120,7 @@ int k;
 int blockeditmode = 0;
 unsigned char copychcol;
 unsigned char copychinfo;
+unsigned char intensity[] = {0,15,4,11,5,10,1,14,6,2,9,3,7,13,8,12};
 
 int randomeditmode = 0;
 int randomactnum = 0;
@@ -196,6 +197,8 @@ void scrollcharleft(void);
 void scrollcharright(void);
 void scrollcharup(void);
 void scrollchardown(void);
+void lightenchar(void);
+void darkenchar(void);
 void char_mainloop(void);
 void editchar(void);
 void editblock(void);
@@ -1127,7 +1130,7 @@ void map_mainloop(void)
     if (k == KEY_F9) loadalldata();
     if (k == KEY_F10) savealldata();
     if (k == KEY_F11) exportmap();
-    
+
     if (mouseb & 1)
     {
       if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
@@ -1728,11 +1731,26 @@ void char_mainloop(void)
         editmode = EM_LEVEL;
         break;
       }
-      if (k == KEY_G)
+    }
+    
+    if (k == KEY_G)
+    {
+      if ((mousex >= 170) && (mousex < 170+32) && (mousey >= 0) && (mousey < 32))
       {
-        if ((mousex >= 170) && (mousex < 170+32) && (mousey >= 0) && (mousey < 32))
+        charnum = blockdata[blocknum * 16 + mousey / 8 * 4 + (mousex - 170) / 8];
+      }
+      if (!blockeditmode)
+      {
+        if (mousex >= 32 && mousey >= 128 && mousex < 320-32 && mousey < 192)
         {
-          charnum = blockdata[blocknum * 16 + mousey / 8 * 4 + (mousex - 170) / 8];
+          charnum = (mousey-128)/8*32+(mousex-32)/8;
+        }
+      }
+       else
+      {
+        if (mousex < 160 && mousey < 160)
+        {
+          charnum = blockdata[blocknum * 16 + mousey / 40 * 4 + mousex / 40];
         }
       }
     }
@@ -1740,7 +1758,7 @@ void char_mainloop(void)
     if (k == KEY_F1) loadchars();
     if (k == KEY_F2) savechars();
     if (k == KEY_F3) loadblocks();
-    if (k == KEY_F4) saveblocks();    
+    if (k == KEY_F4) saveblocks();
     if (k == KEY_F9) loadalldata();
     if (k == KEY_F10) savealldata();
     if (k == KEY_F11) exportmap();
@@ -1748,6 +1766,8 @@ void char_mainloop(void)
     if (k == KEY_RIGHT) scrollcharright();
     if (k == KEY_UP) scrollcharup();
     if (k == KEY_DOWN) scrollchardown();
+    if (k == KEY_L) lightenchar();
+    if (k == KEY_D) darkenchar();
 
     changecol();
     changechar();
@@ -1848,6 +1868,89 @@ void scrollchardown(void)
   ptr[0]=vara1;
 }
 
+void lightenchar(void)
+{
+  int x,y;
+  int ints[4];
+  int nextbits[4];
+  Uint8 andtable[4] = {0xfc, 0xf3, 0xcf, 0x3f};
+
+  if (chcol[charnum] < 8) return;
+
+  ints[0] = intensity[zonebg1[zonenum]];
+  ints[1] = intensity[zonebg2[zonenum]];
+  ints[2] = intensity[zonebg3[zonenum]];
+  ints[3] = intensity[chcol[charnum] & 7];
+  for (x = 0; x < 4; x++)
+  {
+    int diff = 16;
+    int best = x;
+    for (y = 0; y < 4; y++)
+    {
+      int newdiff = ints[y] - ints[x];
+      if (newdiff > 0 && newdiff < diff)
+      {
+        best = y;
+        diff = newdiff;
+      }
+    }
+    nextbits[x]= best;
+  }
+
+  Uint8 *ptr = &chardata[charnum*8];
+  for (y = 0; y < 8; y++)
+  {
+    for (x = 0; x < 4; x++)
+    {
+      Uint8 bits = (ptr[y] >> (x*2)) & 3;
+      bits = nextbits[bits];
+      ptr[y] &= andtable[x];
+      ptr[y] |= bits << (x*2);
+    }
+  }
+}
+
+void darkenchar(void)
+{
+  int x,y;
+  int ints[4];
+  int nextbits[4];
+  Uint8 andtable[4] = {0xfc, 0xf3, 0xcf, 0x3f};
+
+  if (chcol[charnum] < 8) return;
+
+  ints[0] = intensity[zonebg1[zonenum]];
+  ints[1] = intensity[zonebg2[zonenum]];
+  ints[2] = intensity[zonebg3[zonenum]];
+  ints[3] = intensity[chcol[charnum] & 7];
+  for (x = 0; x < 4; x++)
+  {
+    int diff = 16;
+    int best = x;
+    for (y = 0; y < 4; y++)
+    {
+      int newdiff = ints[y] - ints[x];
+      if (newdiff < 0 && abs(newdiff) < diff)
+      {
+        best = y;
+        diff = abs(newdiff);
+      }
+    }
+    nextbits[x]= best;
+  }
+
+  Uint8 *ptr = &chardata[charnum*8];
+  for (y = 0; y < 8; y++)
+  {
+    for (x = 0; x < 4; x++)
+    {
+      Uint8 bits = (ptr[y] >> (x*2)) & 3;
+      bits = nextbits[bits];
+      ptr[y] &= andtable[x];
+      ptr[y] |= bits << (x*2);
+    }
+  }
+}
 
 void drawgrid(void)
 {
@@ -2330,18 +2433,14 @@ void initblockeditmode(int fm)
       }
     }
 
+    // Unless explicitly disabled, ensure all chars are unique
     if (!nocopy)
     {
       for (c = 0; c < 16; c++)
       {
-        // Unless explicitly disabled, ensure all chars are unique
-        for (d = 0; d < c; d++)
-        {
-          copychar(blockdata[16*blocknum+c], e);
-          blockdata[16*blocknum+c] = e;
-          e--;
-          break;
-        }
+        copychar(blockdata[16*blocknum+c], e);
+        blockdata[16*blocknum+c] = e;
+        e--;
       }
     }
 
