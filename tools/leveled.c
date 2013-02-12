@@ -2467,18 +2467,18 @@ int findsameblock(int c, int d)
   }
 
   // If block is used in animating levelobject, do not consider same
-  for (c = 0; c < NUMLVLOBJ; c++)
+  for (e = 0; e < NUMLVLOBJ; e++)
   {
-    if ((lvlobjx[c]) || (lvlobjy[c]))
+    if ((lvlobjy[e] & 0x80) && (lvlobjx[e] || lvlobjy[e]))
     {
-      int lvlobjblk = mapdata[lvlobjx[c] + mapsx * (lvlobjy[c] & 0x7f)];
+      int lvlobjblk = mapdata[lvlobjx[e] + mapsx * (lvlobjy[e] & 0x7f)];
       if (lvlobjblk == c) return 0;
       if (lvlobjblk+1 == c) return 0;
       if (lvlobjblk == d) return 0;
       if (lvlobjblk+1 == d) return 0;
-      if ((lvlobjb[objindex] & 64) && ((lvlobjy[c] & 0x7f) > 0))
+      if ((lvlobjb[objindex] & 0x40) && ((lvlobjy[e] & 0x7f) > 0))
       {
-        lvlobjblk = mapdata[lvlobjx[c] + mapsx * ((lvlobjy[c] & 0x7f)-1)];
+        lvlobjblk = mapdata[lvlobjx[e] + mapsx * ((lvlobjy[e] & 0x7f)-1)];
         if (lvlobjblk == c) return 0;
         if (lvlobjblk+1 == c) return 0;
         if (lvlobjblk == d) return 0;
@@ -2500,7 +2500,7 @@ void removeunusedblocks(void)
   // Check for possibly animating levelobjects, mark blocks+1 used
   for (c = 0; c < NUMLVLOBJ; c++)
   {
-    if ((lvlobjx[c]) || (lvlobjy[c]))
+    if ((lvlobjy[c] & 0x80) && (lvlobjx[c] || lvlobjy[c]))
     {
       blockused[mapdata[lvlobjx[c] + mapsx * (lvlobjy[c] & 0x7f)] + 1] = 1;
       if ((lvlobjb[objindex] & 64) && ((lvlobjy[c] & 0x7f) > 0))

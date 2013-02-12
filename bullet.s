@@ -127,8 +127,9 @@ MoveBullet:     jsr CheckBulletCollisionsApplyDamage
                 bmi MBlt_Remove
 
         ; Move actor in a straight line and return charinfo from final position.
-        ; If hit water, transform into a splash and do not return
-        ; If hit an obstacle, call the destruct routine and do not return
+        ; If hit water, transform into a splash
+        ; If hit an obstacle, call the destruct routine
+        ; Note: do not JSR into this, but jump at the end of bullet move routine
         ;
         ; Parameters: X actor index
         ; Returns: A charinfo
@@ -142,19 +143,14 @@ MoveProjectile: lda actSX,x
                 tay
                 and #CI_WATER|CI_OBSTACLE
                 beq MProj_Done
-                cmp #CI_WATER
+                cpy #CI_WATER
                 beq MProj_HitWater
 MProj_HitObstacle:
-                pla                             ;Discard return address
-                pla
-                ldy #NODAMAGESRC                ;Destroy actor without specific damage source 
+                ldy #NODAMAGESRC                ;Destroy actor without specific damage source
                 jmp DestroyActor
 MProj_Done:     tya
                 rts
-MProj_HitWater: pla                             ;Discard return address
-                pla
-MProj_HitWater_Common:
-                lda #-1                         ;If water 1 already char above, move upward
+MProj_HitWater: lda #-1                         ;If water 1 already char above, move upward
                 jsr GetCharInfoOffset           ;(bullets may move faster than 8 pixels/frame)
                 and #CI_WATER
                 beq MProj_NoWaterAbove
@@ -343,7 +339,8 @@ MoveEMP:        lda actTime,x                   ;TODO: should possibly not manip
                 bne MEMP_ColorDone
 MEMP_Restore:   jsr SetZoneColors
 MEMP_ColorDone: jsr RadiusDamage
-                jsr MoveProjectile
+                lda actSX,x
+                jsr MoveActorX
                 lda #1
                 jsr AnimationDelay
                 bcc MEMP_NoAnim
@@ -447,7 +444,7 @@ MDrn_AccCommon: jsr AccActorY
                 jsr MoveFlyer                   ;If hit water, terminate by splashing
                 and #CI_WATER
                 beq MDrn_Done
-                jmp MProj_HitWater_Common
+                jmp MProj_HitWater
 MDrn_Done:      rts
 MDrn_Expire:    jmp ExplodeActor                ;Explode harmlessly
 
