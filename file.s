@@ -11,7 +11,7 @@ F_LOGO          = $02
 F_SPRITE        = $03
 F_MUSIC         = $07
 F_LEVEL         = $08
-F_SCRIPT        = $0a
+F_SCRIPT        = $0b
 F_SAVE          = $f0
 
 MAX_CHUNKFILES   = 32

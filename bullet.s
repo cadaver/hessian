@@ -440,6 +440,7 @@ MDrn_AccCommon: jsr AccActorY
                 dec actTime,x
                 bmi MDrn_Expire
                 lda #$00
+                sta temp4
                 ldy #CI_OBSTACLE
                 jsr MoveFlyer                   ;If hit water, terminate by splashing
                 and #CI_WATER

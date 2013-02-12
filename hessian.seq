@@ -9,7 +9,8 @@ player.pak 06
 music00.pak 07
 level00.pak 08
 level01.pak 09
-script00.pak 0A
+level02.pak 0A
+script00.pak 0B
 emptysave.dat F0
 emptysave.dat F1
 emptysave.dat F2

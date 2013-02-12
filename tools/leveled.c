@@ -3227,6 +3227,7 @@ void loadblocks(void)
           datalen = 2048 - offset*8;
         read(handle, &chardata[offset*8], datalen);
         read(handle, &chcol[offset], datalen/8);
+        read(handle, &chinfo[offset], datalen/8);
 
         close(handle);
         optimizechars();
@@ -3288,6 +3289,7 @@ void saveblocks(void)
         int chardatasize = 0;
         unsigned char tempchars[2048];
         unsigned char tempchcol[256];
+        unsigned char tempchinfo[256];
         unsigned char tempblocks[4096];
         int numtempchars = 0;
 
@@ -3325,6 +3327,7 @@ void saveblocks(void)
               numtempchars = d+1;
               memcpy(&tempchars[d*8], &chardata[ch*8], 8);
               tempchcol[d] = chcol[ch];
+              tempchinfo[d] = chinfo[ch];
             }
           }
         }
@@ -3338,6 +3341,7 @@ void saveblocks(void)
         }
         write(handle, tempchars, chardatasize);
         write(handle, tempchcol, chardatasize/8);
+        write(handle, tempchinfo, chardatasize/8);
         close(handle);
         return;
       }

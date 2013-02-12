@@ -7,7 +7,8 @@ MB_STARTFALLING = 32
 
         ; Move actor and stop at obstacles
         ;
-        ; Parameters: X actor index, A offset position for side obstacles, Y obstacle bits
+        ; Parameters: X actor index, A Y offset position for obstacles,
+        ;             temp4 X offset position for obstacles, Y obstacle bits
         ; Returns: A charinfo
         ; Modifies: A,Y,temp vars
 
@@ -15,9 +16,18 @@ MoveFlyer:      sta temp5
                 sty temp6
                 lda actSX,x
                 beq MF_XMoveOK
-                jsr MoveActorX
+                bpl MF_NoNegate
+                lda temp4                       ;Negate X check offset if moving left
+                beq MF_NoNegate2
+                eor #$ff
+                clc
+                adc #$01
+                sta temp4
+MF_NoNegate2:   lda actSX,x
+MF_NoNegate:    jsr MoveActorX
                 lda temp5
-                jsr GetCharInfoOffset
+                ldy temp4
+                jsr GetCharInfoXYOffset
                 and temp6
                 beq MF_XMoveOK
                 lda actSX,x
@@ -26,7 +36,8 @@ MoveFlyer:      sta temp5
                 sta actSX,x
 MF_XMoveOK:     lda actSY,x
                 jsr MoveActorY
-                jsr GetCharInfo
+                lda temp5
+                jsr GetCharInfoOffset
                 sta temp8
                 and temp6
                 beq MF_YMoveOK

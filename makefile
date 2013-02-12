@@ -27,7 +27,7 @@ clean:
 	-rm e?
 	-rm f?
 
-hessian.d64: boot.prg loader.pak main.pak logo.pak music00.pak script00.pak level00.pak level01.pak common.pak item.pak weapon.pak player.pak
+hessian.d64: boot.prg loader.pak main.pak logo.pak music00.pak script00.pak level00.pak level01.pak level02.pak common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -131,7 +131,7 @@ sfx/drone.sfx: sfx/drone.ins
 sfx/splash.sfx: sfx/splash.ins
 	ins2nt2 sfx/splash.ins sfx/splash.sfx
 
-levelactors.s: bg/level00.lva bg/level01.lva
+levelactors.s: bg/level00.lva bg/level01.lva bg/level02.lva
 	countobj
 
 main.pak: actor.s actordata.s ai.s aidata.s bullet.s cutscene.s data.s file.s init.s item.s itemdata.s level.s levelactors.s macros.s \
@@ -176,6 +176,15 @@ level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.chi bg/
 	pchunk2 bg/level01.map level01_3.pak
 	pchunk2 bg/level01.blk level01_4.pak
 	filejoin level01_1.pak+level01_2.pak+level01_3.pak+level01_4.pak level01.pak
+
+level02.pak: level02.s memory.s bg/level02.map bg/level02.blk bg/level02.chi bg/level02.chc bg/level02.chr bg/level02.lva
+	filejoin bg/level02.lvo+bg/level02.lvr level02_1.bin
+	pack2 level02_1.bin level02_1.pak
+	dasm level02.s -olevel02_2.bin -f3
+	pack2 level02_2.bin level02_2.pak
+	pchunk2 bg/level02.map level02_3.pak
+	pchunk2 bg/level02.blk level02_4.pak
+	filejoin level02_1.pak+level02_2.pak+level02_3.pak+level02_4.pak level02.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak

@@ -925,7 +925,9 @@ MH_NotStationary:
 MH_NotExitingWater:
 MH_HasWaterAbove:
 MH_NotSwimmingUp:
-                lda #-1                         ;Use middle of player for side obstacle check
+                lda #2
+                sta temp4
+                lda #-1                         ;Use middle of player for obstacle check
                 ldy #CI_GROUND|CI_OBSTACLE
                 jsr MoveFlyer
                 lda #-3

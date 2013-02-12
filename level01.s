@@ -3,7 +3,7 @@
                 include memory.s
 
                 org lvlName
-                dc.b "SECRET CHAMBER",0
+                dc.b "INSIDE SHIP",0
 
                 org lvlCodeStart
 

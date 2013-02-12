@@ -947,6 +947,50 @@ GetActorCharCoordX:
                 ora zpSrcLo
                 rts
 
+        ; Get char collision info from 1 char above actor's pos (optimized)
+        ;
+        ; Parameters: X actor index
+        ; Returns: A charinfo
+        ; Modifies: A,Y,loader temp vars
+
+GetCharInfo4Above:
+                ldy actYH,x
+                dey
+                bmi GCI_Outside
+                bpl GCI_Common
+
+GetCharInfo1Above:
+                ldy actYH,x
+                lda actYL,x
+                sec
+                sbc #$40
+                bcs GCI_Common2
+                dey
+                bmi GCI_Outside
+                bcc GCI_Common2
+
+        ; Get char collision info from 1 char below actor's pos (optimized)
+        ;
+        ; Parameters: X actor index
+        ; Returns: A charinfo
+        ; Modifies: A,Y,loader temp vars
+
+GetCharInfo4Below:
+                ldy actYH,x
+                iny
+                bmi GCI_Outside
+                bpl GCI_Common
+
+GetCharInfo1Below:
+                ldy actYH,x
+                lda actYL,x
+                clc
+                adc #$40
+                bcc GCI_Common2
+                iny
+                bmi GCI_Outside
+                bcs GCI_Common2
+
         ; Get char collision info from the actor's position
         ;
         ; Parameters: X actor index
@@ -954,19 +998,26 @@ GetActorCharCoordX:
         ; Modifies: A,Y,loader temp vars
 
 GetCharInfo:    ldy actYH,x
-GCI_Common2:    lda actYL,x
-                and #$c0
+GCI_Common:     lda actYL,x
+GCI_Common2:    and #$c0
+                sta zpBitsLo
+                lda actXH,x
+                sta zpBitsHi
+                lda actXL,x
+GCI_Common3:    lsr
+                lsr
+                ora zpBitsLo
                 lsr
                 lsr
                 lsr
                 lsr
                 sta zpBitsLo
-GCI_Common:     lda mapTblHi,y
+                lda mapTblHi,y
                 beq GCI_Outside
                 sta zpDestHi
                 lda mapTblLo,y
                 sta zpDestLo
-                ldy actXH,x
+                ldy zpBitsHi
                 cpy limitL
                 bcc GCI_Outside
                 cpy limitR
@@ -977,74 +1028,13 @@ GCI_Common:     lda mapTblHi,y
                 sta zpDestLo
                 lda blkTblHi,y
                 sta zpDestHi
-                lda actXL,x
-                rol
-                rol
-                rol
-                and #$03
-                ora zpBitsLo
-                tay
+                ldy zpBitsLo
                 lda (zpDestLo),y                ;Get char from block
                 tay
                 lda charInfo,y                  ;Get charinfo
                 rts
 GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle char if outside map
                 rts
-
-        ; Get char collision info from 1 char above actor's pos (optimized)
-        ;
-        ; Parameters: X actor index
-        ; Returns: A charinfo
-        ; Modifies: A,Y,loader temp vars
-
-GetCharInfo1Above:
-                lda actYL,x
-                and #$c0
-                lsr
-                lsr
-                lsr
-                lsr
-                ldy actYH,x
-                sbc #$04-1                      ;C=0
-                bcs GCI1A_Ok
-                lda #$0c
-                dey
-GCI1A_Ok:       sta zpBitsLo
-                jmp GCI_Common
-
-        ; Get char collision info from 1 char above actor's pos (optimized)
-        ;
-        ; Parameters: X actor index
-        ; Returns: A charinfo
-        ; Modifies: A,Y,loader temp vars
-
-GetCharInfo1Below:
-                lda actYL,x
-                and #$c0
-                lsr
-                lsr
-                lsr
-                lsr
-                ldy actYH,x
-                adc #$04
-                cmp #$10
-                bcc GCI1B_Ok
-                lda #$00
-                iny
-GCI1B_Ok:       sta zpBitsLo
-                jmp GCI_Common
-
-        ; Get char collision info from 4 chars above actor's pos (optimized)
-        ;
-        ; Parameters: X actor index
-        ; Returns: A charinfo
-        ; Modifies: A,Y,loader temp vars
-
-GetCharInfo4Above:
-                ldy actYH,x
-                dey
-                bpl GCI_Common2
-                bmi GCI_Outside
 
         ; Get char collision info from the actor's position with Y offset
         ;
@@ -1053,29 +1043,78 @@ GetCharInfo4Above:
         ; Modifies: A,Y,loader temp vars
 
 GetCharInfoOffset:
-                sta zpBitsLo
-                lda actYL,x
-                rol
-                rol
-                rol
-                and #$03
-                clc
-                adc zpBitsLo
                 tay
-                asl
-                asl
-                and #$0c
-                sta zpBitsLo
-                tya
-                cmp #$80
                 ror
-                cmp #$80
                 ror
+                ror
+                and #$c0
                 clc
+                adc actYL,x
+                sta zpBitsLo
+                php
+                tya
+                lsr
+                lsr
+                cpy #$80
+                bcc GCIO_NotNeg
+                ora #$c0
+GCIO_NotNeg:    plp
                 adc actYH,x
                 bmi GCI_Outside
                 tay
-                jmp GCI_Common
+                lda zpBitsLo
+                jmp GCI_Common2
+
+        ; Get char collision info from the actor's position with both X & Y offset
+        ;
+        ; Parameters: X actor index, A signed Y offset in chars, Y signed X offset in chars
+        ; Returns: A charinfo
+        ; Modifies: A,Y,loader temp vars
+
+GetCharInfoXYOffset:
+                sty zpBitsHi
+                tay
+                ror
+                ror
+                ror
+                and #$c0
+                clc
+                adc actYL,x
+                and #$c0
+                sta zpBitsLo                    ;Final Y coord lo
+                php
+                tya
+                lsr
+                lsr
+                cpy #$80
+                bcc GCIOXY_NotNeg
+                ora #$c0
+GCIOXY_NotNeg:  plp
+                adc actYH,x
+                bmi GCI_Outside
+                sta zpBitBuf                    ;Final Y coord hi
+GCIOXY_XOffset: lda zpBitsHi
+                tay
+                ror
+                ror
+                ror
+                and #$c0
+                clc
+                adc actXL,x                     ;Final X coord lo
+                pha
+                php
+                tya
+                lsr
+                lsr
+                cpy #$80
+                bcc GCIOXY_XNotNeg
+                ora #$c0
+GCIOXY_XNotNeg: plp
+                adc actXH,x
+                sta zpBitsHi                    ;Final X coord hi
+                ldy zpBitBuf
+                pla
+                jmp GCI_Common3
 
         ; Get actor's logic data address
         ;

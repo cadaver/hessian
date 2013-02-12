@@ -21,6 +21,18 @@ logoStart       = chars
 logoScreen      = chars+608
 logoColors      = chars+608+168
 
+        ; Start from ship
+
+;START_LEVEL     = $00
+;START_X         = $0780
+;START_Y         = $0bc0
+
+        ; Start from city
+
+START_LEVEL     = $02
+START_X         = $0280
+START_Y         = $05c0
+
                 org scriptCodeStart
 
                 dc.w TitleScreen
@@ -322,15 +334,17 @@ IP_SkillCheatLoop:
                 sta xpLevel
                 endif
                 sta invType                     ;1 = fists
+                lda #START_LEVEL
+                sta levelNum
                 lda #$00                        ;Set startposition
                 sta saveD
-                lda #$c0
-                sta saveYL
-                lda #$80
+                lda #<START_X
                 sta saveXL
-                lda #$07
+                lda #>START_X
                 sta saveXH
-                lda #$0b
+                lda #<START_Y
+                sta saveYL
+                lda #>START_Y
                 sta saveYH
                 lda #ACT_PLAYER
                 sta saveT
