@@ -3023,7 +3023,6 @@ void exportmap(void)
   for (;;)
   {
     int r;
-
     win_getspeed(70);
     gfx_fillscreen(254);
 
@@ -3035,10 +3034,12 @@ void exportmap(void)
     if (r == -1) return;
     if (r == 1)
     {
-      char filename[256];
+      int oldzonenum = zonenum;
       int c;
+      char filename[256];
       for (c = 0; c < NUMZONES; c++)
       {
+        zonenum = c;
         if (zonex[c] || zoney[c])
         {
           int sizex = (zoner[c]-zonel[c])*32;
@@ -3078,6 +3079,7 @@ void exportmap(void)
           }
         }
       }
+      zonenum = oldzonenum;
       return;
     }
   }
