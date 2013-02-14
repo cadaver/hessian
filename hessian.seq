@@ -7,10 +7,11 @@ item.pak 04
 weapon.pak 05
 player.pak 06
 music00.pak 07
-level00.pak 08
-level01.pak 09
-level02.pak 0A
-script00.pak 0B
+script00.pak 08
+level00.pak 09
+level01.pak 0A
+level02.pak 0B
+level03.pak 0C
 emptysave.dat F0
 emptysave.dat F1
 emptysave.dat F2
