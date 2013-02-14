@@ -47,21 +47,6 @@ randomAreaStart:
                 include script.s
                 include ai.s
 
-        ; Main loop
-
-StartMainLoop:  ldx #$ff
-                txs
-MainLoop:       jsr ScrollLogic
-                jsr DrawActors
-                jsr FinishFrame
-                jsr ScrollLogic
-                jsr GetControls
-                jsr UpdateMenu
-                jsr UpdateActors
-                jsr FinishFrame
-                jsr UpdateLevelObjects
-                jmp MainLoop
-
 randomAreaEnd:
 
                 include data.s

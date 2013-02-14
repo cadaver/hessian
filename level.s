@@ -529,7 +529,7 @@ ULO_NoDirection:ldx #ACTI_PLAYER
                 jsr MH_StandAnim
                 jsr SaveCheckpoint              ;Save checkpoint now. TODO: check for save-disabled zone
 
-        ; Centers player on screen, redraws screen, and adds all actors from leveldata
+        ; Centers player on screen, redraws screen, adds all actors from leveldata, and jumps to mainloop
         ;
         ; Parameters: -
         ; Returns: -
@@ -590,7 +590,21 @@ CP_NotOverDown: sta mapY
                 jsr RedrawScreen
                 sty lvlObjNum                   ;Reset found levelobject (Y=$ff)
                 jsr AddAllActorsNextFrame
-                jmp UpdateActors
+                jsr UpdateActors
+
+        ; Game main loop
+
+StartMainLoop:  ldx #$ff
+                txs
+MainLoop:       jsr ScrollLogic
+                jsr DrawActors
+                jsr FinishFrame
+                jsr ScrollLogic
+                jsr GetControls
+                jsr UpdateMenu
+                jsr UpdateActors
+                jsr FinishFrame
+                jmp MainLoop
 
         ; Set zone's multicolors
         ;
@@ -618,6 +632,6 @@ SetZoneColors:  ldy #ZONEH_BG1                  ;Set zone multicolors
 GetZoneCenterX: lda limitL
                 clc
                 adc limitR
-                lsr
+                ror
                 sta temp8
                 rts

@@ -1149,7 +1149,16 @@ RCP_ZPState:    lda saveStateZP-1,x
                 ldx #>playerStateStart
                 jsr SaveState_CopyMemory
                 clc                             ;Savestate has all actors, do not load from disk
-RCP_CreatePlayer:
+                jsr CreatePlayerActor
+                jmp CenterPlayer
+
+        ; Create player actor
+        ;
+        ; Parameters: C=0 do not load actors from leveldata, C=1 load actors
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+CreatePlayerActor:
                 ldx #MAX_ACT-1                  ;Clear all actors when starting game
 RCP_ClearActorLoop:
                 jsr RemoveActor
@@ -1164,7 +1173,6 @@ RCP_ClearActorLoop:
                 stx lastReceivedXP
                 jsr InitActor
                 jsr SetPanelRedrawItemAmmo
-                jsr CenterPlayer
 
         ; Apply skill effects
         ;

@@ -568,6 +568,10 @@ UA_Jump:        jsr $0000
 UA_Next:        dex
                 bpl UA_Loop
 
+        ; Update level objects now. Note: if player enters a door, will not return
+
+                jsr UpdateLevelObjects
+
         ; Interpolate actors' movement each second frame
 
 InterpolateActors:

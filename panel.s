@@ -540,9 +540,8 @@ UM_ResumeOrRetry:
                 jsr UM_PauseMenuExit
                 lda actHp+ACTI_PLAYER
                 bne UM_PauseMenuDone
-                jsr RestartCheckpoint
-                jmp StartMainLoop
-                
+                jmp RestartCheckpoint
+
         ; Menu redraw routines
 
         ; None
