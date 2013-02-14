@@ -1109,6 +1109,7 @@ void map_mainloop(void)
     if (k == KEY_W)
     {
       memcpy(&blockdata[blocknum*16],bcopybuffer,16);
+      findusedblocksandchars();
     }
 
     if ((k == KEY_G) || (ascii == 13))
@@ -1702,6 +1703,7 @@ void char_mainloop(void)
     if (k == KEY_W)
     {
       memcpy(&blockdata[blocknum*16],bcopybuffer,16);
+      findusedblocksandchars();
     }
 
     if (!blockeditmode)
@@ -2600,6 +2602,7 @@ void reorganizedata()
   int charmapping[256];
   int c,d,e,z,x,y,s;
 
+  updateallzones();
   findanimatingblocks();
 
   memset(newcharused, 0, sizeof newcharused);
@@ -3134,7 +3137,7 @@ void loadalldata(void)
       
       mapx = 0;
       mapy = 0;
-      
+
       return;
     }
   }
