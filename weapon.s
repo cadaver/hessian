@@ -49,7 +49,7 @@ NOWEAPONFRAME   = $ff
 
 AH_NoAttack:    lda actAttackD,x
                 beq AH_SetIdleWeaponFrame
-                bpl AH_DecrementDelay      ;Break failed or incomplete melee attack
+                bpl AH_DecrementDelay      ;Break incomplete melee attack
                 lda #$01
                 sta actAttackD,x
 AH_DecrementDelay:
@@ -197,7 +197,6 @@ AH_NoWeaponFrame2:
                 and #WDB_THROW|WDB_MELEE
                 beq AH_CannotFire
                 bne AH_MeleeIdle
-AH_MeleeFailed: inc actAttackD,x                ;If melee failed, restore previous counter value
 AH_MeleeIdle:   jmp AH_SetIdleWeaponFrame
 AH_MeleeStrike:
 AH_CannotFire:  rts
@@ -216,12 +215,12 @@ AH_MeleePrepare:lda #FR_PREPARE                 ;Show prepare frame for hands & 
                 ldy #WD_PREPAREFR
                 jmp AH_SetPrepareWeaponFrame
 AH_MeleeAnimation:
-                lda actAttackD,x                ;Check for finishing animation, or reaching
-                cmp #$83                        ;"failed to attack" state in which the attack
-                bcs AH_MeleePrepare             ;must be released before retrying
-                cmp #$81
-                bcc AH_MeleeFailed
-                bne AH_MeleeStrike              ;Show strike frame just before spawning bullet
+                lda actAttackD,x                ;Check for finishing animation
+                cmp #$83
+                bcs AH_MeleePrepare
+                cmp #$82
+                bcs AH_MeleeStrike              ;Show strike frame just before spawning bullet
+                inc actAttackD,x                ;In case melee attack fails, stay in strike position
 
 AH_SpawnBullet: lda actCtrl,x                   ;Require debounced input before actually firing
                 cmp actPrevCtrl,x               ;to prevent erroneous attack direction
@@ -331,7 +330,7 @@ AH_NoAmmoDecrement:
 AH_InsideWall:  jsr RemoveActor
                 ldx actIndex
                 rts
-                
+
         ; Find spawn offset for bullet
         ;
         ; Parameters: X actor index

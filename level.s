@@ -515,6 +515,8 @@ ULO_ClearActorNext:
                 stx actYH+ACTI_PLAYER
                 lda #MB_GROUNDED
                 sta actMB+ACTI_PLAYER
+                ldx #ACTI_PLAYER                ;Because we're forcing grounded status, also reset
+                jsr MH_ResetFall                ;falling distance
                 lda lvlObjB,y
                 and #OBJ_TYPEBITS               ;Check for side door, must set right direction
                 cmp #OBJTYPE_SIDEDOOR

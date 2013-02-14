@@ -113,6 +113,7 @@ unsigned char chcol[256];
 unsigned char chinfo[256];
 unsigned char charused[256];
 unsigned char blockused[256];
+unsigned char animatingblock[256];
 unsigned char mapcopybuffer[MAPCOPYSIZE];
 unsigned char finemapcopybuffer[MAPCOPYSIZE];
 unsigned char ascii;
@@ -183,6 +184,7 @@ void updateallzones(void);
 void endblockeditmode();
 void initblockeditmode(int frommap);
 void findusedblocksandchars(void);
+void findanimatingblocks(void);
 void confirmquit(void);
 void loadchars(void);
 void savechars(void);
@@ -225,8 +227,7 @@ int findsamechar(int c, int d);
 int findsameblock(int c, int d);
 void transferblock(int c, int d);
 void copyblock(int c, int d);
-void removeunusedchars(void);
-void removeunusedblocks(void);
+void reorganizedata(void);
 void optimizechars(void);
 void optimizeblocks(void);
 
@@ -1552,13 +1553,7 @@ void char_mainloop(void)
       break;
     }
 
-    if (k == KEY_O)
-    {
-      optimizechars();
-      optimizeblocks();
-    }
-    if (k == KEY_U) removeunusedchars();
-    if (k == KEY_Y) removeunusedblocks();
+    if (k == KEY_O) reorganizedata();
     if (k == KEY_C)
     {
       memset(&chardata[charnum*8],0,8);
@@ -2453,6 +2448,26 @@ void initblockeditmode(int fm)
     frommap = fm;
 }
 
+void findanimatingblocks(void)
+{
+  int c;
+  for (c = 0; c < 256; c++) animatingblock[c] = 0;
+
+  for (c = 0; c < NUMLVLOBJ; c++)
+  {
+    if ((lvlobjy[c] & 0x80) && (lvlobjx[c] || lvlobjy[c]))
+    {
+      animatingblock[mapdata[lvlobjx[c] + mapsx * (lvlobjy[c] & 0x7f)]] = 1;
+      animatingblock[mapdata[lvlobjx[c] + mapsx * (lvlobjy[c] & 0x7f)] + 1] = 1;
+      if ((lvlobjb[objindex] & 64) && ((lvlobjy[c] & 0x7f) > 0))
+      {
+        animatingblock[mapdata[lvlobjx[c] + mapsx * ((lvlobjy[c] & 0x7f)-1)]] = 1;
+        animatingblock[mapdata[lvlobjx[c] + mapsx * ((lvlobjy[c] & 0x7f)-1)] + 1] = 1;
+      }
+    }
+  }
+}
+    
 void findusedblocksandchars(void)
 {
   int c;
@@ -2566,86 +2581,193 @@ int findsameblock(int c, int d)
   }
 
   // If block is used in animating levelobject, do not consider same
-  for (e = 0; e < NUMLVLOBJ; e++)
-  {
-    if ((lvlobjy[e] & 0x80) && (lvlobjx[e] || lvlobjy[e]))
-    {
-      int lvlobjblk = mapdata[lvlobjx[e] + mapsx * (lvlobjy[e] & 0x7f)];
-      if (lvlobjblk == c) return 0;
-      if (lvlobjblk+1 == c) return 0;
-      if (lvlobjblk == d) return 0;
-      if (lvlobjblk+1 == d) return 0;
-      if ((lvlobjb[objindex] & 0x40) && ((lvlobjy[e] & 0x7f) > 0))
-      {
-        lvlobjblk = mapdata[lvlobjx[e] + mapsx * ((lvlobjy[e] & 0x7f)-1)];
-        if (lvlobjblk == c) return 0;
-        if (lvlobjblk+1 == c) return 0;
-        if (lvlobjblk == d) return 0;
-        if (lvlobjblk+1 == d) return 0;
-      }
-    }
-  }
+  if (animatingblock[c] || animatingblock[d] || animatingblock[c-1] || animatingblock[d-1])
+    return 0;
+
   return 1;
 }
 
-void removeunusedblocks(void)
+void reorganizedata()
 {
-  int c;
-  for (c = 0; c < 256; c++) blockused[c] = 0;
-  for (c = 0; c < mapsx * mapsy; c++)
+  unsigned char newchardata[2048];
+  unsigned char newblockdata[4096];
+  unsigned char* newmapdata = malloc(mapsx * mapsy);
+  unsigned char newchcol[256];
+  unsigned char newchinfo[256];
+  unsigned char newcharused[256];
+  unsigned char newblockused[256];
+  int blockmapping[256];
+  int charmapping[256];
+  int c,d,e,z,x,y,s;
+
+  findanimatingblocks();
+
+  memset(newcharused, 0, sizeof newcharused);
+  memset(newblockused, 0, sizeof newblockused);
+  memset(newchardata, 0, sizeof newchardata);
+  memset(newblockdata, 0, sizeof newblockdata);
+  memset(newmapdata, 0, mapsx*mapsy);
+
+  for (c = 0; c < 256; c++)
   {
-    blockused[mapdata[c]] = 1;
+    blockmapping[c] = -1;
+    charmapping[c] = -1;
+    newchcol[c] = 9;
+    newchinfo[c] = 0;
   }
-  // Check for possibly animating levelobjects, mark blocks+1 used
-  for (c = 0; c < NUMLVLOBJ; c++)
+  // Copy fixed chars first
+  for (c = 0; c < 256; c++)
   {
-    if ((lvlobjy[c] & 0x80) && (lvlobjx[c] || lvlobjy[c]))
+    if (chcol[c] & 64)
     {
-      blockused[mapdata[lvlobjx[c] + mapsx * (lvlobjy[c] & 0x7f)] + 1] = 1;
-      if ((lvlobjb[objindex] & 64) && ((lvlobjy[c] & 0x7f) > 0))
-        blockused[mapdata[lvlobjx[c] + mapsx * ((lvlobjy[c] & 0x7f)-1)] + 1] = 1;
+      memcpy(&newchardata[c*8], &chardata[c*8], 8);
+      newchcol[c] = chcol[c];
+      newchinfo[c] = chinfo[c];
+      newcharused[c] = 1;
+      charmapping[c] = c;
     }
   }
 
-  for (c = 255; c > 0; c--)
+  // Process block 0 then
+  blockmapping[0] = 0;
+  newblockused[0] = 1;
+  memcpy(newblockdata, blockdata, 16);
+  for (d = 0; d < 16; d++)
   {
-    int d;
-    for (d = 0; d < 16; d++)
+    unsigned char ch = blockdata[d];
+    if (charmapping[ch] >= 0)
+      newblockdata[d] = charmapping[ch];
+    else
     {
-      // If block uses a no-optimize char, consider it always used
-      if (chcol[blockdata[c*16+d]] & 64)
-        blockused[mapdata[c]] = 1;
-    }
-  }
-  for (c = 0; c < 256; c++)
-  {
-    if (!blockused[c])
-    {
-      memset(&blockdata[16*c], 0, 16);
-    }
-  }
-  optimizeblocks();
-  findusedblocksandchars();
-}
+      unsigned char newch = 0;
+      while (newcharused[newch])
+        newch++;
 
-void removeunusedchars(void)
-{
-  int c;
-  findusedblocksandchars();
-  for (c = 0; c < 256; c++)
+      for (e = 0; e < 8; e++)
+        newchardata[newch*8+e] = chardata[ch*8+e];
+
+      newcharused[newch] = 1;
+      newchcol[newch] = chcol[ch];
+      newchinfo[newch] = chinfo[ch];
+      charmapping[ch] = newch;
+      newblockdata[d] = newch;
+    }
+  }
+
+  for (z = 0; z < NUMZONES; z++)
   {
-    if (!charused[c] && !(chcol[c] & 64))
+    if (!zonex[z] && !zoney[z])
+      continue;
+    for (x = zonel[z]; x < zoner[z]; x++)
+    {
+      for (y = zoneu[z]; y < zoned[z]; y++)
+      {
+        for (s = x; s < zoner[z]; s++)
+        {
+          unsigned char blk = mapdata[y*mapsx+s];
+          if (blockmapping[blk] >= 0)
+          {
+            newmapdata[y*mapsx+s] = blockmapping[blk];
+            break;
+          }
+          else
+          {
+            unsigned char newblk = 0;
+
+            while (newblockused[newblk])
+              newblk++;
+            newblockused[newblk] = 1;
+            blockmapping[blk] = newblk;
+            newmapdata[y*mapsx+s] = newblk;
+
+            for (d = 0; d < 16; d++)
+            {
+              unsigned char ch = blockdata[blk*16+d];
+              if (charmapping[ch] >= 0)
+                newblockdata[newblk*16+d] = charmapping[ch];
+              else
+              {
+                unsigned char newch = 0;
+                while (newcharused[newch])
+                  newch++;
+
+                for (e = 0; e < 8; e++)
+                  newchardata[newch*8+e] = chardata[ch*8+e];
+
+                newcharused[newch] = 1;
+                newchcol[newch] = chcol[ch];
+                newchinfo[newch] = chinfo[ch];
+                charmapping[ch] = newch;
+                newblockdata[newblk*16+d] = newch;
+              }
+            }
+
+            // If block is animating, must copy the one that follows it
+            if (animatingblock[blk] && blockmapping[blk+1] < 0)
+            {
+              blockmapping[blk+1] = newblk+1;
+              newblockused[newblk+1] = 1;
+              for (d = 0; d < 16; d++)
+              {
+                unsigned char ch = blockdata[blk*16+16+d];
+                if (charmapping[ch] >= 0)
+                  newblockdata[newblk*16+16+d] = charmapping[ch];
+                else
+                {
+                  unsigned char newch = 0;
+                  while (newcharused[newch])
+                    newch++;
+
+                  for (e = 0; e < 8; e++)
+                    newchardata[newch*8+e] = chardata[ch*8+e];
+
+                  newcharused[newch] = 1;
+                  newchcol[newch] = chcol[ch];
+                  newchinfo[newch] = chinfo[ch];
+                  charmapping[ch] = newch;
+                  newblockdata[newblk*16+16+d] = newch;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  memcpy(chardata, newchardata, 2048);
+  memcpy(blockdata, newblockdata, 4096);
+  memcpy(chcol, newchcol, 256);
+  memcpy(chinfo, newchinfo, 256);
+  memcpy(mapdata, newmapdata, mapsx*mapsy);
+
+  findusedblocksandchars();
+
+  // Tidying up step: if char does not use char color, reset color to that used by first char
+  if ((chcol[0] & 0xf) >= 8)
+  {
+    for (c = 1; c < 256; c++)
     {
       int e;
+      int charcolorused = 0;
+      if ((chcol[c] & 0xf) < 8)
+        continue;
+  
       for (e = 0; e < 8; e++)
       {
-        chardata[c*8+e] = 0;
+        int v = chardata[c*8+e];
+        if ((v & 0xc0) == 0xc0) charcolorused = 1;
+        if ((v & 0x30) == 0x30) charcolorused = 1;
+        if ((v & 0x0c) == 0x0c) charcolorused = 1;
+        if ((v & 0x03) == 0x03) charcolorused = 1;
+        if (charcolorused)
+          break;
       }
-      chcol[c] = 9;
-      chinfo[c] = 0;
+  
+      if (!charcolorused)
+        chcol[c] = chcol[0];
     }
   }
-  optimizechars();
 }
 
 void optimizeblocks(void)
@@ -2728,6 +2850,7 @@ void optimizechars(void)
   }
   findusedblocksandchars();
 }
+
 
 void initstuff(void)
 {
@@ -3008,6 +3131,10 @@ void loadalldata(void)
         close(handle);
       }
       findusedblocksandchars();
+      
+      mapx = 0;
+      mapy = 0;
+      
       return;
     }
   }

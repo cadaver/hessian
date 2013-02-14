@@ -1391,7 +1391,7 @@ AS_CheckBackground:
                 lda (actLo),y                   ;Set default AI mode for actor type in question
                 sta actAIMode,x
                 jsr GetCharInfo
-                and #CI_GROUND|CI_OBSTACLE
+                and #CI_GROUND|CI_OBSTACLE|CI_NOSPAWN
                 cmp temp3
                 beq AS_SpawnOK
                 jmp RemoveActor                 ;Spawned into wrong background type, remove
@@ -1465,7 +1465,14 @@ ALA_Common:     lda lvlActX,x
                 tya
                 tax
                 jsr InitActor
-                ldx addActorIndex
+                cpx #ACTI_FIRSTITEM
+                bcc ALA_NotItem
+                jsr GetCharInfo                 ;For items, check whether it's standing on a shelf/in a
+                and #CI_SHELF                   ;weapon closet, and make it grounded in that case
+                beq ALA_NotItem
+                lda #MB_GROUNDED
+                sta actMB,x
+ALA_NotItem:    ldx addActorIndex
 ALA_Fail:       rts
 ALA_IsItem:     lda #ACTI_FIRSTITEM
                 ldy #ACTI_LASTITEM
