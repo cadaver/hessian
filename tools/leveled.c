@@ -1554,7 +1554,19 @@ void char_mainloop(void)
       break;
     }
 
-    if (k == KEY_O) reorganizedata();
+    if (k == KEY_O)
+    {
+      if (shiftdown)
+        reorganizedata();
+      else
+      {
+        optimizechars();
+        optimizeblocks();
+      }
+    }
+    if (k == KEY_U)
+    {
+    }
     if (k == KEY_C)
     {
       memset(&chardata[charnum*8],0,8);
@@ -2603,6 +2615,8 @@ void reorganizedata()
   int c,d,e,z,x,y,s;
 
   updateallzones();
+  optimizechars();
+  optimizeblocks();
   findanimatingblocks();
 
   memset(newcharused, 0, sizeof newcharused);
@@ -2776,6 +2790,8 @@ void reorganizedata()
 void optimizeblocks(void)
 {
   int c,d;
+  
+  findanimatingblocks();
   for (c = 0; c < 256; c++) blockused[c] = 1;
 
   for (d = 1; d < 256; d++)
