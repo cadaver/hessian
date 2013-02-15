@@ -1071,6 +1071,7 @@ UpdateBlockDelta:
         ; Returns: -
         ; Modifies: A,X,Y,temp5-temp8,loader temp vars
 
+UB_Done:        rts
 UpdateBlock:    sta temp5
                 lda #$00
                 sta temp6
@@ -1093,36 +1094,77 @@ UB_InsideZone:  lda mapTblLo,y
                 tay
                 lda blkTblLo,y
                 sta UB_Lda+1
-                sta UB_Lda2+1
                 lda blkTblHi,y
                 sta UB_Lda+2
-                sta UB_Lda2+2
+                lda SL_CSSMapX+1
+                sta zpSrcLo
+                lda SL_CSSMapY+1
+                sta zpSrcHi
+                lda SL_CSSBlockX+1
+                ldx SL_CSSBlockY+1
+                ldy screen
+                jsr UB_UpdateScreen
+                lda scrAdd                      ;If scrolling is in the phase of copying the screen
+                beq UB_Done                     ;must also write the block to the other screen
+                lda scrCounter
+                beq UB_Done
+                cmp #$04
+                bcs UB_Done
+                lda mapX
+                sta zpSrcLo
+                lda mapY
+                sta zpSrcHi
+                lda screen
+                eor #$01
+                tay
+                lda blockX
+                ldx blockY
+UB_UpdateScreen:sta zpBitsLo
+                stx zpBitsHi
+                sty loadTempReg
                 lda temp7                       ;Calculate screen position for update
                 sec
-                sbc SL_CSSMapX+1
+                sbc zpSrcLo
                 cmp #11
-                bcs UB_Done
+                bcs UB_Done2
                 asl
                 asl
                 sec
-                sbc SL_CSSBlockX+1
+                sbc zpBitsLo
                 sta temp5
                 lda temp8
                 sec
-                sbc SL_CSSMapY+1
+                sbc zpSrcHi
                 cmp #7
-                bcs UB_Done
+                bcs UB_Done2
                 asl
                 asl
                 sec
-                sbc SL_CSSBlockY+1
+                sbc zpBitsHi
                 sta temp6
                 ldx #$00
 UB_Row:         lda temp6
                 cmp #SCROLLROWS
                 bcs UB_SkipRow
-                jsr UB_GetRowOffset
-                ldy screen
+                ldy #$00
+                sty zpDestHi
+                sta zpBitBuf
+                asl
+                rol zpDestHi
+                asl
+                rol zpDestHi
+                clc
+                adc zpBitBuf
+                bcc UB_NotOver
+                inc zpDestHi
+UB_NotOver:     asl
+                rol zpDestHi
+                asl
+                rol zpDestHi
+                asl
+                rol zpDestHi
+                sta zpDestLo
+UB_Screen:      ldy loadTempReg
                 lda zpDestHi
                 ora screenBaseTbl,y
                 sta zpDestHi
@@ -1151,82 +1193,9 @@ UB_SkipRow:     txa
 UB_RowDone:     inc temp6
                 cpx #$10
                 bcc UB_Row
-UB_Done:        lda scrAdd                      ;If scrolling is in the phase of copying the screen
-                beq UB_Done2                    ;must also write the block to the other screen
-                lda scrCounter
-                beq UB_Done2
-                cmp #$04
-                bcs UB_Done2
-                lda temp7
-                sec
-                sbc mapX
-                cmp #11
-                bcs UB_Done2
-                asl
-                asl
-                sec
-                sbc blockX
-                sta temp5
-                lda temp8
-                sec
-                sbc mapY
-                cmp #7
-                bcs UB_Done2
-                asl
-                asl
-                sec
-                sbc blockY
-                sta temp6
-                ldx #$00
-UB_Row2:        lda temp6
-                cmp #SCROLLROWS
-                bcs UB_SkipRow2
-                jsr UB_GetRowOffset
-                ldy screen
-                lda zpDestHi
-                ora screenBaseTbl,y
-                eor #$04
-                sta zpDestHi
-                ldy temp5
-UB_Column2:     cpy #39
-                bcs UB_SkipColumn2
-UB_Lda2:        lda $1000,x                     ;Take char from block
-                sta (zpDestLo),y                ;Store char to screen
-UB_SkipColumn2: iny
-                inx
-                txa
-                and #$03
-                bne UB_Column2
-                beq UB_RowDone2
-UB_SkipRow2:    txa
-                adc #$03                        ;C=1
-                tax
-UB_RowDone2:    inc temp6
-                cpx #$10
-                bcc UB_Row2
 UB_Done2:       rts
 
-        ;Subroutine to get screen row start offset with optimized multiply by 40
-
-UB_GetRowOffset:ldy #$00
-                sty zpDestHi
-                sta zpBitBuf
-                asl
-                rol zpDestHi
-                asl
-                rol zpDestHi
-                clc
-                adc zpBitBuf
-                bcc UB_NotOver
-                inc zpDestHi
-UB_NotOver:     asl
-                rol zpDestHi
-                asl
-                rol zpDestHi
-                asl
-                rol zpDestHi
-                sta zpDestLo
-                rts
+        ;Subroutine to apply block animation
 
 UB_Apply:       tay
                 lda (zpDestLo),y
