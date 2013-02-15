@@ -60,6 +60,10 @@ AI_AttackCommon:lda temp5                       ;Always face target (TODO: shoul
                 cmp (actLo),y
                 bcs AI_NoDuckingCheck
                 sta temp1
+                ldy actWpn,x
+                lda itemNPCMaxDist-1,y          ;If beyond attack distance, do not duck
+                cmp temp6
+                bcc AI_ShouldNotDuck
                 lda temp8                       ;If on the same level as target, possibly duck
                 bne AI_ShouldNotDuck
                 ldy actAITarget,x
@@ -72,7 +76,8 @@ AI_AttackCommon:lda temp5                       ;Always face target (TODO: shoul
                 lsr
                 bcs AI_ShouldDuck
 AI_ShouldNotDuck:
-                lda #$00
+                lda actMoveCtrl,x
+                and #$ff-JOY_DOWN
                 beq AI_DuckingCheckDone
 AI_ShouldDuck:  jsr GetCharInfo                 ;However do not climb down unintentionally
                 and #CI_CLIMB
@@ -82,7 +87,6 @@ AI_DuckingCheckDone:
                 sta actMoveCtrl,x
                 jmp AI_NoAttack                 ;Do not attack on same frame when ducking changed
 AI_NoDuckingCheck:
-AI_AccumulateAggression:
                 ldy #AL_OFFENSE                 ;Accumulate aggression
                 and (actLo),y
                 clc
@@ -98,9 +102,9 @@ AI_AggressionOK:sta actTime,x
                 bcs AI_XGreater
                 lda temp8
 AI_XGreater:    cmp itemNPCMinDist-1,y          ;Check that weapon is effective
-                bcc AI_NoAttack
+                bcc AI_NoAttack2
                 cmp itemNPCMaxDist-1,y
-                bcs AI_NoAttack
+                bcs AI_NoAttack2
                 lda actAttackD,x
                 bne AI_NoAttack2
                 lda temp8                       ;Check whether to attack horizontally, vertically or diagonally
@@ -156,7 +160,6 @@ AI_AttackNoRoute:
         ; Thug AI. Possibly not final
 
 AI_ThugContinueAttack:
-                jsr AI_SetStopCtrl
                 jmp AI_ContinueAttack
 AI_ThugIdle:    lda actD,x
                 jsr AI_SetLeftRightCtrl         ;Just continue forward
@@ -176,18 +179,27 @@ AI_Thug:        lda actTime,x
                 bcs AI_ThugIdle
                 ldy actWpn,x
                 lda temp6
+                cmp itemNPCMaxDist-1,y
+                bcs AI_ThugMoveCloserUnconditional
                 cmp itemNPCMinDist-1,y
                 bcc AI_ThugIdle
                 bne AI_ThugMoveCloser
-AI_ThugStop:    jsr AI_SetStopCtrl
+AI_ThugStop:    lda actMoveCtrl,x
+                and #JOY_DOWN
+                bne AI_ThugAttack               ;If already ducking, do not move
+                jsr AI_SetStopCtrl
                 beq AI_ThugAttack
 AI_ThugMoveCloser:
+                lda actMoveCtrl,x
+                and #JOY_DOWN
+                bne AI_ThugAttack               ;If already ducking, do not move
+AI_ThugMoveCloserUnconditional:
                 lda temp5
                 jsr AI_SetLeftRightCtrl
 AI_ThugAttack:  lda temp5                       ;Always face target (TODO: should check previous routecheck
                 sta actD,x                      ;and not do that if no line of sight)
                 jsr Random                      ;Jump to sniper common code for attack
-                jmp AI_AccumulateAggression
+                jmp AI_AttackCommon
 
 AI_SetLeftRightCtrl:
                 tay

@@ -477,6 +477,8 @@ ULO_NoOperate:  lda lvlObjB,y
 ULO_NoDoor:     and #OBJ_TYPEBITS               ;Check for side door
                 cmp #OBJTYPE_SIDEDOOR
                 bne ULO_Done
+                lda actHp+ACTI_PLAYER           ;If dead, do not enter sidedoor
+                beq ULO_Done
                 jsr GetZoneCenterX
                 ldx actXL+ACTI_PLAYER
                 lda actXH+ACTI_PLAYER

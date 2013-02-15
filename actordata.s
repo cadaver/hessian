@@ -435,7 +435,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move caps
-                dc.b 28                         ;Max. movement speed
+                dc.b 3*8                        ;Max. movement speed
                 dc.b 6*8                        ;Terminal falling speed
                 dc.b 8                          ;Ground movement acceleration
                 dc.b 3                          ;In air movement acceleration
