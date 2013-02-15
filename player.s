@@ -1000,6 +1000,7 @@ MH_Drowned:     rts
         ; Returns: -
         ; Modifies: A,temp3-temp8
 
+HD_NoItem2:     jmp HD_NoItem
 HumanDeath:     stx temp3
                 sty temp4
                 lda #SFX_DEATH
@@ -1026,20 +1027,20 @@ HD_NoYSpeed:    tya
                 sta actAIMode,x                 ;Reset any ongoing AI
                 sta temp8
                 txa                             ;Player dropping weapon is unnecessary
-                beq HD_NoItem
+                beq HD_NoItem2
                 lda actWpn,x                    ;Check if should spawn the weapon item
                 beq HD_NoItem                   ;TODO: spawn other items like medkits or quest items if necessary
                 ldy #ACTI_FIRSTITEM             ;Count capacity on both ground and inventory, do not spawn
 HD_CountGroundItems:                            ;if player can't pick up
                 lda actT,y
-                cmp #ACT_ITEM
-                bne HD_CGINext
+                beq HD_CGINext
                 lda actF1,y
                 cmp actWpn,x
                 bne HD_CGINext
                 lda actHp,y
                 clc
                 adc temp8
+                bcs HD_NoItem
                 sta temp8
 HD_CGINext:     iny
                 cpy #ACTI_LASTITEM+1
@@ -1050,6 +1051,7 @@ HD_CGINext:     iny
                 lda invCount,y
                 clc
                 adc temp8
+                bcs HD_NoItem
                 sta temp8
 HD_NotInInventory:
                 ldy actWpn,x
