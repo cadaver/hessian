@@ -122,6 +122,7 @@ MP_CheckPickup: jsr MP_CheckPickupSub           ;Check for item pickup / name di
                 beq MP_CheckObject              ;text
                 jsr ClearPanelText
                 jmp MP_CheckObject
+MPCO_Done2:     jmp MPCO_Done
 MP_HasItem:     lda textTime                    ;Make sure to not overwrite other game
                 bne MP_SkipItemName             ;messages
                 lda actF1,y
@@ -155,9 +156,9 @@ MPCO_Rescan:    lda #$80                        ;Start from beginning
 MPCO_NoRescan:  stx MPCO_LastCheckX+1
                 sty MPCO_LastCheckY+1
                 cmp #$ff
-                beq MPCO_Done
+                beq MPCO_Done2
                 cmp #$80
-                bcc MPCO_Done
+                bcc MPCO_Done2
                 stx MPCO_CmpX+1
                 ldx actYL+ACTI_PLAYER           ;If player stands on top of a block
                 cpx #$40                        ;check 1 block above
@@ -185,8 +186,43 @@ MPCO_EndCmp:    cpx #LVLOBJSEARCH
                 ldx #$ff                        ;If search finished with no object,
 MPCO_NotOver:   txa                             ;no need to rescan until moved
                 ora #$80
-                tax
+                sta lvlObjNum
+                bmi MPCO_Done
 MPCO_Found:     stx lvlObjNum
+                lda lvlObjB,x
+                tay
+                and #OBJ_TYPEBITS
+                cmp #OBJTYPE_DOOR
+                beq MPCO_ShowMarker
+                tya
+                and #OBJ_MODEBITS
+                cmp #OBJMODE_MANUAL             ;If object is manually activated
+                bcc MPCO_Done                   ;or a door with any mode, show marker
+MPCO_ShowMarker:
+                ldy #ACTI_FIRSTPLRBULLET
+                lda actT,y                      ;If marker already shown, update it
+                cmp #ACT_OBJECTMARKER
+                beq MPCO_UpdateMarker
+                tya
+                jsr GetFreeActor
+                bcc MPCO_Done
+MPCO_UpdateMarker:
+                lda lvlObjX,x
+                sta actXH,y
+                lda lvlObjY,x
+                and #$7f
+                adc #$00                        ;C=1
+                sta actYH,y
+                lda #$80
+                sta actXL,y
+                lda #$00
+                sta actYL,y
+                lda #ACT_OBJECTMARKER
+                sta actT,y
+                lda MoveItem_Color+1
+                sta actC,y
+                lda lvlObjNum
+                sta MObjMarker_Cmp+1            ;Only 1 marker exists at a time, modify code directly
 MPCO_Done:
 
 MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventory

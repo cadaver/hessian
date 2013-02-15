@@ -20,6 +20,7 @@ ACT_EXPLOSION   = 18
 ACT_SMOKETRAIL  = 19
 ACT_WATERSPLASH = 20
 ACT_SMALLSPLASH = 21
+ACT_OBJECTMARKER = 22
 
 HP_PLAYER       = 48
 HP_ENEMY        = 12
@@ -50,6 +51,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adSmokeTrail
                 dc.b <adWaterSplash
                 dc.b <adSmallSplash
+                dc.b <adObjectMarker
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adPlayer
@@ -72,6 +74,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adSmokeTrail
                 dc.b >adWaterSplash
                 dc.b >adSmallSplash
+                dc.b >adObjectMarker
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_PLAYER                   ;Lower part spritefile number
@@ -198,6 +201,12 @@ adSmallSplash:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b 3                          ;Number of frames
                 dc.b 60,61,62                   ;Frametable (first all frames of sprite1, then sprite2)
 
+adObjectMarker: dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 1                          ;Number of frames
+                dc.b 63
+
         ; Human actor upper part framenumbers
 
 humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,22,23,24,23,3,4,5,6,7,8,9
@@ -245,6 +254,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alSmokeTrail
                 dc.b <alWaterSplash
                 dc.b <alSmallSplash
+                dc.b <alObjectMarker
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alEnemy
@@ -267,6 +277,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alSmokeTrail
                 dc.b >alWaterSplash
                 dc.b >alSmallSplash
+                dc.b >alObjectMarker
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
@@ -436,3 +447,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b 96                         ;Climbing speed
                 dc.b 2*8                        ;Ladder jump / wallflip speed right
                 dc.b -2*8                       ;Ladder jump / wallflip speed left
+
+alObjectMarker: dc.w MoveObjectMarker           ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags

@@ -636,4 +636,18 @@ GetZoneCenterX: lda limitL
                 adc limitR
                 ror
                 sta temp8
-                rts
+MObjMarker_OK:  rts
+
+        ; Object marker update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveObjectMarker:
+                lda MoveItem_Color+1
+                sta actC,x
+MObjMarker_Cmp: lda #$00                        ;Check if levelobjectnumber has changed
+                cmp lvlObjNum                   ;and disappear in that case
+                beq MObjMarker_OK
+                jmp RemoveActor
