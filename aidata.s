@@ -1,8 +1,10 @@
         ; AI jumptable
 
 aiJumpTblLo:    dc.b <AI_Sniper
+                dc.b <AI_Thug
 
 aiJumpTblHi:    dc.b >AI_Sniper
+                dc.b >AI_Thug
 
 targetListAndTbl:  
                 dc.b 0                          ;1 potential targets

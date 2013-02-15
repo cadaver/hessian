@@ -6,6 +6,7 @@ AIH_AUTOJUMPLEDGE = $04
 
 AIMODE_NONE     = 0
 AIMODE_SNIPER   = 1
+AIMODE_THUG     = 2
 
 NOTARGET        = $80
 
@@ -44,14 +45,16 @@ AI_NoAttack:    lda #$00
                 sta actCtrl,x
                 rts
 
+        ; Sniper AI
+
 AI_Sniper:      lda actTime,x                   ;Attack time left?
                 bmi AI_ContinueAttack
                 jsr FindTarget
                 ldy actAITarget,x
                 bmi AI_GoIdle
                 jsr GetActorDistance
-                lda temp5                       ;Always face the target when in line of sight
-                sta actD,x
+AI_AttackCommon:lda temp5                       ;Always face target (TODO: should check previous routecheck
+                sta actD,x                      ;and not do that if no line of sight)
                 jsr Random                      ;Get random number for offense/defense logic
                 ldy #AL_DEFENSE
                 cmp (actLo),y
@@ -79,6 +82,7 @@ AI_DuckingCheckDone:
                 sta actMoveCtrl,x
                 jmp AI_NoAttack                 ;Do not attack on same frame when ducking changed
 AI_NoDuckingCheck:
+AI_AccumulateAggression:
                 ldy #AL_OFFENSE                 ;Accumulate aggression
                 and (actLo),y
                 clc
@@ -136,6 +140,8 @@ AI_AttackDirOK: sta temp4
                 ldy actAITarget,x               ;Check line of sight before actually firing
                 jsr RouteCheck
                 bcc AI_AttackNoRoute
+                lda temp5                       ;Always face target when attacking
+                sta actD,x
                 lda temp4
                 sta actCtrl,x
                 ldy actWpn,x
@@ -146,6 +152,53 @@ AI_AttackSetTime:
 AI_AttackNoRoute:
                 lda #$00                        ;Clear aggression to avoid making repeated
                 beq AI_AttackSetTime            ;routechecks
+
+        ; Thug AI. Possibly not final
+
+AI_ThugContinueAttack:
+                jsr AI_SetStopCtrl
+                jmp AI_ContinueAttack
+AI_ThugIdle:    lda actD,x
+                jsr AI_SetLeftRightCtrl         ;Just continue forward
+                lda #AIH_AUTOTURNWALL|AIH_AUTOTURNLEDGE
+                sta actAIHelp,x
+                lda #$00
+                sta actCtrl,x                   ;Clear attack controls
+                rts
+AI_Thug:        lda actTime,x
+                bmi AI_ThugContinueAttack
+                jsr FindTarget
+                ldy actAITarget,x
+                bmi AI_ThugIdle
+                jsr GetActorDistance
+                lda temp8                       ;If target far above/below, perform idle logic
+                cmp #2
+                bcs AI_ThugIdle
+                ldy actWpn,x
+                lda temp6
+                cmp itemNPCMinDist-1,y
+                bcc AI_ThugIdle
+                bne AI_ThugMoveCloser
+AI_ThugStop:    jsr AI_SetStopCtrl
+                beq AI_ThugAttack
+AI_ThugMoveCloser:
+                lda temp5
+                jsr AI_SetLeftRightCtrl
+AI_ThugAttack:  lda temp5                       ;Always face target (TODO: should check previous routecheck
+                sta actD,x                      ;and not do that if no line of sight)
+                jsr Random                      ;Jump to sniper common code for attack
+                jmp AI_AccumulateAggression
+
+AI_SetLeftRightCtrl:
+                tay
+                bmi AI_SetLeftCtrl
+                lda #JOY_RIGHT
+                bne AI_SetMoveCtrl
+AI_SetLeftCtrl: lda #JOY_LEFT
+                bne AI_SetMoveCtrl
+AI_SetStopCtrl: lda #$00
+AI_SetMoveCtrl: sta actMoveCtrl,x
+                rts
 
         ; Validate existing AI target / find new target
         ;

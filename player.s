@@ -1024,15 +1024,39 @@ HD_NoYSpeed:    tya
                 sta actFd,x
                 sta actHp,x                     ;Make sure HP is 0 or the death will not work correctly
                 sta actAIMode,x                 ;Reset any ongoing AI
+                sta temp8
                 txa                             ;Player dropping weapon is unnecessary
                 beq HD_NoItem
                 lda actWpn,x                    ;Check if should spawn the weapon item
                 beq HD_NoItem                   ;TODO: spawn other items like medkits or quest items if necessary
-                cmp #ITEM_FIRST_FIREARM         ;Melee weapons are a nuisance if dropped many times
-                bcs HD_ItemTypeOK               ;as only one can be picked up, check for existence first
-                jsr FindItemActor
+                ldy #ACTI_FIRSTITEM             ;Count capacity on both ground and inventory, do not spawn
+HD_CountGroundItems:                            ;if player can't pick up
+                lda actT,y
+                cmp #ACT_ITEM
+                bne HD_CGINext
+                lda actF1,y
+                cmp actWpn,x
+                bne HD_CGINext
+                lda actHp,y
+                clc
+                adc temp8
+                sta temp8
+HD_CGINext:     iny
+                cpy #ACTI_LASTITEM+1
+                bcc HD_CountGroundItems
+                lda actWpn,x
+                jsr FindItem
+                bcc HD_NotInInventory
+                lda invCount,y
+                clc
+                adc temp8
+                sta temp8
+HD_NotInInventory:
+                ldy actWpn,x
+                lda temp8
+                cmp itemMaxCount-1,y
                 bcs HD_NoItem
-HD_ItemTypeOK:  lda #ACTI_FIRSTITEM
+                lda #ACTI_FIRSTITEM
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
                 bcc HD_NoItem

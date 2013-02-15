@@ -442,6 +442,8 @@ UA_IndexNotOver:stx addActorIndex
                 sta UA_AAEndCmp+1
 
         ; Process spawners
+        ; NOTE: spawners should be spaced 13 blocks apart horizontally for a continuous
+        ; spawn zone
 
 UA_SpawnerIndex:ldx #$00
 UA_SpawnerLoop: lda lvlObjB,x
@@ -1349,21 +1351,23 @@ AS_Ground:      lda #CI_GROUND
 AS_SideCommon:  sta temp3
                 jsr Random
                 pha
-                and #$07
-                cmp #$06
-                bcc AS_CoordOK
-                sbc #$04
+                and #$03
                 clc
+                adc #$02        ;TODO: may need greater Y-coord. range
 AS_CoordOK:     adc UA_SpawnerTopCheck+1
                 sta actYH,y
                 pla
                 asl
                 bcc AS_GroundRight
 AS_GroundLeft:  lda UA_SpawnerLeftCheck+1
+                cmp limitL      ;Never spawn at zone edge, would be visible!
+                beq AS_GroundRight
                 sta actXH,y
                 lda #$00
                 beq AS_GroundStoreDir
 AS_GroundRight: ldx UA_SpawnerRightCheck+1
+                cpx limitR      ;Never spawn at zone edge, would be visible!
+                beq AS_GroundLeft
                 dex
                 txa
                 sta actXH,y
@@ -1381,7 +1385,7 @@ AS_CheckBackground:
                 and #CI_GROUND|CI_OBSTACLE|CI_NOSPAWN
                 cmp temp3
                 beq AS_SpawnOK
-                jmp RemoveActor                 ;Spawned into wrong background type, remove
+AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
 AS_Done:
 AS_SpawnOK:     rts
 AS_InAir:       asl
