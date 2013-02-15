@@ -1302,7 +1302,7 @@ DestroyActor:   sty temp8
 DA_NoXP:        ldy temp8
 DA_Jump:        jsr $0000
                 clc
-                rts
+AS_Done2:       rts
 
         ; Attempt to spawn an actor to level from a spawner object
         ;
@@ -1327,12 +1327,16 @@ AttemptSpawn:   sta temp2
                 lda lvlSpawnPlot,x              ;Requires a plotbit to spawn?
                 bmi AS_NoPlotBit
                 jsr GetPlotBit
-                beq AS_Done
+                beq AS_Done2
 AS_NoPlotBit:   lda #ACTI_FIRSTNPC              ;Do not use all NPC slots for spawned actors
                 ldy #ACTI_FIRSTNPC+MAX_SPAWNEDACT-1
                 jsr GetFreeActor
-                bcc AS_Done
-                ldx temp2
+                bcc AS_Done2
+                sty temp7
+                lda #$03
+                sta temp8                       ;Retry counter
+AS_Retry:       ldx temp2
+                ldy temp7
                 lda #$80
                 sta actXL,y                     ;Center into the upper edge of the block
                 sta actLvlDataPos,y             ;Mark as nonpersistent
@@ -1353,7 +1357,7 @@ AS_SideCommon:  sta temp3
                 pha
                 and #$03
                 clc
-                adc #$02        ;TODO: may need greater Y-coord. range
+                adc #$02
 AS_CoordOK:     adc UA_SpawnerTopCheck+1
                 sta actYH,y
                 pla
@@ -1385,7 +1389,9 @@ AS_CheckBackground:
                 and #CI_GROUND|CI_OBSTACLE|CI_NOSPAWN
                 cmp temp3
                 beq AS_SpawnOK
-AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
+AS_Remove:      dec temp8
+                bne AS_Retry
+                jmp RemoveActor                 ;Spawned into wrong background type, remove
 AS_Done:
 AS_SpawnOK:     rts
 AS_InAir:       asl
