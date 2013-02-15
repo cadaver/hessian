@@ -1047,13 +1047,18 @@ GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle char if outside
         ; Modifies: A,Y,loader temp vars
 
 GetCharInfoOffset:
-                tay
+                ldy actXH,x
+                sty zpBitsHi
+                ldy actXL,x
+                sty zpBitBuf
+GCIO_Common:    tay
                 ror
                 ror
                 ror
                 and #$c0
                 clc
                 adc actYL,x
+                and #$c0
                 sta zpBitsLo
                 php
                 tya
@@ -1066,8 +1071,8 @@ GCIO_NotNeg:    plp
                 adc actYH,x
                 bmi GCI_Outside
                 tay
-                lda zpBitsLo
-                jmp GCI_Common2
+                lda zpBitBuf
+                jmp GCI_Common3
 
         ; Get char collision info from the actor's position with both X & Y offset
         ;
@@ -1076,36 +1081,15 @@ GCIO_NotNeg:    plp
         ; Modifies: A,Y,loader temp vars
 
 GetCharInfoXYOffset:
-                sty zpBitsHi
-                tay
-                ror
-                ror
-                ror
-                and #$c0
-                clc
-                adc actYL,x
-                and #$c0
-                sta zpBitsLo                    ;Final Y coord lo
-                php
+                pha
                 tya
-                lsr
-                lsr
-                cpy #$80
-                bcc GCIOXY_NotNeg
-                ora #$c0
-GCIOXY_NotNeg:  plp
-                adc actYH,x
-                bmi GCI_Outside
-                sta zpBitBuf                    ;Final Y coord hi
-GCIOXY_XOffset: lda zpBitsHi
-                tay
                 ror
                 ror
                 ror
                 and #$c0
                 clc
                 adc actXL,x                     ;Final X coord lo
-                pha
+                sta zpBitBuf
                 php
                 tya
                 lsr
@@ -1118,7 +1102,7 @@ GCIOXY_XNotNeg: plp
                 sta zpBitsHi                    ;Final X coord hi
                 ldy zpBitBuf
                 pla
-                jmp GCI_Common3
+                jmp GCIO_Common
 
         ; Get actor's logic data address
         ;
