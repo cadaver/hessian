@@ -211,14 +211,21 @@ GetLevelDataActorBits:
                 sta zpDestHi
                 rts
 
+        ; Find the zone at player's position
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,loader temp vars
+
+FindPlayerZone: ldx actXH+ACTI_PLAYER
+                ldy actYH+ACTI_PLAYER
+
         ; Find the zone indicated by coordinates or number.
         ;
         ; Parameters: A zone number (FindZoneNum) or X,Y pos (FindZoneXY)
         ; Returns: zoneNum, zoneLo-zoneHi
         ; Modifies: A,X,Y,loader temp vars
 
-FindPlayerZone: ldx actXH+ACTI_PLAYER
-                ldy actYH+ACTI_PLAYER
 FindZoneXY:     sty zpBitBuf
                 lda #$00
 FZXY_Loop:      jsr FindZoneNum
@@ -500,35 +507,28 @@ ULO_ClearActorNext:
                 pla
                 tay
                 jsr BlankScreen
-                jsr ActivateObject              ;Activate the door that was entered. Also side-doors
-                lda #$80                        ;will get activated but this should not matter
-                sta actXL+ACTI_PLAYER
-                lda lvlObjX,y
-                sta actXH+ACTI_PLAYER
-                lda #$00
-                sta actYL+ACTI_PLAYER
+                jsr ActivateObject              ;Activate the door that was entered
+                ldx #ACTI_PLAYER                ;Reset animation, falling distance and speed
+                jsr MH_StandAnim
+                jsr MH_ResetFall
+                txa
                 sta actSX+ACTI_PLAYER
-                lda lvlObjY,y
-                and #$7f
-                tax
-                inx
-                stx actYH+ACTI_PLAYER
-                lda #MB_GROUNDED
+                lda #MB_GROUNDED                ;Set physics to grounded status
                 sta actMB+ACTI_PLAYER
-                ldx #ACTI_PLAYER                ;Because we're forcing grounded status, also reset
-                jsr MH_ResetFall                ;falling distance
+                jsr SetActorAtObject
+                jsr FindPlayerZone
                 lda lvlObjB,y
                 and #OBJ_TYPEBITS               ;Check for side door, must set right direction
                 cmp #OBJTYPE_SIDEDOOR
                 bne ULO_NoDirection
-                jsr FindPlayerZone
                 jsr GetZoneCenterX
                 lda actXH+ACTI_PLAYER
                 cmp temp8
                 ror
                 sta actD+ACTI_PLAYER
-ULO_NoDirection:ldx #ACTI_PLAYER
-                jsr MH_StandAnim
+ULO_NoDirection:jsr InitMap
+                ldx #ACTI_PLAYER
+                jsr AlignActorOnGround
                 jsr SaveCheckpoint              ;Save checkpoint now. TODO: check for save-disabled zone
 
         ; Centers player on screen, redraws screen, adds all actors from leveldata, and jumps to mainloop
@@ -538,11 +538,11 @@ ULO_NoDirection:ldx #ACTI_PLAYER
         ; Modifies: A,X,Y,temp vars
 
 CenterPlayer:   jsr FindPlayerZone
+                jsr InitMap
                 jsr SetZoneColors
                 iny
                 lda (zoneLo),y
                 jsr PlaySong                    ;Play zone's music
-                jsr InitMap
                 lda limitR
                 sec
                 sbc #10
@@ -637,6 +637,37 @@ GetZoneCenterX: lda limitL
                 ror
                 sta temp8
 MObjMarker_OK:  rts
+
+        ; Position actor to levelobject, coarsely only
+        ;
+        ; Parameters: X:actor number, Y levelobject number
+        ; Returns: -
+        ; Modifies: A,Y
+
+SetActorAtObject:
+                lda lvlObjX,y
+                sta actXH,x
+                lda lvlObjY,y
+                and #$7f
+                sta actYH,x
+AAOG_Done:      rts
+
+        ; Align actor to center of block and ground level, ground must be below
+        ;
+        ; Parameters: X:actor number
+        ; Returns: -
+        ; Modifies: A,Y
+
+AlignActorOnGround:
+                lda #$80
+                sta actXL,x
+                sta actYL,x
+AAOG_Loop:      jsr GetCharInfo
+                and #CI_GROUND|CI_OBSTACLE      ;Terminate loop if fall outside zone
+                bne AAOG_Done
+                lda #8*8
+                jsr MoveActorY
+                jmp AAOG_Loop
 
         ; Object marker update routine
         ;

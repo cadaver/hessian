@@ -200,29 +200,23 @@ MPCO_Found:     stx lvlObjNum
                 bcc MPCO_Done                   ;or a door with any mode, show marker
 MPCO_ShowMarker:
                 ldy #ACTI_FIRSTPLRBULLET
-                lda actT,y                      ;If marker already shown, update it
+                lda actT,y                      ;If marker already shown, remove it
                 cmp #ACT_OBJECTMARKER
                 beq MPCO_UpdateMarker
                 tya
                 jsr GetFreeActor
                 bcc MPCO_Done
 MPCO_UpdateMarker:
-                lda lvlObjX,x
-                sta actXH,y
-                lda lvlObjY,x
-                and #$7f
-                adc #$00                        ;C=1
-                sta actYH,y
-                lda #$80
-                sta actXL,y
-                lda #$00
-                sta actYL,y
+                stx MObjMarker_Cmp+1            ;Only 1 marker exists at a time, modify code directly
+                tya                             ;for the check whether to remove the marker
+                tax
                 lda #ACT_OBJECTMARKER
-                sta actT,y
+                sta actT,x
+                ldy lvlObjNum
+                jsr SetActorAtObject
+                jsr AlignActorOnGround
                 lda MoveItem_Color+1
-                sta actC,y
-                lda lvlObjNum
-                sta MObjMarker_Cmp+1            ;Only 1 marker exists at a time, modify code directly
+                sta actC,x
 MPCO_Done:
 
 MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventory

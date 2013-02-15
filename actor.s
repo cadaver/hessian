@@ -1579,7 +1579,7 @@ GFA_NotComplex: rts
         ; Modifies: A
 
 SpawnActor:     sta actT,y
-                lda actXL,x
+CopyCoords:     lda actXL,x
                 sta actXL,y
                 lda actXH,x
                 sta actXH,y
