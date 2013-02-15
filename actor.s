@@ -951,29 +951,7 @@ GetActorCharCoordX:
                 ora zpSrcLo
                 rts
 
-        ; Get char collision info from 1 char above actor's pos (optimized)
-        ;
-        ; Parameters: X actor index
-        ; Returns: A charinfo
-        ; Modifies: A,Y,loader temp vars
-
-GetCharInfo4Above:
-                ldy actYH,x
-                dey
-                bmi GCI_Outside
-                bpl GCI_Common
-
-GetCharInfo1Above:
-                ldy actYH,x
-                lda actYL,x
-                sec
-                sbc #$40
-                bcs GCI_Common2
-                dey
-                bmi GCI_Outside
-                bcc GCI_Common2
-
-        ; Get char collision info from 1 char below actor's pos (optimized)
+        ; Get char collision info from 1 block above or below actor's pos (optimized)
         ;
         ; Parameters: X actor index
         ; Returns: A charinfo
@@ -982,8 +960,33 @@ GetCharInfo1Above:
 GetCharInfo4Below:
                 ldy actYH,x
                 iny
-                bmi GCI_Outside
-                bpl GCI_Common
+                jmp GCI_Common
+
+GetCharInfo4Above:
+                ldy actYH,x
+                dey
+                jmp GCI_Common
+
+        ; Get char collision info from 1 char above actor's pos (optimized)
+        ;
+        ; Parameters: X actor index
+        ; Returns: A charinfo
+        ; Modifies: A,Y,loader temp vars
+
+GetCharInfo1Above:
+                ldy actYH,x
+                lda actYL,x
+                sec
+                sbc #$40
+                bcs GCI_Common2
+                dey
+                bcc GCI_Common2
+
+        ; Get char collision info from 1 char below actor's pos (optimized)
+        ;
+        ; Parameters: X actor index
+        ; Returns: A charinfo
+        ; Modifies: A,Y,loader temp vars
 
 GetCharInfo1Below:
                 ldy actYH,x
@@ -992,7 +995,6 @@ GetCharInfo1Below:
                 adc #$40
                 bcc GCI_Common2
                 iny
-                bmi GCI_Outside
                 bcs GCI_Common2
 
         ; Get char collision info from the actor's position
@@ -1016,6 +1018,8 @@ GCI_Common3:    lsr
                 lsr
                 lsr
                 sta zpBitsLo
+                tya
+                bmi GCI_Outside
                 lda mapTblHi,y
                 beq GCI_Outside
                 sta zpDestHi
@@ -1069,7 +1073,6 @@ GCIO_Common:    tay
                 ora #$c0
 GCIO_NotNeg:    plp
                 adc actYH,x
-                bmi GCI_Outside
                 tay
                 lda zpBitBuf
                 jmp GCI_Common3
