@@ -196,62 +196,44 @@ PurgeFile:      sty zpLenLo
                 lda fileHi,y                    ;Check that chunk exists
                 beq PF_Done
                 sta zpDestHi
-                lda freeMemLo                   ;Find out size of the erased chunk
-                sec
-                sbc zpDestLo
-                sta zpBitsLo
+                lda freeMemLo
+                sta zpSrcLo
                 lda freeMemHi
-                sbc zpDestHi
-                sta zpBitsHi
+                sta zpSrcHi
                 ldx #MAX_CHUNKFILES-1
 PF_FindSizeLoop:cpx zpLenLo
                 beq PF_FindSizeSkip
-                lda fileHi,x
-                beq PF_FindSizeSkip
-                lda fileLo,x
-                sec
-                sbc zpDestLo
-                sta zpSrcLo
+                ldy fileLo,x
+                cpy zpDestLo
                 lda fileHi,x
                 sbc zpDestHi
-                sta zpSrcHi
-                lda zpSrcLo
-                cmp zpBitsLo
-                lda zpSrcHi
-                sbc zpBitsHi
+                bcc PF_FindSizeSkip
+                cpy zpSrcLo
+                lda fileHi,x
+                sbc zpSrcHi
                 bcs PF_FindSizeSkip
-PF_FindSizeNewSize:
-                lda zpSrcLo
-                sta zpBitsLo                    ;zpBitsLo,Hi = size of purged chunk-file
-                lda zpSrcHi
-                sta zpBitsHi
+                sty zpSrcLo
+                lda fileHi,x
+                sta zpSrcHi
 PF_FindSizeSkip:dex
                 bpl PF_FindSizeLoop
-                lda zpDestLo                    ;Set source address for memory shift
-                clc
-                adc zpBitsLo
-                sta zpSrcLo
+                lda freeMemLo                   ;How much memory to shift
+                sec
+                sbc zpSrcLo
+                sta zpBitsLo
+                lda freeMemHi
+                sbc zpSrcHi
+                sta zpBitsHi
+                jsr CopyMemory_PointersSet
+                lda zpDestLo
+                sbc zpSrcLo
+                sta zpBitsLo
                 lda zpDestHi
-                adc zpBitsHi
-                sta zpSrcHi
-                ldy freeMemHi
-                iny
-                sty zpBitBuf
-                ldy #$00
-PF_ShiftMemory: lda (zpSrcLo),y
-                sta (zpDestLo),y
-                iny
-                bne PF_ShiftMemory
-                inc zpSrcHi
-                inc zpDestHi
-                lda zpSrcHi                     ;Note: we may copy extra (up to 256 bytes)
-                cmp zpBitBuf                    ;but it should do no harm
-                bcc PF_ShiftMemory
-PF_CopyDone:    ldx #freeMemLo                  ;Shift top of memory pointer
-                ldy #zpBitsLo
-                jsr Sub16
-                ldx #zpBitsLo                   ;zpBitsLo,Hi = negative size of file
-                jsr Negate16
+                sbc zpSrcHi
+                sta zpBitsHi                    ;Negative delta to filepointers
+                ldx #<freeMemLo
+                ldy #<zpBitsLo
+                jsr Add16                       ;Shift the free memory pointer
                 ldy #MAX_CHUNKFILES-1
 PF_RelocLoop:   cpy zpLenLo                     ;Do not relocate itself
                 beq PF_RelocNext
@@ -288,7 +270,7 @@ SaveState_CopyMemory:
                 sty zpBitsLo
                 ldy #>(playerStateEnd-playerStateStart)
                 sty zpBitsHi
-                
+
         ; Copy a block of memory
         ;
         ; Parameters: A,X: destination, zpSrcLo,Hi source zpBitsLo,Hi amount of bytes
@@ -297,16 +279,18 @@ SaveState_CopyMemory:
 
 CopyMemory:     sta zpDestLo
                 stx zpDestHi
-                ldx zpBitsLo
+CopyMemory_PointersSet:
                 ldy #$00
+                ldx zpBitsLo                    ;Predecrement highbyte if lowbyte 0 at start
+                beq CM_Predecrement
 CM_Loop:        lda (zpSrcLo),y
                 sta (zpDestLo),y
                 iny
                 bne CM_NotOver
                 inc zpSrcHi
                 inc zpDestHi
-CM_NotOver:     dex                             ;TODO: may be incorrect when copying exactly 256 bytes
+CM_NotOver:     dex
                 bne CM_Loop
-                dec zpBitsHi
+CM_Predecrement:dec zpBitsHi
                 bpl CM_Loop
                 rts
