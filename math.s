@@ -176,7 +176,7 @@ Cmp16Done:      rts
         ; Return a 8bit pseudorandom number.
         ;
         ; Parameters: -
-        ; Returns: A:number ($00-$ff)
+        ; Returns: A:number ($00-$ff), C=0
         ; Modifies: A
 
 Random:         inc RandomAdd+1
@@ -191,4 +191,5 @@ RandomSeed:     lda #$00
                 asl
 RandomAdd:      adc randomAreaStart
                 sta RandomSeed+1
+                clc
                 rts

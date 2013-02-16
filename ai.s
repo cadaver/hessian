@@ -198,8 +198,7 @@ AI_ThugMoveCloserUnconditional:
                 jsr AI_SetLeftRightCtrl
 AI_ThugAttack:  lda temp5                       ;Always face target (TODO: should check previous routecheck
                 sta actD,x                      ;and not do that if no line of sight)
-                jsr Random                      ;Jump to sniper common code for attack
-                jmp AI_AttackCommon
+                jmp AI_AttackCommon             ;Jump to sniper common code for attack
 
 AI_SetLeftRightCtrl:
                 tay

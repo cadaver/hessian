@@ -91,7 +91,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 11,12,13,14,15,16,17,18
+                dc.b 11,12,13,14,15,16,17,18,19
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -290,6 +290,7 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
 plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
                 dc.b 0                          ;XP from kill
                 dc.b AIMODE_NONE                ;AI mode when spawned randomly
+                dc.b ITEM_NONE                  ;Itemdrop table index or item override
                 dc.b $ff                        ;AI offense probability
                 dc.b $ff                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP|AMF_SWIM ;Move flags
@@ -302,8 +303,6 @@ plrGroundBrake:dc.b INITIAL_GROUNDBRAKE        ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
 plrJumpSpeed:   dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
 plrClimbSpeed:  dc.b INITIAL_CLIMBSPEED         ;Climbing speed
-                dc.b 2*8                        ;Ladder jump / wallflip speed right
-                dc.b -2*8                       ;Ladder jump / wallflip speed left
 plrSwimSpeed:   dc.b 2*8                        ;Swimming speed
 plrSwimAcc:     dc.b INITIAL_GROUNDACC/2        ;Swimming acceleration
 plrDrowningTimer:
@@ -432,6 +431,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.b 5                          ;XP from kill
                 dc.b AIMODE_THUG                ;AI mode when spawned randomly
+                dc.b DROP_WEAPONMEDKITCREDITS   ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move caps
@@ -445,8 +445,6 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b -4                         ;Height in chars for headbump check (negative)
                 dc.b -44                        ;Jump initial speed (negative)
                 dc.b 96                         ;Climbing speed
-                dc.b 2*8                        ;Ladder jump / wallflip speed right
-                dc.b -2*8                       ;Ladder jump / wallflip speed left
 
 alObjectMarker: dc.w MoveObjectMarker           ;Update routine
                 dc.w RemoveActor                ;Destroy routine

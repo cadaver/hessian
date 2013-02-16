@@ -221,11 +221,9 @@ DA_NoAmmoInMag: lda invCount,y
                 lda #$00
 DA_NotNegative: sta invCount,y
                 bne DA_DecreaseDone
-                sty zpSrcLo
                 lda invType,y
                 cmp #ITEM_FIRST_CONSUMABLE      ;If it's a consumable item, remove when ammo
                 bcc DA_DecreaseDone             ;goes to zero
-                ldy itemIndex
                 jmp RemoveItemByIndex
 SetPanelRedrawAmmo:
 DA_DecreaseDone:lda panelUpdateFlags
@@ -269,6 +267,8 @@ MoveItem_Done:  rts
         ; Modifies: A,X,Y,temp vars
         
 UseItem:        lda invType,y
+                cmp #ITEM_FIRST_NONWEAPON
+                bcc UI_Reload
                 cmp #ITEM_MEDKIT
                 beq UseMedKit
 UMK_FullHealth: rts
@@ -283,3 +283,13 @@ UI_ReduceAmmo:  lda #USEITEM_ATTACK_DELAY       ;In case the item is removed, gi
                 sta actAttackD+ACTI_PLAYER      ;attack delay to prevent accidental
                 lda #$01                        ;fire when a weapon becomes selected
                 jmp DecreaseAmmo
+UI_Reload:      ldx invType,y                   ;Do not reload if already full magazine
+                lda invMag,y                    ;or already reloading
+                bmi UI_DontReload
+                cmp itemMagazineSize-1,x
+                bcs UI_DontReload
+                cmp invCount,y
+                bcs UI_DontReload
+                lda #$00                        ;Initiate reload by zeroing magazine
+                sta invMag,y
+UI_DontReload:  rts

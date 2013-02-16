@@ -53,23 +53,22 @@ AL_COLOROVERRIDE = 9
 AL_DMGMODIFY    = 10
 AL_KILLXP       = 11
 AL_SPAWNAIMODE  = 12
-AL_OFFENSE      = 13
-AL_DEFENSE      = 14
-AL_MOVEFLAGS    = 15
-AL_MOVESPEED    = 16
-AL_GROUNDACCEL  = 17
-AL_INAIRACCEL   = 18
-AL_FALLACCEL    = 19                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 20                          ;Gravity acceleration in longjump
-AL_BRAKING      = 21
-AL_HEIGHT       = 22                           ;Height for headbump check, negative
-AL_JUMPSPEED    = 23                           ;Negative
-AL_CLIMBSPEED   = 24
-AL_HALFSPEEDRIGHT = 25                         ;Ladder jump / wallflip speed right
-AL_HALFSPEEDLEFT = 26                          ;Ladder jump / wallflip speed left
-AL_SWIMSPEED    = 27
-AL_SWIMACCEL    = 28
-AL_DROWNINGTIMER = 29
+AL_DROPITEMINDEX = 13
+AL_OFFENSE      = 14
+AL_DEFENSE      = 15
+AL_MOVEFLAGS    = 16
+AL_MOVESPEED    = 17
+AL_GROUNDACCEL  = 18
+AL_INAIRACCEL   = 19
+AL_FALLACCEL    = 20                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 21                          ;Gravity acceleration in longjump
+AL_BRAKING      = 22
+AL_HEIGHT       = 23                           ;Height for headbump check, negative
+AL_JUMPSPEED    = 24                           ;Negative
+AL_CLIMBSPEED   = 25
+AL_SWIMSPEED    = 26
+AL_SWIMACCEL    = 27
+AL_DROWNINGTIMER = 28
 
 AF_NONE         = $00
 AF_ISHERO       = $01
@@ -471,7 +470,6 @@ UA_SpawnerBottomCheck:
                 bcs UA_SpawnerNext
                 jsr Random
                 and lvlObjDL,x
-                clc
                 adc spawnCounter
                 sta spawnCounter
                 bcc UA_SpawnerNext
@@ -1409,7 +1407,6 @@ AS_InAirSide:   jsr Random
                 sta actYL,y
                 pla
                 and #$03
-                clc
                 adc #$01
                 adc UA_SpawnerTopCheck+1
                 jmp AS_SideCommon

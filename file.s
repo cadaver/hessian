@@ -305,7 +305,7 @@ CM_Loop:        lda (zpSrcLo),y
                 bne CM_NotOver
                 inc zpSrcHi
                 inc zpDestHi
-CM_NotOver:     dex
+CM_NotOver:     dex                             ;TODO: may be incorrect when copying exactly 256 bytes
                 bne CM_Loop
                 dec zpBitsHi
                 bpl CM_Loop

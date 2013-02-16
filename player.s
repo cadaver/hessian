@@ -464,12 +464,8 @@ MH_NoBraking:   lda temp1
 MH_WallFlipRight:
                 cmp actMoveCtrl,x
                 bne MH_NoWallFlip
-                ldy #AL_HALFSPEEDRIGHT
                 cmp #JOY_UP|JOY_RIGHT
-                beq MH_WallFlipRight2
-                ldy #AL_HALFSPEEDLEFT
-MH_WallFlipRight2:
-                lda (actLo),y
+                jsr MH_GetSignedHalfSpeed
                 sta actSX,x
                 bne MH_StartJump
 MH_NoWallFlip:  lda #$00
@@ -850,11 +846,7 @@ MH_ClimbUp:     jsr GetCharInfo4Above
                 bne MH_ClimbUpNoJump
                 lda actMoveCtrl,x
                 cmp #JOY_RIGHT
-                ldy #AL_HALFSPEEDRIGHT
-                bcs MH_ClimbUpJumpRight
-                ldy #AL_HALFSPEEDLEFT
-MH_ClimbUpJumpRight:
-                lda (actLo),y
+                jsr MH_GetSignedHalfSpeed
                 sta actSX,x
                 sta actD,x
                 jmp MH_StartJump
@@ -994,15 +986,30 @@ MH_NotDrowning: sta actFallL,x
 MH_SwimAnimDone:jmp MH_AnimDone
 MH_Drowned:     rts
 
+        ; Get halved move speed
+        ;
+        ; Parameters: X actor index (actLo,actHi must be set), C=1 return positive speed, C=0 return negative speed
+        ; Returns: A speed
+        ; Modifies: A,Y
+
+MH_GetSignedHalfSpeed:
+                ldy #AL_MOVESPEED
+                lda (actLo),y
+                php
+                lsr
+                plp
+                bcs MH_GSHSDone
+                eor #$ff
+                adc #$01
+MH_GSHSDone:    rts
+
         ; Humanoid character destroy routine
         ;
         ; Parameters: X actor index,Y damage source actor or $ff if none
         ; Returns: -
-        ; Modifies: A,temp3-temp8
+        ; Modifies: A,Y,temp3-temp8
 
-HD_NoItem2:     jmp HD_NoItem
-HumanDeath:     stx temp3
-                sty temp4
+HumanDeath:     sty temp4
                 lda #SFX_DEATH
                 jsr PlaySfx
                 lda #FR_DIE
@@ -1025,66 +1032,7 @@ HD_NoYSpeed:    tya
                 sta actFd,x
                 sta actHp,x                     ;Make sure HP is 0 or the death will not work correctly
                 sta actAIMode,x                 ;Reset any ongoing AI
-                sta temp8
-                txa                             ;Player dropping weapon is unnecessary
-                beq HD_NoItem2
-                lda actWpn,x                    ;Check if should spawn the weapon item
-                beq HD_NoItem                   ;TODO: spawn other items like medkits or quest items if necessary
-                ldy #ACTI_FIRSTITEM             ;Count capacity on both ground and inventory, do not spawn
-HD_CountGroundItems:                            ;if player can't pick up
-                lda actT,y
-                beq HD_CGINext
-                lda actF1,y
-                cmp actWpn,x
-                bne HD_CGINext
-                lda actHp,y
-                clc
-                adc temp8
-                bcs HD_NoItem
-                sta temp8
-HD_CGINext:     iny
-                cpy #ACTI_LASTITEM+1
-                bcc HD_CountGroundItems
-                lda actWpn,x
-                jsr FindItem
-                bcc HD_NotInInventory
-                lda invCount,y
-                clc
-                adc temp8
-                bcs HD_NoItem
-                sta temp8
-HD_NotInInventory:
-                ldy actWpn,x
-                lda temp8
-                cmp itemMaxCount-1,y
-                bcs HD_NoItem
-                lda #ACTI_FIRSTITEM
-                ldy #ACTI_LASTITEM
-                jsr GetFreeActor
-                bcc HD_NoItem
-                lda #ORG_TEMP
-                jsr SetPersistence
-                lda #$00
-                sta temp5
-                sta temp6
-                lda #<ITEM_SPAWN_OFFSET
-                sta temp7
-                lda #>ITEM_SPAWN_OFFSET
-                sta temp8
-                lda #ACT_ITEM
-                jsr SpawnWithOffset
-                lda actWpn,x
-                tax
-                sta actF1,y
-                lda itemDefaultPickup-1,x
-                sta actHp,y
-                lda #ITEM_YSPEED
-                sta actSY,y
-                tya
-                tax
-                jsr InitActor
-                ldx temp3
-HD_NoItem:      ldy temp4                      ;Check if has a damage source
+                ldy temp4                      ;Check if has a damage source
                 bmi HD_NoDamageSource
                 lda actHp,y
                 sta temp8
@@ -1099,11 +1047,104 @@ HD_NoItem:      ldy temp4                      ;Check if has a damage source
                 bmi HD_LeftImpulse
 HD_RightImpulse:lda temp8
                 ldy #DEATH_MAX_XSPEED
-                jmp AccActorX
+                jsr AccActorX
+                jmp HD_NoDamageSource
 HD_LeftImpulse: lda temp8
                 ldy #DEATH_MAX_XSPEED
-                jmp AccActorXNeg
+                jsr AccActorXNeg
 HD_NoDamageSource:
+
+        ; Drop item from dead enemy
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp3-temp8
+
+DropItem:       stx temp3
+                lda #$02                        ;Retry counter
+                sta temp7
+DI_Retry:       ldy #AL_DROPITEMINDEX
+                lda (actLo),y
+                bpl DI_ItemNumber
+                sta temp4
+                jsr Random
+                and #$03
+                adc temp4
+                tay
+                lda itemDropTable-$80,y
+                bne DI_ItemNumber
+                lda actWpn,x
+                bcc DI_ItemNumber
+DI_Override:
+DI_ItemNumber:  tay
+                beq DI_NoItem
+                sta temp4                       ;Item type to drop
+                lda #$00
+                sta temp5
+                sta temp6
+                sta temp8                       ;Capacity counter
+                ldy #ACTI_FIRSTITEM             ;Count capacity on both ground and inventory, do not spawn
+DI_CountGroundItems:                            ;if player can't pick up
+                lda actT,y
+                beq DI_CGINext
+                lda actF1,y
+                cmp temp4
+                bne DI_CGINext
+                lda actHp,y
+                clc
+                adc temp8
+                bcs DI_NoItem
+                sta temp8
+DI_CGINext:     iny
+                cpy #ACTI_LASTITEM+1
+                bcc DI_CountGroundItems
+                lda temp4
+                jsr FindItem
+                bcc DI_NotInInventory
+                lda invCount,y
+                clc
+                adc temp8
+                bcs DI_NoItem
+                sta temp8
+DI_NotInInventory:
+                ldy temp4
+                lda temp8
+                cmp itemMaxCount-1,y
+                bcc DI_HasCapacity
+                dec temp7
+                bne DI_Retry                    ;If player has no capacity, retry to drop something else
+DI_NoItem:      rts                             ;(eg. credits)
+DI_HasCapacity: lda #ACTI_FIRSTITEM
+                ldy #ACTI_LASTITEM
+                jsr GetFreeActor
+                bcc DI_NoItem
+                lda temp4
+                cmp #ITEM_FIRST_IMPORTANT
+                lda #$00
+                bcs DI_IsImportant
+                lda #ORG_TEMP
+DI_IsImportant: jsr SetPersistence
+                lda #<ITEM_SPAWN_OFFSET
+                sta temp7
+                lda #>ITEM_SPAWN_OFFSET
+                sta temp8
+                lda #ACT_ITEM
+                jsr SpawnWithOffset
+                lda temp4
+                tax
+                sta actF1,y
+                jsr Random
+                and #$07                        ;In case going to drop credits, randomize amount
+                adc #$03
+                sta defaultCreditsPickup
+                lda itemDefaultPickup-1,x
+                sta actHp,y
+                lda #ITEM_YSPEED
+                sta actSY,y
+                tya
+                tax
+                jsr InitActor
+                ldx temp3
                 rts
 
         ; Give experience points to player, check for leveling

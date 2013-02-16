@@ -18,10 +18,13 @@ ITEM_BAZOOKA    = 16
 ITEM_GRENADE    = 17
 ITEM_HOMINGDRONE = 18
 ITEM_MEDKIT     = 19
+ITEM_CREDITS    = 20
+
 
 ITEM_FIRST_FIREARM = ITEM_PISTOL
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
 ITEM_FIRST_NONWEAPON = ITEM_MEDKIT
+ITEM_FIRST_IMPORTANT = ITEM_CREDITS+1
 
 MAG_INFINITE = $ff
 
@@ -44,6 +47,8 @@ itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Grenade
                 dc.b 0                          ;Homing drone
                 dc.b 0                          ;Medikit
+                dc.b 0                          ;Credits
+
 
 itemDefaultMaxCount:
                 dc.b 1                          ;Fists
@@ -65,6 +70,8 @@ itemDefaultMaxCount:
                 dc.b 5                          ;Grenade
                 dc.b 3                          ;Homing drone
                 dc.b 2                          ;Medikit
+                dc.b 250                        ;Credits
+
 
 itemMaxCountAdd:dc.b 0                          ;Fists
                 dc.b 0                          ;Knife
@@ -85,6 +92,8 @@ itemMaxCountAdd:dc.b 0                          ;Fists
                 dc.b 2                          ;Grenade
                 dc.b 1                          ;Homing drone
                 dc.b 1                          ;Medikit
+                dc.b 0                          ;Credits
+
 
 itemDefaultPickup:
                 dc.b 1                          ;Fists
@@ -106,6 +115,9 @@ itemDefaultPickup:
                 dc.b 2                          ;Grenade
                 dc.b 1                          ;Homing drone
                 dc.b 1                          ;Medikit
+defaultCreditsPickup:
+                dc.b 5                          ;Credits
+
 
 itemMagazineSize:
                 dc.b MAG_INFINITE               ;Fists
@@ -127,6 +139,7 @@ itemMagazineSize:
                 dc.b 0                          ;Grenade
                 dc.b 0                          ;Homing drone
                 dc.b 0                          ;Medikit
+                dc.b 0                          ;Credits
 
 itemNPCMinDist: dc.b 0                          ;Fists
                 dc.b 0                          ;Knife

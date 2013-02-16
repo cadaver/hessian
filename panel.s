@@ -359,6 +359,8 @@ UM_NoCounter:   ldy itemIndex
                 beq UM_MoveRight
                 cmp #KEY_R
                 beq UM_Reload
+                cmp #KEY_H
+                beq UM_Heal
                 if ITEM_CHEAT>0
                 cmp #KEY_Z
                 beq UM_PrevItem
@@ -366,13 +368,17 @@ UM_NoCounter:   ldy itemIndex
                 beq UM_NextItem
                 endif
 UM_ControlDone: rts
+UM_Heal:        lda #ITEM_MEDKIT
+                jsr FindItem
+                bcc UM_ControlDone
+UM_Reload:      jmp UseItem
 
         ; Inventory
         
 UM_Inventory:   ldx #MENU_SKILLDISPLAY          ;Check for entering skill display screen
                 lda joystick
                 cmp #JOY_FIRE+JOY_UP
-                beq SetMenuMode
+                beq SetMenuMode2
                 ldx #MENU_NONE                  ;Check for exiting inventory or waiting for
                 ldy #$ff                        ;pause menu
                 cmp #JOY_FIRE
@@ -401,6 +407,7 @@ UM_ForceRefresh:lda #$00                        ;Check for forced refresh (when 
                 cmp prevJoy
                 bne UM_Reload
 UM_MoveDone:    rts
+
 UM_MoveRight:   lda invType+1,y
                 beq UM_MoveDone
                 inc itemIndex
@@ -409,16 +416,6 @@ UM_MoveLeft:    tya                             ;can also be selected in NONE mo
                 beq UM_MoveDone
                 dec itemIndex
                 bpl RedrawInventory
-UM_Reload:      ldx invType,y                   ;Do not reload if already full magazine
-                lda invMag,y                    ;or already reloading
-                bmi UM_DontReload
-                cmp itemMagazineSize-1,x
-                bcs UM_DontReload
-                cmp invCount,y
-                bcs UM_DontReload
-                lda #$00                        ;Initiate reload by zeroing magazine
-                sta invMag,y
-UM_DontReload:  rts
                 if ITEM_CHEAT>0
 UM_PrevItem:    lda #$ff
                 skip2

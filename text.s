@@ -18,7 +18,9 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtBazooka
                 dc.b <txtGrenade
                 dc.b <txtHomingDrone
-                dc.b <txtFirstAidKit
+                dc.b <txtMedKit
+                dc.b <txtCredits
+
 
 itemNameHi:     dc.b >txtFists
                 dc.b >txtKnife
@@ -38,7 +40,9 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtBazooka
                 dc.b >txtGrenade
                 dc.b >txtHomingDrone
-                dc.b >txtFirstAidKit
+                dc.b >txtMedKit
+                dc.b >txtCredits
+
 
 txtFists:       dc.b "FISTS",0
 txtKnife:       dc.b "KNIFE",0
@@ -58,7 +62,8 @@ txtGrenadeLauncher:dc.b "GRENADE LAUNCHER",0
 txtBazooka:     dc.b "BAZOOKA",0
 txtGrenade:     dc.b "GRENADES",0
 txtHomingDrone: dc.b "HOMING DRONE",0
-txtFirstAidKit: dc.b "MEDKIT",0
+txtMedKit:      dc.b "MEDKIT",0
+txtCredits:     dc.b "CREDITS",0
 
         ; Skill names
 

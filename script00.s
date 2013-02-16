@@ -720,7 +720,7 @@ mainMenuChoice: dc.b 0
 optionsMenuChoice:
                 dc.b 0
 
-txtCredits:     dc.b "A COVERT BITOPS PRODUCTION IN 2013",0
+txtPressFire:   dc.b "A COVERT BITOPS PRODUCTION IN 2013",0
                 dc.b 0
                 dc.b 0
                 dc.b "CODE, GRAPHICS & AUDIO BY LASSE __RNI",0
@@ -731,10 +731,10 @@ txtCredits:     dc.b "A COVERT BITOPS PRODUCTION IN 2013",0
 txtInstructions:dc.b "USE JOYSTICK IN PORT 2 AND KEYS",0
                 dc.b 0
                 dc.b ", .     SELECT ITEM",0
-                dc.b 0
                 dc.b $80+11,"R       RELOAD",0
-                dc.b 0
+                dc.b $80+11,"H       USE MEDKIT",0
                 dc.b "RUNSTOP PAUSE MENU",0
+                dc.b 0
 
 txtInstructions2:
                 dc.b "MOVEMENT CONTROLS (NO FIRE PRESSED)",0
@@ -802,13 +802,13 @@ mainMenuJumpTblHi:
                 dc.b >LoadGame
                 dc.b >Options
 
-titlePageTblLo: dc.b <txtCredits
+titlePageTblLo: dc.b <txtPressFire
                 dc.b <txtInstructions
                 dc.b <txtInstructions2
                 dc.b <txtInstructions3
                 dc.b <txtInstructions4
 
-titlePageTblHi: dc.b >txtCredits
+titlePageTblHi: dc.b >txtPressFire
                 dc.b >txtInstructions
                 dc.b >txtInstructions2
                 dc.b >txtInstructions3
