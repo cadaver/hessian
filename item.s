@@ -1,6 +1,6 @@
 ITEM_HEIGHT     = -1
 ITEM_ACCEL      = 4
-ITEM_YSPEED     = -4*8
+ITEM_YSPEED     = -3*8
 ITEM_MAX_YSPEED = 6*8
 ITEM_SPAWN_OFFSET = -16*8
 
@@ -116,9 +116,11 @@ AI_MaxWeaponsCount:
                 cpx #INITIAL_MAX_WEAPONS
                 bcc AI_NoWeaponLimit
                 ldy itemIndex                   ;If weapon limit exceeded, check if current
-                lda invType,y                   ;weapon can be swapped
-                cmp #ITEM_FISTS+1
-                bcc AI_CannotBeSwapped
+                bne AI_NotUsingFists            ;weapon can be swapped. If fists selected, swap
+                inc itemIndex                   ;with first droppable weapon
+                iny
+AI_NotUsingFists:
+                lda invType,y
                 cmp #ITEM_FIRST_CONSUMABLE
                 bcc AI_CanBeSwapped
                 clc

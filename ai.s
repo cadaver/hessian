@@ -78,7 +78,7 @@ AI_AttackCommon:lda temp5                       ;Always face target (TODO: shoul
 AI_ShouldNotDuck:
                 lda actMoveCtrl,x
                 and #$ff-JOY_DOWN
-                beq AI_DuckingCheckDone
+                jmp AI_DuckingCheckDone
 AI_ShouldDuck:  jsr GetCharInfo                 ;However do not climb down unintentionally
                 and #CI_CLIMB
                 bne AI_ShouldNotDuck

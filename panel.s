@@ -1,11 +1,11 @@
 PANEL_TEXT_SIZE = 22
-MENU_DELAY      = 13
+MENU_DELAY      = 12
 MENU_PAUSEDELAY = 37
 MENU_MOVEDELAY  = 3
 
 INDEFINITE_TEXT_DURATION = $7f
 INVENTORY_TEXT_DURATION = 50
-XP_TEXT_DURATION = 100
+XP_TEXT_DURATION = 50
 
 REDRAW_ITEM     = $01
 REDRAW_AMMO     = $02
@@ -321,7 +321,7 @@ SMM_RedrawJump: jmp $0000
         ; Menu logic routines
 
         ; None
-     
+
 UM_PrintXP:     jmp PrintXPMessage
 
 UM_None:        ldx #MENU_PAUSE
@@ -337,7 +337,9 @@ UM_None:        ldx #MENU_PAUSE
                 bne UM_NoLevelUp
                 lda levelUp                     ;Check for pending levelup: begin if no other
                 bne SetMenuMode                 ;messages being displayed
-UM_NoLevelUp:   ldx #MENU_INVENTORY             ;Check for entering inventory by holding firebutton;
+UM_NoLevelUp:   lda actHp+ACTI_PLAYER
+                beq UM_ControlDone
+                ldx #MENU_INVENTORY             ;Check for entering inventory by holding firebutton;
                 ldy #$ff                        ;if a direction simultaneously held, halt the
                 lda joystick                    ;counter until fire released
                 cmp #JOY_FIRE
@@ -349,9 +351,7 @@ UM_NoFire:      iny
                 cpy #MENU_DELAY
                 beq SetMenuMode
 UM_StoreCounter:sty menuCounter
-UM_NoCounter:   lda actHp+ACTI_PLAYER           ;Can also use , & . keys to select items,
-                beq UM_KeyControlDone           ;or R to reload, but not when dead
-                ldy itemIndex
+UM_NoCounter:   ldy itemIndex
                 lda keyType
                 cmp #KEY_COMMA
                 beq UM_MoveLeft
@@ -365,8 +365,7 @@ UM_NoCounter:   lda actHp+ACTI_PLAYER           ;Can also use , & . keys to sele
                 cmp #KEY_X
                 beq UM_NextItem
                 endif
-UM_KeyControlDone:
-                rts
+UM_ControlDone: rts
 
         ; Inventory
         

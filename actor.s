@@ -3,13 +3,13 @@ MAX_ACTY        = 9
 
 ACTI_PLAYER     = 0
 ACTI_FIRSTNPC   = 1
-ACTI_LASTNPC    = 6
-ACTI_FIRSTITEM  = 7
-ACTI_LASTITEM   = 11
-ACTI_FIRSTPLRBULLET = 12
-ACTI_LASTPLRBULLET = 16
-ACTI_FIRSTNPCBULLET = 17
-ACTI_LASTNPCBULLET = 21
+ACTI_LASTNPC    = 5
+ACTI_FIRSTITEM  = 6
+ACTI_LASTITEM   = 10
+ACTI_FIRSTPLRBULLET = 11
+ACTI_LASTPLRBULLET = 15
+ACTI_FIRSTNPCBULLET = 16
+ACTI_LASTNPCBULLET = 20
 
 ACTI_FIRSTEFFECT = ACTI_LASTPLRBULLET
 ACTI_LASTEFFECT = ACTI_FIRSTNPCBULLET+1
@@ -106,6 +106,8 @@ SPAWNERSEARCH   = 16
 
 NODAMAGESRC     = $80
 NODAMAGESRC_QUIET = $ff
+
+SPAWNINFRONT_PROBABILITY = $c0
 
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
@@ -344,7 +346,7 @@ UA_Skip:        rts
 
 AddAllActorsNextFrame:
                 lda #$00
-                sta addActorIndex
+                sta UA_AAStart+1
                 lda #MAX_LVLACT
                 sta UA_AAEndCmp+1
                 rts
@@ -408,7 +410,8 @@ GAB_BottomOK2:  sta UA_RABottomCheck+1          ;Bottom border
 
         ; Add actors from leveldata to screen
 
-AddActors:      ldx addActorIndex
+AddActors:
+UA_AAStart:     ldx #$00
 UA_AddActorsLoop:
                 lda lvlActT,x
                 beq UA_AASkip
@@ -429,6 +432,7 @@ UA_AABottomCheck:
                 cmp #$00
                 bcs UA_AASkip
                 jsr AddLevelActor
+                ldx temp1
 UA_AASkip:      inx
 UA_AAEndCmp:    cpx #LVLACTSEARCH
                 bne UA_AddActorsLoop
@@ -436,7 +440,7 @@ UA_AAEndCmp:    cpx #LVLACTSEARCH
                 bcc UA_IndexNotOver
                 ldx #$00
                 clc
-UA_IndexNotOver:stx addActorIndex
+UA_IndexNotOver:stx UA_AAStart+1
                 txa
                 adc #LVLACTSEARCH
                 sta UA_AAEndCmp+1
@@ -466,9 +470,11 @@ UA_SpawnerBottomCheck:
                 cmp #$00
                 bcs UA_SpawnerNext
                 jsr Random
-                cmp lvlObjDL,x
-                bcs UA_SpawnerNext
-                stx temp1
+                and lvlObjDL,x
+                clc
+                adc spawnCounter
+                sta spawnCounter
+                bcc UA_SpawnerNext
                 jsr AttemptSpawn
                 ldx temp1
 UA_SpawnerNext: inx
@@ -1304,19 +1310,23 @@ DA_Jump:        jsr $0000
                 clc
 AS_Done2:       rts
 
-        ; Attempt to spawn an actor to level from a spawner object
+        ; Attempt to spawn an actor to screen from a spawner object
         ;
-        ; Parameters: A random parameter for actor type, X spawner object index
-        ; Returns: -
+        ; Parameters: A random parameter, X spawner object index
+        ; Returns: temp1 stored value of X
         ; Modifies: A,X,Y,temp vars
 
-AttemptSpawn:   sta temp2
+AttemptSpawn:   stx temp1
+                sta temp2
                 lda lvlObjDH,x
                 lsr
                 lsr
                 lsr
                 lsr
                 sta temp3
+                lda lvlObjY,x
+                and #$7f
+                sta temp4
                 lda lvlObjDH,x
                 and #$0f
                 and temp2
@@ -1328,20 +1338,17 @@ AttemptSpawn:   sta temp2
                 bmi AS_NoPlotBit
                 jsr GetPlotBit
                 beq AS_Done2
-AS_NoPlotBit:   lda #ACTI_FIRSTNPC              ;Do not use all NPC slots for spawned actors
-                ldy #ACTI_FIRSTNPC+MAX_SPAWNEDACT-1
+AS_NoPlotBit:   lda #ACTI_LASTNPC-MAX_SPAWNEDACT+1 ;Do not use all NPC slots for spawned actors
+                ldy #ACTI_LASTNPC
                 jsr GetFreeActor
                 bcc AS_Done2
-                sty temp7
-                lda #$03
-                sta temp8                       ;Retry counter
-AS_Retry:       ldx temp2
-                ldy temp7
                 lda #$80
                 sta actXL,y                     ;Center into the upper edge of the block
-                sta actLvlDataPos,y             ;Mark as nonpersistent
                 lda #$00
                 sta actYL,y
+                lda #ORG_TEMP
+                jsr SetPersistence
+                ldx temp2
                 lda lvlSpawnT,x
                 sta actT,y
                 lda lvlSpawnWpn,x
@@ -1352,25 +1359,25 @@ AS_Retry:       ldx temp2
                 asl
                 bcs AS_InAir
 AS_Ground:      lda #CI_GROUND
-AS_SideCommon:  sta temp3
+                sta temp3
+                lda temp4                       ;For ground spawn, use Y-coord of spawner object
+AS_SideCommon:  sta actYH,y
                 jsr Random
-                pha
-                and #$03
-                clc
-                adc #$02
-AS_CoordOK:     adc UA_SpawnerTopCheck+1
-                sta actYH,y
-                pla
+                cmp #SPAWNINFRONT_PROBABILITY   ;Prefer to spawn in front of player
+                lda actD+ACTI_PLAYER
+                bcc AS_SideNoReverse
+                eor #$80
+AS_SideNoReverse:
                 asl
                 bcc AS_GroundRight
 AS_GroundLeft:  lda UA_SpawnerLeftCheck+1
-                cmp limitL      ;Never spawn at zone edge, would be visible!
-                beq AS_GroundRight
-                sta actXH,y
-                lda #$00
+                cmp limitL                      ;Never spawn at zone edge, would be visible
+                beq AS_GroundRight              ;(zones that are only one screen wide should not
+                sta actXH,y                     ;contain spawners, as otherwise this code will
+                lda #$00                        ;loop indefinitely)
                 beq AS_GroundStoreDir
 AS_GroundRight: ldx UA_SpawnerRightCheck+1
-                cpx limitR      ;Never spawn at zone edge, would be visible!
+                cpx limitR
                 beq AS_GroundLeft
                 dex
                 txa
@@ -1381,30 +1388,39 @@ AS_GroundStoreDir:
 AS_CheckBackground:
                 tya
                 tax
-                jsr InitActor
-                ldy #AL_SPAWNAIMODE
-                lda (actLo),y                   ;Set default AI mode for actor type in question
-                sta actAIMode,x
                 jsr GetCharInfo
                 and #CI_GROUND|CI_OBSTACLE|CI_NOSPAWN
                 cmp temp3
                 beq AS_SpawnOK
-AS_Remove:      dec temp8
-                bne AS_Retry
-                jmp RemoveActor                 ;Spawned into wrong background type, remove
+AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
 AS_Done:
-AS_SpawnOK:     rts
+AS_SpawnOK:     jsr InitActor
+                ldy #AL_SPAWNAIMODE
+                lda (actLo),y                   ;Set default AI mode for actor type
+                sta actAIMode,x
+                rts
 AS_InAir:       asl
                 lda #$00
-                bcc AS_SideCommon
-AS_InAirTop:    sta temp3
-                jsr Random                      ;When spawned from top, randomize char position also
+                sta temp3
+                bcs AS_InAirTop
+AS_InAirSide:   jsr Random
+                pha
+                and #$c0
+                sta actYL,y
+                pla
+                and #$03
+                clc
+                adc #$01
+                adc UA_SpawnerTopCheck+1
+                jmp AS_SideCommon
+AS_InAirTop:    jsr Random
+                pha
                 asl
                 and #$c0
                 sta actXL,y
                 ror
                 sta actD,y                      ;Randomize direction
-                jsr Random
+                pla
                 and #$0f
                 cmp #$0a
                 bcc AS_InAirCoordOK
@@ -1419,10 +1435,10 @@ AS_InAirCoordOK:sec
         ; Add actor from leveldata
         ;
         ; Parameters: X leveldata index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars,actor temp vars
+        ; Returns: temp1 stored value of X
+        ; Modifies: A,X,Y,temp vars,actor temp vars
 
-AddLevelActor:  stx addActorIndex
+AddLevelActor:  stx temp1
                 lda lvlActT,x
                 bmi ALA_IsItem
 ALA_IsNPC:      lda #ACTI_FIRSTNPC
@@ -1469,7 +1485,7 @@ ALA_Common:     lda lvlActX,x
                 beq ALA_NotItem
                 lda #MB_GROUNDED
                 sta actMB,x
-ALA_NotItem:    ldx addActorIndex
+ALA_NotItem:
 ALA_Fail:       rts
 ALA_IsItem:     lda #ACTI_FIRSTITEM
                 ldy #ACTI_LASTITEM
@@ -1487,7 +1503,7 @@ ALA_IsItem:     lda #ACTI_FIRSTITEM
                 lda itemDefaultPickup-1,x
 ALA_NoDefaultPickup:
                 sta actHp,y
-                ldx addActorIndex
+                ldx temp1
                 bpl ALA_Common
 
         ; Remove actor and return to leveldata if applicable
@@ -1822,4 +1838,18 @@ GetNextTempLevelActorIndex:
                 lda #MAX_LVLACT-1
                 sta nextTempLvlActIndex
 GNTLAI_NoWrap:  lda nextTempLvlActIndex
+                rts
+
+        ; Set persistence mode for a newly created actor
+        ;
+        ; Parameters: A temporary bit, Y actor index
+        ; Returns: -
+        ; Modifies: A
+
+SetPersistence: pha
+                jsr GetNextTempLevelActorIndex  ;Persist as a temporary actor
+                sta actLvlDataPos,y
+                pla
+                ora levelNum
+                sta actLvlDataOrg,y
                 rts

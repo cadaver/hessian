@@ -604,12 +604,12 @@ void level_mainloop(void)
                 lvlobjb[objindex] &= 0xe3;
                 lvlobjb[objindex] |= (a << 2);
               }
-              // Spawnpoint default values: add 0, and 15, half probability
+              // Spawnpoint default values: add 0, and 15, half speed
               if ((lvlobjb[objindex] & 0x1c) == 0x18)
               {
                 if ((!lvlobjd1[objindex]) && (!lvlobjd2[objindex]))
                 {
-                  lvlobjd1[objindex] = 0x80;
+                  lvlobjd1[objindex] = 0x7f;
                   lvlobjd2[objindex] = 0xf;
                 }
               }

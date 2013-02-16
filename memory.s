@@ -3,8 +3,8 @@
         ; Constants that affect the memory map
 
 MAX_SPR         = 24
-MAX_ACT         = 22
-MAX_COMPLEXACT  = 7
+MAX_ACT         = 21
+MAX_COMPLEXACT  = 6
 MAX_CACHESPRITES = 64
 MAX_MAPROWS     = 128
 MAX_BLK         = 192
@@ -97,7 +97,6 @@ SCRIPTAREASIZE  = 10*256
                 Var actLo
                 Var actHi
                 Var tgtActIndex
-                Var addActorIndex
                 Var numHeroes
                 Var numVillains
 
@@ -126,6 +125,7 @@ SCRIPTAREASIZE  = 10*256
                 Var xpLevel
                 Var xpLimitLo
                 Var xpLimitHi
+                Var spawnCounter
                 Var nextTempLvlActIndex
 
 playerStateZPStart = levelNum

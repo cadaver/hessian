@@ -159,7 +159,7 @@ music00.pak: music/ninjatr2.d64
 	d642prg music/ninjatr2.d64 testmusic.bin music00.bin -h
 	pack2 music00.bin music00.pak
 
-level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.chi bg/level00.chc bg/level00.chr bg/level00.lva
+level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.chi bg/level00.chc bg/level00.chr bg/level00.lva bg/level00.lvr bg/level00.lvo
 	filejoin bg/level00.lvo+bg/level00.lvr level00_1.bin
 	pack2 level00_1.bin level00_1.pak
 	dasm level00.s -olevel00_2.bin -f3
@@ -168,7 +168,7 @@ level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.chi bg/
 	pchunk2 bg/level00.blk level00_4.pak
 	filejoin level00_1.pak+level00_2.pak+level00_3.pak+level00_4.pak level00.pak
 
-level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.chi bg/level01.chc bg/level01.chr bg/level01.lva
+level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.chi bg/level01.chc bg/level01.chr bg/level01.lva bg/level01.lvr bg/level01.lvo
 	filejoin bg/level01.lvo+bg/level01.lvr level01_1.bin
 	pack2 level01_1.bin level01_1.pak
 	dasm level01.s -olevel01_2.bin -f3
@@ -177,7 +177,7 @@ level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.chi bg/
 	pchunk2 bg/level01.blk level01_4.pak
 	filejoin level01_1.pak+level01_2.pak+level01_3.pak+level01_4.pak level01.pak
 
-level02.pak: level02.s memory.s bg/level02.map bg/level02.blk bg/level02.chi bg/level02.chc bg/level02.chr bg/level02.lva
+level02.pak: level02.s memory.s bg/level02.map bg/level02.blk bg/level02.chi bg/level02.chc bg/level02.chr bg/level02.lva bg/level02.lvr bg/level02.lvo
 	filejoin bg/level02.lvo+bg/level02.lvr level02_1.bin
 	pack2 level02_1.bin level02_1.pak
 	dasm level02.s -olevel02_2.bin -f3
@@ -186,7 +186,7 @@ level02.pak: level02.s memory.s bg/level02.map bg/level02.blk bg/level02.chi bg/
 	pchunk2 bg/level02.blk level02_4.pak
 	filejoin level02_1.pak+level02_2.pak+level02_3.pak+level02_4.pak level02.pak
 
-level03.pak: level03.s memory.s bg/level03.map bg/level03.blk bg/level03.chi bg/level03.chc bg/level03.chr bg/level03.lva
+level03.pak: level03.s memory.s bg/level03.map bg/level03.blk bg/level03.chi bg/level03.chc bg/level03.chr bg/level03.lva bg/level03.lvr bg/level03.lvo
 	filejoin bg/level03.lvo+bg/level03.lvr level03_1.bin
 	pack2 level03_1.bin level03_1.pak
 	dasm level03.s -olevel03_2.bin -f3

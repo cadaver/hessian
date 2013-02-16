@@ -1062,11 +1062,8 @@ HD_NotInInventory:
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
                 bcc HD_NoItem
-                jsr GetNextTempLevelActorIndex  ;Make the item a temporary persisted actor
-                sta actLvlDataPos,y             ;TODO: important quest items should not be temporary
                 lda #ORG_TEMP
-                ora levelNum
-                sta actLvlDataOrg,y
+                jsr SetPersistence
                 lda #$00
                 sta temp5
                 sta temp6
@@ -1204,6 +1201,17 @@ RCP_ZPState:    lda saveStateZP-1,x
                 lda #<playerStateStart
                 ldx #>playerStateStart
                 jsr SaveState_CopyMemory
+                ldx #MAX_LVLACT-1
+RCP_ClearTempEnemies:
+                lda lvlActOrg,x                 ;When checkpoint restarted, remove spawned enemies
+                bmi RCP_NotTempEnemy            ;but not temp items
+                lda lvlActT,x
+                bmi RCP_NotTempEnemy
+                lda #$00
+                sta lvlActT,x
+RCP_NotTempEnemy:
+                dex
+                bpl RCP_ClearTempEnemies
                 clc                             ;Savestate has all actors, do not load from disk
                 jsr CreatePlayerActor
                 jmp CenterPlayer

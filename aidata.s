@@ -13,5 +13,3 @@ targetListAndTbl:
                 dc.b 3                          ;4 potential targets
                 dc.b 7                          ;5 potential targets
                 dc.b 7                          ;6 potential targets
-                dc.b 7                          ;7 potential targets
-

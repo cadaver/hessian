@@ -354,7 +354,8 @@ IP_SkillCheatLoop:
 
         ; Update controls, text & logo fade
 
-Update:         jsr GetControls
+Update:         jsr Random                      ;Make game different according to delay
+                jsr GetControls
                 jsr FinishFrame
                 jsr WaitBottom
                 lda textFadeDir

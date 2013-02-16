@@ -91,9 +91,9 @@ itemDefaultPickup:
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
-                dc.b 6                          ;Pistol
+                dc.b 5                          ;Pistol
                 dc.b 4                          ;Shotgun
-                dc.b 15                         ;Auto rifle
+                dc.b 10                         ;Auto rifle
                 dc.b 3                          ;Sniper rifle
                 dc.b 50                         ;Minigun
                 dc.b 30                         ;Flamethrower
@@ -151,13 +151,13 @@ itemNPCMaxDist: dc.b 1                          ;Fists
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
-                dc.b 6                          ;Pistol
-                dc.b 5                          ;Shotgun
-                dc.b 6                          ;Auto rifle
+                dc.b 5                          ;Pistol
+                dc.b 4                          ;Shotgun
+                dc.b 5                          ;Auto rifle
                 dc.b 7                          ;Sniper rifle
-                dc.b 6                          ;Minigun
-                dc.b 5                          ;Flamethrower
-                dc.b 6                          ;Sonic wave gun
+                dc.b 5                          ;Minigun
+                dc.b 4                          ;Flamethrower
+                dc.b 5                          ;Sonic wave gun
                 dc.b 6                          ;Laser rifle
                 dc.b 6                          ;Plasma gun
                 dc.b 6                          ;EMP generator (not used by NPCs)
