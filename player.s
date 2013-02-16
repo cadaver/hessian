@@ -219,6 +219,36 @@ MPCO_UpdateMarker:
                 sta actC,x
 MPCO_Done:
 
+MP_PlayerMove:  ldx #ACTI_PLAYER
+                jsr MoveHuman                   ;Move player, then check scrolling
+MP_Scroll:      jsr GetActorCharCoords
+                cmp #SCRCENTER_X-2
+                bcs MP_NotLeft1
+                dex
+MP_NotLeft1:    cmp #SCRCENTER_X
+                bcs MP_NotLeft2
+                dex
+MP_NotLeft2:    cmp #SCRCENTER_X+1
+                bcc MP_NotRight1
+                inx
+MP_NotRight1:   cmp #SCRCENTER_X+3
+                bcc MP_NotRight2
+                inx
+MP_NotRight2:   stx scrollSX
+                ldx #$00
+                cpy #SCRCENTER_Y-2
+                bcs MP_NotUp1
+                dex
+MP_NotUp1:      cpy #SCRCENTER_Y
+                bcs MP_NotUp2
+                dex
+MP_NotUp2:      cpy #SCRCENTER_Y+1
+                bcc MP_NotDown1
+                inx
+MP_NotDown1:    cpy #SCRCENTER_Y+3
+                bcc MP_NotDown2
+                inx
+MP_NotDown2:    stx scrollSY
 MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventory
                 ldx invType,y
                 lda itemMagazineSize-1,x        ;Mag size needed for weapon routines,
@@ -233,47 +263,8 @@ MP_NoWeapon:    lda actCtrl+ACTI_PLAYER         ;If not holding a weapon, check
                 jsr UseItem
 MP_NoItemUse:   ldx #ITEM_NONE
 MP_WeaponOK:    stx actWpn+ACTI_PLAYER
-                ldx actIndex
-
-MP_PlayerMove:  jsr MoveHuman
-                jsr AttackHuman
-ScrollPlayer:   jsr GetActorCharCoords
-                cmp #SCRCENTER_X-2
-                bcs SP_NotLeft1
-                dex
-SP_NotLeft1:    cmp #SCRCENTER_X
-                bcs SP_NotLeft2
-                dex
-SP_NotLeft2:    cmp #SCRCENTER_X+1
-                bcc SP_NotRight1
-                inx
-SP_NotRight1:   cmp #SCRCENTER_X+3
-                bcc SP_NotRight2
-                inx
-SP_NotRight2:   stx scrollSX
-                ldx #$00
-                cpy #SCRCENTER_Y-2
-                bcs SP_NotUp1
-                dex
-SP_NotUp1:      cpy #SCRCENTER_Y
-                bcs SP_NotUp2
-                dex
-SP_NotUp2:      cpy #SCRCENTER_Y+1
-                bcc SP_NotDown1
-                inx
-SP_NotDown1:    cpy #SCRCENTER_Y+3
-                bcc SP_NotDown2
-                inx
-SP_NotDown2:    stx scrollSY
                 ldx #ACTI_PLAYER
-                rts
-
-        ; Scroll screen around player actor, then update frame
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,temp1-temp6
-
+                jmp AttackHuman                 ;Finally handle attacks
 
         ; Humanoid character move routine
         ;
