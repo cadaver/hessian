@@ -222,7 +222,7 @@ MPCO_Done:
 MP_PlayerMove:  ldx #ACTI_PLAYER
                 jsr MoveHuman                   ;Move player, then check scrolling
 MP_Scroll:      jsr GetActorCharCoords
-                cmp #SCRCENTER_X-2
+                cmp #SCRCENTER_X-1
                 bcs MP_NotLeft1
                 dex
 MP_NotLeft1:    cmp #SCRCENTER_X
@@ -231,7 +231,7 @@ MP_NotLeft1:    cmp #SCRCENTER_X
 MP_NotLeft2:    cmp #SCRCENTER_X+1
                 bcc MP_NotRight1
                 inx
-MP_NotRight1:   cmp #SCRCENTER_X+3
+MP_NotRight1:   cmp #SCRCENTER_X+2
                 bcc MP_NotRight2
                 inx
 MP_NotRight2:   stx scrollSX
