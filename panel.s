@@ -88,16 +88,7 @@ UP_HealthDone:  lda panelUpdateFlags
                 ldy #SPRH_MASK
                 lda (zpSrcLo),y
                 sta zpBitBuf                    ;Slice bitmask
-                ldx #$03
                 ldy #SPRH_DATA
-UP_SkipSliceLoop:
-                lsr zpBitBuf
-                bcc UP_SkipEmpty
-                tya
-                adc #$06
-                tay
-UP_SkipEmpty:   dex
-                bne UP_SkipSliceLoop
                 ldx #$00
                 jsr UP_DrawSlice
                 lsr zpBitBuf
@@ -337,9 +328,7 @@ UM_None:        ldx #MENU_PAUSE
                 bne UM_NoLevelUp
                 lda levelUp                     ;Check for pending levelup: begin if no other
                 bne SetMenuMode                 ;messages being displayed
-UM_NoLevelUp:   lda actHp+ACTI_PLAYER
-                beq UM_ControlDone
-                ldx #MENU_INVENTORY             ;Check for entering inventory by holding firebutton;
+UM_NoLevelUp:   ldx #MENU_INVENTORY             ;Check for entering inventory by holding firebutton;
                 ldy #$ff                        ;if a direction simultaneously held, halt the
                 lda joystick                    ;counter until fire released
                 cmp #JOY_FIRE

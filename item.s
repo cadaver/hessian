@@ -1,6 +1,6 @@
 ITEM_HEIGHT     = -1
 ITEM_ACCEL      = 4
-ITEM_YSPEED     = -3*8
+ITEM_YSPEED     = -24
 ITEM_MAX_YSPEED = 6*8
 ITEM_SPAWN_OFFSET = -16*8
 
@@ -266,11 +266,14 @@ MoveItem_Done:  rts
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
         
-UseItem:        lda invType,y
+UseItem:        lda actHp+ACTI_PLAYER           ;Can't use/reload after dying
+                beq UI_Dead
+                lda invType,y
                 cmp #ITEM_FIRST_NONWEAPON
                 bcc UI_Reload
                 cmp #ITEM_MEDKIT
                 beq UseMedKit
+UI_Dead:
 UMK_FullHealth: rts
 UseMedKit:      lda actHp+ACTI_PLAYER
                 cmp #HP_PLAYER

@@ -2,7 +2,7 @@ SCROLLROWS      = 22
 SCROLLSPLIT     = 11
 
 SCRCENTER_X     = 19
-SCRCENTER_Y     = 13
+SCRCENTER_Y     = 14
 
 CI_GROUND       = 1                             ;Char info bits
 CI_OBSTACLE     = 2
@@ -1100,6 +1100,10 @@ UB_InsideZone:  lda mapTblLo,y
                 sta zpSrcLo
                 lda SL_CSSMapY+1
                 sta zpSrcHi
+                lda #$91
+                sta UB_StaColor
+                lda #zpBitsLo
+                sta UB_StaColor+1
                 lda SL_CSSBlockX+1
                 ldx SL_CSSBlockY+1
                 ldy screen
@@ -1117,6 +1121,9 @@ UB_InsideZone:  lda mapTblLo,y
                 lda screen
                 eor #$01
                 tay
+                lda #$ea                        ;Disable color-RAM write from the second loop
+                sta UB_StaColor
+                sta UB_StaColor+1
                 lda blockX
                 ldx blockY
 UB_UpdateScreen:sta zpBitsLo
@@ -1164,23 +1171,22 @@ UB_NotOver:     asl
                 asl
                 rol zpDestHi
                 sta zpDestLo
-UB_Screen:      ldy loadTempReg
+                sta zpBitsLo
+                ldy loadTempReg
                 lda zpDestHi
                 ora screenBaseTbl,y
                 sta zpDestHi
                 and #$03
                 ora #>colors
                 sta zpBitsHi
-                lda zpDestLo
-                sta zpBitsLo
                 ldy temp5
 UB_Column:      cpy #39
                 bcs UB_SkipColumn
 UB_Lda:         lda $1000,x                     ;Take char from block
-                sta (zpDestLo),y                ;Store char to screen
+                sta (zpDestLo),y                ;Store char
                 sta UB_LdaColor+1
 UB_LdaColor:    lda charColors
-                sta (zpBitsLo),y                ;Store color to color-RAM
+UB_StaColor:    sta (zpBitsLo),y                ;Store color
 UB_SkipColumn:  iny
                 inx
                 txa

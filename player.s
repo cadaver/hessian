@@ -252,16 +252,16 @@ SP_NotRight1:   cmp #SCRCENTER_X+3
                 inx
 SP_NotRight2:   stx scrollSX
                 ldx #$00
-                cpy #SCRCENTER_Y-3
+                cpy #SCRCENTER_Y-2
                 bcs SP_NotUp1
                 dex
-SP_NotUp1:      cpy #SCRCENTER_Y-1
+SP_NotUp1:      cpy #SCRCENTER_Y
                 bcs SP_NotUp2
                 dex
-SP_NotUp2:      cpy #SCRCENTER_Y+2
+SP_NotUp2:      cpy #SCRCENTER_Y+1
                 bcc SP_NotDown1
                 inx
-SP_NotDown1:    cpy #SCRCENTER_Y+4
+SP_NotDown1:    cpy #SCRCENTER_Y+3
                 bcc SP_NotDown2
                 inx
 SP_NotDown2:    stx scrollSY
@@ -1068,7 +1068,7 @@ DI_Retry:       ldy #AL_DROPITEMINDEX
                 bpl DI_ItemNumber
                 sta temp4
                 jsr Random
-                and #$03
+                and #DROPTABLERANDOM-1
                 adc temp4
                 tay
                 lda itemDropTable-$80,y
@@ -1134,8 +1134,8 @@ DI_IsImportant: jsr SetPersistence
                 tax
                 sta actF1,y
                 jsr Random
-                and #$07                        ;In case going to drop credits, randomize amount
-                adc #$03
+                and #$03                        ;In case going to drop credits, randomize amount
+                adc #$02
                 sta defaultCreditsPickup
                 lda itemDefaultPickup-1,x
                 sta actHp,y

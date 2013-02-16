@@ -429,7 +429,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b HP_ENEMY                   ;Initial health
                 dc.b 2                          ;Color override
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.b 5                          ;XP from kill
+                dc.b 2                          ;XP from kill
                 dc.b AIMODE_THUG                ;AI mode when spawned randomly
                 dc.b DROP_WEAPONMEDKITCREDITS   ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense accumulator
