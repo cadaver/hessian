@@ -90,12 +90,12 @@ ADDACTOR_TOP_LIMIT = 0
 ADDACTOR_RIGHT_LIMIT = 12
 ADDACTOR_BOTTOM_LIMIT = 8
 
-ORG_GLOBAL      = $00                           ;Global important actor
-ORG_TEMP        = $40                           ;Temporary actor, may be overwritten by global or leveldata
+ORG_TEMP        = $00                           ;Temporary actor, may be overwritten by global or leveldata
+ORG_GLOBAL      = $40                           ;Global important actor
 ORG_LEVELDATA   = $80                           ;Leveldata actor, added/removed at level change
 ORG_LEVELNUM    = $3f
 
-POS_NOTPERSISTENT = $ff
+POS_NOTPERSISTENT = $80
 
 DEFAULT_PICKUP  = $ff
 
@@ -1344,8 +1344,6 @@ AS_NoPlotBit:   lda #ACTI_LASTNPC-MAX_SPAWNEDACT+1 ;Do not use all NPC slots for
                 sta actXL,y                     ;Center into the upper edge of the block
                 lda #$00
                 sta actYL,y
-                lda #ORG_TEMP
-                jsr SetPersistence
                 ldx temp2
                 lda lvlSpawnT,x
                 sta actT,y
@@ -1391,12 +1389,29 @@ AS_CheckBackground:
                 cmp temp3
                 beq AS_SpawnOK
 AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
-AS_Done:
 AS_SpawnOK:     jsr InitActor
                 ldy #AL_SPAWNAIMODE
                 lda (actLo),y                   ;Set default AI mode for actor type
+                tay
+                and #$7f
                 sta actAIMode,x
+                tya
+                bmi AS_StoreLvlDataPos
+                lda #ORG_TEMP                   ;Set temp persistence
+
+        ; Set persistence mode for a newly created actor
+        ;
+        ; Parameters: A temporary/global bit, X actor index
+        ; Returns: -
+        ; Modifies: A
+
+SetPersistence: ora levelNum
+                sta actLvlDataOrg,x
+                jsr GetNextTempLevelActorIndex  ;Persist as a temporary actor
+AS_StoreLvlDataPos:
+                sta actLvlDataPos,x
                 rts
+
 AS_InAir:       asl
                 lda #$00
                 sta temp3
@@ -1676,7 +1691,7 @@ GetActorXDistance:
                 eor #$ff
 GAD_XDistPos:   sta temp6
                 rts
-                
+
         ; Check if there is obstacles between actors
         ;
         ; Parameters: X actor index, Y target actor index
@@ -1742,7 +1757,7 @@ RC_MoveYDone2:  dec temp3
                 lda charInfo,y                  ;Get charinfo
                 and #CI_OBSTACLE
                 beq RC_Loop
-RC_NoRoute:     clc                            ;Route not found
+RC_NoRoute:     clc                             ;Route not found
                 rts
 
         ; Find NPC actor from screen by type
@@ -1750,7 +1765,7 @@ RC_NoRoute:     clc                            ;Route not found
         ; Parameters: A actor type
         ; Returns: C=1 actor found, index in X, C=0 not found
         ; Modifies: A,X
-        
+
 FindActor:      ldx #ACTI_LASTNPC
 FA_Loop:        cmp actT,x
                 beq FA_Found
@@ -1758,27 +1773,6 @@ FA_Loop:        cmp actT,x
                 bne FA_Loop
 FA_NotFound:    clc
 FA_Found:       rts
-
-        ; Find item actor from screen by type
-        ;
-        ; Parameters: A item type
-        ; Returns: C=1 actor found, index in Y, C=0 not found
-        ; Modifies: A,X
-
-FindItemActor:  sta FIA_Cmp+1
-                ldy #ACTI_FIRSTITEM
-FIA_Loop:       lda actT,y
-                cmp #ACT_ITEM
-                bne FIA_Next
-                lda actF1,y
-FIA_Cmp:        cmp #$00
-                beq FIA_Found
-FIA_Next:       iny
-                cpy #ACTI_LASTITEM+1
-                bcc FIA_Loop
-FIA_NotFound:   clc
-FIA_Found:      
-GLAI_Found:     rts
 
         ; Find NPC actor from leveldata for state editing. If on screen, will be removed first
         ;
@@ -1793,41 +1787,34 @@ FindLevelActor: sta FLA_Cmp+1
 FLA_NotOnScreen:ldy #MAX_LVLACT-1
 FLA_Loop:       lda lvlActT,y
 FLA_Cmp:        cmp #$00
-                beq FIA_Found
+                beq FA_Found
                 dey
                 bpl FLA_Loop
-                bmi FIA_NotFound
+                bmi FA_NotFound
 
-        ; Get a free index from levelactortable. May overwrite a temp-actor
+        ; Get a free index from levelactortable. May overwrite a temp-actor.
+        ; If no room (fatal error, possibly would make game unfinishable) will loop infinitely
         ;
         ; Parameters: Y search startpos
         ; Returns: Y free index
         ; Modifies: A,Y
 
+GLAI_Wrap:      ldy #MAX_LVLACT-1
 GetLevelActorIndex:
-                sty GLAI_CheckFail+1
 GLAI_Loop:      lda lvlActT,y
-                beq GLAI_Found
+                beq FA_Found
                 lda lvlActOrg,y
-                bmi GLAI_NotFound               ;Can't overwrite a leveldata-actor
-                and #ORG_TEMP                   ;or an important global actor
-                bne GLAI_Found
+                cmp #ORG_GLOBAL                 ;Can't overwrite a leveldata-actor
+                bcc FA_Found                    ;or an important global actor
 GLAI_NotFound:  dey
-                bpl GLAI_NoWrap
-                ldy #MAX_LVLACT-1
-GLAI_NoWrap:
-GLAI_CheckFail: cpy #$00                        ;Fail if reach startpos
-                bne GLAI_Loop
-                if SHOW_LEVELDATA_ERRORS>0
-                inc $d020
-                endif
-                rts
+                bpl GLAI_Loop
+                bmi GLAI_Wrap
 
         ; Get the next leveldata index for a temp actor. Note: does not confirm it is free
         ;
         ; Parameters: -
         ; Returns: nextTempLvlActIndex updated, also returned in A
-        ; Modifies: A,Y
+        ; Modifies: A
 
 GetNextTempLevelActorIndex:
                 dec nextTempLvlActIndex
@@ -1835,18 +1822,4 @@ GetNextTempLevelActorIndex:
                 lda #MAX_LVLACT-1
                 sta nextTempLvlActIndex
 GNTLAI_NoWrap:  lda nextTempLvlActIndex
-                rts
-
-        ; Set persistence mode for a newly created actor
-        ;
-        ; Parameters: A temporary bit, Y actor index
-        ; Returns: -
-        ; Modifies: A
-
-SetPersistence: pha
-                jsr GetNextTempLevelActorIndex  ;Persist as a temporary actor
-                sta actLvlDataPos,y
-                pla
-                ora levelNum
-                sta actLvlDataOrg,y
                 rts

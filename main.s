@@ -5,7 +5,6 @@ SHOW_LEVELUPDATE_TIME = 0
 SHOW_SPRITEDEPACK_TIME = 0
 REDUCE_CONTROL_LATENCY = 1
 OPTIMIZE_SPRITEIRQS = 1
-SHOW_LEVELDATA_ERRORS = 1
 SHOW_STACKPOINTER = 0
 
 GODMODE_CHEAT   = 0
@@ -46,6 +45,20 @@ randomAreaStart:
                 include plot.s
                 include script.s
                 include ai.s
+
+        ; Game main loop
+
+StartMainLoop:  ldx #$ff
+                txs
+MainLoop:       jsr ScrollLogic
+                jsr DrawActors
+                jsr FinishFrame
+                jsr ScrollLogic
+                jsr GetControls
+                jsr UpdateMenu
+                jsr UpdateActors
+                jsr FinishFrame
+                jmp MainLoop
 
 randomAreaEnd:
 

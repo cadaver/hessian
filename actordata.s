@@ -289,7 +289,7 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b 0                          ;Color override
 plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
                 dc.b 0                          ;XP from kill
-                dc.b AIMODE_NONE                ;AI mode when spawned randomly
+                dc.b AIMODE_NONE                ;AI mode when spawned randomly + persistence disable
                 dc.b ITEM_NONE                  ;Itemdrop table index or item override
                 dc.b $ff                        ;AI offense probability
                 dc.b $ff                        ;AI defense probability
@@ -299,7 +299,7 @@ plrGroundAcc:   dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
 plrInAirAcc:    dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
                 dc.b 4                          ;Long jump gravity acceleration
-plrGroundBrake:dc.b INITIAL_GROUNDBRAKE        ;Ground braking
+plrGroundBrake:dc.b INITIAL_GROUNDBRAKE         ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
 plrJumpSpeed:   dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
 plrClimbSpeed:  dc.b INITIAL_CLIMBSPEED         ;Climbing speed
@@ -430,7 +430,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b 2                          ;Color override
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.b 2                          ;XP from kill
-                dc.b AIMODE_THUG                ;AI mode when spawned randomly
+                dc.b AIMODE_THUG                ;AI mode when spawned randomly + persistence disable
                 dc.b DROP_WEAPONMEDKITCREDITS   ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability

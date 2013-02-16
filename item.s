@@ -29,8 +29,7 @@ TP_PickupSuccess:
                 lda zpBitsHi
                 sta actHp,x
                 lda levelNum                    ;After swapping, the item has become temporary
-                ora #ORG_TEMP                   ;and is now disconnected from the leveldata
-                sta actLvlDataOrg,x
+                sta actLvlDataOrg,x             ;and is now disconnected from the leveldata
                 jmp TP_PrintItemName
 TP_NoSwap:      jsr RemoveActor                 ;If not swapped, remove
 TP_PrintItemName:

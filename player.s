@@ -1109,12 +1109,6 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
                 bcc DI_NoItem
-                lda temp4
-                cmp #ITEM_FIRST_IMPORTANT
-                lda #$00
-                bcs DI_IsImportant
-                lda #ORG_TEMP
-DI_IsImportant: jsr SetPersistence
                 lda #<ITEM_SPAWN_OFFSET
                 sta temp7
                 lda #>ITEM_SPAWN_OFFSET
@@ -1135,6 +1129,12 @@ DI_IsImportant: jsr SetPersistence
                 tya
                 tax
                 jsr InitActor
+                lda temp4
+                cmp #ITEM_FIRST_IMPORTANT
+                lda #ORG_GLOBAL
+                bcs DI_IsImportant
+                lda #ORG_TEMP
+DI_IsImportant: jsr SetPersistence
                 ldx temp3
                 rts
 
@@ -1176,7 +1176,7 @@ GXP_Done:       jmp PSfx_Done                   ;Hack: PlaySfx ends similarly
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp regs
-        
+
 SaveCheckpoint: ldx #15
 SCP_LevelName:  lda lvlName,x
                 sta saveLvlName,x
@@ -1233,17 +1233,6 @@ RCP_ZPState:    lda saveStateZP-1,x
                 lda #<playerStateStart
                 ldx #>playerStateStart
                 jsr SaveState_CopyMemory
-                ldx #MAX_LVLACT-1
-RCP_ClearTempEnemies:
-                lda lvlActOrg,x                 ;When checkpoint restarted, remove spawned enemies
-                bmi RCP_NotTempEnemy            ;but not temp items
-                lda lvlActT,x
-                bmi RCP_NotTempEnemy
-                lda #$00
-                sta lvlActT,x
-RCP_NotTempEnemy:
-                dex
-                bpl RCP_ClearTempEnemies
                 clc                             ;Savestate has all actors, do not load from disk
                 jsr CreatePlayerActor
                 jmp CenterPlayer

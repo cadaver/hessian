@@ -42,7 +42,7 @@ MFN_Sub:        and #$0f
                 bcc MFN_Number
                 adc #$06
 MFN_Number:     sta fileName,x
-LF_Error:       rts
+                rts
 
         ; Load a file while handling retry. The file is expected to be found; if not, the prompt
         ; "flip the disk" is displayed. PostLoad is called automatically after to reinit map/block-
@@ -77,6 +77,23 @@ LFR_WaitFire:   jsr GetControls
                 bcc LFR_WaitFire
                 jmp ClearPanelText
 
+LF_NoMemory:    lda #$00                        ;No memory, purge the oldest chunkfile
+                sta zpBitBuf
+                ldx #C_FIRSTPURGEABLE
+LF_PurgeLoop:   ldy fileHi,x
+                beq LF_PurgeSkip
+                ldy fileAge,x
+                cpy zpBitBuf
+                bcc LF_PurgeSkip
+                sty zpBitBuf
+                txa
+LF_PurgeSkip:   inx
+                cpx #MAX_CHUNKFILES
+                bcc LF_PurgeLoop
+                tay
+                jsr PurgeFile
+                jmp LF_MemLoop
+
         ; Allocate & load a chunk-file. If no memory, purge unused files
         ;
         ; Parameters: Y file number, fileName
@@ -102,10 +119,8 @@ LF_MemLoop:     ldy temp6
                 lda temp8                       ;Check for enough memory
                 adc freeMemHi
                 cmp #>fileAreaEnd
-                bcc LF_MemOk
-LF_NoMemory:    jsr PurgeOldestFile
-                jmp LF_MemLoop
-LF_MemOk:       lda freeMemLo                   ;We can load here
+                bcs LF_NoMemory
+                lda freeMemLo                   ;We can load here
                 ldx freeMemHi
                 jsr LoadFile
                 bcs LF_Error                    ;Error in loading?
@@ -154,31 +169,8 @@ LF_Relocate:    lda (zpDestLo),y                ;Relocate object pointers
                 bne LF_Relocate
 LF_RelocDone:
 LSpr_Done:      clc                             ;OK!
+LF_Error:
 PF_Done:        rts
-
-        ; Purge the chunk-file that has not been accessed for the longest time
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,loader temp vars
-
-PurgeOldestFile:lda #$00
-POF_Limit:      sta zpBitBuf
-                ldy #$ff
-                ldx #C_FIRSTPURGEABLE
-POF_Loop:       lda fileHi,x
-                beq POF_Skip
-                lda fileAge,x
-POF_Cmp:        cmp zpBitBuf
-                bcc POF_Skip
-                sta zpBitBuf
-                txa
-                tay
-POF_Skip:       inx
-                cpx #MAX_CHUNKFILES
-                bcc POF_Loop
-                tya
-                bmi PF_Done
 
         ; Remove a chunk-file from memory
         ;

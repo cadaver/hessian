@@ -602,21 +602,8 @@ CP_NotOverDown: sta mapY
                 jsr RedrawScreen
                 sty lvlObjNum                   ;Reset found levelobject (Y=$ff)
                 jsr AddAllActorsNextFrame
-                jsr UpdateActors
-
-        ; Game main loop
-
-StartMainLoop:  ldx #$ff
-                txs
-MainLoop:       jsr ScrollLogic
-                jsr DrawActors
-                jsr FinishFrame
-                jsr ScrollLogic
-                jsr GetControls
-                jsr UpdateMenu
-                jsr UpdateActors
-                jsr FinishFrame
-                jmp MainLoop
+                jsr UpdateActors                ;Update actors once first
+                jmp StartMainLoop
 
         ; Set zone's multicolors
         ;
