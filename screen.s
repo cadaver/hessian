@@ -1,8 +1,7 @@
-SCROLLROWS      = 22
 SCROLLSPLIT     = 11
 
 SCRCENTER_X     = 19
-SCRCENTER_Y     = 14
+SCRCENTER_Y     = SCROLLROWS-8
 
 CI_GROUND       = 1                             ;Char info bits
 CI_OBSTACLE     = 2
@@ -128,7 +127,11 @@ SL_YPos:        lda mapY                        ;Are we on the edge of map?
                 cmp limitD
                 bcc SL_YPosOk
                 lda blockY
+                if SCROLLROWS > 21
                 cmp #$02
+                else
+                cmp #$03
+                endif
                 bcs SL_YZero
 SL_YPosOk:      lda blockY                      ;Update block & map-coords
                 adc #$01
@@ -439,20 +442,7 @@ UF_WaitPrevFrame:
                 bne UF_WaitPrevFrame            ;has been processed
                 lda scrCounter                  ;Is it the colorshift? (needs special timing)
                 cmp #$04
-                bne UF_WaitNormal
-                if SHOW_COLORSCROLL_WAIT > 0
-                dec $d020
-                endif
-UF_WaitColorShift:
-                lda $d012                       ;Wait until we are near the scorescreen split
-                cmp #IRQ3_LINE-$48
-                bcc UF_WaitColorShift
-                cmp #IRQ3_LINE+$20
-                bcs UF_WaitColorShift
-                if SHOW_COLORSCROLL_WAIT > 0
-                inc $d020
-                endif
-                bcc UF_WaitDone
+                beq UF_WaitColorShift
 UF_WaitNormal:  lda $d011                       ;If no colorshift, just need to make sure we
                 bmi UF_WaitDone                 ;are not late from the frameupdate
                 lda $d012
@@ -460,8 +450,18 @@ UF_WaitNormal:  lda $d011                       ;If no colorshift, just need to 
                 bcs UF_WaitDone
                 cmp #IRQ1_LINE-$05
                 bcs UF_WaitNormal
-UF_WaitDone:    
-                if SHOW_FREE_TIME > 0
+UF_WaitColorShift:
+                if SHOW_COLORSCROLL_WAIT > 0
+                dec $d020
+                endif
+UF_WaitColorShiftLoop
+                lda $d012                       ;Wait until we are near the scorescreen split
+                cmp #IRQ3_LINE-$48
+                bcc UF_WaitColorShiftLoop
+                if SHOW_COLORSCROLL_WAIT > 0
+                inc $d020
+                endif
+UF_WaitDone:    if SHOW_FREE_TIME > 0
                 inc $d020
                 endif
                 lda scrollX                     ;Copy scrolling and screen number
@@ -907,11 +907,13 @@ SW_DrawDown:    lda mapY                        ;Draw new blocks to bottom of
                 adc #$05
                 tax
                 lda blockY
+                if SCROLLROWS > 21
                 adc #$01
                 cmp #$04
                 bcc SW_DDCalcDone
                 and #$03
                 inx
+                endif
 SW_DDCalcDone:  asl
                 asl
                 ora blockX

@@ -15,6 +15,7 @@ MAX_SPAWNERS    = 16
 MAX_PLOTBITS    = 64
 
 SCRIPTAREASIZE  = 10*256
+SCROLLROWS      = 22
 
         ; Zeropage variables
 

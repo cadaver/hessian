@@ -77,12 +77,12 @@ ClearScreenLoop:lda #$20
                 sta screen1,x
                 sta screen1+$100,x
                 sta screen1+$200,x
-                sta screen1+$270,x
+                sta screen1+SCROLLROWS*40-$100,x
                 lda #$00
                 sta colors,x
                 sta colors+$100,x
                 sta colors+$200,x
-                sta colors+$270,x
+                sta colors+SCROLLROWS*40-$100,x
                 inx
                 bne ClearScreenLoop
 

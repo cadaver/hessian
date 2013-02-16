@@ -1,6 +1,6 @@
 IRQ1_LINE       = 12
-IRQ3_LINE       = 221
-IRQ4_LINE       = 230
+IRQ3_LINE       = SCROLLROWS*8+45
+IRQ4_LINE       = SCROLLROWS*8+54
 IRQ5_LINE       = 147
 
 PANEL_BG1       = $00
@@ -270,7 +270,11 @@ Irq4:           cld
                 sta $d023
                 dec $d019                       ;Acknowledge raster IRQ
                 lsr newFrame                    ;Mark frame update available
+                if SCROLLROWS > 21
                 lda #$1f                        ;Switch screen back on
+                else
+                lda #$17
+                endif
                 sta $d011
 Irq4_NtscDelay: dec ntscDelay                   ;Handle NTSC delay counting
                 bpl Irq4_NoNtscDelay
