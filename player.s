@@ -10,9 +10,6 @@ FR_SWIM         = 28
 FR_PREPARE      = 32
 FR_ATTACK       = 34
 
-HEALTH_RECHARGE_DELAY = 75
-HEALTH_RECHARGE_RATE = 25
-
 DEATH_DISAPPEAR_DELAY = 75
 DEATH_FLICKER_DELAY = 25
 DEATH_HEIGHT    = -3                            ;Ceiling check height for dead bodies
@@ -246,8 +243,7 @@ MH_NoRollSave:  sec
                 adc temp8
                 ldy #NODAMAGESRC
                 jsr DamageActor                 ;If killed, perform no further move logic
-                bcs MH_NoFallDamage
-                rts
+                bcc MH_DeathDone
 MH_NoFallDamage:dec actFall,x
 MH_NoFallCheck: lda actF1,x                     ;Check special movement states
                 cmp #FR_CLIMB
@@ -259,47 +255,35 @@ MH_RollOrSwim:  cmp #FR_SWIM
                 bcc MH_Rolling
                 jmp MH_Swimming
 MH_Rolling:     inc temp2
-                lda actD,x
-                bmi MH_AccLeft
-                bpl MH_AccRight
+                bne MH_RollAcc
 MH_NotClimbing: cmp #FR_DUCK+1
                 lda actMoveCtrl,x               ;Check turning / X-acceleration / braking
-                and #JOY_LEFT
-                beq MH_NotLeft
-                lda #$80
-                sta actD,x
-                bcs MH_Brake                    ;If ducking, brake
-MH_AccLeft:     lda temp1
-                lsr                             ;Faster acceleration when on ground
-                ldy #AL_GROUNDACCEL
-                bcs MH_OnGroundAccL
-                ldy #AL_INAIRACCEL
-MH_OnGroundAccL:lda (actLo),y
-                ldy temp4
-                jsr AccActorXNeg
-                jmp MH_NoBraking
-MH_NotLeft:     lda actMoveCtrl,x
+                and #JOY_LEFT|JOY_RIGHT
+                beq MH_Brake
                 and #JOY_RIGHT
-                beq MH_NotRight
-                lda #$00
-                sta actD,x
-                bcs MH_Brake                    ;If ducking, brake
-MH_AccRight:    lda temp1
+                bne MH_TurnRight
+                lda #$80
+MH_TurnRight:   sta actD,x
+                bcs MH_Brake                    ;If ducking, only turn, then brake
+MH_RollAcc:     lda temp1
                 lsr                             ;Faster acceleration when on ground
                 ldy #AL_GROUNDACCEL
-                bcs MH_OnGroundAccR
-                ldy #AL_INAIRACCEL
-MH_OnGroundAccR:lda (actLo),y
-                ldy temp4
+                bcs MH_OnGroundAcc
+                iny
+MH_OnGroundAcc: lda (actLo),y
+                ldy actD,x
+                bmi MH_AccLeft
+MH_AccRight:    ldy temp4
                 jsr AccActorX
-                jmp MH_NoBraking
-MH_NotRight:    lda temp1                       ;No braking when jumping
-                lsr
-                bcc MH_NoBraking
+                jmp MH_HorizMoveDone
+MH_AccLeft:     ldy temp4
+                jsr AccActorXNeg
+                jmp MH_HorizMoveDone
 MH_Brake:       ldy #AL_BRAKING                 ;When grounded and not moving, brake X-speed
                 lda (actLo),y
                 jsr BrakeActorX
-MH_NoBraking:   lda temp1
+MH_HorizMoveDone:
+                lda temp1
                 and #MB_HITWALL|MB_LANDED       ;If hit wall (and did not land simultaneously), reset X-speed
                 cmp #MB_HITWALL
                 bne MH_NoHitWall
@@ -735,40 +719,37 @@ MH_Swimming:    ldy #AL_SWIMSPEED
                 iny
                 lda (actLo),y
                 sta temp5
-                lda actMoveCtrl,x
-                cmp #JOY_RIGHT
-                bcc MH_SwimNotRight
-                lda temp5
-                ldy temp4
-                jsr AccActorX
-                lda #$00
-                sta actD,x
-                bpl MH_SwimHorizDone
-MH_SwimNotRight:cmp #JOY_LEFT
-                bcc MH_SwimNotLeft
-                lda temp5
-                ldy temp4
-                jsr AccActorXNeg
-                lda #$80
-                sta actD,x
-                bmi MH_SwimHorizDone
-MH_SwimNotLeft: lda temp5
+                ldy actMoveCtrl,x
+                cpy #JOY_LEFT
+                bcs MH_SwimHorizLeftOrRight
+MH_SwimBrakeHoriz:
                 jsr BrakeActorX
+                jmp MH_SwimHorizDone2
+MH_SwimHorizLeftOrRight:
+                cpy #JOY_RIGHT
+                ldy temp4
+                bcc MH_SwimLeft
+MH_SwimRight:   jsr AccActorX
+                lda #$00
+                bpl MH_SwimHorizDone
+MH_SwimLeft:    jsr AccActorXNeg
+                lda #$80
 MH_SwimHorizDone:
+                sta actD,x
+MH_SwimHorizDone2:
                 lda actMoveCtrl,x
+                and #JOY_UP|JOY_DOWN
+                beq MH_SwimBrakeVert
                 lsr
-                bcc MH_SwimNotUp
                 lda temp5
                 ldy temp4
-                jsr AccActorYNeg
+                bcs MH_SwimUp
+MH_SwimDown:    jsr AccActorY
                 jmp MH_SwimVertDone
-MH_SwimNotUp:   lsr
-                bcc MH_SwimNotDown
+MH_SwimUp:      jsr AccActorYNeg
+                jmp MH_SwimVertDone
+MH_SwimBrakeVert:
                 lda temp5
-                ldy temp4
-                jsr AccActorY
-                jmp MH_SwimVertDone
-MH_SwimNotDown: lda temp5
                 jsr BrakeActorY
 MH_SwimVertDone:lda actSY,x
                 bne MH_NotStationary

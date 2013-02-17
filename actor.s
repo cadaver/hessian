@@ -776,7 +776,7 @@ MAY_NegOk:      rts
         ;
         ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit
         ; Returns:
-        ; Modifies: A,temp8
+        ; Modifies: A,Y,temp8
 
 AccActorXNeg:   sta temp8
                 tya
@@ -817,7 +817,7 @@ AAX_AccDone:    sta actSX,x
         ;
         ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit
         ; Returns:
-        ; Modifies: A,temp8
+        ; Modifies: A,Y,temp8
 
 AccActorYNeg:   sta temp8
                 tya
