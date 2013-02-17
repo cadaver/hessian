@@ -198,6 +198,10 @@ slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
                 dc.b $00,$00,$08,$08,$10,$10,$18,$18    ;Slope 6
                 dc.b $20,$20,$28,$28,$30,$30,$38,$38    ;Slope 7
 
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
+
+d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
+
         ; Data with non-critical alignment
 
                 include paneldata.s

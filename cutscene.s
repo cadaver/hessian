@@ -15,7 +15,7 @@ ShowBitmap:     jsr WaitBottom
                 sta scrollY
                 lda #$00
                 sta Irq1_Bg1+1
-                sta Irq4_LevelUpdate+1
+                sta Irq1_LevelUpdate+1
                 tax
 SB_ClearColors: sta screen1,x
                 sta screen1+13*40-256,x

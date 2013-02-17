@@ -27,13 +27,13 @@ DISABLE_MUSIC = 0
 
 randomAreaStart:
 
+                include math.s
                 include raster.s
                 include sound.s
                 include input.s
                 include screen.s
                 include sprite.s
                 include file.s
-                include math.s
                 include actor.s
                 include physics.s
                 include weapon.s

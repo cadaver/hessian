@@ -159,13 +159,11 @@ Play_SongTblP1: lda $1000,y
 Play_InitLoop:  sta ntChnPattPos-1,x
                 dex
                 bne Play_InitLoop
-                lda #$04                        ;Hack: reset NTSC-delay to avoid systematic
-                sta ntscDelay                   ;hard restart bug at tempo 5
                 jsr Play_InitChn
                 ldx #$07
                 jsr Play_InitChn
                 ldx #$0e
-Play_InitChn:    
+Play_InitChn:
 Play_SongTblP2: lda $1000,y
                 sta ntChnSongPos,x
                 iny
@@ -196,7 +194,7 @@ Play_FiltTimeM1:lda $1000,y
 Play_SetFilt:   sta $d417
                 and #$70
                 sta Play_FiltDone+1
-Play_FiltJump:    
+Play_FiltJump:
 Play_FiltSpdM1a:lda $1000,y
                 bcs Play_FiltJump2
 Play_NextFilt:  inc ntFiltPos
@@ -229,7 +227,9 @@ Play_MasterVolume:
 
         ;Update duration counter
 
-Play_ChnExec:   inc ntChnCounter,x
+Play_ChnExec:   lda ntscDelay                   ;If NTSC, skip song advance each 6th frame, but run
+                beq Play_JumpToPulse            ;the channel effects to avoid eg. drumsound bugs
+                inc ntChnCounter,x
                 bne Play_NoPattern
 
         ;Get data from pattern

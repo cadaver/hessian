@@ -11,12 +11,6 @@ TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
 
-        ; Data here as padding to ensure page-alignment of the sprite multiplexer
-
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
-
-d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
-
         ; IRQ redirector when Kernal is on
 
 RedirectIrq:    ldx $01
@@ -30,111 +24,6 @@ RedirectIrq:    ldx $01
                 jmp ($fffe)
 RI_Return:      stx $01
                 jmp $ea81
-
-        ; Raster interrupt 3. Gamescreen / scorepanel split
-
-Irq3:           sta irqSaveA
-                lda #$35
-                sta $01                         ;Ensure IO memory is available
-Irq3_Wait:      lda $d012
-                cmp #IRQ3_LINE+1
-                bcc Irq3_Wait
-                nop
-                nop
-Irq3_D011:      lda #$57                        ;Stabilize Y-scrolling
-                sta $d011                       ;immediately
-                cmp #$57
-                beq Irq3_NoDelay
-                lda #$07
-Irq3_Delay:     sbc #$01
-                bne Irq3_Delay
-                lda #$57
-                sta $d011
-Irq3_NoDelay:   lda #PANEL_D018                 ;Set panelscreen screen ptr.
-                sta $d018
-                lda #EMPTYSPRITEFRAME           ;Set empty spriteframe
-N               set 0
-                repeat 8
-                sta screen1+$3f8+N
-N               set N+1
-                repend
-                lda #IRQ4_LINE                  ;TODO: needs testing on IDE64 new firmware
-                sta $d012                       ;as IRQ delay may cause whole frame blanking (?)
-                lda #<Irq4
-                sta $fffe
-                lda #>Irq4
-                sta $ffff
-                dec $d019                       ;Acknowledge raster IRQ
-                lda irqSave01
-                sta $01                         ;Restore $01 value
-                lda irqSaveA
-                rti
-
-        ;Raster interrupt 4. Show the scorepanel and play music
-
-Irq4:           cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
-                lda #$18
-                sta $d016
-                lda #PANEL_BG1                  ;Set scorepanel multicolors
-                sta $d021
-                lda #PANEL_BG2
-                sta $d022
-                lda #PANEL_BG3
-                sta $d023
-                dec $d019                       ;Acknowledge raster IRQ
-                lsr newFrame                    ;Mark frame update available
-                if SCROLLROWS > 21
-                lda #$1f                        ;Switch screen back on
-                else
-                lda #$17
-                endif
-                sta $d011
-                lda ntscDelay
-                beq Irq4_SkipFrame
-                if SHOW_PLAYROUTINE_TIME>0
-                dec $d020
-                endif
-                jsr PlayRoutine                 ;Play music/sound effects
-                if SHOW_PLAYROUTINE_TIME>0
-                inc $d020
-                endif
-Irq4_LevelUpdate:lda #$00                       ;Animate level background?
-                beq Irq4_SkipFrame
-                if SHOW_LEVELUPDATE_TIME>0
-                dec $d020
-                endif
-                jsr UpdateLevel
-                if SHOW_LEVELUPDATE_TIME>0
-                inc $d020
-                endif
-Irq4_SkipFrame: lda fileOpen                    ;If file not open, switch SCPU to turbo mode
-                bne Irq4_NoSCPU                 ;during the bottom of the screen to prevent
-                sta $d07b                       ;slowdown during heavy game logic
-Irq4_NoSCPU:    lda #IRQ1_LINE
-                sta $d012
-                lda #<Irq1
-                ldx #>Irq1
-                jmp SetNextIrq
-
-        ; Raster interrupt 5. Text screen split
-
-Irq5:           cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
-Irq5_Wait:      lda $d012
-                cmp #IRQ5_LINE+3
-                bcc Irq5_Wait
-                lda #PANEL_D018
-                sta $d018
-                jmp Irq2_AllDone
 
         ; Raster interrupt 1. Show game screen
 
@@ -153,6 +42,17 @@ Irq1_NtscDelay: dec ntscDelay                   ;Handle NTSC delay counting
                 sta ntscDelay
                 bne Irq1_TargetFramesOk
 Irq1_NoNtscDelay:
+Irq1_LevelUpdate:
+                lda #$00                       ;Animate level background?
+                beq Irq1_NoLevelUpdate
+                if SHOW_LEVELUPDATE_TIME>0
+                dec $d020
+                endif
+                jsr UpdateLevel
+                if SHOW_LEVELUPDATE_TIME>0
+                inc $d020
+                endif
+Irq1_NoLevelUpdate:
                 lda targetFrames                ;Maintain a "target frames" counter
                 cmp #$02                        ;which the main program will decrement.
                 bcs Irq1_TargetFramesOk         ;Delay will not be used when the update
@@ -205,7 +105,6 @@ Irq1_NoSprites: cpy #GAMESCR1_D018+1            ;Use split mode?
 Irq1_SetupTextscreenSplit:
                 lda #IRQ5_LINE
                 sta $d012
-                dec $d019
                 lda #<Irq5
                 ldx #>Irq5
                 jmp SetNextIrq
@@ -371,10 +270,10 @@ Irq2_AllDone:   lda #IRQ3_LINE
                 sbc #$03
                 cmp $d012                       ;Late from the scorepanel IRQ?
                 bcc Irq2_LatePanel
-                dec $d019                       ;Acknowledge raster IRQ
                 lda #<Irq3
                 ldx #>Irq3
-SetNextIrq:     sta $fffe
+SetNextIrq:     dec $d019                       ;Acknowledge raster IRQ
+                sta $fffe
                 stx $ffff
                 lda irqSave01
                 sta $01                         ;Restore $01 value
@@ -385,4 +284,97 @@ SetNextIrq:     sta $fffe
 
 Irq2_LatePanel: ldx irqSaveX
                 ldy irqSaveY
-                jmp Irq3_Wait
+                bcc Irq3_Wait
+
+        ; Raster interrupt 3. Gamescreen / scorepanel split
+
+Irq3:           sta irqSaveA
+                lda #$35
+                sta $01                         ;Ensure IO memory is available
+Irq3_Wait:      lda $d012
+                cmp #IRQ3_LINE+1
+                bcc Irq3_Wait
+                nop
+                nop
+Irq3_D011:      lda #$57                        ;Stabilize Y-scrolling
+                sta $d011                       ;immediately
+                cmp #$57
+                beq Irq3_NoDelay
+                lda #$07
+Irq3_Delay:     sbc #$01
+                bne Irq3_Delay
+                lda #$57
+                sta $d011
+Irq3_NoDelay:   lda #PANEL_D018                 ;Set panelscreen screen ptr.
+                sta $d018
+                lda #EMPTYSPRITEFRAME           ;Set empty spriteframe
+N               set 0
+                repeat 8
+                sta screen1+$3f8+N
+N               set N+1
+                repend
+                lda #IRQ4_LINE                  ;TODO: needs testing on IDE64 new firmware
+                sta $d012                       ;as IRQ delay may cause whole frame blanking (?)
+                lda #<Irq4
+                sta $fffe
+                lda #>Irq4
+                sta $ffff
+                dec $d019                       ;Acknowledge raster IRQ
+                lda irqSave01
+                sta $01                         ;Restore $01 value
+                lda irqSaveA
+                rti
+
+        ;Raster interrupt 4. Show the scorepanel and play music
+
+Irq4:           cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+                lda #$18
+                sta $d016
+                lda #PANEL_BG1                  ;Set scorepanel multicolors
+                sta $d021
+                lda #PANEL_BG2
+                sta $d022
+                lda #PANEL_BG3
+                sta $d023
+                lsr newFrame                    ;Mark frame update available
+                if SCROLLROWS > 21
+                lda #$1f                        ;Switch screen back on
+                else
+                lda #$17
+                endif
+                sta $d011
+                if SHOW_PLAYROUTINE_TIME>0
+                dec $d020
+                endif
+                jsr PlayRoutine                 ;Play music/sound effects
+                if SHOW_PLAYROUTINE_TIME>0
+                inc $d020
+                endif
+                lda fileOpen                    ;If file not open, switch SCPU to turbo mode
+                bne Irq4_NoSCPU                 ;during the bottom of the screen to prevent
+                sta $d07b                       ;slowdown during heavy game logic
+Irq4_NoSCPU:    lda #IRQ1_LINE
+                sta $d012
+                lda #<Irq1
+                ldx #>Irq1
+                jmp SetNextIrq
+
+        ; Raster interrupt 5. Text screen split
+
+Irq5:           cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+Irq5_Wait:      lda $d012
+                cmp #IRQ5_LINE+3
+                bcc Irq5_Wait
+                lda #PANEL_D018
+                sta $d018
+                jmp Irq2_AllDone

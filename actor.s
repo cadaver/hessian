@@ -364,7 +364,7 @@ UpdateActors:   lda menuMode                    ;If game paused, stop scrolling
                 lda #$00
                 sta scrollSX
                 sta scrollSY
-                sta Irq4_LevelUpdate+1
+                sta Irq1_LevelUpdate+1
                 jmp InterpolateActors
 
         ; Calculate border coordinates for adding/removing actors
@@ -537,7 +537,7 @@ UA_ItemFlashCounter:                            ;Get color override for items
                 tax
                 lda itemFlashTbl,x
                 sta MoveItem_Color+1
-                sta Irq4_LevelUpdate+1          ;Can animate level
+                sta Irq1_LevelUpdate+1          ;Can animate level
                 ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
                 beq UA_Next
