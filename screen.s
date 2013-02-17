@@ -251,7 +251,7 @@ SL_CSSMapY:     lda #$00
         ; Modifies: A,X,Y,temp1-temp6
 
                 if sprOrder < MAX_SPR+1         ;Ensure that a zeropage addressing trick works
-                    err
+                err
                 endif
 
 UpdateFrame:    lda #$01                        ;Re-enable raster IRQs after loading/saving
@@ -266,7 +266,7 @@ UF_Wait:        lda targetFrames                ;Wait for NTSC delay if needed
                 if SHOW_FREE_TIME > 0
                 inc $d020
                 endif
-                dec targetFrames               
+                dec targetFrames
                 lda firstSortSpr                ;Switch sprite doublebuffer side
                 eor #MAX_SPR
                 sta firstSortSpr
@@ -453,10 +453,12 @@ UF_WaitColorShift:
                 if SHOW_COLORSCROLL_WAIT > 0
                 dec $d020
                 endif
-UF_WaitColorShiftLoop
+UF_WaitColorShiftLoop:
                 lda $d012                       ;Wait until we are near the scorescreen split
                 cmp #IRQ3_LINE-$48
                 bcc UF_WaitColorShiftLoop
+                cmp #IRQ4_LINE
+                bcs UF_WaitColorShiftLoop
                 if SHOW_COLORSCROLL_WAIT > 0
                 inc $d020
                 endif
@@ -525,7 +527,7 @@ SW_ColorShiftDir:
                 ldx #$00
                 stx temp1
 SW_ColorJump:   jmp SW_NoWork
-            
+
 SW_NoShiftColors:
                 cmp #$02
                 bne SW_NoWork

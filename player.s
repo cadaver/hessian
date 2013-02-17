@@ -264,7 +264,7 @@ MH_NotClimbing: cmp #FR_DUCK+1
                 bne MH_TurnRight
                 lda #$80
 MH_TurnRight:   sta actD,x
-                bcs MH_Brake                    ;If ducking, only turn, then brake
+                bcs MH_Brake2                   ;If ducking, only turn, then brake
 MH_RollAcc:     lda temp1
                 lsr                             ;Faster acceleration when on ground
                 ldy #AL_GROUNDACCEL
@@ -279,7 +279,10 @@ MH_AccRight:    ldy temp4
 MH_AccLeft:     ldy temp4
                 jsr AccActorXNeg
                 jmp MH_HorizMoveDone
-MH_Brake:       ldy #AL_BRAKING                 ;When grounded and not moving, brake X-speed
+MH_Brake:       lda temp1                       ;Only brake when grounded
+                lsr
+                bcc MH_HorizMoveDone
+MH_Brake2:      ldy #AL_BRAKING
                 lda (actLo),y
                 jsr BrakeActorX
 MH_HorizMoveDone:
