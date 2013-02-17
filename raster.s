@@ -191,7 +191,7 @@ Irq2_Spr7Frame: sta screen1+$03f8
 Irq2_ToSpr0:    jmp Irq2_Spr0
 
                 if (Irq2_Spr0 & $ff00) != (Irq2_Spr7 & $ff00)
-                    err
+                err
                 endif
 
 Irq2_SprIrqDone:
@@ -288,20 +288,20 @@ Irq4_NoNtscDelay:
                 inc targetFrames                ;is already lagging behind
 Irq4_TargetFramesOk:
                 if SHOW_PLAYROUTINE_TIME>0
-                    dec $d020
+                dec $d020
                 endif
                 jsr PlayRoutine                 ;Play music/sound effects
                 if SHOW_PLAYROUTINE_TIME>0
-                    inc $d020
+                inc $d020
                 endif
 Irq4_LevelUpdate:lda #$00                       ;Animate level background?
                 beq Irq4_SkipFrame
                 if SHOW_LEVELUPDATE_TIME>0
-                    dec $d020
+                dec $d020
                 endif
                 jsr UpdateLevel
                 if SHOW_LEVELUPDATE_TIME>0
-                    inc $d020
+                inc $d020
                 endif
 Irq4_SkipFrame: lda fileOpen                    ;If file not open, switch SCPU to turbo mode
                 bne Irq4_NoSCPU                 ;during the bottom of the screen to prevent

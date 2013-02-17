@@ -52,7 +52,7 @@ EASY_DMGMULTIPLIER_REDUCE = 2
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new controls
+MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new joystick controls
                 sta actPrevCtrl+ACTI_PLAYER
                 ldy actF1+ACTI_PLAYER
                 cpy #FR_DUCK+1
@@ -84,141 +84,8 @@ MP_ControlMask: and #$ff
                 ora #JOY_DOWN
 MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
 MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
-
-MP_CheckHealth: lda actHp+ACTI_PLAYER           ;Restore health if not dead and not at
-                bne MP_NotDead                  ;full health
-                jmp MP_PlayerMove
-MP_NotDead:     cmp #HP_PLAYER
-                bcs MP_CheckPickup
-                lda healthRecharge
-MP_HealthRechargeRate:
-                adc #INITIAL_HEALTHRECHARGETIMER
-                bcc MP_NoRecharge
-                inc actHp+ACTI_PLAYER
-                lda #HEALTHRECHARGETIMER_RESET  ;Recharge faster after first unit
-MP_NoRecharge:  sta healthRecharge
-
-MP_CheckPickup: lda #ITEMSEARCH
-                sta temp7
-MP_CheckPickupIndex:
-                ldy #ACTI_FIRSTITEM
-MP_CheckPickupLoop:
-                lda actT,y
-                beq MP_CPSNoItem
-                jsr CheckActorCollision
-                bcs MP_HasItem
-MP_CPSNoItem:   iny
-                cpy #ACTI_LASTITEM+1
-                bcc MP_CPSNoItemNoWrap
-                ldy #ACTI_FIRSTITEM
-MP_CPSNoItemNoWrap:
-                sty MP_CheckPickupIndex+1
-                dec temp7
-                bne MP_CheckPickupLoop
-                lda displayedItemName           ;If no items, clear existing item name
-                beq MP_CheckObject              ;text
-                jsr ClearPanelText
-                jmp MP_CheckObject
-MPCO_Done2:     jmp MPCO_Done
-MP_HasItem:     lda textTime                    ;Make sure to not overwrite other game
-                bne MP_SkipItemName             ;messages
-                lda actF1,y
-                cmp displayedItemName           ;Do not reprint same item name
-                beq MP_SkipItemName
-                pha
-                jsr GetItemName
-                ldy #$00
-                jsr PrintPanelText
-                pla
-                sta displayedItemName
-MP_SkipItemName:lda actCtrl+ACTI_PLAYER
-                cmp #JOY_DOWN
-                bne MP_CheckObject
-                lda actFd+ACTI_PLAYER           ;If ducking, try picking up the item
-                beq MP_CheckObject
-                lda actF1+ACTI_PLAYER
-                cmp #FR_DUCK
-                bne MP_CheckObject
-                ldy MP_CheckPickupIndex+1
-                jsr TryPickup
-
-MP_CheckObject: ldx actXH+ACTI_PLAYER           ;Rescan objects whenever player
-                ldy actYH+ACTI_PLAYER           ;block position changes
-                lda lvlObjNum
-MPCO_LastCheckX:cpx #$00
-                bne MPCO_Rescan
-MPCO_LastCheckY:cpy #$00
-                beq MPCO_NoRescan
-MPCO_Rescan:    lda #$80                        ;Start from beginning
-MPCO_NoRescan:  stx MPCO_LastCheckX+1
-                sty MPCO_LastCheckY+1
-                cmp #$ff
-                beq MPCO_Done2
-                cmp #$80
-                bcc MPCO_Done2
-                stx MPCO_CmpX+1
-                ldx actYL+ACTI_PLAYER           ;If player stands on top of a block
-                cpx #$40                        ;check 1 block above
-                bcs MPCO_NotAtTop
-                dey
-MPCO_NotAtTop:  sty MPCO_SubY+1
-                and #$7f
-                tax
-                clc
-                adc #LVLOBJSEARCH
-                sta MPCO_EndCmp+1
-MPCO_Loop:      lda lvlObjX,x
-MPCO_CmpX:      cmp #$00
-                bne MPCO_Next
-                lda lvlObjY,x
-                and #$7f
-MPCO_SubY:      sbc #$00
-                cmp #$02                        ;Above or at object
-                bcc MPCO_Found
-MPCO_Next:      inx
-MPCO_EndCmp:    cpx #LVLOBJSEARCH
-                bcc MPCO_Loop
-                cpx #MAX_LVLOBJ
-                bcc MPCO_NotOver
-                ldx #$ff                        ;If search finished with no object,
-MPCO_NotOver:   txa                             ;no need to rescan until moved
-                ora #$80
-                sta lvlObjNum
-                bmi MPCO_Done
-MPCO_Found:     stx lvlObjNum
-                lda lvlObjB,x
-                tay
-                and #OBJ_TYPEBITS
-                cmp #OBJTYPE_DOOR
-                beq MPCO_ShowMarker
-                tya
-                and #OBJ_MODEBITS
-                cmp #OBJMODE_MANUAL             ;If object is manually activated
-                bcc MPCO_Done                   ;or a door with any mode, show marker
-MPCO_ShowMarker:
-                ldy #ACTI_FIRSTPLRBULLET
-                lda actT,y                      ;If marker already shown, remove it
-                cmp #ACT_OBJECTMARKER
-                beq MPCO_UpdateMarker
-                tya
-                jsr GetFreeActor
-                bcc MPCO_Done
-MPCO_UpdateMarker:
-                stx MObjMarker_Cmp+1            ;Only 1 marker exists at a time, modify code directly
-                tya                             ;for the check whether to remove the marker
-                tax
-                lda #ACT_OBJECTMARKER
-                sta actT,x
-                ldy lvlObjNum
-                jsr SetActorAtObject
-                jsr AlignActorOnGround
-                lda MoveItem_Color+1
-                sta actC,x
-MPCO_Done:
-
-MP_PlayerMove:  ldx #ACTI_PLAYER
-                jsr MoveHuman                   ;Move player, then check scrolling
-MP_Scroll:      jsr GetActorCharCoords
+                jsr MoveHuman                   ;Move player
+MP_Scroll:      jsr GetActorCharCoords          ;Then check scrolling
                 cmp #SCRCENTER_X-1
                 bcs MP_NotLeft1
                 dex
@@ -489,7 +356,6 @@ MH_NoHitWall:   lda temp1
                 bne MH_NoOperate
                 cmp actPrevCtrl,x
                 beq MH_NoOperate
-                inc ULO_OperateFlag+1
                 lda actF1,x
                 cmp #FR_ENTER
                 beq MH_OperateNoDelayReset
@@ -697,10 +563,7 @@ MH_NoDuck:      lda actF1,x                     ;If door enter/operate object an
                 lda actMoveCtrl,x
                 cmp #JOY_UP
                 bne MH_StandAnim
-                lda actFd,x                     ;Increment door entry delay
                 beq MH_AnimDone2
-                inc actFd,x
-                bne MH_AnimDone2
 MH_NoEnterAnim: cmp #FR_DUCK
                 bcc MH_StandOrWalk
 MH_DuckStandUpAnim:
@@ -1317,7 +1180,7 @@ AS_NormalLevel: sta plrDmgModify
                 lda plrVitality
                 clc
                 adc #INITIAL_HEALTHRECHARGETIMER
-                sta MP_HealthRechargeRate+1
+                sta ULO_HealthRechargeRate+1
 
         ; Carrying: more weapons in inventory and higher ammo limit
 

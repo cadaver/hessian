@@ -3,7 +3,7 @@ SHOW_COLORSCROLL_WAIT = 0
 SHOW_PLAYROUTINE_TIME = 0
 SHOW_LEVELUPDATE_TIME = 0
 SHOW_SPRITEDEPACK_TIME = 0
-REDUCE_CONTROL_LATENCY = 1
+REDUCE_CONTROL_LATENCY = 0
 OPTIMIZE_SPRITEIRQS = 1
 SHOW_STACKPOINTER = 0
 
@@ -51,6 +51,7 @@ randomAreaStart:
 StartMainLoop:  ldx #$ff
                 txs
 MainLoop:       jsr ScrollLogic
+                jsr UpdateLevelObjects
                 jsr DrawActors
                 jsr FinishFrame
                 jsr ScrollLogic

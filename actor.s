@@ -102,7 +102,6 @@ DEFAULT_PICKUP  = $ff
 LVLOBJSEARCH    = 32
 LVLACTSEARCH    = 32
 SPAWNERSEARCH   = 16
-ITEMSEARCH      = 2
 
 NODAMAGESRC     = $80
 NODAMAGESRC_QUIET = $ff
@@ -359,7 +358,14 @@ AddAllActorsNextFrame:
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-UpdateActors:
+UpdateActors:   lda menuMode                    ;If game paused, stop scrolling
+                cmp #MENU_LEVELUPMSG            ;and only update actor flashing
+                bcc GetActorBorders             ;(in InterpolateActors)
+                lda #$00
+                sta scrollSX
+                sta scrollSY
+                sta Irq4_LevelUpdate+1
+                jmp InterpolateActors
 
         ; Calculate border coordinates for adding/removing actors
 
@@ -520,15 +526,6 @@ BCL_AllDone:    lda #$ff                        ;Store endmarks
                 stx numHeroes
                 sty numVillains
 
-                lda menuMode                    ;If levelup or pausemenu in progress,
-                cmp #MENU_LEVELUPMSG            ;do not move actors
-                bcc UA_UpdateAll
-                lda #$00
-                sta Irq4_LevelUpdate+1          ;Also stop level animation & scrolling
-                sta scrollSX
-                sta scrollSY
-UA_SkipUpdate:  jmp InterpolateActors
-
         ; Call update routines of all on-screen actors
 
 UA_UpdateAll:   inc UA_ItemFlashCounter+1
@@ -574,10 +571,6 @@ UA_NoRemove:    ldy #AL_UPDATEROUTINE
 UA_Jump:        jsr $0000
 UA_Next:        dex
                 bpl UA_Loop
-
-        ; Update level objects now. Note: if player enters a door, will not return
-
-                jsr UpdateLevelObjects
 
         ; Interpolate actors' movement each second frame
 
