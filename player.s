@@ -52,22 +52,6 @@ EASY_DMGMULTIPLIER_REDUCE = 2
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MP_CheckPickupSub:
-                ldy #ACTI_FIRSTITEM
-MP_CheckPickupSub2:
-                lda actT,y
-                beq MP_CPSNoItem
-                jsr CheckActorCollision
-                bcs MP_CPSHasItem
-MP_CPSNoItem:   iny
-                cpy #ACTI_LASTITEM+1
-                bcc MP_CPSNoItemNoWrap
-                ldy #ACTI_FIRSTITEM
-                clc
-MP_CPSNoItemNoWrap:
-                sty MP_CheckPickupSub+1
-MP_CPSHasItem:  rts
-
 MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new controls
                 sta actPrevCtrl+ACTI_PLAYER
                 ldy actF1+ACTI_PLAYER
@@ -114,10 +98,23 @@ MP_HealthRechargeRate:
                 lda #HEALTHRECHARGETIMER_RESET  ;Recharge faster after first unit
 MP_NoRecharge:  sta healthRecharge
 
-MP_CheckPickup: jsr MP_CheckPickupSub           ;Check for item pickup / name display
+MP_CheckPickup: lda #ITEMSEARCH
+                sta temp7
+MP_CheckPickupIndex:
+                ldy #ACTI_FIRSTITEM
+MP_CheckPickupLoop:
+                lda actT,y
+                beq MP_CPSNoItem
+                jsr CheckActorCollision
                 bcs MP_HasItem
-                jsr MP_CheckPickupSub2
-                bcs MP_HasItem
+MP_CPSNoItem:   iny
+                cpy #ACTI_LASTITEM+1
+                bcc MP_CPSNoItemNoWrap
+                ldy #ACTI_FIRSTITEM
+MP_CPSNoItemNoWrap:
+                sty MP_CheckPickupIndex+1
+                dec temp7
+                bne MP_CheckPickupLoop
                 lda displayedItemName           ;If no items, clear existing item name
                 beq MP_CheckObject              ;text
                 jsr ClearPanelText
@@ -142,7 +139,7 @@ MP_SkipItemName:lda actCtrl+ACTI_PLAYER
                 lda actF1+ACTI_PLAYER
                 cmp #FR_DUCK
                 bne MP_CheckObject
-                ldy MP_CheckPickupSub+1
+                ldy MP_CheckPickupIndex+1
                 jsr TryPickup
 
 MP_CheckObject: ldx actXH+ACTI_PLAYER           ;Rescan objects whenever player

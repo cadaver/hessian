@@ -190,7 +190,6 @@ SL_YDone:       stx SW_ShiftDir+1
                 lda scrollCSX                   ;Get absolute X-speed
                 bpl SL_XPos2
                 eor #$ff
-                clc
                 adc #$01
 SL_XPos2:       tax
                 sta scrAdd
