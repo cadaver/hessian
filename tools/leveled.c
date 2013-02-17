@@ -1230,7 +1230,7 @@ void map_mainloop(void)
       if (k == KEY_DOWN) bsy++;
       if (bsy < 0) bsy = 0;
       if (bsy > 21) bsy = 21;
-      if (mouseb & 1)
+      if (mouseb & 1 || k == KEY_G)
       {
         if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
         {
@@ -1263,10 +1263,15 @@ void drawblocks(void)
       if (blk < 256)
       {
         drawblock(x*32,y*32,blk);
+        if (blockusecount[blk] && blockusecount[blk] < 3)
+        {
+          sprintf(textbuffer, "%d", blockusecount[blk]);
+          printtext_color(textbuffer, x*32, y*32+22,SPR_FONTS,COL_WHITE);
+        }
       }
     }
   }
-  
+
   if (mousey < 160)
   {
     int bx = mousex & 0xffe0;
