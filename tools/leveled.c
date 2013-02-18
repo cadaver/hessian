@@ -871,14 +871,6 @@ void zone_mainloop(void)
       break;
     }
 
-    if (k == KEY_F1) loadchars();
-    if (k == KEY_F2) savechars();
-    if (k == KEY_F3) loadblocks();
-    if (k == KEY_F4) saveblocks();
-    if (k == KEY_F9) loadalldata();
-    if (k == KEY_F10) savealldata();
-    if (k == KEY_F11) exportmap();
-    
     if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
     {
       int x = mapx+mousex/32;
@@ -908,6 +900,14 @@ void zone_mainloop(void)
         }
       }
     }
+
+    if (k == KEY_F1) loadchars();
+    if (k == KEY_F2) savechars();
+    if (k == KEY_F3) loadblocks();
+    if (k == KEY_F4) saveblocks();
+    if (k == KEY_F9) loadalldata();
+    if (k == KEY_F10) savealldata();
+    if (k == KEY_F11) exportmap();
 
     gfx_fillscreen(254);
     drawmap();
@@ -973,14 +973,6 @@ void map_mainloop(void)
       memcpy(&blockdata[blocknum*16],bcopybuffer,16);
       findusedblocksandchars();
     }
-
-    if (k == KEY_F1) loadchars();
-    if (k == KEY_F2) savechars();
-    if (k == KEY_F3) loadblocks();
-    if (k == KEY_F4) saveblocks();
-    if (k == KEY_F9) loadalldata();
-    if (k == KEY_F10) savealldata();
-    if (k == KEY_F11) exportmap();
 
     if (!blockselectmode)
     {
@@ -1241,6 +1233,14 @@ void map_mainloop(void)
         }
       }
     }
+
+    if (k == KEY_F1) loadchars();
+    if (k == KEY_F2) savechars();
+    if (k == KEY_F3) loadblocks();
+    if (k == KEY_F4) saveblocks();
+    if (k == KEY_F9) loadalldata();
+    if (k == KEY_F10) savealldata();
+    if (k == KEY_F11) exportmap();
 
     gfx_fillscreen(254);
     if (!blockselectmode)

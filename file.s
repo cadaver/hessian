@@ -120,7 +120,7 @@ LF_MemLoop:     ldy temp6
                 adc freeMemHi
                 cmp #>fileAreaEnd
                 bcs LF_NoMemory
-                lda freeMemLo                   ;We can load here
+LF_HasMemory:   lda freeMemLo                   ;We can load here
                 ldx freeMemHi
                 jsr LoadFile
                 bcs LF_Error                    ;Error in loading?
@@ -152,6 +152,9 @@ AF_Skip:        dex
                 sta fileHi,y
                 adc temp8
                 sta freeMemHi
+                if SHOW_FREE_MEMORY > 0
+                jsr PrintFreeMem
+                endif
                 ldx fileNumObjects,y
 LF_Relocate2:   txa
                 beq LF_RelocDone
@@ -172,6 +175,36 @@ LSpr_Done:      clc                             ;OK!
 LF_Error:
 PF_Done:        rts
 
+                if SHOW_FREE_MEMORY > 0
+PrintFreeMem:   ldx #0
+                lda #<fileAreaEnd
+                sec
+                sbc freeMemLo
+                pha
+                lda #>fileAreaEnd
+                sbc freeMemHi
+                jsr PrintHexByte
+                pla
+PrintHexByte:   pha
+                lsr
+                lsr
+                lsr
+                lsr
+                jsr PrintHexDigit
+                pla
+                and #$0f
+PrintHexDigit:  cmp #$0a
+                bcc PrintHexDigit_IsNumber
+                adc #$06
+PrintHexDigit_IsNumber:
+                adc #$30
+                sta screen1+SCROLLROWS*40,x
+                lda #$01
+                sta colors+SCROLLROWS*40,x
+                inx
+                rts
+                endif
+
         ; Remove a chunk-file from memory
         ;
         ; Parameters: Y file number
@@ -179,13 +212,13 @@ PF_Done:        rts
         ; Modifies: A,X,loader temp vars
 
 PurgeFile:      sty zpLenLo
-                lda #$ff                        ;Invalidate last used spritefile (may have moved in memory)
-                sta sprFileNum
-                lda fileLo,y
-                sta zpDestLo
                 lda fileHi,y                    ;Check that chunk exists
                 beq PF_Done
                 sta zpDestHi
+                lda fileLo,y
+                sta zpDestLo
+                lda #$ff                        ;Invalidate last used spritefile (may have moved in memory)
+                sta sprFileNum
                 lda freeMemLo
                 sta zpSrcLo
                 lda freeMemHi
@@ -224,6 +257,9 @@ PF_FindSizeSkip:dex
                 ldx #<freeMemLo
                 ldy #<zpBitsLo
                 jsr Add16                       ;Shift the free memory pointer
+                if SHOW_FREE_MEMORY > 0
+                jsr PrintFreeMem
+                endif
                 ldy #MAX_CHUNKFILES-1
 PF_RelocLoop:   cpy zpLenLo                     ;Do not relocate itself
                 beq PF_RelocNext
