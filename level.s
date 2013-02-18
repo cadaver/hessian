@@ -80,7 +80,6 @@ LoadLevel:      ror                             ;C to high bit
                 sta LL_ActorMode+1
                 ldx #$ff
                 stx autoDeactObjNum             ;Reset object auto-deactivation
-                stx ULO_COLastCheckY+1          ;Reset object search
                 lda levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
@@ -496,7 +495,7 @@ CP_NotOverUp:   cmp temp2
 CP_NotOverDown: sta mapY
                 sty blockY
                 jsr RedrawScreen
-                sty lvlObjNum                   ;Reset found levelobject (Y=$ff)
+                sty ULO_COLastCheckY+1          ;Reset object search (Y=$ff)
                 jsr AddAllActorsNextFrame
                 jsr UpdateActors                ;Update actors once first
                 jmp StartMainLoop
@@ -639,8 +638,8 @@ ActivateObject: lda lvlObjB,y                   ;Make sure that is inactive
                 bmi AO_Done
                 and #OBJ_TYPEBITS
                 tax
-                tya
-                pha
+                tya                             ;Save object number to stack, as the following code
+                pha                             ;might use any temp variables
                 cpx #OBJTYPE_SCRIPT             ;Check for action to perform
                 beq AO_Script
                 cpx #OBJTYPE_SWITCH
@@ -708,10 +707,7 @@ AO_Reveal:      lda lvlObjX,y
                 sta AO_RevealXCmp+1
                 lda lvlObjY,y
                 and #$7f
-                sta AO_RevealYCmpHi+1
-                tax
-                dex
-                stx AO_RevealYCmpLo+1
+                sta AO_RevealYCmp+1
                 ldx #MAX_LVLACT-1
 AO_RevealLoop:  lda lvlActT,x
                 beq AO_RevealNext
@@ -726,9 +722,7 @@ AO_RevealXCmp:  cmp #$00
                 bne AO_RevealNext
                 lda lvlActY,x
                 and #$7f
-AO_RevealYCmpLo:cmp #$00
-                beq AO_DoReveal
-AO_RevealYCmpHi:cmp #$00
+AO_RevealYCmp:  cmp #$00
                 bne AO_RevealNext
 AO_DoReveal:    sta lvlActY,x
                 jsr AddAllActorsNextFrame       ;Hack: add all actors next frame

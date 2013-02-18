@@ -144,7 +144,7 @@ AF_Skip:        dex
                 sta zpBitsLo
                 sta zpDestLo
                 sta fileLo,y
-                adc temp7
+                adc temp7                       ;C=0 here
                 sta freeMemLo
                 lda freeMemHi
                 sta zpBitsHi
@@ -181,8 +181,6 @@ PF_Done:        rts
 PurgeFile:      sty zpLenLo
                 lda #$ff                        ;Invalidate last used spritefile (may have moved in memory)
                 sta sprFileNum
-                lda #$00                        ;Reset chunk age
-                sta fileAge,y
                 lda fileLo,y
                 sta zpDestLo
                 lda fileHi,y                    ;Check that chunk exists
@@ -230,12 +228,10 @@ PF_FindSizeSkip:dex
 PF_RelocLoop:   cpy zpLenLo                     ;Do not relocate itself
                 beq PF_RelocNext
                 ldx zpLenLo
-                lda fileHi,y                    ;Need relocation?
-                cmp fileHi,x
-                bcc PF_RelocNext
-                bne PF_RelocOk
-                lda fileLo,y
+                lda fileLo,y                    ;Need relocation? (higher in memory than purged file)
                 cmp fileLo,x
+                lda fileHi,y
+                sbc fileHi,x
                 bcc PF_RelocNext
 PF_RelocOk:     lda fileLo,y                    ;Relocate the file pointer
                 clc
@@ -255,6 +251,7 @@ PF_RelocNext:   dey
                 ldy zpLenLo
                 lda #$00
                 sta fileHi,y                    ;Mark chunk not in memory
+                sta fileAge,y                   ;and reset age for eventual reload
                 rts
 
 SaveState_CopyMemory:
