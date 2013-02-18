@@ -1264,7 +1264,7 @@ void drawblocks(void)
       if (blk < 256)
       {
         drawblock(x*32,y*32,blk);
-        if (blockusecount[blk] && blockusecount[blk] < 3)
+        if (blk && blockusecount[blk] < 3)
         {
           sprintf(textbuffer, "%d", blockusecount[blk]);
           printtext_color(textbuffer, x*32, y*32+22,SPR_FONTS,COL_WHITE);
@@ -2557,11 +2557,9 @@ void findanimatingblocks(void)
     if ((lvlobjy[c] & 0x80) && (lvlobjx[c] || lvlobjy[c]))
     {
       animatingblock[mapdata[lvlobjx[c] + mapsx * (lvlobjy[c] & 0x7f)]] = 1;
-      animatingblock[mapdata[lvlobjx[c] + mapsx * (lvlobjy[c] & 0x7f)] + 1] = 1;
-      if ((lvlobjb[objindex] & 64) && ((lvlobjy[c] & 0x7f) > 0))
+      if ((lvlobjb[c] & 64) && ((lvlobjy[c] & 0x7f) > 0))
       {
         animatingblock[mapdata[lvlobjx[c] + mapsx * ((lvlobjy[c] & 0x7f)-1)]] = 1;
-        animatingblock[mapdata[lvlobjx[c] + mapsx * ((lvlobjy[c] & 0x7f)-1)] + 1] = 1;
       }
     }
   }
@@ -2695,7 +2693,7 @@ int findsameblock(int c, int d)
   }
 
   // If block is used in animating levelobject, do not consider same
-  if (animatingblock[c] || animatingblock[d] || animatingblock[c-1] || animatingblock[d-1])
+  if (animatingblock[c] || animatingblock[d] || (c > 0 && animatingblock[c-1]) || (d > 0 && animatingblock[d-1]))
     return 0;
 
   return 1;
@@ -2890,8 +2888,9 @@ void reorganizedata()
 void optimizeblocks(void)
 {
   int c,d;
-  
-  findanimatingblocks();
+
+  findusedblocksandchars();
+
   for (c = 0; c < 256; c++) blockused[c] = 1;
 
   for (d = 1; d < 256; d++)
