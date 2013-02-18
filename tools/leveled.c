@@ -222,8 +222,9 @@ void changecol(void);
 void changechar(void);
 void initstuff(void);
 void drawcbar(int x, int y, char col);
-void printtext_color(char *string, int x, int y, unsigned spritefile, int color);
-void printtext_center_color(char *string, int y, unsigned spritefile, int color);
+unsigned getcharsprite(unsigned char ch);
+void printtext_color(unsigned char *string, int x, int y, unsigned spritefile, int color);
+void printtext_center_color(unsigned char *string, int y, unsigned spritefile, int color);
 void editmain(void);
 void copychar(int c, int d);
 void transferchar(int c, int d);
@@ -2390,34 +2391,38 @@ void changecol(void)
   }
 }
 
-void printtext_color(char *string, int x, int y, unsigned spritefile, int color)
+unsigned getcharsprite(unsigned char ch)
 {
-  Uint8 *xlat = colxlattable[color];
+  unsigned num = ch-31;
+  if (num >= 64) num -= 32;
+  if (num > 59) num = 32;
+  return num;
+}
+
+void printtext_color(unsigned char *string, int x, int y, unsigned spritefile, int color)
+{
+  unsigned char *xlat = colxlattable[color];
 
   spritefile <<= 16;
   while (*string)
   {
-    unsigned num = *string - 31;
-
-    if (num >= 64) num -= 32;
+    unsigned num = getcharsprite(*string);
     gfx_drawspritex(x, y, spritefile + num, xlat);
     x += spr_xsize;
     string++;
   }
 }
 
-void printtext_center_color(char *string, int y, unsigned spritefile, int color)
+void printtext_center_color(unsigned char *string, int y, unsigned spritefile, int color)
 {
   int x = 0;
-  char *stuff = string;
-  Uint8 *xlat = colxlattable[color];
+  unsigned char *stuff = string;
+  unsigned char *xlat = colxlattable[color];
   spritefile <<= 16;
 
   while (*stuff)
   {
-    unsigned num = *stuff - 31;
-
-    if (num >= 64) num -= 32;
+    unsigned num = getcharsprite(*stuff);
     gfx_getspriteinfo(spritefile + num);
     x += spr_xsize;
     stuff++;
@@ -2426,9 +2431,7 @@ void printtext_center_color(char *string, int y, unsigned spritefile, int color)
 
   while (*string)
   {
-    unsigned num = *string - 31;
-
-    if (num >= 64) num -= 32;
+    unsigned num = getcharsprite(*string);
     gfx_drawspritex(x, y, spritefile + num, xlat);
     x += spr_xsize;
     string++;
