@@ -336,8 +336,10 @@ void level_mainloop(void)
     }
     if (k == KEY_TAB)
     {
-      editmode++;
-      if (editmode > EM_ZONE) editmode = EM_CHARS;
+      if (editmode != EM_CHARS)
+        editmode = EM_CHARS;
+      else
+        editmode = EM_MAP;
       break;
     }
     if (k == KEY_F5)
@@ -801,8 +803,10 @@ void zone_mainloop(void)
     }
     if (k == KEY_TAB)
     {
-      editmode++;
-      if (editmode > EM_ZONE) editmode = EM_CHARS;
+      if (editmode != EM_CHARS)
+        editmode = EM_CHARS;
+      else
+        editmode = EM_MAP;
       break;
     }
     if (k == KEY_LEFT) mapx--;
@@ -934,8 +938,10 @@ void map_mainloop(void)
     }
     if (k == KEY_TAB)
     {
-      editmode++;
-      if (editmode > EM_ZONE) editmode = EM_CHARS;
+      if (editmode != EM_CHARS)
+        editmode = EM_CHARS;
+      else
+        editmode = EM_MAP;
       break;
     }
 
@@ -1264,7 +1270,14 @@ void drawblocks(void)
       if (blk < 256)
       {
         drawblock(x*32,y*32,blk);
-        if (blk && blockusecount[blk] < 3)
+        if (blk == blocknum)
+        {
+          gfx_line(x*32,y*32,x*32+31,y*32,1);
+          gfx_line(x*32,y*32,x*32,y*32+31,1);
+          gfx_line(x*32+31,y*32,x*32+31,y*32+31,1);
+          gfx_line(x*32,y*32+31,x*32+31,y*32+31,1);
+        }
+        if (blk && blk < maxusedblocks && blockusecount[blk] < 3)
         {
           sprintf(textbuffer, "%d", blockusecount[blk]);
           printtext_color(textbuffer, x*32, y*32+22,SPR_FONTS,COL_WHITE);
@@ -1631,11 +1644,12 @@ void char_mainloop(void)
 
     if (k == KEY_TAB)
     {
-      editmode++;
-      if (editmode > EM_ZONE) editmode = EM_CHARS;
+      if (editmode != EM_CHARS)
+        editmode = EM_CHARS;
+      else
+        editmode = EM_MAP;
       break;
     }
-
     if (k == KEY_O)
     {
       if (shiftdown)
