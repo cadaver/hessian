@@ -29,9 +29,15 @@ logoColors      = chars+608+168
 
         ; Start from city
 
-START_LEVEL     = $02
-START_X         = $0280
-START_Y         = $05c0
+;START_LEVEL     = $02
+;START_X         = $0280
+;START_Y         = $05c0
+
+        ; Start from underground
+
+START_LEVEL     = $04
+START_X         = $0580
+START_Y         = $0500
 
                 org scriptCodeStart
 

@@ -232,6 +232,7 @@ int findsamechar(int c, int d);
 int findsameblock(int c, int d);
 void transferblock(int c, int d);
 void swapblocks(int c, int d);
+void insertblock(int c, int d);
 void copyblock(int c, int d);
 void reorganizedata(void);
 void optimizechars(void);
@@ -1245,6 +1246,14 @@ void map_mainloop(void)
         {
           int blocknum2 = mousey/32*10+mousex/32+bsy*10;
           swapblocks(blocknum, blocknum2);
+        }
+      }
+      if (k == KEY_I || k == KEY_INS)
+      {
+        if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
+        {
+          int blocknum2 = mousey/32*10+mousex/32+bsy*10;
+          insertblock(blocknum, blocknum2);
         }
       }
     }
@@ -2674,13 +2683,14 @@ void copyblock(int c, int d)
 void swapblocks(int c, int d)
 {
   int e;
+  unsigned char temp[16];
+
   if (c == d) return;
-  for (e = 0; e < 16; e++)
-  {
-    unsigned char ch = blockdata[d*16+e];
-    blockdata[d*16+e] = blockdata[c*16+e];
-    blockdata[c*16+e] = ch;
-  }
+
+  memcpy(temp, &blockdata[c*16], 16);
+  memcpy(&blockdata[c*16], &blockdata[d*16], 16);
+  memcpy(&blockdata[d*16], temp, 16);
+
   for (e = 0; e < mapsx * mapsy; e++)
   {
     if (mapdata[e] == c)
@@ -2689,6 +2699,29 @@ void swapblocks(int c, int d)
       mapdata[e] = c;
   }
 
+  findusedblocksandchars();
+}
+
+void insertblock(int c, int d)
+{
+  int e;
+  unsigned char temp[16];
+
+  if (c == d) return;
+
+  memcpy(temp, &blockdata[c*16], 16);
+  memset(&blockdata[c*16], 0, 16);
+  memmove(&blockdata[d*16+16], &blockdata[d*16], (255-d)*16);
+  memcpy(&blockdata[d*16], temp, 16);
+
+  for (e = 0; e < mapsx * mapsy; e++)
+  {
+    if (mapdata[e] == c)
+      mapdata[e] = d;
+    else if (mapdata[e] >= d)
+      mapdata[e]++;
+  }
+  
   findusedblocksandchars();
 }
 
@@ -3080,6 +3113,14 @@ void loadalldata(void)
         close(handle);
         findusedblocksandchars();
       }
+
+      // If loaded a different level, reset map position
+      if (strcmp(levelname, ib1))
+      {
+        mapx = 0;
+        mapy = 0;
+      }
+
       strcpy(levelname, ib1);
       strcpy(ib2, ib1);
       strcat(ib2, ".chr");

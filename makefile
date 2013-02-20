@@ -27,7 +27,8 @@ clean:
 	-rm e?
 	-rm f?
 
-hessian.d64: boot.prg loader.pak main.pak logo.pak music00.pak script00.pak level00.pak level01.pak level02.pak level03.pak common.pak item.pak weapon.pak player.pak
+hessian.d64: boot.prg loader.pak main.pak logo.pak music00.pak script00.pak level00.pak level01.pak level02.pak level03.pak level04.pak \
+	common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -194,6 +195,15 @@ level03.pak: level03.s memory.s bg/level03.map bg/level03.blk bg/level03.chi bg/
 	pchunk2 bg/level03.map level03_3.pak
 	pchunk2 bg/level03.blk level03_4.pak
 	filejoin level03_1.pak+level03_2.pak+level03_3.pak+level03_4.pak level03.pak
+
+level04.pak: level04.s memory.s bg/level04.map bg/level04.blk bg/level04.chi bg/level04.chc bg/level04.chr bg/level04.lva bg/level04.lvr bg/level04.lvo
+	filejoin bg/level04.lvo+bg/level04.lvr level04_1.bin
+	pack2 level04_1.bin level04_1.pak
+	dasm level04.s -olevel04_2.bin -f3
+	pack2 level04_2.bin level04_2.pak
+	pchunk2 bg/level04.map level04_3.pak
+	pchunk2 bg/level04.blk level04_4.pak
+	filejoin level04_1.pak+level04_2.pak+level04_3.pak+level04_4.pak level04.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak
