@@ -1703,6 +1703,7 @@ void char_mainloop(void)
       chinfo[charnum] += 32;
     }
 
+    /*
     if (k == KEY_A) // Global multicolor toggle
     {
       int c;
@@ -1710,6 +1711,7 @@ void char_mainloop(void)
         chcol[c] ^= 8;
       findusedblocksandchars();
     }
+    */
 
     if (k == KEY_M)
     {
@@ -3569,25 +3571,53 @@ void loadblocks(void)
         offset = c + 1;
         if (c == 256) c = 255;
 
+        int length = lseek(handle, 0, SEEK_END);
+        lseek(handle, 0, SEEK_SET);
         read(handle, &numblocks, sizeof numblocks);
         read(handle, &datalen, sizeof datalen);
-        for (c = frame; c < frame+numblocks; c++)
-        {
-          int b = c;
-          int d;
 
-          if (b > BLOCKS-1) b = BLOCKS-1;
-          read(handle, &blockdata[16*b], 16);
-          for (d = 0; d < 16; d++)
-          {
-            blockdata[16*b+d] += offset;
-          }
+        if (length >= sizeof numblocks + sizeof datalen + numblocks*16 + datalen + datalen/8*2)
+        {
+            for (c = frame; c < frame+numblocks; c++)
+            {
+              int b = c;
+              int d;
+    
+              if (b > BLOCKS-1) b = BLOCKS-1;
+              read(handle, &blockdata[16*b], 16);
+              for (d = 0; d < 16; d++)
+              {
+                blockdata[16*b+d] += offset;
+              }
+            }
+            if ((datalen + offset*8) > 2048)
+              datalen = 2048 - offset*8;
+            read(handle, &chardata[offset*8], datalen);
+            read(handle, &chcol[offset], datalen/8);
+            read(handle, &chinfo[offset], datalen/8);
         }
-        if ((datalen + offset*8) > 2048)
-          datalen = 2048 - offset*8;
-        read(handle, &chardata[offset*8], datalen);
-        read(handle, &chcol[offset], datalen/8);
-        read(handle, &chinfo[offset], datalen/8);
+        else
+        {
+            // MW4 import (block colors, will be discarded)
+            for (c = frame; c < frame+numblocks; c++)
+            {
+              unsigned char blockcol;
+              read(handle, &blockcol, 1);
+
+              int b = c;
+              int d;
+
+              if (b > BLOCKS-1) b = BLOCKS-1;
+              read(handle, &blockdata[16*b], 16);
+              for (d = 0; d < 16; d++)
+              {
+                blockdata[16*b+d] += offset;
+              }
+            }
+            if ((datalen + offset*8) > 2048)
+              datalen = 2048 - offset*8;
+            read(handle, &chardata[offset*8], datalen);
+        }
 
         close(handle);
         optimizechars();
