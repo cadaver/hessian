@@ -231,6 +231,7 @@ void transferchar(int c, int d);
 int findsamechar(int c, int d);
 int findsameblock(int c, int d);
 void transferblock(int c, int d);
+void swapblocks(int c, int d);
 void copyblock(int c, int d);
 void reorganizedata(void);
 void optimizechars(void);
@@ -1236,6 +1237,14 @@ void map_mainloop(void)
           blocknum = mousey/32*10+mousex/32+bsy*10;
           if (blocknum > 255)
             blocknum = 255;
+        }
+      }
+      if (k == KEY_S)
+      {
+        if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
+        {
+          int blocknum2 = mousey/32*10+mousex/32+bsy*10;
+          swapblocks(blocknum, blocknum2);
         }
       }
     }
@@ -2662,6 +2671,27 @@ void copyblock(int c, int d)
   }
 }
 
+void swapblocks(int c, int d)
+{
+  int e;
+  if (c == d) return;
+  for (e = 0; e < 16; e++)
+  {
+    unsigned char ch = blockdata[d*16+e];
+    blockdata[d*16+e] = blockdata[c*16+e];
+    blockdata[c*16+e] = ch;
+  }
+  for (e = 0; e < mapsx * mapsy; e++)
+  {
+    if (mapdata[e] == c)
+      mapdata[e] = d;
+    else if (mapdata[e] == d)
+      mapdata[e] = c;
+  }
+
+  findusedblocksandchars();
+}
+
 void copychar(int c, int d)
 {
   int e;
@@ -2726,7 +2756,7 @@ void reorganizedata()
   unsigned char newblockused[256];
   int blockmapping[256];
   int charmapping[256];
-  int c,d,e,z,x,y,s;
+  int c,d,e,z,x,y,s,newblk;
 
   updateallzones();
   optimizechars();
@@ -2759,109 +2789,49 @@ void reorganizedata()
     }
   }
 
-  // Process block 0 then
-  blockmapping[0] = 0;
-  newblockused[0] = 1;
-  memcpy(newblockdata, blockdata, 16);
-  for (d = 0; d < 16; d++)
+  // Process blocks & chars
+  newblk = 0;
+  for (c = 0; c < 256; c++)
   {
-    unsigned char ch = blockdata[d];
-    if (charmapping[ch] >= 0)
-      newblockdata[d] = charmapping[ch];
-    else
+    if (!c || blockusecount[c] > 0)
     {
-      unsigned char newch = 0;
-      while (newcharused[newch])
-        newch++;
+      newblockused[newblk] = 1;
+      blockmapping[c] = newblk;
+      for (d = 0; d < 16; d++)
+      {
+        unsigned char ch = blockdata[c*16+d];
+        if (charmapping[ch] >= 0)
+          newblockdata[newblk*16+d] = charmapping[ch];
+        else
+        {
+          unsigned char newch = 0;
+          while (newcharused[newch])
+            newch++;
 
-      for (e = 0; e < 8; e++)
-        newchardata[newch*8+e] = chardata[ch*8+e];
+          for (e = 0; e < 8; e++)
+            newchardata[newch*8+e] = chardata[ch*8+e];
 
-      newcharused[newch] = 1;
-      newchcol[newch] = chcol[ch];
-      newchinfo[newch] = chinfo[ch];
-      charmapping[ch] = newch;
-      newblockdata[d] = newch;
+          newcharused[newch] = 1;
+          newchcol[newch] = chcol[ch];
+          newchinfo[newch] = chinfo[ch];
+          charmapping[ch] = newch;
+          newblockdata[newblk*16+d] = newch;
+        }
+      }
+      newblk++;
     }
   }
-
+  
+  // Rewrite mapdata
   for (z = 0; z < NUMZONES; z++)
   {
     if (!zonex[z] && !zoney[z])
       continue;
-    for (x = zonel[z]; x < zoner[z]; x++)
+    for (y = zoneu[z]; y < zoned[z]; y++)
     {
-      for (y = zoneu[z]; y < zoned[z]; y++)
+      for (x = zonel[z]; x < zoner[z]; x++)
       {
-        for (s = x; s < zoner[z]; s++)
-        {
-          unsigned char blk = mapdata[y*mapsx+s];
-          if (blockmapping[blk] >= 0)
-          {
-            newmapdata[y*mapsx+s] = blockmapping[blk];
-            break;
-          }
-          else
-          {
-            unsigned char newblk = 0;
-
-            while (newblockused[newblk])
-              newblk++;
-            newblockused[newblk] = 1;
-            blockmapping[blk] = newblk;
-            newmapdata[y*mapsx+s] = newblk;
-
-            for (d = 0; d < 16; d++)
-            {
-              unsigned char ch = blockdata[blk*16+d];
-              if (charmapping[ch] >= 0)
-                newblockdata[newblk*16+d] = charmapping[ch];
-              else
-              {
-                unsigned char newch = 0;
-                while (newcharused[newch])
-                  newch++;
-
-                for (e = 0; e < 8; e++)
-                  newchardata[newch*8+e] = chardata[ch*8+e];
-
-                newcharused[newch] = 1;
-                newchcol[newch] = chcol[ch];
-                newchinfo[newch] = chinfo[ch];
-                charmapping[ch] = newch;
-                newblockdata[newblk*16+d] = newch;
-              }
-            }
-
-            // If block is animating, must copy the one that follows it
-            if (animatingblock[blk] && blockmapping[blk+1] < 0)
-            {
-              blockmapping[blk+1] = newblk+1;
-              newblockused[newblk+1] = 1;
-              for (d = 0; d < 16; d++)
-              {
-                unsigned char ch = blockdata[blk*16+16+d];
-                if (charmapping[ch] >= 0)
-                  newblockdata[newblk*16+16+d] = charmapping[ch];
-                else
-                {
-                  unsigned char newch = 0;
-                  while (newcharused[newch])
-                    newch++;
-
-                  for (e = 0; e < 8; e++)
-                    newchardata[newch*8+e] = chardata[ch*8+e];
-
-                  newcharused[newch] = 1;
-                  newchcol[newch] = chcol[ch];
-                  newchinfo[newch] = chinfo[ch];
-                  charmapping[ch] = newch;
-                  newblockdata[newblk*16+16+d] = newch;
-                }
-              }
-            }
-          }
-        }
+        newmapdata[y*mapsx+x] = blockmapping[mapdata[y*mapsx+x]];
       }
     }
   }
@@ -3266,8 +3236,6 @@ void loadalldata(void)
       }
       findusedblocksandchars();
       
-      mapx = 0;
-      mapy = 0;
 
       return;
     }

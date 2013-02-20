@@ -178,9 +178,11 @@ RI_NotFound:    rts
 RemoveItem:     jsr FindItem
                 bcc RI_NotFound
 RemoveItemByIndex:
-                cpy itemIndex
+                cpy itemIndex                   ;If current item removed, or removed item is
+                beq RI_MoveSelection            ;earlier in inventory, shift selection back
                 bcs RI_ShiftLoop
-                dec itemIndex                   ;Change selection if selected item was shifted
+RI_MoveSelection:
+                dec itemIndex
 RI_ShiftLoop:   lda invCount+1,y                ;Shift items to remove the hole left by dropped item
                 sta invCount,y
                 lda invMag+1,y
@@ -191,11 +193,6 @@ RI_ShiftLoop:   lda invCount+1,y                ;Shift items to remove the hole 
                 iny
                 bne RI_ShiftLoop
 RI_Done:        inc UM_ForceRefresh+1           ;If inventory open, force it to refresh
-                ldy itemIndex                   ;If current index points past inventory end,
-                beq RI_Success                  ;change selection back
-                lda invType,y
-                bne RI_Success
-                dec itemIndex
                 jmp RI_Success
 
         ; Decrease ammo in inventory
