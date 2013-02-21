@@ -39,6 +39,10 @@ UL_WaterCmp:    cpx #$00
                 bcc UL_WaterLoop
                 rts
 
+                org lvlWaterSplashColor
+                dc.b 0                          ;Water splash color override
+                dc.b 0                          ;Water damage
+
                 org charInfo
                 incbin bg/level02.chi
                 incbin bg/level02.chc

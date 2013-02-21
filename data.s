@@ -293,12 +293,13 @@ actAuxData:     ds.b MAX_ACT,0
 actAITarget:    ds.b MAX_ACT,0
 actLvlDataPos:  ds.b MAX_PERSISTENTACT,0
 actLvlDataOrg:  ds.b MAX_PERSISTENTACT,0
+actF2:          ds.b MAX_COMPLEXACT,0
 actCtrl:        ds.b MAX_COMPLEXACT,0
 actMoveCtrl:    ds.b MAX_COMPLEXACT,0
 actPrevCtrl:    ds.b MAX_COMPLEXACT,0
 actFall:        ds.b MAX_COMPLEXACT,0
 actFallL:       ds.b MAX_COMPLEXACT,0
-actF2:          ds.b MAX_COMPLEXACT,0
+actWaterDamage: ds.b MAX_COMPLEXACT,0
 actWpn:         ds.b MAX_COMPLEXACT,ITEM_NONE
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0

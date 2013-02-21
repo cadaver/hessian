@@ -9,6 +9,10 @@
 
 UpdateLevel:    rts
 
+                org lvlWaterSplashColor
+                dc.b 0                          ;Water splash color override
+                dc.b 0                          ;Water damage
+
                 org charInfo
                 incbin bg/level03.chi
                 incbin bg/level03.chc

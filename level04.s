@@ -8,47 +8,53 @@
 
                 org lvlCodeStart
 
-UpdateLevel:    inc UL_RandomIndex
-                ldx UL_RandomIndex
+UpdateLevel:    inc UL_Delay+1
+UL_Delay:       lda #$00
+                tay
+                and #$07
+                bne UL_NoWaterAnim
+                ldx #$07
+UL_WaterLoop:   lda chars+28*8,x
+                asl
+                adc #$00
+                asl
+                adc #$00
+                sta chars+28*8,x
+                dex
+                bne UL_WaterLoop
+UL_NoWaterAnim: inc UL_RandomIndex+1
+UL_RandomIndex: ldx #$00
                 lda randomAreaStart,x
-                ldy UL_LightOn
+UL_LightOn:     ldy #$01
                 beq UL_NoLight
 UL_HasLight:    cmp #$c0
                 bcs UL_Toggle
                 rts
 UL_NoLight:     cmp #$f8
-                bcs UL_Toggle
-                rts
+                bcc UL_NoToggle
 UL_Toggle:      tya
                 eor #$01
-                sta UL_LightOn
-                lda chars+25*8
-                eor #%00010101
-                sta chars+25*8
-                sta chars+25*8+3
-                lda chars+25*8+1
-                eor #%01101010
-                sta chars+25*8+1
-                sta chars+25*8+2
-                lda chars+26*8
-                eor #%01010101
-                sta chars+26*8
-                sta chars+26*8+3
-                lda chars+26*8+1
-                eor #%10101010
-                sta chars+26*8+1
-                sta chars+26*8+2
-                lda chars+27*8
-                eor #%01010100
-                sta chars+27*8
-                sta chars+27*8+3
-                lda chars+27*8+1
-                eor #%10101001
-                sta chars+27*8+1
-                sta chars+27*8+2
-UL_Done:        rts
-UL_LightOn:     dc.b 1
-UL_RandomIndex: dc.b 0
+                sta UL_LightOn+1
+                ldx #0
+                jsr UL_ToggleSub
+                ldx #8
+                jsr UL_ToggleSub
+                ldx #16
+UL_ToggleSub:   ldy #3
+UL_ToggleLoop:  lda chars+25*8,x
+                pha
+                lda chars+50*8,x
+                sta chars+25*8,x
+                pla
+                sta chars+50*8,x
+                inx
+                dey
+                bpl UL_ToggleLoop
+UL_NoToggle:    rts
+
+                org lvlWaterSplashColor
+                dc.b $05                        ;Water splash color override
+                dc.b $08                        ;Water damage
 
                 org charInfo
                 incbin bg/level04.chi

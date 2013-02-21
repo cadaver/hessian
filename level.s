@@ -486,7 +486,15 @@ CP_OverUp:      lda limitU
                 beq CP_NotOverDown
 CP_NotOverUp:   cmp temp2
                 bcc CP_NotOverDown
-                lda temp2
+                bne CP_OverDown
+                if SCROLLROWS > 21
+                cpy #$02
+                bcc CP_NotOverDown
+                else
+                cpy #$03
+                bcc CP_NotOverDown
+                endif
+CP_OverDown:    lda temp2
                 if SCROLLROWS > 21
                 ldy #$02
                 else

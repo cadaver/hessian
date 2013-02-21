@@ -66,9 +66,7 @@ AL_BRAKING      = 22
 AL_HEIGHT       = 23                           ;Height for headbump check, negative
 AL_JUMPSPEED    = 24                           ;Negative
 AL_CLIMBSPEED   = 25
-AL_SWIMSPEED    = 26
-AL_SWIMACCEL    = 27
-AL_DROWNINGTIMER = 28
+AL_DROWNINGTIMER = 26
 
 AF_NONE         = $00
 AF_ISHERO       = $01
@@ -1229,8 +1227,22 @@ DA_Done:
 CAC_HasCollision:
                 sec
 CAC_HasCollision2:
+DS_Alive:
                 rts
 
+        ; Apply damage to self, and do not return if killed. To be called from move routines
+        ;
+        ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or >=$80 if none ($ff
+        ;             for quiet damage: no flashing, no sound)
+        ; Returns: C=1 if actor is alive, does not return if killed
+        ; Modifies: A,Y,temp7-temp8,possibly other temp registers
+
+DamageSelf:     jsr DamageActor
+                bcs DS_Alive
+                pla
+                pla
+                rts
+                
         ; Damage actor, and destroy if health goes to zero
         ;
         ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or >=$80 if none ($ff
@@ -1597,6 +1609,7 @@ GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actAttackD,y
                 sta actFall,y
                 sta actFallL,y
+                sta actWaterDamage,y
                 sta actAIHelp,y
                 lda #NOWEAPONFRAME
                 sta actWpnF,y

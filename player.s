@@ -17,8 +17,10 @@ DEATH_ACCEL     = 6
 DEATH_YSPEED    = -5*8
 DEATH_MAX_XSPEED = 6*8
 DEATH_BRAKING   = 6
-DEATH_WATER_YBRAKING = 8
-DEATH_WATER_BRAKING = 2
+
+WATER_XBRAKING = 4
+WATER_YBRAKING = 4
+DEATH_WATER_YBRAKING = 2
 
 HUMAN_MAX_YSPEED = 6*8
 
@@ -146,14 +148,13 @@ MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 lda #$00
                 sta actSX,x
 MH_DeathNoHitWall:
-                tya                             ;If in water, brake X & Y speeds
+                tya                             ;Apply extra buoyancy to corpses
                 and #MB_INWATER
-                beq MH_NotInWater
-                lda #DEATH_WATER_BRAKING
-                jsr BrakeActorX
+                beq MH_DeathNotInWater
                 lda #DEATH_WATER_YBRAKING
                 jsr BrakeActorY
-MH_NotInWater:  lda #$06
+MH_DeathNotInWater:
+                lda #$06
                 ldy #FR_DIE+1
                 bne MH_DeathAnimDelay
 MH_DeathGrounded:
@@ -183,9 +184,24 @@ MH_DeathAnimDone:
 MH_DeathDone:   rts
 MH_DeathRemove: jmp RemoveActor
 
-MoveHuman:      lda actHp,x
-                beq MH_DeathAnim
-                lda actD,x
+MoveHuman:      lda actMB,x
+                sta temp1                       ;Movement state bits
+                and #MB_INWATER
+                beq MH_NotInWater
+                lda #WATER_XBRAKING             ;Global water braking, both for alive & dead characters
+                jsr BrakeActorX
+                lda #WATER_YBRAKING
+                jsr BrakeActorY
+                lda lvlWaterDamage              ;Check if water in this level is damaging
+                beq MH_NotInWater
+                clc
+                adc actWaterDamage,x
+                sta actWaterDamage,x
+                bcc MH_NotInWater
+                lda #DMG_WATER
+                ldy #NODAMAGESRC
+                jsr DamageSelf
+MH_NotInWater:  lda actD,x
                 sta MH_OldDir+1
                 ldy #AL_SIZEUP                  ;Set size up based on currently displayed
                 lda (actLo),y                   ;frame
@@ -201,8 +217,7 @@ MoveHuman:      lda actHp,x
                 iny
                 lda (actLo),y
                 sta temp4                       ;Movement speed
-                lda actMB,x                     ;Movement state bits
-                sta temp1
+                lda temp1
                 lsr                             ;Check after fall-effects (forced duck, damage)
                 bcc MH_NoFallCheck
                 ldy actFall,x
@@ -242,21 +257,23 @@ MH_NoRollSave:  sec
                 asl
                 adc temp8
                 ldy #NODAMAGESRC
-                jsr DamageActor                 ;If killed, perform no further move logic
-                bcc MH_DeathDone
+                jsr DamageSelf
 MH_NoFallDamage:dec actFall,x
-MH_NoFallCheck: lda actF1,x                     ;Check special movement states
+MH_NoFallCheck: lda actF1,x                     ;Check for special movement states
                 cmp #FR_CLIMB
-                bcc MH_NotClimbing
+                bcc MH_NoSpecial
+                cmp #FR_SWIM
+                bcs MH_IsSwimming
                 cmp #FR_ROLL
-                bcs MH_RollOrSwim
+                bcs MH_IsRolling
+                cmp #FR_DIE
+                bcs MH_IsDying
                 jmp MH_Climbing
-MH_RollOrSwim:  cmp #FR_SWIM
-                bcc MH_Rolling
-                jmp MH_Swimming
-MH_Rolling:     inc temp2
+MH_IsDying:     jmp MH_DeathAnim
+MH_IsSwimming:  jmp MH_Swimming
+MH_IsRolling:   inc temp2
                 bne MH_RollAcc
-MH_NotClimbing: cmp #FR_DUCK+1
+MH_NoSpecial:   cmp #FR_DUCK+1
                 lda actMoveCtrl,x               ;Check turning / X-acceleration / braking
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_Brake
@@ -270,7 +287,11 @@ MH_RollAcc:     lda temp1
                 ldy #AL_GROUNDACCEL
                 bcs MH_OnGroundAcc
                 iny
-MH_OnGroundAcc: lda (actLo),y
+MH_OnGroundAcc: lsr                             ;If in water, halve max speed
+                bcc MH_NoWaterMaxSpeed
+                lsr temp4
+MH_NoWaterMaxSpeed:
+                lda (actLo),y
                 ldy actD,x
                 bmi MH_AccLeft
 MH_AccRight:    ldy temp4
@@ -387,14 +408,15 @@ MH_NoLongJump:  lda (actLo),y
                 jsr MoveWithGravity             ;Actually move & check collisions
                 and #MB_INWATER
                 beq MH_NoWater
-                lda temp3                       ;If actor can't swim, kill instantly
-                bmi MH_CanSwim                  ;but retain the unmodified Y-speed
-                LDY #NODAMAGESRC
-                jmp DestroyActor
-MH_CanSwim:     jsr GetCharInfo1Above           ;Must be deep in water before
+                lda #-3
+                jsr GetCharInfoOffset           ;Must be deep in water before
                 and #CI_WATER                   ;swimming kicks in
                 beq MH_NoWater
-                jmp MH_InitSwim
+                lda temp3                       ;If actor can't swim, kill instantly
+                bmi MH_CanSwim
+                ldy #NODAMAGESRC
+                jmp DestroyActor
+MH_CanSwim:     jmp MH_InitSwim
 MH_NoWater:     lda actMB,x
                 cmp #MB_STARTFALLING
                 bcc MH_NoFallStart
@@ -716,18 +738,16 @@ MH_ClimbAnimDown:
                 jsr MoveActorY
                 jmp NoInterpolation
 
-MH_Swimming:    ldy #AL_SWIMSPEED
+MH_Swimming:    ldy #AL_MOVESPEED
                 lda (actLo),y
+                lsr                             ;Swimming max speed = half of ground speed
                 sta temp4
                 iny
                 lda (actLo),y
                 sta temp5
                 ldy actMoveCtrl,x
                 cpy #JOY_LEFT
-                bcs MH_SwimHorizLeftOrRight
-MH_SwimBrakeHoriz:
-                jsr BrakeActorX
-                jmp MH_SwimHorizDone2
+                bcc MH_SwimHorizDone2
 MH_SwimHorizLeftOrRight:
                 cpy #JOY_RIGHT
                 ldy temp4
@@ -742,7 +762,7 @@ MH_SwimHorizDone:
 MH_SwimHorizDone2:
                 lda actMoveCtrl,x
                 and #JOY_UP|JOY_DOWN
-                beq MH_SwimBrakeVert
+                beq MH_SwimVertDone
                 lsr
                 lda temp5
                 ldy temp4
@@ -750,10 +770,6 @@ MH_SwimHorizDone2:
 MH_SwimDown:    jsr AccActorY
                 jmp MH_SwimVertDone
 MH_SwimUp:      jsr AccActorYNeg
-                jmp MH_SwimVertDone
-MH_SwimBrakeVert:
-                lda temp5
-                jsr BrakeActorY
 MH_SwimVertDone:lda actSY,x
                 bne MH_NotStationary
                 lda #-1                         ;If Y-speed stationary, rise up slowly
@@ -805,10 +821,9 @@ MH_NoDrowningTimerReset:
                 clc
                 adc (actLo),y
                 bcc MH_NotDrowning
-                lda #1
+                lda #DMG_DROWNING
                 ldy #NODAMAGESRC_QUIET
-                jsr DamageActor
-                bcc MH_Drowned
+                jsr DamageSelf
                 lda #DROWNINGTIMER_RESET        ;Drowning damage is faster after initial delay
 MH_NotDrowning: sta actFallL,x
                 lda #$03
@@ -819,7 +834,7 @@ MH_NotDrowning: sta actFallL,x
                 bcc MH_SwimAnimDone
                 lda #FR_SWIM
 MH_SwimAnimDone:jmp MH_AnimDone
-MH_Drowned:     rts
+                rts
 
         ; Get halved move speed
         ;
@@ -1118,10 +1133,8 @@ ApplySkills:
                 clc
                 adc #INITIAL_GROUNDACC
                 sta plrGroundAcc
-                sbc #3-1                        ;C=0, subtract one more
-                sta plrSwimAcc
                 txa
-                adc #INITIAL_INAIRACC-1         ;C=1, add one more
+                adc #INITIAL_INAIRACC
                 sta plrInAirAcc
                 txa
                 asl
@@ -1201,5 +1214,7 @@ CreateSplash:   lda #ACTI_FIRSTEFFECT
                 lda actYL,y                     ;Align to char boundary
                 and #$c0
                 sta actYL,y
+                lda lvlWaterSplashColor
+                sta actC,y
                 lda #SFX_SPLASH
                 jmp PlaySfx
