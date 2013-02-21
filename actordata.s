@@ -303,8 +303,6 @@ plrGroundBrake:dc.b INITIAL_GROUNDBRAKE         ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
 plrJumpSpeed:   dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
 plrClimbSpeed:  dc.b INITIAL_CLIMBSPEED         ;Climbing speed
-plrDrowningTimer:
-                dc.b INITIAL_DROWNINGTIMER      ;Drowning rate when underwater
 
 alItem:         dc.w MoveItem                   ;Update routine
                 dc.w RemoveActor                ;Destroy routine

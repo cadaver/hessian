@@ -66,7 +66,6 @@ AL_BRAKING      = 22
 AL_HEIGHT       = 23                           ;Height for headbump check, negative
 AL_JUMPSPEED    = 24                           ;Negative
 AL_CLIMBSPEED   = 25
-AL_DROWNINGTIMER = 26
 
 AF_NONE         = $00
 AF_ISHERO       = $01
@@ -102,7 +101,6 @@ LVLACTSEARCH    = 32
 SPAWNERSEARCH   = 16
 
 NODAMAGESRC     = $80
-NODAMAGESRC_QUIET = $ff
 
 SPAWNINFRONT_PROBABILITY = $c0
 
@@ -1232,12 +1230,12 @@ DS_Alive:
 
         ; Apply damage to self, and do not return if killed. To be called from move routines
         ;
-        ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or >=$80 if none ($ff
-        ;             for quiet damage: no flashing, no sound)
+        ; Parameters: A damage amount, X actor index
         ; Returns: C=1 if actor is alive, does not return if killed
         ; Modifies: A,Y,temp7-temp8,possibly other temp registers
 
-DamageSelf:     jsr DamageActor
+DamageSelf:     ldy #NODAMAGESRC
+                jsr DamageActor
                 bcs DS_Alive
                 pla
                 pla
@@ -1254,11 +1252,11 @@ DamageActor:    sty temp7
                 sta temp8
                 cpx #ACTI_PLAYER
                 bne DA_NotPlayer
+                stx healthRecharge              ;If player hit, reset health recharge timer
                 if GODMODE_CHEAT>0
                 lda actHp,x
                 bne DA_NotDead
                 endif
-                stx healthRecharge              ;If player hit, reset health recharge timer
 DA_NotPlayer:   jsr GetActorLogicData
                 ldy #AL_DMGMODIFY
                 lda (actLo),y
@@ -1279,15 +1277,12 @@ DA_Sub:         sbc temp8
                 lda #$00
 DA_NotDead:     sta actHp,x
                 php
-                lda temp7
-                cmp #NODAMAGESRC_QUIET
-                beq DA_QuietDamage
                 lda actC,x                      ;Flash actor as a sign of damage
                 ora #$f0
                 sta actC,x
                 lda #SFX_DAMAGE
                 jsr PlaySfx
-DA_QuietDamage: plp
+                plp
                 bne DA_Done
 
         ; Call destroy routine of an actor

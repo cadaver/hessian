@@ -18,11 +18,13 @@ DEATH_YSPEED    = -5*8
 DEATH_MAX_XSPEED = 6*8
 DEATH_BRAKING   = 6
 
-WATER_XBRAKING = 4
+WATER_XBRAKING = 3
 WATER_YBRAKING = 4
 DEATH_WATER_YBRAKING = 2
 
 HUMAN_MAX_YSPEED = 6*8
+
+DROWNING_TIMER = 5
 
 DAMAGING_FALL_DISTANCE = 4
 
@@ -37,10 +39,8 @@ INITIAL_INAIRACC = 2
 INITIAL_GROUNDBRAKE = 6
 INITIAL_JUMPSPEED = 40
 INITIAL_CLIMBSPEED = 84
-INITIAL_DROWNINGTIMER = 5
 INITIAL_HEALTHRECHARGETIMER = 2
 
-DROWNINGTIMER_RESET = $a8
 HEALTHRECHARGETIMER_RESET = $e0
 
 EASY_DMGMULTIPLIER_REDUCE = 2
@@ -193,13 +193,22 @@ MoveHuman:      lda actMB,x
                 lda #WATER_YBRAKING
                 jsr BrakeActorY
                 lda lvlWaterDamage              ;Check if water in this level is damaging
+                bne MH_HasDamagingWater2
+                lda #-3                         ;If water itself is not damaging, check drowning
+                jsr GetCharInfoOffset           ;(head under water)
+                and #CI_WATER
+                bne MH_NoDrowningTimerReset
+                lda #$00
+                sta actWaterDamage,x
                 beq MH_NotInWater
+MH_NoDrowningTimerReset:
+                lda #DROWNING_TIMER
+MH_HasDamagingWater2:
                 clc
                 adc actWaterDamage,x
                 sta actWaterDamage,x
                 bcc MH_NotInWater
                 lda #DMG_WATER
-                ldy #NODAMAGESRC
                 jsr DamageSelf
 MH_NotInWater:  lda actD,x
                 sta MH_OldDir+1
@@ -256,7 +265,6 @@ MH_NoRollSave:  sec
                 sta temp8
                 asl
                 adc temp8
-                ldy #NODAMAGESRC
                 jsr DamageSelf
 MH_NoFallDamage:dec actFall,x
 MH_NoFallCheck: lda actF1,x                     ;Check for special movement states
@@ -634,7 +642,10 @@ MH_ResetFall:   lda #$00
                 sta actFallL,x
                 rts
 
-MH_InitSwim:    jsr MH_ResetFall                ;Falling counter used for drowning damage, reset
+MH_InitSwim:    lda lvlWaterDamage              ;If only water damage is drowning, reset water damage counter
+                bne MH_HasDamagingWater
+                sta actWaterDamage,x
+MH_HasDamagingWater:
                 lda actSY,x
                 bmi MH_SwimNoYSpeedMod          ;If falling down, reduce speed when hit water
                 ldy #6
@@ -786,9 +797,36 @@ MH_NotStationary:
                 lda actMoveCtrl,x               ;If joystick held up, exit if ground above
                 lsr
                 bcc MH_NotExitingWater
+                cmp #JOY_LEFT/2                ;Check for exiting to left/right
+                bcc MH_ExitWaterCheckAbove
+                cmp #JOY_RIGHT/2
+                lda #8*8
+                ldy #3
+                bcs MH_ExitWaterCheckRight
+                lda #-8*8
+                ldy #-3
+MH_ExitWaterCheckRight:
+                sta temp1
+                lda #-2
+                jsr GetCharInfoXYOffset
+                lsr
+                bcc MH_NotExitingWater
+MH_GetOutOfWaterLoop:
+                lda temp1
+                jsr MoveActorX
+                lda #-2
+                jsr GetCharInfoOffset
+                lsr
+                bcc MH_GetOutOfWaterLoop
+                jmp MH_ExitWaterCommon
+MH_ExitWaterLeft:
+                dec actXH,x
+                jmp MH_ExitWaterCommon
+MH_ExitWaterCheckAbove:
                 tya
                 lsr
                 bcc MH_NotExitingWater
+MH_ExitWaterCommon:
                 lda #-16*8
                 jsr MoveActorY
                 lda actYL,x
@@ -809,23 +847,6 @@ MH_NotSwimmingUp:
                 lda #-1                         ;Use middle of player for obstacle check
                 ldy #CI_GROUND|CI_OBSTACLE
                 jsr MoveFlyer
-                lda #-3
-                jsr GetCharInfoOffset           ;Check for drowning damage (head under water)
-                ldy actFallL,x
-                and #CI_WATER
-                bne MH_NoDrowningTimerReset
-                ldy #$00
-MH_NoDrowningTimerReset:
-                tya
-                ldy #AL_DROWNINGTIMER
-                clc
-                adc (actLo),y
-                bcc MH_NotDrowning
-                lda #DMG_DROWNING
-                ldy #NODAMAGESRC_QUIET
-                jsr DamageSelf
-                lda #DROWNINGTIMER_RESET        ;Drowning damage is faster after initial delay
-MH_NotDrowning: sta actFallL,x
                 lda #$03
                 jsr AnimationDelay
                 lda actF1,x
@@ -834,7 +855,6 @@ MH_NotDrowning: sta actFallL,x
                 bcc MH_SwimAnimDone
                 lda #FR_SWIM
 MH_SwimAnimDone:jmp MH_AnimDone
-                rts
 
         ; Get halved move speed
         ;
@@ -1163,21 +1183,20 @@ ApplySkills:
                 lda plrWeaponBonusTbl,x
                 sta AH_PlayerMeleeBonus+1
 
-        ; Vitality: damage reduction, slower drowning, faster health recharge
+        ; Vitality: damage reduction, faster health recharge
 
-                lda #INITIAL_DROWNINGTIMER
-                sec
-                sbc plrVitality
-                sta plrDrowningTimer
-                adc #NO_MODIFY-INITIAL_DROWNINGTIMER-1
-                ldy difficulty                  ;On Easy level damage multiplier is lower
-                bne AS_NormalLevel
-                sbc #EASY_DMGMULTIPLIER_REDUCE-1 ;C=0, subtract one less
-AS_NormalLevel: sta plrDmgModify
                 lda plrVitality
+                tay
                 clc
                 adc #INITIAL_HEALTHRECHARGETIMER
                 sta ULO_HealthRechargeRate+1
+                lda #NO_MODIFY+1
+                sbc plrVitality                 ;C=0, subtracts one more
+                ldy difficulty                  ;On Easy level damage multiplier is lower
+                bne AS_NormalLevel
+                sbc #EASY_DMGMULTIPLIER_REDUCE
+AS_NormalLevel: sta plrDmgModify
+                lda plrVitality
 
         ; Carrying: more weapons in inventory and higher ammo limit
 
