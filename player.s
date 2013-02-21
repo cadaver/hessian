@@ -17,10 +17,10 @@ DEATH_ACCEL     = 6
 DEATH_YSPEED    = -5*8
 DEATH_MAX_XSPEED = 6*8
 DEATH_BRAKING   = 6
+DEATH_WATER_YBRAKING = 2                        ;Extra braking applied in water
 
 WATER_XBRAKING = 3
 WATER_YBRAKING = 4
-DEATH_WATER_YBRAKING = 2
 
 HUMAN_MAX_YSPEED = 6*8
 
@@ -140,7 +140,6 @@ MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 lda #DEATH_ACCEL
                 ldy #HUMAN_MAX_YSPEED
                 jsr MoveWithGravity
-                tay
                 lsr
                 bcs MH_DeathGrounded            ;If grounded, animate faster
                 and #MB_HITWALL/2               ;If hit wall, zero X-speed
@@ -148,12 +147,6 @@ MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
                 lda #$00
                 sta actSX,x
 MH_DeathNoHitWall:
-                tya                             ;Apply extra buoyancy to corpses
-                and #MB_INWATER
-                beq MH_DeathNotInWater
-                lda #DEATH_WATER_YBRAKING
-                jsr BrakeActorY
-MH_DeathNotInWater:
                 lda #$06
                 ldy #FR_DIE+1
                 bne MH_DeathAnimDelay
@@ -190,9 +183,15 @@ MoveHuman:      lda actMB,x
                 beq MH_NotInWater
                 lda #WATER_XBRAKING             ;Global water braking, both for alive & dead characters
                 jsr BrakeActorX
+                lda actSY,x                     ;Do not brake upward jumps so that player can get out of water
+                bmi MH_NoYBraking               ;but apply extra buoyancy to corpses
+                lda actHp,x
+                cmp #$01
                 lda #WATER_YBRAKING
-                jsr BrakeActorY
-                lda lvlWaterDamage              ;Check if water in this level is damaging
+                bcs MH_NoFloating
+                adc #DEATH_WATER_YBRAKING
+MH_NoFloating:  jsr BrakeActorY
+MH_NoYBraking:  lda lvlWaterDamage              ;Check if water in this level is damaging
                 bne MH_HasDamagingWater2
                 lda #-3                         ;If water itself is not damaging, check drowning
                 jsr GetCharInfoOffset           ;(head under water)
@@ -356,32 +355,16 @@ MH_NoHitWall:   lda temp1
                 beq MH_NoNewJump
                 lda temp2
                 bne MH_NoNewJump
-                txa                             ;If player, check for entering door/
-                bne MH_NoOperate                ;operating level object
+                txa                             ;If player, check for operating levelobjects
+                bne MH_NoOperate
                 ldy lvlObjNum
                 bmi MH_NoOperate
-                lda lvlObjB,y
-                and #OBJ_TYPEBITS+OBJ_MODEBITS
-                cmp #OBJTYPE_SIDEDOOR           ;Side doors and spawnpoints can not be operated
-                bcs MH_NoOperate
-                and #OBJ_MODEBITS
-                cmp #OBJMODE_TRIG               ;Triggered objects can not be operated
-                beq MH_NoOperate
-                lda actMoveCtrl,x
-                cmp #JOY_UP
+                lda actMoveCtrl+ACTI_PLAYER
+                cmp #JOY_UP                     ;Must be holding only UP to operate
                 bne MH_NoOperate
-                cmp actPrevCtrl,x
-                beq MH_NoOperate
-                lda actF1,x
-                cmp #FR_ENTER
-                beq MH_OperateNoDelayReset
-                lda #$00
-                sta actFd,x
-                lda #FR_ENTER
-                sta actF1,x
-MH_OperateNoDelayReset:
-                sta actF2,x
-                bne MH_NoNewJump
+                jsr OperateObject
+                ldx #ACTI_PLAYER
+                bcs MH_NoNewJump
 MH_NoOperate:   lda temp3
                 and #AMF_CLIMB
                 beq MH_NoInitClimbUp
@@ -400,6 +383,8 @@ MH_StartJump:   ldy #AL_JUMPSPEED
                 lda (actLo),y
                 sta actSY,x
                 jsr MH_ResetFall
+                lda actMB,x
+                and #$ff-MB_GROUNDED
                 sta actMB,x                     ;Reset grounded bit manually for immediate jump physics
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 lda (actLo),y
@@ -415,7 +400,8 @@ MH_NoLongJump:  lda (actLo),y
                 ldy #HUMAN_MAX_YSPEED
                 jsr MoveWithGravity             ;Actually move & check collisions
                 and #MB_INWATER
-                beq MH_NoWater
+                beq MH_NoWater                  ;If in water, check for starting to swim
+                jsr MH_ResetFall                ;No fall damage when hit water
                 lda #-3
                 jsr GetCharInfoOffset           ;Must be deep in water before
                 and #CI_WATER                   ;swimming kicks in
@@ -428,9 +414,7 @@ MH_CanSwim:     jmp MH_InitSwim
 MH_NoWater:     lda actMB,x
                 cmp #MB_STARTFALLING
                 bcc MH_NoFallStart
-                lda #$00
-                sta actFall,x
-                sta actFallL,x
+                jsr MH_ResetFall
                 lda actAIHelp,x                 ;Check AI autojumping or autoturning
                 cmp #AIH_AUTOJUMPLEDGE          ;when falling
                 bcs MH_AutoJump
@@ -531,6 +515,9 @@ MH_NewDuckOrRoll:
                 lda temp3
                 and #AMF_ROLL
                 beq MH_NoNewRoll
+                lda actMB,x                     ;Can't roll in water
+                and #MB_INWATER
+                bne MH_NoNewRoll
                 lda actMoveCtrl,x               ;To initiate a roll, must push the
                 cmp actPrevCtrl,x               ;joystick diagonally down
                 beq MH_NoNewRoll
@@ -812,16 +799,13 @@ MH_ExitWaterCheckRight:
                 lsr
                 bcc MH_NotExitingWater
 MH_GetOutOfWaterLoop:
-                lda temp1
-                jsr MoveActorX
-                lda #-2
+                lda #-2                         ;Move actor until standing on ground
                 jsr GetCharInfoOffset
                 lsr
-                bcc MH_GetOutOfWaterLoop
-                jmp MH_ExitWaterCommon
-MH_ExitWaterLeft:
-                dec actXH,x
-                jmp MH_ExitWaterCommon
+                bcs MH_ExitWaterCommon
+                lda temp1
+                jsr MoveActorX
+                jmp MH_GetOutOfWaterLoop
 MH_ExitWaterCheckAbove:
                 tya
                 lsr

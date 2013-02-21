@@ -343,31 +343,14 @@ ULO_COUpdateMarker:
                 sta actC,x
 ULO_CODone:     ldy lvlObjNum
                 bmi ULO_Done
-                lda actF1+ACTI_PLAYER
-                cmp #FR_ENTER
+                lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
+                cmp #FR_ENTER                   ;entry delay has elapsed
                 bne ULO_NoDoor
-                lda actFd+ACTI_PLAYER           ;Operate only on the first frame when facing an object
-                bmi ULO_NoOperate
-                inc actFd+ACTI_PLAYER           ;Increment operate / door entry delay counter
-                tax
-                bne ULO_NoOperate
                 lda lvlObjB,y
-                bmi ULO_OperateActive
-                and #OBJ_MODEBITS
-                cmp #OBJMODE_MANUAL             ;Check if manual activation possible
-                bcc ULO_NoOperate
-                jsr ActivateObject
-                jmp ULO_NoOperate
-ULO_OperateActive:
-                and #OBJ_MODEBITS               ;Object was active, inactivate if possible
-                cmp #OBJMODE_MANUALAD
-                bcc ULO_NoOperate
-                jsr InactivateObject
-ULO_NoOperate:  lda lvlObjB,y
                 and #OBJ_TYPEBITS+OBJ_ACTIVE
-                cmp #OBJTYPE_DOOR+OBJ_ACTIVE    ;Check for ordinary door that is open
+                cmp #OBJTYPE_DOOR+OBJ_ACTIVE
                 bne ULO_NoDoor
-                ldx actFd+ACTI_PLAYER           ;Check for entry delay
+                ldx actFd+ACTI_PLAYER
                 cpx #DOORENTRYDELAY
                 bcs ULO_EnterDoor
 ULO_NoDoor:     lda lvlObjB,y
@@ -505,6 +488,7 @@ CP_NotOverDown: sta mapY
                 jsr RedrawScreen
                 sty ULO_COLastCheckY+1          ;Reset object search (Y=$ff)
                 jsr AddAllActorsNextFrame
+                jsr GetControls
                 jsr UpdateActors                ;Update actors once first
                 jmp StartMainLoop
 
@@ -585,7 +569,45 @@ FindZoneNum:    sta zoneNum
                 iny
                 lda (zoneLo),y
                 sta limitD
+OO_Done:
 IO_Done:        rts
+
+        ; Operate a level object
+        ;
+        ; Parameters: Y object number
+        ; Returns: C=1 if object was operated successfully (should not jump), C=0 if not
+        ; Modifies: A,X,temp vars
+
+OperateObject:  lda actF1+ACTI_PLAYER           ;If already in the enter stance, do not operate
+                cmp #FR_ENTER                   ;again
+                beq OO_ContinueOperate
+                lda lvlObjB,y                   ;Must either be manually activated object,
+                cmp #OBJTYPE_DOOR+OBJ_ACTIVE    ;or a door opened from elsewhere
+                beq OO_EnterNoOperate
+                and #OBJ_MODEBITS
+                cmp #OBJMODE_MANUAL
+                bcc OO_Done
+                lda lvlObjB,y
+                bmi OO_Active
+                jsr ActivateObject
+                jmp OO_EnterNoOperate
+OO_Active:      and #OBJ_MODEBITS               ;Object was active, inactivate if possible
+                cmp #OBJMODE_MANUALAD
+                bcc OO_Done
+                jsr InactivateObject
+OO_EnterNoOperate:
+                lda #FR_ENTER
+                sta actF1+ACTI_PLAYER
+                sta actF2+ACTI_PLAYER
+                lda #$00
+                sta actFd+ACTI_PLAYER           ;Reset door entry delay
+                beq OO_Success
+OO_ContinueOperate:
+                lda actFd+ACTI_PLAYER
+                bmi OO_Success
+                inc actFd+ACTI_PLAYER           ;Increment door entry delay, up to 128
+OO_Success:     sec
+                rts
 
         ; Toggle a level object
         ; 

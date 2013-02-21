@@ -8,7 +8,7 @@ MB_STARTFALLING = 32
         ; Move actor and stop at obstacles
         ;
         ; Parameters: X actor index, A Y offset position for obstacles,
-        ;             temp4 X offset position for obstacles, Y obstacle bits
+        ;             temp4 X offset position for obstacles, Y vertical obstacle bits
         ; Returns: A charinfo
         ; Modifies: A,Y,temp vars
 
@@ -28,7 +28,7 @@ MF_NoNegate:    jsr MoveActorX
                 lda temp5
                 ldy temp4
                 jsr GetCharInfoXYOffset
-                and temp6
+                and #CI_OBSTACLE
                 beq MF_XMoveOK
                 lda actSX,x
                 jsr MoveActorXNeg
@@ -56,7 +56,7 @@ MF_YMoveOK:     lda temp8
         ; Modifies: A,Y,temp5-temp8
 
 MoveWithGravity:sta temp6
-                lda actMB,x                     ;Only retain the grounded & water flag
+                lda actMB,x                     ;Only retain the grounded & water flags
                 and #MB_GROUNDED|MB_INWATER
                 sta temp5
                 lsr
@@ -75,14 +75,16 @@ MWG_NoYSpeedLimit:
 MWG_NoYMove:    lda actSX,x                     ;Have X-speed?
                 beq MWG_NoXMove
                 jsr MoveActorX
-                lda temp5                       ;If grounded, check wall 1 char higher
-                bne MWG_GroundedWallCheck
+MWG_NoXMove:    lda temp5                       ;If grounded, check wall 1 char higher
+                lsr
+                bcs MWG_GroundedWallCheck
 MWG_InAirWallCheck:
                 jsr GetCharInfo
                 jmp MWG_WallCheckDone
 MWG_GroundedWallCheck:
                 jsr GetCharInfo1Above
 MWG_WallCheckDone:
+                tay
                 and #CI_OBSTACLE
                 beq MWG_NoWallHit
                 lda actSX,x                     ;If hit wall, back out & set flag
@@ -106,9 +108,28 @@ MWG_HitWallLeft:lda actXL,x
 MWG_HitWallDone:lda temp5
                 ora #MB_HITWALL
                 sta temp5
-MWG_NoWallHit:
-MWG_NoXMove:    lda temp5                       ;Do in air or grounded collision checks?
+MWG_NoWallHit:  lda temp5                       ;Check enter/leave water
                 lsr
+                and #MB_INWATER/2
+                bne MWG_CheckLeaveWater
+MWG_CheckEnterWater:
+                tya
+                and #CI_WATER
+                beq MWG_NoLeaveWater
+                php
+                jsr CreateSplash
+                plp
+                lda temp5
+                ora #MB_INWATER
+                bne MWG_StoreFlags
+MWG_CheckLeaveWater:
+                tya
+                and #CI_WATER|CI_OBSTACLE|CI_GROUND ;Leaving water conclusive only if no ground/obstacles at feet
+                bne MWG_NoLeaveWater
+                lda temp5
+                and #$ff-MB_INWATER
+MWG_StoreFlags: sta temp5
+MWG_NoLeaveWater:
                 bcc MWG_InAir
                 jmp MWG_OnGround
 
@@ -149,20 +170,6 @@ MWG_NoLanding:  lda temp5
 
 MWG_CheckLanding:
                 jsr GetCharInfo                 ;Get charinfo at actor pos
-                tay
-                and #CI_WATER
-                beq MWG_NotInWater
-                lda temp5
-                and #MB_INWATER
-                bne MWG_AlreadyInWater
-                sty temp8
-                jsr CreateSplash
-                ldy temp8
-                lda temp5
-                ora #MB_INWATER
-                sta temp5
-MWG_AlreadyInWater:
-MWG_NotInWater: tya
                 lsr                             ;Hit ground?
                 bcc MWG_CheckCharCrossY         ;If not directly, check also possible char crossing
                 tya
