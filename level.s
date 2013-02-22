@@ -88,8 +88,8 @@ LoadLevelRetry: lda #<lvlObjX                   ;Load level objects & spawners
                 ldx #>lvlObjX
                 jsr LoadFile
                 bcs LoadLevelError
-                lda #<lvlName                   ;Load level graphics, animation code &
-                ldx #>lvlName                   ;level actors
+                lda #<lvlCodeStart              ;Load level graphics, animation code &
+                ldx #>lvlCodeStart              ;level actors
                 jsr LoadFile
                 bcs LoadLevelError
                 ldy #C_MAP
@@ -98,6 +98,12 @@ LoadLevelRetry: lda #<lvlObjX                   ;Load level objects & spawners
                 ldy #C_BLOCKS
                 jsr LoadAllocFile               ;Load BLOCKS chunk
                 bcs LoadLevelError
+                ldx #lvlPropertiesEnd-lvlPropertiesStart-1
+LL_CopyLevelProperties:
+                lda lvlLoadName,x               ;Copy level name & water properties
+                sta lvlPropertiesStart,x
+                dex
+                bpl LL_CopyLevelProperties
 LL_ActorMode:   lda #$00                        ;Check if should copy leveldata actors
                 bpl PostLoad
                 ldx #MAX_LVLACT-1

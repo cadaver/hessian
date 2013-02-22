@@ -3,12 +3,21 @@
                 include memory.s
                 include mainsym.s
 
-                org lvlName
-                dc.b "UNDERGROUND",0
-
                 org lvlCodeStart
 
-UpdateLevel:    inc UL_Delay+1
+UpdateLevel:    ldy chars+214*8+15
+                ldx #$0e
+UL_Waterfall:   lda chars+214*8,x
+                sta chars+214*8+1,x
+                dex
+                bpl UL_Waterfall
+                sty chars+214*8
+                and #%01010101
+                sta chars+222*8+6
+                tya
+                ora #%01010101
+                sta chars+222*8+7
+                inc UL_Delay+1
 UL_Delay:       lda #$00
                 tay
                 and #$07
@@ -52,10 +61,6 @@ UL_ToggleLoop:  lda chars+25*8,x
                 bpl UL_ToggleLoop
 UL_NoToggle:    rts
 
-                org lvlWaterSplashColor
-                dc.b $05                        ;Water splash color override
-                dc.b $08                        ;Water damage
-
                 org charInfo
                 incbin bg/level04.chi
                 incbin bg/level04.chc
@@ -66,3 +71,9 @@ UL_NoToggle:    rts
                 org lvlDataActX
                 incbin bg/level04.lva
 
+                org lvlLoadName
+                dc.b "UNDERGROUND",0
+
+                org lvlLoadWaterSplashColor
+                dc.b $05                        ;Water splash color override
+                dc.b $08                        ;Water damage

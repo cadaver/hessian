@@ -2,9 +2,6 @@
 
                 include memory.s
 
-                org lvlName
-                dc.b "CARGO SHIP",0
-
                 org lvlCodeStart
 
 UpdateLevel:    inc UL_Delay+1
@@ -55,10 +52,6 @@ UL_WaterCmp:    cpx #$00
                 bcc UL_WaterLoop
                 rts
 
-                org lvlWaterSplashColor
-                dc.b 0                          ;Water splash color override
-                dc.b 0                          ;Water damage
-
                 org charInfo
                 incbin bg/level00.chi
                 incbin bg/level00.chc
@@ -68,3 +61,10 @@ UL_WaterCmp:    cpx #$00
 
                 org lvlDataActX
                 incbin bg/level00.lva
+
+                org lvlLoadName
+                dc.b "CARGO SHIP",0
+
+                org lvlLoadWaterSplashColor
+                dc.b 0                          ;Water splash color override
+                dc.b 0                          ;Water damage

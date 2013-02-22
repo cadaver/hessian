@@ -2,16 +2,9 @@
 
                 include memory.s
 
-                org lvlName
-                dc.b "INSIDE SHIP",0
-
                 org lvlCodeStart
 
 UpdateLevel:    rts
-
-                org lvlWaterSplashColor
-                dc.b 0                          ;Water splash color override
-                dc.b 0                          ;Water damage
 
                 org charInfo
                 incbin bg/level01.chi
@@ -23,3 +16,9 @@ UpdateLevel:    rts
                 org lvlDataActX
                 incbin bg/level01.lva
 
+                org lvlLoadName
+                dc.b "INSIDE SHIP",0
+
+                org lvlLoadWaterSplashColor
+                dc.b 0                          ;Water splash color override
+                dc.b 0                          ;Water damage

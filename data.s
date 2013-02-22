@@ -317,6 +317,13 @@ lvlSpawnT:      ds.b MAX_SPAWNERS,0
 lvlSpawnWpn:    ds.b MAX_SPAWNERS,0
 lvlSpawnPlot:   ds.b MAX_SPAWNERS,0
 
+lvlPropertiesStart:
+lvlName:        ds.b 16,0
+lvlWaterSplashColor:
+                dc.b 0
+lvlWaterDamage: dc.b 0
+lvlPropertiesEnd:
+
         ; Player/world state
 
 playerStateStart:
