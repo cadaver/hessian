@@ -2886,7 +2886,7 @@ void reorganizedata()
       int charcolorused = 0;
       if ((chcol[c] & 0xf) < 8)
         continue;
-  
+
       for (e = 0; e < 8; e++)
       {
         int v = chardata[c*8+e];
@@ -2897,9 +2897,9 @@ void reorganizedata()
         if (charcolorused)
           break;
       }
-  
+
       if (!charcolorused)
-        chcol[c] = chcol[0];
+        chcol[c] = chcol[0] | (chcol[c] & 0x40);
     }
   }
 }
