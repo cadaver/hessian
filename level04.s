@@ -43,10 +43,10 @@ UL_Toggle:      tya
 UL_ToggleSub:   ldy #3
 UL_ToggleLoop:  lda chars+25*8,x
                 pha
-                lda chars+87*8,x
+                lda chars+189*8,x
                 sta chars+25*8,x
                 pla
-                sta chars+87*8,x
+                sta chars+189*8,x
                 inx
                 dey
                 bpl UL_ToggleLoop
