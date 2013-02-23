@@ -169,6 +169,7 @@ MWG_NoLanding:  lda temp5
 
 MWG_CheckLanding:
                 jsr GetCharInfo                 ;Get charinfo at actor pos
+                tay
                 lsr                             ;Hit ground?
                 bcc MWG_CheckCharCrossY         ;If not directly, check also possible char crossing
                 tya
@@ -269,17 +270,5 @@ MWG_OnGroundDone:
                 ora slopeTbl,y
                 sta actYL,x
                 lda temp5
-                sta actMB,x
-                rts
-
-        ; Reset grounded flag from actor physics state. Leaves other flags intact
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A
-
-ResetGroundedFlag:
-                lda actMB,x
-                and #$ff-MB_GROUNDED
                 sta actMB,x
                 rts

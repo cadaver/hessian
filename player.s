@@ -383,7 +383,7 @@ MH_StartJump:   ldy #AL_JUMPSPEED
                 lda (actLo),y
                 sta actSY,x
                 jsr MH_ResetFall
-                jsr ResetGroundedFlag
+                jsr MH_ResetGrounded
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 lda (actLo),y
                 sta temp4
@@ -620,16 +620,6 @@ MH_InitClimb:   lda #$80
                 sta actSY,x
                 jmp NoInterpolation
 
-MH_ResetFall:   lda #$00
-                sta actFall,x
-                sta actFallL,x
-                rts
-
-MH_SetGrounded: lda actMB,x
-                ora #MB_GROUNDED
-                sta actMB,x
-                rts
-
 MH_InitSwim:    lda lvlWaterDamage              ;If only water damage is drowning, reset water damage counter
                 bne MH_HasDamagingWater
                 sta actWaterDamage,x
@@ -842,11 +832,20 @@ MH_NotSwimmingUp:
                 lda #FR_SWIM
 MH_SwimAnimDone:jmp MH_AnimDone
 
-        ; Get halved move speed
-        ;
-        ; Parameters: X actor index (actLo,actHi must be set), C=1 return positive speed, C=0 return negative speed
-        ; Returns: A speed
-        ; Modifies: A,Y
+MH_ResetFall:   lda #$00
+                sta actFall,x
+                sta actFallL,x
+                rts
+
+MH_SetGrounded: lda actMB,x
+                ora #MB_GROUNDED
+                bne MH_SetMoveBits
+
+MH_ResetGrounded:
+                lda actMB,x
+                and #$ff-MB_GROUNDED
+MH_SetMoveBits: sta actMB,x
+                rts
 
 MH_GetSignedHalfSpeed:
                 ldy #AL_MOVESPEED
@@ -881,7 +880,7 @@ HumanDeath:     sty temp4
                 bne HD_NoYSpeed
                 lda #DEATH_YSPEED
                 sta actSY,x
-HD_NoYSpeed:    jsr ResetGroundedFlag
+HD_NoYSpeed:    jsr MH_ResetGrounded
                 lda #$00
                 sta actFd,x
                 sta actHp,x                     ;Make sure HP is 0 or the death will not work correctly
