@@ -271,3 +271,15 @@ MWG_OnGroundDone:
                 lda temp5
                 sta actMB,x
                 rts
+
+        ; Reset grounded flag from actor physics state. Leaves other flags intact
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A
+
+ResetGroundedFlag:
+                lda actMB,x
+                and #$ff-MB_GROUNDED
+                sta actMB,x
+                rts

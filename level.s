@@ -616,7 +616,7 @@ OO_Success:     sec
                 rts
 
         ; Toggle a level object
-        ; 
+        ;
         ; Parameters: Y object number
         ; Returns: -
         ; Modifies: A,X,temp vars

@@ -383,9 +383,7 @@ MH_StartJump:   ldy #AL_JUMPSPEED
                 lda (actLo),y
                 sta actSY,x
                 jsr MH_ResetFall
-                lda actMB,x
-                and #$ff-MB_GROUNDED
-                sta actMB,x                     ;Reset grounded bit manually for immediate jump physics
+                jsr ResetGroundedFlag
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 lda (actLo),y
                 sta temp4
@@ -883,9 +881,7 @@ HumanDeath:     sty temp4
                 bne HD_NoYSpeed
                 lda #DEATH_YSPEED
                 sta actSY,x
-HD_NoYSpeed:    tya
-                and #$ff-MB_GROUNDED
-                sta actMB,x                     ;Not grounded anymore
+HD_NoYSpeed:    jsr ResetGroundedFlag
                 lda #$00
                 sta actFd,x
                 sta actHp,x                     ;Make sure HP is 0 or the death will not work correctly

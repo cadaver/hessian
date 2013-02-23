@@ -284,8 +284,7 @@ TransformBullet:sta actT,x
 MGrn_HitWater:  jmp RemoveActor                 ;MoveWithGravity already created splash, just remove
 MoveGrenade:    dec actTime,x
                 bmi ExplodeGrenade
-                lda actMB,x
-                and #$ff-MB_GROUNDED            ;Grenade never stays grounded
+                lda #$00                        ;Grenade never stays grounded
                 sta actMB,x
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
