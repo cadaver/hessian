@@ -401,7 +401,6 @@ MH_NoLongJump:  lda (actLo),y
                 jsr MoveWithGravity             ;Actually move & check collisions
                 and #MB_INWATER
                 beq MH_NoWater                  ;If in water, check for starting to swim
-                jsr MH_ResetFall                ;No fall damage when hit water
                 lda #-3
                 jsr GetCharInfoOffset           ;Must be deep in water before
                 and #CI_WATER                   ;swimming kicks in
@@ -422,8 +421,7 @@ MH_NoWater:     lda actMB,x
                 beq MH_NoAutoJump
                 lda actSX,x
                 jsr MoveActorXNeg               ;Back off from the ledge
-                lda #MB_GROUNDED
-                sta actMB,x                     ;Force grounded status
+                jsr MH_SetGrounded              ;Force grounded status
                 sec
                 bne MH_DoAutoTurn
 MH_AutoJump:    ldy #AL_JUMPSPEED
@@ -629,6 +627,11 @@ MH_ResetFall:   lda #$00
                 sta actFallL,x
                 rts
 
+MH_SetGrounded: lda actMB,x
+                ora #MB_GROUNDED
+                sta actMB,x
+                rts
+
 MH_InitSwim:    lda lvlWaterDamage              ;If only water damage is drowning, reset water damage counter
                 bne MH_HasDamagingWater
                 sta actWaterDamage,x
@@ -676,6 +679,7 @@ MH_ClimbExitBelow:
 MH_ClimbExit:   lda actYL,x
                 and #$c0
                 sta actYL,x
+                jsr MH_SetGrounded
                 jsr NoInterpolation
                 jmp MH_StandAnim
 
@@ -819,7 +823,7 @@ MH_ExitWaterCommon:
                 jsr MH_ResetFall
                 sta actSY,x
                 lda #MB_GROUNDED
-                sta actMB,x                     ;Clear water bit
+                sta actMB,x                     ;Forcibly clear water bit
                 jsr NoInterpolation
                 lda #FR_DUCK+1
                 jmp MH_AnimDone
