@@ -347,9 +347,16 @@ ULO_COUpdateMarker:
                 jsr AlignActorOnGround
                 lda MoveItem_Color+1
                 sta actC,x
-ULO_CODone:     ldy lvlObjNum
+ULO_CODone:
+ULO_OperateFlag:ldx #$00
+                lda #$00
+                sta ULO_OperateFlag+1
+                ldy lvlObjNum
                 bmi ULO_Done
-                lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
+                txa                             ;Check if player is operating an object
+                beq ULO_NoOperate
+                jsr ToggleObject
+ULO_NoOperate:  lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
                 cmp #FR_ENTER                   ;entry delay has elapsed
                 bne ULO_NoDoor
                 lda lvlObjB,y
@@ -569,15 +576,20 @@ FindZoneNum:    sta zoneNum
 OO_Done:
 IO_Done:        rts
 
-        ; Operate a level object
+        ; Operate a level object. Does not actually activate/deactivate yet, but sets a flag
+        ; for UpdateLevelObjects
         ;
         ; Parameters: Y object number
         ; Returns: C=1 if object was operated successfully (should not jump), C=0 if not
-        ; Modifies: A,X,temp vars
+        ; Modifies: A,temp vars
 
-OperateObject:  lda actF1+ACTI_PLAYER           ;If already in the enter stance, do not operate
-                cmp #FR_ENTER                   ;again
+OperateObject:  lda actF1+ACTI_PLAYER           ;Already in enter/operate stance?
+                cmp #FR_ENTER
                 beq OO_ContinueOperate
+                lda actPrevCtrl+ACTI_PLAYER     ;If joystick already held up, do not operate again
+                and #JOY_UP                     ;(eg. after entering a door)
+                clc
+                bne OO_Done
                 lda lvlObjB,y                   ;Must either be manually activated object,
                 cmp #OBJTYPE_DOOR+OBJ_ACTIVE    ;or a door opened from elsewhere
                 beq OO_EnterNoOperate
@@ -585,13 +597,11 @@ OperateObject:  lda actF1+ACTI_PLAYER           ;If already in the enter stance,
                 cmp #OBJMODE_MANUAL
                 bcc OO_Done
                 lda lvlObjB,y
-                bmi OO_Active
-                jsr ActivateObject
-                jmp OO_EnterNoOperate
+                bpl OO_Inactive
 OO_Active:      and #OBJ_MODEBITS               ;Object was active, inactivate if possible
                 cmp #OBJMODE_MANUALAD
                 bcc OO_Done
-                jsr InactivateObject
+OO_Inactive:    inc ULO_OperateFlag+1
 OO_EnterNoOperate:
                 lda #FR_ENTER
                 sta actF1+ACTI_PLAYER
@@ -616,7 +626,7 @@ ToggleObject:   lda lvlObjB,y
                 bpl ActivateObject
 
         ; Inactivate a level object
-        ; 
+        ;
         ; Parameters: Y object number
         ; Returns: -
         ; Modifies: A,X,temp vars

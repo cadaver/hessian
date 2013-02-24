@@ -364,7 +364,6 @@ MH_NoHitWall:   lda temp1
                 cmp #JOY_UP                     ;Must be holding only UP to operate
                 bne MH_NoOperate
                 jsr OperateObject
-                ldx #ACTI_PLAYER
                 bcs MH_NoNewJump
 MH_NoOperate:   lda temp3
                 and #AMF_CLIMB

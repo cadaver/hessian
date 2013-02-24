@@ -1055,7 +1055,7 @@ UB_RestoreZone: lda loadTempReg
                 jmp FindZoneNum
 
         ; Animate a block on the map by deltavalue. If on screen, refresh it immediately.
-        ; Note: call only in between ScrollLogic & UpdateFrame
+        ; Note: call only UpdateFrame & before next ScrollWork
         ;
         ; Parameters: A block deltavalue, X horizontal map coordinate, Y vertical map coordinate
         ; Returns: -
@@ -1068,7 +1068,7 @@ UpdateBlockDelta:
                 bne UB_Common
 
         ; Update a block on the map. If on screen, refresh it immediately.
-        ; Note: call only in between ScrollLogic & UpdateFrame
+        ; Note: call only UpdateFrame & before next ScrollWork
         ;
         ; Parameters: A new block, X horizontal map coordinate, Y vertical map coordinate
         ; Returns: -
@@ -1114,7 +1114,6 @@ UB_InsideZone:  lda mapTblLo,y
                 lda scrAdd                      ;If scrolling is in the phase of copying the screen
                 beq UB_Done                     ;must also write the block to the other screen
                 lda scrCounter
-                beq UB_Done
                 cmp #$04
                 bcs UB_Done
                 lda mapX

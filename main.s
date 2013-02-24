@@ -52,7 +52,6 @@ randomAreaStart:
 StartMainLoop:  ldx #$ff
                 txs
 MainLoop:       jsr ScrollLogic
-                jsr UpdateLevelObjects
                 jsr DrawActors
                 jsr FinishFrame
                 jsr ScrollLogic
@@ -60,6 +59,7 @@ MainLoop:       jsr ScrollLogic
                 jsr UpdateMenu
                 jsr UpdateActors
                 jsr FinishFrame
+                jsr UpdateLevelObjects
                 jmp MainLoop
 
 randomAreaEnd:
