@@ -36,8 +36,8 @@ logoColors      = chars+608+168
         ; Start from underground
 
 START_LEVEL     = $04
-START_X         = $6080
-START_Y         = $0b00
+START_X         = $1680
+START_Y         = $2600
 
                 org scriptCodeStart
 

@@ -364,17 +364,15 @@ ULO_NoDoor:     lda lvlObjB,y
                 cmp #OBJTYPE_SIDEDOOR
                 bne ULO_Done
                 jsr GetZoneCenterX
-                ldx actXL+ACTI_PLAYER
                 lda actXH+ACTI_PLAYER
-                cmp lvlObjX,y
-                bne ULO_Done
-                cmp temp8                       ;If player is on right side of zone,
-                bcs ULO_RightSide               ;assume door is also on right side
-                txa
-                beq ULO_EnterDoor
-                bne ULO_Done
-ULO_RightSide:  inx
-                beq ULO_EnterDoor
+                ldx actXL+ACTI_PLAYER
+                cmp temp8
+                bcs ULO_RightSide
+                cpx #$20
+                bcc ULO_EnterDoor
+                rts
+ULO_RightSide:  cpx #$e0
+                bcs ULO_EnterDoor
 ULO_Done:       rts
 
 ULO_EnterDoor:  ldx #MAX_ACT-1                  ;When entering a door, remove all actors except player
@@ -396,17 +394,12 @@ ULO_ClearActorNext:
                 jsr ActivateObject              ;Activate the door that was entered
                 ldx #ACTI_PLAYER                ;Reset animation, falling distance and speed
                 jsr MH_StandAnim
+                jsr MH_SetGrounded
                 jsr MH_ResetFall
                 txa
-                sta actSX+ACTI_PLAYER
-                lda #MB_GROUNDED                ;Set physics to grounded status
-                sta actMB+ACTI_PLAYER
+                sta actSX+ACTI_PLAYER           ;Stop X-movement
                 jsr SetActorAtObject
-                jsr FindPlayerZone
-                lda lvlObjB,y
-                and #OBJ_TYPEBITS               ;Check for side door, must set right direction
-                cmp #OBJTYPE_SIDEDOOR
-                bne ULO_NoDirection
+                jsr FindPlayerZone              ;After entering any door, face player toward zone center
                 jsr GetZoneCenterX
                 lda actXH+ACTI_PLAYER
                 cmp temp8

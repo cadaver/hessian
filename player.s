@@ -17,16 +17,16 @@ DEATH_ACCEL     = 6
 DEATH_YSPEED    = -5*8
 DEATH_MAX_XSPEED = 6*8
 DEATH_BRAKING   = 6
-DEATH_WATER_YBRAKING = 2                        ;Extra braking applied in water
+DEATH_WATER_YBRAKING = 3                        ;Extra braking for corpses in water
 
 WATER_XBRAKING = 3
-WATER_YBRAKING = 4
+WATER_YBRAKING = 3
 
 HUMAN_MAX_YSPEED = 6*8
 
 DROWNING_TIMER = 5
 
-DAMAGING_FALL_DISTANCE = 4
+DAMAGING_FALL_DISTANCE = 3
 
 FIRST_XPLIMIT   = 100
 NEXT_XPLIMIT    = 50
@@ -183,13 +183,14 @@ MoveHuman:      lda actMB,x
                 beq MH_NotInWater
                 lda #WATER_XBRAKING             ;Global water braking, both for alive & dead characters
                 jsr BrakeActorX
-                lda actSY,x                     ;Do not brake upward jumps so that player can get out of water
-                bmi MH_NoYBraking               ;but apply extra buoyancy to corpses
+                lda actF1,x                     ;Allow jump in water to begin without braking
+                cmp #FR_JUMP                    ;(so that can get out of water)
+                beq MH_NoYBraking
                 lda actHp,x
                 cmp #$01
                 lda #WATER_YBRAKING
                 bcs MH_NoFloating
-                adc #DEATH_WATER_YBRAKING
+                adc #DEATH_WATER_YBRAKING       ;Extra buoyancy for corpses
 MH_NoFloating:  jsr BrakeActorY
 MH_NoYBraking:  lda lvlWaterDamage              ;Check if water in this level is damaging
                 bne MH_HasDamagingWater2
@@ -633,7 +634,13 @@ MH_SwimNoYSpeedMod:
                 lda #FR_SWIM
                 jmp MH_AnimDone
 
-MH_Climbing:    ldy #AL_CLIMBSPEED
+MH_Climbing:    jsr GetCharInfo                 ;Check water bit
+                sta temp1
+                and #CI_WATER
+                lsr
+                lsr
+                sta actMB,x
+                ldy #AL_CLIMBSPEED
                 lda (actLo),y
                 sta zpSrcLo
                 lda actF1,x                     ;Reset frame in case attack ended
@@ -652,7 +659,7 @@ MH_NoClimbUp:   lsr
                 lsr
                 ror
                 sta actD,x
-                jsr GetCharInfo                 ;Check ground bit
+                lda temp1                       ;Check ground bit
                 lsr
                 bcs MH_ClimbExit
                 lda actYL,x                     ;If half way a char, check also 1 char
@@ -671,7 +678,7 @@ MH_ClimbExit:   lda actYL,x
                 jsr NoInterpolation
                 jmp MH_StandAnim
 
-MH_ClimbDown:   jsr GetCharInfo
+MH_ClimbDown:   lda temp1
                 and #CI_CLIMB
                 beq MH_ClimbDone
                 ldy #4*8
@@ -679,7 +686,7 @@ MH_ClimbDown:   jsr GetCharInfo
 MH_ClimbDone:   rts
 
 MH_ClimbUp:     jsr GetCharInfo4Above
-                sta temp1
+                sta temp8
                 and #CI_OBSTACLE
                 bne MH_ClimbUpNoJump
                 lda actMoveCtrl,x               ;Check for exiting the ladder
@@ -687,7 +694,7 @@ MH_ClimbUp:     jsr GetCharInfo4Above
                 beq MH_ClimbUpNoJump
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_ClimbUpNoJump
-                jsr GetCharInfo                 ;If in the middle of an obstacle
+                lda temp1                       ;If in the middle of an obstacle
                 and #CI_OBSTACLE                ;block, can not exit by jump
                 bne MH_ClimbUpNoJump
                 lda #-2
@@ -704,7 +711,7 @@ MH_ClimbUpNoJump:
                 lda actYL,x
                 and #$20
                 bne MH_ClimbUpOk
-                lda temp1
+                lda temp8
                 and #CI_CLIMB
                 beq MH_ClimbDone
 MH_ClimbUpOk:   ldy #-4*8
