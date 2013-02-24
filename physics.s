@@ -87,8 +87,19 @@ MWG_WallCheckDone:
                 and #CI_OBSTACLE
                 beq MWG_NoWallHit
                 lda actSX,x                     ;If hit wall, back out & set flag
-                jsr MoveActorXNeg
-                lda temp5
+                beq MWG_WallHitDone
+                bmi MWG_WallHitLeft
+MWG_WallHitRight:
+                lda #-8*8
+                jsr MoveActorX
+                ora #$3f
+                bne MWG_WallHitDone2
+MWG_WallHitLeft:lda #8*8
+                jsr MoveActorX
+                and #$c0
+MWG_WallHitDone2: 
+                sta actXL,x
+MWG_WallHitDone:lda temp5
                 ora #MB_HITWALL
                 sta temp5
 MWG_NoWallHit:  lda temp5                       ;Check enter/leave water

@@ -367,12 +367,10 @@ ULO_NoDoor:     lda lvlObjB,y
                 lda actXH+ACTI_PLAYER
                 ldx actXL+ACTI_PLAYER
                 cmp temp8
-                bcs ULO_RightSide
-                cpx #$20
-                bcc ULO_EnterDoor
-                rts
-ULO_RightSide:  cpx #$e0
-                bcs ULO_EnterDoor
+                txa
+                bcc ULO_LeftSide
+                inx
+ULO_LeftSide:   beq ULO_EnterDoor
 ULO_Done:       rts
 
 ULO_EnterDoor:  ldx #MAX_ACT-1                  ;When entering a door, remove all actors except player
