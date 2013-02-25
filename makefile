@@ -27,8 +27,8 @@ clean:
 	-rm e?
 	-rm f?
 
-hessian.d64: boot.prg loader.pak main.pak logo.pak music00.pak script00.pak level00.pak level01.pak level02.pak level03.pak level04.pak \
-	common.pak item.pak weapon.pak player.pak
+hessian.d64: boot.prg loader.pak main.pak logo.pak music00.pak script00.pak level00.pak level01.pak level02.pak level03.pak \
+	level04.pak level05.pak common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -95,7 +95,7 @@ sfx/damage.sfx: sfx/damage.ins
 
 sfx/death.sfx: sfx/death.ins
 	ins2nt2 sfx/death.ins sfx/death.sfx
-	
+
 sfx/flamer.sfx: sfx/flamer.ins
 	ins2nt2 sfx/flamer.ins sfx/flamer.sfx
 
@@ -135,8 +135,8 @@ sfx/splash.sfx: sfx/splash.ins
 levelactors.s: bg/level00.lva bg/level01.lva bg/level02.lva bg/level03.lva
 	countobj
 
-main.pak: actor.s actordata.s ai.s aidata.s bullet.s cutscene.s data.s file.s init.s item.s itemdata.s level.s levelactors.s macros.s \
-	main.s math.s memory.s panel.s paneldata.s physics.s player.s plot.s raster.s screen.s script.s sound.s sounddata.s \
+main.pak: actor.s actordata.s ai.s aidata.s bullet.s cutscene.s data.s file.s init.s item.s itemdata.s level.s levelactors.s \
+	macros.s main.s math.s memory.s panel.s paneldata.s physics.s player.s plot.s raster.s screen.s script.s sound.s sounddata.s \
 	sprite.s text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/shotgun.sfx sfx/autorifle.sfx \
 	sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
@@ -204,6 +204,15 @@ level04.pak: level04.s memory.s bg/level04.map bg/level04.blk bg/level04.chi bg/
 	pchunk2 bg/level04.map level04_3.pak
 	pchunk2 bg/level04.blk level04_4.pak
 	filejoin level04_1.pak+level04_2.pak+level04_3.pak+level04_4.pak level04.pak
+
+level05.pak: level05.s memory.s bg/level05.map bg/level05.blk bg/level05.chi bg/level05.chc bg/level05.chr bg/level05.lva bg/level05.lvr bg/level05.lvo
+	filejoin bg/level05.lvo+bg/level05.lvr level05_1.bin
+	pack2 level05_1.bin level05_1.pak
+	dasm level05.s -olevel05_2.bin -f3
+	pack2 level05_2.bin level05_2.pak
+	pchunk2 bg/level05.map level05_3.pak
+	pchunk2 bg/level05.blk level05_4.pak
+	filejoin level05_1.pak+level05_2.pak+level05_3.pak+level05_4.pak level05.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak
