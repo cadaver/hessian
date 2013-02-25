@@ -227,29 +227,20 @@ FT_TargetOK:    rts
 FT_Invalidate:  lda #NOTARGET
 FT_StoreTarget: sta actAITarget,x
 FT_NoTarget:    rts
-FT_PickNew:     lda actFlags,x
-                bpl FT_PickVillain
-FT_PickHero:    ldy numHeroes
+FT_PickNew:     ldy numTargets
                 beq FT_NoTarget
                 jsr Random
                 and targetListAndTbl-1,y
-                cmp numHeroes
-                bcc FT_PickHeroOK
-                sbc numHeroes
-FT_PickHeroOK:  tay
-                lda heroList,y
-                bpl FT_TargetCommon
-FT_PickVillain: ldy numVillains
-                beq FT_NoTarget
-                jsr Random
-                and targetListAndTbl-1,y
-                cmp numVillains
-                bcc FT_PickVillainOK
-                sbc numVillains
-FT_PickVillainOK:
+                cmp numTargets
+                bcc FT_PickTargetOK
+                sbc numTargets
+FT_PickTargetOK:tay
+                lda targetList,y
                 tay
-                lda villainList,y
-FT_TargetCommon:tay
+                lda actFlags,x                  ;Must not be in same group
+                eor actFlags,y
+                and #AF_GROUPBITS
+                beq FT_NoTarget
 FT_CheckRoute:  sty tgtActIndex
                 jsr RouteCheck
                 bcc FT_NoTarget

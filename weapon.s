@@ -277,7 +277,7 @@ AH_BulletFrameDone:
                 jsr InitActor                   ;Set collision size
                 ldy actIndex
                 lda actFlags,y
-                and #AF_ISHERO|AF_ISVILLAIN     ;Copy group from attacker
+                and #AF_GROUPBITS               ;Copy group from attacker
                 sta actFlags,x
                 sta actAITarget,x               ;Reset target for homing bullets
                 ldy #WD_DAMAGE                  ;Set duration and damage

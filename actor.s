@@ -67,12 +67,19 @@ AL_HEIGHT       = 23                           ;Height for headbump check, negat
 AL_JUMPSPEED    = 24                           ;Negative
 AL_CLIMBSPEED   = 25
 
-AF_NONE         = $00
-AF_ISHERO       = $01
-AF_INITONLYSIZE = $02
-AF_ISORGANIC    = $04
-AF_NOREMOVECHECK = $40
-AF_ISVILLAIN    = $80
+GRP_NONE        = $00                           ;Does not collide/take damage
+GRP_HEROES      = $01
+GRP_GOVERNMENT  = $02
+GRP_BANDITS     = $03
+GRP_ANIMALS     = $04
+GRP_MERCS       = $05
+GRP_THRONE      = $06
+GRP_ALIENS      = $07
+
+AF_GROUPBITS    = $07
+AF_INITONLYSIZE = $08
+AF_ISORGANIC    = $10
+AF_NOREMOVECHECK = $80
 
 AMF_JUMP        = $01
 AMF_DUCK        = $02
@@ -487,40 +494,26 @@ UA_SpawnerEndCmp:cpx #SPAWNERSEARCH
                 adc #SPAWNERSEARCH/2-1           ;C=1, add one more
                 sta UA_SpawnerEndCmp+1
 
-        ; Build hero/villain lists for bullet collision
+        ; Build target list for AI & bullet collision
 
-BuildCollisionLists:
-                ldx #ACTI_LASTNPC
+BuildTargetList:ldx #ACTI_LASTNPC
                 ldy #$00                        ;Villain list index
                 sty temp1                       ;Hero list index
-BCL_Loop:       lda actT,x                      ;Actor must exist and have nonzero health
-                beq BCL_Next
+BTL_Loop:       lda actT,x                      ;Actor must exist and have nonzero health
+                beq BTL_Next
                 lda actHp,x
-                beq BCL_Next
-                lda actFlags,x
-                and #AF_ISHERO|AF_ISVILLAIN
-                beq BCL_Next
-                bpl BCL_StoreHero
-BCL_StoreVillain:
+                beq BTL_Next
+                lda actFlags,x                  ;Actor must not be in bystander (none) group
+                and #AF_GROUPBITS
+                beq BTL_Next
                 txa
-                sta villainList,y
+                sta targetList,y
                 iny
-BCL_Next:       dex
-                bpl BCL_Loop
-                bmi BCL_AllDone
-BCL_StoreHero:  txa
-                ldx temp1
-                sta heroList,x
-                inc temp1
-                tax
-                dex
-                bpl BCL_Loop
-BCL_AllDone:    lda #$ff                        ;Store endmarks
-                sta villainList,y
-                ldx temp1
-                sta heroList,x
-                stx numHeroes
-                sty numVillains
+BTL_Next:       dex
+                bpl BTL_Loop
+                lda #$ff                        ;Store endmark
+                sta targetList,y
+                sty numTargets
 
         ; Call update routines of all on-screen actors
 
@@ -543,7 +536,6 @@ UA_NotZero:     stx actIndex
                 lda actLogicTblHi-1,y
                 sta actHi
                 lda actFlags,x                  ;Perform remove check?
-                asl
                 bmi UA_NoRemove
                 lda actXH,x
 UA_RALeftCheck: cmp #$00
@@ -1127,8 +1119,8 @@ InitActor:      jsr GetActorLogicData
                 ldy #AL_ACTORFLAGS
                 lda (actLo),y
                 sta actFlags,x
-                lsr
-                lsr
+                and #AF_INITONLYSIZE
+                php
                 iny
                 lda (actLo),y
                 sta actSizeH,x
@@ -1138,7 +1130,8 @@ InitActor:      jsr GetActorLogicData
                 iny
                 lda (actLo),y
                 sta actSizeD,x
-                bcs IA_SkipHealthColor
+                plp
+                bne IA_SkipHealthColor
                 iny
                 lda (actLo),y
                 sta actHp,x

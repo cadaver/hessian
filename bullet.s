@@ -459,17 +459,18 @@ CheckBulletCollisionsApplyDamage:
                 clc
 CheckBulletCollisions:
                 ror temp7
-                lda actFlags,x
-                bmi CBC_CheckHeroes
-CBC_CheckVillains:
-                lda #<villainList
-                sta CBC_GetNextVillain+1
-CBC_GetNextVillain:
-                ldy villainList
+                lda #<targetList
+                sta CBC_GetNextTarget+1
+CBC_GetNextTarget:
+                ldy targetList
                 bmi CBC_Done
-                inc CBC_GetNextVillain+1
+                inc CBC_GetNextTarget+1
+                lda actFlags,x
+                eor actFlags,y
+                and #AF_GROUPBITS
+                beq CBC_GetNextTarget           ;Must not be in the same group
                 jsr CheckActorCollision
-                bcc CBC_GetNextVillain
+                bcc CBC_GetNextTarget
 CBC_HasCollision:
                 lda temp7
                 bmi CBC_ReportOnly
@@ -488,16 +489,7 @@ CBC_NoDamage:   ldx actIndex
 CBC_Done:       clc
 CBC_ReportOnly: rts
 
-CBC_CheckHeroes:lda #<heroList
-                sta CBC_GetNextHero+1
-CBC_GetNextHero:ldy heroList
-                bmi CBC_Done
-                inc CBC_GetNextHero+1
-                jsr CheckActorCollision
-                bcc CBC_GetNextHero
-                bcs CBC_HasCollision
-
-        ; Give radius damage to both heroes & villains. Prior to calling, expand the
+        ; Give radius damage to all NPC actors. Prior to calling, expand the
         ; collision size of the source actor as necessary
         ;
         ; Parameters: X source actor index (must also be in actIndex)
@@ -507,11 +499,9 @@ CBC_GetNextHero:ldy heroList
 RadiusDamage:   ldy #ACTI_LASTNPC
 RD_Loop:        lda actT,y
                 beq RD_Next
-                lda actHp,y
-                beq RD_Next
                 lda actFlags,y
-                and #AF_ISHERO|AF_ISVILLAIN
-                beq RD_Next
+                and #AF_GROUPBITS
+                beq RD_Next                     ;Skip bystander (none) group
                 jsr CheckActorCollision
                 bcc RD_Next
                 sty tgtActIndex

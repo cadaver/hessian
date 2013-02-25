@@ -98,8 +98,7 @@ SCROLLROWS      = 22
                 Var actLo
                 Var actHi
                 Var tgtActIndex
-                Var numHeroes
-                Var numVillains
+                Var numTargets
 
                 Var lvlObjNum                   ;Level object variables
                 Var autoDeactObjNum
@@ -190,8 +189,7 @@ chars           = $e800
 screen2         = $f000
 screen1         = $f400
 improveList     = screen1+1002
-heroList        = screen2+1016-MAX_SPR*4-(MAX_COMPLEXACT+1)*2
-villainList     = screen2+1016-MAX_SPR*4-(MAX_COMPLEXACT+1)
+targetList      = screen2+1016-MAX_SPR*4-(MAX_COMPLEXACT+1)
 sprOrTbl        = screen2+1016-MAX_SPR*4
 sprAndTbl       = screen2+1016-MAX_SPR*2
 lvlDataActX     = screen2

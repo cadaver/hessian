@@ -1190,7 +1190,7 @@ AS_NormalLevel: sta plrDmgModify
         ; Carrying: more weapons in inventory and higher ammo limit
 
                 lda plrCarrying
-                adc #INITIAL_MAX_WEAPONS
+                adc #INITIAL_MAX_WEAPONS-1
                 sta AI_MaxWeaponsCount+1
                 ldx #itemDefaultMaxCount - itemMaxCount
 AS_AmmoLoop:    lda itemMaxCountAdd-1,x
