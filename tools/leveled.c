@@ -83,7 +83,7 @@ char *actiontext[] = {
   "SCRIPT",
   "SIDEDOOR",
   "SPAWN",
-  "UNUSED"};
+  "CHAIN"};
 
 char *spawnmodename[] = {
   "GROUND",

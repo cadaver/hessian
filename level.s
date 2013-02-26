@@ -27,6 +27,7 @@ OBJTYPE_REVEAL  = $0c
 OBJTYPE_SCRIPT  = $10
 OBJTYPE_SIDEDOOR = $14
 OBJTYPE_SPAWN   = $18
+OBJTYPE_CHAIN   = $1c
 
 DOORENTRYDELAY  = 6
 AUTODEACTDELAY  = 12
@@ -573,8 +574,7 @@ FindZoneNum:    sta zoneNum
                 iny
                 lda (zoneLo),y
                 sta limitD
-OO_Done:
-IO_Done:        rts
+OO_Done:        rts
 
         ; Operate a level object. Does not actually activate/deactivate yet, but sets a flag
         ; for UpdateLevelObjects
@@ -600,7 +600,7 @@ OperateObject:  lda actF1+ACTI_PLAYER           ;Already in enter/operate stance
                 bpl OO_Inactive
 OO_Active:      and #OBJ_MODEBITS               ;Object was active, inactivate if possible
                 cmp #OBJMODE_MANUALAD
-                bcc OO_Done
+                bcc OO_EnterNoOperate
 OO_Inactive:    inc ULO_OperateFlag+1
 OO_EnterNoOperate:
                 lda #FR_ENTER
@@ -614,7 +614,7 @@ OO_ContinueOperate:
                 bmi OO_Success
                 inc actFd+ACTI_PLAYER           ;Increment door entry delay, up to 128
 OO_Success:     sec
-                rts
+IO_Done:        rts
 
         ; Toggle a level object
         ;
@@ -638,7 +638,15 @@ InactivateObject:
                 sta lvlObjB,y
                 lda #$ff
                 ldx lvlObjY,y                 ;Check for animation
-                bpl IO_Done
+                bpl IO_NoAnimation
+                jsr AnimateObjectDelta
+IO_NoAnimation: lda lvlObjB,y                 ;Check for chained inactivation
+                and #OBJ_TYPEBITS
+                cmp #OBJTYPE_CHAIN
+                bne IO_Done
+                lda lvlObjDL,y
+                tay
+                bcs InactivateObject
 
         ; Animate a level object by block deltavalue
         ; 
@@ -714,7 +722,15 @@ AO_NoPreviousAutoDeact:
                 sta autoDeactObjCounter
 AO_NoAutoDeact: lda #$01
                 ldx lvlObjY,y                   ;Check for animation
-                bmi AnimateObjectDelta
+                bpl AO_NoAnimation
+                jsr AnimateObjectDelta
+AO_NoAnimation: lda lvlObjB,y                   ;Check for chained activation
+                and #OBJ_TYPEBITS
+                cmp #OBJTYPE_CHAIN
+                bne AO_Done
+                lda lvlObjDL,y
+                tay
+                bcs ActivateObject
 AO_Done:        rts
 
          ; Switch, activate another object
