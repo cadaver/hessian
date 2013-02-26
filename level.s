@@ -25,9 +25,9 @@ OBJTYPE_DOOR    = $04
 OBJTYPE_SWITCH  = $08
 OBJTYPE_REVEAL  = $0c
 OBJTYPE_SCRIPT  = $10
-OBJTYPE_SIDEDOOR = $14
-OBJTYPE_SPAWN   = $18
-OBJTYPE_CHAIN   = $1c
+OBJTYPE_CHAIN   = $14
+OBJTYPE_SIDEDOOR = $18
+OBJTYPE_SPAWN   = $1c
 
 DOORENTRYDELAY  = 6
 AUTODEACTDELAY  = 12
@@ -51,22 +51,21 @@ ChangeLevel:    cmp levelNum                    ;Check if level already loaded
                 ldy lvlDataActBitsLen,x         ;Assume leveldata actors are all gone
                 dey
                 lda #$00
-ULD_ClearStateBits:
-                sta (zpDestLo),y
+CL_ClearLoop:   sta (actLo),y
                 dey
-                bpl ULD_ClearStateBits
+                bpl CL_ClearLoop
                 ldx #MAX_LVLACT-1
-ULD_LevelDataLoop:
-                lda lvlActT,x
-                beq ULD_NextActor
-                lda lvlActOrg,x                  ;Check persistence mode, must be leveldata
-                bpl ULD_NextActor
-                and #$7f
+CL_ActorLoop:   lda lvlActT,x
+                beq CL_NextActor
+                lda lvlActOrg,x                 ;Check persistence mode, must be leveldata
+                bpl CL_NextActor
+                and #$7f                        ;Actor is not gone, set bit
                 jsr DecodeBit
-                ora (zpDestLo),y
-                sta (zpDestLo),y
-ULD_NextActor:  dex
-                bpl ULD_LevelDataLoop
+                ora (actLo),y
+                sta (actLo),y
+CL_NextActor:   dex
+                bpl CL_ActorLoop
+                jsr SaveLevelObjectState
                 pla
                 sta levelNum
                 sec                             ;Load new level's leveldata actors
@@ -106,7 +105,7 @@ LL_CopyLevelProperties:
                 dex
                 bpl LL_CopyLevelProperties
 LL_ActorMode:   lda #$00                        ;Check if should copy leveldata actors
-                bpl PostLoad
+                bpl LL_SkipLevelDataActors
                 ldx #MAX_LVLACT-1
 LL_PurgeOldLevelDataActors:
                 lda lvlActOrg,x                 ;Remove the current leveldata actors
@@ -122,7 +121,7 @@ LL_CopyLevelDataActors:
                 beq LL_NextLevelDataActor
                 txa
                 jsr DecodeBit
-                and (zpDestLo),y                ;Check state, whether actor still exists
+                and (actLo),y                   ;Check state, whether actor still exists
                 beq LL_NextLevelDataActor
                 jsr GetNextTempLevelActorIndex  ;It's actually not a temp actor, but use the same
                 tay                             ;FIFO indexing scheme
@@ -143,9 +142,42 @@ LL_CopyLevelDataActors:
 LL_NextLevelDataActor:
                 dex
                 bpl LL_CopyLevelDataActors
-                                                ;TODO: at this point item actors at REVEAL-type
-                                                ;objects should be re-hidden, as all level objects
-                                                ;have been reset to deactivated state
+LL_SkipLevelDataActors:
+                jsr GetLevelObjectBits          ;Set persistent levelobjects' active state now
+                lda #$00
+                sta temp1                       ;Persistent object index
+                tax
+LL_SetLevelObjectsActive:
+                lda lvlObjX,x
+                ora lvlObjY,x
+                beq LL_NextLevelObject
+                lda lvlObjB,x
+                and #OBJ_TYPEBITS+OBJ_AUTODEACT
+                cmp #OBJTYPE_SIDEDOOR
+                bcs LL_NextLevelObject
+                lda temp1
+                inc temp1
+                jsr DecodeBit
+                and (actLo),y                   ;Active?
+                beq LL_NextLevelObject
+                txa
+                tay
+                lda lvlObjB,y
+                ora #OBJ_ACTIVE
+                sta lvlObjB,y
+                and #OBJ_TYPEBITS
+                cmp #OBJTYPE_REVEAL             ;If this is a weapon closet, make sure items at it are revealed
+                bne LL_NoReveal
+                jsr RevealSub
+LL_NoReveal:    lda #$01
+                ldx lvlObjY,y                   ;Animate levelobject if necessary
+                bpl LL_NoAnimation
+                jsr AnimateObjectDelta
+LL_NoAnimation: tya
+                tax
+LL_NextLevelObject:
+                inx
+                bpl LL_SetLevelObjectsActive
 
         ; Calculate start addresses for each map-row (of current zone) and for each
         ; block, and set zone multicolors.
@@ -500,18 +532,68 @@ CP_NotOverDown: sta mapY
         ; Get address of levelactor-bits according to current level
         ;
         ; Parameters: levelNum
-        ; Returns: bits address in zpDestLo
-        ; Modifies: A,X,loader temp vars
+        ; Returns: bits address in actLo
+        ; Modifies: A,X,actLo-actHi
 
 GetLevelDataActorBits:
                 ldx levelNum
                 lda #<lvlDataActBits
                 clc
                 adc lvlDataActBitsStart,x
-                sta zpDestLo
+                sta actLo
                 lda #>lvlDataActBits
-                adc #$00
-                sta zpDestHi
+GLB_Common:     adc #$00
+                sta actHi
+                rts
+
+        ; Get address of levelobject-bits according to current level
+        ;
+        ; Parameters: levelNum
+        ; Returns: bits address in actLo
+        ; Modifies: A,X,actLo-actHi
+
+GetLevelObjectBits:
+                ldx levelNum
+                lda #<lvlObjBits
+                clc
+                adc lvlObjBitsStart,x
+                sta actLo
+                lda #>lvlObjBits
+                bne GLB_Common
+
+        ; Save activation state of current level's persistent levelobjects as bits
+        ; Needs to be done on level change, and when saving a checkpoint
+        ;
+        ; Parameters: levelNum
+        ; Returns: -
+        ; Modifies: A,X,Y,temp1,actLo-actHi
+
+SaveLevelObjectState:
+                jsr GetLevelObjectBits
+                ldy lvlObjBitsLen,x             ;Assume persistent levelobjects are inactive,
+                dey                             ;then set bits for active objects
+                lda #$00
+SLOS_ClearLoop: sta (actLo),y
+                dey
+                bpl SLOS_ClearLoop
+                sta temp1                       ;Persistent object index
+                tax
+SLOS_Loop:      lda lvlObjX,x                   ;Check if levelobject needs persistency
+                ora lvlObjY,x
+                beq SLOS_NextObject
+                lda lvlObjB,x
+                and #OBJ_TYPEBITS+OBJ_AUTODEACT
+                cmp #OBJTYPE_SIDEDOOR           ;Sidedoors, spawners and all auto-deactivating
+                bcs SLOS_NextObject             ;objects don't
+                lda temp1
+                inc temp1
+                ldy lvlObjB,x
+                bpl SLOS_NextObject             ;Inactive
+                jsr DecodeBit
+                ora (actLo),y
+                sta (actLo),y
+SLOS_NextObject:inx
+                bpl SLOS_Loop
                 rts
 
         ; Find the zone at player's position
@@ -756,10 +838,13 @@ AO_RequirementOK:
 
         ; Reveal hidden items (weapon closet)
 
-AO_Reveal:      lda lvlObjX,y
+AO_Reveal:      jsr RevealSub
+                jmp AO_NoOperation
+
+RevealSub:      lda lvlObjX,y
                 sta AO_RevealXCmp+1
                 lda lvlObjY,y
-                and #$7f
+                ora #$80
                 sta AO_RevealYCmp+1
                 ldx #MAX_LVLACT-1
 AO_RevealLoop:  lda lvlActT,x
@@ -774,14 +859,14 @@ AO_RevealLevelOK:
 AO_RevealXCmp:  cmp #$00
                 bne AO_RevealNext
                 lda lvlActY,x
-                and #$7f
 AO_RevealYCmp:  cmp #$00
                 bne AO_RevealNext
-AO_DoReveal:    sta lvlActY,x
+AO_DoReveal:    and #$7f
+                sta lvlActY,x
                 jsr AddAllActorsNextFrame       ;Hack: add all actors next frame
 AO_RevealNext:  dex                             ;to reveal the item as quickly as possible
                 bpl AO_RevealLoop
-                jmp AO_NoOperation
+                rts
 
         ; Set zone's multicolors
         ;

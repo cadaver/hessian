@@ -193,7 +193,7 @@ slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
                 dc.b $38,$30,$28,$20,$18,$10,$08,$00    ;Slope 1
                 dc.b $38,$38,$30,$30,$28,$28,$20,$20    ;Slope 2
                 dc.b $18,$18,$10,$10,$08,$08,$00,$00    ;Slope 3
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 4 (unused)
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 4 (same as 0, used for stairs to not allow falling through)
                 dc.b $00,$08,$10,$18,$20,$28,$30,$38    ;Slope 5
                 dc.b $00,$00,$08,$08,$10,$10,$18,$18    ;Slope 6
                 dc.b $20,$20,$28,$28,$30,$30,$38,$38    ;Slope 7
@@ -338,6 +338,7 @@ plrMelee:       dc.b 0
 plrVitality:    dc.b 0
 plotBits:       ds.b MAX_PLOTBITS/8,0
 lvlDataActBits: ds.b LVLDATAACTTOTALSIZE,0
+lvlObjBits:     ds.b LVLOBJTOTALSIZE,0
 lvlActX:        ds.b MAX_LVLACT,0
 lvlActY:        ds.b MAX_LVLACT,0
 lvlActF:        ds.b MAX_LVLACT,0

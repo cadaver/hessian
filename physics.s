@@ -156,6 +156,8 @@ MWG_XSpeedNeg:  cmp actSY,x
                 and #$e0
                 beq MWG_NoLanding               ;If no slope, can't be a landing
                 sta temp6
+                cmp #$80                        ;Slope 4 = stairs, land regardless of direction
+                beq MWG_HitGround2
                 eor actSX,x                     ;If it's a diagonal slope, verify that X-speed
                 bpl MWG_HitGround2              ;is actually against it
 MWG_NoLanding:  lda temp5

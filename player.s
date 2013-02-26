@@ -1045,7 +1045,8 @@ GXP_Done:       jmp PSfx_Done                   ;Hack: PlaySfx ends similarly
         ; Returns: -
         ; Modifies: A,X,Y,temp regs
 
-SaveCheckpoint: ldx #15
+SaveCheckpoint: jsr SaveLevelObjectState
+                ldx #15
 SCP_LevelName:  lda lvlName,x
                 sta saveLvlName,x
                 dex

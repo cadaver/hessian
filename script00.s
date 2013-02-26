@@ -322,6 +322,12 @@ IP_InitLevelData:
                 sta lvlDataActBits-1,x          ;Assume all leveldata-actors exist at start
                 dex
                 bne IP_InitLevelData
+                ldx #LVLOBJTOTALSIZE
+                lda #$00
+IP_InitLevelObjects:
+                sta lvlObjBits-1,x              ;Assume all persistent levelobjects are inactive
+                dex                             ;at start
+                bne IP_InitLevelObjects
                 lda #<FIRST_XPLIMIT
                 sta xpLimitLo
                 #if SKILL_CHEAT>0

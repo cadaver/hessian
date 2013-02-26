@@ -81,9 +81,9 @@ char *actiontext[] = {
   "SWITCH",
   "REVEAL",
   "SCRIPT",
+  "CHAIN",
   "SIDEDOOR",
-  "SPAWN",
-  "CHAIN"};
+  "SPAWN"};
 
 char *spawnmodename[] = {
   "GROUND",
@@ -562,7 +562,7 @@ void level_mainloop(void)
                 switch((lvlobjb[objindex] & 0x1c) >> 2)
                 {
                   case 1:
-                  case 5:
+                  case 6:
                   if (lvlobjd2[objindex] == levelnum)
                   {
                     int tgt = lvlobjd1[objindex];
@@ -615,7 +615,7 @@ void level_mainloop(void)
                 lvlobjb[objindex] |= (a << 2);
               }
               // Spawnpoint default values: add 0, and 15, half speed
-              if ((lvlobjb[objindex] & 0x1c) == 0x18)
+              if ((lvlobjb[objindex] & 0x1c) == 0x1c)
               {
                 if ((!lvlobjd1[objindex]) && (!lvlobjd2[objindex]))
                 {
