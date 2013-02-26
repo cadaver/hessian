@@ -168,7 +168,7 @@ LL_SetLevelObjectsActive:
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_REVEAL             ;If this is a weapon closet, make sure items at it are revealed
                 bne LL_NoReveal
-                jsr RevealSub
+                jsr AO_Reveal
 LL_NoReveal:    jsr AnimateObjectActivation     ;Animate if necessary
 LL_NoAnimation: tya
                 tax
@@ -431,7 +431,7 @@ ULO_ClearActorNext:
                 jsr ChangeLevel                 ;Load new level if necessary
                 pla
                 tay
-                jsr BlankScreen
+                jsr BlankScreen                 ;Does not modify Y
                 jsr ActivateObject              ;Activate the door that was entered
                 ldx #ACTI_PLAYER                ;Reset animation, falling distance and speed
                 jsr MH_StandAnim
@@ -710,7 +710,7 @@ IO_Done:        rts
         ;
         ; Parameters: Y object number
         ; Returns: -
-        ; Modifies: A,X,temp vars
+        ; Modifies: A,X,Y,temp vars
 
 ToggleObject:   lda lvlObjB,y
                 bpl ActivateObject
@@ -726,9 +726,10 @@ InactivateObject:
                 bpl IO_Done
                 and #$ff-OBJ_ACTIVE
                 sta lvlObjB,y
+                pha
                 lda #$ff
                 jsr AnimateObjectDelta
-                lda lvlObjB,y                 ;Check for chained inactivation
+                pla
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_CHAIN
                 bne IO_Done
@@ -762,48 +763,20 @@ AOD_Sub:        and #$7f
                 lda temp4
                 jsr UpdateBlockDelta
                 ldy temp3
+AO_Done:
 AOD_Done:       rts
 
         ; Activate a level object
         ;
         ; Parameters: Y object number
         ; Returns: -
-        ; Modifies: A,X,temp vars
+        ; Modifies: A,X,Y,temp vars
 
 ActivateObject: lda lvlObjB,y                   ;Make sure that is inactive
                 bmi AO_Done
-                and #OBJ_TYPEBITS
-                tax
-                tya                             ;Save object number to stack, as the following code
-                pha                             ;might use any temp variables
-                cpx #OBJTYPE_SCRIPT             ;Check for action to perform
-                beq AO_Script
-                cpx #OBJTYPE_SWITCH
-                beq AO_Switch
-                cpx #OBJTYPE_REVEAL
-                beq AO_Reveal
-                bne AO_NoOperation
-
-        ; Reveal hidden items (weapon closet)
-
-AO_Reveal:      jsr RevealSub
-                bmi AO_NoOperation              ;N=1 when returning
-
-        ; Script execution
-
-AO_Script:      ldx lvlObjDL,y
-                lda lvlObjDH,y
-                tay
-                txa
-                jsr ExecScript
-
-        ; No operation / object animation
-
-AO_NoOperation: pla
-                tay
-                lda lvlObjB,y
                 ora #OBJ_ACTIVE
                 sta lvlObjB,y
+                pha
                 and #OBJ_AUTODEACT              ;Enable auto-deactivation if necessary
                 beq AO_NoAutoDeact
                 lda autoDeactObjNum             ;If another object already deactivating,
@@ -816,15 +789,32 @@ AO_NoPreviousAutoDeact:
                 sty autoDeactObjNum
                 lda #AUTODEACTDELAY
                 sta autoDeactObjCounter
-AO_NoAutoDeact: jsr AnimateObjectActivation
-AO_NoAnimation: lda lvlObjB,y                   ;Check for chained activation
-                and #OBJ_TYPEBITS
+AO_NoAutoDeact: jsr AnimateObjectActivation     ;Animate object if necessary
+                pla
+                and #OBJ_TYPEBITS               ;Check for type-specific action
                 cmp #OBJTYPE_CHAIN
-                bne AO_Done
-                lda lvlObjDL,y
+                beq AO_Chain
+                cmp #OBJTYPE_SCRIPT
+                beq AO_Script
+                cmp #OBJTYPE_SWITCH
+                beq AO_Switch
+                cmp #OBJTYPE_REVEAL
+                beq AO_Reveal
+AO_NoOperation: rts
+
+        ; Chained activation
+
+AO_Chain:       lda lvlObjDL,y
                 tay
-                bcs ActivateObject
-AO_Done:        rts
+                bcs ActivateObject              ;C=1 here
+
+        ; Script execution
+
+AO_Script:      ldx lvlObjDL,y
+                lda lvlObjDH,y
+                tay
+                txa
+                jmp ExecScript
 
          ; Switch, activate another object
 
@@ -844,10 +834,11 @@ AO_Switch:      ldx lvlObjDL,y
 AO_RequirementOK:
                 txa                             ;Get destination object and toggle it
                 tay
-                jsr ToggleObject
-                jmp AO_NoOperation
+                jmp ToggleObject
 
-RevealSub:      lda lvlObjX,y
+        ; Reveal actors (weapon closet)
+
+AO_Reveal:      lda lvlObjX,y
                 sta AO_RevealXCmp+1
                 lda lvlObjY,y
                 ora #$80
