@@ -169,10 +169,7 @@ LL_SetLevelObjectsActive:
                 cmp #OBJTYPE_REVEAL             ;If this is a weapon closet, make sure items at it are revealed
                 bne LL_NoReveal
                 jsr RevealSub
-LL_NoReveal:    lda #$01
-                ldx lvlObjY,y                   ;Animate levelobject if necessary
-                bpl LL_NoAnimation
-                jsr AnimateObjectDelta
+LL_NoReveal:    jsr AnimateObjectActivation     ;Animate if necessary
 LL_NoAnimation: tya
                 tax
 LL_NextLevelObject:
@@ -388,7 +385,7 @@ ULO_OperateFlag:ldx #$00
                 bmi ULO_Done
                 txa                             ;Check if player is operating an object
                 beq ULO_NoOperate
-                jsr ToggleObject
+                jmp ToggleObject
 ULO_NoOperate:  lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
                 cmp #FR_ENTER                   ;entry delay has elapsed
                 bne ULO_NoDoor
@@ -399,8 +396,14 @@ ULO_NoOperate:  lda actF1+ACTI_PLAYER           ;Check if player is standing at 
                 ldx actFd+ACTI_PLAYER
                 cpx #DOORENTRYDELAY
                 bcs ULO_EnterDoor
-ULO_NoDoor:     lda lvlObjB,y
-                and #OBJ_TYPEBITS               ;Check for side door
+ULO_NoDoor:     lda lvlObjB,y                   ;Check for triggered activation
+                tax
+                and #OBJ_MODEBITS+OBJ_ACTIVE
+                cmp #OBJMODE_TRIG
+                bne ULO_NoTrigger
+                jmp ActivateObject
+ULO_NoTrigger:  txa
+                and #OBJ_TYPEBITS               ;Check for entering a side door
                 cmp #OBJTYPE_SIDEDOOR
                 bne ULO_Done
                 jsr GetZoneCenterX
@@ -719,10 +722,8 @@ InactivateObject:
                 and #$ff-OBJ_ACTIVE
                 sta lvlObjB,y
                 lda #$ff
-                ldx lvlObjY,y                 ;Check for animation
-                bpl IO_NoAnimation
                 jsr AnimateObjectDelta
-IO_NoAnimation: lda lvlObjB,y                 ;Check for chained inactivation
+                lda lvlObjB,y                 ;Check for chained inactivation
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_CHAIN
                 bne IO_Done
@@ -736,10 +737,13 @@ IO_NoAnimation: lda lvlObjB,y                 ;Check for chained inactivation
         ; Returns: -
         ; Modifies: A,X,temp vars
 
+AnimateObjectActivation:
+                lda #$01
 AnimateObjectDelta:
                 sty temp3
                 sta temp4
                 lda lvlObjY,y
+                bpl AOD_Done                    ;No animation
                 jsr AOD_Sub
                 lda lvlObjB,y
                 and #OBJ_SIZE
@@ -775,6 +779,11 @@ ActivateObject: lda lvlObjB,y                   ;Make sure that is inactive
                 beq AO_Reveal
                 bne AO_NoOperation
 
+        ; Reveal hidden items (weapon closet)
+
+AO_Reveal:      jsr RevealSub
+                bmi AO_NoOperation              ;N=1 when returning
+
         ; Script execution
 
 AO_Script:      ldx lvlObjDL,y
@@ -802,10 +811,7 @@ AO_NoPreviousAutoDeact:
                 sty autoDeactObjNum
                 lda #AUTODEACTDELAY
                 sta autoDeactObjCounter
-AO_NoAutoDeact: lda #$01
-                ldx lvlObjY,y                   ;Check for animation
-                bpl AO_NoAnimation
-                jsr AnimateObjectDelta
+AO_NoAutoDeact: jsr AnimateObjectActivation
 AO_NoAnimation: lda lvlObjB,y                   ;Check for chained activation
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_CHAIN
@@ -834,11 +840,6 @@ AO_RequirementOK:
                 txa                             ;Get destination object and toggle it
                 tay
                 jsr ToggleObject
-                jmp AO_NoOperation
-
-        ; Reveal hidden items (weapon closet)
-
-AO_Reveal:      jsr RevealSub
                 jmp AO_NoOperation
 
 RevealSub:      lda lvlObjX,y
