@@ -687,6 +687,11 @@ OO_Active:      and #OBJ_MODEBITS               ;Object was active, inactivate i
                 cmp #OBJMODE_MANUALAD
                 bcc OO_EnterNoOperate
 OO_Inactive:    inc ULO_OperateFlag+1
+                lda lvlObjY,y                   ;If object uses animation, play sound when operating
+                bpl OO_NoSound
+                lda #SFX_OBJECT
+                jsr PlaySfx
+OO_NoSound:
 OO_EnterNoOperate:
                 lda #FR_ENTER
                 sta actF1+ACTI_PLAYER
