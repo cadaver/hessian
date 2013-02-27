@@ -15,7 +15,7 @@ SAVE_GAME       = 1
 TITLE_MOVEDELAY = 8
 TITLE_PAGEDELAY = 500
 
-saveStateBuffer = screen2
+SAVEDESCSIZE    = 24
 
 logoStart       = chars
 logoScreen      = chars+608
@@ -569,12 +569,10 @@ ScanSaves:      lda #0
 ScanSaveLoop:   ldx #F_SAVE
                 jsr MakeFileName
                 jsr OpenFile
-                lda #<saveStateBuffer
-                ldx #>saveStateBuffer
-                jsr ReadSaveFile
+                jsr ReadSaveDescription
                 lda #5
                 sta temp1
-                bcs GetSaveDescription
+                bcc GetSaveDescription
                 lda #<txtEmpty
                 ldx #>txtEmpty
                 jsr PrintText
@@ -587,13 +585,13 @@ SaveDone:       inc temp2
                 ldx #>txtCancel
                 jmp PrintText
 GetSaveDescription:
-                lda #<saveStateBuffer           ;Level name
-                ldx #>saveStateBuffer
+                lda #<saveDescription           ;Level name
+                ldx #>saveDescription
                 jsr PrintText
                 lda #$20                        ;Level / XP / XP limit
                 sta txtSaveLevel
                 sta txtSaveLevel+1
-                lda saveStateBuffer+21
+                lda saveDescription+21
                 jsr ConvertToBCD8
                 ldx #80
                 jsr PrintBCDDigitsNoZeroes
@@ -602,18 +600,16 @@ CopyLevelText:  lda screen1+23*40-1,x
                 dex
                 cpx #81
                 bcs CopyLevelText
-                lda saveStateBuffer+19
-                ldy saveStateBuffer+20
-                jsr ConvertToBCD16
+                lda saveDescription+19
+                ldy saveDescription+20
                 ldx #80
-                jsr Print3BCDDigits
+                jsr ConvertAndPrint3BCDDigits
                 lda #"/"
                 sta screen1+25*40+3
-                lda saveStateBuffer+22
-                ldy saveStateBuffer+23
-                jsr ConvertToBCD16
+                lda saveDescription+22
+                ldy saveDescription+23
                 ldx #84
-                jsr Print3BCDDigits
+                jsr ConvertAndPrint3BCDDigits
 CopyXPText:     lda screen1+23*40-1,x
                 sta txtSaveXP-81,x
                 dex
@@ -626,10 +622,27 @@ CopyXPText:     lda screen1+23*40-1,x
                 jsr PrintText
                 jmp SaveDone
 
+        ; Read just the description (level name + player XP) from a savefile. C=0 if success
+
+ReadSaveDescription:
+                ldy #$00
+RSD_Loop:       jsr GetByte
+                bcs RSD_Error
+                sta saveDescription,y
+                iny
+                cpy #SAVEDESCSIZE
+                bcc RSD_Loop
+RSD_Close:      jsr GetByte
+                bcc RSD_Close
+                clc
+RSD_Error:      rts
+
         ; Read an opened savefile. C=1 if read to the end
 
-ReadSaveFile:   sta zpDestLo
-                stx zpDestHi
+ReadSaveFile:   lda #<saveStateStart
+                sta zpDestLo
+                lda #>saveStateStart
+                sta zpDestHi
                 ldy #$00
                 ldx #$00
 RSF_Loop:       jsr GetByte
@@ -640,12 +653,10 @@ RSF_Loop:       jsr GetByte
                 inc zpDestHi
                 inx
                 bne RSF_Loop
-RSF_End:        cpx #>(saveStateEnd-saveStateStart)
-                bcc RSF_Empty
-                bne RSF_NotEmpty
-                cpy #<(saveStateEnd-saveStateStart)
-RSF_Empty:
-RSF_NotEmpty:   rts
+RSF_End:        cpy #<(saveStateEnd-saveStateStart)
+                txa
+                sbc #>(saveStateEnd-saveStateStart)
+                rts
 
         ; Pick choice by joystick up/down
         
@@ -781,5 +792,7 @@ logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
                 dc.b $08,$09,$0a,$0b,$0c,$0d,$0e,$0f
 
 textFadeTbl:    dc.b $00,$06,$03,$01
+
+saveDescription:ds.b SAVEDESCSIZE,0
 
                 CheckScriptEnd
