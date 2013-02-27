@@ -9,7 +9,7 @@ OPTIMIZE_SPRITEIRQS = 1
 SHOW_STACKPOINTER = 0
 
 GODMODE_CHEAT   = 0
-ITEM_CHEAT      = 1
+ITEM_CHEAT      = 0
 AMMO_CHEAT      = 0
 SKILL_CHEAT     = 0
 
@@ -37,15 +37,15 @@ randomAreaStart:
                 include file.s
                 include actor.s
                 include physics.s
-                include script.s
-                include plot.s
-                include level.s
-                include panel.s
                 include player.s
                 include weapon.s
                 include bullet.s
                 include item.s
+                include panel.s
                 include ai.s
+                include script.s
+                include plot.s
+                include level.s                 ;Note: must be last due to intentional fallthrough
 
         ; Game main loop
 

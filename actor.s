@@ -1214,7 +1214,17 @@ DamageSelf:     ldy #NODAMAGESRC
                 pla
                 pla
                 rts
-                
+
+        ; Damage target actor
+        ;
+        ; Parameters: A damage amount, actIndex damage source actor, tgtActIndex target actor
+        ; Returns: C=1 if actor is alive, C=0 if killed
+        ; Modifies: A,Y,temp7-temp8,possibly other temp registers
+
+DamageTargetActor:
+                ldx tgtActIndex
+                ldy actIndex
+
         ; Damage actor, and destroy if health goes to zero
         ;
         ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or >=$80 if none
@@ -1415,7 +1425,7 @@ AS_InAirCoordOK:sec
                 sta actXH,y
                 lda UA_SpawnerTopCheck+1
                 sta actYH,y
-                jmp AS_CheckBackground
+                bpl AS_CheckBackground
 
         ; Add actor from leveldata
         ;

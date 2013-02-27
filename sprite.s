@@ -134,8 +134,8 @@ GASS_DoNotAccept:
         ; Cache (depack) a sprite
 
 GASS_CacheSprite:
-                if SHOW_SPRITEDEPACK_TIME>0
-                    dec $d020
+                if SHOW_SPRITEDEPACK_TIME > 0
+                dec $d020
                 endif
                 stx zpBitsHi
 GASS_CachePos:  ldx #MAX_CACHESPRITES           ;Continue from where we left off last time
@@ -293,8 +293,8 @@ GASS_DepackDone:lda #$35                        ;Restore I/O registers
                 ldx zpBitsHi
                 sta sprF,x
                 inx                             ;Increment sprite count
-                if SHOW_SPRITEDEPACK_TIME>0
-                    inc $d020
+                if SHOW_SPRITEDEPACK_TIME > 0
+                inc $d020
                 endif
                 rts
 

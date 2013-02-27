@@ -995,9 +995,9 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 jsr MoveActorY
                 lda temp4
                 cmp #ITEM_FIRST_IMPORTANT
-                lda #ORG_GLOBAL
-                bcs DI_IsImportant
-                lda #ORG_TEMP
+                ror
+                ror
+                and #ORG_GLOBAL
 DI_IsImportant: jsr SetPersistence
                 ldx temp3
                 rts

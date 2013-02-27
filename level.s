@@ -76,10 +76,7 @@ CL_NextActor:   dex
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-LoadLevel:      ror                             ;C to high bit
-                sta LL_ActorMode+1
-                ldx #$ff
-                stx autoDeactObjNum             ;Reset object auto-deactivation
+LoadLevel:      ror LL_ActorMode+1              ;Set high bit if C=1
                 lda levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
@@ -104,6 +101,7 @@ LL_CopyLevelProperties:
                 sta lvlPropertiesStart,x
                 dex
                 bpl LL_CopyLevelProperties
+                stx autoDeactObjNum             ;Reset object auto-deactivation (X=$ff)
 LL_ActorMode:   lda #$00                        ;Check if should copy leveldata actors
                 bpl LL_SkipLevelDataActors
                 ldx #MAX_LVLACT-1
@@ -227,310 +225,7 @@ IM_BlockLoop:   lda zpSrcLo                     ;Store and increase block-
                 iny
                 cpy #MAX_BLK
                 bcc IM_BlockLoop
-ULO_IsPaused:
-ULO_PlayerDead: rts
-
-        ; Update level objects. Handle operation, auto-deactivation and actually entering doors.
-        ; Also check for picking up items and player health regeneration
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,temp vars
-
-UpdateLevelObjects:
-                lda menuMode
-                cmp #MENU_LEVELUPMSG
-                bcs ULO_IsPaused
-                ldy autoDeactObjNum
-                bmi ULO_NoAutoDeact
-                dec autoDeactObjCounter
-                bne ULO_NoAutoDeact
-                lda #$ff
-                sta autoDeactObjNum
-                jsr InactivateObject
-ULO_NoAutoDeact:lda actHp+ACTI_PLAYER           ;Restore health if not dead and not at
-                beq ULO_PlayerDead              ;full health
-                cmp #HP_PLAYER
-                bcs ULO_CheckPickup
-                lda healthRecharge
-ULO_HealthRechargeRate:
-                adc #INITIAL_HEALTHRECHARGETIMER
-                bcc ULO_NoRecharge
-                inc actHp+ACTI_PLAYER
-                lda #HEALTHRECHARGETIMER_RESET  ;Recharge faster after first unit
-ULO_NoRecharge: sta healthRecharge
-ULO_CheckPickup:ldx #ACTI_PLAYER                ;Check if player is colliding with an item
-ULO_CheckPickupIndex:                           ;If was at an item last frame, continue search
-                ldy #ACTI_FIRSTITEM             ;from it
-ULO_CheckPickupLoop:
-                lda actT,y
-                beq ULO_CPNoItem
-                jsr CheckActorCollision
-                bcs ULO_HasItem
-ULO_CPNoItem:   iny
-                cpy #ACTI_LASTITEM+1
-                bcc ULO_CPNoItemNoWrap
-                ldy #ACTI_FIRSTITEM
-ULO_CPNoItemNoWrap:
-                cpy ULO_CheckPickupIndex+1
-                bne ULO_CheckPickupLoop
-                lda displayedItemName           ;If no items, clear existing item name
-                beq ULO_CheckObject             ;text
-                jsr ClearPanelText
-                jmp ULO_CheckObject
-ULO_CODone2:    jmp ULO_CODone
-ULO_HasItem:    sty ULO_CheckPickupIndex+1
-                lda textTime                    ;Make sure to not overwrite other game
-                bne ULO_SkipItemName            ;messages
-                lda actF1,y
-                cmp displayedItemName           ;Do not reprint same item name
-                beq ULO_SkipItemName
-                pha
-                jsr GetItemName
-                ldy #$00
-                jsr PrintPanelText
-                pla
-                sta displayedItemName
-ULO_SkipItemName:
-                lda actCtrl+ACTI_PLAYER
-                cmp #JOY_DOWN
-                bne ULO_CheckObject
-                lda actFd+ACTI_PLAYER           ;If ducking, try picking up the item
-                beq ULO_CheckObject
-                lda actF1+ACTI_PLAYER
-                cmp #FR_DUCK
-                bne ULO_CheckObject
-                ldy ULO_CheckPickupIndex+1
-                jsr TryPickup
-
-ULO_CheckObject:ldx actXH+ACTI_PLAYER           ;Rescan objects whenever player
-                ldy actYH+ACTI_PLAYER           ;block position changes
-                lda lvlObjNum
-ULO_COLastCheckX:
-                cpx #$00
-                bne ULO_CORescan
-ULO_COLastCheckY:
-                cpy #$00
-                beq ULO_CONoRescan
-ULO_CORescan:   lda #$80                        ;Start from beginning
-ULO_CONoRescan: stx ULO_COLastCheckX+1
-                sty ULO_COLastCheckY+1
-                cmp #$ff
-                beq ULO_CODone2
-                cmp #$80
-                bcc ULO_CODone2
-                stx ULO_COCmpX+1
-                ldx actYL+ACTI_PLAYER           ;If player stands on top of a block
-                cpx #$40                        ;check 1 block above
-                bcs ULO_CONotAtTop
-                dey
-ULO_CONotAtTop: sty ULO_COSubY+1
-                and #$7f
-                tax
-                clc
-                adc #LVLOBJSEARCH
-                sta ULO_COEndCmp+1
-ULO_COLoop:     lda lvlObjX,x
-ULO_COCmpX:     cmp #$00
-                bne ULO_CONext
-                lda lvlObjY,x
-                and #$7f
-ULO_COSubY:     sbc #$00
-                cmp #$02                        ;Above or at object
-                bcc ULO_COFound
-ULO_CONext:     inx
-ULO_COEndCmp:   cpx #LVLOBJSEARCH
-                bcc ULO_COLoop
-                cpx #MAX_LVLOBJ
-                bcc ULO_CONotOver
-                ldx #$ff                        ;If search finished with no object,
-ULO_CONotOver:  txa                             ;no need to rescan until moved
-                ora #$80
-                sta lvlObjNum
-                bmi ULO_CODone
-ULO_COFound:    stx lvlObjNum
-                lda lvlObjB,x
-                tay
-                and #OBJ_TYPEBITS
-                cmp #OBJTYPE_DOOR
-                beq ULO_COShowMarker
-                tya
-                and #OBJ_MODEBITS
-                cmp #OBJMODE_MANUAL             ;If object is manually activated
-                bcc ULO_CODone                  ;or a door with any mode, show marker
-ULO_COShowMarker:
-                ldy #ACTI_FIRSTPLRBULLET
-                lda actT,y                      ;If marker already shown, remove it
-                cmp #ACT_OBJECTMARKER
-                beq ULO_COUpdateMarker
-                tya
-                jsr GetFreeActor
-                bcc ULO_CODone
-ULO_COUpdateMarker:
-                stx MObjMarker_Cmp+1            ;Only 1 marker exists at a time, modify code directly
-                tya                             ;for the check whether to remove the marker
-                tax
-                lda #ACT_OBJECTMARKER
-                sta actT,x
-                ldy lvlObjNum
-                jsr SetActorAtObject
-                jsr AlignActorOnGround
-                lda MoveItem_Color+1
-                sta actC,x
-ULO_CODone:
-ULO_OperateFlag:ldx #$00
-                lda #$00
-                sta ULO_OperateFlag+1
-                ldy lvlObjNum
-                bmi ULO_Done
-                txa                             ;Check if player is operating an object
-                beq ULO_NoOperate
-                jmp ToggleObject
-ULO_NoOperate:  lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
-                cmp #FR_ENTER                   ;entry delay has elapsed
-                bne ULO_NoDoor
-                lda lvlObjB,y
-                and #OBJ_TYPEBITS+OBJ_ACTIVE
-                cmp #OBJTYPE_DOOR+OBJ_ACTIVE
-                bne ULO_NoDoor
-                ldx actFd+ACTI_PLAYER
-                cpx #DOORENTRYDELAY
-                bcs ULO_EnterDoor
-ULO_NoDoor:     lda lvlObjB,y                   ;Check for triggered activation
-                tax
-                and #OBJ_MODEBITS+OBJ_ACTIVE
-                cmp #OBJMODE_TRIG
-                bne ULO_NoTrigger
-                jmp ActivateObject
-ULO_NoTrigger:  txa
-                and #OBJ_TYPEBITS               ;Check for entering a side door
-                cmp #OBJTYPE_SIDEDOOR
-                bne ULO_Done
-                jsr GetZoneCenterX
-                lda actXH+ACTI_PLAYER
-                ldx actXL+ACTI_PLAYER
-                cmp temp8
-                txa
-                bcc ULO_LeftSide
-                inx
-ULO_LeftSide:   beq ULO_EnterDoor
-ULO_Done:       rts
-
-ULO_EnterDoor:  ldx #MAX_ACT-1                  ;When entering a door, remove all actors except player
-ULO_ClearActorLoop:                             ;back to leveldata
-                lda actT,x
-                beq ULO_ClearActorNext
-                jsr RemoveLevelActor
-ULO_ClearActorNext:
-                dex
-                bne ULO_ClearActorLoop
-                ldy lvlObjNum
-                lda lvlObjDL,y                  ;Get destination door
-                pha
-                lda lvlObjDH,y
-                jsr ChangeLevel                 ;Load new level if necessary
-                pla
-                tay
-                jsr BlankScreen                 ;Does not modify Y
-                jsr ActivateObject              ;Activate the door that was entered
-                ldx #ACTI_PLAYER                ;Reset animation, falling distance and speed
-                jsr MH_StandAnim
-                jsr MH_SetGrounded
-                jsr MH_ResetFall
-                txa
-                sta actSX+ACTI_PLAYER           ;Stop X-movement
-                jsr SetActorAtObject
-                jsr FindPlayerZone              ;After entering any door, face player toward zone center
-                jsr GetZoneCenterX
-                lda actXH+ACTI_PLAYER
-                cmp temp8
-                ror
-                sta actD+ACTI_PLAYER
-ULO_NoDirection:jsr InitMap
-                ldx #ACTI_PLAYER
-                jsr AlignActorOnGround
-                jsr SaveCheckpoint              ;Save checkpoint now. TODO: check for save-disabled zone
-
-        ; Centers player on screen, redraws screen, adds all actors from leveldata, and jumps to mainloop
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,temp vars
-
-CenterPlayer:   jsr FindPlayerZone
-                jsr InitMap
-                jsr SetZoneColors
-                iny
-                lda (zoneLo),y
-                jsr PlaySong                    ;Play zone's music
-                lda limitR
-                sec
-                sbc #10
-                sta temp1
-                lda limitD
-                sbc #6
-                sta temp2
-                ldx #3
-                lda actXH+ACTI_PLAYER
-                sbc #5
-                bcc CP_OverLeft
-                cmp limitL
-                bcs CP_NotOverLeft
-CP_OverLeft:    lda limitL
-                ldx #0
-                beq CP_NotOverRight
-CP_NotOverLeft: cmp temp1
-                bcc CP_NotOverRight
-                lda temp1
-                ldx #1
-CP_NotOverRight:sta mapX
-                stx blockX
-                if SCROLLROWS > 21
-                lda #$80
-                else
-                lda #$c0
-                endif
-                clc
-                adc actYL+ACTI_PLAYER
-                php
-                rol
-                rol
-                rol
-                and #$03
-                tay
-                plp
-                lda actYH+ACTI_PLAYER
-                sbc #3
-                bcc CP_OverUp
-                cmp limitU
-                bcs CP_NotOverUp
-CP_OverUp:      lda limitU
-                ldy #0
-                beq CP_NotOverDown
-CP_NotOverUp:   cmp temp2
-                bcc CP_NotOverDown
-                bne CP_OverDown
-                if SCROLLROWS > 21
-                cpy #$02
-                bcc CP_NotOverDown
-                else
-                cpy #$03
-                bcc CP_NotOverDown
-                endif
-CP_OverDown:    lda temp2
-                if SCROLLROWS > 21
-                ldy #$02
-                else
-                ldy #$03
-                endif
-CP_NotOverDown: sta mapY
-                sty blockY
-                jsr RedrawScreen
-                sty ULO_COLastCheckY+1          ;Reset object search (Y=$ff)
-                jsr AddAllActorsNextFrame
-                jsr GetControls
-                jsr UpdateActors                ;Update actors once first
-                jmp StartMainLoop
+                rts
 
         ; Get address of levelactor-bits according to current level
         ;
@@ -895,19 +590,19 @@ GetZoneCenterX: lda limitL
                 sta temp8
 MObjMarker_OK:  rts
 
-        ; Position actor to levelobject, coarsely only
+        ; Object marker update routine
         ;
-        ; Parameters: X:actor number, Y levelobject number
+        ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y
 
-SetActorAtObject:
-                lda lvlObjX,y
-                sta actXH,x
-                lda lvlObjY,y
-                and #$7f
-                sta actYH,x
-AAOG_Done:      rts
+MoveObjectMarker:
+                lda MoveItem_Color+1
+                sta actC,x
+MObjMarker_Cmp: lda #$00                        ;Check if levelobjectnumber has changed
+                cmp lvlObjNum                   ;and disappear in that case
+                beq MObjMarker_OK
+                jmp RemoveActor
 
         ; Align actor to center of block and ground level, ground must be below
         ;
@@ -926,16 +621,320 @@ AAOG_Loop:      jsr GetCharInfo
                 jsr MoveActorY
                 jmp AAOG_Loop
 
-        ; Object marker update routine
+        ; Position actor to levelobject, coarsely only
         ;
-        ; Parameters: X actor index
+        ; Parameters: X:actor number, Y levelobject number
         ; Returns: -
         ; Modifies: A,Y
 
-MoveObjectMarker:
+SetActorAtObject:
+                lda lvlObjX,y
+                sta actXH,x
+                lda lvlObjY,y
+                and #$7f
+                sta actYH,x
+ULO_IsPaused:
+ULO_PlayerDead
+AAOG_Done:      rts
+
+        ; Update level objects. Handle operation, auto-deactivation and actually entering doors.
+        ; Also check for picking up items and player health regeneration
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+UpdateLevelObjects:
+                lda menuMode
+                cmp #MENU_LEVELUPMSG
+                bcs ULO_IsPaused
+                ldy autoDeactObjNum
+                bmi ULO_NoAutoDeact
+                dec autoDeactObjCounter
+                bne ULO_NoAutoDeact
+                lda #$ff
+                sta autoDeactObjNum
+                jsr InactivateObject
+ULO_NoAutoDeact:lda actHp+ACTI_PLAYER           ;Restore health if not dead and not at
+                beq ULO_PlayerDead              ;full health
+                cmp #HP_PLAYER
+                bcs ULO_CheckPickup
+                lda healthRecharge
+ULO_HealthRechargeRate:
+                adc #INITIAL_HEALTHRECHARGETIMER
+                bcc ULO_NoRecharge
+                inc actHp+ACTI_PLAYER
+                lda #HEALTHRECHARGETIMER_RESET  ;Recharge faster after first unit
+ULO_NoRecharge: sta healthRecharge
+ULO_CheckPickup:ldx #ACTI_PLAYER                ;Check if player is colliding with an item
+ULO_CheckPickupIndex:                           ;If was at an item last frame, continue search
+                ldy #ACTI_FIRSTITEM             ;from it
+ULO_CheckPickupLoop:
+                lda actT,y
+                beq ULO_CPNoItem
+                jsr CheckActorCollision
+                bcs ULO_HasItem
+ULO_CPNoItem:   iny
+                cpy #ACTI_LASTITEM+1
+                bcc ULO_CPNoItemNoWrap
+                ldy #ACTI_FIRSTITEM
+ULO_CPNoItemNoWrap:
+                cpy ULO_CheckPickupIndex+1
+                bne ULO_CheckPickupLoop
+                lda displayedItemName           ;If no items, clear existing item name
+                beq ULO_CheckObject             ;text
+                jsr ClearPanelText
+                jmp ULO_CheckObject
+ULO_CODone2:    jmp ULO_CODone
+ULO_HasItem:    sty ULO_CheckPickupIndex+1
+                lda textTime                    ;Make sure to not overwrite other game
+                bne ULO_SkipItemName            ;messages
+                lda actF1,y
+                cmp displayedItemName           ;Do not reprint same item name
+                beq ULO_SkipItemName
+                pha
+                jsr GetItemName
+                ldy #$00
+                jsr PrintPanelText
+                pla
+                sta displayedItemName
+ULO_SkipItemName:
+                lda actCtrl+ACTI_PLAYER
+                cmp #JOY_DOWN
+                bne ULO_CheckObject
+                lda actFd+ACTI_PLAYER           ;If ducking, try picking up the item
+                beq ULO_CheckObject
+                lda actF1+ACTI_PLAYER
+                cmp #FR_DUCK
+                bne ULO_CheckObject
+                ldy ULO_CheckPickupIndex+1
+                jsr TryPickup
+
+ULO_CheckObject:ldx actXH+ACTI_PLAYER           ;Rescan objects whenever player
+                ldy actYH+ACTI_PLAYER           ;block position changes
+                lda lvlObjNum
+ULO_COLastCheckX:
+                cpx #$00
+                bne ULO_CORescan
+ULO_COLastCheckY:
+                cpy #$00
+                beq ULO_CONoRescan
+ULO_CORescan:   lda #$80                        ;Start from beginning
+ULO_CONoRescan: stx ULO_COLastCheckX+1
+                sty ULO_COLastCheckY+1
+                cmp #$ff
+                beq ULO_CODone2
+                cmp #$80
+                bcc ULO_CODone2
+                stx ULO_COCmpX+1
+                ldx actYL+ACTI_PLAYER           ;If player stands on top of a block
+                cpx #$40                        ;check 1 block above
+                bcs ULO_CONotAtTop
+                dey
+ULO_CONotAtTop: sty ULO_COSubY+1
+                and #$7f
+                tax
+                clc
+                adc #LVLOBJSEARCH
+                sta ULO_COEndCmp+1
+ULO_COLoop:     lda lvlObjX,x
+ULO_COCmpX:     cmp #$00
+                bne ULO_CONext
+                lda lvlObjY,x
+                and #$7f
+ULO_COSubY:     sbc #$00
+                cmp #$02                        ;Above or at object
+                bcc ULO_COFound
+ULO_CONext:     inx
+ULO_COEndCmp:   cpx #LVLOBJSEARCH
+                bcc ULO_COLoop
+                cpx #MAX_LVLOBJ
+                bcc ULO_CONotOver
+                ldx #$ff                        ;If search finished with no object,
+ULO_CONotOver:  txa                             ;no need to rescan until moved
+                ora #$80
+                sta lvlObjNum
+                bmi ULO_CODone
+ULO_COFound:    stx lvlObjNum
+                lda lvlObjB,x
+                tay
+                and #OBJ_TYPEBITS
+                cmp #OBJTYPE_DOOR
+                beq ULO_COShowMarker
+                tya
+                and #OBJ_MODEBITS
+                cmp #OBJMODE_MANUAL             ;If object is manually activated
+                bcc ULO_CODone                  ;or a door with any mode, show marker
+ULO_COShowMarker:
+                ldy #ACTI_FIRSTPLRBULLET
+                lda actT,y                      ;If marker already shown, remove it
+                cmp #ACT_OBJECTMARKER
+                beq ULO_COUpdateMarker
+                tya
+                jsr GetFreeActor
+                bcc ULO_CODone
+ULO_COUpdateMarker:
+                stx MObjMarker_Cmp+1            ;Only 1 marker exists at a time, modify code directly
+                tya                             ;for the check whether to remove the marker
+                tax
+                lda #ACT_OBJECTMARKER
+                sta actT,x
+                ldy lvlObjNum
+                jsr SetActorAtObject
+                jsr AlignActorOnGround
                 lda MoveItem_Color+1
                 sta actC,x
-MObjMarker_Cmp: lda #$00                        ;Check if levelobjectnumber has changed
-                cmp lvlObjNum                   ;and disappear in that case
-                beq MObjMarker_OK
-                jmp RemoveActor
+ULO_CODone:
+ULO_OperateFlag:ldx #$00
+                lda #$00
+                sta ULO_OperateFlag+1
+                ldy lvlObjNum
+                bmi ULO_Done
+                txa                             ;Check if player is operating an object
+                beq ULO_NoOperate
+                jmp ToggleObject
+ULO_NoOperate:  lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
+                cmp #FR_ENTER                   ;entry delay has elapsed
+                bne ULO_NoDoor
+                lda lvlObjB,y
+                and #OBJ_TYPEBITS+OBJ_ACTIVE
+                cmp #OBJTYPE_DOOR+OBJ_ACTIVE
+                bne ULO_NoDoor
+                ldx actFd+ACTI_PLAYER
+                cpx #DOORENTRYDELAY
+                bcs ULO_EnterDoor
+ULO_NoDoor:     lda lvlObjB,y                   ;Check for triggered activation
+                tax
+                and #OBJ_MODEBITS+OBJ_ACTIVE
+                cmp #OBJMODE_TRIG
+                bne ULO_NoTrigger
+                jmp ActivateObject
+ULO_NoTrigger:  txa
+                and #OBJ_TYPEBITS               ;Check for entering a side door
+                cmp #OBJTYPE_SIDEDOOR
+                bne ULO_Done
+                jsr GetZoneCenterX
+                lda actXH+ACTI_PLAYER
+                ldx actXL+ACTI_PLAYER
+                cmp temp8
+                txa
+                bcc ULO_LeftSide
+                inx
+ULO_LeftSide:   beq ULO_EnterDoor
+ULO_Done:       rts
+
+ULO_EnterDoor:  ldx #MAX_ACT-1                  ;When entering a door, remove all actors except player
+ULO_ClearActorLoop:                             ;back to leveldata
+                lda actT,x
+                beq ULO_ClearActorNext
+                jsr RemoveLevelActor
+ULO_ClearActorNext:
+                dex
+                bne ULO_ClearActorLoop
+                ldy lvlObjNum
+                lda lvlObjDL,y                  ;Get destination door
+                pha
+                lda lvlObjDH,y
+                jsr ChangeLevel                 ;Load new level if necessary
+                pla
+                tay
+                jsr BlankScreen                 ;Does not modify Y
+                jsr ActivateObject              ;Activate the door that was entered
+                ldx #ACTI_PLAYER                ;Reset animation, falling distance and speed
+                jsr MH_StandAnim
+                jsr MH_SetGrounded
+                jsr MH_ResetFall
+                txa
+                sta actSX+ACTI_PLAYER           ;Stop X-movement
+                jsr SetActorAtObject
+                jsr FindPlayerZone              ;After entering any door, face player toward zone center
+                jsr GetZoneCenterX
+                lda actXH+ACTI_PLAYER
+                cmp temp8
+                ror
+                sta actD+ACTI_PLAYER
+ULO_NoDirection:jsr InitMap
+                ldx #ACTI_PLAYER
+                jsr AlignActorOnGround
+                jsr SaveCheckpoint              ;Save checkpoint now. TODO: check for save-disabled zone
+
+        ; Centers player on screen, redraws screen, adds all actors from leveldata, and jumps to mainloop
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+CenterPlayer:   jsr FindPlayerZone
+                jsr InitMap
+                jsr SetZoneColors
+                iny
+                lda (zoneLo),y
+                jsr PlaySong                    ;Play zone's music
+                lda limitR
+                sec
+                sbc #10
+                sta temp1
+                lda limitD
+                sbc #6
+                sta temp2
+                ldx #3
+                lda actXH+ACTI_PLAYER
+                sbc #5
+                bcc CP_OverLeft
+                cmp limitL
+                bcs CP_NotOverLeft
+CP_OverLeft:    lda limitL
+                ldx #0
+                beq CP_NotOverRight
+CP_NotOverLeft: cmp temp1
+                bcc CP_NotOverRight
+                lda temp1
+                ldx #1
+CP_NotOverRight:sta mapX
+                stx blockX
+                if SCROLLROWS > 21
+                lda #$80
+                else
+                lda #$c0
+                endif
+                clc
+                adc actYL+ACTI_PLAYER
+                php
+                rol
+                rol
+                rol
+                and #$03
+                tay
+                plp
+                lda actYH+ACTI_PLAYER
+                sbc #3
+                bcc CP_OverUp
+                cmp limitU
+                bcs CP_NotOverUp
+CP_OverUp:      lda limitU
+                ldy #0
+                beq CP_NotOverDown
+CP_NotOverUp:   cmp temp2
+                bcc CP_NotOverDown
+                bne CP_OverDown
+                if SCROLLROWS > 21
+                cpy #$02
+                bcc CP_NotOverDown
+                else
+                cpy #$03
+                bcc CP_NotOverDown
+                endif
+CP_OverDown:    lda temp2
+                if SCROLLROWS > 21
+                ldy #$02
+                else
+                ldy #$03
+                endif
+CP_NotOverDown: sta mapY
+                sty blockY
+                jsr RedrawScreen
+                sty ULO_COLastCheckY+1          ;Reset object search (Y=$ff)
+                jsr AddAllActorsNextFrame
+                jsr GetControls
+                jsr UpdateActors                ;Update actors once first
+                                                ;Fall through to main loop
