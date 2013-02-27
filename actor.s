@@ -1220,31 +1220,28 @@ DamageSelf:     ldy #NODAMAGESRC
                 
         ; Damage actor, and destroy if health goes to zero
         ;
-        ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or >=$80 if none ($ff
-        ;             for quiet damage: no flashing, no sound)
+        ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or >=$80 if none
         ; Returns: C=1 if actor is alive, C=0 if killed
         ; Modifies: A,Y,temp7-temp8,possibly other temp registers
 
-DamageActor:    sty temp7
-                sta temp8
-                cpx #ACTI_PLAYER
+DamageActor:    cpx #ACTI_PLAYER
                 bne DA_NotPlayer
                 stx healthRecharge              ;If player hit, reset health recharge timer
                 if GODMODE_CHEAT>0
-                lda actHp,x
-                bne DA_NotDead
+                beq DA_Done
                 endif
-DA_NotPlayer:   jsr GetActorLogicData
+DA_NotPlayer:   sty temp7
+                pha
+                jsr GetActorLogicData
                 ldy #AL_DMGMODIFY
                 lda (actLo),y
                 tay
-                lda temp8
+                pla
                 jsr ModifyDamage
                 tay                             ;Never reduce damage to zero with the damage
                 bne DA_NotZeroDamage            ;modifier
                 lda #$01
 DA_NotZeroDamage:
-                ldy temp7
                 sta temp8
                 lda actHp,x                     ;First check that there is health
                 beq DA_Done                     ;(prevent destroy being called multiple times)
@@ -1261,6 +1258,7 @@ DA_NotDead:     sta actHp,x
                 jsr PlaySfx
                 plp
                 bne DA_Done
+                ldy temp7
 
         ; Call destroy routine of an actor
         ;

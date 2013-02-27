@@ -55,26 +55,25 @@ GetAndStoreSprite:
                 sta zpBitsLo                    ;Framenumber with direction in high bit
                 asl
                 tay
-                lda #$00
-                rol
-                sta zpLenLo                     ;Sprite direction
                 lda (sprFileLo),y               ;Get sprite header address
                 sta frameLo
                 iny
                 lda (sprFileLo),y
                 sta frameHi
-                lda #SPRH_HOTSPOTX
-                ora zpLenLo
+                lda #$00
+                rol
+                sta zpLenLo                     ;Sprite direction
+                ora #SPRH_HOTSPOTX
                 tay
                 lda temp1                       ;Subtract X-hotspot
                 sec
                 sbc (frameLo),y
                 sta sprXL,x
-                iny
-                iny
                 lda temp2
                 sbc #$00
                 sta sprXH,x
+                iny
+                iny
                 lda (frameLo),y                 ;Add X-connect spot
                 clc
                 bmi GASS_CSXNeg
@@ -93,10 +92,9 @@ GASS_CSXCommon: adc sprXH,x
                 sbc (frameLo),y
                 iny
                 sta sprY,x
-                lda temp4
-                sbc #$00
-                sta temp4
-                lda (frameLo),y                 ;Add Y-connect spot
+                bcs GASS_YNotOver
+                dec temp4
+GASS_YNotOver:  lda (frameLo),y                 ;Add Y-connect spot
                 clc
                 bmi GASS_CSYNeg
                 adc sprY,x
