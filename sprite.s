@@ -39,7 +39,7 @@ LSF_NoError:    jsr PostLoad
                 sty sprFileNum                  ;PurgeChunk clears sprFileNum, restore it now
                 lda fileHi,y
 LSF_SaveX:      ldx #$00
-GASS_DoNotAccept:
+GASS_DoNotAccept2:
                 rts
 
         ; Get and store a sprite. Cache (depack) if not cached yet.
@@ -51,7 +51,7 @@ GASS_DoNotAccept:
 
 GetAndStoreSprite:
                 cpx #MAX_SPR
-                bcs GASS_DoNotAccept
+                bcs GASS_DoNotAccept2
                 sta zpBitsLo                    ;Framenumber with direction in high bit
                 asl
                 tay
@@ -75,11 +75,6 @@ GetAndStoreSprite:
                 lda temp2
                 sbc #$00
                 sta sprXH,x
-                beq GASS_XNotOutside
-                lda sprXL,x
-                cmp #MAX_SPRX-256
-                bcs GASS_XOutside
-GASS_XNotOutside:
                 lda (frameLo),y                 ;Add X-connect spot
                 clc
                 bmi GASS_CSXNeg
@@ -101,7 +96,6 @@ GASS_CSXCommon: adc sprXH,x
                 lda temp4
                 sbc #$00
                 sta temp4
-                bne GASS_YOutside
                 lda (frameLo),y                 ;Add Y-connect spot
                 clc
                 bmi GASS_CSYNeg
@@ -114,87 +108,12 @@ GASS_CSYNeg:    adc sprY,x
                 lda #$ff
 GASS_CSYCommon: adc temp4
                 sta temp4
-                jmp GASS_Accept
-
-GASS_XOutside:  lda (frameLo),y                 ;X coord is outside, but must still add the connect-spot
-                clc
-                bmi GASS_CSXNeg2
-                adc sprXL,x
-                sta temp1
-                lda #$00
-                beq GASS_CSXCommon2
-GASS_CSXNeg2:   adc sprXL,x
-                sta temp1
-                lda #$ff
-GASS_CSXCommon2:adc sprXH,x
-                sta temp2
-                ldy #SPRH_HOTSPOTY
-                lda temp3                       ;Subtract Y-hotspot
-                sec
-                sbc (frameLo),y
-                iny
-                sta sprY,x
-                lda temp4
-                sbc #$00
-                sta temp4
-GASS_YOutside:  lda (frameLo),y                 ;Y coord is outside, but must still add the connect-spot
-                clc
-                bmi GASS_CSYNeg2
-                adc sprY,x
-                sta temp3
-                lda #$00
-                beq GASS_CSYCommon2
-GASS_CSYNeg2:   adc sprY,x
-                sta temp3
-                lda #$ff
-GASS_CSYCommon2:adc temp4
-                sta temp4
-GASS_DoNotAccept2:
-                rts
-
-        ; Get and store a sprite without modifying coords for next sprite
-        ;
-        ; Parameters: A frame number, X sprite index, temp1-temp2 X coord, temp3-temp4 Y coord,
-        ;             actIndex actor index, sprFileLo-Hi spritefile
-        ; Returns: X incremented if sprite accepted
-        ; Modifies: A,X,Y
-
-GetAndStoreLastSprite:
-                cpx #MAX_SPR
-                bcs GASS_DoNotAccept2
-                sta zpBitsLo                    ;Framenumber with direction in high bit
-                asl
-                tay
-                lda #$00
-                rol
-                sta zpLenLo                     ;Sprite direction
-                lda (sprFileLo),y               ;Get sprite header address
-                sta frameLo
-                iny
-                lda (sprFileLo),y
-                sta frameHi
-                lda temp4                       ;Optimization: check Y high without actually
-                bne GASS_DoNotAccept2           ;subtracting the hotspot from it
-                lda #SPRH_HOTSPOTX
-                ora zpLenLo
-                tay
-                lda temp1                       ;Subtract X-hotspot
-                sec
-                sbc (frameLo),y
-                sta sprXL,x
-                lda temp2
-                sbc #$00
-                sta sprXH,x
-                beq GASS_XNotOutside2
+                bne GASS_DoNotAccept            ;Note: Y visibility checked incorrectly after adding the connect-spot
+                lda sprXH,x
+                beq GASS_Accept                 ;Check X visibility
                 lda sprXL,x
                 cmp #MAX_SPRX-256
-                bcs GASS_DoNotAccept2
-GASS_XNotOutside2:
-                ldy #SPRH_HOTSPOTY              ;Subtract Y-hotspot
-                lda temp3
-                sec
-                sbc (frameLo),y
-                sta sprY,x
+                bcs GASS_DoNotAccept
 GASS_Accept:    lda actIndex                    ;Sprite was accepted: store actor index
                 sta sprAct,x                    ;for interpolation
                 ldy #SPRH_COLOR
@@ -212,6 +131,7 @@ GASS_ColorOr:   ora #$00
                 lda GASS_CurrentFrame+1         ;Mark cached sprite in use
                 sta cacheSprAge-FIRSTCACHEFRAME,y
                 inx                             ;Finally increment sprite count
+GASS_DoNotAccept:
                 rts
 
         ; Cache (depack) a sprite

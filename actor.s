@@ -234,7 +234,6 @@ DA_SprFileLoaded:
 DA_SameSprFile: ldy #AD_NUMSPRITES              ;Get number of sprites / humanoid / invisible flag
                 clc
                 lda (actLo),y
-                beq DA_OneSprite
                 bmi DA_Humanoid
 
 DA_Normal:      sta temp5
@@ -248,30 +247,15 @@ DA_NormalRight: adc #AD_FRAMES
                 ldx sprIndex
 DA_NormalLoop:  tay
                 lda (actLo),y
-                dec temp5                       ;Decrement actor sprite count
-                bmi DA_LastSprite               ;If last sprite, no need to add the connect-spot
                 jsr GetAndStoreSprite
+                dec temp5                       ;Decrement actor sprite count
+                bmi DA_ActorDone2
                 ldy #AD_NUMFRAMES
                 lda temp6                       ;Advance framepointer
                 clc
                 adc (actLo),y
                 sta temp6
                 bcc DA_NormalLoop
-
-DA_OneSprite:   lda actF1,x                     ;Fast path for onesprite-actors
-                ldy actD,x
-                bpl DA_OneSpriteRight
-                ldy #AD_LEFTFRADD               ;Add left frame offset if necessary
-                adc (actLo),y
-DA_OneSpriteRight:
-                adc #AD_FRAMES
-                ldx sprIndex
-                tay
-                lda (actLo),y
-DA_LastSprite:  jsr GetAndStoreLastSprite
-                stx sprIndex
-                ldx actIndex
-                jmp DA_ActorDone
 
 DA_Humanoid:    lda actWpnF,x
                 sta DA_HumanWpnF+1
@@ -307,9 +291,9 @@ DA_HumanWpnF:   lda #$00
                 sty sprFileLo
                 ldy fileHi+C_WEAPON
                 sty sprFileHi
-                jsr GetAndStoreLastSprite
+                jsr GetAndStoreSprite
 DA_HumanNoWeapon:
-                stx sprIndex
+DA_ActorDone2:  stx sprIndex
                 ldx actIndex
                 jmp DA_ActorDone
 
