@@ -798,7 +798,6 @@ InitLoader:     ldx #$ff                        ;Init stackpointer
                 stx $d020
                 stx messages                    ;Disable KERNAL messages
                 stx fileOpen                    ;Clear fileopen indicator
-                stx ntscDelay                   ;Assume NTSC mode
 IL_DetectNtsc1: lda $d012                       ;Detect PAL/NTSC
 IL_DetectNtsc2: cmp $d012
                 beq IL_DetectNtsc2
@@ -807,7 +806,6 @@ IL_DetectNtsc2: cmp $d012
                 bcc IL_IsNtsc
                 lda #$2c                        ;Adjust 2-bit fastload transfer
                 sta FL_Delay                    ;delay for PAL
-                inc ntscDelay                   ;Tell the main program we detected PAL
 IL_IsNtsc:      lda $dc0d
                 inc $d019
                 lda #<NMI                       ;Set NMI vector

@@ -25,6 +25,21 @@ RedirectIrq:    ldx $01
 RI_Return:      stx $01
                 jmp $ea81
 
+        ; Raster interrupt 5. Text screen split
+
+Irq5:           cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+Irq5_Wait:      lda $d012
+                cmp #IRQ5_LINE+3
+                bcc Irq5_Wait
+                lda #PANEL_D018
+                sta $d018
+                jmp Irq2_AllDone
+
         ; Raster interrupt 1. Show game screen
 
 Irq1:           cld
@@ -36,12 +51,6 @@ Irq1:           cld
                 lda #$00
                 sta newFrame
                 sta $d07a                       ;SCPU back to slow mode
-Irq1_NtscDelay: dec ntscDelay                   ;Handle NTSC delay counting
-                bpl Irq1_NoNtscDelay
-                lda #$05
-                sta ntscDelay
-                bne Irq1_TargetFramesOk
-Irq1_NoNtscDelay:
 Irq1_LevelUpdate:
                 lda #$00                       ;Animate level background?
                 beq Irq1_NoLevelUpdate
@@ -53,11 +62,6 @@ Irq1_LevelUpdate:
                 inc $d020
                 endif
 Irq1_NoLevelUpdate:
-                lda targetFrames                ;Maintain a "target frames" counter
-                cmp #$02                        ;which the main program will decrement.
-                bcs Irq1_TargetFramesOk         ;Delay will not be used when the update
-                inc targetFrames                ;is already lagging behind
-Irq1_TargetFramesOk:
 Irq1_MinSprY:   lda #$00
                 sta FL_MinSprY+1
 Irq1_MaxSprY:   ldy #$00
@@ -363,18 +367,3 @@ Irq4_NoSCPU:    lda #IRQ1_LINE
                 lda #<Irq1
                 ldx #>Irq1
                 jmp SetNextIrq
-
-        ; Raster interrupt 5. Text screen split
-
-Irq5:           cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
-Irq5_Wait:      lda $d012
-                cmp #IRQ5_LINE+3
-                bcc Irq5_Wait
-                lda #PANEL_D018
-                sta $d018
-                jmp Irq2_AllDone

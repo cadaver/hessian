@@ -39,7 +39,6 @@ LSF_NoError:    jsr PostLoad
                 sty sprFileNum                  ;PurgeChunk clears sprFileNum, restore it now
                 lda fileHi,y
 LSF_SaveX:      ldx #$00
-GASS_DoNotAccept2:
                 rts
 
         ; Get and store a sprite. Cache (depack) if not cached yet.
@@ -50,8 +49,6 @@ GASS_DoNotAccept2:
         ; Modifies: A,X,Y,temp1-temp4
 
 GetAndStoreSprite:
-                cpx #MAX_SPR
-                bcs GASS_DoNotAccept2
                 sta zpBitsLo                    ;Framenumber with direction in high bit
                 asl
                 tay
@@ -111,6 +108,8 @@ GASS_CSYCommon: adc temp4
                 beq GASS_Accept                 ;Check X visibility
                 lda sprXL,x
                 cmp #MAX_SPRX-256
+                bcs GASS_DoNotAccept
+                cpx #MAX_SPR                    ;Ran out of sprites?
                 bcs GASS_DoNotAccept
 GASS_Accept:    lda actIndex                    ;Sprite was accepted: store actor index
                 sta sprAct,x                    ;for interpolation

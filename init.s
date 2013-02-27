@@ -39,13 +39,7 @@ InitZP:         sta joystick,x
                 lda #>fileAreaStart
                 sta freeMemHi
 
-        ; Check NTSC
-
-                lda ntscDelay                   ;Check if loader part detected PAL or NTSC
-                beq IsNTSC
-                lda #$a5                        ;In PAL mode, disable NTSC delay counting
-                sta Irq1_NtscDelay              ;(replace DEC with LDA)
-IsNTSC:         jsr InitScroll
+                jsr InitScroll
 
         ; Initialize panel text printing
 

@@ -106,6 +106,7 @@ SCROLLROWS      = 22
 
                 Var wpnLo                       ;Weapon variables
                 Var wpnHi
+                Var wpnBits
                 Var magazineSize
 
                 Var displayedItemName           ;Misc. game variables
@@ -137,12 +138,10 @@ playerStateZPEnd = nextTempLvlActIndex+1
                 CheckVarBase $90
 
                 VarBase $c0
-                VarRange sprXL,MAX_SPR
-                VarRange sprXH,MAX_SPR
+                VarRange sprXL,MAX_SPR+1
+                VarRange sprXH,MAX_SPR+1
 
-                Var ntscDelay                   ;Frame update/raster IRQ variables
-                Var targetFrames
-                Var newFrame
+                Var newFrame                    ;Frame update/raster IRQ variables
                 Var irqSaveA
                 Var irqSaveX
                 Var irqSaveY

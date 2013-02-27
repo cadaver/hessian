@@ -145,25 +145,9 @@ DA_CacheAgeNotOver:
                 ldx #$00                        ;Reset amount of used sprites
                 stx sprIndex
 DA_Loop:        ldy actT,x
-                bne DA_NotZero
-DA_ActorDone:   inx
-                cpx #MAX_ACT
-                bcc DA_Loop
-DA_FillSprites: ldx sprIndex                    ;If less sprites used than last frame, set unused Y-coords to max.
-                txa
-                ldy #$ff
-DA_FillSpritesLoop:
-                sty sprY,x
-                inx
-DA_LastSprIndex:cpx #$00
-                bcc DA_FillSpritesLoop
-DA_FillSpritesDone:
-                sta DA_LastSprIndex+1
-                rts
-
-DA_NotZero:     lda actDispTblHi-1,y            ;Zero display address = invisible
                 beq DA_ActorDone
-                stx actIndex
+                lda actDispTblHi-1,y            ;Zero display address = invisible
+                beq DA_ActorDone
                 sta actHi
                 lda actDispTblLo-1,y            ;Get actor display structure address
                 sta actLo
@@ -205,6 +189,23 @@ DA_SprSubXH:    sbc #$00
                 sta temp1
                 lda coordTblHi,y
                 sta temp2
+                jsr DrawActorSub
+DA_ActorDone:   inx
+                cpx #MAX_ACT
+                bcc DA_Loop
+DA_FillSprites: ldx sprIndex                    ;If less sprites used than last frame, set unused Y-coords to max.
+                txa
+                ldy #$ff
+DA_FillSpritesLoop:
+                sty sprY,x
+                inx
+DA_LastSprIndex:cpx #$00
+                bcc DA_FillSpritesLoop
+DA_FillSpritesDone:
+                sta DA_LastSprIndex+1
+                rts
+
+DrawActorSub:   stx actIndex
                 ldy #$0f                        ;Get flashing/flicker/color override:
                 lda actC,x                      ;$01-$0f = color override only
                 cmp #COLOR_ONETIMEFLASH         ;$40/$80 = flicker with sprite's own color
@@ -218,6 +219,7 @@ DA_NoHitFlash:  sta GASS_ColorOr+1
                 iny
 DA_ColorOverrideDone:
                 sty GASS_ColorAnd+1
+DrawActorSub_NoColor:
                 ldy #AD_SPRFILE                 ;Get spritefile. Also called for invisible actors,
                 lda (actLo),y                   ;so the spritefile must be valid
                 cmp sprFileNum
@@ -249,24 +251,48 @@ DA_NormalLoop:  tay
                 lda (actLo),y
                 jsr GetAndStoreSprite
                 dec temp5                       ;Decrement actor sprite count
-                bmi DA_ActorDone2
+                bmi DA_ActorSubDone
                 ldy #AD_NUMFRAMES
                 lda temp6                       ;Advance framepointer
                 clc
                 adc (actLo),y
                 sta temp6
                 bcc DA_NormalLoop
+DA_ActorSubDone:stx sprIndex
+                ldx actIndex
+DA_Invisible:   rts
 
 DA_Humanoid:    lda actWpnF,x
                 sta DA_HumanWpnF+1
-                jsr DA_GetHumanFrames
-DA_HumanFrame1: lda #$00
+                lda actF2,x
+                ldy actD,x
+                bpl DA_HumanRight2
+                ldy #ADH_LEFTFRADD2             ;Add left frame offset if necessary
+                adc (actLo),y
+DA_HumanRight2: ldy #ADH_BASEINDEX2
+                adc (actLo),y
+                tay
+                lda humanUpperFrTbl,y           ;Take sprite frame from the frametable
+                ldy #ADH_BASEFRAME2
+                adc (actLo),y
+                sta temp5
+                lda actF1,x
+                ldy actD,x
+                bpl DA_HumanRight1
+                ldy #ADH_LEFTFRADD              ;Add left frame offset if necessary
+                adc (actLo),y
+DA_HumanRight1: ldy #ADH_BASEINDEX
+                adc (actLo),y
+                tay
+                lda humanLowerFrTbl,y           ;Take sprite frame from the frametable
+                ldy #ADH_BASEFRAME
+                adc (actLo),y
                 ldx sprIndex
                 jsr GetAndStoreSprite
                 ldy #ADH_SPRFILE2               ;Get second part spritefile
                 lda (actLo),y
                 cmp sprFileNum
-                beq DA_HumanFrame2
+                beq DA_SameSprFile2
                 sta sprFileNum
                 tay
                 lda fileHi,y
@@ -276,7 +302,7 @@ DA_SprFileLoaded2:
                 sta sprFileHi
                 lda fileLo,y
                 sta sprFileLo
-DA_HumanFrame2: lda #$00
+DA_SameSprFile2:lda temp5
                 jsr GetAndStoreSprite
 DA_HumanWpnF:   lda #$00
                 cmp #NOWEAPONFRAME
@@ -293,36 +319,7 @@ DA_HumanWpnF:   lda #$00
                 sty sprFileHi
                 jsr GetAndStoreSprite
 DA_HumanNoWeapon:
-DA_ActorDone2:  stx sprIndex
-                ldx actIndex
-                jmp DA_ActorDone
-
-DA_GetHumanFrames:
-                lda actF2,x
-                ldy actD,x
-                bpl DA_HumanRight2
-                ldy #ADH_LEFTFRADD2             ;Add left frame offset if necessary
-                adc (actLo),y
-DA_HumanRight2: ldy #ADH_BASEINDEX2
-                adc (actLo),y
-                tay
-                lda humanUpperFrTbl,y           ;Take sprite frame from the frametable
-                ldy #ADH_BASEFRAME2
-                adc (actLo),y
-                sta DA_HumanFrame2+1
-                lda actF1,x
-                ldy actD,x
-                bpl DA_HumanRight1
-                ldy #ADH_LEFTFRADD              ;Add left frame offset if necessary
-                adc (actLo),y
-DA_HumanRight1: ldy #ADH_BASEINDEX
-                adc (actLo),y
-                tay
-                lda humanLowerFrTbl,y           ;Take sprite frame from the frametable
-                ldy #ADH_BASEFRAME
-                adc (actLo),y
-                sta DA_HumanFrame1+1
-UA_Skip:        rts
+                jmp DA_ActorSubDone
 
         ; Set all actors to be added on next frame
         ;
@@ -1606,25 +1603,25 @@ CopyCoords:     lda actXL,x
 
         ; Spawn an actor with X & Y offset
         ;
-        ; Parameters: A actor type, X creating actor, Y destination actor index, temp5-temp6 X offset,
-        ;             temp7-temp8 Y offset
+        ; Parameters: A actor type, X creating actor, Y destination actor index, temp1-temp2 X offset,
+        ;             temp3-temp4 Y offset
         ; Returns: -
         ; Modifies: A
 
 SpawnWithOffset:sta actT,y
                 lda actXL,x
                 clc
-                adc temp5
+                adc temp1
                 sta actXL,y
                 lda actXH,x
-                adc temp6
+                adc temp2
                 sta actXH,y
                 lda actYL,x
                 clc
-                adc temp7
+                adc temp3
                 sta actYL,y
                 lda actYH,x
-                adc temp8
+                adc temp4
                 sta actYH,y
                 rts
 

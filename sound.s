@@ -227,9 +227,7 @@ Play_MasterVolume:
 
         ;Update duration counter
 
-Play_ChnExec:   lda ntscDelay                   ;If NTSC, skip song advance each 6th frame, but run
-                beq Play_JumpToPulse            ;the channel effects to avoid eg. drumsound bugs
-                inc ntChnCounter,x
+Play_ChnExec:   inc ntChnCounter,x
                 bne Play_NoPattern
 
         ;Get data from pattern

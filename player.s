@@ -939,8 +939,6 @@ DI_ItemNumber:  tay
                 beq DI_NoItem
                 sta temp4                       ;Item type to drop
                 lda #$00
-                sta temp5
-                sta temp6
                 sta temp8                       ;Capacity counter
                 ldy #ACTI_FIRSTITEM             ;Count capacity on both ground and inventory, do not spawn
 DI_CountGroundItems:                            ;if player can't pick up
@@ -977,12 +975,8 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
                 bcc DI_NoItem
-                lda #<ITEM_SPAWN_OFFSET
-                sta temp7
-                lda #>ITEM_SPAWN_OFFSET
-                sta temp8
                 lda #ACT_ITEM
-                jsr SpawnWithOffset
+                jsr SpawnActor
                 lda temp4
                 tax
                 sta actF1,y
@@ -997,6 +991,8 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 tya
                 tax
                 jsr InitActor
+                lda #ITEM_SPAWN_OFFSET
+                jsr MoveActorY
                 lda temp4
                 cmp #ITEM_FIRST_IMPORTANT
                 lda #ORG_GLOBAL

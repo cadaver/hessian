@@ -59,7 +59,7 @@ AH_SetIdleWeaponFrame:
                 sta actF2,x
                 cmp #FR_ENTER
                 bcs AH_NoWeaponFrame
-                lda temp3                   ;Check for animation lock (for weapons with
+                lda wpnBits                 ;Check for animation lock (for weapons with
                 and #WDB_LOCKANIMATION      ;backpack)
                 beq AH_NoLockAnimation
                 ldy #WD_LOCKANIMFRAME
@@ -68,7 +68,7 @@ AH_SetIdleWeaponFrame:
 AH_NoLockAnimation:
                 ldy #WD_IDLEFR
 AH_SetPrepareWeaponFrame:
-                lda temp3
+                lda wpnBits
                 lsr
                 bcs AH_NoWeaponFrame
                 lda actD,x
@@ -93,7 +93,7 @@ AttackHuman:    ldy actWpn,x
                 sta wpnHi
                 ldy #WD_BITS
                 lda (wpnLo),y
-                sta temp3
+                sta wpnBits
                 txa
                 bne AH_NotPlayer
                 ldy itemIndex                   ;Check for ammo & reloading
@@ -163,10 +163,10 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 iny
                 cmp (wpnLo),y
                 bcs AH_NoAttack2
-AH_DirOk2:      sta temp1                       ;Final aim direction
-                sta temp2
+AH_DirOk2:      sta temp2                       ;Final aim direction
+                sta AH_FireDir+1
                 clc
-                ldy temp3                       ;Check fire-from-hip animation mode
+                ldy wpnBits                     ;Check fire-from-hip animation mode
                 bpl AH_NormalAttack
                 tay
                 lda fromHipFrameTbl-1,y
@@ -177,13 +177,13 @@ AH_StoreAttackFrame:
                 ldy #WD_ATTACKFR
                 lda actD,x
                 bpl AH_AimRight
-                iny
-                lda temp1
+                lda temp2
                 adc #5
-                sta temp1
-AH_AimRight:    lda temp3
+                sta AH_FireDir+1
+                iny
+AH_AimRight:    lda wpnBits
                 lsr
-                lda #$ff
+                lda #NOWEAPONFRAME
                 bcs AH_NoWeaponFrame2
                 lda (wpnLo),y
                 adc temp2
@@ -193,7 +193,7 @@ AH_NoWeaponFrame2:
                 beq AH_CanFire
                 dec actAttackD,x                ;Decrement delay / progress the melee animation
                 bmi AH_MeleeAnimation
-                lda temp3
+                lda wpnBits
                 and #WDB_THROW|WDB_MELEE
                 beq AH_CannotFire
                 bne AH_MeleeIdle
@@ -201,14 +201,14 @@ AH_MeleeIdle:   jmp AH_SetIdleWeaponFrame
 AH_MeleeStrike:
 AH_CannotFire:  rts
 
-AH_CanFire:     lda temp3                       ;Check for melee/throw weapon and play its
+AH_CanFire:     lda wpnBits                     ;Check for melee/throw weapon and play its
                 and #WDB_THROW|WDB_MELEE        ;animation, else go directly to firing
                 beq AH_SpawnBullet
 AH_ThrownOrMelee:
                 lda #$84                        ;Setup the melee animation counter
                 sta actAttackD,x
 AH_MeleePrepare:lda #FR_PREPARE                 ;Show prepare frame for hands & weapon
-                ldy temp3
+                ldy wpnBits
                 cpy #WDB_MELEE
                 adc #$00
                 sta actF2,x
@@ -226,7 +226,6 @@ AH_SpawnBullet: lda actCtrl,x                   ;Require debounced input before 
                 cmp actPrevCtrl,x               ;to prevent erroneous attack direction
                 bne AH_CannotFire
                 jsr GetBulletOffset
-                bcc AH_CannotFire
                 txa                             ;Check whether to use player or NPC bullet actor
                 beq AH_IsPlayer                 ;indices
                 lda #ACTI_FIRSTNPCBULLET
@@ -236,49 +235,50 @@ AH_IsPlayer:    lda #ACTI_FIRSTPLRBULLET
                 ldy #ACTI_LASTPLRBULLET
 AH_IsNpc:       jsr GetFreeActor
                 bcc AH_CannotFire
-                sty temp2
+                sty tgtActIndex
                 ldy #WD_BULLETTYPE
                 lda (wpnLo),y
-                ldy temp2
+                ldy tgtActIndex
                 jsr SpawnWithOffset
-                lda temp3
+                lda wpnBits
                 and #WDB_BULLETDIRFRAME
                 beq AH_BulletFrameDone
-                lda temp1
+                lda AH_FireDir+1
 AH_BulletFrameDone:
                 sta actF1,y
                 ldy #WD_BULLETSPEED
                 lda (wpnLo),y
                 sta temp4
                 iny
-                lda temp1
+AH_FireDir:     lda #$00
                 clc
                 adc (wpnLo),y
                 tay
                 sty zpSrcLo
                 lda bulletXSpdTbl,y
                 ldy temp4
-                ldx #temp5
+                ldx #temp1
                 jsr MulU
                 ldy zpSrcLo
                 lda bulletYSpdTbl,y
                 ldy temp4
-                ldx #temp7
+                ldx #temp3
                 jsr MulU
                 lda zpSrcLo
-                ldx temp2
+                ldx tgtActIndex
                 jsr GetCharInfo                 ;Check if spawned inside wall
                 and #CI_OBSTACLE                ;and destroy immediately in that case
                 bne AH_InsideWall
-                lda temp5                       ;Set speed
+                lda temp1                       ;Set speed
                 sta actSX,x
-                lda temp7
+                lda temp3
                 sta actSY,x
                 jsr InitActor                   ;Set collision size
                 ldy actIndex
                 lda actFlags,y
                 and #AF_GROUPBITS               ;Copy group from attacker
                 sta actFlags,x
+                lda #NOTARGET
                 sta actAITarget,x               ;Reset target for homing bullets
                 ldy #WD_DAMAGE                  ;Set duration and damage
                 lda (wpnLo),y
@@ -290,7 +290,7 @@ AH_BulletFrameDone:
                 iny
                 lda (wpnLo),y
                 sta actTime,x
-                lda temp3
+                lda wpnBits
                 and #WDB_FLICKERBULLET
                 beq AH_NoBulletFlicker
                 txa
@@ -306,7 +306,7 @@ AH_NoBulletFlicker:
                 lda #$01
                 jsr DecreaseAmmo
                 endif
-                lda temp3
+                lda wpnBits
                 and #WDB_NOSKILLBONUS
                 bne AH_NoPlayerBonus
 AH_PlayerFirearmBonus:
@@ -317,8 +317,8 @@ AH_PlayerMeleeBonus:
 AH_PlayerBonusCommon:
                 lda temp8
                 jsr ModifyDamage
-                ldy temp2
-                sta actHp,y
+                ldy tgtActIndex
+                sta actHp,y                     ;Set bullet damage
 AH_NoPlayerBonus:
 AH_NoAmmoDecrement:
                 ldy #WD_ATTACKDELAY
@@ -334,7 +334,7 @@ AH_InsideWall:  jsr RemoveActor
         ; Find spawn offset for bullet
         ;
         ; Parameters: X actor index
-        ; Returns: C=1 success (temp5-temp6 X offset, temp7-temp8 Y offset), C=0 failure (sprites unloaded)
+        ; Returns: temp1-temp2 X offset, temp3-temp4 Y offset
         ; Modifies: A,Y,loader temp regs
 
 GetBulletOffset:ldy actT,x
@@ -342,115 +342,22 @@ GetBulletOffset:ldy actT,x
                 sta actLo
                 lda actDispTblHi-1,y
                 sta actHi
-                ldy #$00
-                sty temp5
-                sty temp7
-                clc
-                lda (actLo),y                   ;Get display type
-                bmi GBO_Humanoid
-                sta zpBitsLo                    ;Sprite counter
-                iny
-                lda (actLo),y                   ;Sprite file
-                sta GBO_NormalSprFile+1
-                lda actF1,x
-                ldy actD,x
-                bpl GBO_NormalRight
-                ldy #AD_LEFTFRADD               ;Add left frame offset if necessary
-                adc (actLo),y
-GBO_NormalRight:adc #AD_FRAMES
-GBO_NormalLoop: sta zpBitsHi                    ;Frame index
-                tay
-                lda (actLo),y
-GBO_NormalSprFile:
-                ldy #$00
-                jsr GBO_Sub
-                ldy #AD_NUMFRAMES
-                lda zpBitsHi                    ;Advance framepointer
-                clc
-                adc (actLo),y
-                dec zpBitsLo
-                bpl GBO_NormalLoop
-                bmi GBO_Common
-
-GBO_Humanoid:   jsr DA_GetHumanFrames
-                dey
-                lda (actLo),y
-                tay
-                lda DA_HumanFrame1+1
-                jsr GBO_Sub
-                ldy #ADH_SPRFILE2
-                lda (actLo),y
-                tay
-                lda DA_HumanFrame2+1
-                jsr GBO_Sub
-                lda actWpnF,x                   ;If no weapon frame, spawn projectile from the hand
-                cmp #NOWEAPONFRAME
-                beq GBO_Common
-                ldy #C_WEAPON
-                jsr GBO_Sub
-GBO_Common:     lda #$00
-                asl temp5
-                bcc GBO_XPos
-                lda #$ff
-GBO_XPos:       rol
-                asl temp5
-                rol
-                asl temp5
-                rol
-                sta temp6
                 lda #$00
-                asl temp7
-                bcc GBO_YPos
-                lda #$ff
-GBO_YPos:       rol
-                asl temp7
-                rol
-                asl temp7
-                rol
-                sta temp8
-                sec
-                rts
-
-GBO_Sub:        pha
-                lda fileHi,y
-                beq GBO_Fail
-                sta zpSrcHi
-                lda fileLo,y
-                sta zpSrcLo
-                pla
-                asl
-                tay
-                lda #$00
-                rol
-                sta zpLenLo                     ;Sprite direction
-                lda (zpSrcLo),y
-                sta frameLo
-                iny
-                lda (zpSrcLo),y
-                sta frameHi
-                ldy #SPRH_CONNECTSPOTY
-                lda temp7
-                adc (frameLo),y
+                sta temp1
+                sta temp2
+                sta temp3
+                sta temp4
+                lda #MAX_SPR                    ;"Draw" the actor in a fake manner
+                sta sprIndex                    ;to get the last connect-spot
+                jsr DrawActorSub_NoColor
+                ldy #3
+GBO_MulLoop:    asl temp1
+                rol temp2
+                asl temp3
+                rol temp4
                 dey
-                sec
-                sbc (frameLo),y
-                sta temp7
-                lda #SPRH_CONNECTSPOTX
-                ora zpLenLo
-                tay
-                lda temp5
-                clc
-                adc (frameLo),y
-                dey
-                dey
-                sec
-                sbc (frameLo),y
-                sta temp5
-                rts
-GBO_Fail:       pla
-                pla
-                pla
-                clc
+                bne GBO_MulLoop
+                ldx actIndex
                 rts
 
         ; Modify damage based on whether target is organic/nonorganic

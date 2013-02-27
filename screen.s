@@ -259,18 +259,17 @@ UpdateFrame:    lda #$01                        ;Re-enable raster IRQs after loa
                 if SHOW_FREE_TIME > 0
                 dec $d020
                 endif
-UF_Wait:        lda targetFrames                ;Wait for NTSC delay if needed
-                beq UF_Wait
-                lda newFrame                    ;Wait until sprite IRQs are done with the current sprites
+UF_Wait:        lda newFrame                    ;Wait until sprite IRQs are done with the current sprites
                 bmi UF_Wait
                 if SHOW_FREE_TIME > 0
                 inc $d020
                 endif
-                dec targetFrames
                 lda firstSortSpr                ;Switch sprite doublebuffer side
                 eor #MAX_SPR
                 sta firstSortSpr
-                ldx #$00
+                ldx #$ff                        ;Make sure the sort endmark is intact (may have been
+                stx sprY+MAX_SPR                ;overwritten if ran out of sprites)
+                inx
                 stx temp3                       ;D010 bits for first IRQ
                 txa
 SSpr_Loop1:     ldy sprOrder,x                  ;Check for coordinates being in order
