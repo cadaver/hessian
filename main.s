@@ -37,14 +37,14 @@ randomAreaStart:
                 include file.s
                 include actor.s
                 include physics.s
+                include script.s
+                include plot.s
+                include level.s
+                include panel.s
+                include player.s
                 include weapon.s
                 include bullet.s
-                include player.s
                 include item.s
-                include panel.s
-                include level.s
-                include plot.s
-                include script.s
                 include ai.s
 
         ; Game main loop

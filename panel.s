@@ -760,14 +760,68 @@ PXPM_XPLevel:   lda xpLevel
                 inx
                 lda xpLo
                 ldy xpHi
-                jsr ConvertToBCD16
                 jsr Print3BCDDigits
                 lda #"/"
                 jsr PrintPanelChar
                 lda xpLimitLo
                 ldy xpLimitHi
+
+        ; Print a 3-digit BCD value to panel
+        ;
+        ; Parameters: temp7-temp8 value, X position
+        ; Returns: X position incremented
+        ; Modifies: A
+
+ConvertAndPrint3BCDDigits:
                 jsr ConvertToBCD16
-                jmp Print3BCDDigits
+Print3BCDDigits:lda temp8
+PBCD_3DigitsOK: jsr PrintBCDDigit
+                lda temp7
+
+        ; Print a BCD value to panel
+        ;
+        ; Parameters: A value, X position
+        ; Returns: X position incremented
+        ; Modifies: A
+
+PrintBCDDigits: pha
+                lsr
+                lsr
+                lsr
+                lsr
+                ora #$30
+                sta screen1+SCROLLROWS*40+40,x
+                inx
+                pla
+PrintBCDDigit:  and #$0f
+                ora #$30
+PrintPanelChar: sta screen1+SCROLLROWS*40+40,x
+                lda #$01
+                sta colors+SCROLLROWS*40+40,x
+                inx
+                rts
+
+        ; Print a 3-digit BCD value to panel without leading zeroes
+        ;
+        ; Parameters: temp7-temp8 value, X position
+        ; Returns: X position incremented
+        ; Modifies: A
+
+Print3BCDDigitsNoZeroes:
+                lda temp8
+                bne PBCD_3DigitsOK
+
+        ; Print a 2-digit BCD value to panel without leading zeroes
+        ;
+        ; Parameters: temp7-temp8 value, X position
+        ; Returns: X position incremented
+        ; Modifies: A
+
+PrintBCDDigitsNoZeroes:
+                lda temp7
+                cmp #$10
+                bcs PrintBCDDigits
+                bcc PrintBCDDigit
 
         ; Convert a 8-bit value to BCD
         ;
@@ -804,58 +858,3 @@ ConvertToBCD16: sta temp5
                 sty temp6
                 ldy #$10
                 bne CTB_Common
-
-        ; Print a 3-digit BCD value to panel
-        ;
-        ; Parameters: temp7-temp8 value, X position
-        ; Returns: X position incremented
-        ; Modifies: A
-
-Print3BCDDigits:lda temp8
-PBCD_3DigitsOK: jsr PrintBCDDigit
-                lda temp7
-
-        ; Print a BCD value to panel
-        ;
-        ; Parameters: A value, X position
-        ; Returns: X position incremented
-        ; Modifies: A
-
-PrintBCDDigits: pha
-                lsr
-                lsr
-                lsr
-                lsr
-                ora #$30
-                sta screen1+SCROLLROWS*40+40,x
-                inx
-                pla
-PrintBCDDigit:  and #$0f
-                ora #$30
-PrintPanelChar: sta screen1+SCROLLROWS*40+40,x
-                lda #$01
-                sta colors+SCROLLROWS*40+40,x
-                inx
-CL_Done:        rts
-
-        ; Print a 3-digit BCD value to panel without leading zeroes
-        ;
-        ; Parameters: temp7-temp8 value, X position
-        ; Returns: X position incremented
-        ; Modifies: A
-
-Print3BCDDigitsNoZeroes:
-                lda temp8
-                bne PBCD_3DigitsOK
-
-        ; Print a 2-digit BCD value to panel without leading zeroes
-        ;
-        ; Parameters: temp7-temp8 value, X position
-        ; Returns: X position incremented
-        ; Modifies: A
-
-PrintBCDDigitsNoZeroes:
-                lda temp7
-                cmp #$10
-                bcs PrintBCDDigits
-                bcc PrintBCDDigit

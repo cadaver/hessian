@@ -149,10 +149,10 @@ main.pak: actor.s actordata.s ai.s aidata.s bullet.s cutscene.s data.s file.s in
 	symbols main.tbl mainsym.s
 	pack2 main.bin main.pak
 
-logo.pak: pics/logo.iff
+logo.pak: pics/logo.iff logo.s
 	pic2chr pics/logo.iff logo.chr /m14 /n15 /x24 /y7 /c /s
 	pic2chr pics/logo.iff logoscr.dat /m14 /n15 /x24 /y7 /t
-	filejoin logo.chr+logoscr.dat logo.bin
+	dasm logo.s -ologo.bin -f3
 	pack2 logo.bin logo.pak
 
 script00.pak: script00.s memory.s mainsym.s

@@ -14,7 +14,7 @@ MAX_LVLOBJ      = 128                           ;Note: must be 128! And-operatio
 MAX_SPAWNERS    = 16
 MAX_PLOTBITS    = 64
 
-SCRIPTAREASIZE  = 10*256
+SCRIPTAREASIZE  = 8*256
 SCROLLROWS      = 22
 
         ; Zeropage variables

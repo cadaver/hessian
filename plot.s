@@ -48,4 +48,4 @@ DecodeBit:      pha
                 lsr
                 tay
 DB_Value:       lda #$00
-                rts
+CL_Done:        rts

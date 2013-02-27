@@ -1,7 +1,6 @@
 SCRIPT_TITLE    = 0
 
 EP_TITLE        = $0000
-EP_RESTART      = $0001
 
         ; Execute a script
         ;

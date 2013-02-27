@@ -102,7 +102,6 @@ LF_PurgeSkip:   inx
 
 LoadAllocFile:  sty temp6
                 jsr OpenFile
-LoadAllocFile_FileOpen:
                 ldy temp6                       ;Purge if in memory
                 jsr PurgeFile
                 jsr GetByte                     ;Get datasize lowbyte, or abort due to error
