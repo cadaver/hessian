@@ -760,11 +760,14 @@ PXPM_XPLevel:   lda xpLevel
                 inx
                 lda xpLo
                 ldy xpHi
-                jsr Print3BCDDigits
+                jsr ConvertAndPrint3BCDDigits
                 lda #"/"
                 jsr PrintPanelChar
                 lda xpLimitLo
                 ldy xpLimitHi
+
+ConvertAndPrint3BCDDigits:
+                jsr ConvertToBCD16
 
         ; Print a 3-digit BCD value to panel
         ;
@@ -772,8 +775,6 @@ PXPM_XPLevel:   lda xpLevel
         ; Returns: X position incremented
         ; Modifies: A
 
-ConvertAndPrint3BCDDigits:
-                jsr ConvertToBCD16
 Print3BCDDigits:lda temp8
 PBCD_3DigitsOK: jsr PrintBCDDigit
                 lda temp7
