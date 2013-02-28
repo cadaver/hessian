@@ -356,12 +356,11 @@ FindZoneNum:    sta zoneNum
                 sta limitD
 OO_Done:        rts
 
-        ; Operate a level object. Does not actually activate/deactivate yet, but sets a flag
-        ; for UpdateLevelObjects
+        ; Operate a level object.
         ;
         ; Parameters: Y object number
         ; Returns: C=1 if object was operated successfully (should not jump), C=0 if not
-        ; Modifies: A,temp vars
+        ; Modifies: A,X,Y,temp vars
 
 OperateObject:  lda actF1+ACTI_PLAYER           ;Already in enter/operate stance?
                 cmp #FR_ENTER
@@ -381,16 +380,15 @@ OperateObject:  lda actF1+ACTI_PLAYER           ;Already in enter/operate stance
 OO_Active:      and #OBJ_MODEBITS               ;Object was active, inactivate if possible
                 cmp #OBJMODE_MANUALAD
                 bcc OO_EnterNoOperate
-OO_Inactive:    inc ULO_OperateFlag+1
-                lda lvlObjY,y                   ;If object uses animation, play sound when operating
+OO_Inactive:    lda lvlObjY,y                   ;If object uses animation, play sound when operating
                 bpl OO_NoSound
                 lda #SFX_OBJECT
                 jsr PlaySfx
-OO_NoSound:
-OO_EnterNoOperate:
-                lda #FR_ENTER
-                sta actF1+ACTI_PLAYER
-                sta actF2+ACTI_PLAYER
+OO_NoSound:     jsr ToggleObject                ;Note: animating the object here (before UpdateFrame)
+OO_EnterNoOperate:                              ;may theoretically induce an UpdateBlock bug if colorscroll
+                lda #FR_ENTER                   ;is happening on the same frame. However, in practice it seems
+                sta actF1+ACTI_PLAYER           ;the bug will not occur, as the scrolling is never in that phase
+                sta actF2+ACTI_PLAYER           ;on the actor logic update frame
                 lda #$00
                 sta actFd+ACTI_PLAYER           ;Reset door entry delay
                 beq OO_Success
@@ -476,6 +474,8 @@ ActivateObject: lda lvlObjB,y                   ;Make sure that is inactive
                 beq AO_NoAutoDeact
                 lda autoDeactObjNum             ;If another object already deactivating,
                 bmi AO_NoPreviousAutoDeact      ;deactivate it immediately
+                cpy autoDeactObjNum
+                beq AO_NoPreviousAutoDeact      ;If same object deactivating, no need to do that
                 sty temp2
                 tay
                 jsr InactivateObject
@@ -684,8 +684,7 @@ ULO_CPNoItemNoWrap:
                 lda displayedItemName           ;If no items, clear existing item name
                 beq ULO_CheckObject             ;text
                 jsr ClearPanelText
-                jmp ULO_CheckObject
-ULO_CODone2:    jmp ULO_CODone
+                bcs ULO_CheckObject             ;C=1 when returning
 ULO_HasItem:    sty ULO_CheckPickupIndex+1
                 lda textTime                    ;Make sure to not overwrite other game
                 bne ULO_SkipItemName            ;messages
@@ -723,9 +722,9 @@ ULO_CORescan:   lda #$80                        ;Start from beginning
 ULO_CONoRescan: stx ULO_COLastCheckX+1
                 sty ULO_COLastCheckY+1
                 cmp #$ff
-                beq ULO_CODone2
+                beq ULO_CODone
                 cmp #$80
-                bcc ULO_CODone2
+                bcc ULO_CODone
                 stx ULO_COCmpX+1
                 ldx actYL+ACTI_PLAYER           ;If player stands on top of a block
                 cpx #$40                        ;check 1 block above
@@ -784,16 +783,9 @@ ULO_COUpdateMarker:
                 jsr AlignActorOnGround
                 lda MoveItem_Color+1
                 sta actC,x
-ULO_CODone:
-ULO_OperateFlag:ldx #$00
-                lda #$00
-                sta ULO_OperateFlag+1
-                ldy lvlObjNum
+ULO_CODone:     ldy lvlObjNum
                 bmi ULO_Done
-                txa                             ;Check if player is operating an object
-                beq ULO_NoOperate
-                jmp ToggleObject
-ULO_NoOperate:  lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
+                lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
                 cmp #FR_ENTER                   ;entry delay has elapsed
                 bne ULO_NoDoor
                 lda lvlObjB,y
