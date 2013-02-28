@@ -135,7 +135,8 @@ sfx/splash.sfx: sfx/splash.ins
 sfx/object.sfx: sfx/object.ins
 	ins2nt2 sfx/object.ins sfx/object.sfx
 
-levelactors.s: bg/level00.lva bg/level01.lva bg/level02.lva bg/level03.lva
+levelactors.s: bg/level00.lva bg/level01.lva bg/level02.lva bg/level03.lva bg/level04.lva bg/level05.lva \
+	bg/level00.lvo bg/level01.lvo bg/level02.lvo bg/level03.lvo bg/level04.lvo bg/level05.lvo
 	countobj
 
 main.pak: actor.s actordata.s ai.s aidata.s bullet.s cutscene.s data.s file.s init.s item.s itemdata.s level.s leveldata.s \
