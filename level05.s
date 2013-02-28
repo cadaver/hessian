@@ -48,4 +48,4 @@ UL_NoWaterAnim: rts
 
                 org lvlLoadWaterSplashColor
                 dc.b $05                        ;Water splash color override
-                dc.b $18                        ;Water damage
+                dc.b $10                        ;Water damage

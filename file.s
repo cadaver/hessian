@@ -52,15 +52,14 @@ MFN_Number:     sta fileName,x
         ; Returns: fileName
         ; Modifies: A,X,Y,loader temp vars
 
-LoadFileRetry:  sta LFR_AddressLo+1
-                stx LFR_AddressHi+1
-LFR_Again:      jsr LoadFile
-                bcc LFR_Success
-                jsr LFR_ErrorPrompt
+LFR_Error:      jsr LFR_ErrorPrompt
 LFR_AddressLo:  lda #$00
 LFR_AddressHi:  ldx #$00
-                bne LFR_Again
-LFR_Success:    jmp PostLoad
+LoadFileRetry:  sta LFR_AddressLo+1
+                stx LFR_AddressHi+1
+                jsr LoadFile
+                bcs LFR_Error
+                jmp PostLoad
 
 LFR_ErrorPrompt:cmp #$02
                 beq LFR_FlipDisk
