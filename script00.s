@@ -34,16 +34,22 @@ titleTexts      = chars+608+168*2
 ;START_X         = $0280
 ;START_Y         = $05c0
 
-        ; Start from underground
+        ; Start from service tunnels
 
-START_LEVEL     = $04
-START_X         = $0380
-START_Y         = $0500
+;START_LEVEL     = $04
+;START_X         = $0380
+;START_Y         = $0500
+
+        ; Start from sewers
+
+START_LEVEL     = $06
+START_X         = $0d80
+START_Y         = $0b00
 
         ; Start from water treatment
 
 ;START_LEVEL     = $05
-;START_X         = $0380
+;START_X         = $0880
 ;START_Y         = $2600
 
                 org scriptCodeStart

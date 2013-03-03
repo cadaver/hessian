@@ -5,33 +5,7 @@
 
                 org lvlCodeStart
 
-UpdateLevel:    ldy chars+214*8+15
-                ldx #$0e
-UL_Waterfall:   lda chars+214*8,x
-                sta chars+214*8+1,x
-                dex
-                bpl UL_Waterfall
-                sty chars+214*8
-                and #%01010101
-                sta chars+222*8+6
-                tya
-                ora #%01010101
-                sta chars+222*8+7
-                inc UL_Delay+1
-UL_Delay:       lda #$00
-                tay
-                and #$07
-                bne UL_NoWaterAnim
-                ldx #$07
-UL_WaterLoop:   lda chars+28*8,x
-                asl
-                adc #$00
-                asl
-                adc #$00
-                sta chars+28*8,x
-                dex
-                bne UL_WaterLoop
-UL_NoWaterAnim: inc UL_RandomIndex+1
+UpdateLevel:    inc UL_RandomIndex+1
 UL_RandomIndex: ldx #$00
                 lda randomAreaStart,x
 UL_LightOn:     ldy #$01
@@ -44,21 +18,30 @@ UL_NoLight:     cmp #$f8
 UL_Toggle:      tya
                 eor #$01
                 sta UL_LightOn+1
-                ldx #0
-                jsr UL_ToggleSub
-                ldx #8
-                jsr UL_ToggleSub
-                ldx #16
-UL_ToggleSub:   ldy #3
-UL_ToggleLoop:  lda chars+25*8,x
-                pha
-                lda chars+189*8,x
-                sta chars+25*8,x
-                pla
-                sta chars+189*8,x
-                inx
-                dey
-                bpl UL_ToggleLoop
+                lda chars+25*8
+                eor #%10010101
+                sta chars+25*8
+                sta chars+25*8+3
+                lda chars+25*8+1
+                eor #%01101010
+                sta chars+25*8+1
+                sta chars+25*8+2
+                lda chars+26*8
+                eor #%01010101
+                sta chars+26*8
+                sta chars+26*8+3
+                lda chars+26*8+1
+                eor #%10101010
+                sta chars+26*8+1
+                sta chars+26*8+2
+                lda chars+27*8
+                eor #%01010110
+                sta chars+27*8
+                sta chars+27*8+3
+                lda chars+27*8+1
+                eor #%10101001
+                sta chars+27*8+1
+                sta chars+27*8+2
 UL_NoToggle:    rts
 
                 org charInfo
@@ -72,7 +55,7 @@ UL_NoToggle:    rts
                 incbin bg/level04.lva
 
                 org lvlLoadName
-                dc.b "UNDERGROUND",0
+                dc.b "SERVICE TUNNELS",0
 
                 org lvlLoadWaterSplashColor
                 dc.b $05                        ;Water splash color override

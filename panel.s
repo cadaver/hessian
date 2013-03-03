@@ -129,11 +129,10 @@ UP_MagCountOK:  ora #$30
                 bne UP_SkipAmmo
 UP_Consumable:  lda invType,y                   ;Draw the X for real consumables, but
                 cmp #ITEM_FIRST_CONSUMABLE      ;not for weapons such as the minigun
-                bcs UP_TrueConsumable           ;that don't have magazines
+                bcs UP_IsConsumable             ;that don't have magazines
                 lda #32
                 skip2
-UP_TrueConsumable:
-                lda #42
+UP_IsConsumable:lda #42
                 sta screen1+SCROLLROWS*40+40+35
                 lda invCount,y
                 jsr ConvertToBCD8
@@ -174,8 +173,7 @@ UP_BeginLine:   lda textDelay
                 sta textTime
 UP_PrintTextLoop:
                 sty zpSrcHi
-                lda #$00
-                sta zpSrcLo
+                stx zpSrcLo
 UP_ScanWordLoop:lda (textLo),y
                 beq UP_ScanWordDone
                 cmp #$20
@@ -188,13 +186,9 @@ UP_ScanWordLoop:lda (textLo),y
 UP_ScanWordDone2:
                 inc zpSrcLo
 UP_ScanWordDone:ldy zpSrcHi
-                txa
-                clc
-                adc zpSrcLo
-                sta UP_WordCmp+1
-                cmp textRightMargin
-                beq UP_WordCmp
-                bcc UP_WordCmp
+                lda textRightMargin
+                cmp zpSrcLo
+                bcs UP_WordCmp
 UP_EndLine:     stx zpBitsLo
                 tya
                 ldx #textLo
@@ -212,7 +206,7 @@ UP_PrintTextDone:
 UP_WordLoop:    lda (textLo),y
                 jsr PrintPanelChar
                 iny
-UP_WordCmp:     cpx #$00
+UP_WordCmp:     cpx zpSrcLo
                 bcc UP_WordLoop
 UP_SpaceLoop:   lda (textLo),y
                 beq UP_EndLine

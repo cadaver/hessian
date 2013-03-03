@@ -783,7 +783,7 @@ MH_NotStationary:
                 lda actMoveCtrl,x               ;If joystick held up, exit if ground above
                 lsr
                 bcc MH_NotExitingWater
-                cmp #JOY_LEFT/2                ;Check for exiting to left/right
+                cmp #JOY_LEFT/2                 ;Check for exiting to left/right
                 bcc MH_ExitWaterCheckAbove
                 cmp #JOY_RIGHT/2
                 lda #8*8
@@ -828,7 +828,7 @@ MH_NotSwimmingUp:
                 lda #2
                 sta temp4
                 lda #-1                         ;Use middle of player for obstacle check
-                ldy #CI_GROUND|CI_OBSTACLE
+                ldy #CI_WATER
                 jsr MoveFlyer
                 lda #$03
                 jsr AnimationDelay
@@ -882,16 +882,15 @@ HumanDeath:     sty temp4
                 lda #POS_NOTPERSISTENT          ;Bodies are supposed to eventually vanish, so mark as
                 sta actLvlDataPos,x             ;nonpersistent if goes off the screen
                 lda actMB,x                     ;If in water, do not modify Y-speed
-                tay
                 and #MB_INWATER
                 bne HD_NoYSpeed
                 lda #DEATH_YSPEED
                 sta actSY,x
-HD_NoYSpeed:    jsr MH_ResetGrounded
-                lda #$00
+                jsr MH_ResetGrounded
+HD_NoYSpeed:    lda #$00
                 sta actFd,x
-                sta actHp,x                     ;Make sure HP is 0 or the death will not work correctly
-                sta actAIMode,x                 ;Reset any ongoing AI
+                sta actHp,x
+                sta actAIMode,x                ;Reset any ongoing AI
                 ldy temp4                      ;Check if has a damage source
                 bmi HD_NoDamageSource
                 lda actHp,y
@@ -904,14 +903,12 @@ HD_NoYSpeed:    jsr MH_ResetGrounded
                 sbc actXL,y
                 lda actXH,x
                 sbc actXH,y
-                bmi HD_LeftImpulse
-HD_RightImpulse:lda temp8
+                lda temp8
                 ldy #DEATH_MAX_XSPEED
-                jsr AccActorX
+                bcc HD_LeftImpulse
+HD_RightImpulse:jsr AccActorX
                 jmp HD_NoDamageSource
-HD_LeftImpulse: lda temp8
-                ldy #DEATH_MAX_XSPEED
-                jsr AccActorXNeg
+HD_LeftImpulse: jsr AccActorXNeg
 HD_NoDamageSource:
 
         ; Drop item from dead enemy

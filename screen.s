@@ -1161,7 +1161,6 @@ UB_Row:         lda temp6
                 rol zpDestHi
                 asl
                 rol zpDestHi
-                clc
                 adc zpBitBuf
                 bcc UB_NotOver
                 inc zpDestHi

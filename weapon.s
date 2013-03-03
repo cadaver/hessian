@@ -350,7 +350,7 @@ GetBulletOffset:ldy actT,x
                 lda #MAX_SPR                    ;"Draw" the actor in a fake manner
                 sta sprIndex                    ;to get the last connect-spot
                 jsr DrawActorSub_NoColor
-                ldy #3
+                ldy #$03
 GBO_MulLoop:    asl temp1
                 rol temp2
                 asl temp3

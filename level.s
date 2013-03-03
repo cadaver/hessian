@@ -666,7 +666,13 @@ ULO_HealthRechargeRate:
                 inc actHp+ACTI_PLAYER
                 lda #HEALTHRECHARGETIMER_RESET  ;Recharge faster after first unit
 ULO_NoRecharge: sta healthRecharge
-ULO_CheckPickup:ldx #ACTI_PLAYER                ;Check if player is colliding with an item
+ULO_CheckPickup:ldx #ACTI_PLAYER
+                lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
+                cmp limitD
+                bcc ULO_NotOutside
+                beq ULO_NotOutside
+                jmp DestroyActor
+ULO_NotOutside:                                 ;Check if player is colliding with an item
 ULO_CheckPickupIndex:                           ;If was at an item last frame, continue search
                 ldy #ACTI_FIRSTITEM             ;from it
 ULO_CheckPickupLoop:

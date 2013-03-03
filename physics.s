@@ -8,7 +8,7 @@ MB_STARTFALLING = 32
         ; Move actor and stop at obstacles
         ;
         ; Parameters: X actor index, A Y offset position for obstacles,
-        ;             temp4 X offset position for obstacles, Y vertical obstacle bits
+        ;             temp4 X offset position for obstacles, Y required charinfo (minus ground bit)
         ; Returns: A charinfo
         ; Modifies: A,Y,temp vars
 
@@ -28,7 +28,8 @@ MF_NoNegate:    jsr MoveActorX
                 lda temp5
                 ldy temp4
                 jsr GetCharInfoXYOffset
-                and #CI_OBSTACLE
+                and #CI_OBSTACLE|CI_WATER
+                cmp temp6
                 beq MF_XMoveOK
                 lda actSX,x
                 jsr MoveActorXNeg
@@ -39,10 +40,11 @@ MF_XMoveOK:     lda actSY,x
                 lda temp5
                 jsr GetCharInfoOffset
                 sta temp8
-                and temp6
+                and #CI_OBSTACLE|CI_WATER
+                cmp temp6
                 beq MF_YMoveOK
                 lda actSY,x
-                jmp MoveActorYNeg
+                jsr MoveActorYNeg
                 lda #$00
                 sta actSY,x
 MF_YMoveOK:     lda temp8
@@ -97,7 +99,7 @@ MWG_WallHitRight:
 MWG_WallHitLeft:lda #8*8
                 jsr MoveActorX
                 and #$c0
-MWG_WallHitDone2: 
+MWG_WallHitDone2:
                 sta actXL,x
 MWG_WallHitDone:lda temp5
                 ora #MB_HITWALL

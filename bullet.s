@@ -440,12 +440,8 @@ MDrn_AccCommon: jsr AccActorY
                 bmi MDrn_Expire
                 lda #$00
                 sta temp4
-                ldy #CI_OBSTACLE
-                jsr MoveFlyer                   ;If hit water, terminate by splashing
-                and #CI_WATER
-                beq MDrn_Done
-                jmp MProj_HitWater
-MDrn_Done:      rts
+                ldy #$00
+                jmp MoveFlyer
 MDrn_Expire:    jmp ExplodeActor                ;Explode harmlessly
 
         ; Check bullet collisions and optionally apply damage

@@ -1392,9 +1392,9 @@ void drawmap(void)
       }
     }
 
-    sprintf(textbuffer, "XPOS %02X", mapx+mousex/32);
+    sprintf(textbuffer, "XPOS %02X (%d)", mapx+mousex/32, mapx+mousex/32);
     printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
-    sprintf(textbuffer, "YPOS %02X", mapy+mousey/32);
+    sprintf(textbuffer, "YPOS %02X (%d)", mapy+mousey/32, mapy+mousey/32);
     printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
     drawblock(320-32,160,blocknum);
     sprintf(textbuffer, "BLOCK %03d", blocknum);
@@ -1685,6 +1685,7 @@ void char_mainloop(void)
     {
       memset(&chardata[charnum*8],0,8);
       chinfo[charnum]=0;
+      chcol[charnum] &= 0xf;
     }
     if (!shiftdown && !ctrldown)
     {
@@ -2561,14 +2562,19 @@ void initblockeditmode(int fm)
       }
     }
 
-    // Unless explicitly disabled, ensure all chars are unique
+    // Unless explicitly disabled, ensure all chars are unique. However, do not copy fixed chars
+    // as optimizing them back is problematic
     if (!nocopy)
     {
       for (c = 0; c < 16; c++)
       {
-        copychar(blockdata[16*blocknum+c], e);
-        blockdata[16*blocknum+c] = e;
-        e--;
+        int ch = blockdata[16*blocknum+c];
+        if (!(chcol[ch] & 64))
+        {
+          copychar(ch, e);
+          blockdata[16*blocknum+c] = e;
+          e--;
+        }
       }
     }
 
