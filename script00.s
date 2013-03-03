@@ -30,9 +30,9 @@ titleTexts      = chars+608+168*2
 
         ; Start from city
 
-;START_LEVEL     = $02
-;START_X         = $0280
-;START_Y         = $05c0
+START_LEVEL     = $02
+START_X         = $0280
+START_Y         = $05c0
 
         ; Start from service tunnels
 
@@ -42,9 +42,9 @@ titleTexts      = chars+608+168*2
 
         ; Start from sewers
 
-START_LEVEL     = $06
-START_X         = $0d80
-START_Y         = $0b00
+;START_LEVEL     = $06
+;START_X         = $0d80
+;START_Y         = $0b00
 
         ; Start from water treatment
 

@@ -1471,7 +1471,7 @@ void drawmap(void)
       }
       for (c = 0; c < NUMLVLOBJ; c++)
       {
-        if ((lvlobjb[c] & 0x1c) == 0x18) sp++;
+        if ((lvlobjb[c] & 0x1c) == 0x1c) sp++;
       }
       sprintf(textbuffer, "SPAWNERS IN LEVEL: %d", sp);
       printtext_color(textbuffer,0,175,SPR_FONTS,COL_WHITE);
