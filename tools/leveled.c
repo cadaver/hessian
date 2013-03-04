@@ -234,6 +234,7 @@ void transferblock(int c, int d);
 void swapblocks(int c, int d);
 void insertblock(int c, int d);
 void copyblock(int c, int d);
+void relocatezone(int x, int y);
 void reorganizedata(void);
 void optimizechars(void);
 void optimizeblocks(void);
@@ -790,13 +791,15 @@ void zone_mainloop(void)
 
   for (;;)
   {
-    int s;
+    int s, shiftdown, ctrldown;
 
     s = win_getspeed(70);
     flash += s;
     flash &= 31;
     k = kbd_getkey();
     ascii = kbd_getascii();
+    shiftdown = win_keystate[KEY_LEFTSHIFT] | win_keystate[KEY_RIGHTSHIFT];
+    ctrldown = win_keystate[KEY_CTRL];
     mouseupdate();
     if (ascii == 27)
     {
@@ -853,6 +856,15 @@ void zone_mainloop(void)
     {
       zonex[zonenum] = 0;
       zoney[zonenum] = 0;
+    }
+    if (k == KEY_R && shiftdown)
+    {
+      if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
+      {
+        int x = mapx+mousex/32;
+        int y = mapy+mousey/32;
+        relocatezone(x,y);
+      }
     }
 
     if (k == KEY_F5)
@@ -1634,14 +1646,14 @@ void char_mainloop(void)
   }
   for (;;)
   {
-    int s;
-    int shiftdown = win_keystate[KEY_LEFTSHIFT] | win_keystate[KEY_RIGHTSHIFT];
-    int ctrldown = win_keystate[KEY_CTRL];
+    int s, shiftdown, ctrldown;
     s = win_getspeed(70);
     flash += s;
     flash &= 31;
     k = kbd_getkey();
     ascii = kbd_getascii();
+    shiftdown = win_keystate[KEY_LEFTSHIFT] | win_keystate[KEY_RIGHTSHIFT];
+    ctrldown = win_keystate[KEY_CTRL];
     mouseupdate();
     if (ascii == 27)
     {
@@ -2782,6 +2794,70 @@ int findsameblock(int c, int d)
     return 0;
 
   return 1;
+}
+
+void relocatezone(int x, int y)
+{
+  int sx, sy, oldx, oldy, ox, oy, c, bx, by;
+  if (!zonex[zonenum] && !zoney[zonenum])
+    return;
+  sx = zoner[zonenum] - zonel[zonenum];
+  sy = zoned[zonenum] - zoneu[zonenum];
+  if (x + sx > 256) return;
+  if (y + sy > 128) return;
+  unsigned char* tempmapdata = malloc(sx*sy);
+  oldx = zonel[zonenum];
+  oldy = zoneu[zonenum];
+  ox = x - oldx;
+  oy = y - oldy;
+  // Relocate objects & actors within zone
+  for (c = 0; c < NUMLVLOBJ; c++)
+  {
+    if ((lvlobjx[c]) || (lvlobjy[c]))
+    {
+      if (lvlobjx[c] >= zonel[zonenum] && lvlobjx[c] < zoner[zonenum] && (lvlobjy[c] & 0x7f) >= zoneu[zonenum] && (lvlobjy[c] & 0x7f) < zoned[zonenum])
+      {
+        lvlobjx[c] += ox;
+        lvlobjy[c] += oy;
+      }
+    }
+  }
+  for (c = 0; c < NUMLVLACT; c++)
+  {
+    if (lvlactt[c])
+    {
+      if (lvlactx[c] >= zonel[zonenum] && lvlactx[c] < zoner[zonenum] && (lvlacty[c] & 0x7f) >= zoneu[zonenum] && (lvlacty[c] & 0x7f) < zoned[zonenum])
+      {
+        lvlactx[c] += ox;
+        lvlacty[c] += oy;
+      }
+    }
+  }
+  c = 0;
+  for (by = 0; by < sy; by++)
+  {
+    for (bx = 0; bx < sx; bx++)
+    {
+      tempmapdata[c++] = mapdata[(by+zoneu[zonenum])*mapsx + bx+zonel[zonenum]];
+      mapdata[(by+zoneu[zonenum])*mapsx + bx+zonel[zonenum]] = 0;
+    }
+  }
+  c = 0;
+  for (by = 0; by < sy; by++)
+  {
+    for (bx = 0; bx < sx; bx++)
+    {
+      mapdata[(by+y)*mapsx + bx+x] = tempmapdata[c++];
+    }
+  }
+  zonel[zonenum] = x;
+  zoner[zonenum] = x+sx;
+  zoneu[zonenum] = y;
+  zoned[zonenum] = y+sy;
+  zonex[zonenum] = (x+sx)/2;
+  zoney[zonenum] = (y+sy)/2;
+
+  free(tempmapdata);
 }
 
 void reorganizedata()

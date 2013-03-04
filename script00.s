@@ -49,8 +49,8 @@ START_Y         = $0900
         ; Start from water treatment
 
 ;START_LEVEL     = $05
-;START_X         = $0880
-;START_Y         = $2600
+;START_X         = $0180
+;START_Y         = $1200
 
                 org scriptCodeStart
 
