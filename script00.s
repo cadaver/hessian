@@ -30,9 +30,9 @@ titleTexts      = chars+608+168*2
 
         ; Start from city
 
-;START_LEVEL     = $02
-;START_X         = $0280
-;START_Y         = $05c0
+START_LEVEL     = $02
+START_X         = $b380
+START_Y         = $0900
 
         ; Start from service tunnels
 
@@ -48,9 +48,9 @@ titleTexts      = chars+608+168*2
 
         ; Start from water treatment
 
-START_LEVEL     = $05
-START_X         = $0880
-START_Y         = $2600
+;START_LEVEL     = $05
+;START_X         = $0880
+;START_Y         = $2600
 
                 org scriptCodeStart
 
