@@ -41,6 +41,8 @@ NO_MODIFY       = 8
 
 NOWEAPONFRAME   = $ff
 
+RELOAD_FINISH_DELAY = 9                         ;Fixed delay before weapon can be fired after reloading
+
         ; Actor attack routine
         ;
         ; Parameters: X actor index
@@ -95,48 +97,65 @@ AttackHuman:    ldy actWpn,x
                 lda (wpnLo),y
                 sta wpnBits
                 txa
-                bne AH_NotPlayer
-                ldy itemIndex                   ;Check for ammo & reloading
+                beq AH_AmmoCheck
+                jmp AH_NotPlayer
+AH_AmmoCheck:   ldy itemIndex                   ;Check for ammo & reloading
                 lda magazineSize
-                bmi AH_AmmoCheckOK              ;Melee weapon, no ammo check / no reload
-                bne AH_CheckFirearm
-                lda invCount,y                  ;Consumable item: no attack if out of ammo
-                bne AH_AmmoCheckOK
-                beq AH_NoAttack
-AH_CheckFirearm:lda invMag,y                    ;Check if reload ongoing
-                bpl AH_NotReloading
+                beq AH_AmmoCheckOK              ;Melee weapon or consumable, no ammo check & reload
+                bmi AH_AmmoCheckOK
+AH_CheckReload: cmp invCount,y
+                bcc AH_HasFullMagReserve
+                lda invCount,y
+AH_HasFullMagReserve:
+                sta temp1                       ;Reload limit
+                lda plrReload
+                beq AH_NotReloading
+                bmi AH_BeginReload
+                cmp temp1
                 lda actAttackD+ACTI_PLAYER
-                cmp #$01
-                bcs AH_NoAttack                 ;While ongoing, keep weapon in down position
-                lda invCount,y                  ;Finish reloading
-                cmp magazineSize
-                bcc AH_ReloadSizeOK
-                lda magazineSize
-AH_ReloadSizeOK:sta invMag,y
+                bne AH_NoAttack                 ;While ongoing, keep weapon in down position
+                bcs AH_ReloadComplete           ;Reload finished?
+                lda actCtrl+ACTI_PLAYER
+                cmp #JOY_FIRE
+                bcc AH_ReloadNextShot           ;Interrupt shotgun reload by pressing fire
+AH_ReloadComplete:
+                lda #RELOAD_FINISH_DELAY
+                sta actAttackD+ACTI_PLAYER
+                lda #$00
                 ldy #WD_RELOADDONESFX
-                lda (wpnLo),y
-                jsr PlaySfx
-AH_RedrawAmmoNoAttack:
-                jsr SetPanelRedrawAmmo
-                jmp AH_NoAttack
-AH_NotReloading:bne AH_AmmoCheckOK
+                bne AH_PlayReloadSound
+AH_NotReloading:lda invMag,y
+                bne AH_AmmoCheckOK
 AH_EmptyMagazine:
                 lda invCount,y                  ;Initiate reloading if mag empty and reserve left
                 beq AH_FirearmEmpty
-                lda actAttackD+ACTI_PLAYER      ;Do not start reloading before attack delay
+AH_BeginReload: lda actAttackD+ACTI_PLAYER      ;Do not start reloading before attack delay
                 bne AH_AmmoCheckOK              ;zero
-                lda #$ff
-                sta invMag,y
+AH_ReloadNextShot:
+                lda invType,y                   ;Shotgun reloads one shot at a time
+                cmp #ITEM_SHOTGUN               ;but reload can be interrupted
+                bne AH_ReloadWholeMagazine
+                lda invMag,y
+                adc #$00
+                cmp temp1
+                bcc AH_NotExceeded
+AH_ReloadWholeMagazine:
+                lda temp1
+AH_NotExceeded: sta invMag,y
+                pha
                 ldy #WD_RELOADDELAY
                 lda (wpnLo),y
 AH_ReloadDelayBonus:
                 ldy #NO_MODIFY
                 jsr ModifyDamage
                 sta actAttackD+ACTI_PLAYER
+                pla
                 ldy #WD_RELOADSFX
+AH_PlayReloadSound:
+                sta plrReload
                 lda (wpnLo),y
                 jsr PlaySfx
-                jmp AH_RedrawAmmoNoAttack
+                jsr SetPanelRedrawAmmo
 AH_NoAttack2:   jmp AH_NoAttack
 AH_FirearmEmpty:lda #$01                        ;If no bullets, set a constant attack delay to
                 sta actAttackD+ACTI_PLAYER      ;prevent firing but allow brandishing empty weapon

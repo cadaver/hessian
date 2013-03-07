@@ -336,6 +336,7 @@ plrCarrying:    dc.b 0
 plrFirearms:    dc.b 0
 plrMelee:       dc.b 0
 plrVitality:    dc.b 0
+plrReload:      dc.b 0
 plotBits:       ds.b MAX_PLOTBITS/8,0
 lvlDataActBits: ds.b LVLDATAACTTOTALSIZE,0
 lvlObjBits:     ds.b LVLOBJTOTALSIZE,0

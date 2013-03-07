@@ -283,13 +283,13 @@ UI_ReduceAmmo:  lda #USEITEM_ATTACK_DELAY       ;In case the item is removed, gi
                 sta actAttackD+ACTI_PLAYER      ;attack delay to prevent accidental
                 lda #$01                        ;fire when a weapon becomes selected
                 jmp DecreaseAmmo
-UI_Reload:      ldx invType,y                   ;Do not reload if already full magazine
+UI_Reload:      lda plrReload
+                bne UI_DontReload
+                ldx invType,y                   ;Do not reload if already full magazine
                 lda invMag,y                    ;or already reloading
-                bmi UI_DontReload
                 cmp itemMagazineSize-1,x
                 bcs UI_DontReload
                 cmp invCount,y
                 bcs UI_DontReload
-                lda #$00                        ;Initiate reload by zeroing magazine
-                sta invMag,y
+                dec plrReload
 UI_DontReload:  rts

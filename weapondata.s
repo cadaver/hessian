@@ -189,7 +189,7 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
 wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
-                dc.b 11                         ;Attack delay
+                dc.b 10                         ;Attack delay
                 dc.b ACT_SHOTGUNBULLET          ;Bullet actor type
                 dc.b DMG_SHOTGUN                ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
@@ -201,8 +201,8 @@ wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b $80+9                      ;Idle weapon frame (left)
                 dc.b 7                          ;Attack weapon frames (right)
                 dc.b $80+7                      ;Attack weapon frames (left)
-                dc.b 30                         ;Reload delay
-                dc.b SFX_RELOAD                 ;Reload sound
+                dc.b 8                          ;Reload delay
+                dc.b SFX_OBJECT                 ;Reload sound
                 dc.b SFX_COCKSHOTGUN            ;Reload finished sound
 
 wdAutoRifle:    dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits

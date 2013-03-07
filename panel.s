@@ -103,8 +103,9 @@ UP_SkipWeapon:  lda panelUpdateFlags
                 sta temp4
                 beq UP_Consumable
                 bmi UP_MeleeWeapon
-UP_Firearm:     lda invMag,y                    ;Print rounds in magazine
-                bmi UP_Reloading
+UP_Firearm:     lda plrReload
+                bne UP_Reloading
+                lda invMag,y                    ;Print rounds in magazine
                 jsr ConvertToBCD8
                 lda temp7
                 ldx #35

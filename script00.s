@@ -362,6 +362,7 @@ IP_SkillCheatLoop:
                 lda #START_LEVEL
                 sta levelNum
                 lda #$00                        ;Set startposition
+                sta plrReload
                 sta saveD
                 lda #<START_X
                 sta saveXL
