@@ -910,6 +910,8 @@ void zone_mainloop(void)
         zoneu[zonenum] = y;
         zoned[zonenum] = y+1;
         updatezone(zonenum);
+        zonex[zonenum] = (zonel[zonenum]+zoner[zonenum])/2;
+        zoney[zonenum] = (zoneu[zonenum]+zoned[zonenum])/2;
         if ((zonel[zonenum] == zoner[zonenum]-1) &&
             (zoneu[zonenum] == zoned[zonenum]-1))
         {
@@ -1168,7 +1170,6 @@ void map_mainloop(void)
         {
           mapdata[mapx+mousex/32+(mapy+mousey/32)*255]=blocknum;
         }
-        updateallzones();
         findusedblocksandchars();
       }
       if ((mouseb & 2) && (!prevmouseb))
