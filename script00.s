@@ -30,9 +30,15 @@ titleTexts      = chars+608+168*2
 
         ; Start from city
 
-START_LEVEL     = $02
-START_X         = $1380
-START_Y         = $1500
+;START_LEVEL     = $02
+;START_X         = $1380
+;START_Y         = $1500
+
+        ; Start from upper city
+
+START_LEVEL     = $03
+START_X         = $0e80
+START_Y         = $0a00
 
         ; Start from service tunnels
 
