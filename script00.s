@@ -31,8 +31,8 @@ titleTexts      = chars+608+168*2
         ; Start from city
 
 START_LEVEL     = $02
-START_X         = $a680
-START_Y         = $1400
+START_X         = $1380
+START_Y         = $1500
 
         ; Start from service tunnels
 
