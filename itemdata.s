@@ -1,24 +1,25 @@
 ITEM_NONE       = 0
 ITEM_FISTS      = 1
-ITEM_KNIFE      = 2
-ITEM_NIGHTSTICK = 3
-ITEM_BAT        = 4
-ITEM_PISTOL     = 5
-ITEM_SHOTGUN    = 6
-ITEM_AUTORIFLE  = 7
-ITEM_SNIPERRIFLE = 8
-ITEM_MINIGUN    = 9
-ITEM_FLAMETHROWER = 10
-ITEM_SONICWAVEGUN = 11
-ITEM_LASERRIFLE = 12
-ITEM_PLASMAGUN  = 13
-ITEM_EMPGENERATOR = 14
-ITEM_GRENADELAUNCHER = 15
-ITEM_BAZOOKA    = 16
-ITEM_GRENADE    = 17
-ITEM_HOMINGDRONE = 18
-ITEM_MEDKIT     = 19
-ITEM_CREDITS    = 20
+ITEM_SHIV       = 2
+ITEM_KNIFE      = 3
+ITEM_NIGHTSTICK = 4
+ITEM_BAT        = 5
+ITEM_PISTOL     = 6
+ITEM_SHOTGUN    = 7
+ITEM_AUTORIFLE  = 8
+ITEM_SNIPERRIFLE = 9
+ITEM_MINIGUN    = 10
+ITEM_FLAMETHROWER = 11
+ITEM_SONICWAVEGUN = 12
+ITEM_LASERRIFLE = 13
+ITEM_PLASMAGUN  = 14
+ITEM_EMPGENERATOR = 15
+ITEM_GRENADELAUNCHER = 16
+ITEM_BAZOOKA    = 17
+ITEM_GRENADE    = 18
+ITEM_HOMINGDRONE = 19
+ITEM_MEDKIT     = 20
+ITEM_CREDITS    = 21
 
 
 ITEM_FIRST_FIREARM = ITEM_PISTOL
@@ -29,6 +30,7 @@ ITEM_FIRST_IMPORTANT = ITEM_CREDITS+1
 MAG_INFINITE = $ff
 
 itemMaxCount:   dc.b 0                          ;Fists
+                dc.b 0                          ;Shiv
                 dc.b 0                          ;Knife
                 dc.b 0                          ;Nightstick
                 dc.b 0                          ;Bat
@@ -52,6 +54,7 @@ itemMaxCount:   dc.b 0                          ;Fists
 
 itemDefaultMaxCount:
                 dc.b 1                          ;Fists
+                dc.b 1                          ;Shiv
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
@@ -74,6 +77,7 @@ itemDefaultMaxCount:
 
 
 itemMaxCountAdd:dc.b 0                          ;Fists
+                dc.b 0                          ;Shiv
                 dc.b 0                          ;Knife
                 dc.b 0                          ;Nightstick
                 dc.b 0                          ;Bat
@@ -97,6 +101,7 @@ itemMaxCountAdd:dc.b 0                          ;Fists
 
 itemDefaultPickup:
                 dc.b 1                          ;Fists
+                dc.b 1                          ;Shiv
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
@@ -121,6 +126,7 @@ defaultCreditsPickup:
 
 itemMagazineSize:
                 dc.b MAG_INFINITE               ;Fists
+                dc.b MAG_INFINITE               ;Shiv
                 dc.b MAG_INFINITE               ;Knife
                 dc.b MAG_INFINITE               ;Nightstick
                 dc.b MAG_INFINITE               ;Bat
@@ -142,6 +148,7 @@ itemMagazineSize:
                 dc.b 0                          ;Credits
 
 itemNPCMinDist: dc.b 0                          ;Fists
+                dc.b 0                          ;Shiv
                 dc.b 0                          ;Knife
                 dc.b 0                          ;Nightstick
                 dc.b 0                          ;Bat
@@ -161,6 +168,7 @@ itemNPCMinDist: dc.b 0                          ;Fists
                 dc.b 2                          ;Homing drone
 
 itemNPCMaxDist: dc.b 1                          ;Fists
+                dc.b 1                          ;Shiv
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
@@ -181,6 +189,7 @@ itemNPCMaxDist: dc.b 1                          ;Fists
 
 itemNPCAttackLength:                            ;Note: stored as negative
                 dc.b -6/2                       ;Fists
+                dc.b -6/2                       ;Shiv
                 dc.b -6/2                       ;Knife
                 dc.b -6/2                       ;Nightstick
                 dc.b -6/2                       ;Bat
@@ -201,6 +210,7 @@ itemNPCAttackLength:                            ;Note: stored as negative
 
 itemNPCAttackThreshold:
                 dc.b $08                        ;Fists
+                dc.b $0a                        ;Shiv
                 dc.b $0c                        ;Knife
                 dc.b $0e                        ;Nightstick
                 dc.b $10                        ;Bat

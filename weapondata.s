@@ -2,6 +2,7 @@ DMG_WATER       = 2
 DMG_FISTS       = 4
 DMG_FLAMETHROWER = 5
 DMG_MINIGUN     = 5
+DMG_SHIV        = 5
 DMG_KNIFE       = 6
 DMG_NIGHTSTICK  = 6
 DMG_BAT         = 7
@@ -64,6 +65,7 @@ bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
         ; Weapon data
 
 wpnTblLo:       dc.b <wdFists
+                dc.b <wdShiv
                 dc.b <wdKnife
                 dc.b <wdNightstick
                 dc.b <wdBat
@@ -83,6 +85,7 @@ wpnTblLo:       dc.b <wdFists
                 dc.b <wdHomingDrone
 
 wpnTblHi:       dc.b >wdFists
+                dc.b >wdShiv
                 dc.b >wdKnife
                 dc.b >wdNightstick
                 dc.b >wdBat
@@ -112,6 +115,24 @@ wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
                 dc.b 1                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_PUNCH                  ;Sound effect
+
+wdShiv:         dc.b WDB_MELEE                  ;Weapon bits
+                dc.b AIM_HORIZONTAL             ;First aim direction
+                dc.b AIM_HORIZONTAL+1           ;First invalid aim direction
+                dc.b 6                          ;Attack delay
+                dc.b ACT_MELEEHIT               ;Bullet actor type
+                dc.b DMG_SHIV                   ;Bullet damage
+                dc.b DMGMOD_NONORGANIC75        ;Damage modifier nonorganic/organic
+                dc.b 1                          ;Bullet time duration
+                dc.b 1                          ;Bullet speed in pixels
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
+                dc.b SFX_MELEE                  ;Sound effect
+                dc.b 61                         ;Idle weapon frame (right)
+                dc.b 61                         ;Idle weapon frame (left)
+                dc.b 62-2                       ;Attack weapon frames (right)
+                dc.b $80+62-2                   ;Attack weapon frames (left)
+                dc.b 62                         ;Prepare weapon frame (right)
+                dc.b $80+62                     ;Prepare weapon frame (left)
 
 wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction

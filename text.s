@@ -1,6 +1,7 @@
         ; Item names
 
 itemNameLo:     dc.b <txtFists
+                dc.b <txtShiv
                 dc.b <txtKnife
                 dc.b <txtNightstick
                 dc.b <txtBat
@@ -23,6 +24,7 @@ itemNameLo:     dc.b <txtFists
 
 
 itemNameHi:     dc.b >txtFists
+                dc.b >txtShiv
                 dc.b >txtKnife
                 dc.b >txtNightstick
                 dc.b >txtBat
@@ -45,7 +47,8 @@ itemNameHi:     dc.b >txtFists
 
 
 txtFists:       dc.b "FISTS",0
-txtKnife:       dc.b "KNIFE",0
+txtShiv:        dc.b "SHIV",0
+txtKnife:       dc.b "COMBAT KNIFE",0
 txtNightstick:  dc.b "NIGHTSTICK",0
 txtBat:         dc.b "BAT",0
 txtPistol:      dc.b "PISTOL",0
