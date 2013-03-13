@@ -829,11 +829,19 @@ ULO_ClearActorLoop:                             ;back to leveldata
 ULO_ClearActorNext:
                 dex
                 bne ULO_ClearActorLoop
-                ldy lvlObjNum
-                lda lvlObjDL,y                  ;Get destination door
+                ldx lvlObjNum
+                lda lvlObjDL,x                  ;Get destination door number
                 pha
-                lda lvlObjDH,y
-                jsr ChangeLevel                 ;Load new level if necessary
+                lda lvlObjDH,x                  ;Get levelnumber
+                bpl ULO_EnterDoorNoScript       ;If negative, exec a script instead
+                and #$7f
+                tay
+                pla
+                jsr ExecScript                  ;On return from the door script, A=object number and Y=level
+                pha
+                tya
+ULO_EnterDoorNoScript:
+                jsr ChangeLevel
                 pla
                 tay
                 jsr BlankScreen                 ;Does not modify Y
