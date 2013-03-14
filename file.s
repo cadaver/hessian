@@ -27,25 +27,9 @@ MakeFileName:   stx zpSrcLo
                 adc zpSrcLo
 MakeFileName_Direct:
                 sta fileNumber
-                pha
-                lsr
-                lsr
-                lsr
-                lsr
-                ldx #$00
-                jsr MFN_Sub
-                pla
-                inx
-MFN_Sub:        and #$0f
-                ora #$30
-                cmp #$3a
-                bcc MFN_Number
-                adc #$06
-MFN_Number:     sta fileName,x
                 rts
 
-        ; Load a file while handling retry. The file is expected to be found; if not, the prompt
-        ; "flip the disk" is displayed. PostLoad is called automatically after to reinit map/block-
+        ; Load a file while handling retry. PostLoad is called automatically after to reinit map/block-
         ; tables
         ;
         ; Parameters: A,X load address, filename

@@ -27,14 +27,18 @@ InitializeDrive = $d005         ;1541 only
         ; Kernal on/off switching and other Kernal related subroutines
 
 KernalOn:       jsr WaitBottom
-                ldx InitFastLoad+1              ;In fake-IRQload mode IRQs continue,
+FastLoadMode:   lda #$01                        ;In fake-IRQload mode IRQs continue,
                 bmi KernalOnFast                ;so no setup necessary
                 jsr SilenceSID
                 sta $d01a                       ;Raster IRQs off
                 sta $d015                       ;Sprites off
                 sta $d011                       ;Blank screen
-KernalOnFast:   ldx #$36
-                stx $01
+KernalOnFast:   lda #$36
+                sta $01
+                rts
+
+KernalOff:      lda #$35
+                sta $01
                 rts
 
 WaitBottom:     lda $d011                       ;Wait until bottom of screen
@@ -52,55 +56,53 @@ SS_Sub:         sta $d400,x
                 sta $d40e,x
                 rts
 
-SetFileName:    lda #$02
-                ldx #<fileName
-                ldy #>fileName
-                jmp SetNam
-
-CloseKernalFile:lda #$02
-                jmp Close
-
-SetLFSOpen:     ldx fa
-                jsr SetLFS
-                jsr Open
-                ldx #$02
-OF_Done:        rts
-
         ; NMI routine
 
 NMI:            rti
 
         ; Open file
         ;
-        ; Parameters: fileName (slowload) / fileNumber (fastload)
+        ; Parameters: fileNumber
         ; Returns: -
         ; Modifies: A,X,Y
 
-OpenFile:       ldx fileOpen                    ;A file already open? If so, do nothing
-                bne OF_Done                     ;(allows chaining of files)
-FastOpen:       inc fileOpen
+OpenFile:       jmp FastOpen
+SaveFile:       jmp FastSave
+
+        ; Read a byte from an opened file
+        ;
+        ; Parameters: -
+        ; Returns: if C=0, byte in A. If C=1, EOF/errorcode in A:
+        ; $00 - EOF (no error)
+        ; $01 - Read error
+        ; $02 - File not found
+        ; $80 - Device not present
+        ; Modifies: A
+
+GetByte:        lda fileOpen
+                beq GB_Closed
+                stx loadTempReg
+                inc bufferStatus
+                ldx bufferStatus
+                lda loadBuffer+1,x
+GB_FastCmp:     cpx #$00                        ;Reach end of buffer?
+                bcc GB_Done
+                pha
+                jsr FL_FillBuffer               ;Fill buffer for next byte
+                pla
+GB_Done:        ldx loadTempReg
+                clc
+FO_Done:        rts
+GB_Closed:      lda loadBuffer+2
+                sec
+                rts
+
+FastOpen:       ldx fileOpen                    ;A file already open? If so, do nothing
+                bne FO_Done                     ;(allows chaining of files)
+                inc fileOpen
                 sta $d07a                       ;SCPU to slow mode
-FL_FileNumber:  lda #$01                        ;Default filenumber for the mainpart
-FL_StoreFileNumber:
-                sta loadTempReg
-                ldy #$08                        ;Bit counter
-FL_SendInner:   bit $dd00                       ;Wait for both DATA & CLK to go high
-                bpl FL_SendInner
-                bvc FL_SendInner
-                lsr loadTempReg                 ;Send one bit of filenumber
-                lda #$10
-                ora $dd00
-                bcc FL_ZeroBit
-                eor #$30
-FL_ZeroBit:     sta $dd00
-                lda #$c0                        ;Wait for CLK & DATA low (diskdrive answers)
-FL_SendAck:     bit $dd00
-                bne FL_SendAck
-                lda #$ff-$30                    ;Set DATA and CLK high
-                and $dd00
-                sta $dd00
-                dey
-                bne FL_SendInner
+                lda #$00                        ;Command 0 = load
+                jsr FL_SendCommand
 FL_PreDelay:    inx                             ;Wait to make sure the drive has also set
                 bne FL_PreDelay                 ;lines high
 FL_FillBuffer:  ldx #$00
@@ -151,34 +153,60 @@ FL_Common:      stx bufferStatus                ;X is 0 here
                 stx fileOpen                    ;Clear fileopen indicator
 FL_NoLoadEnd:   dex
 FL_FullBuffer:  stx GB_FastCmp+1
-GB_Closed:      lda loadBuffer+2
-                sec
                 rts
 
-        ; Read a byte from an opened file
+FL_SendCommand: ;jsr FL_SendByte
+FL_FileNumber:  lda fileNumber                  ;Initial filenumber for the mainpart
+FL_SendByte:    sta loadTempReg
+                ldx #$08                        ;Bit counter
+FL_SendInner:   bit $dd00                       ;Wait for both DATA & CLK to go high
+                bpl FL_SendInner
+                bvc FL_SendInner
+                lsr loadTempReg                 ;Send one bit of filenumber
+                lda #$10
+                ora $dd00
+                bcc FL_ZeroBit
+                eor #$30
+FL_ZeroBit:     sta $dd00
+                lda #$c0                        ;Wait for CLK & DATA low (diskdrive answers)
+FL_SendAck:     bit $dd00
+                bne FL_SendAck
+                lda #$ff-$30                    ;Set DATA and CLK high
+                and $dd00
+                sta $dd00
+                dex
+                bne FL_SendInner
+                rts
+
+        ; Save file
         ;
-        ; Parameters: -
-        ; Returns: if C=0, byte in A. If C=1, EOF/errorcode in A:
-        ; $00 - EOF (no error)
-        ; $01 - Read error
-        ; $02 - File not found
-        ; $80 - Device not present
-        ; Modifies: A
+        ; Parameters: A,X startaddress, zpBitsLo amount of bytes, fileName / fileNumber
+        ; Returns: -
+        ; Modifies: A,X,Y
 
-GetByte:        lda fileOpen
-                beq GB_Closed
-                stx GB_ReloadX+1
-GB_Fast:        inc bufferStatus
-                ldx bufferStatus
-                lda loadBuffer+1,x
-GB_FastCmp:     cpx #$00                        ;Reach end of buffer?
-                bcc GB_ReloadX
-                pha
-                jsr FL_FillBuffer
-                pla
-GB_Done:        clc
-GB_ReloadX:     ldx #$00
+FastSave:       sta zpSrcLo
+                stx zpSrcHi
+                lda #$01
+                jsr FL_SendCommand
+                lda zpBitsLo
+                jsr FL_SendByte
+                lda zpBitsHi
+                jsr FL_SendByte
+                ldy #$00
+                lda zpBitsLo
+                beq FS_PreDecrement
+FS_Loop:        lda (zpSrcLo),y
+                jsr FL_SendByte
+                iny
+                bne FS_NotOver
+                inc zpSrcLo
+FS_NotOver:     dec zpBitsLo
+                bne FS_Loop
+FS_PreDecrement:dec zpBitsHi
+                bpl FS_Loop
                 rts
+
+FastLoadEnd:
 
         ; Load file packed with Exomizer 2 forward mode
         ;
@@ -454,102 +482,221 @@ skipcarry:
 ; end of decruncher
 ; -------------------------------------------------------------------
 
-        ; Save file, then restart fastloader
-        ;
-        ; Parameters: A,X startaddress, zpDest endaddress (first byte to not save), fileName / fileNumber
-        ; Returns: -
-        ; Modifies: A,X,Y
+        ; Loader runtime data
 
-SaveFile:       sta zpSrcLo
-                stx zpSrcHi
-                inc fileOpen                    ;Set fileopen indicator, raster delays are to be expected
-                sta $d07a                       ;SCPU to slow mode
-                jsr KernalOn                    ;IDE64 delays are to be expected
-                lda #$05
-                ldx #<scratch
-                ldy #>scratch
-                jsr SetNam
-                lda #$0f
-                tay
-                jsr SetLFSOpen
-                lda #$0f
+tablBit:       dc.b 2,4,4                       ;Exomizer static tables
+tablOff:       dc.b 48,32,16
+
+scratch:        dc.b "S0:"
+fileName:       dc.b "01"                       ;Initial filename for the mainpart
+fileNumber:     dc.b $01                        ;Initial filenumber for the mainpart
+
+loaderCodeEnd:                                  ;Resident code ends here!
+
+        ; Loader initialization
+
+InitLoader:     ldx #$ff                        ;Init stackpointer
+                txs
+                lda #$02                        ;Close the file loaded from
                 jsr Close
-                jsr SetFileName
-                ldy #$01                        ;Open for write
-                ldx fa
-                jsr SetLFSOpen
-                jsr ChkOut
+                sei
+                sta $d07f                       ;Disable SCPU hardware regs
+                sta $d07a                       ;SCPU to slow mode
+                lda #$7f                        ;Disable & acknowledge IRQ sources
+                sta $dc0d
+                ldx #$00
+                stx $d01a
+                stx $d015
+                stx $d020
+                stx messages                    ;Disable KERNAL messages
+                stx fileOpen                    ;Clear fileopen indicator
+IL_DetectNtsc1: lda $d012                       ;Detect PAL/NTSC
+IL_DetectNtsc2: cmp $d012
+                beq IL_DetectNtsc2
+                bmi IL_DetectNtsc1
+                cmp #$20
+                bcc IL_IsNtsc
+                lda #$2c                        ;Adjust 2-bit fastload transfer
+                sta FL_Delay                    ;delay for PAL
+IL_IsNtsc:      lda $dc0d
+                inc $d019
+                lda #<NMI                       ;Set NMI vector
+                sta $0318
+                sta $fffa
+                sta $fffe
+                lda #>NMI
+                sta $0319
+                sta $fffb
+                sta $ffff
+                lda #$81                        ;Run Timer A once to disable NMI from Restore keypress
+                sta $dd0d                       ;Timer A interrupt source
+                lda #$01                        ;Timer A count ($0001)
+                sta $dd04
+                stx $dd05
+                lda #%00011001                  ;Run Timer A in one-shot mode
+                sta $dd0e
+                lda $dc01                       ;If space held down when starting,
+                and #$10                        ;revert to slow (compatible) loading
+                beq IL_NoFastLoad
+
+IL_DetectDrive: lda #$aa
+                sta $a5
+                lda #(ilDriveCodeEnd-ilDriveCode+MW_LENGTH-1)/MW_LENGTH
+                ldx #<ilDriveCode
+                ldy #>ilDriveCode
+                jsr UploadDriveCode             ;Upload test-drivecode
+                lda status                      ;If error $c0, it's probably IDE64
+                cmp #$c0                        ;and we must not persist with more
+                beq IL_NoSerial                 ;serial IO or we'll lock up
+                ldx #$00
                 ldy #$00
-SF_Loop:        lda (zpSrcLo),y
-                jsr ChrOut
-                inc zpSrcLo
-                bne SF_Ok
-                inc zpSrcHi
-SF_Ok:          lda zpSrcLo
-                cmp zpDestLo
-                bne SF_Loop
-                lda zpSrcHi
-                cmp zpDestHi
-                bne SF_Loop
-                jsr CloseKernalFile
-                dec fileOpen
-
-                ldx #$20                        ;Perform a delay loop to avoid erroneous 1581 drive LED
-SF_Delay:       jsr WaitBottom
+IL_Delay:       inx                             ;Delay to make sure the test-
+                bne IL_Delay                    ;drivecode executed to the end
+                iny
+                bpl IL_Delay
+                lda fa                          ;Set drive to listen
+                jsr Listen
+                lda #$6f
+                jsr Second
+                ldx #$05
+IL_DDSendMR:    lda ilMRString,x                ;Send M-R command (backwards)
+                jsr CIOut
                 dex
-                bpl SF_Delay
+                bpl IL_DDSendMR
+                jsr UnLsn
+                lda fa
+                jsr Talk
+                lda #$6f
+                jsr Tksa
+                lda #$00
+                jsr ACPtr                       ;First byte: test value
+                pha
+                jsr ACPtr                       ;Second byte: drive type
+                tax
+                jsr UnTlk
+                pla
+                cmp #$aa                        ;Drive can execute code, so can
+                beq IL_FastLoadOK               ;use fastloader
+                lda $a5                         ;If serial bus delay counter is
+                cmp #$aa                        ;unchanged, it's probably VICE's
+                bne IL_NoFastLoad               ;virtual device trap
+IL_NoSerial:    lda #$80                        ;Serial bus not used: switch to
+                sta FastLoadMode+1              ;"fake" IRQ-loading mode
+IL_NoFastLoad:  ldx #ilSlowLoadEnd-ilSlowLoadStart
+IL_CopySlowLoad:lda ilSlowLoadStart-1,x         ;Copy slowload routines
+                sta OpenFile-1,x
+                dex
+                bne IL_CopySlowLoad
+                jmp IL_Done
 
-        ; Init fastloader
-
-InitFastLoad:   lda #$01                        ;Need fastload?
-                bne IFL_Quit
+IL_FastLoadOK:  dec FastLoadMode+1              ;Use normal IRQ-loading
+                txa                             ;1541?
+                beq IL_Is1541
+                lda #>DrvMain_Not1541           ;If not, skip the $1c07 write
+                sta iflMEString                 ;on loader init
+                lda #<DrvMain_Not1541
+                sta iflMEString+1
+IL_Is1541:      lda ilDirTrkLo,x                ;Patch directory
+                sta DrvDirTrk+1-drvStart+driveCode
+                lda ilDirTrkHi,x
+                sta DrvDirTrk+2-drvStart+driveCode
+                lda ilDirSctLo,x
+                sta DrvDirSct+1-drvStart+driveCode
+                lda ilDirSctHi,x
+                sta DrvDirSct+2-drvStart+driveCode
+                lda ilExecLo,x                  ;Patch job exec address
+                sta DrvExecJsr+1-drvStart+driveCode
+                lda ilExecHi,x
+                sta DrvExecJsr+2-drvStart+driveCode
+                lda ilJobTrkLo,x                ;Patch job track/sector
+                sta DrvReadTrk+1-drvStart+driveCode
+                adc #$00                        ;C=1 here, so adds 1
+                sta DrvReadSct+1-drvStart+driveCode
+                lda ilJobTrkHi,x
+                sta DrvReadTrk+2-drvStart+driveCode
+                adc #$00
+                sta DrvReadSct+2-drvStart+driveCode
+                lda ilExitJump,x                ;Patch exit jump
+                sta DrvExitJump-drvStart+driveCode
+                lda ilLedBit,x
+                sta DrvLed+1-drvStart+driveCode
+                lda ilLedAdrHi,x
+                sta DrvLedAcc0+2-drvStart+driveCode
+                sta DrvLedAcc1+2-drvStart+driveCode
+                lda il1800Lo,x
+                sta IL_Patch1800Lo+1
+                lda il1800Hi,x
+                sta IL_Patch1800Hi+1
+                ldy #10
+IL_PatchLoop:   ldx il1800Ofs,y
+IL_Patch1800Lo: lda #$00                        ;Patch all $1800 accesses
+                sta DrvMain+1-drvStart+driveCode,x
+IL_Patch1800Hi: lda #$00
+                sta DrvMain+2-drvStart+driveCode,x
+                dey
+                bpl IL_PatchLoop
+                cmp #$18
+                bne IL_StartFastLoad            ;Copy the 1 Mhz routine for 1541
+                ldy #il1MHzEnd-il1MHzStart-1
+IL_1MHzCopy:    lda il1MHzStart,y
+                sta Drv1MHzSend-drvStart+driveCode,y
+                dey
+                bpl IL_1MHzCopy
+IL_StartFastLoad: 
                 lda #(drvEnd-drvStart+MW_LENGTH-1)/MW_LENGTH
                 ldx #<driveCode
                 ldy #>driveCode
-IFL_Begin:      sta loadTempReg                 ;Number of "packets" to send
+                jsr UploadDriveCode             ;Then start fastloader
+
+IL_Done:        jsr KernalOff
+                lda #>(loaderCodeEnd-1)         ;Mainpart startaddress-1
+                pha
+                lda #<(loaderCodeEnd-1)
+                pha
+                lda #<loaderCodeEnd
+                ldx #>loaderCodeEnd
+                jmp LoadFile                    ;Code here will be overwritten
+
+UploadDriveCode:sta loadTempReg                 ;Number of "packets" to send
                 stx zpSrcLo
                 sty zpSrcHi
                 ldy #$00                        ;Init selfmodifying addresses
                 sty iflMWString+2
                 lda #>drvStart
                 sta iflMWString+1
-                bne IFL_NextPacket
-IFL_SendMW:     lda iflMWString,x               ;Send M-W command (backwards)
+                bne UDC_NextPacket
+UDC_SendMW:     lda iflMWString,x               ;Send M-W command (backwards)
                 jsr CIOut
                 dex
-                bpl IFL_SendMW
+                bpl UDC_SendMW
                 ldx #MW_LENGTH
-IFL_SendData:   lda (zpSrcLo),y                 ;Send one byte of drive code
+UDC_SendData:   lda (zpSrcLo),y                 ;Send one byte of drive code
                 jsr CIOut
                 iny
-                bne IFL_NotOver
+                bne UDC_NotOver
                 inc zpSrcHi
-IFL_NotOver:    inc iflMWString+2               ;Also, move the M-W pointer forward
-                bne IFL_NotOver2
+UDC_NotOver:    inc iflMWString+2               ;Also, move the M-W pointer forward
+                bne UDC_NotOver2
                 inc iflMWString+1
-IFL_NotOver2:   dex
-                bne IFL_SendData
+UDC_NotOver2:   dex
+                bne UDC_SendData
                 jsr UnLsn                       ;Unlisten to perform the command
-IFL_NextPacket: lda fa                          ;Set drive to listen
+UDC_NextPacket: lda fa                          ;Set drive to listen
                 jsr Listen
                 lda status                      ;Quit if error (IDE64)
                 cmp #$c0
-                beq IFL_Quit
+                beq UDC_Quit
                 lda #$6f
                 jsr Second
                 ldx #$05
                 dec loadTempReg                 ;All "packets" sent?
-                bpl IFL_SendMW
-IFL_SendME:     lda iflMEString-1,x             ;Send M-E command (backwards)
+                bpl UDC_SendMW
+UDC_SendME:     lda iflMEString-1,x             ;Send M-E command (backwards)
                 jsr CIOut
                 dex
-                bne IFL_SendME
+                bne UDC_SendME
                 jsr UnLsn
-IFL_Quit:
-
-KernalOff:      ldx #$35
-                stx $01
-                rts
+UDC_Quit:       rts
 
         ; Diskdrive code
 
@@ -768,192 +915,6 @@ drvEnd:
 
                 rend
 
-        ; Loader runtime data
-
-iflMWString:   dc.b MW_LENGTH,>drvStart, <drvStart,"W-M"
-iflMEString:   dc.b >DrvMain,<DrvMain, "E-M"
-
-tablBit:       dc.b 2,4,4                       ;Exomizer static tables
-tablOff:       dc.b 48,32,16
-
-scratch:        dc.b "S0:"
-fileName:       dc.b "01"                       ;Default filename for the mainpart
-fileNumber      = FL_FileNumber+1
-
-loaderCodeEnd:                                  ;Resident code ends here!
-
-        ; Loader initialization
-
-InitLoader:     ldx #$ff                        ;Init stackpointer
-                txs
-                jsr CloseKernalFile             ;Close the file loaded from
-                sei
-                sta $d07f                       ;Disable SCPU hardware regs
-                sta $d07a                       ;SCPU to slow mode
-                lda #$7f                        ;Disable & acknowledge IRQ sources
-                sta $dc0d
-                ldx #$00
-                stx $d01a
-                stx $d015
-                stx $d020
-                stx messages                    ;Disable KERNAL messages
-                stx fileOpen                    ;Clear fileopen indicator
-IL_DetectNtsc1: lda $d012                       ;Detect PAL/NTSC
-IL_DetectNtsc2: cmp $d012
-                beq IL_DetectNtsc2
-                bmi IL_DetectNtsc1
-                cmp #$20
-                bcc IL_IsNtsc
-                lda #$2c                        ;Adjust 2-bit fastload transfer
-                sta FL_Delay                    ;delay for PAL
-IL_IsNtsc:      lda $dc0d
-                inc $d019
-                lda #<NMI                       ;Set NMI vector
-                sta $0318
-                sta $fffa
-                sta $fffe
-                lda #>NMI
-                sta $0319
-                sta $fffb
-                sta $ffff
-                lda #$81                        ;Run Timer A once to disable NMI from Restore keypress
-                sta $dd0d                       ;Timer A interrupt source
-                lda #$01                        ;Timer A count ($0001)
-                sta $dd04
-                stx $dd05
-                lda #%00011001                  ;Run Timer A in one-shot mode
-                sta $dd0e
-                lda $dc01                       ;If space held down when starting,
-                and #$10                        ;revert to slow (compatible) loading
-                beq IL_NoFastLoad
-
-IL_DetectDrive: lda #$aa
-                sta $a5
-                lda #(ilDriveCodeEnd-ilDriveCode+MW_LENGTH-1)/MW_LENGTH
-                ldx #<ilDriveCode
-                ldy #>ilDriveCode
-                jsr IFL_Begin                   ;Upload test-drivecode
-                jsr KernalOn                    ;Switch kernal back on
-                lda status                      ;If error $c0, it's probably IDE64
-                cmp #$c0                        ;and we must not persist with more
-                beq IL_NoSerial                 ;serial IO or we'll lock up
-                ldx #$00
-                ldy #$00
-IL_Delay:       inx                             ;Delay to make sure the test-
-                bne IL_Delay                    ;drivecode executed to the end
-                iny
-                bpl IL_Delay
-                lda fa                          ;Set drive to listen
-                jsr Listen
-                lda #$6f
-                jsr Second
-                ldx #$05
-IL_DDSendMR:    lda ilMRString,x                ;Send M-R command (backwards)
-                jsr CIOut
-                dex
-                bpl IL_DDSendMR
-                jsr UnLsn
-                lda fa
-                jsr Talk
-                lda #$6f
-                jsr Tksa
-                lda #$00
-                jsr ACPtr                       ;First byte: test value
-                pha
-                jsr ACPtr                       ;Second byte: drive type
-                tax
-                jsr UnTlk
-                pla
-                cmp #$aa                        ;Drive can execute code, so can
-                beq IL_FastLoadOK               ;use fastloader
-                lda $a5                         ;If serial bus delay counter is
-                cmp #$aa                        ;unchanged, it's probably VICE's
-                bne IL_NoFastLoad               ;virtual device trap
-IL_NoSerial:    lda #$80                        ;Serial bus not used: switch to
-                sta InitFastLoad+1              ;"fake" IRQ-loading mode
-IL_NoFastLoad:  ldy #ilKernalGetByteStart-ilKernalOpenFileStart
-IL_CopyKernalLoad:
-                lda ilKernalOpenFileStart-1,y   ;Copy Kernal-based OpenFile / GetByte-
-                sta FL_StoreFileNumber-1,y      ;routines if necessary
-                dey
-                bne IL_CopyKernalLoad
-                ldy #ilKernalGetByteEnd-ilKernalGetByteStart
-IL_CopyKernalLoad2:
-                lda ilKernalGetByteStart-1,y
-                sta FL_NoSprites-1,y
-                dey
-                bne IL_CopyKernalLoad2
-                ldy #$03
-IL_CopyKernalLoad3:
-                lda ilGetByteJump-1,y
-                sta GB_Fast-1,y
-                dey
-                bne IL_CopyKernalLoad3
-                jmp IL_Done
-
-IL_FastLoadOK:  dec InitFastLoad+1              ;Use normal IRQ-loading
-                txa                             ;1541?
-                beq IL_Is1541
-                lda #>DrvMain_Not1541           ;If not, skip the $1c07 write
-                sta iflMEString                 ;on loader init
-                lda #<DrvMain_Not1541
-                sta iflMEString+1
-IL_Is1541:      lda ilDirTrkLo,x                ;Patch directory
-                sta DrvDirTrk+1-drvStart+driveCode
-                lda ilDirTrkHi,x
-                sta DrvDirTrk+2-drvStart+driveCode
-                lda ilDirSctLo,x
-                sta DrvDirSct+1-drvStart+driveCode
-                lda ilDirSctHi,x
-                sta DrvDirSct+2-drvStart+driveCode
-                lda ilExecLo,x                  ;Patch job exec address
-                sta DrvExecJsr+1-drvStart+driveCode
-                lda ilExecHi,x
-                sta DrvExecJsr+2-drvStart+driveCode
-                lda ilJobTrkLo,x                ;Patch job track/sector
-                sta DrvReadTrk+1-drvStart+driveCode
-                adc #$00                        ;C=1 here, so adds 1
-                sta DrvReadSct+1-drvStart+driveCode
-                lda ilJobTrkHi,x
-                sta DrvReadTrk+2-drvStart+driveCode
-                adc #$00
-                sta DrvReadSct+2-drvStart+driveCode
-                lda ilExitJump,x                ;Patch exit jump
-                sta DrvExitJump-drvStart+driveCode
-                lda ilLedBit,x
-                sta DrvLed+1-drvStart+driveCode
-                lda ilLedAdrHi,x
-                sta DrvLedAcc0+2-drvStart+driveCode
-                sta DrvLedAcc1+2-drvStart+driveCode
-                lda il1800Lo,x
-                sta IL_Patch1800Lo+1
-                lda il1800Hi,x
-                sta IL_Patch1800Hi+1
-                ldy #10
-IL_PatchLoop:   ldx il1800Ofs,y
-IL_Patch1800Lo: lda #$00                        ;Patch all $1800 accesses
-                sta DrvMain+1-drvStart+driveCode,x
-IL_Patch1800Hi: lda #$00
-                sta DrvMain+2-drvStart+driveCode,x
-                dey
-                bpl IL_PatchLoop
-                cmp #$18
-                bne IL_Done                     ;Copy the 1 Mhz routine for 1541
-                ldy #il1MHzEnd-il1MHzStart-1
-IL_1MHzCopy:    lda il1MHzStart,y
-                sta Drv1MHzSend-drvStart+driveCode,y
-                dey
-                bpl IL_1MHzCopy
-
-IL_Done:        jsr InitFastLoad                ;Init fastloader now if needed
-                lda #>(loaderCodeEnd-1)         ;Mainpart startaddress-1
-                pha
-                lda #<(loaderCodeEnd-1)
-                pha
-                lda #<loaderCodeEnd
-                ldx #>loaderCodeEnd
-                jmp LoadFile                    ;Code here will be overwritten
-
         ;Drive detection drivecode
         
 ilDriveCode:
@@ -1019,52 +980,128 @@ Drv1MHzSerialAcc11: stx $1800                       ;Finish send: DATA & CLK bot
                 rend
 il1MHzEnd:
 
-        ; Slow fileopen / getbyte routines
+        ; Slow fileopen / getbyte / save routines
 
-ilKernalOpenFileStart:
+ilSlowLoadStart:
 
-                rorg FL_StoreFileNumber
+                rorg OpenFile
 
-SlowOpen:       jsr KernalOn
+                jmp SlowOpen
+                jmp SlowSave
+
+SlowGetByte:    lda fileOpen
+                beq SGB_Closed
+                stx bufferStatus
+                jsr KernalOnFast
+                jsr ChrIn
+                sta loadTempReg
+                lda status
+                bne SGB_EOF
+                jsr KernalOff
+SGB_Done:       lda loadTempReg
+                clc
+SGB_Common:     ldx bufferStatus
+SO_Done:        rts
+
+SGB_EOF:        and #$83
+                sta SGB_Closed+1
+                php
+                sty SGB_SaveY+1
+                jsr CloseKernalFile
+SGB_SaveY:      ldy #$00
+                plp
+                beq SGB_Done                    ;If zero return code, return last file byte now
+SGB_Closed:     lda #$00
+                sec
+                bcs SGB_Common
+
+SlowOpen:       lda fileOpen
+                bne SO_Done
+                inc fileOpen
+                jsr KernalOn
                 jsr SetFileName
                 ldy #$00                        ;A is $02 here
                 jsr SetLFSOpen
                 jsr ChkIn
-                jmp KernalOff                   ;Kernal off
+                jmp KernalOff                   ;Kernal off after opening
 
-                rend
-                
-ilKernalGetByteStart:
+SlowSave:       sta zpSrcLo
+                stx zpSrcHi
+                inc fileOpen                    ;Set fileopen indicator, raster delays are to be expected
+                sta $d07a                       ;SCPU to slow mode
+                jsr KernalOn
+                jsr ConvertFileName
+                lda #$05
+                ldx #<scratch
+                ldy #>scratch
+                jsr SetNam
+                lda #$0f
+                tay
+                jsr SetLFSOpen
+                lda #$0f
+                jsr Close
+                jsr SetFileNameOnly
+                ldy #$01                        ;Open for write
+                ldx fa
+                jsr SetLFSOpen
+                jsr ChkOut
+                ldy #$00
+SF_Loop:        lda (zpSrcLo),y
+                jsr ChrOut
+                inc zpSrcLo
+                bne SF_Ok
+                inc zpSrcHi
+SF_Ok:          lda zpSrcLo
+                cmp zpDestLo
+                bne SF_Loop
+                lda zpSrcHi
+                cmp zpDestHi
+                bne SF_Loop
 
-                rorg FL_NoSprites
-
-GB_Slow:        jsr KernalOnFast
-                jsr ChrIn
-                ldx status
-                bne GB_SlowEOF
-                jsr KernalOff
-                jmp GB_Done
-
-GB_SlowEOF:     sta loadTempReg
-                txa
-                and #$83
-                sta loadBuffer+2
-                sty bufferStatus                ;Close may modify Y
-                jsr CloseKernalFile
-                ldy bufferStatus
-                jsr KernalOff
+CloseKernalFile:lda #$02
+                jsr Close
                 dec fileOpen
-                jsr GB_Closed                   ;If nonzero returncode, return it
-                beq GB_LastByte                 ;Else return last byte of file
-                jmp GB_ReloadX
-GB_LastByte:    lda loadTempReg
-                jmp GB_Done
+                jmp KernalOff
+
+SetFileName:    jsr ConvertFileName
+SetFileNameOnly:lda #$02
+                ldx #<fileName
+                ldy #>fileName
+                jmp SetNam
+
+ConvertFileName:
+                lda fileNumber
+                pha
+                lsr
+                lsr
+                lsr
+                lsr
+                ldx #$00
+                jsr CFN_Sub
+                pla
+                inx
+CFN_Sub:        and #$0f
+                ora #$30
+                cmp #$3a
+                bcc CFN_Number
+                adc #$06
+CFN_Number:     sta fileName,x
+                rts
+
+SetLFSOpen:     ldx fa
+                jsr SetLFS
+                jsr Open
+                ldx #$02
+                rts
+
+SlowLoadEnd:
+                if SlowLoadEnd > FastLoadEnd
+                err
+                endif
 
                 rend
 
-ilKernalGetByteEnd:
-
-ilGetByteJump:  jmp GB_Slow
+ilSlowLoadEnd:
 
 ilMRString:     dc.b 2,>drvReturn,<drvReturn,"R-M"
 
@@ -1098,3 +1135,6 @@ ilExitJump:     dc.b $4c,$60,$60,$60
 
 ilLedBit:       dc.b $08,$40,$40,$00
 ilLedAdrHi:     dc.b $1c,$40,$40,$05
+
+iflMWString:    dc.b MW_LENGTH,>drvStart, <drvStart,"W-M"
+iflMEString:    dc.b >DrvMain,<DrvMain, "E-M"

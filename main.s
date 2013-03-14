@@ -29,8 +29,8 @@ DISABLE_MUSIC = 0
 
 randomAreaStart:
 
-                include math.s
                 include raster.s
+                include math.s
                 include sound.s
                 include input.s
                 include screen.s

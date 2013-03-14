@@ -5,7 +5,7 @@ LoadFile
 SaveFile
 Change01
 InitLoader
-InitFastLoad
+FastLoadMode
 WaitBottom
 SilenceSID
 FL_MinSprY

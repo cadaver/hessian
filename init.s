@@ -161,7 +161,16 @@ InitRaster:     sei
                 sta $d011
                 lda #IRQ1_LINE                  ;Line where next IRQ happens
                 sta $d012
-                cli
+                lda FastLoadMode+1              ;If not using fastloader, disable MinSprY/MaxSprY writing
+                beq IR_UseFastLoad
+                lda #$ea
+                ldx #$02
+IR_DisableMinMaxSprY:
+                sta Irq1_StoreMinSprY,x
+                sta Irq1_StoreMaxSprY,x
+                dex
+                bpl IR_DisableMinMaxSprY
+IR_UseFastLoad: cli
 
         ; Initializations are complete. Start the main program
 
