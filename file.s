@@ -61,13 +61,19 @@ LoadFileRetry:  sta LFR_AddressLo+1
                 bcs LFR_Error
                 jmp PostLoad
 
-LFR_ErrorPrompt:cmp #$02
+LFR_ErrorPrompt:
+                if USE_FLIPDISK_PROMPT > 0
+                cmp #$02
                 beq LFR_FlipDisk
 LFR_DiskError:  lda #<txtDiskError
                 ldx #>txtDiskError
                 bne LFR_MessageCommon
 LFR_FlipDisk:   lda #<txtFlipDisk
                 ldx #>txtFlipDisk
+                else
+                lda #<txtDiskError
+                ldx #>txtDiskError
+                endif
 LFR_MessageCommon:
                 ldy #INDEFINITE_TEXT_DURATION
                 jsr PrintPanelText

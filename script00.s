@@ -24,39 +24,9 @@ titleTexts      = chars+608+168*2
 
         ; Start from ship
 
-;START_LEVEL     = $00
-;START_X         = $0780
-;START_Y         = $0bc0
-
-        ; Start from city
-
-;START_LEVEL     = $02
-;START_X         = $1380
-;START_Y         = $1500
-
-        ; Start from upper city
-
-START_LEVEL     = $03
-START_X         = $0e80
-START_Y         = $0a00
-
-        ; Start from service tunnels
-
-;START_LEVEL     = $04
-;START_X         = $0380
-;START_Y         = $0500
-
-        ; Start from sewers
-
-;START_LEVEL     = $06
-;START_X         = $0d80
-;START_Y         = $0b00
-
-        ; Start from water treatment
-
-;START_LEVEL     = $05
-;START_X         = $0180
-;START_Y         = $1200
+START_LEVEL     = $00
+START_X         = $0780
+START_Y         = $0bc0
 
                 org scriptCodeStart
 
