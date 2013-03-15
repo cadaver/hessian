@@ -846,6 +846,7 @@ DrvSave:        jsr DrvGetByte                  ;Get filenumber
 DrvSaveFound:   lda drvFileSct,y
 DrvSaveSectorLoop:
                 jsr DrvReadSector               ;First read the sector for T/S chain
+                bcs DrvSaveFinish               ;If reading fails, abort
                 ldx #$02
 DrvSaveByteLoop:jsr DrvGetSaveByte              ;Then get bytes from C64 and write
                 bcs DrvSaveSector               ;If last byte, save the last sector
