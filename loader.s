@@ -848,29 +848,24 @@ DrvSaveSectorLoop:
                 jsr DrvReadSector               ;First read the sector for T/S chain
                 ldx #$02
 DrvSaveByteLoop:jsr DrvGetSaveByte              ;Then get bytes from C64 and write
-                bcs DrvSaveLastSector
+                bcs DrvSaveSector               ;If last byte, save the last sector
                 sta drvBuf,x
                 inx
                 bne DrvSaveByteLoop
-                jsr DrvWriteSector
+DrvSaveSector:  ldy #$90
+                jsr DrvDoJob
                 lda drvBuf+1                    ;Follow the T/S chain
                 ldx drvBuf
                 bne DrvSaveSectorLoop
-DrvSaveFinish:  jsr DrvGetSaveByte
+DrvSaveFinish:  jsr DrvGetSaveByte              ;Make sure all bytes are received
                 bcc DrvSaveFinish
-                bcs DrvSaveFinished
-DrvSaveLastSector:
-                jsr DrvWriteSector
-DrvSaveFinished:jmp DrvLoop
-
-DrvWriteSector: ldy #$90
-                bmi DrvDoCommand
+                jmp DrvLoop
 
 DrvReadSector:
 DrvReadTrk:     stx $1000
 DrvReadSct:     sta $1000
                 ldy #$80
-DrvDoCommand:   sty DrvRetry+1
+DrvDoJob:       sty DrvRetry+1
                 jsr DrvLed
                 ldy #RETRIES                    ;Retry counter
 DrvRetry:       lda #$80
