@@ -706,15 +706,15 @@ driveCode:
 DrvMain:        lda #IRQ_SPEED                  ;Speed up the controller a bit
                 sta $1c07                       ;(1541 only)
 DrvMain_Not1541:
-DrvLoop:        cli
-                jsr DrvGetByte                  ;Check command (load/save)
-                beq DrvLoad
-                jmp DrvSave
-DrvLoad:        sei                             ;Disable interrupts now
+DrvLoop:
 DrvDirCached:   lda #$00                        ;Cache directory if necessary
                 bne DrvCacheValid
                 jsr DrvCacheDir
-DrvCacheValid:  sei
+DrvCacheValid:  cli
+                jsr DrvGetByte                  ;Get command (load/save)
+                beq DrvLoad
+                jmp DrvSave
+DrvLoad:        sei
                 jsr DrvGetByte                  ;Get filenumber
                 tay
                 ldx drvFileTrk,y
@@ -785,14 +785,15 @@ DrvSendDone:    lda drvBuf+1                    ;Follow the T/S chain
                 bne DrvEndMark                  ;endmark has been sent and can
                 jmp DrvLoop                     ;return to main loop
 
-DrvGetSaveByte: lda drvSaveCountLo
-                ora drvSaveCountHi
+DrvGetSaveByte:
+DrvSaveCountLo: lda #$00
+                tay
+DrvSaveCountHi: ora #$00
                 beq DrvNoMoreBytes
-                dec drvSaveCountLo
-                lda drvSaveCountLo
-                cmp #$ff
+                dec DrvSaveCountLo+1
+                tya
                 bne DrvGetByte
-                dec drvSaveCountHi
+                dec DrvSaveCountHi+1
 
 DrvGetByte:     ldy #$08                        ;Filenumber bit counter
 DrvGetBitLoop:
@@ -833,14 +834,16 @@ DrvNoMoreBytes: sec
 DrvSave:        jsr DrvGetByte                  ;Get filenumber
                 pha
                 jsr DrvGetByte                  ;Get amount of bytes to expect
-                sta drvSaveCountLo
+                sta DrvSaveCountLo+1
                 jsr DrvGetByte
-                sta drvSaveCountHi
+                sta DrvSaveCountHi+1
                 pla
                 tay
                 ldx drvFileTrk,y
-                beq DrvSaveFinish               ;If file not found, just receive the bytes
-                lda drvFileSct,y                ;TODO: should report error to C64
+                bne DrvSaveFound                ;If file not found, just receive the bytes
+                stx DrvDirCached+1              ;TODO: should report error to C64
+                beq DrvSaveFinish
+DrvSaveFound:   lda drvFileSct,y
 DrvSaveSectorLoop:
                 jsr DrvReadSector               ;First read the sector for T/S chain
                 ldx #$02
@@ -855,7 +858,7 @@ DrvSaveByteLoop:jsr DrvGetSaveByte              ;Then get bytes from C64 and wri
                 bne DrvSaveSectorLoop
 DrvSaveFinish:  jsr DrvGetSaveByte
                 bcc DrvSaveFinish
-                bcc DrvSaveFinished
+                bcs DrvSaveFinished
 DrvSaveLastSector:
                 jsr DrvWriteSector
 DrvSaveFinished:jmp DrvLoop
@@ -971,8 +974,6 @@ drv1541DirTrk:  dc.b 18
 
 drvCommand:     dc.b 0
 drvReceiveBuf:  dc.b 0
-drvSaveCountLo: dc.b 0
-drvSaveCountHi: dc.b 0
 
 drvEnd:
                 if drvEnd > $0700
