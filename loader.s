@@ -17,9 +17,9 @@ tablHi          = depackBuffer + 104
 drvIdDrv0       = $12           ;Disk drive ID (1541 only)
 drvId           = $16           ;Disk ID (1541 only)
 drvFileTrk      = $0300
+drvFileSct      = $0380
 drvBuf          = $0400         ;Sector data buffer
 drvStart        = $0500
-drvFileSct      = $0680
 InitializeDrive = $d005         ;1541 only
 
                 org mainCodeStart
@@ -155,7 +155,7 @@ FL_NoLoadEnd:   dex
 FL_FullBuffer:  stx GB_FastCmp+1
                 rts
 
-FL_SendCommand: ;jsr FL_SendByte
+FL_SendCommand: jsr FL_SendByte
 FL_FileNumber:  lda fileNumber                  ;Initial filenumber for the mainpart
 FL_SendByte:    sta loadTempReg
                 ldx #$08                        ;Bit counter
@@ -186,7 +186,7 @@ FL_SendAck:     bit $dd00
 
 FastSave:       sta zpSrcLo
                 stx zpSrcHi
-                lda #$01
+                lda #$01                        ;Command 1 = save
                 jsr FL_SendCommand
                 lda zpBitsLo
                 jsr FL_SendByte
@@ -199,7 +199,7 @@ FS_Loop:        lda (zpSrcLo),y
                 jsr FL_SendByte
                 iny
                 bne FS_NotOver
-                inc zpSrcLo
+                inc zpSrcHi
 FS_NotOver:     dec zpBitsLo
                 bne FS_Loop
 FS_PreDecrement:dec zpBitsHi
@@ -707,35 +707,16 @@ DrvMain:        lda #IRQ_SPEED                  ;Speed up the controller a bit
                 sta $1c07                       ;(1541 only)
 DrvMain_Not1541:
 DrvLoop:        cli
-                ldy #$08                        ;Filenumber bit counter
-DrvNameBitLoop:
-DrvSerialAcc1:  lda $1800
-                bpl DrvNoQuit                   ;Quit if ATN is low
-DrvExitJump:    jmp InitializeDrive             ;1541 = exit through Initialize
-                                                ;Others = exit through RTS
-DrvNoQuit:      and #$05                        ;Wait for CLK or DATA going low
-                beq DrvNameBitLoop
-                lsr                             ;Read the data bit
-                lda #$02                        ;Pull the other line low to acknowledge
-                bcc DrvNameZero
-                lda #$08
-DrvNameZero:    ror DrvFileName+1               ;Store the data bit
-DrvSerialAcc2:  sta $1800
-DrvNameWait:
-DrvSerialAcc3:  lda $1800                       ;Wait for either line going high
-                and #$05
-                cmp #$05
-                beq DrvNameWait
-                lda #$00
-DrvSerialAcc4:  sta $1800                       ;Set CLK & DATA high
-                dey
-                bne DrvNameBitLoop              ;Loop until all bits have been received
-                sei                             ;Disable interrupts after first byte
+                jsr DrvGetByte                  ;Check command (load/save)
+                beq DrvLoad
+                jmp DrvSave
+DrvLoad:        sei                             ;Disable interrupts now
 DrvDirCached:   lda #$00                        ;Cache directory if necessary
                 bne DrvCacheValid
                 jsr DrvCacheDir
-DrvCacheValid:
-DrvFileName:    ldy #$00
+DrvCacheValid:  sei
+                jsr DrvGetByte                  ;Get filenumber
+                tay
                 ldx drvFileTrk,y
                 bne DrvFound
                 stx DrvDirCached+1              ;If file not found, reset caching
@@ -758,7 +739,7 @@ DrvSendLoop:    lda drvBuf,y
                 lsr
                 lsr
                 lsr
-DrvSerialAcc5:  stx $1800                       ;Set DATA=low for first byte, high for
+DrvSerialAcc1:  stx $1800                       ;Set DATA=low for first byte, high for
                 tax                             ;subsequent bytes
                 lda drvSendTbl,x
                 pha
@@ -766,10 +747,10 @@ DrvSerialAcc5:  stx $1800                       ;Set DATA=low for first byte, hi
                 and #$0f
                 tax
                 lda #$04
-DrvSerialAcc6:  bit $1800                       ;Wait for CLK=low
-                beq DrvSerialAcc6
+DrvSerialAcc2:  bit $1800                       ;Wait for CLK=low
+                beq DrvSerialAcc2
                 lda drvSendTbl,x
-DrvSerialAcc7:  sta $1800
+DrvSerialAcc3:  sta $1800
 
         ; 2MHz send timing code from ULoad3 by MagerValp
 
@@ -777,24 +758,24 @@ Drv2MHzSend:    jsr DrvDelay18
                 nop
                 asl
                 and #$0f
-Drv2MHzSerialAcc8:
+Drv2MHzSerialAcc4:
                 sta $1800
                 cmp ($00,x)
                 nop
                 pla
-Drv2MHzSerialAcc9:
+Drv2MHzSerialAcc5:
                 sta $1800
                 cmp ($00,x)
                 nop
                 asl
                 and #$0f
-Drv2MHzSerialAcc10:
+Drv2MHzSerialAcc6:
                 sta $1800
                 ldx #$00
                 iny
                 bne DrvSendLoop
                 jsr DrvDelay12
-Drv2MHzSerialAcc11:
+Drv2MHzSerialAcc7:
                 stx $1800                       ;Finish send: DATA & CLK both high
 
 DrvSendDone:    lda drvBuf+1                    ;Follow the T/S chain
@@ -804,9 +785,89 @@ DrvSendDone:    lda drvBuf+1                    ;Follow the T/S chain
                 bne DrvEndMark                  ;endmark has been sent and can
                 jmp DrvLoop                     ;return to main loop
 
+DrvGetSaveByte: lda drvSaveCountLo
+                ora drvSaveCountHi
+                beq DrvNoMoreBytes
+                dec drvSaveCountLo
+                lda drvSaveCountLo
+                cmp #$ff
+                bne DrvGetByte
+                dec drvSaveCountHi
+
+DrvGetByte:     ldy #$08                        ;Filenumber bit counter
+DrvGetBitLoop:
+DrvSerialAcc8:  lda $1800
+                bpl DrvNoQuit                   ;Quit if ATN is low
+                pla
+                pla
+DrvExitJump:    jmp InitializeDrive             ;1541 = exit through Initialize
+                                                ;Others = exit through RTS
+DrvNoQuit:      and #$05                        ;Wait for CLK or DATA going low
+                beq DrvGetBitLoop
+                lsr                             ;Read the data bit
+                lda #$02                        ;Pull the other line low to acknowledge
+                bcc DrvGetZero
+                lda #$08
+DrvGetZero:     ror drvReceiveBuf               ;Store the data bit
+DrvSerialAcc9:  sta $1800
+DrvGetWait:
+DrvSerialAcc10: lda $1800                       ;Wait for either line going high
+                and #$05
+                cmp #$05
+                beq DrvGetWait
+                lda #$00
+DrvSerialAcc11: sta $1800                       ;Set CLK & DATA high
+                dey
+                bne DrvGetBitLoop               ;Loop until all bits have been received
+                lda drvReceiveBuf
+                clc
+                rts
+
+                if DrvSerialAcc11 - DrvMain > $ff
+                    err
+                endif
+
+DrvNoMoreBytes: sec
+                rts
+
+DrvSave:        jsr DrvGetByte                  ;Get filenumber
+                pha
+                jsr DrvGetByte                  ;Get amount of bytes to expect
+                sta drvSaveCountLo
+                jsr DrvGetByte
+                sta drvSaveCountHi
+                pla
+                tay
+                ldx drvFileTrk,y
+                beq DrvSaveFinish               ;If file not found, just receive the bytes
+                lda drvFileSct,y                ;TODO: should report error to C64
+DrvSaveSectorLoop:
+                jsr DrvReadSector               ;First read the sector for T/S chain
+                ldx #$02
+DrvSaveByteLoop:jsr DrvGetSaveByte              ;Then get bytes from C64 and write
+                bcs DrvSaveLastSector
+                sta drvBuf,x
+                inx
+                bne DrvSaveByteLoop
+                jsr DrvWriteSector
+                lda drvBuf+1                    ;Follow the T/S chain
+                ldx drvBuf
+                bne DrvSaveSectorLoop
+DrvSaveFinish:  jsr DrvGetSaveByte
+                bcc DrvSaveFinish
+                bcc DrvSaveFinished
+DrvSaveLastSector:
+                jsr DrvWriteSector
+DrvSaveFinished:jmp DrvLoop
+
+DrvWriteSector: ldy #$90
+                bmi DrvDoCommand
+
 DrvReadSector:
 DrvReadTrk:     stx $1000
 DrvReadSct:     sta $1000
+                ldy #$80
+DrvDoCommand:   sty DrvRetry+1
                 jsr DrvLed
                 ldy #RETRIES                    ;Retry counter
 DrvRetry:       lda #$80
@@ -851,7 +912,7 @@ DrvDelay12:     rts
 DrvCacheDir:    tax                             ;A=0 here
 DrvClearCache:  sta drvFileTrk,x                ;Clear tracknumbers first
                 inx
-                bne DrvClearCache
+                bpl DrvClearCache
 DrvDirTrk:      ldx $1000
 DrvDirSct:      lda $1000                       ;Read disk directory
 DrvDirLoop:     jsr DrvReadSector               ;Read sector
@@ -908,8 +969,13 @@ drv1581DirSct  = drvSendTbl+5                   ;Byte $03
 
 drv1541DirTrk:  dc.b 18
 
+drvCommand:     dc.b 0
+drvReceiveBuf:  dc.b 0
+drvSaveCountLo: dc.b 0
+drvSaveCountHi: dc.b 0
+
 drvEnd:
-                if drvEnd > drvFileSct
+                if drvEnd > $0700
                     err
                 endif
 
@@ -961,20 +1027,17 @@ il1MHzStart:
 
 Drv1MHzSend:    asl
                 and #$0f
-Drv1MHzSerialAcc8:
                 sta $1800
                 pla
-Drv1MHzSerialAcc9:
                 sta $1800
                 asl
                 and #$0f
-Drv1MHzSerialAcc10:
                 sta $1800
                 ldx #$00
                 iny
                 bne DrvSendLoop
                 nop
-Drv1MHzSerialAcc11: stx $1800                       ;Finish send: DATA & CLK both high
+                stx $1800                       ;Finish send: DATA & CLK both high
                 beq DrvSendDone
 
                 rend
@@ -1046,17 +1109,17 @@ SlowSave:       sta zpSrcLo
                 jsr SetLFSOpen
                 jsr ChkOut
                 ldy #$00
-SF_Loop:        lda (zpSrcLo),y
+                lda zpBitsLo
+                beq SS_PreDecrement
+SS_Loop:        lda (zpSrcLo),y
                 jsr ChrOut
-                inc zpSrcLo
-                bne SF_Ok
+                iny
+                bne SS_NotOver
                 inc zpSrcHi
-SF_Ok:          lda zpSrcLo
-                cmp zpDestLo
-                bne SF_Loop
-                lda zpSrcHi
-                cmp zpDestHi
-                bne SF_Loop
+SS_NotOver:     dec zpBitsLo
+                bne SS_Loop
+SS_PreDecrement:dec zpBitsHi
+                bpl SS_Loop
 
 CloseKernalFile:lda #$02
                 jsr Close
@@ -1108,14 +1171,14 @@ ilMRString:     dc.b 2,>drvReturn,<drvReturn,"R-M"
 il1800Ofs:      dc.b DrvSerialAcc1-DrvMain
                 dc.b DrvSerialAcc2-DrvMain
                 dc.b DrvSerialAcc3-DrvMain
-                dc.b DrvSerialAcc4-DrvMain
-                dc.b DrvSerialAcc5-DrvMain
-                dc.b DrvSerialAcc6-DrvMain
-                dc.b DrvSerialAcc7-DrvMain
-                dc.b Drv2MHzSerialAcc8-DrvMain
-                dc.b Drv2MHzSerialAcc9-DrvMain
-                dc.b Drv2MHzSerialAcc10-DrvMain
-                dc.b Drv2MHzSerialAcc11-DrvMain
+                dc.b Drv2MHzSerialAcc4-DrvMain
+                dc.b Drv2MHzSerialAcc5-DrvMain
+                dc.b Drv2MHzSerialAcc6-DrvMain
+                dc.b Drv2MHzSerialAcc7-DrvMain
+                dc.b DrvSerialAcc8-DrvMain
+                dc.b DrvSerialAcc9-DrvMain
+                dc.b DrvSerialAcc10-DrvMain
+                dc.b DrvSerialAcc11-DrvMain
 
 il1800Lo:       dc.b <$1800,<$4001,<$4001,<$8000
 il1800Hi:       dc.b >$1800,>$4001,>$4001,>$8000

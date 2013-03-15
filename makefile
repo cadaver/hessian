@@ -27,7 +27,7 @@ clean:
 	-rm e?
 	-rm f?
 
-hessian.d64: boot.prg loader.pak main.pak logo.pak music00.pak script00.pak level00.pak level01.pak \
+hessian.d64: boot.prg loader.pak main.pak emptysave.bin logo.pak music00.pak script00.pak level00.pak level01.pak \
 	common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
@@ -148,6 +148,9 @@ main.pak: actor.s actordata.s ai.s aidata.s bullet.s cutscene.s data.s file.s in
 	dasm main.s -omain.bin -smain.tbl -f3
 	symbols main.tbl mainsym.s
 	pack2 main.bin main.pak
+
+emptysave.bin: emptysave.s mainsym.s
+	dasm emptysave.s -oemptysave.bin -f3
 
 logo.pak: pics/logo.iff logo.s
 	pic2chr pics/logo.iff logo.chr /m14 /n15 /x24 /y7 /c /s

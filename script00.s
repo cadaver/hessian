@@ -105,10 +105,10 @@ TitleScreenParam:
 SaveGame:       lda #SAVE_GAME
                 jmp LoadOrSaveGame
 SaveGameExec:   jsr FadeOutText
-                lda #<saveStateEnd
-                sta zpDestLo
-                lda #>saveStateEnd
-                sta zpDestHi
+                lda #<(saveStateEnd-saveStateStart)
+                sta zpBitsLo
+                lda #>(saveStateEnd-saveStateStart)
+                sta zpBitsHi
                 lda #<saveStateStart
                 ldx #>saveStateStart
                 jsr SaveFile
@@ -561,7 +561,8 @@ ScanSaveLoop:   ldx #F_SAVE
                 jsr ReadSaveDescription
                 lda #5
                 sta temp1
-                bcc GetSaveDescription
+                lda saveDescription
+                bne GetSaveDescription
                 lda #<txtEmpty
                 ldx #>txtEmpty
                 jsr PrintText
@@ -611,10 +612,11 @@ CopyXPText:     lda screen1+23*40-1,x
                 jsr PrintText
                 jmp SaveDone
 
-        ; Read just the description (level name + player XP) from a savefile. C=0 if success
+        ; Read just the description (level name + player XP) from a savefile
 
 ReadSaveDescription:
                 ldy #$00
+                sty saveDescription
 RSD_Loop:       jsr GetByte
                 bcs RSD_Error
                 sta saveDescription,y
@@ -623,7 +625,6 @@ RSD_Loop:       jsr GetByte
                 bcc RSD_Loop
 RSD_Close:      jsr GetByte
                 bcc RSD_Close
-                clc
 RSD_Error:      rts
 
         ; Read an opened savefile. C=1 if read to the end

@@ -10,8 +10,8 @@ music00.pak 07
 script00.pak 08
 level00.pak 09
 level01.pak 0A
-emptysave.dat F0
-emptysave.dat F1
-emptysave.dat F2
-emptysave.dat F3
-emptysave.dat F4
+emptysave.bin 70
+emptysave.bin 71
+emptysave.bin 72
+emptysave.bin 73
+emptysave.bin 74
