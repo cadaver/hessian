@@ -27,7 +27,7 @@ clean:
 	-rm e?
 	-rm f?
 
-hessian.d64: boot.prg loader.pak main.pak emptysave.bin logo.pak music00.pak script00.pak level00.pak level01.pak \
+hessian.d64: boot.prg loader.pak loadpic.pak main.pak emptysave.bin logo.pak music00.pak script00.pak level00.pak level01.pak \
 	common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
@@ -44,6 +44,11 @@ loader.pak: kernal.s loader.s ldepack.s macros.s memory.s
 	dasm ldepack.s -oldepack.bin -f3
 	invert ldepack.bin ldepack.bin
 	filejoin ldepack.bin+ldata.pak loader.pak
+
+loadpic.pak: loadpic.s loadsym.s pics/loadpic.iff
+	gfxconv pics\loadpic.iff loadpic.raw /r /b0
+	dasm loadpic.s  -oloadpic.bin -f3
+	pack2 loadpic.bin loadpic.pak
 
 sfx/pistol.sfx: sfx/pistol.ins
 	ins2nt2 sfx/pistol.ins sfx/pistol.sfx

@@ -156,7 +156,7 @@ FL_FullBuffer:  stx GB_FastCmp+1
                 rts
 
 FL_SendCommand: jsr FL_SendByte
-FL_FileNumber:  lda fileNumber                  ;Initial filenumber for the mainpart
+FL_FileNumber:  lda fileNumber
 FL_SendByte:    sta loadTempReg
                 ldx #$08                        ;Bit counter
 FL_SendInner:   bit $dd00                       ;Wait for both DATA & CLK to go high
@@ -488,8 +488,8 @@ tablBit:       dc.b 2,4,4                       ;Exomizer static tables
 tablOff:       dc.b 48,32,16
 
 scratch:        dc.b "S0:"
-fileName:       dc.b "01"                       ;Initial filename for the mainpart
-fileNumber:     dc.b $01                        ;Initial filenumber for the mainpart
+fileName:       dc.b "  "
+fileNumber:     dc.b $01                        ;Initial filenumber for the loading picture
 
 loaderCodeEnd:                                  ;Resident code ends here!
 
@@ -649,6 +649,11 @@ IL_StartFastLoad:
                 jsr UploadDriveCode             ;Then start fastloader
 
 IL_Done:        jsr KernalOff
+                lda #<loadPicStart              ;Load & show loading picture
+                ldx #>loadPicStart
+                jsr LoadFile
+                jsr loadPicCodeStart
+                inc fileNumber
                 lda #>(loaderCodeEnd-1)         ;Mainpart startaddress-1
                 pha
                 lda #<(loaderCodeEnd-1)

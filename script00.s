@@ -37,24 +37,9 @@ TitleScreen:    stx TitleScreenParam+1          ;Go to save screen (X>0) or main
                 jsr ClearPanelText
                 jsr InitScroll                  ;Make sure no scrolling
 
-        ; Load the always resident sprites
-
-                lda fileHi+C_COMMON             ;If not loaded yet, load the always
-                bne SpritesLoaded               ;resident sprites
-                ldy #C_COMMON
-                jsr LoadSpriteFile
-                ldy #C_ITEM
-                jsr LoadSpriteFile
-                ldy #C_WEAPON
-                jsr LoadSpriteFile
-                lda #HP_PLAYER                  ;Init health & fists item immediately
-                sta actHp+ACTI_PLAYER           ;even before starting the game so that
-                lda #ITEM_FISTS                 ;the panel looks nice
-                sta invType
-
         ; Load logo chars & clear screen
 
-SpritesLoaded:  lda #F_LOGO
+                lda #F_LOGO
                 jsr MakeFileName_Direct
                 lda #<logoStart
                 ldx #>logoStart

@@ -65,8 +65,9 @@ MainLoop:       jsr ScrollLogic
 
 randomAreaEnd:
 
-                include data.s
-
         ; Disposable init part
 
                 include init.s
+
+                include data.s
+

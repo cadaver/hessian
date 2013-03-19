@@ -50,12 +50,60 @@ InitZP:         sta joystick,x
                 lda #REDRAW_ITEM+REDRAW_AMMO
                 sta panelUpdateFlags
 
+        ;Initialize the sprite multiplexing system
+
+InitSprites:    lda #$00
+                sta newFrame
+                sta firstSortSpr
+                lda #$ff
+                sta sprFileNum
+                ldx #MAX_SPR
+                lda #$01
+                sta temp1
+ISpr_Loop:      txa
+                sta sprOrder,x
+                lda #$ff
+                sta sprY,x
+                cpx #MAX_SPR
+                beq ISpr_OrValueOk
+                lda temp1
+                sta sprOrTbl,x
+                sta sprOrTbl+MAX_SPR,x
+                eor #$ff
+                sta sprAndTbl,x
+                sta sprAndTbl+MAX_SPR,x
+                asl temp1
+                bne ISpr_OrValueOk
+                lda #$01
+                sta temp1
+ISpr_OrValueOk: dex
+                bpl ISpr_Loop
+                ldx #MAX_CACHESPRITES-1
+ISpr_ClearCacheInUse:
+                lda #$00
+                sta cacheSprAge,x
+                lda #$ff
+                sta cacheSprFile,x
+                dex
+                bpl ISpr_ClearCacheInUse
+
+        ; Load resident sprites
+
+                ldy #C_COMMON
+                jsr LoadSpriteFile
+                ldy #C_ITEM
+                jsr LoadSpriteFile
+                ldy #C_WEAPON
+                jsr LoadSpriteFile
+
         ; Initialize video registers and screen memory
 
-InitVideo:      lda $dd00                       ;Set game videobank
+InitVideo:      jsr WaitBottom
+                lda $dd00                       ;Set game videobank
                 and #$fc
                 sta $dd00
                 lda #$00
+                sta $d011                       ;Blank screen
                 sta $d01b                       ;Sprites on top of BG
                 sta $d01d                       ;Sprite X-expand off
                 sta $d017                       ;Sprite Y-expand off
@@ -104,42 +152,10 @@ IVid_InitScorePanel:
                 dex
                 bpl IVid_InitScorePanel
 
-        ;Initialize the sprite multiplexing system
-
-InitSprites:    lda #$00
-                sta newFrame
-                sta firstSortSpr
-                lda #$ff
-                sta sprFileNum
-                ldx #MAX_SPR
-                lda #$01
-                sta temp1
-ISpr_Loop:      txa
-                sta sprOrder,x
-                lda #$ff
-                sta sprY,x
-                cpx #MAX_SPR
-                beq ISpr_OrValueOk
-                lda temp1
-                sta sprOrTbl,x
-                sta sprOrTbl+MAX_SPR,x
-                eor #$ff
-                sta sprAndTbl,x
-                sta sprAndTbl+MAX_SPR,x
-                asl temp1
-                bne ISpr_OrValueOk
-                lda #$01
-                sta temp1
-ISpr_OrValueOk: dex
-                bpl ISpr_Loop
-                ldx #MAX_CACHESPRITES-1
-ISpr_ClearCacheInUse:
-                lda #$00
-                sta cacheSprAge,x
-                lda #$ff
-                sta cacheSprFile,x
-                dex
-                bpl ISpr_ClearCacheInUse
+                lda #HP_PLAYER                  ;Init health & fists item immediately
+                sta actHp+ACTI_PLAYER           ;even before starting the game so that
+                lda #ITEM_FISTS                 ;the panel looks nice
+                sta invType
 
         ; Initialize raster IRQs
         ; Relies on loader init to have already disabled the timer interrupt
