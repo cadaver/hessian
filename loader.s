@@ -24,27 +24,6 @@ InitializeDrive = $d005         ;1541 only
 
                 org mainCodeStart
 
-        ; Loading initialization related subroutines, also used by mainpart
-
-WaitBottom:     lda $d011                       ;Wait until bottom of screen
-                bmi WaitBottom
-WB_Loop2:       lda $d011
-                bpl WB_Loop2
-                rts
-
-SilenceSID:     lda #$00
-                tax
-                jsr SS_Sub
-                inx
-SS_Sub:         sta $d400,x
-                sta $d407,x
-                sta $d40e,x
-                rts
-
-        ; NMI routine
-
-NMI:            rti
-
         ; Open file
         ;
         ; Parameters: fileNumber
@@ -52,6 +31,13 @@ NMI:            rti
         ; Modifies: A,X,Y
 
 OpenFile:       jmp FastOpen
+
+        ; Save file
+        ;
+        ; Parameters: A,X startaddress, zpBitsLo amount of bytes, fileNumber
+        ; Returns: -
+        ; Modifies: A,X,Y
+
 SaveFile:       jmp FastSave
 
         ; Read a byte from an opened file
@@ -162,12 +148,6 @@ FL_SendAck:     bit $dd00
                 dex
                 bne FL_SendInner
                 rts
-
-        ; Save file
-        ;
-        ; Parameters: A,X startaddress, zpBitsLo amount of bytes, fileNumber
-        ; Returns: -
-        ; Modifies: A,X,Y
 
 FastSave:       sta zpSrcLo
                 stx zpSrcHi
@@ -467,14 +447,32 @@ skipcarry:
 ; end of decruncher
 ; -------------------------------------------------------------------
 
+        ; Loading initialization related subroutines, also used by mainpart
+
+WaitBottom:     lda $d011                       ;Wait until bottom of screen
+                bmi WaitBottom
+WB_Loop2:       lda $d011
+                bpl WB_Loop2
+                rts
+
+SilenceSID:     lda #$00                        ;Mute SID by setting frequencies to zero
+                tax
+                jsr SS_Sub
+                inx
+SS_Sub:         sta $d400,x
+                sta $d407,x
+                sta $d40e,x
+                rts
+
+        ; NMI routine
+
+NMI:            rti
+
         ; Loader runtime data
 
-tablBit:       dc.b 2,4,4                       ;Exomizer static tables
-tablOff:       dc.b 48,32,16
-
-scratch:        dc.b "S0:"
-fileName:       dc.b "  "
-fileNumber:     dc.b $01                        ;Initial filenumber for the loading picture
+tablBit:        dc.b 2,4,4                       ;Exomizer static tables
+tablOff:        dc.b 48,32,16
+fileNumber:     dc.b $01                        ;01 = initial filenumber for the loading picture
 fastLoadMode:   dc.b $01
 
 loaderCodeEnd:                                  ;Resident code ends here!
@@ -634,8 +632,8 @@ IL_StartFastLoad:
                 ldy #>driveCode
                 jsr UploadDriveCode             ;Then start fastloader
 
-IL_Done:        lda #$35
-                sta $01
+IL_Done:        lda #$35                        ;Loader needs Kernal off to use the buffers
+                sta $01                         ;under ROM
                 lda #<loadPicStart              ;Load & show loading picture
                 ldx #>loadPicStart
                 jsr LoadFile
@@ -1069,8 +1067,7 @@ SGB_Closed:     lda #$00
 
 SlowOpen:       lda fileOpen
                 bne SO_Done
-                inc fileOpen
-                jsr KernalOn
+                jsr PrepareKernalIO
                 jsr SetFileName
                 ldy #$00                        ;A is $02 here
                 jsr SetLFSOpen
@@ -1079,10 +1076,7 @@ SlowOpen:       lda fileOpen
 
 SlowSave:       sta zpSrcLo
                 stx zpSrcHi
-                inc fileOpen                    ;Set fileopen indicator, raster delays are to be expected
-                sta $d07a                       ;SCPU to slow mode
-                jsr KernalOn
-                jsr ConvertFileName
+                jsr PrepareKernalIO
                 lda #$05
                 ldx #<scratch
                 ldy #>scratch
@@ -1092,7 +1086,7 @@ SlowSave:       sta zpSrcLo
                 jsr SetLFSOpen
                 lda #$0f
                 jsr Close
-                jsr SetFileNameOnly
+                jsr SetFileName
                 ldy #$01                        ;Open for write
                 ldx fa
                 jsr SetLFSOpen
@@ -1115,10 +1109,23 @@ CloseKernalFile:lda #$02
                 dec fileOpen
 
 KernalOff:      lda #$35
-                sta $01
+Store01Value:   sta $01
                 rts
 
-KernalOn:       jsr WaitBottom
+PrepareKernalIO:inc fileOpen                    ;Set fileopen indicator, raster delays are to be expected
+                sta $d07a                       ;SCPU to slow mode
+                lda fileNumber                  ;Convert filename
+                pha
+                lsr
+                lsr
+                lsr
+                lsr
+                ldx #$00
+                jsr CFN_Sub
+                pla
+                inx
+                jsr CFN_Sub
+                jsr WaitBottom
                 lda fastLoadMode                ;In fake-IRQload mode IRQs continue,
                 bmi KernalOnFast                ;so no setup necessary
                 lda $d01a                       ;If raster IRQs not yet active, no
@@ -1129,26 +1136,19 @@ KernalOn:       jsr WaitBottom
                 sta $d015                       ;Sprites off
                 sta $d011                       ;Blank screen
 KernalOnFast:   lda #$36
-                sta $01
-                rts
+                bne Store01Value
 
-SetFileName:    jsr ConvertFileName
-SetFileNameOnly:lda #$02
+SetFileName:    lda #$02
                 ldx #<fileName
                 ldy #>fileName
                 jmp SetNam
 
-ConvertFileName:
-                lda fileNumber
-                pha
-                lsr
-                lsr
-                lsr
-                lsr
-                ldx #$00
-                jsr CFN_Sub
-                pla
-                inx
+SetLFSOpen:     ldx fa
+                jsr SetLFS
+                jsr Open
+                ldx #$02
+                rts
+
 CFN_Sub:        and #$0f
                 ora #$30
                 cmp #$3a
@@ -1157,13 +1157,11 @@ CFN_Sub:        and #$0f
 CFN_Number:     sta fileName,x
                 rts
 
-SetLFSOpen:     ldx fa
-                jsr SetLFS
-                jsr Open
-                ldx #$02
-                rts
+scratch:        dc.b "S0:"
+fileName:       dc.b "  "
 
 SlowLoadEnd:
+
                 if SlowLoadEnd > FastLoadEnd
                 err
                 endif
@@ -1171,6 +1169,10 @@ SlowLoadEnd:
                 rend
 
 ilSlowLoadEnd:
+
+                if ilSlowLoadEnd - ilSlowLoadStart > $ff
+                err
+                endif
 
 ilMRString:     dc.b 2,>drvReturn,<drvReturn,"R-M"
 
