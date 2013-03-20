@@ -171,8 +171,6 @@ cacheSprFrame   = $02a7
 
 mainCodeStart   = $0334
 
-loadPicCodeStart = $c800
-loadPicStart    = $a000
 fileAreaEnd     = spriteCache
 spriteCache     = $d000
 colors          = $d800

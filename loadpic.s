@@ -1,32 +1,17 @@
-                include memory.s
-                include loadsym.s
+                include macros.s
+                include mainsym.s
 
-                org loadPicStart
+                org loaderCodeEnd
 
-                incbin loadpic.raw
-
-                org loadPicCodeStart
-
-                ldx #$00
-CopyScreenColors:
-                lda loadPicStart+$2000,x
-                sta $8c00,x
-                lda loadPicStart+$2100,x
-                sta $8d00,x
-                lda loadPicStart+$2200,x
-                sta $8e00,x
-                lda loadPicStart+$2300,x
-                sta $8f00,x
-                lda loadPicStart+$2400,x
-                sta colors,x
-                lda loadPicStart+$2500,x
-                sta colors+$100,x
-                lda loadPicStart+$2600,x
-                sta colors+$200,x
-                lda loadPicStart+$2700,x
-                sta colors+$300,x
-                inx
-                bne CopyScreenColors
+                lda #<$a000
+                ldx #>$a000
+                jsr LoadFile                    ;Load bitmap data attached to this file
+                lda #<$8c00
+                ldx #>$8c00
+                jsr LoadFile                    ;Load screen data
+                lda #<colors
+                ldx #>colors
+                jsr LoadFile                    ;Load color-RAM data
                 lda #$00
                 sta $d021
                 lda $dd00
@@ -39,5 +24,12 @@ CopyScreenColors:
                 sta $d016
                 jsr WaitBottom
                 lda #$3b
-                sta $d011
-                rts
+                sta $d011                       ;Screen on
+                inc fileNumber
+                lda #>(InitAll-1)
+                pha
+                lda #<(InitAll-1)
+                pha
+                lda #<loaderCodeEnd
+                ldx #>loaderCodeEnd
+                jmp LoadFile                    ;Load mainpart

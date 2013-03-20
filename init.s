@@ -1,3 +1,5 @@
+scriptCodeStart:
+
         ; Initialize registers/variables at startup. This code is called only once and can be
         ; disposed after that.
         ;

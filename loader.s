@@ -634,18 +634,10 @@ IL_StartFastLoad:
 
 IL_Done:        lda #$35                        ;Loader needs Kernal off to use the buffers
                 sta $01                         ;under ROM
-                lda #<loadPicStart              ;Load & show loading picture
-                ldx #>loadPicStart
-                jsr LoadFile
-                jsr loadPicCodeStart
-                inc fileNumber
-                lda #>(loaderCodeEnd-1)         ;Mainpart startaddress-1
-                pha
-                lda #<(loaderCodeEnd-1)
-                pha
-                lda #<loaderCodeEnd
+                lda #<loaderCodeEnd             ;Load & show loading picture
                 ldx #>loaderCodeEnd
-                jmp LoadFile                    ;Code here will be overwritten
+                jsr LoadFile
+                jmp loaderCodeEnd
 
 UploadDriveCode:sta loadTempReg                 ;Number of "packets" to send
                 stx zpSrcLo

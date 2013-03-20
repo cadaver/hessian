@@ -1,9 +1,6 @@
-        ; Script code area
-
-scriptCodeStart:ds.b SCRIPTAREASIZE,0
-
         ; Game data
 
+                org scriptCodeStart+SCRIPTAREASIZE
                 org (* + $ff) & $ff00
 
 scriptCodeEnd:

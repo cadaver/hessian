@@ -23,10 +23,6 @@ DISABLE_MUSIC = 0
 
                 org loaderCodeEnd
 
-        ; Entry point. Jump to disposable init
-
-                jmp InitAll
-
 randomAreaStart:
 
                 include raster.s
@@ -68,6 +64,8 @@ randomAreaEnd:
         ; Disposable init part
 
                 include init.s
+
+        ; Static data and variables
 
                 include data.s
 

@@ -48,6 +48,9 @@ int columns = 0;
 int x,y,c;
 int startadr = 0xa000;
 int rawsave = 0;
+int nobitmap = 0;
+int noscreen = 0;
+int nocolors = 0;
 
 int main(int argc, char **argv)
 {
@@ -65,7 +68,10 @@ int main(int argc, char **argv)
            "/sXX Set picture start address in hex (default a000)\n"
            "/r   Raw save (no .PRG start address included)\n"
            "/o   Optimal save (do not align bitmap & screen data to page boundary)\n"
-           "/c   Save color data before bitmap\n");
+           "/c   Save color data before bitmap\n"
+           "/nb  Do not save bitmap\n"
+           "/ns  Do not save screendata\n"
+           "/nc  Do not save colors\n");
     return 1;
   }
 
@@ -91,6 +97,21 @@ int main(int argc, char **argv)
 
         case 's':
         sscanf(&argv[c][2], "%x", &startadr);
+        break;
+
+        case 'n':
+        switch (argv[c][2])
+        {
+          case 'b':
+          nobitmap = 1;
+          break;
+          case 's':
+          noscreen = 1;
+          break;
+          case 'c':
+          nocolors = 1;
+          break;
+        }
         break;
 
         case 'r':
@@ -313,33 +334,45 @@ int process(void)
   }
   if (optimalsave)
   {
-  if (!cbefore)
-  {
-    fwrite(pixelbuf, rows*columns*8, 1, handle);
-    fwrite(screenbuf, rows*columns, 1, handle);
-    fwrite(colorbuf, rows*columns, 1, handle);
+    if (!cbefore)
+    {
+      if (!nobitmap)
+        fwrite(pixelbuf, rows*columns*8, 1, handle);
+      if (!noscreen)
+        fwrite(screenbuf, rows*columns, 1, handle);
+      if (!nocolors)
+        fwrite(colorbuf, rows*columns, 1, handle);
+    }
+    else
+    {
+      if (!noscreen)
+        fwrite(screenbuf, rows*columns, 1, handle);
+      if (!nocolors)
+        fwrite(colorbuf, rows*columns, 1, handle);
+      if (!nobitmap)
+        fwrite(pixelbuf, rows*columns*8, 1, handle);
+    }
   }
   else
   {
-    fwrite(screenbuf, rows*columns, 1, handle);
-    fwrite(colorbuf, rows*columns, 1, handle);
-    fwrite(pixelbuf, rows*columns*8, 1, handle);
-  }
-  }
-  else
-  {
-  if (!cbefore)
-  {
-    fwrite(pixelbuf, ((rows*columns*8+255)/256)*256, 1, handle);
-    fwrite(screenbuf, ((rows*columns+255)/256)*256, 1, handle);
-    fwrite(colorbuf, ((rows*columns+255)/256)*256, 1, handle);
-  }
-  else
-  {
-    fwrite(screenbuf, ((rows*columns+255)/256)*256, 1, handle);
-    fwrite(colorbuf, ((rows*columns+255)/256)*256, 1, handle);
-    fwrite(pixelbuf, ((rows*columns*8+255)/256)*256, 1, handle);
-  }
+    if (!cbefore)
+    {
+      if (!nobitmap)
+        fwrite(pixelbuf, ((rows*columns*8+255)/256)*256, 1, handle);
+      if (!noscreen)
+        fwrite(screenbuf, ((rows*columns+255)/256)*256, 1, handle);
+      if (!nocolors)
+        fwrite(colorbuf, ((rows*columns+255)/256)*256, 1, handle);
+    }
+    else
+    {
+      if (!noscreen)
+        fwrite(screenbuf, ((rows*columns+255)/256)*256, 1, handle);
+      if (!nocolors)
+        fwrite(colorbuf, ((rows*columns+255)/256)*256, 1, handle);
+      if (!nobitmap)
+        fwrite(pixelbuf, ((rows*columns*8+255)/256)*256, 1, handle);
+    }
   }
   return 0;
 }

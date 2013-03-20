@@ -45,10 +45,16 @@ loader.pak: kernal.s loader.s ldepack.s macros.s memory.s
 	invert ldepack.bin ldepack.bin
 	filejoin ldepack.bin+ldata.pak loader.pak
 
-loadpic.pak: loadpic.s loadsym.s pics/loadpic.iff
-	gfxconv pics\loadpic.iff loadpic.raw /r /b0
+loadpic.pak: loadpic.s loadsym.s mainsym.s pics/loadpic.iff
+	gfxconv pics\loadpic.iff loadpic.dat /r /b0 /o /nc /ns
+	gfxconv pics\loadpic.iff loadpicscr.dat /r /b0 /o /nc /nb
+	gfxconv pics\loadpic.iff loadpiccol.dat /r /b0 /o /nb /ns
 	dasm loadpic.s  -oloadpic.bin -f3
-	pack2 loadpic.bin loadpic.pak
+	pack2 loadpic.bin loadpic_1.pak
+	pack2 loadpic.dat loadpic_2.pak
+	pack2 loadpicscr.dat loadpic_3.pak
+	pack2 loadpiccol.dat loadpic_4.pak
+	filejoin loadpic_1.pak+loadpic_2.pak+loadpic_3.pak+loadpic_4.pak loadpic.pak
 
 sfx/pistol.sfx: sfx/pistol.ins
 	ins2nt2 sfx/pistol.ins sfx/pistol.sfx
