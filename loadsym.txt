@@ -5,11 +5,10 @@ LoadFile
 SaveFile
 Change01
 InitLoader
-FastLoadMode
 WaitBottom
 SilenceSID
 FL_MinSprY
 FL_MaxSprY
-fileName
+fastLoadMode
 fileNumber
 loaderCodeEnd

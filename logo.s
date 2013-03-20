@@ -26,7 +26,7 @@ txtInstructions:dc.b "USE JOYSTICK IN PORT 2 AND KEYS",0
                 dc.b $80+11,"H       USE MEDKIT",0
                 dc.b "RUNSTOP PAUSE MENU",0
                 dc.b 0
-                
+
 txtInstructions2:
                 dc.b "MOVEMENT CONTROLS (NO FIRE PRESSED)",0
                 dc.b 0

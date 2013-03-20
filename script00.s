@@ -261,7 +261,7 @@ LoadGameExec:   jsr OpenFile                    ;Load the savegame now
                 ldx #>saveStateStart
                 jsr ReadSaveFile
                 bcc LoadGameLoop                ;Fail
-                lda FastLoadMode+1              ;Fade out screen, unless in slowload mode
+                lda fastLoadMode                ;Fade out screen, unless in slowload mode
                 cmp #$01
                 beq LoadSkipFade
                 jsr FadeOutAll

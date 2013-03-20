@@ -177,7 +177,7 @@ InitRaster:     sei
                 sta $d011
                 lda #IRQ1_LINE                  ;Line where next IRQ happens
                 sta $d012
-                lda FastLoadMode+1              ;If not using fastloader, disable MinSprY/MaxSprY writing
+                lda fastLoadMode                ;If not using fastloader, disable MinSprY/MaxSprY writing
                 beq IR_UseFastLoad
                 lda #$ea
                 ldx #$02

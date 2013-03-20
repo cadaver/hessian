@@ -24,22 +24,7 @@ InitializeDrive = $d005         ;1541 only
 
                 org mainCodeStart
 
-        ; Kernal on/off switching and other Kernal related subroutines
-
-KernalOn:       jsr WaitBottom
-FastLoadMode:   lda #$01                        ;In fake-IRQload mode IRQs continue,
-                bmi KernalOnFast                ;so no setup necessary
-                jsr SilenceSID
-                sta $d01a                       ;Raster IRQs off
-                sta $d015                       ;Sprites off
-                sta $d011                       ;Blank screen
-KernalOnFast:   lda #$36
-                sta $01
-                rts
-
-KernalOff:      lda #$35
-                sta $01
-                rts
+        ; Loading initialization related subroutines, also used by mainpart
 
 WaitBottom:     lda $d011                       ;Wait until bottom of screen
                 bmi WaitBottom
@@ -180,7 +165,7 @@ FL_SendAck:     bit $dd00
 
         ; Save file
         ;
-        ; Parameters: A,X startaddress, zpBitsLo amount of bytes, fileName / fileNumber
+        ; Parameters: A,X startaddress, zpBitsLo amount of bytes, fileNumber
         ; Returns: -
         ; Modifies: A,X,Y
 
@@ -210,7 +195,7 @@ FastLoadEnd:
 
         ; Load file packed with Exomizer 2 forward mode
         ;
-        ; Parameters: A,X load address, fileName / fileNumber
+        ; Parameters: A,X load address, fileNumber
         ; Returns: C=0 if loaded OK, or C=1 and error code in A (see GetByte)
         ; Modifies: A,X,Y
 
@@ -490,6 +475,7 @@ tablOff:       dc.b 48,32,16
 scratch:        dc.b "S0:"
 fileName:       dc.b "  "
 fileNumber:     dc.b $01                        ;Initial filenumber for the loading picture
+fastLoadMode:   dc.b $01
 
 loaderCodeEnd:                                  ;Resident code ends here!
 
@@ -581,7 +567,7 @@ IL_DDSendMR:    lda ilMRString,x                ;Send M-R command (backwards)
                 cmp #$aa                        ;unchanged, it's probably VICE's
                 bne IL_NoFastLoad               ;virtual device trap
 IL_NoSerial:    lda #$80                        ;Serial bus not used: switch to
-                sta FastLoadMode+1              ;"fake" IRQ-loading mode
+                sta fastLoadMode                ;"fake" IRQ-loading mode
 IL_NoFastLoad:  ldx #ilSlowLoadEnd-ilSlowLoadStart
 IL_CopySlowLoad:lda ilSlowLoadStart-1,x         ;Copy slowload routines
                 sta OpenFile-1,x
@@ -589,7 +575,7 @@ IL_CopySlowLoad:lda ilSlowLoadStart-1,x         ;Copy slowload routines
                 bne IL_CopySlowLoad
                 jmp IL_Done
 
-IL_FastLoadOK:  dec FastLoadMode+1              ;Use normal IRQ-loading
+IL_FastLoadOK:  dec fastLoadMode                ;Use normal IRQ-loading
                 txa                             ;1541?
                 beq IL_Is1541
                 lda #>DrvMain_Not1541           ;If not, skip the $1c07 write
@@ -648,7 +634,8 @@ IL_StartFastLoad:
                 ldy #>driveCode
                 jsr UploadDriveCode             ;Then start fastloader
 
-IL_Done:        jsr KernalOff
+IL_Done:        lda #$35
+                sta $01
                 lda #<loadPicStart              ;Load & show loading picture
                 ldx #>loadPicStart
                 jsr LoadFile
@@ -1126,7 +1113,24 @@ SS_PreDecrement:dec zpBitsHi
 CloseKernalFile:lda #$02
                 jsr Close
                 dec fileOpen
-                jmp KernalOff
+
+KernalOff:      lda #$35
+                sta $01
+                rts
+
+KernalOn:       jsr WaitBottom
+                lda fastLoadMode                ;In fake-IRQload mode IRQs continue,
+                bmi KernalOnFast                ;so no setup necessary
+                lda $d01a                       ;If raster IRQs not yet active, no
+                lsr                             ;setup necessary
+                bcc KernalOnFast
+                jsr SilenceSID
+                sta $d01a                       ;Raster IRQs off
+                sta $d015                       ;Sprites off
+                sta $d011                       ;Blank screen
+KernalOnFast:   lda #$36
+                sta $01
+                rts
 
 SetFileName:    jsr ConvertFileName
 SetFileNameOnly:lda #$02
