@@ -173,7 +173,10 @@ MProj_LargeSplash:
                 lda #SFX_SPLASH
                 jsr PlaySfx
                 lda #ACT_WATERSPLASH
-MProj_SplashOK: jmp TransformBullet
+MProj_SplashOK: jsr TransformBullet
+                lda lvlWaterSplashColor
+                sta actC,x
+                rts
 
         ; Rocket update routine
         ;
