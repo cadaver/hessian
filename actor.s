@@ -1602,18 +1602,15 @@ GFA_NotComplex: rts
         ;
         ; Parameters: A actor type, X creating actor, Y destination actor index
         ; Returns: -
-        ; Modifies: A
+        ; Modifies: A,temp1-temp4
 
 SpawnActor:     sta actT,y
-CopyCoords:     lda actXL,x
-                sta actXL,y
-                lda actXH,x
-                sta actXH,y
-                lda actYL,x
-                sta actYL,y
-                lda actYH,x
-                sta actYH,y
-                rts
+                lda #$00
+                sta temp1
+                sta temp2
+                sta temp3
+                sta temp4
+                beq SWO_SetCoords
 
         ; Spawn an actor with X & Y offset
         ;
@@ -1623,20 +1620,24 @@ CopyCoords:     lda actXL,x
         ; Modifies: A
 
 SpawnWithOffset:sta actT,y
-                lda actXL,x
+SWO_SetCoords:  lda actXL,x
                 clc
                 adc temp1
                 sta actXL,y
+                sta actPrevXL,y
                 lda actXH,x
                 adc temp2
                 sta actXH,y
+                sta actPrevXH,y
                 lda actYL,x
                 clc
                 adc temp3
                 sta actYL,y
+                sta actPrevYL,y
                 lda actYH,x
                 adc temp4
                 sta actYH,y
+                sta actPrevYH,y
                 rts
 
         ; Get flicker color override for actor based on low bit of actor index
