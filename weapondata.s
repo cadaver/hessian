@@ -248,7 +248,7 @@ wdAutoRifle:    dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
 wdSniperRifle:  dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
-                dc.b 14                         ;Attack delay
+                dc.b 13                         ;Attack delay
                 dc.b ACT_RIFLEBULLET            ;Bullet actor type
                 dc.b DMG_SNIPERRIFLE            ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
@@ -292,7 +292,7 @@ wdFlameThrower: dc.b WDB_FLICKERBULLET|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOS
                 dc.b DMG_FLAMETHROWER           ;Bullet damage
                 dc.b DMGMOD_NONORGANIC75        ;Damage modifier nonorganic/organic
                 dc.b 15                         ;Bullet time duration
-                dc.b 8                          ;Bullet speed in pixels
+                dc.b 7                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_FLAMETHROWER           ;Sound effect
                 dc.b 26                         ;Idle weapon frame (right)
