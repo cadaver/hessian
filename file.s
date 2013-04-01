@@ -12,7 +12,8 @@ F_SPRITE        = $04
 F_MUSIC         = $08
 F_SCRIPT        = $09
 F_LEVEL         = $0a
-F_SAVE          = $70
+F_OPTIONS       = $70
+F_SAVE          = $71
 
 MAX_CHUNKFILES   = 32
 

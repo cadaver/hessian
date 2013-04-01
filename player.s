@@ -43,6 +43,10 @@ INITIAL_HEALTHRECHARGETIMER = 2
 
 HEALTHRECHARGETIMER_RESET = $e0
 
+DIFFICULTY_EASY = 0
+DIFFICULTY_MEDIUM = 1
+DIFFICULTY_HARD = 2
+
 EASY_DMGMULTIPLIER_REDUCE = 2
 
         ; Player update routine
@@ -1169,17 +1173,21 @@ ApplySkills:
 
         ; Vitality: damage reduction, faster health recharge
 
+                ldy difficulty
                 lda plrVitality
-                tay
                 clc
                 adc #INITIAL_HEALTHRECHARGETIMER
-                sta ULO_HealthRechargeRate+1
-                lda #NO_MODIFY+1
-                sbc plrVitality                 ;C=0, subtracts one more
-                ldy difficulty                  ;On Easy level damage multiplier is lower
-                bne AS_NormalLevel
+                cpy #DIFFICULTY_HARD                ;Hard level disables health recharge
+                bcc AS_MediumOrEasy
+                lda #$00
+AS_MediumOrEasy:sta ULO_HealthRechargeRate+1
+                lda #NO_MODIFY
+                sec
+                sbc plrVitality
+                cpy #DIFFICULTY_MEDIUM              ;On Easy level damage multiplier is lower
+                bcs AS_MediumOrHard
                 sbc #EASY_DMGMULTIPLIER_REDUCE
-AS_NormalLevel: sta plrDmgModify
+AS_MediumOrHard:sta plrDmgModify
                 lda plrVitality
 
         ; Carrying: more weapons in inventory and higher ammo limit

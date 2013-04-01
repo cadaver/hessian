@@ -168,13 +168,10 @@ Options:        lda #0
                 jsr PrintPage
 RefreshOptions: lda #23
                 sta temp1
-                lda #<txtEasy
-                ldx #>txtEasy
                 ldy difficulty
-                beq EasyDifficulty
-                lda #<txtHard
-                ldx #>txtHard
-EasyDifficulty: ldy #TEXTSTARTROW
+                lda difficultyTxtLo,y
+                ldx difficultyTxtHi,y
+                ldy #TEXTSTARTROW
                 jsr PrintOnOffCommon
                 lda musicMode
                 ldy #TEXTSTARTROW+2
@@ -182,7 +179,7 @@ EasyDifficulty: ldy #TEXTSTARTROW
                 lda soundMode
                 ldy #TEXTSTARTROW+4
                 jsr PrintOnOff
-OptionsLoop:    lda #11
+OptionsLoop:    lda #10
                 sta temp1
                 lda optionsMenuChoice
                 asl
@@ -202,10 +199,15 @@ OptionsLoop:    lda #11
 OptionsSelect:  ldx optionsMenuChoice
                 cpx #3
                 bcs OptionsGoBack
-                lda difficulty,x
-                eor #$01
+                lda #$01
+                sta optionsModified
+                inc difficulty,x
+                lda optionMaxValue,x
+                cmp difficulty,x
+                bcs OptionsNotOver
+                lda #$00
                 sta difficulty,x
-                lda #SFX_SELECT
+OptionsNotOver: lda #SFX_SELECT
                 jsr PlaySfx
                 jsr RestartSong
                 jmp RefreshOptions
@@ -214,7 +216,7 @@ OptionsGoBack:  lda #SFX_SELECT
                 jmp MainMenu
 
         ; Load/save game
-        
+
 LoadGame:       lda #LOAD_GAME
 LoadOrSaveGame: sta LoadOrSaveGameMode+1
                 jsr FadeOutText
@@ -265,12 +267,14 @@ LoadGameExec:   jsr OpenFile                    ;Load the savegame now
                 cmp #$01
                 beq LoadSkipFade
                 jsr FadeOutAll
-LoadSkipFade:   jmp RestartCheckpoint           ;Success, start loaded game, use actors from savestate
+LoadSkipFade:   jsr SaveModifiedOptions
+                jmp RestartCheckpoint           ;Success, start loaded game
 LoadGameCancel: jmp TitleTexts
 
         ; Start new game
 
 StartNewGame:   jsr FadeOutAll
+                jsr SaveModifiedOptions
 InitPlayer:     lda #$00
                 ldx #playerStateZPEnd-playerStateZPStart-1
 IP_InitZPState: sta playerStateZPStart,x
@@ -337,8 +341,26 @@ IP_SkillCheatLoop:
                 sta saveT
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
-                jsr SaveCheckpoint              ;Save first checkpoint immediately
+                jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
                 jmp CenterPlayer
+
+        ; Save options if modified
+
+SaveModifiedOptions:
+                lda optionsModified
+                beq SMC_NoChange
+                lda #F_OPTIONS
+                sta fileNumber
+                lda #<3
+                sta zpBitsLo
+                lda #>3
+                sta zpBitsHi
+                lda #<difficulty
+                ldx #>difficulty
+                jsr SaveFile
+                lda #$00
+                sta optionsModified
+SMC_NoChange:   rts
 
         ; Update controls, text & logo fade
 
@@ -719,6 +741,8 @@ titlePageDelayHi:
 mainMenuChoice: dc.b 0
 optionsMenuChoice:
                 dc.b 0
+                
+optionsModified: dc.b 0
 
 txtMainMenu:    dc.b 0
                 dc.b $80+13,"START NEW GAME",0
@@ -728,16 +752,20 @@ txtMainMenu:    dc.b 0
                 dc.b $80+13,"OPTIONS",0
                 dc.b 0
 
-txtOptions:     dc.b $80+13,"GAME MODE",0
+txtOptions:     dc.b $80+12,"GAME MODE",0
                 dc.b 0
-                dc.b $80+13,"MUSIC",0
+                dc.b $80+12,"MUSIC",0
                 dc.b 0
-                dc.b $80+13,"SOUND FX",0
+                dc.b $80+12,"SOUND FX",0
                 dc.b 0
-                dc.b $80+13,"BACK",0
+                dc.b $80+12,"BACK",0
 
-txtEasy:        dc.b "EASY",0
-txtHard:        dc.b "HARD",0
+difficultyTxtLo:dc.b <txtEasy, <txtMedium, <txtHard
+difficultyTxtHi:dc.b >txtEasy, >txtMedium, >txtHard
+
+txtEasy:        dc.b "EASY  ",0
+txtMedium:      dc.b "MEDIUM",0
+txtHard:        dc.b "HARD  ",0
 txtOn:          dc.b "ON ",0
 txtOff:         dc.b "OFF",0
 txtLoadSlot:    dc.b "CONTINUE FROM SAVE",0
@@ -767,6 +795,8 @@ logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
                 dc.b $08,$09,$0a,$0b,$0c,$0d,$0e,$0f
 
 textFadeTbl:    dc.b $00,$06,$03,$01
+
+optionMaxValue: dc.b 2,1,1
 
 saveDescription:ds.b SAVEDESCSIZE,0
 

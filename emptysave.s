@@ -1,6 +1,6 @@
                 include macros.s
                 include mainsym.s
                 
-                org $0000
-                
+                org saveStateStart
+
                 ds.b saveStateEnd - saveStateStart, 0

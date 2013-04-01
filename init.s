@@ -24,22 +24,24 @@ InitZP:         sta joystick,x
                 sta ntFiltTime
                 lda #$7f
                 sta ntInitSong
-                if DISABLE_MUSIC>0
-                lda #$00
-                sta musicMode
-                lda #$01
-                sta soundMode
-                else
-                lda #$01                        ;Music and sound FX on by default
-                sta musicMode
-                sta soundMode
-                endif
-                sta difficulty                  ;Default to Hard difficulty
 
                 lda #<fileAreaStart
                 sta freeMemLo
                 lda #>fileAreaStart
                 sta freeMemHi
+
+        ; Load options file
+        
+                lda #F_OPTIONS
+                sta fileNumber
+                jsr OpenFile
+                ldx #$00
+LoadOptions:    jsr GetByte
+                bcs LoadOptionsDone
+                sta difficulty,x
+                inx
+                bcc LoadOptions
+LoadOptionsDone:
 
                 jsr InitScroll
 

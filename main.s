@@ -14,8 +14,6 @@ ITEM_CHEAT      = 1
 AMMO_CHEAT      = 0
 SKILL_CHEAT     = 0
 
-DISABLE_MUSIC = 0
-
         ; Memory configuration & loader symbols
 
                 include memory.s
