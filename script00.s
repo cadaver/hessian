@@ -6,7 +6,6 @@
 LOGOSTARTROW    = 1
 TEXTSTARTROW    = 12
 NUMTEXTROWS     = 8
-NUMSAVES        = 5
 NUMTITLEPAGES   = 5
 
 LOAD_GAME       = 0
@@ -17,6 +16,7 @@ TITLE_PAGEDELAY = 500
 
 SAVEDESCSIZE    = 24
 
+saveList        = charInfo
 logoStart       = chars
 logoScreen      = chars+608
 logoColors      = chars+608+168
@@ -90,13 +90,36 @@ TitleScreenParam:
 SaveGame:       lda #SAVE_GAME
                 jmp LoadOrSaveGame
 SaveGameExec:   jsr FadeOutText
-                lda #<(saveStateEnd-saveStateStart)
+                lda #<(saveStateEnd-saveStateStart) ;Save the savegame first
                 sta zpBitsLo
                 lda #>(saveStateEnd-saveStateStart)
                 sta zpBitsHi
                 lda #<saveStateStart
                 ldx #>saveStateStart
                 jsr SaveFile
+                lda saveSlotChoice
+                asl
+                adc saveSlotChoice
+                asl
+                asl
+                asl
+                tay
+                ldx #$00
+CopySaveDesc:   lda saveStateStart,x            ;Copy levelname & player XP to the savegamelist
+                sta saveList,y
+                iny
+                inx
+                cpx #SAVEDESCSIZE
+                bcc CopySaveDesc
+                lda #F_SAVELIST
+                jsr MakeFileName_Direct
+                lda #<MAX_SAVES*SAVEDESCSIZE
+                sta zpBitsLo
+                lda #>MAX_SAVES*SAVEDESCSIZE
+                sta zpBitsHi
+                lda #<saveList
+                ldx #>saveList
+                jsr SaveFile                    ;Then save the list also
 
         ; Title text display
 
@@ -237,12 +260,12 @@ LoadTextOK:     jsr PrintTextCenter
 LoadGameLoop:   lda #3
                 sta temp1
                 lda saveSlotChoice
-                ldx #NUMSAVES+1
+                ldx #MAX_SAVES+1
                 ldy #TEXTSTARTROW+2
                 jsr DrawChoiceArrow
                 jsr Update
                 lda saveSlotChoice
-                ldx #NUMSAVES
+                ldx #MAX_SAVES
                 jsr TitleMenuControl
                 sta saveSlotChoice
                 jsr GetFireClick
@@ -250,7 +273,7 @@ LoadGameLoop:   lda #3
                 lda #SFX_SELECT
                 jsr PlaySfx
                 lda saveSlotChoice
-                cmp #NUMSAVES
+                cmp #MAX_SAVES
                 bcs LoadGameCancel              ;Cancel load/save (TODO: save needs confirm step as data will be lost)
                 ldx #F_SAVE
                 jsr MakeFileName
@@ -260,15 +283,25 @@ LoadOrSaveGameMode:
                 jmp SaveGameExec
 LoadGameExec:   jsr OpenFile                    ;Load the savegame now
                 lda #<saveStateStart
-                ldx #>saveStateStart
-                jsr ReadSaveFile
-                bcc LoadGameLoop                ;Fail
+                sta zpDestLo
+                lda #>saveStateStart
+                sta zpDestHi
+                ldy #$00
+RSF_Loop:       jsr GetByte
+                bcs RSF_End
+                sta (zpDestLo),y
+                iny
+                bne RSF_Loop
+                inc zpDestHi
+                bne RSF_Loop
+RSF_End:        lda saveStateStart              ;If first byte zero, it's an empty file (no save)
+                beq LoadGameLoop
                 lda fastLoadMode                ;Fade out screen, unless in slowload mode
                 cmp #$01
                 beq LoadSkipFade
                 jsr FadeOutAll
 LoadSkipFade:   jsr SaveModifiedOptions
-                jmp RestartCheckpoint           ;Success, start loaded game
+                jmp RestartCheckpoint           ;Start loaded game
 LoadGameCancel: jmp TitleTexts
 
         ; Start new game
@@ -350,7 +383,7 @@ SaveModifiedOptions:
                 lda optionsModified
                 beq SMC_NoChange
                 lda #F_OPTIONS
-                sta fileNumber
+                jsr MakeFileName_Direct
                 lda #<3
                 sta zpBitsLo
                 lda #>3
@@ -552,23 +585,32 @@ GetRowAddress:  lda #40
                 sta zpDestHi
                 rts
 
-        ; Scan savegames and print their descriptions
+        ; Load savegamelist and print savegame descriptions
 
 ScanSaves:      lda #0
                 sta temp3
+                sta ScanSaveStore+1
                 ldx #1                          ;Always select "continue" in main menu after load/save
                 stx mainMenuChoice
                 ldx saveSlotChoice              ;If "cancel" selected, select first slot instead
-                cpx #NUMSAVES
-                bne ScanSaveLoop
+                cpx #MAX_SAVES
+                bne SaveSlotOK
                 sta saveSlotChoice
-ScanSaveLoop:   ldx #F_SAVE
-                jsr MakeFileName
+SaveSlotOK:     lda #F_SAVELIST                 ;Load the savegamelist which contains levelnames & player XPs
+                jsr MakeFileName_Direct         ;from all savegames
                 jsr OpenFile
-                jsr ReadSaveDescription
+ScanSaveLoop:   ldy #$00                        ;Read one description from the list, then print
+ScanSaveByteLoop:
+                jsr GetByte
+                sta saveDesc,y
+ScanSaveStore:  sta saveList
+                inc ScanSaveStore+1
+                iny
+                cpy #SAVEDESCSIZE
+                bcc ScanSaveByteLoop
                 lda #5
                 sta temp1
-                lda saveDescription
+                lda saveDesc
                 bne GetSaveDescription
                 lda #<txtEmpty
                 ldx #>txtEmpty
@@ -576,19 +618,21 @@ ScanSaveLoop:   ldx #F_SAVE
 SaveDone:       inc temp2
                 inc temp3
                 lda temp3
-                cmp #NUMSAVES
+                cmp #MAX_SAVES
                 bcc ScanSaveLoop
+ScanSaveClose:  jsr GetByte
+                bcc ScanSaveClose
                 lda #<txtCancel
                 ldx #>txtCancel
                 jmp PrintText
 GetSaveDescription:
-                lda #<saveDescription           ;Level name
-                ldx #>saveDescription
+                lda #<saveDesc                  ;Level name
+                ldx #>saveDesc
                 jsr PrintText
                 lda #$20                        ;Level / XP / XP limit
                 sta txtSaveLevel
                 sta txtSaveLevel+1
-                lda saveDescription+21
+                lda saveDesc+21
                 jsr ConvertToBCD8
                 ldx #80
                 jsr PrintBCDDigitsNoZeroes
@@ -597,14 +641,14 @@ CopyLevelText:  lda screen1+23*40-1,x
                 dex
                 cpx #81
                 bcs CopyLevelText
-                lda saveDescription+19
-                ldy saveDescription+20
+                lda saveDesc+19
+                ldy saveDesc+20
                 ldx #80
                 jsr ConvertAndPrint3BCDDigits
                 lda #"/"
                 sta screen1+25*40+3
-                lda saveDescription+22
-                ldy saveDescription+23
+                lda saveDesc+22
+                ldy saveDesc+23
                 ldx #84
                 jsr ConvertAndPrint3BCDDigits
 CopyXPText:     lda screen1+23*40-1,x
@@ -618,42 +662,6 @@ CopyXPText:     lda screen1+23*40-1,x
                 ldx #>txtSaveLevelAndXP
                 jsr PrintText
                 jmp SaveDone
-
-        ; Read just the description (level name + player XP) from a savefile
-
-ReadSaveDescription:
-                ldy #$00
-                sty saveDescription
-RSD_Loop:       jsr GetByte
-                bcs RSD_Error
-                sta saveDescription,y
-                iny
-                cpy #SAVEDESCSIZE
-                bcc RSD_Loop
-RSD_Close:      jsr GetByte
-                bcc RSD_Close
-RSD_Error:      rts
-
-        ; Read an opened savefile. C=1 if read to the end
-
-ReadSaveFile:   lda #<saveStateStart
-                sta zpDestLo
-                lda #>saveStateStart
-                sta zpDestHi
-                ldy #$00
-                ldx #$00
-RSF_Loop:       jsr GetByte
-                bcs RSF_End
-                sta (zpDestLo),y
-                iny
-                bne RSF_Loop
-                inc zpDestHi
-                inx
-                bne RSF_Loop
-RSF_End:        cpy #<(saveStateEnd-saveStateStart)
-                txa
-                sbc #>(saveStateEnd-saveStateStart)
-                rts
 
         ; Pick choice by joystick up/down
         
@@ -798,6 +806,6 @@ textFadeTbl:    dc.b $00,$06,$03,$01
 
 optionMaxValue: dc.b 2,1,1
 
-saveDescription:ds.b SAVEDESCSIZE,0
+saveDesc:       ds.b SAVEDESCSIZE,0 
 
                 CheckScriptEnd

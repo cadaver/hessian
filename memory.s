@@ -6,6 +6,7 @@ MAX_SPR         = 24
 MAX_ACT         = 21
 MAX_COMPLEXACT  = 6
 MAX_CACHESPRITES = 64
+MAX_CHUNKFILES   = 32
 MAX_MAPROWS     = 128
 MAX_BLK         = 192
 MAX_LVLDATAACT  = 80
@@ -13,7 +14,10 @@ MAX_LVLACT      = 96                            ;Allow extra 16 global or tempor
 MAX_LVLOBJ      = 128                           ;Note: must be 128! And-operations are used in code
 MAX_SPAWNERS    = 16
 MAX_PLOTBITS    = 64
+MAX_SAVES       = 5
 
+
+SAVEDESCSIZE    = 24
 SCRIPTAREASIZE  = 8*256
 SCROLLROWS      = 22
 

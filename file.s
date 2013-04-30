@@ -13,9 +13,8 @@ F_MUSIC         = $08
 F_SCRIPT        = $09
 F_LEVEL         = $0a
 F_OPTIONS       = $70
-F_SAVE          = $71
-
-MAX_CHUNKFILES   = 32
+F_SAVELIST      = $71
+F_SAVE          = $72
 
         ; Create a number-based file name
         ;

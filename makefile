@@ -27,8 +27,8 @@ clean:
 	-rm e?
 	-rm f?
 
-hessian.d64: boot.prg loader.pak loadpic.pak main.pak options.bin emptysave.bin logo.pak music00.pak script00.pak level00.pak level01.pak \
-	common.pak item.pak weapon.pak player.pak
+hessian.d64: boot.prg loader.pak loadpic.pak main.pak options.bin emptysave.bin savelist.bin logo.pak music00.pak script00.pak \
+	level00.pak level01.pak common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -165,6 +165,9 @@ emptysave.bin: emptysave.s mainsym.s
 
 options.bin: options.s mainsym.s
 	dasm options.s -ooptions.bin -f3
+
+savelist.bin: savelist.s mainsym.s
+	dasm savelist.s -osavelist.bin -f3
 
 logo.pak: pics/logo.iff logo.s
 	pic2chr pics/logo.iff logo.chr /m14 /n15 /x24 /y7 /c /s

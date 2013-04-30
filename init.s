@@ -33,7 +33,7 @@ InitZP:         sta joystick,x
         ; Load options file
         
                 lda #F_OPTIONS
-                sta fileNumber
+                jsr MakeFileName_Direct
                 jsr OpenFile
                 ldx #$00
 LoadOptions:    jsr GetByte
