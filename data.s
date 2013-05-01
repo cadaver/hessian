@@ -270,6 +270,7 @@ actYL:          ds.b MAX_ACT,0
 actYH:          ds.b MAX_ACT,0
 actT:           ds.b MAX_ACT,0
 actD:           ds.b MAX_ACT,0
+actHp:          ds.b MAX_ACT,0
 actF1:          ds.b MAX_ACT,0
 actFd:          ds.b MAX_ACT,0
 actC:           ds.b MAX_ACT,0
@@ -284,7 +285,6 @@ actSizeH:       ds.b MAX_ACT,0
 actSizeU:       ds.b MAX_ACT,0
 actSizeD:       ds.b MAX_ACT,0
 actTime:        ds.b MAX_ACT,0
-actHp:          ds.b MAX_ACT,0
 actMB:          ds.b MAX_ACT,0
 actAuxData:     ds.b MAX_ACT,0
 actAITarget:    ds.b MAX_ACT,0
@@ -357,6 +357,7 @@ saveYL:         dc.b 0
 saveYH:         dc.b 0
 saveT:          dc.b 0
 saveD:          dc.b 0
+saveHp:         dc.b 0
 saveStateEnd:
 
         ; Other variables

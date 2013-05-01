@@ -98,12 +98,7 @@ SaveGameExec:   jsr FadeOutText
                 ldx #>saveStateStart
                 jsr SaveFile
                 lda saveSlotChoice
-                asl
-                adc saveSlotChoice
-                asl
-                asl
-                asl
-                tay
+                jsr GetSaveListPos
                 ldx #$00
 CopySaveDesc:   lda saveStateStart,x            ;Copy levelname & player XP to the savegamelist
                 sta saveList,y
@@ -146,9 +141,9 @@ TitleTextsLoop: jsr Update
 
 EnterMainMenu:  lda #SFX_SELECT
                 jsr PlaySfx
-                
+
         ; Main menu
-        
+
 MainMenu:       jsr FadeOutText
                 jsr ClearText
                 lda #<txtMainMenu
@@ -372,6 +367,8 @@ IP_SkillCheatLoop:
                 sta saveYH
                 lda #ACT_PLAYER
                 sta saveT
+                lda #HP_PLAYER
+                sta saveHp
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
@@ -585,32 +582,42 @@ GetRowAddress:  lda #40
                 sta zpDestHi
                 rts
 
+        ; Get index of entry A in savegamelist
+        
+GetSaveListPos: sta temp8
+                asl
+                adc temp8
+                asl
+                asl
+                asl
+                tay
+                rts
+
         ; Load savegamelist and print savegame descriptions
 
-ScanSaves:      lda #0
+ScanSaves:      lda #F_SAVELIST                 ;Load the savegamelist which contains levelnames & player XPs
+                jsr MakeFileName_Direct         ;from all savegames
+                jsr OpenFile
+                lda #0
                 sta temp3
-                sta ScanSaveStore+1
                 ldx #1                          ;Always select "continue" in main menu after load/save
                 stx mainMenuChoice
-                ldx saveSlotChoice              ;If "cancel" selected, select first slot instead
+                ldx saveSlotChoice              ;If "cancel" selected last time, select first slot instead
                 cpx #MAX_SAVES
                 bne SaveSlotOK
                 sta saveSlotChoice
-SaveSlotOK:     lda #F_SAVELIST                 ;Load the savegamelist which contains levelnames & player XPs
-                jsr MakeFileName_Direct         ;from all savegames
-                jsr OpenFile
-ScanSaveLoop:   ldy #$00                        ;Read one description from the list, then print
-ScanSaveByteLoop:
-                jsr GetByte
-                sta saveDesc,y
-ScanSaveStore:  sta saveList
-                inc ScanSaveStore+1
-                iny
-                cpy #SAVEDESCSIZE
-                bcc ScanSaveByteLoop
-                lda #5
+SaveSlotOK:     tax
+ReadSaveList:   jsr GetByte
+                bcs ScanSaveLoop
+                sta saveList,x
+                inx
+                bcc ReadSaveList
+ScanSaveLoop:   lda #5
                 sta temp1
-                lda saveDesc
+                lda temp3
+                jsr GetSaveListPos
+                sty temp8
+                lda saveList,y
                 bne GetSaveDescription
                 lda #<txtEmpty
                 ldx #>txtEmpty
@@ -620,19 +627,18 @@ SaveDone:       inc temp2
                 lda temp3
                 cmp #MAX_SAVES
                 bcc ScanSaveLoop
-ScanSaveClose:  jsr GetByte
-                bcc ScanSaveClose
                 lda #<txtCancel
                 ldx #>txtCancel
                 jmp PrintText
 GetSaveDescription:
-                lda #<saveDesc                  ;Level name
-                ldx #>saveDesc
+                lda temp8                       ;Level name
+                ldx #>saveList
                 jsr PrintText
                 lda #$20                        ;Level / XP / XP limit
                 sta txtSaveLevel
                 sta txtSaveLevel+1
-                lda saveDesc+21
+                ldx temp8
+                lda saveList+21,x
                 jsr ConvertToBCD8
                 ldx #80
                 jsr PrintBCDDigitsNoZeroes
@@ -641,14 +647,16 @@ CopyLevelText:  lda screen1+23*40-1,x
                 dex
                 cpx #81
                 bcs CopyLevelText
-                lda saveDesc+19
-                ldy saveDesc+20
+                ldx temp8
+                lda saveList+19,x
+                ldy saveList+20,x
                 ldx #80
                 jsr ConvertAndPrint3BCDDigits
                 lda #"/"
                 sta screen1+25*40+3
-                lda saveDesc+22
-                ldy saveDesc+23
+                ldx temp8
+                lda saveList+22,x
+                ldy saveList+23,x
                 ldx #84
                 jsr ConvertAndPrint3BCDDigits
 CopyXPText:     lda screen1+23*40-1,x
@@ -664,7 +672,7 @@ CopyXPText:     lda screen1+23*40-1,x
                 jmp SaveDone
 
         ; Pick choice by joystick up/down
-        
+
 TitleMenuControl:
                 tay
                 stx temp6
@@ -805,7 +813,5 @@ logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
 textFadeTbl:    dc.b $00,$06,$03,$01
 
 optionMaxValue: dc.b 2,1,1
-
-saveDesc:       ds.b SAVEDESCSIZE,0 
 
                 CheckScriptEnd

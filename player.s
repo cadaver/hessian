@@ -1063,8 +1063,8 @@ SCP_ZPState:    lda playerStateZPStart-1,x
                 jsr SaveState_CopyMemory
                 clc
 StoreLoadActorVars:
-                ldx #5
-                ldy #5*MAX_ACT
+                ldx #6
+                ldy #6*MAX_ACT
 SLAV_Loop:      bcc SLAV_Store
                 lda saveXL,x
                 sta actXL+ACTI_PLAYER,y
@@ -1079,7 +1079,17 @@ SLAV_Next:      php
                 plp
                 dex
                 bpl SLAV_Loop
-                rts
+                bcc SLAV_Store2
+                lda #HP_PLAYER                  ;Check health after checkpoint restore
+                ldx difficulty                  ;Give full health on Easy & Medium, and
+                cpx #DIFFICULTY_HARD            ;at least half on Hard
+                bcc SLAV_EasyOrMedium
+                lsr
+SLAV_EasyOrMedium:
+                cmp actHp+ACTI_PLAYER
+                bcc SLAV_Store2
+                sta actHp+ACTI_PLAYER
+SLAV_Store2:    rts
 
         ; Restore an in-memory checkpoint
         ;
