@@ -11,7 +11,7 @@ music00.pak 08
 script00.pak 09
 level00.pak 0A
 level01.pak 0B
-config.bin 70
+options.bin 70
 savelist.bin 71
 emptysave.bin 72
 emptysave.bin 73
