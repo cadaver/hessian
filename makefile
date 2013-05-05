@@ -27,7 +27,7 @@ clean:
 	-rm e?
 	-rm f?
 
-hessian.d64: boot.prg loader.pak loadpic.pak main.pak options.bin emptysave.bin savelist.bin logo.pak music00.pak script00.pak \
+hessian.d64: boot.prg loader.pak main.pak loadpic.pak options.bin emptysave.bin savelist.bin logo.pak music00.pak script00.pak \
 	level00.pak level01.pak common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
@@ -44,17 +44,6 @@ loader.pak: kernal.s loader.s ldepack.s macros.s memory.s
 	dasm ldepack.s -oldepack.bin -f3
 	invert ldepack.bin ldepack.bin
 	filejoin ldepack.bin+ldata.pak loader.pak
-
-loadpic.pak: loadpic.s loadsym.s mainsym.s pics/loadpic.iff
-	gfxconv pics\loadpic.iff loadpic.dat /r /b0 /o /nc /ns
-	gfxconv pics\loadpic.iff loadpicscr.dat /r /b0 /o /nc /nb
-	gfxconv pics\loadpic.iff loadpiccol.dat /r /b0 /o /nb /ns
-	dasm loadpic.s  -oloadpic.bin -f3
-	pack2 loadpic.bin loadpic_1.pak
-	pack2 loadpic.dat loadpic_2.pak
-	pack2 loadpicscr.dat loadpic_3.pak
-	pack2 loadpiccol.dat loadpic_4.pak
-	filejoin loadpic_1.pak+loadpic_2.pak+loadpic_3.pak+loadpic_4.pak loadpic.pak
 
 sfx/pistol.sfx: sfx/pistol.ins
 	ins2nt2 sfx/pistol.ins sfx/pistol.sfx
@@ -159,6 +148,17 @@ main.pak: actor.s actordata.s ai.s aidata.s bullet.s cutscene.s data.s file.s in
 	dasm main.s -omain.bin -smain.tbl -f3
 	symbols main.tbl mainsym.s
 	pack2 main.bin main.pak
+
+loadpic.pak: loadpic.s loadsym.s mainsym.s pics/loadpic.iff
+	gfxconv pics\loadpic.iff loadpic.dat /r /b0 /o /nc /ns
+	gfxconv pics\loadpic.iff loadpicscr.dat /r /b0 /o /nc /nb
+	gfxconv pics\loadpic.iff loadpiccol.dat /r /b0 /o /nb /ns
+	dasm loadpic.s  -oloadpic.bin -f3
+	pack2 loadpic.bin loadpic_1.pak
+	pack2 loadpic.dat loadpic_2.pak
+	pack2 loadpicscr.dat loadpic_3.pak
+	pack2 loadpiccol.dat loadpic_4.pak
+	filejoin loadpic_1.pak+loadpic_2.pak+loadpic_3.pak+loadpic_4.pak loadpic.pak
 
 emptysave.bin: emptysave.s mainsym.s
 	dasm emptysave.s -oemptysave.bin -f3

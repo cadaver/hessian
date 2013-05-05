@@ -338,7 +338,7 @@ IP_InitLevelData:
                 lda #<FIRST_XPLIMIT
                 sta xpLimitLo
                 #if SKILL_CHEAT>0
-                lda #3
+                lda #SKILL_CHEAT
                 ldx #4
 IP_SkillCheatLoop:
                 sta plrAgility,x

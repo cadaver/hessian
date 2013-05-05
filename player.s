@@ -24,8 +24,6 @@ WATER_YBRAKING = 3
 
 HUMAN_MAX_YSPEED = 6*8
 
-DROWNING_TIMER = 5
-
 DAMAGING_FALL_DISTANCE = 3
 
 FIRST_XPLIMIT   = 100
@@ -48,6 +46,9 @@ DIFFICULTY_MEDIUM = 1
 DIFFICULTY_HARD = 2
 
 EASY_DMGMULTIPLIER_REDUCE = 2
+
+DROWNING_TIMER = 1
+DROWNING_TIMER_REPEAT = $f0
 
         ; Player update routine
         ;
@@ -197,23 +198,31 @@ MoveHuman:      lda actMB,x
                 adc #DEATH_WATER_YBRAKING       ;Extra buoyancy for corpses
 MH_NoFloating:  jsr BrakeActorY
 MH_NoYBraking:  lda lvlWaterDamage              ;Check if water in this level is damaging
-                bne MH_HasDamagingWater2
+                bne MH_HasDamagingWater
                 lda #-3                         ;If water itself is not damaging, check drowning
                 jsr GetCharInfoOffset           ;(head under water)
                 and #CI_WATER
-                bne MH_NoDrowningTimerReset
-                lda #$00
-                sta actWaterDamage,x
-                beq MH_NotInWater
+                clc
+                beq MH_ResetDrowningTimer
 MH_NoDrowningTimerReset:
                 lda #DROWNING_TIMER
-MH_HasDamagingWater2:
+MH_HasDamagingWater:
                 clc
                 adc actWaterDamage,x
+MH_ResetDrowningTimer:
                 sta actWaterDamage,x
                 bcc MH_NotInWater
                 lda #DMG_WATER
                 jsr DamageSelf
+                lda lvlWaterDamage
+                bne MH_NotInWater
+                lda #DROWNING_TIMER_REPEAT      ;Drowning is faster after initial damage
+                cpx #ACTI_PLAYER
+                bne MH_NotPlayerDrowning
+MH_PlayerDrowningTimerRepeat:
+                lda #DROWNING_TIMER_REPEAT
+MH_NotPlayerDrowning:
+                sta actWaterDamage,x
 MH_NotInWater:  lda actD,x
                 sta MH_OldDir+1
                 ldy #AL_SIZEUP                  ;Set size up based on currently displayed
@@ -626,9 +635,9 @@ MH_InitClimb:   lda #$80
                 jmp NoInterpolation
 
 MH_InitSwim:    lda lvlWaterDamage              ;If only water damage is drowning, reset water damage counter
-                bne MH_HasDamagingWater
+                bne MH_HasDamagingWater2
                 sta actWaterDamage,x
-MH_HasDamagingWater:
+MH_HasDamagingWater2:
                 lda actSY,x
                 bmi MH_SwimNoYSpeedMod          ;If falling down, reduce speed when hit water
                 ldy #6
@@ -1181,7 +1190,7 @@ ApplySkills:
                 lda plrWeaponBonusTbl,x
                 sta AH_PlayerMeleeBonus+1
 
-        ; Vitality: damage reduction, faster health recharge
+        ; Vitality: damage reduction, faster health recharge, slower drowning
 
                 ldy difficulty
                 lda plrVitality
@@ -1196,14 +1205,17 @@ AS_MediumOrEasy:sta ULO_HealthRechargeRate+1
                 sbc plrVitality
                 cpy #DIFFICULTY_MEDIUM              ;On Easy level damage multiplier is lower
                 bcs AS_MediumOrHard
-                sbc #EASY_DMGMULTIPLIER_REDUCE
+                sbc #EASY_DMGMULTIPLIER_REDUCE-1    ;C=0 here, becomes 1
 AS_MediumOrHard:sta plrDmgModify
-                lda plrVitality
+                lda #DROWNING_TIMER_REPEAT/2
+                sbc plrVitality
+                asl                                 ;C becomes 0
+                sta MH_PlayerDrowningTimerRepeat+1
 
         ; Carrying: more weapons in inventory and higher ammo limit
 
                 lda plrCarrying
-                adc #INITIAL_MAX_WEAPONS-1
+                adc #INITIAL_MAX_WEAPONS
                 sta AI_MaxWeaponsCount+1
                 ldx #itemDefaultMaxCount - itemMaxCount
 AS_AmmoLoop:    lda itemMaxCountAdd-1,x
