@@ -24,7 +24,8 @@ WATER_YBRAKING = 3
 
 HUMAN_MAX_YSPEED = 6*8
 
-DAMAGING_FALL_DISTANCE = 3
+DAMAGING_FALL_DISTANCE = 4
+MIN_ROLLSAVE_SPEED = 16
 
 FIRST_XPLIMIT   = 100
 NEXT_XPLIMIT    = 50
@@ -250,13 +251,10 @@ MH_NotInWater:  lda actD,x
                 lda temp3                       ;Possibility to reduce damage by rolling
                 and #AMF_ROLL
                 beq MH_NoRollSave
-                cpy #DAMAGING_FALL_DISTANCE-2   ;If fall is ridiculously low, do not allow the roll
-                bcc MH_NoRollSave
                 lda actSX,x
-                cmp #16                         ;Must have sufficient X-speed for roll
+                adc #MIN_ROLLSAVE_SPEED-1       ;C=1 here
+                cmp #MIN_ROLLSAVE_SPEED*2       ;Must have sufficient X-speed for roll
                 bcc MH_NoRollSave
-                cmp #-15
-                bcs MH_NoRollSave
                 lda actD,x
                 asl
                 lda #JOY_DOWN|JOY_RIGHT
