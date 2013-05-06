@@ -216,12 +216,13 @@ MH_ResetDrowningTimer:
                 jsr DamageSelf
                 lda lvlWaterDamage
                 bne MH_NotInWater
-                lda #DROWNING_TIMER_REPEAT      ;Drowning is faster after initial damage
-                cpx #ACTI_PLAYER
+                txa
                 bne MH_NotPlayerDrowning
 MH_PlayerDrowningTimerRepeat:
-                lda #DROWNING_TIMER_REPEAT
+                lda #DROWNING_TIMER_REPEAT      ;Drowning is faster after initial damage
+                skip2
 MH_NotPlayerDrowning:
+                lda #DROWNING_TIMER_REPEAT
                 sta actWaterDamage,x
 MH_NotInWater:  lda actD,x
                 sta MH_OldDir+1
@@ -1194,8 +1195,7 @@ ApplySkills:
 
                 ldy difficulty
                 lda plrVitality
-                clc
-                adc #INITIAL_HEALTHRECHARGETIMER
+                adc #INITIAL_HEALTHRECHARGETIMER-1  ;C=1 here
                 cpy #DIFFICULTY_HARD                ;Hard level disables health recharge
                 bcc AS_MediumOrEasy
                 lda #$00
@@ -1207,8 +1207,9 @@ AS_MediumOrEasy:sta ULO_HealthRechargeRate+1
                 bcs AS_MediumOrHard
                 sbc #EASY_DMGMULTIPLIER_REDUCE-1    ;C=0 here, becomes 1
 AS_MediumOrHard:sta plrDmgModify
-                lda #DROWNING_TIMER_REPEAT/2
+                lda #DROWNING_TIMER_REPEAT/4
                 sbc plrVitality
+                asl
                 asl                                 ;C becomes 0
                 sta MH_PlayerDrowningTimerRepeat+1
 

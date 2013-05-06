@@ -1249,11 +1249,10 @@ DA_NotPlayer:   sty temp7
                 tay
                 pla
                 jsr ModifyDamage
-                tay                             ;Never reduce damage to zero with the damage
-                bne DA_NotZeroDamage            ;modifier
-                lda #$01
-DA_NotZeroDamage:
-                sta temp8
+                cmp #DMG_MINIMUM                ;Always at least 2 points damage
+                bcs DA_NotMinDamage
+                lda #DMG_MINIMUM
+DA_NotMinDamage:sta temp8
                 lda actHp,x                     ;First check that there is health
                 beq DA_Done                     ;(prevent destroy being called multiple times)
                 sec

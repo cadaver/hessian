@@ -1,3 +1,4 @@
+DMG_MINIMUM     = 2
 DMG_WATER       = 2
 DMG_FISTS       = 4
 DMG_FLAMETHROWER = 5
