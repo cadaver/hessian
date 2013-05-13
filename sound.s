@@ -17,8 +17,9 @@ NT_FIRSTWAVE        = $09
 
 MUSIC_SILENCE       = $00
 MUSIC_TITLE         = $01
-                
-FIRST_INGAME_SONG   = $01
+MUSIC_CARGOSHIP     = $04
+
+FIRST_INGAME_SONG   = $04
 
         ; Play a song. Load if necessary. Do not reinit if already playing
         ;
@@ -253,6 +254,7 @@ Play_CheckHr:   bmi Play_Rest
                 bne Play_Rest
                 lda #$fe
                 sta ntChnGate,x
+                sta $d405,x
                 lda #NT_HRPARAM
                 sta $d406,x
 Play_Rest:      iny

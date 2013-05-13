@@ -8,9 +8,10 @@ item.pak 05
 weapon.pak 06
 player.pak 07
 music00.pak 08
-script00.pak 09
-level00.pak 0A
-level01.pak 0B
+music01.pak 09
+script00.pak 0A
+level00.pak 0B
+level01.pak 0C
 options.bin 70
 savelist.bin 71
 emptysave.bin 72
