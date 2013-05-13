@@ -16,7 +16,6 @@ TITLE_PAGEDELAY = 500
 
 SAVEDESCSIZE    = 24
 
-saveList        = charInfo
 logoStart       = chars
 logoScreen      = chars+608
 logoColors      = chars+608+168
@@ -472,6 +471,161 @@ M               set M+1
                 bpl UC_UpdateLogoLoop
 UC_LogoDone:    rts
 
+        ; Load savegamelist and print savegame descriptions
+
+ScanSaves:      lda #F_SAVELIST                 ;Load the savegamelist which contains levelnames & player XPs
+                jsr MakeFileName_Direct         ;from all savegames
+                jsr OpenFile
+                lda #0
+                sta temp3
+                ldx #1                          ;Always select "continue" in main menu after load/save
+                stx mainMenuChoice
+                ldx saveSlotChoice              ;If "cancel" selected last time, select first slot instead
+                cpx #MAX_SAVES
+                bne SaveSlotOK
+                sta saveSlotChoice
+SaveSlotOK:     tax
+ReadSaveList:   jsr GetByte
+                bcs ScanSaveLoop
+                sta saveList,x
+                inx
+                bcc ReadSaveList
+ScanSaveLoop:   lda #5
+                sta temp1
+                lda temp3
+                jsr GetSaveListPos
+                sty temp8
+                lda saveList,y
+                bne GetSaveDescription
+                lda #<txtEmpty
+                ldx #>txtEmpty
+                jsr PrintText
+SaveDone:       inc temp2
+                inc temp3
+                lda temp3
+                cmp #MAX_SAVES
+                bcc ScanSaveLoop
+                lda #<txtCancel
+                ldx #>txtCancel
+                jmp PrintText
+GetSaveDescription:
+                lda #<saveList
+                adc temp8                       ;Level name
+                sta zpSrcLo
+                lda #>saveList
+                adc #$00
+                sta zpSrcHi
+                jsr PrintTextContinue
+                lda #$20                        ;Level / XP / XP limit
+                sta txtSaveLevel
+                sta txtSaveLevel+1
+                ldx temp8
+                lda saveList+21,x
+                jsr ConvertToBCD8
+                ldx #80
+                jsr PrintBCDDigitsNoZeroes
+CopyLevelText:  lda screen1+23*40-1,x
+                sta txtSaveLevel-81,x
+                dex
+                cpx #81
+                bcs CopyLevelText
+                ldx temp8
+                lda saveList+19,x
+                ldy saveList+20,x
+                ldx #80
+                jsr ConvertAndPrint3BCDDigits
+                lda #"/"
+                sta screen1+25*40+3
+                ldx temp8
+                lda saveList+22,x
+                ldy saveList+23,x
+                ldx #84
+                jsr ConvertAndPrint3BCDDigits
+CopyXPText:     lda screen1+23*40-1,x
+                sta txtSaveXP-81,x
+                dex
+                cpx #81
+                bcs CopyXPText
+                lda #22
+                sta temp1
+                lda #<txtSaveLevelAndXP
+                ldx #>txtSaveLevelAndXP
+                jsr PrintText
+                jmp SaveDone
+
+        ; Pick choice by joystick up/down
+
+TitleMenuControl:
+                tay
+                stx temp6
+                ldx moveDelay
+                beq TMC_NoDelay
+                dec moveDelay
+                rts
+TMC_NoDelay:    lda joystick
+                lsr
+                bcc TMC_NotUp
+                dey
+                bpl TMC_HasMove
+                ldy temp6
+TMC_HasMove:    lda #SFX_SELECT
+                jsr PlaySfx
+                ldx #TITLE_MOVEDELAY
+                lda joystick
+                cmp prevJoy
+                bne TMC_NormalDelay
+                dex
+                dex
+                dex
+TMC_NormalDelay:stx moveDelay
+TMC_NoMove:     tya
+                rts
+TMC_NotUp:      lsr
+                bcc TMC_NoMove
+                iny
+                cpy temp6
+                bcc TMC_HasMove
+                beq TMC_HasMove
+                ldy #$00
+                beq TMC_HasMove
+
+        ; Title delay counting
+
+TitlePageDelayInteractive:
+                lda joystick                    ;Reset delay if joystick moved
+                bne ResetTitlePageDelay
+TitlePageDelay: inc titlePageDelayLo
+                bne TPD_NotOver
+                inc titlePageDelayHi
+TPD_NotOver:    lda titlePageDelayHi
+                cmp #>TITLE_PAGEDELAY
+                bne TPD_Done
+                lda titlePageDelayLo
+                cmp #<TITLE_PAGEDELAY
+TPD_Done:       rts
+
+        ; Print page
+        
+PrintPage:      ldy #TEXTSTARTROW
+                sty temp2
+                jsr PrintTextCenter
+                inc temp2
+TitleRowLoop:   jsr PrintTextCenterContinue
+                inc temp2
+                lda temp2
+                cmp #TEXTSTARTROW+7
+                bcc TitleRowLoop
+
+        ; Reset title delay, set text to fade in
+
+ResetPage:      lda #1
+                sta textFadeDir
+ResetTitlePageDelay:
+                lda #0
+                sta titlePageDelayLo
+                sta titlePageDelayHi
+                rts
+
         ; Wait until text faded out
 
 FadeOutAll:     lda #-1
@@ -593,157 +747,6 @@ GetSaveListPos: sta temp8
                 tay
                 rts
 
-        ; Load savegamelist and print savegame descriptions
-
-ScanSaves:      lda #F_SAVELIST                 ;Load the savegamelist which contains levelnames & player XPs
-                jsr MakeFileName_Direct         ;from all savegames
-                jsr OpenFile
-                lda #0
-                sta temp3
-                ldx #1                          ;Always select "continue" in main menu after load/save
-                stx mainMenuChoice
-                ldx saveSlotChoice              ;If "cancel" selected last time, select first slot instead
-                cpx #MAX_SAVES
-                bne SaveSlotOK
-                sta saveSlotChoice
-SaveSlotOK:     tax
-ReadSaveList:   jsr GetByte
-                bcs ScanSaveLoop
-                sta saveList,x
-                inx
-                bcc ReadSaveList
-ScanSaveLoop:   lda #5
-                sta temp1
-                lda temp3
-                jsr GetSaveListPos
-                sty temp8
-                lda saveList,y
-                bne GetSaveDescription
-                lda #<txtEmpty
-                ldx #>txtEmpty
-                jsr PrintText
-SaveDone:       inc temp2
-                inc temp3
-                lda temp3
-                cmp #MAX_SAVES
-                bcc ScanSaveLoop
-                lda #<txtCancel
-                ldx #>txtCancel
-                jmp PrintText
-GetSaveDescription:
-                lda temp8                       ;Level name
-                ldx #>saveList
-                jsr PrintText
-                lda #$20                        ;Level / XP / XP limit
-                sta txtSaveLevel
-                sta txtSaveLevel+1
-                ldx temp8
-                lda saveList+21,x
-                jsr ConvertToBCD8
-                ldx #80
-                jsr PrintBCDDigitsNoZeroes
-CopyLevelText:  lda screen1+23*40-1,x
-                sta txtSaveLevel-81,x
-                dex
-                cpx #81
-                bcs CopyLevelText
-                ldx temp8
-                lda saveList+19,x
-                ldy saveList+20,x
-                ldx #80
-                jsr ConvertAndPrint3BCDDigits
-                lda #"/"
-                sta screen1+25*40+3
-                ldx temp8
-                lda saveList+22,x
-                ldy saveList+23,x
-                ldx #84
-                jsr ConvertAndPrint3BCDDigits
-CopyXPText:     lda screen1+23*40-1,x
-                sta txtSaveXP-81,x
-                dex
-                cpx #81
-                bcs CopyXPText
-                lda #22
-                sta temp1
-                lda #<txtSaveLevelAndXP
-                ldx #>txtSaveLevelAndXP
-                jsr PrintText
-                jmp SaveDone
-
-        ; Pick choice by joystick up/down
-
-TitleMenuControl:
-                tay
-                stx temp6
-                ldx moveDelay
-                beq TMC_NoDelay
-                dec moveDelay
-                rts
-TMC_NoDelay:    lda joystick
-                lsr
-                bcc TMC_NotUp
-                dey
-                bpl TMC_HasMove
-                ldy temp6
-TMC_HasMove:    lda #SFX_SELECT
-                jsr PlaySfx
-                ldx #TITLE_MOVEDELAY
-                lda joystick
-                cmp prevJoy
-                bne TMC_NormalDelay
-                dex
-                dex
-                dex
-TMC_NormalDelay:stx moveDelay
-TMC_NoMove:     tya
-                rts
-TMC_NotUp:      lsr
-                bcc TMC_NoMove
-                iny
-                cpy temp6
-                bcc TMC_HasMove
-                beq TMC_HasMove
-                ldy #$00
-                beq TMC_HasMove
-
-        ; Title delay counting
-
-TitlePageDelayInteractive:
-                lda joystick                    ;Reset delay if joystick moved
-                bne ResetTitlePageDelay
-TitlePageDelay: inc titlePageDelayLo
-                bne TPD_NotOver
-                inc titlePageDelayHi
-TPD_NotOver:    lda titlePageDelayHi
-                cmp #>TITLE_PAGEDELAY
-                bne TPD_Done
-                lda titlePageDelayLo
-                cmp #<TITLE_PAGEDELAY
-TPD_Done:       rts
-
-        ; Print page
-        
-PrintPage:      ldy #TEXTSTARTROW
-                sty temp2
-                jsr PrintTextCenter
-                inc temp2
-TitleRowLoop:   jsr PrintTextCenterContinue
-                inc temp2
-                lda temp2
-                cmp #TEXTSTARTROW+7
-                bcc TitleRowLoop
-
-        ; Reset title delay, set text to fade in
-
-ResetPage:      lda #1
-                sta textFadeDir
-ResetTitlePageDelay:
-                lda #0
-                sta titlePageDelayLo
-                sta titlePageDelayHi
-                rts
-
 logoFade:       dc.b 0
 textFade:       dc.b 0
 logoFadeDir:    dc.b 1
@@ -813,5 +816,7 @@ logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
 textFadeTbl:    dc.b $00,$06,$03,$01
 
 optionMaxValue: dc.b 2,1,1
+
+saveList:       ds.b MAX_SAVES*SAVEDESCSIZE,0
 
                 CheckScriptEnd
