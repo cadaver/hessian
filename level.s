@@ -358,7 +358,7 @@ OO_Done:        rts
 
         ; Operate a level object.
         ;
-        ; Parameters: Y object number
+        ; Parameters: Y object number (should also be in lvlObjNum)
         ; Returns: C=1 if object was operated successfully (should not jump), C=0 if not
         ; Modifies: A,X,Y,temp vars
 
@@ -384,7 +384,22 @@ OO_Inactive:    lda lvlObjY,y                   ;If object uses animation, play 
                 bpl OO_NoSound
                 lda #SFX_OBJECT
                 jsr PlaySfx
-OO_NoSound:     jsr ToggleObject                ;Note: animating the object here (before UpdateFrame)
+OO_NoSound:     lda lvlObjR,y                  ;Check requirement item
+                beq OO_RequirementOK
+                sta temp3
+                jsr FindItem
+                bcs OO_RequirementOK
+                lda #<txtRequired
+                ldx #>txtRequired
+                ldy #INVENTORY_TEXT_DURATION
+                jsr PrintPanelText
+                lda temp3
+                jsr GetItemName
+                jsr ContinuePanelText
+                jmp OO_EnterNoOperate           ;Turn to object but do not actually operate
+OO_RequirementOK:
+                ldy lvlObjNum
+                jsr ToggleObject                ;Note: animating the object here (before UpdateFrame)
 OO_EnterNoOperate:                              ;may theoretically induce an UpdateBlock bug if colorscroll
                 lda #FR_ENTER                   ;is happening on the same frame. However, in practice it seems
                 sta actF1+ACTI_PLAYER           ;the bug will not occur, as the scrolling is never in that phase
@@ -467,6 +482,8 @@ AOD_Done:       rts
 
 ActivateObject: lda lvlObjB,y                   ;Make sure that is inactive
                 bmi AO_Done
+
+                lda lvlObjB,y
                 ora #OBJ_ACTIVE
                 sta lvlObjB,y
                 pha
@@ -511,24 +528,9 @@ AO_Script:      ldx lvlObjDL,y
                 txa
                 jmp ExecScript
 
-         ; Switch, activate another object
+         ; Switch, activate another object in the same level
 
-AO_Switch:      ldx lvlObjDL,y
-                lda lvlObjDH,y                  ;Has requirement item?
-                beq AO_RequirementOK
-                sta temp3
-                jsr FindItem
-                bcs AO_RequirementOK
-                lda #<txtRequired
-                ldx #>txtRequired
-                ldy #INVENTORY_TEXT_DURATION
-                jsr PrintPanelText
-                lda temp3
-                jsr GetItemName
-                jmp ContinuePanelText
-AO_RequirementOK:
-                txa                             ;Get destination object and toggle it
-                tay
+AO_Switch:      lda lvlObjDL,y                  ;Get destination object and toggle it
                 jmp ToggleObject
 
         ; Reveal actors (weapon closet)

@@ -43,6 +43,7 @@ unsigned char lvlobjy[NUMLVLOBJ];
 unsigned char lvlobjb[NUMLVLOBJ];
 unsigned char lvlobjd1[NUMLVLOBJ];
 unsigned char lvlobjd2[NUMLVLOBJ];
+unsigned char lvlobjr[NUMLVLOBJ];
 
 unsigned char randomactt[NUMRANDOMACT];
 unsigned char randomactw[NUMRANDOMACT];
@@ -581,6 +582,7 @@ void level_mainloop(void)
                 lvlobjb[objindex] = 0;
                 lvlobjd1[objindex] = 0;
                 lvlobjd2[objindex] = 0;
+                lvlobjr[objindex] = 0;
               }
               if (k == KEY_S) // Size
               {
@@ -628,6 +630,38 @@ void level_mainloop(void)
               if (k == KEY_D) // Auto-deactivate
               {
                   lvlobjb[objindex] ^= 32;
+              }
+
+              if (k == KEY_I) // Requirement item
+              {
+                if (lvlobjr[objindex])
+                  lvlobjr[objindex] = 0;
+                else
+                  lvlobjr[objindex]++;
+              }
+              if (k == KEY_Z)
+              {
+                lvlobjr[objindex]--;
+              }
+              if (k == KEY_X)
+              {
+                lvlobjr[objindex]++;
+              }
+              if (k == KEY_1)
+              {
+                lvlobjr[objindex]--;
+              }
+              if (k == KEY_2)
+              {
+                lvlobjr[objindex]++;
+              }
+              if (k == KEY_3)
+              {
+                lvlobjr[objindex] -= 16;
+              }
+              if (k == KEY_4)
+              {
+                lvlobjr[objindex] += 16;
               }
             }
             else
@@ -1545,6 +1579,15 @@ void drawmap(void)
           printtext_color(textbuffer, 128,175,SPR_FONTS,COL_WHITE);
 
           sprintf(textbuffer, "TYPE:%s (%02X%02X)", actiontext[(lvlobjb[o] & 0x1c) >> 2], lvlobjd2[o], lvlobjd1[o]);
+
+          if (lvlobjr[o])
+          {
+            sprintf(textbuffer, "%-16s", itemname[lvlobjr[o]]);
+            printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
+
+            sprintf(textbuffer, "REQ:%02X (ITEM)", lvlobjr[o] & 127);
+          }
+          else sprintf(textbuffer, "REQ:NONE");
 
           if (dataeditmode) dataeditflash++;
 
@@ -2528,6 +2571,7 @@ int initchars(void)
     lvlobjb[c] = 0;
     lvlobjd1[c] = 0;
     lvlobjd2[c] = 0;
+    lvlobjr[c] = 0;
   }
   for (c = 0; c < NUMLVLACT; c++)
   {
@@ -3239,22 +3283,21 @@ void loadalldata(void)
         lvlobjb[c] = 0;
         lvlobjd1[c] = 0;
         lvlobjd2[c] = 0;
+        lvlobjr[c] = 0;
       }
       strcpy(ib2, ib1);
       strcat(ib2, ".lvo");
       handle = open(ib2, O_RDONLY | O_BINARY);
       if (handle != -1)
       {
-        int numobj;
-        // Handle legacy formats / changing object count
         length = lseek(handle, 0, SEEK_END);
         lseek(handle, 0, SEEK_SET);
-        numobj = length / 5;
-        read(handle, &lvlobjx[0], numobj);
-        read(handle, &lvlobjy[0], numobj);
-        read(handle, &lvlobjb[0], numobj);
-        read(handle, &lvlobjd1[0], numobj);
-        read(handle, &lvlobjd2[0], numobj);
+        read(handle, &lvlobjx[0], NUMLVLOBJ);
+        read(handle, &lvlobjy[0], NUMLVLOBJ);
+        read(handle, &lvlobjb[0], NUMLVLOBJ);
+        read(handle, &lvlobjd1[0], NUMLVLOBJ);
+        read(handle, &lvlobjd2[0], NUMLVLOBJ);
+        read(handle, &lvlobjr[0], NUMLVLOBJ);
         close(handle);
       }
       
@@ -3590,6 +3633,7 @@ void savealldata(void)
         write(handle, &lvlobjb[0], NUMLVLOBJ);
         write(handle, &lvlobjd1[0], NUMLVLOBJ);
         write(handle, &lvlobjd2[0], NUMLVLOBJ);
+        write(handle, &lvlobjr[0], NUMLVLOBJ);
         close(handle);
       }
 
