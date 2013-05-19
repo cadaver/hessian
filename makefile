@@ -1,4 +1,4 @@
-all: hessian.d64 hessian.d81
+all: hessian.d64 hessian.d81 hessian.sid
 
 clean:
 	-rm *.bin
@@ -186,6 +186,9 @@ music00.pak: music/ninjatr2.d64
 music01.pak: music/ninjatr2.d64
 	d642prg music/ninjatr2.d64 cargoship.bin music01.bin -h
 	pack2 music01.bin music01.pak
+
+hessian.sid: hessiansid.s music00.bin music01.bin
+	dasm hessiansid.s -ohessian.sid -f3
 
 level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.chi bg/level00.chc bg/level00.chr bg/level00.lva bg/level00.lvr bg/level00.lvo
 	filejoin bg/level00.lvo+bg/level00.lvr level00_1.bin
