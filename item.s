@@ -285,6 +285,9 @@ UI_ReduceAmmo:  lda #USEITEM_ATTACK_DELAY       ;In case the item is removed, gi
                 jmp DecreaseAmmo
 UI_Reload:      lda plrReload
                 bne UI_DontReload
+                lda actF1+ACTI_PLAYER           ;No reload if dead or swimming
+                cmp #FR_DIE
+                bcs UI_DontReload
                 ldx invType,y                   ;Do not reload if already full magazine
                 lda invMag,y                    ;or already reloading
                 cmp itemMagazineSize-1,x

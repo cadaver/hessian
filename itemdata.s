@@ -60,7 +60,7 @@ itemDefaultMaxCount:
                 dc.b 1                          ;Bat
                 dc.b 40                         ;Pistol
                 dc.b 24                         ;Shotgun
-                dc.b 75                         ;Auto rifle
+                dc.b 90                         ;Auto rifle
                 dc.b 15                         ;Sniper rifle
                 dc.b 100                        ;Minigun
                 dc.b 90                         ;Flamethrower
@@ -83,7 +83,7 @@ itemMaxCountAdd:dc.b 0                          ;Fists
                 dc.b 0                          ;Bat
                 dc.b 10                         ;Pistol
                 dc.b 6                          ;Shotgun
-                dc.b 25                         ;Auto rifle
+                dc.b 30                         ;Auto rifle
                 dc.b 5                          ;Sniper rifle
                 dc.b 50                         ;Minigun
                 dc.b 30                         ;Flamethrower
@@ -132,7 +132,7 @@ itemMagazineSize:
                 dc.b MAG_INFINITE               ;Bat
                 dc.b 10                         ;Pistol
                 dc.b 6                          ;Shotgun
-                dc.b 25                         ;Auto rifle
+                dc.b 30                         ;Auto rifle
                 dc.b 5                          ;Sniper rifle
                 dc.b 0                          ;Minigun
                 dc.b 60                         ;Flamethrower
