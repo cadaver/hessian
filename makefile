@@ -180,7 +180,7 @@ script00.pak: script00.s memory.s mainsym.s
 	pack2 script00.bin script00.pak
 
 music00.pak: music/ninjatr2.d64
-	d642prg music/ninjatr2.d64 testmusic.bin music00.bin -h
+	d642prg music/ninjatr2.d64 title.bin music00.bin -h
 	pack2 music00.bin music00.pak
 
 music01.pak: music/ninjatr2.d64

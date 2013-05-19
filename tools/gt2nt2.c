@@ -1608,8 +1608,7 @@ void getpatttempos(void)
                         if (note == KEYOFF)
                             keyon[c] = 0;
 
-                        if (pattern[pn[c]][pp[c]*4+1])
-                            instr[c] = pattern[pn[c]][pp[c]*4+1];
+                        instr[c] = pattern[pn[c]][pp[c]*4+1];
 
                         if ((pattern[pn[c]][pp[c]*4+2] == 0xf) && (!tick[c]))
                         {
