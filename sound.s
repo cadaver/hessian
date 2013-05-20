@@ -171,6 +171,7 @@ Play_SongTblP2: lda $1000,y
                 lda #$ff
                 sta ntChnNewNote,x
                 sta ntChnDuration,x
+                sta ntChnTrans,x
                 sta ntInitSong
                 rts
 
