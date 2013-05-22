@@ -9,9 +9,9 @@ C_FIRSTPURGEABLE = C_PLAYER
 
 F_LOGO          = $03
 F_SPRITE        = $04
-F_MUSIC         = $08
-F_SCRIPT        = $0a
-F_LEVEL         = $0b
+F_SCRIPT        = $08
+F_LEVEL         = $09
+F_MUSIC         = $0B
 F_OPTIONS       = $70
 F_SAVELIST      = $71
 F_SAVE          = $72

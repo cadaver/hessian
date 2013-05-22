@@ -1,7 +1,7 @@
                 processor 6502
                 org $0000
 
-SUBTUNES        = 2
+SUBTUNES        = 3
 
                 dc.b "PSID"
                 dc.b 0,1
@@ -629,16 +629,20 @@ ntChnWaveOld:   dc.b 0
 
 moduleTblLo:    dc.b <module0
                 dc.b <module1
+                dc.b <module2
 
 moduleTblHi:    dc.b >module0
                 dc.b >module1
-
+                dc.b >module2
 subTuneModuleTbl:
                 dc.b 0
                 dc.b 1
+                dc.b 2
 
 subTuneTuneTbl: dc.b 1
+                dc.b 0
                 dc.b 0
                 
 module0:        incbin music00.bin
 module1:        incbin music01.bin
+module2:        incbin music02.bin
