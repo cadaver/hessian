@@ -18,6 +18,7 @@ NT_FIRSTWAVE        = $09
 MUSIC_SILENCE       = $00
 MUSIC_TITLE         = $01
 MUSIC_CARGOSHIP     = $04
+MUSIC_CITY          = $08
 
 FIRST_INGAME_SONG   = $04
 
