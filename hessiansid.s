@@ -34,7 +34,8 @@ ntFiltPos       = $fc
 ntFiltTime      = $fd
 ntFiltCutoff    = $fe
 
-musicData       = $f800
+orgMusicData    = $f800
+musicData       = $c000
 
 NT_FIRSTNOTE    = $18
 NT_DUR          = $c0
@@ -73,6 +74,8 @@ Play_DoInit:    asl
 Play_SongTblP0: lda $1000,y
                 sta ntTrackLo
 Play_SongTblP1: lda $1000,y
+                sec
+                sbc #>(orgMusicData-musicData)
                 sta ntTrackHi
                 txa
                 sta ntFiltPos
@@ -150,6 +153,8 @@ Play_PattTblLoM1:
                 sta ntTemp1
 Play_PattTblHiM1:
                 lda $1000,y
+                sec
+                sbc #>(orgMusicData-musicData)
                 sta ntTemp2
                 ldy ntChnPattPos,x
                 lda (ntTemp1),y
@@ -434,8 +439,6 @@ Play_VibNoDir2: sbc #$02
         ;Init subtune
 
 Init:           tay
-                lda #$35
-                sta $01
                 ldx subTuneModuleTbl,y
                 lda subTuneTuneTbl,y
                 pha
