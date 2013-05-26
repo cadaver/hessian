@@ -1,29 +1,30 @@
                 processor 6502
                 org $0000
 
-SUBTUNES        = 3
+SUBTUNES        = 4
 
                 dc.b "PSID"
-                dc.b 0,1
-                dc.b 0,$76
-                dc.b $10,$00
+                dc.b 0,2
+                dc.b 0,$7c
+                dc.b $00,$00
                 dc.b $10,$00
                 dc.b $10,$03
                 dc.b 0,SUBTUNES
                 dc.b 0,1
                 dc.b 0,0,0,0
-                
+
                 org $0016
                 dc.b "Hessian"
-                
+
                 org $0036
                 dc.b "Cadaver (Lasse Öörni)"
-                
+
                 org $0056
-                
+
                 dc.b "2013 Covert Bitops"
-                
-                org $0076
+
+                org $007c
+                dc.b $00,$10
                 rorg $1000
 
 ntTemp1         = $f8
@@ -259,7 +260,7 @@ Play_CmdSRM1:   lda $1000,y
                 bcc Play_SkipGate
                 lda #$ff
                 sta ntChnGate,x
-                lda #NT_FIRSTWAVE
+                lda #$09
                 sta $d404,x
 Play_SkipGate:
 Play_SkipAdsr:
@@ -633,19 +634,25 @@ ntChnWaveOld:   dc.b 0
 moduleTblLo:    dc.b <module0
                 dc.b <module1
                 dc.b <module2
+                dc.b <module3
 
 moduleTblHi:    dc.b >module0
                 dc.b >module1
                 dc.b >module2
+                dc.b >module3
+
 subTuneModuleTbl:
                 dc.b 0
                 dc.b 1
                 dc.b 2
+                dc.b 3
 
 subTuneTuneTbl: dc.b 1
+                dc.b 0
                 dc.b 0
                 dc.b 0
                 
 module0:        incbin music00.bin
 module1:        incbin music01.bin
 module2:        incbin music02.bin
+module3:        incbin music03.bin

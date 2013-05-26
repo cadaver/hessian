@@ -1494,6 +1494,26 @@ void convertsong(void)
                 c++;
         }
 
+        // Remove 1-2-1 duration changes if possible
+        for (c = 1; c < MAX_PATTROWS+1; c++)
+        {
+            if (notecolumn[c] == NT_ENDPATT || notecolumn[c+1] == NT_ENDPATT)
+                break;
+            if (durcolumn[c+1] == durcolumn[c-1] && durcolumn[c] == 2*durcolumn[c-1] && notecolumn[c] >= NT_FIRSTNOTE && notecolumn[c] <= NT_LASTNOTE)
+            {
+                int d;
+                for (d = MAX_PATTROWS - 1; d > c; d--)
+                {
+                    notecolumn[d+1] = notecolumn[d];
+                    cmdcolumn[d+1] = cmdcolumn[d];
+                    durcolumn[d+1]= durcolumn[d];
+                }
+                notecolumn[c+1] = NT_KEYON;
+                cmdcolumn[c+1] = 0;
+                durcolumn[c] = durcolumn[c+1] = durcolumn[c-1];
+            }
+        }
+
         // Clear unneeded durations
         for (c = 0; c < MAX_PATTROWS+1; c++)
         {
