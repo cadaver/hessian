@@ -57,6 +57,7 @@ int highestusedinstr;
 int highestusedsong;
 int defaultpatternlength = 64;
 int remappedpatterns = 0;
+int maxdur = NT_MAXDUR;
 
 unsigned char ntwavetbl[MAX_NTTBLLEN+1];
 unsigned char ntnotetbl[MAX_NTTBLLEN+1];
@@ -107,9 +108,12 @@ int main(int argc, const char** argv)
 {
     if (argc < 3)
     {
-        printf("Usage: gt2nt2 <input> <output>");
+        printf("Usage: gt2nt2 <input> <output> [maxdur]");
         return 1;
     }
+
+    if (argc > 3)
+        sscanf(argv[3], "%d", &maxdur);
 
     loadsong(argv[1]);
     printsonginfo();
@@ -1460,15 +1464,12 @@ void convertsong(void)
             }
         }
 
-        // Merge rows where possible
         for (c = 0; c < MAX_PATTROWS+1;)
         {
             int merge = 0;
-            if (notecolumn[c] == NT_ENDPATT)
-                break;
             if (notecolumn[c+1] != NT_ENDPATT)
             {
-                if ((durcolumn[c] + durcolumn[c+1]) <= NT_MAXDUR && cmdcolumn[c+1] == 0)
+                if ((durcolumn[c] + durcolumn[c+1]) <= maxdur && cmdcolumn[c+1] == 0)
                 {
                     if (notecolumn[c] == NT_KEYOFF && notecolumn[c+1] == NT_KEYOFF)
                         merge = 1;
