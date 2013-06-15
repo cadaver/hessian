@@ -1088,12 +1088,7 @@ SLAV_Next:      php
                 dex
                 bpl SLAV_Loop
                 bcc SLAV_Store2
-                lda #HP_PLAYER                  ;Check health after checkpoint restore
-                ldx difficulty                  ;Give full health on Easy & Medium, and
-                cpx #DIFFICULTY_HARD            ;at least half on Hard
-                bcc SLAV_EasyOrMedium
-                lsr
-SLAV_EasyOrMedium:
+                lda #HP_PLAYER/2                ;Ensure at least half health after checkpoint restore
                 cmp actHp+ACTI_PLAYER
                 bcc SLAV_Store2
                 sta actHp+ACTI_PLAYER
@@ -1194,9 +1189,9 @@ ApplySkills:
                 ldy difficulty
                 lda plrVitality
                 adc #INITIAL_HEALTHRECHARGETIMER-1  ;C=1 here
-                cpy #DIFFICULTY_HARD                ;Hard level disables health recharge
+                cpy #DIFFICULTY_HARD                ;Hard level slows down health recharge
                 bcc AS_MediumOrEasy
-                lda #$00
+                lsr
 AS_MediumOrEasy:sta ULO_HealthRechargeRate+1
                 lda #NO_MODIFY
                 sec
