@@ -28,7 +28,7 @@ clean:
 	-rm f?
 
 hessian.d64: boot.prg loader.pak main.pak loadpic.pak options.bin emptysave.bin savelist.bin logo.pak music00.pak music01.pak \
-	music02.pak music03.pak music04.pak script00.pak level00.pak level01.pak common.pak item.pak weapon.pak player.pak
+	music02.pak music03.pak music04.pak music05.pak script00.pak level00.pak level01.pak common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -196,10 +196,14 @@ music03.pak: music/ninjatr2.d64
 	pack2 music03.bin music03.pak
 
 music04.pak: music/ninjatr2.d64
-	d642prg music/ninjatr2.d64 ending.bin music04.bin -h
-	pack2 music03.bin music04.pak
+	d642prg music/ninjatr2.d64 lowercity.bin music04.bin -h
+	pack2 music04.bin music04.pak
 
-hessian.sid: hessiansid.s music00.bin music01.bin music02.bin music03.bin
+music05.pak: music/ninjatr2.d64
+	d642prg music/ninjatr2.d64 ending.bin music05.bin -h
+	pack2 music05.bin music05.pak
+
+hessian.sid: hessiansid.s music00.bin music01.bin music02.bin music03.bin music04.bin music05.bin
 	dasm hessiansid.s -ohessian.sid -f3
 
 level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.chi bg/level00.chc bg/level00.chr bg/level00.lva bg/level00.lvr bg/level00.lvo
