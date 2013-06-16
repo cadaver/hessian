@@ -1,6 +1,6 @@
         ; Ninjatracker V2.03 gamemusic playroutine
         ; Relocation defines
-        
+
 NT_FIRSTNOTE        = $18
 NT_DUR              = $c0
 NT_HEADERLENGTH     = 6
@@ -17,10 +17,14 @@ NT_FIRSTWAVE        = $09
 
 MUSIC_SILENCE       = $00
 MUSIC_TITLE         = $01
-MUSIC_CARGOSHIP     = $04
-MUSIC_CITY          = $08
+MUSIC_ENDING        = $04
+MUSIC_GAMEOVER      = $08
+MUSIC_CARGOSHIP     = $0c
+MUSIC_UPPERCITY     = $10
+MUSIC_WILDERNESS    = $14
+MUSIC_LOWERCITY     = $18
 
-FIRST_INGAME_SONG   = $04
+FIRST_INGAME_SONG   = $08
 
         ; Play a song. Load if necessary. Do not reinit if already playing
         ;
@@ -30,9 +34,9 @@ FIRST_INGAME_SONG   = $04
 
 RestartSong:    lda #$00
 PlaySong:       sta RestartSong+1
-                cmp #FIRST_INGAME_SONG          ;If title/intro music, always play even if music off
+                cmp #FIRST_INGAME_SONG          ;If title/intro/outro music, always play even if music off
                 bcc PS_MusicOn
-                ldx musicMode                   ;If music off, always select song 0 of file 0 (global silence)
+                ldx musicMode                   ;If music off, always select silence tune
                 bne PS_MusicOn
                 txa
 PS_MusicOn:     sta PSfx_MusicCheck+1

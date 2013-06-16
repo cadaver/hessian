@@ -290,6 +290,9 @@ UM_UpdateJump:  jmp $0000
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,loader temp vars
 
+SetGameOverMenu:lda #MUSIC_GAMEOVER
+                jsr PlaySong
+                ldx #MENU_PAUSE
 SetMenuMode:    stx menuMode
                 lda #$00
                 sta menuCounter
@@ -310,10 +313,10 @@ SMM_RedrawJump: jmp $0000
 
 UM_PrintXP:     jmp PrintXPMessage
 
-UM_None:        ldx #MENU_PAUSE
-                lda actT+ACTI_PLAYER            ;If vanished after death, forcibly enter pause menu
-                beq SetMenuMode
-                lda keyType
+UM_None:        lda actT+ACTI_PLAYER            ;If vanished after death, forcibly enter pause menu
+                beq SetGameOverMenu
+                ldx #MENU_PAUSE
+                lda keyType                     ;Enter pause menu manually by pressing RUN/STOP
                 cmp #KEY_RUNSTOP
                 beq SetMenuMode
                 ldx #MENU_LEVELUPMSG
