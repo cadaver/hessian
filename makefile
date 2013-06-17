@@ -1,4 +1,4 @@
-all: hessian.d64 hessian.d81 hessian.sid
+all: hessian.sid hessian.d64 hessian.d81 
 
 clean:
 	-rm *.bin
