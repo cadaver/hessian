@@ -180,32 +180,32 @@ script00.pak: script00.s memory.s mainsym.s
 	dasm script00.s -oscript00.bin -f3
 	pack2 script00.bin script00.pak
 
-music00.pak: music/ninjatr2.d64
-	d642prg music/ninjatr2.d64 title.bin music00.bin -h
+music00.pak: music/hessianmusic.d64
+	d642prg music/hessianmusic.d64 title.bin music00.bin -h
 	pack2 music00.bin music00.pak
 
-music01.pak: music/ninjatr2.d64
-	d642prg music/ninjatr2.d64 ending.bin music01.bin -h
+music01.pak: music/hessianmusic.d64
+	d642prg music/hessianmusic.d64 ending.bin music01.bin -h
 	pack2 music01.bin music01.pak
 
-music02.pak: music/ninjatr2.d64
-	d642prg music/ninjatr2.d64 gameover.bin music02.bin -h
+music02.pak: music/hessianmusic.d64
+	d642prg music/hessianmusic.d64 gameover.bin music02.bin -h
 	pack2 music02.bin music02.pak
 
-music03.pak: music/ninjatr2.d64
-	d642prg music/ninjatr2.d64 cargoship.bin music03.bin -h
+music03.pak: music/hessianmusic.d64
+	d642prg music/hessianmusic.d64 cargoship.bin music03.bin -h
 	pack2 music03.bin music03.pak
 
-music04.pak: music/ninjatr2.d64
-	d642prg music/ninjatr2.d64 city.bin music04.bin -h
+music04.pak: music/hessianmusic.d64
+	d642prg music/hessianmusic.d64 city.bin music04.bin -h
 	pack2 music04.bin music04.pak
 
-music05.pak: music/ninjatr2.d64
-	d642prg music/ninjatr2.d64 wilderness.bin music05.bin -h
+music05.pak: music/hessianmusic.d64
+	d642prg music/hessianmusic.d64 wilderness.bin music05.bin -h
 	pack2 music05.bin music05.pak
 
-music06.pak: music/ninjatr2.d64
-	d642prg music/ninjatr2.d64 lowercity.bin music06.bin -h
+music06.pak: music/hessianmusic.d64
+	d642prg music/hessianmusic.d64 lowercity.bin music06.bin -h
 	pack2 music06.bin music06.pak
 
 hessian.sid: hessiansid.s music00.bin music01.bin music02.bin music03.bin music04.bin music05.bin
