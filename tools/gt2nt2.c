@@ -1622,7 +1622,7 @@ void getpatttempos(void)
                     else
                     {
                         int note = pattern[pn[c]][pp[c]*4];
-                        if (note >= FIRSTNOTE && note <= LASTNOTE)
+                        if (note >= FIRSTNOTE && note <= LASTNOTE && pattern[pn[c]][pp[c]*4+2] != CMD_TONEPORTA)
                             keyon[c] = 1;
                         if (note == KEYON)
                             keyon[c] = 1;
