@@ -1183,11 +1183,11 @@ void convertsong(void)
     }
 
     // Convert instruments
-    printf("Converting instruments\n");
     memset(instrmap, 0, sizeof instrmap);
     for (e = 1; e <= highestusedinstr; e++)
     {
-        if (instr[e].name[0] == 0x00 || instr[e].name[0] == 0x20)
+        // If instrument has no wavetable pointer, assume it is not used
+        if (!instr[e].ptr[WTBL])
             continue;
         ntcmdad[ntcmdlen] = instr[e].ad;
         ntcmdsr[ntcmdlen] = instr[e].sr;
@@ -1591,9 +1591,9 @@ void getpatttempos(void)
         {
             for (c = 0; c < MAX_CHN; c++)
             {
-                if (!stop[c])
+                if (!stop[c] && !tick[c])
                 {
-                    if (pp[c] == 0xff)
+                    if (pp[c] == 0xff || pattern[pn[c]][pp[c]*4] == ENDPATT)
                     {
                         if (!rep[c])
                         {
@@ -1617,9 +1617,8 @@ void getpatttempos(void)
                         pn[c] = songorder[e][c][sp[c]];
                         pp[c] = 0;
                     }
-                    if (pattern[pn[c]][pp[c]*4] == ENDPATT)
-                        pp[c] = 0xff;
-                    else
+                    
+                    if (!stop[c])
                     {
                         int note = pattern[pn[c]][pp[c]*4];
                         if (note >= FIRSTNOTE && note <= LASTNOTE && pattern[pn[c]][pp[c]*4+2] != CMD_TONEPORTA)
@@ -1646,6 +1645,7 @@ void getpatttempos(void)
                     }
                 }
             }
+
             for (c = 0; c < MAX_CHN; c++)
             {
                 if (!stop[c])
@@ -1657,6 +1657,7 @@ void getpatttempos(void)
                             // We have detected pattern playback with multiple tempos
                             int f;
                             int pattfound = 0;
+
                             for (f = 0; f < remappedpatterns; f++)
                             {
                                 if (pattremaptempo[f] == tempo[c] && pattremapsrc[f] == pn[c])

@@ -17,7 +17,7 @@ SUBTUNES        = 8
                 dc.b "Hessian"
 
                 org $0036
-                dc.b "Cadaver (Lasse Öörni)"
+                dc.b "Lasse Öörni (Cadaver)"
 
                 org $0056
 
