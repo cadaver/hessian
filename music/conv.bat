@@ -5,6 +5,7 @@ gt2nt2 city.sng city.nt
 gt2nt2 lowercity.sng lowercity.nt
 gt2nt2 wilderness.sng wilderness.nt 56
 gt2nt2 maintenance.sng maintenance.nt
+gt2nt2 caves.sng caves.nt
 gt2nt2 ending.sng ending.nt
 prg2d64 hessianmusic.d64 GAMEOVER gameover.nt
 prg2d64 hessianmusic.d64 TITLE title.nt
@@ -13,4 +14,5 @@ prg2d64 hessianmusic.d64 CITY city.nt
 prg2d64 hessianmusic.d64 LOWERCITY lowercity.nt
 prg2d64 hessianmusic.d64 WILDERNESS wilderness.nt
 prg2d64 hessianmusic.d64 MAINTENANCE maintenance.nt
+prg2d64 hessianmusic.d64 CAVES caves.nt
 prg2d64 hessianmusic.d64 ENDING ending.nt
