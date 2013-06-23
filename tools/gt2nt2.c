@@ -39,9 +39,9 @@ unsigned char ltable[MAX_TABLES][MAX_TABLELEN];
 unsigned char rtable[MAX_TABLES][MAX_TABLELEN];
 unsigned char songorder[MAX_SONGS][MAX_CHN][MAX_SONGLEN+2];
 unsigned char pattern[MAX_PATT][MAX_PATTROWS*4+4];
-unsigned char patttempo[MAX_PATT][MAX_PATTROWS];
-unsigned char pattinstr[MAX_PATT][MAX_PATTROWS];
-unsigned char pattkeyon[MAX_PATT][MAX_PATTROWS];
+unsigned char patttempo[MAX_PATT][MAX_PATTROWS+1];
+unsigned char pattinstr[MAX_PATT][MAX_PATTROWS+1];
+unsigned char pattkeyon[MAX_PATT][MAX_PATTROWS+1];
 unsigned char pattremaptempo[MAX_PATT];
 unsigned char pattremapsrc[MAX_PATT];
 unsigned char pattremapdest[MAX_PATT];
@@ -1587,7 +1587,7 @@ void getpatttempos(void)
         int tick[3] = {0,0,0};
         int keyon[3] = {0,0,0};
 
-        while ((!stop[0])||(!stop[1])||(!stop[2]))
+        while (!stop[0] || !stop[1] || !stop[2])
         {
             for (c = 0; c < MAX_CHN; c++)
             {
@@ -1630,7 +1630,7 @@ void getpatttempos(void)
 
                         instr[c] = pattern[pn[c]][pp[c]*4+1];
 
-                        if ((pattern[pn[c]][pp[c]*4+2] == 0xf) && (!tick[c]))
+                        if (pattern[pn[c]][pp[c]*4+2] == 0xf)
                         {
                             int newtempo = pattern[pn[c]][pp[c]*4+3];
                             if (newtempo < 0x80)
@@ -1650,52 +1650,54 @@ void getpatttempos(void)
             {
                 if (!stop[c])
                 {
-                    if (pp[c] != 0xff)
+                    if (patttempo[pn[c]][pp[c]] != 0 && patttempo[pn[c]][pp[c]] != tempo[c])
                     {
-                        if (patttempo[pn[c]][pp[c]] != 0 && patttempo[pn[c]][pp[c]] != tempo[c])
+                        // We have detected pattern playback with multiple tempos
+                        int f;
+                        int pattfound = 0;
+
+                        for (f = 0; f < remappedpatterns; f++)
                         {
-                            // We have detected pattern playback with multiple tempos
-                            int f;
-                            int pattfound = 0;
-
-                            for (f = 0; f < remappedpatterns; f++)
+                            if (pattremaptempo[f] == tempo[c] && pattremapsrc[f] == pn[c])
                             {
-                                if (pattremaptempo[f] == tempo[c] && pattremapsrc[f] == pn[c])
-                                {
-                                    pattfound = 1;
-                                    pn[c] = pattremapdest[f];
-                                    songorder[e][c][sp[c]] = pn[c];
-                                    break;
-                                }
-                            }
-
-                            if (!pattfound)
-                            {
-                                if (highestusedpatt >= MAX_PATT-1)
-                                {
-                                    printf("Not enough patterns free to perform tempo remapping");
-                                    exit(1);
-                                }
-                                printf("Remapping pattern %d to %d as it's played at multiple tempos\n", pn[c], highestusedpatt+1);
-                                memcpy(&pattern[highestusedpatt+1][0], &pattern[pn[c]][0], MAX_PATTROWS*4+4);
-                                pattremaptempo[remappedpatterns] = tempo[c];
-                                pattremapsrc[remappedpatterns] = pn[c];
-                                pattremapdest[remappedpatterns] = highestusedpatt+1;
-                                remappedpatterns++;
-                                pn[c] = highestusedpatt+1;
+                                pattfound = 1;
+                                pn[c] = pattremapdest[f];
                                 songorder[e][c][sp[c]] = pn[c];
-                                highestusedpatt++;
+                                break;
                             }
                         }
+
+                        if (!pattfound)
+                        {
+                            if (highestusedpatt >= MAX_PATT-1)
+                            {
+                                printf("Not enough patterns free to perform tempo remapping");
+                                exit(1);
+                            }
+                            printf("Remapping pattern %d to %d as it's played at multiple tempos\n", pn[c], highestusedpatt+1);
+                            memcpy(&pattern[highestusedpatt+1][0], &pattern[pn[c]][0], MAX_PATTROWS*4+4);
+                            pattremaptempo[remappedpatterns] = tempo[c];
+                            pattremapsrc[remappedpatterns] = pn[c];
+                            pattremapdest[remappedpatterns] = highestusedpatt+1;
+                            remappedpatterns++;
+                            pn[c] = highestusedpatt+1;
+                            songorder[e][c][sp[c]] = pn[c];
+                            highestusedpatt++;
+                        }
+                    }
+                    
+                    if (!tick[c])
+                    {
                         patttempo[pn[c]][pp[c]] = tempo[c];
                         pattinstr[pn[c]][pp[c]] = instr[c];
                         pattkeyon[pn[c]][pp[c]] = keyon[c];
-                        tick[c]++;
-                        if (tick[c] >= tempo[c])
-                        {
-                            tick[c] = 0;
-                            pp[c]++;
-                        }
+                    }
+
+                    tick[c]++;
+                    if (tick[c] >= tempo[c])
+                    {
+                        tick[c] = 0;
+                        pp[c]++;
                     }
                 }
             }
