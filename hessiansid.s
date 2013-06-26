@@ -1,7 +1,7 @@
                 processor 6502
                 org $0000
 
-SUBTUNES        = 10
+SUBTUNES        = 11
 
                 dc.b "PSID"
                 dc.b 0,2
@@ -641,6 +641,7 @@ moduleTblLo:    dc.b <module0
                 dc.b <module7
                 dc.b <module8
                 dc.b <module9
+                dc.b <module10
 
 moduleTblHi:    dc.b >module0
                 dc.b >module1
@@ -652,6 +653,7 @@ moduleTblHi:    dc.b >module0
                 dc.b >module7
                 dc.b >module8
                 dc.b >module9
+                dc.b >module10
 
 subTuneModuleTbl:
                 dc.b 0
@@ -662,10 +664,12 @@ subTuneModuleTbl:
                 dc.b 7
                 dc.b 8
                 dc.b 9
+                dc.b 10
                 dc.b 2
                 dc.b 1
 
 subTuneTuneTbl: dc.b 1
+                dc.b 0
                 dc.b 0
                 dc.b 0
                 dc.b 0
@@ -686,3 +690,4 @@ module6:        incbin music06.bin
 module7:        incbin music07.bin
 module8:        incbin music08.bin
 module9:        incbin music09.bin
+module10:       incbin music10.bin
