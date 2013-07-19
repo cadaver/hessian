@@ -870,6 +870,10 @@ void zone_mainloop(void)
     {
       zonebg1[zonenum] ^= 128;
     }
+    if (k == KEY_C)
+    {
+      zonebg2[zonenum] ^= 128;
+    }
     if (k == KEY_N)
     {
       zonemusic[zonenum]--;
@@ -1486,9 +1490,11 @@ void drawmap(void)
     printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "YPOS %02X", mapy+mousey/32);
     printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
-    sprintf(textbuffer, "COLORS %01X %01X %01X", zonebg1[zonenum] & 15, zonebg2[zonenum], zonebg3[zonenum]);
+    sprintf(textbuffer, "COLORS %01X %01X %01X", zonebg1[zonenum] & 15, zonebg2[zonenum] & 15, zonebg3[zonenum] & 15);
     if (zonebg1[zonenum] & 128)
       strcat(textbuffer, " (NOSAVE)");
+    if (zonebg2[zonenum] & 128)
+      strcat(textbuffer, " (NOCOLORSCR)");
     printtext_color(textbuffer, 80,175,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "MUSIC %02X-%01X", zonemusic[zonenum] / 4, zonemusic[zonenum] % 4);
     printtext_color(textbuffer, 80,185,SPR_FONTS,COL_WHITE);
@@ -2060,9 +2066,9 @@ void lightenchar(void)
 
   if (chcol[charnum] < 8) return;
 
-  ints[0] = intensity[zonebg1[zonenum]];
-  ints[1] = intensity[zonebg2[zonenum]];
-  ints[2] = intensity[zonebg3[zonenum]];
+  ints[0] = intensity[zonebg1[zonenum] & 15];
+  ints[1] = intensity[zonebg2[zonenum] & 15];
+  ints[2] = intensity[zonebg3[zonenum] & 15];
   ints[3] = intensity[chcol[charnum] & 7];
   for (x = 0; x < 4; x++)
   {
@@ -2102,9 +2108,9 @@ void darkenchar(void)
 
   if (chcol[charnum] < 8) return;
 
-  ints[0] = intensity[zonebg1[zonenum]];
-  ints[1] = intensity[zonebg2[zonenum]];
-  ints[2] = intensity[zonebg3[zonenum]];
+  ints[0] = intensity[zonebg1[zonenum] & 15];
+  ints[1] = intensity[zonebg2[zonenum] & 15];
+  ints[2] = intensity[zonebg3[zonenum] & 15];
   ints[3] = intensity[chcol[charnum] & 7];
   for (x = 0; x < 4; x++)
   {
@@ -2177,11 +2183,11 @@ void drawgrid(void)
             break;
 
             case 1:
-            v = zonebg2[zonenum];
+            v = zonebg2[zonenum] & 15;
             break;
 
             case 2:
-            v = zonebg3[zonenum];
+            v = zonebg3[zonenum] & 15;
             break;
 
             case 3:
@@ -2236,11 +2242,11 @@ void drawgrid(void)
                 break;
 
                 case 1:
-                v = zonebg2[zonenum];
+                v = zonebg2[zonenum] & 15;
                 break;
 
                 case 2:
-                v = zonebg3[zonenum];
+                v = zonebg3[zonenum] & 15;
                 break;
 
                 case 3:
@@ -2319,8 +2325,8 @@ void drawgrid(void)
   if (ccolor == 3) v = COL_HIGHLIGHT;
   printtext_color("CHAR",170,95,SPR_FONTS,v);
   drawcbar(220,50,zonebg1[zonenum] & 15);
-  drawcbar(220,65,zonebg2[zonenum]);
-  drawcbar(220,80,zonebg3[zonenum]);
+  drawcbar(220,65,zonebg2[zonenum] & 15);
+  drawcbar(220,80,zonebg3[zonenum] & 15);
   drawcbar(220,95,chcol[charnum]&7);
   gfx_line(218,48+15*ccolor,236,48+15*ccolor,1);
   gfx_line(236,48+15*ccolor,236,60+15*ccolor,1);
@@ -2431,12 +2437,16 @@ void changecol(void)
           zonebg1[zonenum] |= old;
           break;
           case 1:
+          old = zonebg2[zonenum] & 128;
           zonebg2[zonenum]++;
           zonebg2[zonenum] &= 15;
+          zonebg2[zonenum] |= old;
           break;
           case 2:
+          old = zonebg3[zonenum] & 128;
           zonebg3[zonenum]++;
           zonebg3[zonenum] &= 15;
+          zonebg3[zonenum] |= old;
           break;
           case 3:
           {
@@ -2460,12 +2470,16 @@ void changecol(void)
           zonebg1[zonenum] |= old;
           break;
           case 1:
+          old = zonebg2[zonenum] & 128;
           zonebg2[zonenum]--;
           zonebg2[zonenum] &= 15;
+          zonebg2[zonenum] |= old;
           break;
           case 2:
+          old = zonebg3[zonenum] & 128;
           zonebg3[zonenum]--;
           zonebg3[zonenum] &= 15;
+          zonebg3[zonenum] |= old;
           break;
           case 3:
           {
@@ -4137,11 +4151,11 @@ void drawchar(int dx, int dy, int c)
           break;
 
           case 1:
-          v = zonebg2[zonenum];
+          v = zonebg2[zonenum] & 15;
           break;
 
           case 2:
-          v = zonebg3[zonenum];
+          v = zonebg3[zonenum] & 15;
           break;
 
           case 3:

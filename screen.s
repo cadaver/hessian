@@ -438,6 +438,8 @@ SSpr_AllDone:
 UF_WaitPrevFrame:
                 lda newFrame                    ;Now wait until the previous new frame
                 bne UF_WaitPrevFrame            ;has been processed
+                lda Irq1_Bg2+1                  ;Check for disabled colorscroll
+                bmi UF_WaitNormal
                 lda scrCounter                  ;Is it the colorshift? (needs special timing)
                 cmp #$04
                 beq UF_WaitColorShift
@@ -503,7 +505,7 @@ UF_NoSprites2:  sta Irq1_D015+1
 UF_NoSprites:   sta Irq1_MaxSprY+1
                 lda #$80
                 sta newFrame
-                
+
 ScrollWork:     lda scrCounter
                 bne SW_NoScreenShift
                 lda scrAdd
@@ -521,7 +523,8 @@ SW_ScreenJump:  jmp SW_NoWork
 SW_NoScreenShift:
                 cmp #$04
                 bne SW_NoShiftColors
-SW_ShiftColors:
+SW_ShiftColors: lda Irq1_Bg2+1                  ;Check for disabled colorscroll
+                bmi SW_NoWork
 SW_ColorShiftDir:
                 ldx #$00
                 stx temp1
