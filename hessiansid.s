@@ -1,7 +1,7 @@
                 processor 6502
                 org $0000
 
-SUBTUNES        = 12
+SUBTUNES        = 13
 
                 dc.b "PSID"
                 dc.b 0,2
@@ -17,7 +17,7 @@ SUBTUNES        = 12
                 dc.b "Hessian"
 
                 org $0036
-                dc.b "Lasse Öörni (Cadaver)"
+                dc.b "Cadaver & NecroPolo"
 
                 org $0056
 
@@ -643,6 +643,7 @@ moduleTblLo:    dc.b <module0
                 dc.b <module9
                 dc.b <module10
                 dc.b <module11
+                dc.b <module12
 
 moduleTblHi:    dc.b >module0
                 dc.b >module1
@@ -656,6 +657,7 @@ moduleTblHi:    dc.b >module0
                 dc.b >module9
                 dc.b >module10
                 dc.b >module11
+                dc.b >module12
 
 subTuneModuleTbl:
                 dc.b 0
@@ -668,10 +670,12 @@ subTuneModuleTbl:
                 dc.b 9
                 dc.b 10
                 dc.b 11
+                dc.b 12
                 dc.b 2
                 dc.b 1
 
 subTuneTuneTbl: dc.b 1
+                dc.b 0
                 dc.b 0
                 dc.b 0
                 dc.b 0
@@ -696,3 +700,4 @@ module8:        incbin music08.bin
 module9:        incbin music09.bin
 module10:       incbin music10.bin
 module11:       incbin music11.bin
+module12:       incbin music12.bin

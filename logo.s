@@ -13,9 +13,9 @@ titlePageTbl:   dc.w txtPressFire
 
 txtPressFire:   dc.b "A COVERT BITOPS PRODUCTION IN 2013",0
                 dc.b 0
+                dc.b "CODE, GFX, SOUND: LASSE __RNI",0
                 dc.b 0
-                dc.b "CODE, GRAPHICS & AUDIO BY LASSE __RNI",0
-                dc.b 0
+                dc.b "MUSIC: LASSE __RNI & PETER NAGY-MIKLOS",0
                 dc.b 0
                 dc.b "PRESS FIRE FOR MENU",0
 
