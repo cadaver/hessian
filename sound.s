@@ -29,6 +29,7 @@ MUSIC_THRONE        = $24
 MUSIC_INSIDE        = $28
 MUSIC_TEMPLE        = $2c
 MUSIC_HAUNTED       = $30
+MUSIC_ASSAULT       = $34
 
 FIRST_INGAME_SONG   = $08
 
