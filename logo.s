@@ -10,6 +10,7 @@ titlePageTbl:   dc.w txtPressFire
                 dc.w txtInstructions2
                 dc.w txtInstructions3
                 dc.w txtInstructions4
+                dc.w txtInstructions5
 
 txtPressFire:   dc.b "A COVERT BITOPS PRODUCTION IN 2013",0
                 dc.b 0
@@ -54,6 +55,15 @@ txtInstructions4:
                 dc.b $80,"MELEE     MORE MELEE DAMAGE",0
                 dc.b $80,"VITALITY  RESIST DAMAGE, RECOVER FASTER",0
 
+txtInstructions5:
+                dc.b "TAKE CONTROL OF HESSIAN, AN EX-MILITARY",0
+                dc.b "MEMBER OF A GROUP KNOWN AS 'SKEPTICS'",0
+                dc.b "THAT INVESTIGATES POTENTIAL END-OF-THE-",0
+                dc.b "WORLD SCENARIOS. AS A MYSTERIOUS ENERGY",0
+                dc.b "BLAST ENGULFS ONE SECTOR OF THE GROUP'S",0
+                dc.b "HOME CITY 'METROPOL' THEY MAY NO LONGER",0
+                dc.b "BE ABLE TO REMAIN SKEPTICAL...",0
+                
                 if * > screen2+SCROLLROWS*40
                     err
                 endif
