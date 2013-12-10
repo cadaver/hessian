@@ -70,15 +70,16 @@ AL_CLIMBSPEED   = 25
 GRP_NONE        = $00                           ;Does not collide/take damage
 GRP_HEROES      = $01
 GRP_GOVERNMENT  = $02
-GRP_BANDITS     = $03
+GRP_THUGS       = $03
 GRP_ANIMALS     = $04
-GRP_MERCS       = $05
+GRP_SYNDICATE   = $05
 GRP_THRONE      = $06
 GRP_ALIENS      = $07
 
 AF_GROUPBITS    = $07
 AF_INITONLYSIZE = $08
 AF_ISORGANIC    = $10
+AF_USETRIGGERS  = $20
 AF_NOREMOVECHECK = $80
 
 AMF_JUMP        = $01
@@ -1289,7 +1290,9 @@ DestroyActor:   sty temp8
                 ldy #AL_KILLXP
                 lda (actLo),y
                 jsr GiveXP
-DA_NoXP:        ldy temp8
+DA_NoXP:        lda #AT_DESTROY                 ;Run the DESTROY trigger
+                jsr ActorTrigger
+                ldy temp8
 DA_Jump:        jsr $0000
                 clc
 AS_Done2:       rts
@@ -1483,7 +1486,8 @@ ALA_Common:     lda lvlActX,x
                 beq ALA_NotItem
                 lda #MB_GROUNDED
                 sta actMB,x
-ALA_NotItem:
+ALA_NotItem:    lda #AT_ADD                     ;Run the ADD trigger routine
+                jmp ActorTrigger
 ALA_Fail:       rts
 ALA_IsItem:     lda #ACTI_FIRSTITEM
                 ldy #ACTI_LASTITEM
@@ -1547,6 +1551,8 @@ RA_StoreNPC:    sta lvlActT,y
                 and #$80
                 ora actWpn,x
 RA_StoreCommon: sta lvlActWpn,y
+                lda #AT_REMOVE                  ;Run the REMOVE trigger routine
+                jsr ActorTrigger
 
         ; Remove actor without returning to leveldata
         ;

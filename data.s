@@ -336,6 +336,10 @@ plrMelee:       dc.b 0
 plrVitality:    dc.b 0
 plrReload:      dc.b 0
 plotBits:       ds.b MAX_PLOTBITS/8,0
+atType:         ds.b MAX_ACTORTRIGGERS+1,0
+atScriptF:      ds.b MAX_ACTORTRIGGERS,0
+atScriptEP:     ds.b MAX_ACTORTRIGGERS,0
+atMask:         ds.b MAX_ACTORTRIGGERS,0
 lvlDataActBits: ds.b LVLDATAACTTOTALSIZE,0
 lvlObjBits:     ds.b LVLOBJTOTALSIZE,0
 lvlActX:        ds.b MAX_LVLACT,0

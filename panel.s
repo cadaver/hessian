@@ -514,11 +514,11 @@ UM_PauseMenuDone:
 UM_PauseMenuAction:
                 tya
                 beq UM_ResumeOrRetry
+                sta ES_LoadedScriptFile+1       ;Always reload title script (A!=0)
                 lda #<EP_TITLE                  ;Execute titlescreen in "save" mode
-                ldy #>EP_TITLE
-                ldx #$01
-                inc ES_LoadedScriptFile+1       ;Always reload title script
-                jmp ExecScript
+                ldx #>EP_TITLE                  ;(parameter 1)
+                ldy #$01
+                jmp ExecScriptParam
 
 UM_ResumeOrRetry:
                 jsr UM_PauseMenuExit

@@ -195,9 +195,9 @@ IR_UseFastLoad: cli
         ; Initializations are complete. Start the main program
 
                 lda #<EP_TITLE                  ;Load and execute the title screen
-                ldy #>EP_TITLE
-                ldx #$00
-                jmp ExecScript
+                ldx #>EP_TITLE
+                ldy #$00
+                jmp ExecScriptParam
 
         ; Scorepanel chars
 

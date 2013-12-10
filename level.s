@@ -522,10 +522,8 @@ AO_Chain:       lda lvlObjDL,y
 
         ; Script execution
 
-AO_Script:      ldx lvlObjDL,y
-                lda lvlObjDH,y
-                tay
-                txa
+AO_Script:      ldx lvlObjDH,y
+                lda lvlObjDL,y
                 jmp ExecScript
 
          ; Switch, activate another object in the same level
@@ -837,16 +835,16 @@ ULO_ClearActorNext:
                 lda lvlObjDH,x                  ;Get levelnumber
                 bpl ULO_EnterDoorNoScript       ;If negative, exec a script instead
                 and #$7f
-                tay
+                tax
                 pla
                 jsr ExecScript                  ;On return from the door script, A=object number and Y=level
                 pha
                 tya
 ULO_EnterDoorNoScript:
                 jsr ChangeLevel
+                jsr BlankScreen                 ;Blank screen in case level was not changed
                 pla
                 tay
-                jsr BlankScreen                 ;Does not modify Y
                 jsr ActivateObject              ;Activate the door that was entered
                 ldx #ACTI_PLAYER                ;Reset animation, falling distance and speed
                 jsr MH_StandAnim

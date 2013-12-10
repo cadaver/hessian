@@ -58,8 +58,8 @@ itemDefaultMaxCount:
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
-                dc.b 40                         ;Pistol
-                dc.b 24                         ;Shotgun
+                dc.b 50                         ;Pistol
+                dc.b 32                         ;Shotgun
                 dc.b 90                         ;Auto rifle
                 dc.b 15                         ;Sniper rifle
                 dc.b 100                        ;Minigun
@@ -82,7 +82,7 @@ itemMaxCountAdd:dc.b 0                          ;Fists
                 dc.b 0                          ;Nightstick
                 dc.b 0                          ;Bat
                 dc.b 10                         ;Pistol
-                dc.b 6                          ;Shotgun
+                dc.b 8                          ;Shotgun
                 dc.b 30                         ;Auto rifle
                 dc.b 5                          ;Sniper rifle
                 dc.b 50                         ;Minigun
@@ -106,7 +106,7 @@ itemDefaultPickup:
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
                 dc.b 5                          ;Pistol
-                dc.b 3                          ;Shotgun
+                dc.b 4                          ;Shotgun
                 dc.b 10                         ;Auto rifle
                 dc.b 3                          ;Sniper rifle
                 dc.b 50                         ;Minigun
@@ -131,7 +131,7 @@ itemMagazineSize:
                 dc.b MAG_INFINITE               ;Nightstick
                 dc.b MAG_INFINITE               ;Bat
                 dc.b 10                         ;Pistol
-                dc.b 6                          ;Shotgun
+                dc.b 8                          ;Shotgun
                 dc.b 30                         ;Auto rifle
                 dc.b 5                          ;Sniper rifle
                 dc.b 0                          ;Minigun

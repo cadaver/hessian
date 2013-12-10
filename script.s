@@ -2,30 +2,119 @@ SCRIPT_TITLE    = 0
 
 EP_TITLE        = $0000
 
+AT_ADD          = 1
+AT_REMOVE       = 2
+AT_DESTROY      = 4
+AT_NEAR         = 8
+AT_TALK         = 16
+
+        ; Set or modify trigger for an actor type
+        ;
+        ; Parameters: A Script entrypoint, X script file, Y actor type, temp1 trigger mask
+        ; Returns: -
+        ; Modifies: A,X,Y,zpSrcLo
+
+SetActorTrigger:pha
+                jsr ATSearch                    ;Either search for existing or create new
+                pla
+                sta atScriptEP,y
+                txa
+                sta atScriptF,y
+                lda zpSrcLo
+                sta atType,y
+                lda temp1
+                sta atMask,y
+                rts
+
+        ; Remove trigger from an actor type
+        ;
+        ; Parameters: Y actor type
+        ; Returns: -
+        ; Modifies: A,Y,zpSrcLo
+
+RemoveActorTrigger:
+                jsr ATSearch
+                bcc RAT_NotFound
+RAT_Loop:       lda atType+1,y
+                sta atType,y
+                lda atScriptEP+1,y
+                sta atScriptEP,y
+                lda atScriptF+1,y
+                sta atScriptF,y
+                lda atMask+1,y
+                sta atMask,y
+                iny
+                cpy #MAX_ACTORTRIGGERS
+                bcc RAT_Loop
+RAT_NotFound:   rts
+
+ATSearch:       sty zpSrcLo
+                ldy #$00
+ATSearch_Loop:  lda atType,y
+                beq ATSearch_NotFound
+ATSearch_Cmp:   cmp zpSrcLo
+                beq ATSearch_Found              ;C=1 if found existing
+                iny
+                bne ATSearch_Loop
+ATSearch_NotFound:
+AT_Fail:
+                clc
+ATSearch_Found: rts
+
+        ; Run an actor trigger routine
+        ;
+        ; Parameters: A trigger type (mask bit), X actor number
+        ; Returns: C=1 trigger found and executed C=0 trigger not found
+        ; Modifies: A,Y,loader temp vars
+
+ActorTrigger:   sta ES_ParamA+1
+                lda actFlags,x
+                and #AF_USETRIGGERS             ;First check: does the actor use triggers at all?
+                beq AT_Fail
+                ldy #$00
+AT_Search:      lda atType,y                    ;Reached end of trigger list?
+                beq AT_Fail
+                cmp actT,x
+                beq AT_Found
+                iny
+                bne AT_Search
+AT_Found:       lda atMask,y
+AT_MaskCheck:   and ES_ParamA+1
+                beq AT_Fail
+                stx ES_ParamX+1
+                lda atScriptEP,y
+                ldx atScriptF,y
+                jsr ExecScript
+                ldx ES_ParamX+1
+                sec
+                rts
+
         ; Execute a script
         ;
-        ; Parameters: Y script file, A script entrypoint, X parameter (optional)
+        ; Parameters: A script entrypoint, X script file, ES_ParamA+1, ES_ParamX+1 (or Y in ExecScriptParam)
         ; Returns: -
-        ; Modifies: A,X,Y,temp vars,actor ZP temp vars
+        ; Modifies: A,X,Y,loader temp vars
 
+ExecScriptParam:sty ES_ParamA+1
 ExecScript:     asl
-                sta temp1
-                stx temp2
+                pha
 ES_LoadedScriptFile:
-                cpy #$ff                        ;Check if same file already loaded
+                cpx #$ff                        ;Check if same file already loaded
                 beq ES_SameFile
-                sty ES_LoadedScriptFile+1
-                tya
+                stx ES_LoadedScriptFile+1
+                txa
                 ldx #F_SCRIPT
                 jsr MakeFileName
                 lda #<scriptCodeStart
                 ldx #>scriptCodeStart
                 jsr LoadFileRetry
-ES_SameFile:    ldx temp1
+ES_SameFile:    pla
+                tax
                 lda scriptCodeStart,x
                 sta ES_ScriptJump+1
                 lda scriptCodeStart+1,x
                 sta ES_ScriptJump+2
-                ldx temp2
+ES_ParamA:      lda #$00
+ES_ParamX:      ldx #$00
 ES_ScriptJump:  jmp $1000
 

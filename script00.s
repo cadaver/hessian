@@ -31,7 +31,7 @@ START_Y         = $0bc0
 
                 dc.w TitleScreen
 
-TitleScreen:    stx TitleScreenParam+1          ;Go to save screen (X>0) or main menu (X=0)
+TitleScreen:    sta TitleScreenParam+1          ;Go to save screen (A>0) or main menu (A=0)
                 jsr BlankScreen
                 jsr ClearPanelText
                 jsr InitScroll                  ;Make sure no scrolling
@@ -318,6 +318,11 @@ IP_InitInventory:
 IP_InitPlotBits:sta plotBits,x
                 dex
                 bpl IP_InitPlotBits
+                ldx #MAX_ACTORTRIGGERS-1
+IP_InitActorTriggers:
+                sta atType,x
+                dex
+                bpl IP_InitActorTriggers
                 ldx #MAX_LVLACT-1
 IP_InitLevelActors:
                 sta lvlActT,x

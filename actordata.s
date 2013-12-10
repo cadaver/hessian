@@ -418,7 +418,7 @@ alDrone:        dc.w MoveDrone                  ;Update routine
 
 alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
-                dc.b GRP_BANDITS|AF_ISORGANIC   ;Actor flags
+                dc.b GRP_THUGS|AF_ISORGANIC     ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
