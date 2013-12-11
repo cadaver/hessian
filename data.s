@@ -141,12 +141,13 @@ colorJumpTblHi: dc.b >SW_ShiftColorsUp
                 dc.b >SW_ShiftColorsDown
                 dc.b >SW_ShiftColorsDown
 
-menuUpdateTblLo:dc.b <UM_None
-                dc.b <UM_Inventory
-                dc.b <UM_SkillDisplay
-                dc.b <UM_LevelUpMsg
-                dc.b <UM_LevelUpChoice
-                dc.b <UM_PauseMenu
+targetListAndTbl:
+                dc.b 0                          ;1 potential targets
+                dc.b 1                          ;2 potential targets
+                dc.b 3                          ;3 potential targets
+                dc.b 3                          ;4 potential targets
+                dc.b 7                          ;5 potential targets
+                dc.b 7                          ;6 potential targets
 
                 org nextSliceTbl+$c0+42
                 dc.b $c0+43,$c0+44,0
@@ -156,12 +157,10 @@ shiftEndTbl:    dc.b $f0,$30,$30
                 dc.b $f0,$30,$30
                 dc.b $f0,$30,$30
 
-menuUpdateTblHi:dc.b >UM_None
-                dc.b >UM_Inventory
-                dc.b >UM_SkillDisplay
-                dc.b >UM_LevelUpMsg
-                dc.b >UM_LevelUpChoice
-                dc.b >UM_PauseMenu
+pauseMenuArrowPosTbl:
+                dc.b 8,21
+                
+itemFlashTbl:   dc.b 10,7,1,7
 
                 org nextSliceTbl+$100
 
@@ -253,7 +252,6 @@ sortSprX:       ds.b MAX_SPR*2,0
 sortSprD010:    ds.b MAX_SPR*2,0
 sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
-sprIrqLine:     ds.b MAX_SPR*2,0
 
         ; Chunk-file memory allocation variables
 

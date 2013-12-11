@@ -529,7 +529,7 @@ GetSaveDescription:
                 jsr ConvertToBCD8
                 ldx #80
                 jsr PrintBCDDigitsNoZeroes
-CopyLevelText:  lda screen1+23*40-1,x
+CopyLevelText:  lda screen1+SCROLLROWS*40+40-1,x
                 sta txtSaveLevel-81,x
                 dex
                 cpx #81
@@ -540,13 +540,13 @@ CopyLevelText:  lda screen1+23*40-1,x
                 ldx #80
                 jsr ConvertAndPrint3BCDDigits
                 lda #"/"
-                sta screen1+25*40+3
+                sta screen1+SCROLLROWS*40+120+3
                 ldx temp8
                 lda saveList+22,x
                 ldy saveList+23,x
                 ldx #84
                 jsr ConvertAndPrint3BCDDigits
-CopyXPText:     lda screen1+23*40-1,x
+CopyXPText:     lda screen1+SCROLLROWS*40+40-1,x
                 sta txtSaveXP-81,x
                 dex
                 cpx #81

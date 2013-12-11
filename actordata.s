@@ -222,10 +222,6 @@ humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5
 humanSizeReduceTbl:
                 dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,10,10,10,10
 
-        ; Item actor color flashing
-
-itemFlashTbl:   dc.b 10,7,1,7
-
         ; Player weapon damage bonus according to weapon skill
 
 plrWeaponBonusTbl:

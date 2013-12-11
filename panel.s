@@ -16,6 +16,7 @@ MENU_SKILLDISPLAY = 2
 MENU_LEVELUPMSG = 3
 MENU_LEVELUPCHOICE = 4
 MENU_PAUSE      = 5
+MENU_SKILLDISPLAYKEY = 6
 
         ; Finish frame. Update frame and update score panel
         ;
@@ -319,6 +320,9 @@ UM_None:        lda actT+ACTI_PLAYER            ;If vanished after death, forcib
                 lda keyType                     ;Enter pause menu manually by pressing RUN/STOP
                 cmp #KEY_RUNSTOP
                 beq SetMenuMode
+                ldx #MENU_SKILLDISPLAYKEY
+                cmp #KEY_S
+                beq SetMenuMode
                 ldx #MENU_LEVELUPMSG
                 lda lastReceivedXP              ;If XP received, show XP message now
                 bne UM_PrintXP
@@ -438,6 +442,17 @@ UM_SkillDisplay:ldx #MENU_NONE                  ;Exit either into inventory (fir
                 jsr SetMenuMode                 ;When returning to inventory, do not
                 dec menuCounter                 ;allow to enter pausemenu anymore until
 UM_SkillDisplayDone:                            ;fire released
+                rts
+
+        ; Skill display when entered by keyboard
+
+UM_SkillDisplayKey:
+                ldx #MENU_NONE                  ;Exit with fire or any key
+                lda joystick
+                cmp #JOY_FIRE
+                bcs SetMenuMode2
+                lda keyType
+                bpl SetMenuMode2
                 rts
 
         ; Levelup text

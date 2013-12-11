@@ -5,7 +5,6 @@ ITEM_MAX_YSPEED = 6*8
 
 ITEM_SPAWN_OFFSET = -15*8
 
-MAX_INVENTORYITEMS = 16
 INITIAL_MAX_WEAPONS = 3
 
 USEITEM_ATTACK_DELAY = 5                        ;Attack delay after using an item

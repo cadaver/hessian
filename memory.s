@@ -9,6 +9,7 @@ MAX_CACHESPRITES = 64
 MAX_CHUNKFILES   = 32
 MAX_MAPROWS     = 128
 MAX_BLK         = 192
+MAX_INVENTORYITEMS = 16
 MAX_LVLDATAACT  = 80
 MAX_LVLACT      = 96                            ;Allow extra 16 global or temporary persistent actors
 MAX_LVLOBJ      = 128                           ;Note: must be 128! And-operations are used in code
@@ -17,10 +18,9 @@ MAX_PLOTBITS    = 64
 MAX_ACTORTRIGGERS = 16
 MAX_SAVES       = 5
 
-
 SAVEDESCSIZE    = 24
 SCRIPTAREASIZE  = 8*256
-SCROLLROWS      = 22
+SCROLLROWS      = 21
 
         ; Zeropage variables
 
@@ -192,8 +192,9 @@ charColors      = $e700
 chars           = $e800
 screen2         = $f000
 screen1         = $f400
-improveList     = screen1+1002
-targetList      = screen2+1016-MAX_SPR*4-(MAX_COMPLEXACT+1)
+improveList     = screen1+1016-(MAX_COMPLEXACT+1)-6
+targetList      = screen1+1016-(MAX_COMPLEXACT+1)
+sprIrqLine     = screen2+1016-MAX_SPR*6
 sprOrTbl        = screen2+1016-MAX_SPR*4
 sprAndTbl       = screen2+1016-MAX_SPR*2
 lvlDataActX     = screen2
