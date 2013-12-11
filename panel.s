@@ -448,8 +448,7 @@ UM_SkillDisplayDone:                            ;fire released
 
 UM_SkillDisplayKey:
                 ldx #MENU_NONE                  ;Exit with fire or any key
-                lda joystick
-                cmp #JOY_FIRE
+                jsr GetFireClick
                 bcs SetMenuMode2
                 lda keyType
                 bpl SetMenuMode2
@@ -514,8 +513,7 @@ UM_PauseMenu:   ldy menuCounter
                 jsr GetFireClick
                 bcs UM_PauseMenuAction
                 lda keyType
-                cmp #KEY_RUNSTOP
-                bne UM_PauseMenuNoExit
+                bmi UM_PauseMenuNoExit
                 lda actT+ACTI_PLAYER            ;If no player actor anymore, can not exit but must choose
                 bne UM_PauseMenuExit
 UM_PauseMenuNoExit:
