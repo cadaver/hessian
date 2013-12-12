@@ -12,9 +12,8 @@ DRONE_MAXSPEED = 4*8
         ; Returns: -
         ; Modifies: A,Y
 
-MoveSmokeTrail: lda #1
-                ldy #2
-                bne AnimateAndRemove
+MoveSmokeTrail: ldy #2
+                SKIP2
 
         ; Small water splash update routine
         ;
@@ -22,8 +21,8 @@ MoveSmokeTrail: lda #1
         ; Returns: -
         ; Modifies: A,Y
 
-MoveSmallSplash:lda #1
-                ldy #3
+MoveSmallSplash:ldy #3
+                lda #1
                 bne AnimateAndRemove
 
         ; Explosion / large water splash update routine

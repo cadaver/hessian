@@ -458,6 +458,7 @@ UF_WaitColorShiftLoop:
                 lda $d012                       ;Wait until we are near the scorescreen split
                 cmp #IRQ3_LINE-$48
                 bcc UF_WaitColorShiftLoop
+UF_ColorShiftLateCheck:
                 cmp #IRQ4_LINE
                 bcs UF_WaitColorShiftLoop
                 if SHOW_COLORSCROLL_WAIT > 0

@@ -39,7 +39,7 @@ hessian.d81: hessian.d64 hessiand81.seq
 boot.prg: boot.s kernal.s memory.s loader.pak
 	dasm boot.s -oboot.prg
 
-loader.pak: kernal.s loader.s ldepack.s macros.s memory.s
+loader.pak: kernal.s loader.s loadsym.txt ldepack.s macros.s memory.s
 	dasm loader.s -oloader.bin -sloader.tbl -f3
 	symbols loader.tbl loadsym.s loadsym.txt
 	lpack loader.bin ldata.pak

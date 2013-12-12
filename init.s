@@ -43,6 +43,8 @@ LoadOptions:    jsr GetByte
                 bcc LoadOptions
 LoadOptionsDone:
 
+        ; Initialize scrolling
+
                 jsr InitScroll
 
         ; Initialize panel text printing
@@ -183,14 +185,19 @@ InitRaster:     sei
                 sta $d012
                 lda fastLoadMode                ;If not using fastloader, disable MinSprY/MaxSprY writing
                 beq IR_UseFastLoad
-                lda #$ea
-                ldx #$02
-IR_DisableMinMaxSprY:
-                sta Irq1_StoreMinSprY,x
-                sta Irq1_StoreMaxSprY,x
-                dex
-                bpl IR_DisableMinMaxSprY
-IR_UseFastLoad: cli
+                lda #$2c
+                sta Irq1_StoreMinSprY
+                sta Irq1_StoreMaxSprY
+IR_UseFastLoad:
+IR_DetectNtsc1: lda $d012                       ;Detect PAL/NTSC again
+IR_DetectNtsc2: cmp $d012
+                beq IR_DetectNtsc2
+                bmi IR_DetectNtsc1
+                cmp #$20
+                bcc IR_IsNtsc
+                lda #$ff
+                sta UF_ColorShiftLateCheck+1
+IR_IsNtsc:      cli
 
         ; Initializations are complete. Start the main program
 
