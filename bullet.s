@@ -22,8 +22,7 @@ MoveSmokeTrail: ldy #2
         ; Modifies: A,Y
 
 MoveSmallSplash:ldy #3
-                lda #1
-                bne AnimateAndRemove
+                SKIP2
 
         ; Explosion / large water splash update routine
         ;
@@ -32,8 +31,9 @@ MoveSmallSplash:ldy #3
         ; Modifies: A,Y
 
 MoveWaterSplash:
-MoveExplosion:  lda #1
-                ldy #5
+MoveExplosion:  ldy #5
+AnimateAndRemoveDelay1:
+                lda #1
 AnimateAndRemove:
                 sty temp8
                 jsr AnimationDelay
