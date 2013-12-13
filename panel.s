@@ -160,6 +160,27 @@ UP_SkipAmmo:    lda #$00
                 dec textTime
                 beq UP_UpdateText
 UP_TextDone:    rts
+
+        ; Clear the panel text
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X
+
+UM_RedrawNone:
+ClearPanelText: ldx #$00
+                ldy #$00
+
+        ; Print text to panel, possibly multi-line
+        ;
+        ; Parameters: A,X text address, Y delay in game logic frames (25 = 1 sec)
+        ; Returns: -
+        ; Modifies: A
+
+PrintPanelText: sty textDelay
+                sta textLo
+                stx textHi
+
 UP_UpdateText:  lda #$00
                 sta displayedItemName
                 ldx textLeftMargin
@@ -238,26 +259,6 @@ UP_EmptySlice:  sta textChars+35*8,x
                 cpx zpDestLo
                 bcc UP_DrawSliceLoop
                 rts
-
-        ; Clear the panel text
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X
-
-ClearPanelText: ldx #$00
-                ldy #$00
-
-        ; Print text to panel, possibly multi-line
-        ;
-        ; Parameters: A,X text address, Y delay in game logic frames (25 = 1 sec)
-        ; Returns: -
-        ; Modifies: A
-
-PrintPanelText: sty textDelay
-                sta textLo
-                stx textHi
-                jmp UP_UpdateText
 
         ; Print continued panel text. Should be called immediately after printing
         ; the beginning part.
@@ -542,8 +543,6 @@ UM_ResumeOrRetry:
         ; Menu redraw routines
 
         ; None
-
-UM_RedrawNone:  jmp ClearPanelText
 
         ; Inventory
 
