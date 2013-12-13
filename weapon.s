@@ -96,13 +96,12 @@ AttackHuman:    ldy actWpn,x
                 ldy #WD_BITS
                 lda (wpnLo),y
                 sta wpnBits
-                txa
+                txa                             ;Ammo check only for player
                 beq AH_AmmoCheck
                 jmp AH_NotPlayer
 AH_AmmoCheck:   ldy itemIndex                   ;Check for ammo & reloading
                 lda magazineSize
-                beq AH_AmmoCheckOK              ;Melee weapon or consumable, no ammo check & reload
-                bmi AH_AmmoCheckOK
+                bmi AH_AmmoCheckOK              ;Infinite (melee weapon)
 AH_CheckReload: cmp invCount,y
                 bcc AH_HasFullMagReserve
                 lda invCount,y
@@ -129,6 +128,8 @@ AH_NotReloading:lda invMag,y
 AH_EmptyMagazine:
                 lda invCount,y                  ;Initiate reloading if mag empty and reserve left
                 beq AH_FirearmEmpty
+                lda magazineSize                ;Check for magazineless weapon
+                beq AH_AmmoCheckOK
 AH_BeginReload: lda actAttackD+ACTI_PLAYER      ;Do not start reloading before attack delay
                 bne AH_AmmoCheckOK              ;zero
 AH_ReloadNextShot:

@@ -31,8 +31,7 @@ START_Y         = $0bc0
 
                 dc.w TitleScreen
 
-TitleScreen:    sta TitleScreenParam+1          ;Go to save screen (A>0) or main menu (A=0)
-                jsr BlankScreen
+TitleScreen:    jsr BlankScreen
                 jsr ClearPanelText
                 jsr InitScroll                  ;Make sure no scrolling
 
@@ -80,8 +79,9 @@ M               set M+1
                 lda #MUSIC_TITLE
                 jsr PlaySong
 
-TitleScreenParam:
-                lda #$00
+        ; Go to either the title screen or save screen
+
+                lda ES_ParamA+1                 ;Script execution parameter
                 beq TitleTexts
 
         ; Save game

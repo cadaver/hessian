@@ -202,16 +202,12 @@ RI_Done:        inc UM_ForceRefresh+1           ;If inventory open, force it to 
         ; Modifies: A,Y,zpSrcLo
 
 DecreaseAmmo:   sta zpSrcLo
+                sec
                 lda invMag,y                    ;Decrease ammo in magazine as well
                 beq DA_NoAmmoInMag
-                sec
-                sbc zpSrcLo
-                bcs DA_MagNotNegative
-                lda #$00
-DA_MagNotNegative:
-                sta invMag,y
-DA_NoAmmoInMag: lda invCount,y
-                sec
+                sbc zpSrcLo                     ;Is assumed not to overflow negatively, as
+                sta invMag,y                    ;when item has a magazine it is decreased
+DA_NoAmmoInMag: lda invCount,y                  ;only by one
                 sbc zpSrcLo
                 bcs DA_NotNegative
                 lda #$00

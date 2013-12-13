@@ -1117,7 +1117,7 @@ RCP_ZPState:    lda saveStateZP-1,x
                 jsr CreatePlayerActor
                 jmp CenterPlayer
 
-        ; Create player actor
+        ; Create player actor and (re)load level
         ;
         ; Parameters: C=0 do not load actors from leveldata, C=1 load actors
         ; Returns: -
