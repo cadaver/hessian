@@ -250,14 +250,8 @@ Irq2_SprIrqDone:
                 sta $d012
                 sbc #$03                        ;Already late from the next IRQ?
                 cmp $d012
+                bcs SetNextIrqNoAddress
                 bcc Irq2_Direct                 ;If yes, execute directly
-                dec $d019                       ;Acknowledge raster IRQ
-                lda irqSave01
-                sta $01
-                lda irqSaveA
-                ldx irqSaveX
-                ldy irqSaveY
-                rti
 
 Irq2:           cld
                 sta irqSaveA
@@ -278,9 +272,10 @@ Irq2_AllDone:   lda #IRQ3_LINE
                 bcc Irq2_LatePanel
                 lda #<Irq3
                 ldx #>Irq3
-SetNextIrq:     dec $d019                       ;Acknowledge raster IRQ
-                sta $fffe
+SetNextIrq:     sta $fffe
                 stx $ffff
+SetNextIrqNoAddress:
+                dec $d019                       ;Acknowledge raster IRQ
                 lda irqSave01
                 sta $01                         ;Restore $01 value
                 lda irqSaveA
