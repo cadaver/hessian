@@ -176,8 +176,8 @@ cacheSprFrame   = $02a7
 
 mainCodeStart   = $0334
 
-fileAreaEnd     = spriteCache
 spriteCache     = $d000
+fileAreaEnd     = spriteCache
 colors          = $d800
 textChars       = $e000
 mapTblLo        = $e300

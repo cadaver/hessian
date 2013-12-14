@@ -227,3 +227,5 @@ scorePanelColors:
                 ds.b 4,1
                 dc.b 11
                 ds.b 40,11
+
+scriptCodeEnd   = scriptCodeStart+SCRIPTAREASIZE

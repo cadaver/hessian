@@ -19,11 +19,28 @@ SKILL_CHEAT     = 0
                 include memory.s
                 include loadsym.s
 
+        ; Aligned code and data
+
                 org loaderCodeEnd
+
+                include raster.s
+                include aligneddata.s
+
+        ; Non-aligned data
+
+                include paneldata.s
+                include actordata.s
+                include itemdata.s
+                include weapondata.s
+                include leveldata.s
+                include aidata.s
+                include sounddata.s
+                include text.s
+
+        ; Non-aligned game code
 
 randomAreaStart:
 
-                include raster.s
                 include math.s
                 include sound.s
                 include input.s
@@ -59,11 +76,10 @@ MainLoop:       jsr ScrollLogic
 
 randomAreaEnd:
 
-        ; Disposable init part
+        ; Disposable init part, overwritten by loadable (script code)
 
                 include init.s
 
-        ; Static data and variables
+        ; Game variables
 
-                include data.s
-
+                include vars.s

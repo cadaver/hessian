@@ -11,6 +11,16 @@ TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
 
+        ; IRQ common startup code
+
+StartIrq:       cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+                rts
+
         ; IRQ redirector when Kernal is on
 
 RedirectIrq:    ldx $01
@@ -27,12 +37,7 @@ RI_Return:      stx $01
 
         ; Raster interrupt 5. Text screen split
 
-Irq5:           cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
+Irq5:           jsr StartIrq
 Irq5_Wait:      lda $d012
                 cmp #IRQ5_LINE+3
                 bcc Irq5_Wait
@@ -42,12 +47,7 @@ Irq5_Wait:      lda $d012
 
         ; Raster interrupt 1. Show game screen
 
-Irq1:           cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35
-                sta $01                         ;Ensure IO memory is available
+Irq1:           jsr StartIrq
                 lda #$00
                 sta newFrame
                 sta $d07a                       ;SCPU back to slow mode
@@ -253,8 +253,8 @@ Irq2_SprIrqDone:
                 bcs SetNextIrqNoAddress
                 bcc Irq2_Direct                 ;If yes, execute directly
 
-Irq2:           cld
-                sta irqSaveA
+Irq2:           cld                             ;To save time, do not use StartIrq here, as the sprite IRQs
+                sta irqSaveA                    ;may repeat several times
                 stx irqSaveX
                 sty irqSaveY
                 lda #$35
@@ -328,12 +328,7 @@ N               set N+1
 
         ;Raster interrupt 4. Show the scorepanel and play music
 
-Irq4:           cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
+Irq4:           jsr StartIrq
                 lda #$18
                 sta $d016
                 lda #PANEL_BG1                  ;Set scorepanel multicolors
