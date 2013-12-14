@@ -41,8 +41,7 @@ AnimateAndRemove:
                 inc actF1,x
                 lda actF1,x
                 cmp temp8
-                bne MExpl_NoRemove
-                jmp RemoveActor
+                bcs MMH_Remove
 MExpl_NoAnimation:
 MRckt_Done:
 MExpl_NoRemove: rts
@@ -54,7 +53,7 @@ MExpl_NoRemove: rts
         ; Modifies: A,Y
 
 MoveMeleeHit:   jsr CheckBulletCollisionsApplyDamage
-                jmp RemoveActor
+MMH_Remove:     jmp RemoveActor
 
         ; Flame update routine
         ;

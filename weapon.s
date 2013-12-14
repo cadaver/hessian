@@ -323,8 +323,7 @@ AH_NoBulletFlicker:
                 bmi AH_PlayerMeleeBonus
                 ldy itemIndex
                 if AMMO_CHEAT=0
-                lda #$01
-                jsr DecreaseAmmo
+                jsr DecreaseAmmoOne
                 endif
                 lda wpnBits
                 and #WDB_NOSKILLBONUS

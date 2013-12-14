@@ -162,11 +162,14 @@ AI_StoreItem:   lda zpSrcLo
                 beq AI_Success
                 sty itemIndex
 AI_Success:     
-RI_Success:     
+RI_Success:     sec
 SetPanelRedrawItemAmmo:
                 lda #REDRAW_ITEM+REDRAW_AMMO
+                SKIP2
+SetPanelRedrawAmmo:
+                lda #REDRAW_AMMO
+                ora panelUpdateFlags
                 sta panelUpdateFlags
-                sec
 RI_NotFound:    rts
 
         ; Remove item from inventory
@@ -201,6 +204,7 @@ RI_Done:        inc UM_ForceRefresh+1           ;If inventory open, force it to 
         ; Returns: -
         ; Modifies: A,Y,zpSrcLo
 
+DecreaseAmmoOne:lda #$01
 DecreaseAmmo:   sta zpSrcLo
                 sec
                 lda invMag,y                    ;Decrease ammo in magazine as well
@@ -212,16 +216,11 @@ DA_NoAmmoInMag: lda invCount,y                  ;only by one
                 bcs DA_NotNegative
                 lda #$00
 DA_NotNegative: sta invCount,y
-                bne DA_DecreaseDone
+                bne SetPanelRedrawAmmo
                 lda invType,y
                 cmp #ITEM_FIRST_CONSUMABLE      ;If it's a consumable item, remove when ammo
-                bcc DA_DecreaseDone             ;goes to zero
+                bcc SetPanelRedrawAmmo          ;goes to zero
                 jmp RemoveItemByIndex
-SetPanelRedrawAmmo:
-DA_DecreaseDone:lda panelUpdateFlags
-                ora #REDRAW_AMMO
-                sta panelUpdateFlags
-                rts
 
         ; Item update routine
         ;
@@ -267,17 +266,15 @@ UseItem:        lda actHp+ACTI_PLAYER           ;Can't use/reload after dying
                 beq UseMedKit
 UI_Dead:
 UMK_FullHealth: rts
-UseMedKit:      lda actHp+ACTI_PLAYER
-                cmp #HP_PLAYER
-                bcs UMK_FullHealth
-                lda #HP_PLAYER
+UseMedKit:      lda #HP_PLAYER
+                cmp actHp+ACTI_PLAYER
+                beq UMK_FullHealth
                 sta actHp+ACTI_PLAYER
                 lda #SFX_POWERUP
                 jsr PlaySfx
 UI_ReduceAmmo:  lda #USEITEM_ATTACK_DELAY       ;In case the item is removed, give an
                 sta actAttackD+ACTI_PLAYER      ;attack delay to prevent accidental
-                lda #$01                        ;fire when a weapon becomes selected
-                jmp DecreaseAmmo
+                jmp DecreaseAmmoOne             ;fire if a weapon becomes selected next
 UI_Reload:      lda plrReload
                 bne UI_DontReload
                 lda actF1+ACTI_PLAYER           ;No reload if dead or swimming
