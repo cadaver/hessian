@@ -17,6 +17,9 @@ ACTI_LASTEFFECT = ACTI_FIRSTNPCBULLET+1
 MAX_PERSISTENTACT = ACTI_LASTITEM+1             ;Player + complex actors + items
 MAX_SPAWNEDACT = 3
 
+MAX_NEARTRIGGER_XDIST = 2
+MAX_NEARTRIGGER_YDIST = 1
+
 AD_NUMSPRITES   = 0
 AD_SPRFILE      = 1
 AD_LEFTFRADD    = 2
@@ -481,9 +484,7 @@ UA_SpawnerEndCmp:cpx #SPAWNERSEARCH
 BuildTargetList:ldx #ACTI_LASTNPC
                 ldy #$00                        ;Villain list index
                 sty temp1                       ;Hero list index
-BTL_Loop:       lda actT,x                      ;Actor must exist and have nonzero health
-                beq BTL_Next
-                lda actHp,x
+BTL_Loop:       lda actHp,x                     ;Actor must have nonzero health
                 beq BTL_Next
                 lda actFlags,x                  ;Actor must not be in bystander (none) group
                 and #AF_GROUPBITS
@@ -1275,9 +1276,9 @@ DA_NotDead:     sta actHp,x
         ;
         ; Parameters: X actor index, Y damage source actor if applicable or >=$80 if none
         ; Returns: C=0
-        ; Modifies: A,Y,temp8,possibly other temp registers
+        ; Modifies: A,Y,possibly temp registers
 
-DestroyActor:   sty temp8
+DestroyActor:   sty DA_DamageSrc+1
                 cpy #ACTI_FIRSTNPCBULLET
                 jsr GetActorLogicData
                 ldy #AL_DESTROYROUTINE
@@ -1290,9 +1291,9 @@ DestroyActor:   sty temp8
                 ldy #AL_KILLXP
                 lda (actLo),y
                 jsr GiveXP
-DA_NoXP:        lda #AT_DESTROY                 ;Run the DESTROY trigger
+DA_NoXP:        ldy #AT_DESTROY                 ;Run the DESTROY trigger
                 jsr ActorTrigger
-                ldy temp8
+DA_DamageSrc:   ldy #$00
 DA_Jump:        jsr $0000
                 clc
 AS_Done2:       rts
@@ -1486,7 +1487,7 @@ ALA_Common:     lda lvlActX,x
                 beq ALA_NotItem
                 lda #MB_GROUNDED
                 sta actMB,x
-ALA_NotItem:    lda #AT_ADD                     ;Run the ADD trigger routine
+ALA_NotItem:    ldy #AT_ADD                     ;Run the ADD trigger routine
                 jmp ActorTrigger
 ALA_Fail:       rts
 ALA_IsItem:     lda #ACTI_FIRSTITEM
@@ -1551,7 +1552,7 @@ RA_StoreNPC:    sta lvlActT,y
                 and #$80
                 ora actWpn,x
 RA_StoreCommon: sta lvlActWpn,y
-                lda #AT_REMOVE                  ;Run the REMOVE trigger routine
+                ldy #AT_REMOVE                  ;Run the REMOVE trigger routine
                 jsr ActorTrigger
 
         ; Remove actor without returning to leveldata
@@ -1563,7 +1564,8 @@ RA_StoreCommon: sta lvlActWpn,y
 RemoveActor:    lda #ACT_NONE
                 sta actT,x
                 sta actHp,x                     ;Clear hitpoints so that bullet collision can not cause damage to an
-RA_Done:        rts                             ;actor removed on the same frame (outdated collision list)
+                sta actFlags,x                  ;actor removed on the same frame (outdated collision list)
+RA_Done:        rts
 
         ; Get a free actor
         ;

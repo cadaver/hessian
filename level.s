@@ -688,9 +688,9 @@ ULO_CPNoItemNoWrap:
                 cpy ULO_CheckPickupIndex+1
                 bne ULO_CheckPickupLoop
                 lda displayedItemName           ;If no items, clear existing item name
-                beq ULO_CheckObject             ;text
+                beq ULO_CheckNearTrigger        ;text
                 jsr ClearPanelText
-                bcs ULO_CheckObject             ;C=1 when returning
+                bcs ULO_CheckNearTrigger        ;C=1 when returning
 ULO_HasItem:    sty ULO_CheckPickupIndex+1
                 lda textTime                    ;Make sure to not overwrite other game
                 bne ULO_SkipItemName            ;messages
@@ -706,14 +706,37 @@ ULO_HasItem:    sty ULO_CheckPickupIndex+1
 ULO_SkipItemName:
                 lda actCtrl+ACTI_PLAYER
                 cmp #JOY_DOWN
-                bne ULO_CheckObject
+                bne ULO_CheckNearTrigger
                 lda actFd+ACTI_PLAYER           ;If ducking, try picking up the item
-                beq ULO_CheckObject
+                beq ULO_CheckNearTrigger
                 lda actF1+ACTI_PLAYER
                 cmp #FR_DUCK
-                bne ULO_CheckObject
+                bne ULO_CheckNearTrigger
                 ldy ULO_CheckPickupIndex+1
                 jsr TryPickup
+
+ULO_CheckNearTrigger:
+                ldx #ACTI_LASTNPC
+                lda actFlags,x
+                and #AF_USETRIGGERS
+                beq ULO_CNTNext
+                ldy #ACTI_PLAYER
+                jsr GetActorDistance
+                lda temp6
+                cmp #MAX_NEARTRIGGER_XDIST
+                bcs ULO_CNTNext
+                lda temp8
+                cmp #MAX_NEARTRIGGER_YDIST
+                bcs ULO_CNTNext
+                lda actMB+ACTI_PLAYER           ;If neartrigger would be OK to execute, but player
+                lsr                             ;is jumping, skip (neartrigger often triggers
+                bcc ULO_CheckObject             ;a conversation, would look stupid if hanging in midair)
+                ldy #AT_NEAR
+                jsr ActorTriggerNoFlagCheck
+ULO_CNTNext:    dex
+                bne ULO_CNTNotOver
+                ldx #ACTI_LASTNPC
+ULO_CNTNotOver: stx ULO_CheckNearTrigger+1
 
 ULO_CheckObject:ldx actXH+ACTI_PLAYER           ;Rescan objects whenever player
                 ldy actYH+ACTI_PLAYER           ;block position changes

@@ -881,7 +881,7 @@ MH_GSHSDone:    rts
         ;
         ; Parameters: X actor index,Y damage source actor or $ff if none
         ; Returns: -
-        ; Modifies: A,Y,temp3-temp8
+        ; Modifies: A,Y,temp1-temp8
 
 HumanDeath:     sty temp4
                 lda #SFX_DEATH
@@ -927,18 +927,17 @@ HD_NoDamageSource:
         ;
         ; Parameters: X actor index
         ; Returns: -
-        ; Modifies: A,Y,temp3-temp8
+        ; Modifies: A,Y,temp1-temp8
 
-DropItem:       stx temp3
-                lda #$02                        ;Retry counter
+DropItem:       lda #$02                        ;Retry counter
                 sta temp7
 DI_Retry:       ldy #AL_DROPITEMINDEX
                 lda (actLo),y
                 bpl DI_ItemNumber
-                sta temp4
+                sta temp5
                 jsr Random
                 and #DROPTABLERANDOM-1
-                adc temp4
+                adc temp5
                 tay
                 lda itemDropTable-$80,y
                 bne DI_ItemNumber
@@ -947,7 +946,7 @@ DI_Retry:       ldy #AL_DROPITEMINDEX
 DI_Override:
 DI_ItemNumber:  tay
                 beq DI_NoItem
-                sta temp4                       ;Item type to drop
+                sta temp5                       ;Item type to drop
                 lda #$00
                 sta temp8                       ;Capacity counter
                 ldy #ACTI_FIRSTITEM             ;Count capacity on both ground and inventory, do not spawn
@@ -955,7 +954,7 @@ DI_CountGroundItems:                            ;if player can't pick up
                 lda actT,y
                 beq DI_CGINext
                 lda actF1,y
-                cmp temp4
+                cmp temp5
                 bne DI_CGINext
                 lda actHp,y
                 clc
@@ -974,7 +973,7 @@ DI_CGINext:     iny
                 bcs DI_NoItem
                 sta temp8
 DI_NotInInventory:
-                ldy temp4
+                ldy temp5
                 lda temp8
                 cmp itemMaxCount-1,y
                 bcc DI_HasCapacity
@@ -987,7 +986,8 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 bcc DI_NoItem
                 lda #ACT_ITEM
                 jsr SpawnActor
-                lda temp4
+                lda temp5
+                stx temp6
                 tax
                 sta actF1,y
                 jsr Random
@@ -1003,13 +1003,13 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 jsr InitActor
                 lda #ITEM_SPAWN_OFFSET
                 jsr MoveActorY
-                lda temp4
+                lda temp5
                 cmp #ITEM_FIRST_IMPORTANT
                 ror
                 ror
                 and #ORG_GLOBAL
-DI_IsImportant: jsr SetPersistence
-                ldx temp3
+                jsr SetPersistence
+                ldx temp6
                 rts
 
         ; Give experience points to player, check for leveling

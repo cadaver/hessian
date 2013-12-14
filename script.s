@@ -6,7 +6,6 @@ AT_ADD          = 1
 AT_REMOVE       = 2
 AT_DESTROY      = 4
 AT_NEAR         = 8
-AT_TALK         = 16
 
         ; Set or modify trigger for an actor type
         ;
@@ -57,20 +56,20 @@ ATSearch_Cmp:   cmp zpSrcLo
                 iny
                 bne ATSearch_Loop
 ATSearch_NotFound:
-AT_Fail:
                 clc
 ATSearch_Found: rts
 
         ; Run an actor trigger routine
         ;
-        ; Parameters: A trigger type (mask bit), X actor number
-        ; Returns: C=1 trigger found and executed C=0 trigger not found
+        ; Parameters: Y trigger type (mask bit), X actor number
+        ; Returns: -
         ; Modifies: A,Y,loader temp vars
 
-ActorTrigger:   sta ES_ParamA+1
-                lda actFlags,x
+ActorTrigger:   lda actFlags,x
                 and #AF_USETRIGGERS             ;First check: does the actor use triggers at all?
                 beq AT_Fail
+ActorTriggerNoFlagCheck:
+                sty ES_ParamA+1
                 ldy #$00
 AT_Search:      lda atType,y                    ;Reached end of trigger list?
                 beq AT_Fail
@@ -86,8 +85,7 @@ AT_MaskCheck:   and ES_ParamA+1
                 ldx atScriptF,y
                 jsr ExecScript
                 ldx ES_ParamX+1
-                sec
-                rts
+AT_Fail:        rts
 
         ; Execute a script
         ;

@@ -219,10 +219,8 @@ AI_SetMoveCtrl: sta actMoveCtrl,x
 
 FindTarget:     ldy actAITarget,x
                 bmi FT_PickNew
-                lda actT,y
-                beq FT_Invalidate
-                lda actHp,y
-                beq FT_Invalidate
+                lda actHp,y                     ;When actor is removed (actT = 0) also health is zeroed
+                beq FT_Invalidate               ;so only checking for health is enough
 FT_TargetOK:    rts
 FT_Invalidate:  lda #NOTARGET
 FT_StoreTarget: sta actAITarget,x

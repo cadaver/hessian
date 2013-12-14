@@ -1,5 +1,3 @@
-        ; Game data, beginning with aligned data
-
                 org (* + $ff) & $ff00
 
         ; Sprite cache / depacking tables
