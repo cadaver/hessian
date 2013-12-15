@@ -63,15 +63,8 @@ MoveWithGravity:sta temp6
                 sta temp5
                 lsr
                 bcs MWG_NoYMove                 ;If not grounded, move in Y-dir first
-                sty temp7
-                lda actSY,x                     ;Add Y-acceleration (simplified version of AccActorY)
-                adc temp6
-                bmi MWG_NoYSpeedLimit           ;If speed still negative, can not have
-                cmp temp7                       ;reached terminal velocity yet
-                bcc MWG_NoYSpeedLimit
-                tya
-MWG_NoYSpeedLimit:
-                sta actSY,x
+                lda temp6
+                jsr AccActorY
                 jsr MoveActorY
 MWG_NoYMove:    lda actSX,x                     ;Have X-speed?
                 beq MWG_NoXMove

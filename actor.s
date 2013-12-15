@@ -752,7 +752,7 @@ MAY_NegOk:      rts
 AccActorXNegOrPos:
                 bcc AccActorX
 
-        ; Accelerate actor in X-direction with negative acceleration & speed limit
+        ; Accelerate actor in negative X-direction
         ;
         ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit
         ; Returns:
@@ -766,11 +766,15 @@ AccActorXNeg:   sta temp8
                 lda actSX,x
                 sec
                 sbc temp8
+                bpl AAX_Done
                 sty temp8
-                bmi AAX_SpeedNeg
-                bpl AAX_SpeedPos
+                cmp temp8
+                bcs AAX_Done
+AAX_Limit:      tya
+AAX_Done:       sta actSX,x
+                rts
 
-        ; Accelerate actor in X-direction
+        ; Accelerate actor in positive X-direction
         ;
         ; Parameters: X actor index, A acceleration, Y speed limit
         ; Returns: -
@@ -779,19 +783,10 @@ AccActorXNeg:   sta temp8
 AccActorX:      sty temp8
                 clc
                 adc actSX,x
-                bmi AAX_SpeedNeg
-AAX_SpeedPos:   bit temp8                       ;If speed positive and limit negative,
-                bmi AAX_AccDone                 ;can't have reached limit yet
+                bmi AAX_Done                    ;If speed negative, can not have reached limit yet
                 cmp temp8
-                bcc AAX_AccDone
-                bcs AAX_AccLimit
-AAX_SpeedNeg:   bit temp8                       ;If speed negative and limit positive,
-                bpl AAX_AccDone                 ;can't have reached limit yet
-                cmp temp8
-                bcs AAX_AccDone
-AAX_AccLimit:   tya
-AAX_AccDone:    sta actSX,x
-                rts
+                bcs AAX_Limit
+                bcc AAX_Done
 
         ; Accelerate actor in Y-direction with either positive or negative acceleration
         ;
@@ -802,7 +797,7 @@ AAX_AccDone:    sta actSX,x
 AccActorYNegOrPos:
                 bcc AccActorY
 
-        ; Accelerate actor in Y-direction with negative acceleration & speed limit
+        ; Accelerate actor in negative Y-direction
         ;
         ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit
         ; Returns:
@@ -816,32 +811,27 @@ AccActorYNeg:   sta temp8
                 lda actSY,x
                 sec
                 sbc temp8
+                bpl AAY_Done
                 sty temp8
-                bmi AAY_SpeedNeg
-                bpl AAY_SpeedPos
+                cmp temp8
+                bcs AAY_Done
+AAY_Limit:      tya
+AAY_Done:       sta actSY,x
+                rts
 
-        ; Accelerate actor in Y-direction
+        ; Accelerate actor in positive Y-direction
         ;
         ; Parameters: X actor index, A acceleration, Y speed limit
         ; Returns: -
-        ; Modifies: A, temp8
+        ; Modifies: A,temp8
 
 AccActorY:      sty temp8
                 clc
                 adc actSY,x
-                bmi AAY_SpeedNeg
-AAY_SpeedPos:   bit temp8                       ;If speed positive and limit negative,
-                bmi AAY_AccDone                 ;can't have reached limit yet
+                bmi AAY_Done                    ;If speed negative, can not have reached limit yet
                 cmp temp8
-                bcc AAY_AccDone
-                bcs AAY_AccLimit
-AAY_SpeedNeg:   bit temp8                       ;If speed negative and limit positive,
-                bpl AAY_AccDone                 ;can't have reached limit yet
-                cmp temp8
-                bcs AAY_AccDone
-AAY_AccLimit:   tya
-AAY_AccDone:    sta actSY,x
-                rts
+                bcs AAY_Limit
+                bcc AAY_Done
 
         ; Brake X-speed of an actor towards zero
         ;
