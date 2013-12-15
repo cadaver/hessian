@@ -406,36 +406,23 @@ MDrn_NoMaxSize: clc                             ;Offset Y-check location by 3/4 
 MDrn_YDistPos:  sta temp8
                 jsr GetActorXDistance
                 lda temp5
-                bmi MDrn_TargetLeft
-MDrn_TargetRight:
+                asl                             ;Horizontal direction to carry
                 lda #DRONE_ATTACK_ACCEL
                 ldy #DRONE_MAXSPEED
-                bne MDrn_TargetAccXCommon
-MDrn_TargetLeft:
-                lda #-DRONE_ATTACK_ACCEL
-                ldy #-DRONE_MAXSPEED
-MDrn_TargetAccXCommon:
-                jsr AccActorX
+                jsr AccActorXNegOrPos
                 lda temp7
-                bmi MDrn_TargetUp
-MDrn_TargetDown:
+                asl                             ;Vertical direction to carry
                 lda #DRONE_ATTACK_ACCEL
-                ldy #DRONE_MAXSPEED
-                bne MDrn_AccCommon
-MDrn_TargetUp:  lda #-DRONE_ATTACK_ACCEL
-                ldy #-DRONE_MAXSPEED
                 bne MDrn_AccCommon
 MDrn_Idle:      ldy actF1,x
                 iny
                 tya
-                and #$02
-                beq MDrn_AccUp
-MDrn_AccDown:   lda #DRONE_IDLE_ACCEL
-                ldy #DRONE_MAXSPEED
-                bne MDrn_AccCommon
-MDrn_AccUp:     lda #-DRONE_IDLE_ACCEL
-                ldy #-DRONE_MAXSPEED
-MDrn_AccCommon: jsr AccActorY
+                and #$02                        ;Oscillate between down/up acceleration
+                lsr
+                lsr
+                lda #DRONE_IDLE_ACCEL
+MDrn_AccCommon: ldy #DRONE_MAXSPEED
+                jsr AccActorYNegOrPos
                 jsr CheckBulletCollisionsApplyDamage
                 dec actTime,x
                 bmi MDrn_Expire

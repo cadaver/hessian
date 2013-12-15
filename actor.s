@@ -743,6 +743,15 @@ MAY_Neg:        clc
                 dec actYH,x
 MAY_NegOk:      rts
 
+        ; Accelerate actor in X-direction with either positive or negative acceleration
+        ;
+        ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit, C direction (0 = right, 1 = left)
+        ; Returns:
+        ; Modifies: A,Y,temp8
+
+AccActorXNegOrPos:
+                bcc AccActorX
+
         ; Accelerate actor in X-direction with negative acceleration & speed limit
         ;
         ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit
@@ -783,6 +792,15 @@ AAX_SpeedNeg:   bit temp8                       ;If speed negative and limit pos
 AAX_AccLimit:   tya
 AAX_AccDone:    sta actSX,x
                 rts
+
+        ; Accelerate actor in Y-direction with either positive or negative acceleration
+        ;
+        ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit, C direction (0 = down, 1 = up)
+        ; Returns:
+        ; Modifies: A,Y,temp8
+
+AccActorYNegOrPos:
+                bcc AccActorY
 
         ; Accelerate actor in Y-direction with negative acceleration & speed limit
         ;

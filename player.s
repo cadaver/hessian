@@ -311,14 +311,11 @@ MH_OnGroundAcc: lsr                             ;If in water, halve max speed
                 bcc MH_NoWaterMaxSpeed
                 lsr temp4
 MH_NoWaterMaxSpeed:
+                lda actD,x
+                asl                             ;Direction to carry
                 lda (actLo),y
-                ldy actD,x
-                bmi MH_AccLeft
-MH_AccRight:    ldy temp4
-                jsr AccActorX
-                jmp MH_HorizMoveDone
-MH_AccLeft:     ldy temp4
-                jsr AccActorXNeg
+                ldy temp4
+                jsr AccActorXNegOrPos
                 jmp MH_HorizMoveDone
 MH_Brake:       lda temp1                       ;Only brake when grounded
                 lsr
@@ -756,29 +753,25 @@ MH_Swimming:    ldy #AL_MOVESPEED
                 sta temp5
                 ldy actMoveCtrl,x
                 cpy #JOY_LEFT
-                bcc MH_SwimHorizDone2
+                bcc MH_SwimHorizDone
 MH_SwimHorizLeftOrRight:
-                cpy #JOY_RIGHT
-                ldy temp4
-                bcc MH_SwimLeft
-MH_SwimRight:   jsr AccActorX
                 lda #$00
-                bpl MH_SwimHorizDone
-MH_SwimLeft:    jsr AccActorXNeg
+                cpy #JOY_RIGHT
+                bcs MH_SwimRight
                 lda #$80
+MH_SwimRight:   sta actD,x
+                asl                             ;Direction to carry
+                ldy temp4
+                lda temp5
+                jsr AccActorXNegOrPos
 MH_SwimHorizDone:
-                sta actD,x
-MH_SwimHorizDone2:
                 lda actMoveCtrl,x
                 and #JOY_UP|JOY_DOWN
                 beq MH_SwimVertDone
                 lsr
                 lda temp5
                 ldy temp4
-                bcs MH_SwimUp
-MH_SwimDown:    jsr AccActorY
-                jmp MH_SwimVertDone
-MH_SwimUp:      jsr AccActorYNeg
+                jsr AccActorYNegOrPos
 MH_SwimVertDone:lda actSY,x
                 bne MH_NotStationary
                 lda #-1                         ;If Y-speed stationary, rise up slowly
@@ -883,7 +876,22 @@ MH_GSHSDone:    rts
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8
 
-HumanDeath:     sty temp7
+HumanDeath:     tya                             ;Check if has a damage source
+                bmi HD_NoDamageSource
+                lda actHp,y
+                sta temp8
+                lda actSX,y                     ;Check if final attack came from right or left
+                bne HD_GotDir
+                lda actXL,x
+                sec
+                sbc actXL,y
+                lda actXH,x
+                sbc actXH,y
+HD_GotDir:      asl                             ;Direction to carry
+                lda temp8
+                ldy #DEATH_MAX_XSPEED
+                jsr AccActorXNegOrPos
+HD_NoDamageSource:
                 lda #SFX_DEATH
                 jsr PlaySfx
                 lda #FR_DIE
@@ -903,25 +911,6 @@ HD_NoYSpeed:    lda #$00
                 sta actFd,x
                 sta actHp,x
                 sta actAIMode,x                ;Reset any ongoing AI
-                ldy temp7                      ;Check if has a damage source
-                bmi HD_NoDamageSource
-                lda actHp,y
-                sta temp8
-                lda actSX,y                    ;Check if final attack came from right or left
-                bne HD_GotDir
-                lda actXL,x
-                sec
-                sbc actXL,y
-                lda actXH,x
-                sbc actXH,y
-HD_GotDir:      asl                             ;Sign bit of dir to carry
-                lda temp8
-                ldy #DEATH_MAX_XSPEED
-                bcs HD_LeftImpulse
-HD_RightImpulse:jsr AccActorX
-                jmp HD_NoDamageSource
-HD_LeftImpulse: jsr AccActorXNeg
-HD_NoDamageSource:
 
         ; Drop item from dead enemy
         ;
