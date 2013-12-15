@@ -131,7 +131,6 @@ SCROLLROWS      = 22
                 Var xpLevel
                 Var xpLimitLo
                 Var xpLimitHi
-                Var spawnCounter
                 Var nextTempLvlActIndex
 
 playerStateZPStart = levelNum

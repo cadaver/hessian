@@ -64,7 +64,7 @@ MoveWithGravity:sta temp6
                 lsr
                 bcs MWG_NoYMove                 ;If not grounded, move in Y-dir first
                 lda temp6
-                jsr AccActorY
+                jsr AccActorYNoClc
                 jsr MoveActorY
 MWG_NoYMove:    lda actSX,x                     ;Have X-speed?
                 beq MWG_NoXMove

@@ -465,9 +465,9 @@ UA_SpawnerBottomCheck:
                 bcs UA_SpawnerNext
                 jsr Random
                 and lvlObjDL,x
-                adc spawnCounter
-                sta spawnCounter
-                bcc UA_SpawnerNext
+UA_SpawnCounter:adc #$00                        ;Spawn counter is not part of savestate, meaning spawning
+                sta UA_SpawnCounter+1           ;will not be deterministic. But it relies on random numbers
+                bcc UA_SpawnerNext              ;in any case
                 jsr AttemptSpawn
                 ldx temp1
 UA_SpawnerNext: inx
@@ -750,7 +750,7 @@ MAY_NegOk:      rts
         ; Modifies: A,Y,temp8
 
 AccActorXNegOrPos:
-                bcc AccActorX
+                bcc AccActorXNoClc
 
         ; Accelerate actor in negative X-direction
         ;
@@ -758,21 +758,19 @@ AccActorXNegOrPos:
         ; Returns:
         ; Modifies: A,Y,temp8
 
-AccActorXNeg:   sta temp8
-                tya
-                eor #$ff
-                tay
-                iny
-                lda actSX,x
-                sec
-                sbc temp8
-                bpl AAX_Done
+AccActorXNeg:   sec
+AccActorXNegNoSec:
                 sty temp8
+                sbc actSX,x
+                bmi AAX_NegDone
                 cmp temp8
-                bcs AAX_Done
-AAX_Limit:      tya
+                bcc AAX_NegDone2
+                tya
+AAX_NegDone:    clc
+AAX_NegDone2:   eor #$ff
+                adc #$00
 AAX_Done:       sta actSX,x
-                rts
+AAX_Done2:      rts
 
         ; Accelerate actor in positive X-direction
         ;
@@ -780,58 +778,14 @@ AAX_Done:       sta actSX,x
         ; Returns: -
         ; Modifies: A,temp8
 
-AccActorX:      sty temp8
-                clc
+AccActorX:      clc
+AccActorXNoClc: sty temp8
                 adc actSX,x
                 bmi AAX_Done                    ;If speed negative, can not have reached limit yet
                 cmp temp8
-                bcs AAX_Limit
                 bcc AAX_Done
-
-        ; Accelerate actor in Y-direction with either positive or negative acceleration
-        ;
-        ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit, C direction (0 = down, 1 = up)
-        ; Returns:
-        ; Modifies: A,Y,temp8
-
-AccActorYNegOrPos:
-                bcc AccActorY
-
-        ; Accelerate actor in negative Y-direction
-        ;
-        ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit
-        ; Returns:
-        ; Modifies: A,Y,temp8
-
-AccActorYNeg:   sta temp8
                 tya
-                eor #$ff
-                tay
-                iny
-                lda actSY,x
-                sec
-                sbc temp8
-                bpl AAY_Done
-                sty temp8
-                cmp temp8
-                bcs AAY_Done
-AAY_Limit:      tya
-AAY_Done:       sta actSY,x
-                rts
-
-        ; Accelerate actor in positive Y-direction
-        ;
-        ; Parameters: X actor index, A acceleration, Y speed limit
-        ; Returns: -
-        ; Modifies: A,temp8
-
-AccActorY:      sty temp8
-                clc
-                adc actSY,x
-                bmi AAY_Done                    ;If speed negative, can not have reached limit yet
-                cmp temp8
-                bcs AAY_Limit
-                bcc AAY_Done
+                bcs AAX_Done
 
         ; Brake X-speed of an actor towards zero
         ;
@@ -841,18 +795,61 @@ AccActorY:      sty temp8
 
 BrakeActorX:    sta temp8
                 lda actSX,x
-                beq BAct_XDone2
+                beq AAX_Done2
                 bmi BAct_XNeg
 BAct_XPos:      sec
                 sbc temp8
-                bpl BAct_XDone
+                bpl AAX_Done
 BAct_XZero:     lda #$00
-BAct_XDone:     sta actSX,x
-BAct_XDone2:    rts
+                beq AAX_Done
 BAct_XNeg:      clc
                 adc temp8
-                bmi BAct_XDone
                 bpl BAct_XZero
+                bmi AAX_Done
+
+        ; Accelerate actor in Y-direction with either positive or negative acceleration
+        ;
+        ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit, C direction (0 = down, 1 = up)
+        ; Returns:
+        ; Modifies: A,Y,temp8
+
+AccActorYNegOrPos:
+                bcc AccActorYNoClc
+
+        ; Accelerate actor in negative Y-direction
+        ;
+        ; Parameters: X actor index, A absolute acceleration, Y absolute speed limit
+        ; Returns:
+        ; Modifies: A,Y,temp8
+
+AccActorYNeg:   sec
+AccActorYNegNoSec:
+                sty temp8
+                sbc actSY,x
+                bmi AAY_NegDone
+                cmp temp8
+                bcc AAY_NegDone2
+                tya
+AAY_NegDone:    clc
+AAY_NegDone2:   eor #$ff
+                adc #$00
+AAY_Done:       sta actSY,x
+AAY_Done2:      rts
+
+        ; Accelerate actor in positive Y-direction
+        ;
+        ; Parameters: X actor index, A acceleration, Y speed limit
+        ; Returns: -
+        ; Modifies: A,temp8
+
+AccActorY:      clc
+AccActorYNoClc: sty temp8
+                adc actSY,x
+                bmi AAY_Done                    ;If speed negative, can not have reached limit yet
+                cmp temp8
+                bcc AAY_Done
+                tya
+                bcs AAY_Done
 
         ; Brake Y-speed of an actor towards zero
         ;
@@ -862,18 +859,17 @@ BAct_XNeg:      clc
 
 BrakeActorY:    sta temp8
                 lda actSY,x
-                beq BAct_YDone2
+                beq AAY_Done2
                 bmi BAct_YNeg
 BAct_YPos:      sec
                 sbc temp8
-                bpl BAct_YDone
+                bpl AAY_Done
 BAct_YZero:     lda #$00
-BAct_YDone:     sta actSY,x
-BAct_YDone2:    rts
+                beq AAY_Done
 BAct_YNeg:      clc
                 adc temp8
-                bmi BAct_YDone
                 bpl BAct_YZero
+                bmi AAY_Done
 
         ; Process actor's animation delay
         ;
