@@ -883,7 +883,7 @@ MH_GSHSDone:    rts
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8
 
-HumanDeath:     sty temp4
+HumanDeath:     sty temp7
                 lda #SFX_DEATH
                 jsr PlaySfx
                 lda #FR_DIE
@@ -903,21 +903,21 @@ HD_NoYSpeed:    lda #$00
                 sta actFd,x
                 sta actHp,x
                 sta actAIMode,x                ;Reset any ongoing AI
-                ldy temp4                      ;Check if has a damage source
+                ldy temp7                      ;Check if has a damage source
                 bmi HD_NoDamageSource
                 lda actHp,y
                 sta temp8
                 lda actSX,y                    ;Check if final attack came from right or left
-                bmi HD_LeftImpulse
-                bne HD_RightImpulse
+                bne HD_GotDir
                 lda actXL,x
                 sec
                 sbc actXL,y
                 lda actXH,x
                 sbc actXH,y
+HD_GotDir:      asl                             ;Sign bit of dir to carry
                 lda temp8
                 ldy #DEATH_MAX_XSPEED
-                bcc HD_LeftImpulse
+                bcs HD_LeftImpulse
 HD_RightImpulse:jsr AccActorX
                 jmp HD_NoDamageSource
 HD_LeftImpulse: jsr AccActorXNeg
