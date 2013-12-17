@@ -5,7 +5,7 @@
 #include "fileio.h"
 
 #define MAX_LEVELS 64
-#define MAX_LVLACT 128
+#define MAX_LVLACT 80
 #define MAX_LVLOBJ 128
 
 int numlvlact[MAX_LEVELS];
@@ -22,6 +22,7 @@ unsigned char lvlobjy[MAX_LVLOBJ];
 unsigned char lvlobjb[MAX_LVLOBJ];
 unsigned char lvlobjd1[MAX_LVLOBJ];
 unsigned char lvlobjd2[MAX_LVLOBJ];
+unsigned char lvlobjr[MAX_LVLOBJ];
 int bitareasize = 0;
 int lvlobjbitareasize = 0;
 
@@ -72,7 +73,7 @@ int main(int argc, char** argv)
         fseek(in, 0, SEEK_END);
         length = ftell(in);
         fseek(in, 0, SEEK_SET);
-        numobj = length / 5;
+        numobj = length / 6;
         memset(lvlobjx, 0, sizeof lvlobjx);
         memset(lvlobjy, 0, sizeof lvlobjy);
         fread(&lvlobjx[0], numobj, 1, in);
@@ -80,6 +81,7 @@ int main(int argc, char** argv)
         fread(&lvlobjb[0], numobj, 1, in);
         fread(&lvlobjd1[0], numobj, 1, in);
         fread(&lvlobjd2[0], numobj, 1, in);
+        fread(&lvlobjr[0], numobj, 1, in);
         fclose(in);
         numpersistentobj = 0;
         actualnumobj = 0;

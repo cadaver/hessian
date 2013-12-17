@@ -59,6 +59,9 @@ DROWNING_TIMER_REPEAT = $f0
 
 MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new joystick controls
                 sta actPrevCtrl+ACTI_PLAYER
+                ldy #$00                        ;When in inventory, no controls (idle)
+                lda menuMode
+                bne MP_StoreControlMask
                 ldy actF1+ACTI_PLAYER
                 cpy #FR_DUCK+1
                 bne MP_NoDuckFirePrevent
@@ -124,13 +127,7 @@ MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventor
                 sta magazineSize                ;cache it now
                 cpx #ITEM_FIRST_NONWEAPON
                 bcc MP_WeaponOK
-MP_NoWeapon:    lda actCtrl+ACTI_PLAYER         ;If not holding a weapon, check
-                cmp actPrevCtrl+ACTI_PLAYER     ;for item use
-                beq MP_NoItemUse
-                cmp #JOY_DOWN+JOY_FIRE
-                bne MP_NoItemUse
-                jsr UseItem
-MP_NoItemUse:   ldx #ITEM_NONE
+                ldx #ITEM_NONE
 MP_WeaponOK:    stx actWpn+ACTI_PLAYER
                 ldx #ACTI_PLAYER
                 jmp AttackHuman                 ;Finally handle attacks

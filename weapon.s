@@ -160,8 +160,7 @@ AH_PlayReloadSound:
 AH_NoAttack2:   jmp AH_NoAttack
 AH_FirearmEmpty:lda #$01                        ;If no bullets, set a constant attack delay to
                 sta actAttackD+ACTI_PLAYER      ;prevent firing but allow brandishing empty weapon
-AH_AmmoCheckOK: lda menuMode                    ;If player is in any menu mode, do not attack
-                bne AH_NoAttack2
+AH_AmmoCheckOK:
 AH_NotPlayer:   lda actCtrl,x
                 cmp #JOY_FIRE
                 bcc AH_NoAttack2
