@@ -277,7 +277,7 @@ actLogicTblHi:  dc.b >alPlayer
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
-                dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
+                dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down

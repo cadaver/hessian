@@ -12,6 +12,7 @@ MAX_BLK         = 192
 MAX_INVENTORYITEMS = 16
 MAX_LVLDATAACT  = 80
 MAX_LVLACT      = 96                            ;Allow extra 16 global or temporary persistent actors
+MAX_GLOBALACT   = MAX_LVLACT - MAX_LVLDATAACT
 MAX_LVLOBJ      = 128                           ;Note: must be 128! And-operations are used in code
 MAX_SPAWNERS    = 16
 MAX_PLOTBITS    = 64

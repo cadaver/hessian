@@ -47,24 +47,7 @@ LoadLevelError: jsr LFR_ErrorPrompt
 ChangeLevel:    cmp levelNum                    ;Check if level already loaded
                 beq CL_Done
                 pha
-                jsr GetLevelDataActorBits
-                ldy lvlDataActBitsLen,x         ;Assume leveldata actors are all gone
-                dey
-                lda #$00
-CL_ClearLoop:   sta (actLo),y
-                dey
-                bpl CL_ClearLoop
-                ldx #MAX_LVLACT-1
-CL_ActorLoop:   lda lvlActT,x
-                beq CL_NextActor
-                lda lvlActOrg,x                 ;Check persistence mode, must be leveldata
-                bpl CL_NextActor
-                and #$7f                        ;Actor is not gone, set bit
-                jsr DecodeBit
-                ora (actLo),y
-                sta (actLo),y
-CL_NextActor:   dex
-                bpl CL_ActorLoop
+                jsr SaveLevelActorState
                 jsr SaveLevelObjectState
                 pla
                 sta levelNum
@@ -258,6 +241,34 @@ GetLevelObjectBits:
                 sta actLo
                 lda #>lvlObjBits
                 bne GLB_Common
+
+        ; Save existence of leveldata actors as bits
+        ; Needs to be done on level change and on game save when optimizing the save size
+        ;
+        ; Parameters: levelNum
+        ; Returns: -
+        ; Modifies: A,X,Y,actLo-actHi
+
+SaveLevelActorState:
+                jsr GetLevelDataActorBits
+                ldy lvlDataActBitsLen,x         ;Assume leveldata actors are all gone
+                dey
+                lda #$00
+SLAS_ClearLoop: sta (actLo),y
+                dey
+                bpl SLAS_ClearLoop
+                ldx #MAX_LVLACT-1
+SLAS_ActorLoop: lda lvlActT,x
+                beq SLAS_NextActor
+                lda lvlActOrg,x                 ;Check persistence mode, must be leveldata
+                bpl SLAS_NextActor
+                and #$7f                        ;Actor is not gone, set bit
+                jsr DecodeBit
+                ora (actLo),y
+                sta (actLo),y
+SLAS_NextActor: dex
+                bpl SLAS_ActorLoop
+                rts
 
         ; Save activation state of current level's persistent levelobjects as bits
         ; Needs to be done on level change, and when saving a checkpoint

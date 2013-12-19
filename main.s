@@ -9,10 +9,12 @@ OPTIMIZE_SPRITEIRQS = 1
 SHOW_STACKPOINTER = 0
 USE_FLIPDISK_PROMPT = 0
 
+
 GODMODE_CHEAT   = 0
 ITEM_CHEAT      = 0
 AMMO_CHEAT      = 0
 SKILL_CHEAT     = 0
+OPTIMIZE_SAVE   = 1                             ;Clean up temporary actors when saving/continuing
 
         ; Memory configuration & loader symbols
 

@@ -371,8 +371,6 @@ IP_SkillCheatLoop:
                 sta saveYH
                 lda #ACT_PLAYER
                 sta saveT
-                lda #HP_PLAYER
-                sta saveHp
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately

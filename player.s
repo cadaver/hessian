@@ -1037,7 +1037,40 @@ GXP_Done:       jmp PSfx_Done                   ;Hack: PlaySfx ends similarly
         ; Returns: -
         ; Modifies: A,X,Y,temp regs
 
-SaveCheckpoint: jsr SaveLevelObjectState
+SaveCheckpoint:
+                if OPTIMIZE_SAVE>0
+                jsr SaveLevelActorState
+                ldx #MAX_LVLACT-1
+                ldy #$00
+SCP_SaveGlobalActorsLoop:
+                lda lvlActT,x
+                beq SCP_SaveGlobalNext
+                sta saveLvlActT,y
+                lda lvlActOrg,x
+                sta saveLvlActOrg,y
+                bmi SCP_SaveGlobalNext
+                asl                             ;Global bit to N flag
+                bpl SCP_SaveGlobalNext
+                lda lvlActX,x
+                sta saveLvlActX,y
+                lda lvlActY,x
+                sta saveLvlActY,y
+                lda lvlActF,x
+                sta saveLvlActF,y
+                lda lvlActWpn,x
+                sta saveLvlActWpn,y
+                iny
+SCP_SaveGlobalNext:
+                dex
+                bpl SCP_SaveGlobalActorsLoop
+                lda #$00
+SCP_SaveGlobalClearLoop:                        ;Clear unused global actors
+                sta saveLvlActT,y
+                iny
+                cpy #MAX_GLOBALACT
+                bcc SCP_SaveGlobalClearLoop
+                endif
+                jsr SaveLevelObjectState
                 ldx #15
 SCP_LevelName:  lda lvlName,x
                 sta saveLvlName,x
@@ -1055,30 +1088,18 @@ SCP_ZPState:    lda playerStateZPStart-1,x
                 lda #<saveState
                 ldx #>saveState
                 jsr SaveState_CopyMemory
-                clc
-StoreLoadActorVars:
-                ldx #6
-                ldy #6*MAX_ACT
-SLAV_Loop:      bcc SLAV_Store
-                lda saveXL,x
-                sta actXL+ACTI_PLAYER,y
-                bcs SLAV_Next
-SLAV_Store:     lda actXL+ACTI_PLAYER,y
+                ldx #5
+                ldy #5*MAX_ACT
+StorePlayerActorVars:
+                lda actXL+ACTI_PLAYER,y
                 sta saveXL,x
-SLAV_Next:      php
                 tya
                 sec
                 sbc #MAX_ACT
                 tay
-                plp
                 dex
-                bpl SLAV_Loop
-                bcc SLAV_Store2
-                lda #HP_PLAYER/2                ;Ensure at least half health after checkpoint restore
-                cmp actHp+ACTI_PLAYER
-                bcc SLAV_Store2
-                sta actHp+ACTI_PLAYER
-SLAV_Store2:    rts
+                bpl StorePlayerActorVars
+                rts
 
         ; Restore an in-memory checkpoint
         ;
@@ -1099,7 +1120,33 @@ RCP_ZPState:    lda saveStateZP-1,x
                 lda #<playerStateStart
                 ldx #>playerStateStart
                 jsr SaveState_CopyMemory
+                if OPTIMIZE_SAVE>0
+RCP_CopyActors: ldx #MAX_GLOBALACT-1
+RCP_CopyGlobalActorsLoop:
+                lda saveLvlActX,x
+                sta lvlActX,x
+                lda saveLvlActY,x
+                sta lvlActY,x
+                lda saveLvlActF,x
+                sta lvlActF,x
+                lda saveLvlActT,x
+                sta lvlActT,x
+                lda saveLvlActWpn,x
+                sta lvlActWpn,x
+                lda saveLvlActOrg,x
+                sta lvlActOrg,x
+                dex
+                bpl RCP_CopyGlobalActorsLoop
+RCP_ClearActors:ldx #MAX_LVLDATAACT-1
+                lda #$00
+RCP_ClearActorsLoop:
+                sta lvlActT+MAX_GLOBALACT,x
+                dex
+                bpl RCP_ClearActorsLoop
+                sec                             ;Need to load leveldata actors again
+                else
                 clc                             ;Savestate has all actors, do not load from disk
+                endif
                 jsr CreatePlayerActor
                 jmp CenterPlayer
 
@@ -1118,9 +1165,18 @@ RCP_ClearActorLoop:
                 jsr LoadLevel
                 ldy #ACTI_PLAYER
                 jsr GFA_Found
+                ldx #5
+                ldy #5*MAX_ACT
+LoadPlayerActorVars:
+                lda saveXL,x
+                sta actXL+ACTI_PLAYER,y
+                tya
                 sec
-                jsr StoreLoadActorVars
-                ldx #ACTI_PLAYER
+                sbc #MAX_ACT
+                tay
+                dex
+                bpl LoadPlayerActorVars
+                inx                             ;X=0
                 stx lastReceivedXP
                 jsr InitActor
                 jsr SetPanelRedrawItemAmmo
