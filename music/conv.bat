@@ -11,6 +11,7 @@ gt2nt2 inside.sng inside.nt
 gt2nt2 temple.sng temple.nt
 gt2nt2 haunted.sng haunted.nt
 gt2nt2 assault.sng assault.nt
+gt2nt2 skeptics.sng skeptics.nt
 gt2nt2 ending.sng ending.nt
 prg2d64 hessianmusic.d64 GAMEOVER gameover.nt
 prg2d64 hessianmusic.d64 TITLE title.nt
@@ -25,4 +26,5 @@ prg2d64 hessianmusic.d64 INSIDE inside.nt
 prg2d64 hessianmusic.d64 TEMPLE temple.nt
 prg2d64 hessianmusic.d64 HAUNTED haunted.nt
 prg2d64 hessianmusic.d64 ASSAULT assault.nt
+prg2d64 hessianmusic.d64 SKEPTICS skeptics.nt
 prg2d64 hessianmusic.d64 ENDING ending.nt

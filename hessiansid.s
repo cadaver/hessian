@@ -1,7 +1,7 @@
                 processor 6502
                 org $0000
 
-SUBTUNES        = 14
+SUBTUNES        = 15
 
                 dc.b "PSID"
                 dc.b 0,2
@@ -21,7 +21,7 @@ SUBTUNES        = 14
 
                 org $0056
 
-                dc.b "2013 Covert Bitops"
+                dc.b "2014 Covert Bitops"
 
                 org $007c
                 dc.b $00,$10
@@ -645,6 +645,7 @@ moduleTblLo:    dc.b <module0
                 dc.b <module11
                 dc.b <module12
                 dc.b <module13
+                dc.b <module14
 
 moduleTblHi:    dc.b >module0
                 dc.b >module1
@@ -660,6 +661,7 @@ moduleTblHi:    dc.b >module0
                 dc.b >module11
                 dc.b >module12
                 dc.b >module13
+                dc.b >module14
 
 subTuneModuleTbl:
                 dc.b 0
@@ -674,10 +676,12 @@ subTuneModuleTbl:
                 dc.b 11
                 dc.b 12
                 dc.b 13
+                dc.b 14
                 dc.b 2
                 dc.b 1
 
 subTuneTuneTbl: dc.b 1
+                dc.b 0
                 dc.b 0
                 dc.b 0
                 dc.b 0
@@ -706,3 +710,4 @@ module10:       incbin music10.bin
 module11:       incbin music11.bin
 module12:       incbin music12.bin
 module13:       incbin music13.bin
+module14:       incbin music14.bin

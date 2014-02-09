@@ -12,7 +12,7 @@ titlePageTbl:   dc.w txtPressFire
                 dc.w txtInstructions4
                 dc.w txtInstructions5
 
-txtPressFire:   dc.b "A COVERT BITOPS PRODUCTION IN 2013",0
+txtPressFire:   dc.b "A COVERT BITOPS PRODUCTION IN 2014",0
                 dc.b 0
                 dc.b "CODE, GFX, SOUND: LASSE __RNI",0
                 dc.b 0
