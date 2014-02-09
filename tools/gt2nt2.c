@@ -1495,6 +1495,30 @@ void convertsong(void)
                 c++;
         }
 
+        // Check if two consecutive durations can be averaged
+        for (c = 0; c < MAX_PATTROWS+1; c++)
+        {
+            if (notecolumn[c+1] != NT_ENDPATT)
+            {
+                int sum = durcolumn[c] + durcolumn[c+1];
+                int average = 0;
+                if (!(sum & 1) && durcolumn[c] != durcolumn[c+1] && cmdcolumn[c+1] == 0 && (notecolumn[c+2] == NT_ENDPATT || durcolumn[c+2] != durcolumn[c+1]))
+                {
+                    if (notecolumn[c] == NT_KEYOFF && notecolumn[c+1] == NT_KEYOFF)
+                        average = 1;
+                    else if (notecolumn[c] == NT_KEYON && notecolumn[c+1] == NT_KEYON)
+                        average = 1;
+                    else if (notecolumn[c] >= NT_FIRSTNOTE && notecolumn[c] <= NT_LASTNOTE && notecolumn[c+1] == NT_KEYON)
+                        average = 1;
+                }
+                if (average == 1)
+                {
+                    durcolumn[c] = durcolumn[c+1] = sum/2;
+                    c++;
+                }
+            }
+        }
+        
         // Remove 1-2-1 duration changes if possible
         for (c = 1; c < MAX_PATTROWS+1; c++)
         {
