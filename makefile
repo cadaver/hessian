@@ -29,7 +29,7 @@ clean:
 
 hessian.d64: boot.prg loader.pak main.pak loadpic.pak options.bin emptysave.bin savelist.bin logo.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
-	music08.pak music09.pak music10.pak music11.pak music12.pak music13.pak script00.pak level00.pak level01.pak \
+	music08.pak music09.pak music10.pak music11.pak music12.pak music13.pak music14.pak script00.pak level00.pak level01.pak \
 	common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
@@ -194,7 +194,7 @@ music02.pak: music/hessianmusic.d64
 	pack2 music02.bin music02.pak
 
 music03.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 cargoship.bin music03.bin -h
+	d642prg music/hessianmusic.d64 mystery.bin music03.bin -h
 	pack2 music03.bin music03.pak
 
 music04.pak: music/hessianmusic.d64
@@ -202,40 +202,44 @@ music04.pak: music/hessianmusic.d64
 	pack2 music04.bin music04.pak
 
 music05.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 wilderness.bin music05.bin -h
+	d642prg music/hessianmusic.d64 lowercity.bin music05.bin -h
 	pack2 music05.bin music05.pak
 
 music06.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 lowercity.bin music06.bin -h
+	d642prg music/hessianmusic.d64 suburbs.bin music06.bin -h
 	pack2 music06.bin music06.pak
 
 music07.pak: music/hessianmusic.d64
 	d642prg music/hessianmusic.d64 maintenance.bin music07.bin -h
 	pack2 music07.bin music07.pak
-	
+
 music08.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 caves.bin music08.bin -h
+	d642prg music/hessianmusic.d64 outside.bin music08.bin -h
 	pack2 music08.bin music08.pak
 
 music09.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 throne.bin music09.bin -h
+	d642prg music/hessianmusic.d64 caves.bin music09.bin -h
 	pack2 music09.bin music09.pak
 
 music10.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 inside.bin music10.bin -h
+	d642prg music/hessianmusic.d64 throne.bin music10.bin -h
 	pack2 music10.bin music10.pak
 
 music11.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 temple.bin music11.bin -h
+	d642prg music/hessianmusic.d64 government.bin music11.bin -h
 	pack2 music11.bin music11.pak
 
 music12.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 haunted.bin music12.bin -h
+	d642prg music/hessianmusic.d64 temple.bin music12.bin -h
 	pack2 music12.bin music12.pak
 
 music13.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 assault.bin music13.bin -h
+	d642prg music/hessianmusic.d64 haunted.bin music13.bin -h
 	pack2 music13.bin music13.pak
+
+music14.pak: music/hessianmusic.d64
+	d642prg music/hessianmusic.d64 assault.bin music14.bin -h
+	pack2 music14.bin music14.pak
 
 hessian.sid: hessiansid.s music00.bin music01.bin music02.bin music03.bin music04.bin music05.bin music06.bin music07.bin \
 	music08.bin music09.bin music10.bin music11.bin music12.bin music13.bin music14.bin
