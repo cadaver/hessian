@@ -11,7 +11,7 @@ USE_FLIPDISK_PROMPT = 0
 
 
 GODMODE_CHEAT   = 0
-ITEM_CHEAT      = 0
+ITEM_CHEAT      = 1
 AMMO_CHEAT      = 0
 SKILL_CHEAT     = 0
 OPTIMIZE_SAVE   = 1                             ;Clean up temporary actors when saving/continuing
