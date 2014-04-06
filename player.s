@@ -59,8 +59,8 @@ DROWNING_TIMER_REPEAT = $f0
 
 MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new joystick controls
                 sta actPrevCtrl+ACTI_PLAYER
-                ldy #$00                        ;When in inventory, no controls (idle)
-                lda menuMode
+                ldy #$00
+                cpy menuMode                    ;When in inventory, no controls (idle)
                 bne MP_StoreControlMask
                 ldy actF1+ACTI_PLAYER
                 cpy #FR_DUCK+1
