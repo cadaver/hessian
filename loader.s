@@ -1,7 +1,7 @@
         ; Loader part
 
-                include Memory.s
-                include Kernal.s
+                include memory.s
+                include kernal.s
 
 MULTISIDE       = 0             ;Multi-diskside support
 RETRIES         = 5             ;Retries when reading a sector

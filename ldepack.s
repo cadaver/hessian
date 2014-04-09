@@ -1,8 +1,8 @@
         ; Loader depacker (ldepack algorithm)
 
-                include Memory.s
-                include Kernal.s
-                include LoadSym.s
+                include memory.s
+                include kernal.s
+                include loadsym.s
 
                 org depackCodeStart
 

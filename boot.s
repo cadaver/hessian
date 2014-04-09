@@ -1,8 +1,8 @@
         ; Autostarting bootpart
 
-                include Memory.s
-                include Kernal.s
-                include LoadSym.s
+                include memory.s
+                include kernal.s
+                include loadsym.s
 
         ; SYS instruction if autostart not used
 
