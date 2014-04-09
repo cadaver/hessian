@@ -44,6 +44,8 @@ TitleScreen:    jsr BlankScreen
                 jsr LoadFileRetry
                 lda #$00                        ;Show panel chars in gamescreen & position
                 sta Irq1_Bg1+1                  ;the screen
+                sta Irq1_Bg2+1
+                sta Irq1_Bg3+1
                 sta scrollY
                 sta menuMode                    ;Reset in-game menu mode
                 lda #$03
@@ -113,7 +115,7 @@ CopySaveDesc:   lda saveStateStart,x            ;Copy levelname & player XP to t
                 sta zpBitsHi
                 lda #<saveList
                 ldx #>saveList
-                jsr SaveFile                    ;Then save the list also
+                jsr SaveFile                    ;Then save the savegamelist also
 
         ; Title text display
 
@@ -296,7 +298,7 @@ RSF_End:        lda saveStateStart              ;If first byte zero, it's an emp
                 jsr FadeOutAll
 LoadSkipFade:   jsr SaveModifiedOptions
                 jmp RestartCheckpoint           ;Start loaded game
-LoadGameCancel: jmp TitleTexts
+LoadGameCancel: jmp MainMenu
 
         ; Start new game
 
@@ -639,7 +641,7 @@ FOT_Wait:       jsr Update
                 lda textFade
                 bne FOT_Wait
                 rts
-        
+
         ; Clear text rows
         
 ClearText:      lda #$20
