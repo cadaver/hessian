@@ -51,8 +51,3 @@ DP_StoreOk:     bcc DP_CopyLoop
                 bcs DepackStart
 DP_OneByte:     ldy #7+2*8                      ;One byte string: fixed offset highbyte, length 2
                 bne DP_CalcOffsetLength
-
-
-
-
-

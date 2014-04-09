@@ -104,7 +104,7 @@ txtPauseSave:   dc.b "  SAVE&EXIT",0
 
         ; System messages
 
-                if USE_FLIPDISK_PROMPT > 0
+                if MULTISIDE > 0
 txtFlipDisk:    dc.b "FLIP DISK & PRESS FIRE",0
                 endif
 txtDiskError:   dc.b "IO ERROR, FIRE TO RETRY",0

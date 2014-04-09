@@ -12,3 +12,4 @@ FL_MaxSprY
 fastLoadMode
 fileNumber
 loaderCodeEnd
+MULTISIDE

@@ -46,7 +46,7 @@ LoadFileRetry:  sta LFR_AddressLo+1
                 jmp PostLoad
 
 LFR_ErrorPrompt:
-                if USE_FLIPDISK_PROMPT > 0
+                if MULTISIDE > 0
                 cmp #$02
                 beq LFR_FlipDisk
 LFR_DiskError:  lda #<txtDiskError

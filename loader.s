@@ -3,6 +3,7 @@
                 include Memory.s
                 include Kernal.s
 
+MULTISIDE       = 0             ;Multi-diskside support
 RETRIES         = 5             ;Retries when reading a sector
 
 IRQ_SPEED       = $20           ;$1c07 (head movement speed)
@@ -133,7 +134,7 @@ FL_SendByte:    sta loadTempReg
 FL_SendInner:   bit $dd00                       ;Wait for both DATA & CLK to go high
                 bpl FL_SendInner
                 bvc FL_SendInner
-                lsr loadTempReg                 ;Send one bit of filenumber
+                lsr loadTempReg                 ;Send one bit
                 lda #$10
                 ora $dd00
                 bcc FL_ZeroBit
@@ -688,10 +689,15 @@ driveCode:
 DrvMain:        lda #IRQ_SPEED                  ;Speed up the controller a bit
                 sta $1c07                       ;(1541 only)
 DrvMain_Not1541:
+                if MULTISIDE = 0
+                jsr DrvCacheDir                 ;If no multiside support, cache once
+                endif                           ;in the beginning
 DrvLoop:
+                if MULTISIDE > 0
 DrvDirCached:   lda #$00                        ;Cache directory if necessary
                 bne DrvCacheValid
                 jsr DrvCacheDir
+                endif
 DrvCacheValid:  cli
                 jsr DrvGetByte                  ;Get command (load/save)
                 beq DrvLoad
@@ -701,7 +707,9 @@ DrvLoad:        sei
                 tay
                 ldx drvFileTrk,y
                 bne DrvFound
+                if MULTISIDE > 0
                 stx DrvDirCached+1              ;If file not found, reset caching
+                endif
 DrvFileNotFound:ldx #$02                        ;Return code $02 = File not found
 DrvEndMark:     stx drvBuf+2                    ;Send endmark, return code in X
                 lda #$00
@@ -712,8 +720,10 @@ DrvEndMark:     stx drvBuf+2                    ;Send endmark, return code in X
 DrvFound:       lda drvFileSct,y                ;File found, get starting T&S
 DrvSectorLoop:  jsr DrvReadSector               ;Read the data sector
                 bcs DrvEndMark                  ;Quit if cannot read
+                if MULTISIDE > 0
                 lda DrvDirCached+1              ;If disk ID changed and dir cache invalidated,
                 beq DrvFileNotFound             ;treat as file not found error
+                endif
 DrvSendBlk:     ldy #$00
                 ldx #$02
 DrvSendLoop:    lda drvBuf,y
@@ -823,7 +833,9 @@ DrvSave:        jsr DrvGetByte                  ;Get filenumber
                 tay
                 ldx drvFileTrk,y
                 bne DrvSaveFound                ;If file not found, just receive the bytes
+                if MULTISIDE > 0
                 stx DrvDirCached+1              ;TODO: should report error to C64
+                endif
                 beq DrvSaveFinish
 DrvSaveFound:   lda drvFileSct,y
 DrvSaveSectorLoop:
@@ -870,6 +882,7 @@ Drv1541Exec:    sta $01                         ;Set command for execution
 Drv1541ExecWait:
                 lda $01                         ;Wait until command finishes
                 bmi Drv1541ExecWait
+                if MULTISIDE > 0
                 pha                             ;Save returncode
                 ldx #$02
 DrvCheckId:     lda drvId-1,x                   ;Check for disk ID change
@@ -881,6 +894,7 @@ DrvCheckId:     lda drvId-1,x                   ;Check for disk ID change
 DrvIdOk:        dex
                 bne DrvCheckId
                 pla
+                endif
                 rts
 
 DrvFdExec:      jsr $ff54                       ;FD2000 fix By Ninja
@@ -929,7 +943,10 @@ DrvSkipFile:    tya
                 lda drvBuf+1                    ;Go to next directory block, until no
                 ldx drvBuf                      ;more directory blocks
                 bne DrvDirLoop
-DrvDirCacheDone:inc DrvDirCached+1
+DrvDirCacheDone:
+                if MULTISIDE > 0
+                inc DrvDirCached+1
+                endif
                 rts
 
 DrvDecodeLetter:sec
