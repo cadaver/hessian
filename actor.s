@@ -768,7 +768,7 @@ AccActorXNegNoSec:
                 tya
 AAX_NegDone:    clc
 AAX_NegDone2:   eor #$ff
-                adc #$00
+                adc #$01
 AAX_Done:       sta actSX,x
 AAX_Done2:      rts
 
@@ -832,7 +832,7 @@ AccActorYNegNoSec:
                 tya
 AAY_NegDone:    clc
 AAY_NegDone2:   eor #$ff
-                adc #$00
+                adc #$01
 AAY_Done:       sta actSY,x
 AAY_Done2:      rts
 
