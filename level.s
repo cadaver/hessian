@@ -608,8 +608,6 @@ MObjMarker_OK:  rts
         ; Modifies: A,Y
 
 MoveObjectMarker:
-                lda MoveItem_Color+1
-                sta actC,x
 MObjMarker_Cmp: lda #$00                        ;Check if levelobjectnumber has changed
                 cmp lvlObjNum                   ;and disappear in that case
                 beq MObjMarker_OK
@@ -821,8 +819,6 @@ ULO_COUpdateMarker:
                 ldy lvlObjNum
                 jsr SetActorAtObject
                 jsr AlignActorOnGround
-                lda MoveItem_Color+1
-                sta actC,x
 ULO_CODone:     ldy lvlObjNum
                 bmi ULO_Done
                 lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and

@@ -122,7 +122,17 @@ SPAWNINFRONT_PROBABILITY = $c0
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor ZP temp vars
 
-DrawActors:     lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
+DrawActors:     inc DA_ItemFlashCounter+1
+DA_ItemFlashCounter:                            ;Get color override for items
+                lda #$00
+                lsr
+                lsr
+                and #$03
+                tax
+                lda itemFlashTbl,x
+                sta SSpr_FlashColor+1
+                sta Irq1_LevelUpdate+1          ;Can animate level
+                lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
                 sta IA_PrevScrollX+1
                 lda scrollY
                 sta IA_PrevScrollY+1
@@ -349,10 +359,9 @@ AddAllActorsNextFrame:
 UpdateActors:   lda menuMode                    ;If game paused, only do InterpolateActors
                 cmp #MENU_LEVELUPMSG            ;and only update actor flashing
                 bcc GetActorBorders             ;(in InterpolateActors)
-                lda #$00
+                lda #$00                        ;Stop scrolling when actors aren't moving
                 sta scrollSX
                 sta scrollSY
-                sta Irq1_LevelUpdate+1
                 jmp InterpolateActors
 
         ; Calculate border coordinates for adding/removing actors
@@ -500,17 +509,7 @@ BTL_Next:       dex
 
         ; Call update routines of all on-screen actors
 
-UA_UpdateAll:   inc UA_ItemFlashCounter+1
-UA_ItemFlashCounter:                            ;Get color override for items
-                lda #$00
-                lsr
-                lsr
-                and #$03
-                tax
-                lda itemFlashTbl,x
-                sta MoveItem_Color+1
-                sta Irq1_LevelUpdate+1          ;Can animate level
-                ldx #MAX_ACT-1
+UA_UpdateAll:   ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex
@@ -644,7 +643,6 @@ IA_ScrollYAdjust:
 IA_Next:        dex
                 bmi IA_Done
                 jmp IA_SprLoop
-IA_Done:        rts
 
 IA_AddOffset:   lda actPrevXL,y                 ;Add offset to sprite coords
                 clc
@@ -666,13 +664,14 @@ IA_XOffsetCommon2:
                 dex
                 bmi IA_Done
                 jmp IA_SprLoop
+IA_Done:        rts
 
         ; Disable actor interpolation for the current position
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A
-        
+
 NoInterpolation:lda actXL,x
                 sta actPrevXL,x
                 lda actXH,x
