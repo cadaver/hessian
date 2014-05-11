@@ -7,6 +7,8 @@ AT_REMOVE       = 2
 AT_DESTROY      = 4
 AT_NEAR         = 8
 
+SPEECHBUBBLEOFFSET = -40*8
+
         ; Set or modify trigger for an actor type
         ;
         ; Parameters: A Script entrypoint, X script file, Y actor type, temp1 trigger mask
@@ -116,3 +118,30 @@ ES_ParamA:      lda #$00
 ES_ParamX:      ldx #$00
 ES_ScriptJump:  jmp $1000
 
+        ; NPC speak a line
+        ;
+        ; Parameters: Y actor type, A,X text address
+        ; Returns: -
+        ; Modifies: A,X,Y,temp1-temp4
+
+SpeakLine:      sty SL_ActT+1
+                jsr PrintPanelTextIndefinite
+SL_ActT:        lda #$00
+                jsr FindActor
+                bcc SL_NoSpeechBubble
+                lda #ACTI_FIRSTEFFECT
+                ldy #ACTI_LASTEFFECT
+                jsr GetFreeActor
+                bcc SL_NoSpeechBubble
+                lda #$00
+                sta temp1
+                sta temp2
+                lda #<SPEECHBUBBLEOFFSET
+                sta temp3
+                lda #>SPEECHBUBBLEOFFSET
+                sta temp4
+                lda #ACT_SPEECHBUBBLE
+                jsr SpawnWithOffset
+SL_NoSpeechBubble:
+                ldx #MENU_DIALOGUE
+                jmp SetMenuMode

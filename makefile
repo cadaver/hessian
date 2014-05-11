@@ -29,8 +29,8 @@ clean:
 
 hessian.d64: boot.prg loader.pak main.pak loadpic.pak options.bin emptysave.bin savelist.bin logo.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
-	music08.pak music09.pak music10.pak music11.pak music12.pak music13.pak music14.pak script00.pak level00.pak level01.pak \
-	common.pak item.pak weapon.pak player.pak
+	music08.pak music09.pak music10.pak music11.pak music12.pak music13.pak music14.pak script00.pak \
+	script01.pak level00.pak level01.pak level02.pak common.pak item.pak weapon.pak player.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -137,7 +137,7 @@ sfx/splash.sfx: sfx/splash.ins
 sfx/object.sfx: sfx/object.ins
 	ins2nt2 sfx/object.ins sfx/object.sfx
 
-levelactors.s: bg/level00.lva bg/level00.lvo bg/level01.lva bg/level01.lvo
+levelactors.s: bg/level00.lva bg/level00.lvo bg/level01.lva bg/level01.lvo bg/level02.lva bg/level02.lvo
 	countobj
 
 main.pak: actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutscene.s file.s init.s item.s itemdata.s level.s leveldata.s \
@@ -180,6 +180,10 @@ logo.pak: pics/logo.iff logo.s
 script00.pak: script00.s memory.s mainsym.s
 	dasm script00.s -oscript00.bin -f3
 	pack2 script00.bin script00.pak
+
+script01.pak: script01.s memory.s mainsym.s
+	dasm script01.s -oscript01.bin -f3
+	pack2 script01.bin script01.pak
 
 music00.pak: music/hessianmusic.d64
 	d642prg music/hessianmusic.d64 title.bin music00.bin -h
@@ -262,6 +266,15 @@ level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.chi bg/
 	pchunk2 bg/level01.map level01_3.pak
 	pchunk2 bg/level01.blk level01_4.pak
 	filejoin level01_1.pak+level01_2.pak+level01_3.pak+level01_4.pak level01.pak
+
+level02.pak: level02.s memory.s bg/level02.map bg/level02.blk bg/level02.chi bg/level02.chc bg/level02.chr bg/level02.lva bg/level02.lvr bg/level02.lvo
+	filejoin bg/level02.lvo+bg/level02.lvr level02_1.bin
+	pack2 level02_1.bin level02_1.pak
+	dasm level02.s -olevel02_2.bin -f3
+	pack2 level02_2.bin level02_2.pak
+	pchunk2 bg/level02.map level02_3.pak
+	pchunk2 bg/level02.blk level02_4.pak
+	filejoin level02_1.pak+level02_2.pak+level02_3.pak+level02_4.pak level02.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak

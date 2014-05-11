@@ -23,14 +23,21 @@ MoveAIHuman:    lda actCtrl,x
                 lsr
                 bcs MA_SkipAI
                 ldy actAIMode,x
-                beq MA_SkipAI
-                lda aiJumpTblLo-1,y
+                lda aiJumpTblLo,y
                 sta MA_AIJump+1
-                lda aiJumpTblHi-1,y
+                lda aiJumpTblHi,y
                 sta MA_AIJump+2
 MA_AIJump:      jsr $0000
 MA_SkipAI:      jsr MoveHuman
                 jmp AttackHuman
+
+        ; Turn to AI
+        
+AI_TurnTo:      ldy #ACTI_PLAYER
+                jsr GetActorDistance
+                lda temp5
+                sta actD,x
+                rts
 
 AI_ContinueAttack:
                 inc actTime,x
@@ -41,6 +48,10 @@ AI_GoIdle:      jsr Random
                 bcs AI_NoAttack
                 lda #$00
                 sta actMoveCtrl,x
+
+        ; Idle AI
+
+AI_Idle:
 AI_NoAttack:    lda #$00
                 sta actCtrl,x
                 rts

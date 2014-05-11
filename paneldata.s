@@ -5,6 +5,7 @@ menuRedrawTblLo:dc.b <UM_RedrawNone
                 dc.b <UM_RedrawLevelUpChoice
                 dc.b <UM_RedrawPauseMenu
                 dc.b <UM_RedrawSkillDisplay
+                dc.b <UM_RedrawDialogue
 
 menuRedrawTblHi:dc.b >UM_RedrawNone
                 dc.b >UM_RedrawInventory
@@ -13,6 +14,7 @@ menuRedrawTblHi:dc.b >UM_RedrawNone
                 dc.b >UM_RedrawLevelUpChoice
                 dc.b >UM_RedrawPauseMenu
                 dc.b >UM_RedrawSkillDisplay
+                dc.b >UM_RedrawDialogue
 
 menuUpdateTblLo:dc.b <UM_None
                 dc.b <UM_Inventory
@@ -21,6 +23,7 @@ menuUpdateTblLo:dc.b <UM_None
                 dc.b <UM_LevelUpChoice
                 dc.b <UM_PauseMenu
                 dc.b <UM_SkillDisplayKey
+                dc.b <UM_Dialogue
 
 menuUpdateTblHi:dc.b >UM_None
                 dc.b >UM_Inventory
@@ -29,3 +32,4 @@ menuUpdateTblHi:dc.b >UM_None
                 dc.b >UM_LevelUpChoice
                 dc.b >UM_PauseMenu
                 dc.b >UM_SkillDisplayKey
+                dc.b >UM_Dialogue

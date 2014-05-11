@@ -23,9 +23,15 @@ titleTexts      = chars+608+168*2
 
         ; Start from ship
 
-START_LEVEL     = $00
-START_X         = $0780
-START_Y         = $0bc0
+;START_LEVEL     = $00
+;START_X         = $0780
+;START_Y         = $0bc0
+
+        ; Start from the testlevel
+        
+START_LEVEL     = $02
+START_X         = $0500
+START_Y         = $0300
 
                 org scriptCodeStart
 
@@ -304,8 +310,8 @@ LoadGameCancel: jmp MainMenu
 
 StartNewGame:   jsr FadeOutAll
                 jsr SaveModifiedOptions
-InitPlayer:     lda #$00
-                ldx #playerStateZPEnd-playerStateZPStart-1
+InitPlayer:     lda #$00                        ;Init player state (level number, inventory selected item,
+                ldx #playerStateZPEnd-playerStateZPStart-1 ;experience, inventory items)
 IP_InitZPState: sta playerStateZPStart,x
                 dex
                 bpl IP_InitZPState
@@ -316,11 +322,11 @@ IP_InitInventory:
                 sta invMag,x
                 dex
                 bpl IP_InitInventory
-                ldx #MAX_PLOTBITS/8-1
+                ldx #MAX_PLOTBITS/8-1           ;Clear plotbits
 IP_InitPlotBits:sta plotBits,x
                 dex
                 bpl IP_InitPlotBits
-                ldx #MAX_ACTORTRIGGERS-1
+                ldx #MAX_ACTORTRIGGERS-1        ;Clear actor triggers
 IP_InitActorTriggers:
                 sta atType,x
                 dex
@@ -358,6 +364,9 @@ IP_SkillCheatLoop:
                 sta xpLevel
                 endif
                 sta invType                     ;1 = fists
+
+                settrigger ACT_TESTNPC,$0100,AT_NEAR ;Trigger for NPC mechanics testing
+
                 lda #START_LEVEL
                 sta levelNum
                 lda #$00                        ;Set startposition

@@ -346,7 +346,7 @@ AddAllActorsNextFrame:
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-UpdateActors:   lda menuMode                    ;If game paused, stop scrolling
+UpdateActors:   lda menuMode                    ;If game paused, only do InterpolateActors
                 cmp #MENU_LEVELUPMSG            ;and only update actor flashing
                 bcc GetActorBorders             ;(in InterpolateActors)
                 lda #$00

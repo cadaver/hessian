@@ -53,6 +53,7 @@ MExpl_NoRemove: rts
         ; Modifies: A,Y
 
 MoveMeleeHit:   jsr CheckBulletCollisionsApplyDamage
+MoveSpeechBubble:
 MMH_Remove:     jmp RemoveActor
 
         ; Flame update routine

@@ -25,143 +25,143 @@ SCROLLROWS      = 22
 
         ; Zeropage variables
 
-                VarBase $02
+                varbase $02
 
-                Var loadTempReg                 ;Loader variables
-                Var bufferStatus
-                Var fileOpen
+                var loadTempReg                 ;Loader variables
+                var bufferStatus
+                var fileOpen
 
-                Var zpLenLo                     ;Exomizer 2 depackroutine variables
-                Var zpSrcLo
-                Var zpSrcHi
-                Var zpBitsLo
-                Var zpBitsHi
-                Var zpBitBuf
-                Var zpDestLo
-                Var zpDestHi
+                var zpLenLo                     ;Exomizer 2 depackroutine variables
+                var zpSrcLo
+                var zpSrcHi
+                var zpBitsLo
+                var zpBitsHi
+                var zpBitBuf
+                var zpDestLo
+                var zpDestHi
 
-                Var temp1                       ;Temp variables
-                Var temp2
-                Var temp3
-                Var temp4
-                Var temp5
-                Var temp6
-                Var temp7
-                Var temp8
+                var temp1                       ;Temp variables
+                var temp2
+                var temp3
+                var temp4
+                var temp5
+                var temp6
+                var temp7
+                var temp8
 
-                Var freeMemLo                   ;Memory allocator variables
-                Var freeMemHi
+                var freeMemLo                   ;Memory allocator variables
+                var freeMemHi
 
-                Var joystick                    ;Joystick/keyboard variables
-                Var prevJoy
-                Var keyPress
-                Var keyType
+                var joystick                    ;Joystick/keyboard variables
+                var prevJoy
+                var keyPress
+                var keyType
 
-                Var screen                      ;Scrolling/map/zone variables
-                Var scrollX
-                Var scrollY
-                Var scrollSX
-                Var scrollSY
-                Var scrollCSX
-                Var scrollCSY
-                Var scrCounter
-                Var scrAdd
-                Var blockX
-                Var blockY
-                Var mapX
-                Var mapY
-                Var mapSizeX
-                Var zoneNum
-                Var zoneLo
-                Var zoneHi
-                Var limitL
-                Var limitR
-                Var limitU
-                Var limitD
+                var screen                      ;Scrolling/map/zone variables
+                var scrollX
+                var scrollY
+                var scrollSX
+                var scrollSY
+                var scrollCSX
+                var scrollCSY
+                var scrCounter
+                var scrAdd
+                var blockX
+                var blockY
+                var mapX
+                var mapY
+                var mapSizeX
+                var zoneNum
+                var zoneLo
+                var zoneHi
+                var limitL
+                var limitR
+                var limitU
+                var limitD
 
-                Var firstSortSpr                ;Sprite multiplexing variables
+                var firstSortSpr                ;Sprite multiplexing variables
 
-                Var sprIndex                    ;Spritefile access variables
-                Var sprFileNum
-                Var sprFileLo
-                Var sprFileHi
-                Var frameLo
-                Var frameHi
+                var sprIndex                    ;Spritefile access variables
+                var sprFileNum
+                var sprFileLo
+                var sprFileHi
+                var frameLo
+                var frameHi
 
-                Var textLo                      ;Panel text printing variables
-                Var textHi
-                Var textTime
-                Var textDelay
-                Var textLeftMargin
-                Var textRightMargin
-                Var panelUpdateFlags
+                var textLo                      ;Panel text printing variables
+                var textHi
+                var textTime
+                var textDelay
+                var textLeftMargin
+                var textRightMargin
+                var panelUpdateFlags
 
-                Var menuMode                    ;Menu system variables
-                Var menuCounter
-                Var menuMoveDelay
+                var menuMode                    ;Menu system variables
+                var menuCounter
+                var menuMoveDelay
 
-                Var actIndex                    ;Actor variables
-                Var actLo
-                Var actHi
-                Var tgtActIndex
-                Var numTargets
+                var actIndex                    ;Actor variables
+                var actLo
+                var actHi
+                var tgtActIndex
+                var numTargets
 
-                Var lvlObjNum                   ;Level object variables
-                Var autoDeactObjNum
-                Var autoDeactObjCounter
+                var lvlObjNum                   ;Level object variables
+                var autoDeactObjNum
+                var autoDeactObjCounter
 
-                Var wpnLo                       ;Weapon variables
-                Var wpnHi
-                Var wpnBits
-                Var magazineSize
+                var wpnLo                       ;Weapon variables
+                var wpnHi
+                var wpnBits
+                var magazineSize
 
-                Var displayedItemName           ;Misc. game variables
-                Var displayedHealth
-                Var healthRecharge
-                Var lastReceivedXP
+                var displayedItemName           ;Misc. game variables
+                var displayedHealth
+                var healthRecharge
+                var lastReceivedXP
 
-                Var difficulty                  ;Game options
-                Var musicMode
-                Var soundMode
+                var difficulty                  ;Game options
+                var musicMode
+                var soundMode
 
-                Var levelNum                    ;Player state
-                Var itemIndex
-                Var levelUp
-                Var xpLo
-                Var xpHi
-                Var xpLevel
-                Var xpLimitLo
-                Var xpLimitHi
-                Var nextTempLvlActIndex
+                var levelNum                    ;Player state
+                var itemIndex
+                var levelUp
+                var xpLo
+                var xpHi
+                var xpLevel
+                var xpLimitLo
+                var xpLimitHi
+                var nextTempLvlActIndex
 
 playerStateZPStart = levelNum
 playerStateZPEnd = nextTempLvlActIndex+1
 
-                VarRange sprOrder,MAX_SPR+1
-                VarRange sprY,MAX_SPR+1
+                varrange sprOrder,MAX_SPR+1
+                varrange sprY,MAX_SPR+1
 
-                CheckVarBase $90
+                checkvarbase $90
 
-                VarBase $c0
-                VarRange sprXL,MAX_SPR+1
-                VarRange sprXH,MAX_SPR+1
+                varbase $c0
+                varrange sprXL,MAX_SPR+1
+                varrange sprXH,MAX_SPR+1
 
-                Var newFrame                    ;Frame update/raster IRQ variables
-                Var irqSaveA
-                Var irqSaveX
-                Var irqSaveY
-                Var irqSave01
+                var newFrame                    ;Frame update/raster IRQ variables
+                var irqSaveA
+                var irqSaveX
+                var irqSaveY
+                var irqSave01
 
-                Var ntInitSong                  ;Playroutine
-                Var ntTemp1
-                Var ntTemp2
-                Var ntTrackLo
-                Var ntTrackHi
-                Var ntFiltPos
-                Var ntFiltTime
-                Var ntFiltCutoff
+                var ntInitSong                  ;Playroutine
+                var ntTemp1
+                var ntTemp2
+                var ntTrackLo
+                var ntTrackHi
+                var ntFiltPos
+                var ntFiltTime
+                var ntFiltCutoff
 
-                CheckVarBase $100
+                checkvarbase $100
 
         ; Memory areas and non-zeropage variables
 

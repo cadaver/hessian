@@ -1,26 +1,28 @@
 ACT_NONE        = 0
 ACT_PLAYER      = 1
-ACT_TESTENEMY   = 2
-ACT_ITEM        = 3
-ACT_MELEEHIT    = 4
-ACT_LARGEMELEEHIT = 5
-ACT_BULLET      = 6
-ACT_SHOTGUNBULLET = 7
-ACT_RIFLEBULLET = 8
-ACT_FLAME       = 9
-ACT_SONICWAVE   = 10
-ACT_EMP         = 11
-ACT_LASER       = 12
-ACT_PLASMA      = 13
-ACT_LAUNCHERGRENADE = 14
-ACT_GRENADE     = 15
-ACT_ROCKET      = 16
-ACT_DRONE       = 17
-ACT_EXPLOSION   = 18
-ACT_SMOKETRAIL  = 19
-ACT_WATERSPLASH = 20
-ACT_SMALLSPLASH = 21
-ACT_OBJECTMARKER = 22
+ACT_ITEM        = 2
+ACT_MELEEHIT    = 3
+ACT_LARGEMELEEHIT = 4
+ACT_BULLET      = 5
+ACT_SHOTGUNBULLET = 6
+ACT_RIFLEBULLET = 7
+ACT_FLAME       = 8
+ACT_SONICWAVE   = 9
+ACT_EMP         = 10
+ACT_LASER       = 11
+ACT_PLASMA      = 12
+ACT_LAUNCHERGRENADE = 13
+ACT_GRENADE     = 14
+ACT_ROCKET      = 15
+ACT_DRONE       = 16
+ACT_EXPLOSION   = 17
+ACT_SMOKETRAIL  = 18
+ACT_WATERSPLASH = 19
+ACT_SMALLSPLASH = 20
+ACT_OBJECTMARKER = 21
+ACT_SPEECHBUBBLE = 22
+ACT_TESTNPC     = 23
+ACT_TESTENEMY   = 24
 
 HP_PLAYER       = 48
 HP_ENEMY        = 12
@@ -31,7 +33,6 @@ adMeleeHit      = $0000                         ;Invisible
 adLargeMeleeHit = $0000
 
 actDispTblLo:   dc.b <adPlayer
-                dc.b <adPlayer
                 dc.b <adItem
                 dc.b <adMeleeHit
                 dc.b <adLargeMeleeHit
@@ -52,9 +53,11 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adWaterSplash
                 dc.b <adSmallSplash
                 dc.b <adObjectMarker
+                dc.b <adSpeechBubble
+                dc.b <adPlayer
+                dc.b <adPlayer
 
 actDispTblHi:   dc.b >adPlayer
-                dc.b >adPlayer
                 dc.b >adItem
                 dc.b >adMeleeHit
                 dc.b >adLargeMeleeHit
@@ -75,6 +78,9 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adWaterSplash
                 dc.b >adSmallSplash
                 dc.b >adObjectMarker
+                dc.b >adSpeechBubble
+                dc.b >adPlayer
+                dc.b >adPlayer
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_PLAYER                   ;Lower part spritefile number
@@ -207,6 +213,12 @@ adObjectMarker: dc.b ONESPRITE                  ;Number of sprites
                 dc.b 1                          ;Number of frames
                 dc.b 63
 
+adSpeechBubble: dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 1                          ;Number of frames
+                dc.b 64
+
         ; Human actor upper part framenumbers
 
 humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,22,23,24,23,3,4,5,6,7,8,9
@@ -230,7 +242,6 @@ plrWeaponBonusTbl:
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
-                dc.b <alEnemy
                 dc.b <alItem
                 dc.b <alMeleeHit
                 dc.b <alLargeMeleeHit
@@ -251,9 +262,11 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alWaterSplash
                 dc.b <alSmallSplash
                 dc.b <alObjectMarker
+                dc.b <alSpeechBubble
+                dc.b <alNPC
+                dc.b <alEnemy
 
 actLogicTblHi:  dc.b >alPlayer
-                dc.b >alEnemy
                 dc.b >alItem
                 dc.b >alMeleeHit
                 dc.b >alLargeMeleeHit
@@ -274,6 +287,9 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alWaterSplash
                 dc.b >alSmallSplash
                 dc.b >alObjectMarker
+                dc.b >alSpeechBubble
+                dc.b >alNPC
+                dc.b >alEnemy
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
@@ -412,6 +428,40 @@ alDrone:        dc.w MoveDrone                  ;Update routine
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
 
+alObjectMarker: dc.w MoveObjectMarker           ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+
+alSpeechBubble: dc.w MoveSpeechBubble           ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+
+alNPC:          dc.w MoveAIHuman                ;Update routine
+                dc.w HumanDeath                 ;Destroy routine
+                dc.b GRP_HEROES|AF_ISORGANIC|AF_USETRIGGERS ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 34                         ;Size up
+                dc.b 0                          ;Size down
+                dc.b HP_ENEMY                   ;Initial health
+                dc.b 8                          ;Color override
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.b 2                          ;XP from kill
+                dc.b AIMODE_THUG                ;AI mode when spawned randomly + persistence disable
+                dc.b DROP_WEAPONMEDKITCREDITS   ;Itemdrop table index or item override
+                dc.b $07                        ;AI offense accumulator
+                dc.b $08                        ;AI defense probability
+                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB ;Move caps
+                dc.b 3*8                        ;Max. movement speed
+                dc.b 6*8                        ;Terminal falling speed
+                dc.b 8                          ;Ground movement acceleration
+                dc.b 3                          ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 4                          ;Long jump gravity acceleration
+                dc.b 6                          ;Ground braking
+                dc.b -4                         ;Height in chars for headbump check (negative)
+                dc.b -44                        ;Jump initial speed (negative)
+                dc.b 96                         ;Climbing speed
+
 alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b GRP_THUGS|AF_ISORGANIC     ;Actor flags
@@ -426,7 +476,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b DROP_WEAPONMEDKITCREDITS   ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability
-                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move caps
+                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB ;Move caps
                 dc.b 3*8                        ;Max. movement speed
                 dc.b 6*8                        ;Terminal falling speed
                 dc.b 8                          ;Ground movement acceleration
@@ -437,7 +487,3 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b -4                         ;Height in chars for headbump check (negative)
                 dc.b -44                        ;Jump initial speed (negative)
                 dc.b 96                         ;Climbing speed
-
-alObjectMarker: dc.w MoveObjectMarker           ;Update routine
-                dc.w RemoveActor                ;Destroy routine
-                dc.b AF_INITONLYSIZE            ;Actor flags

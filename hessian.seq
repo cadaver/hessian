@@ -7,9 +7,9 @@ common.pak 04
 item.pak 05
 weapon.pak 06
 player.pak 07
-script00.pak 08
-level00.pak 09
-level01.pak 0A
+level00.pak 08
+level01.pak 09
+level02.pak 0A
 music00.pak 0B
 music01.pak 0C
 music02.pak 0D
@@ -25,6 +25,8 @@ music11.pak 16
 music12.pak 17
 music13.pak 18
 music14.pak 19
+script00.pak 1A
+script01.pak 1B
 options.bin 70
 savelist.bin 71
 emptysave.bin 72

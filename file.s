@@ -9,9 +9,9 @@ C_FIRSTPURGEABLE = C_PLAYER
 
 F_LOGO          = $03
 F_SPRITE        = $04
-F_SCRIPT        = $08
-F_LEVEL         = $09
-F_MUSIC         = $0B
+F_LEVEL         = $08
+F_MUSIC         = $0b
+F_SCRIPT        = $1a
 F_OPTIONS       = $70
 F_SAVELIST      = $71
 F_SAVE          = $72
@@ -59,8 +59,7 @@ LFR_FlipDisk:   lda #<txtFlipDisk
                 ldx #>txtDiskError
                 endif
 LFR_MessageCommon:
-                ldy #INDEFINITE_TEXT_DURATION
-                jsr PrintPanelText
+                jsr PrintPanelTextIndefinite
 LFR_WaitFire:   jsr GetControls
                 jsr GetFireClick
                 bcc LFR_WaitFire

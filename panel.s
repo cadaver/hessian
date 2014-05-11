@@ -17,6 +17,7 @@ MENU_LEVELUPMSG = 3
 MENU_LEVELUPCHOICE = 4
 MENU_PAUSE      = 5
 MENU_SKILLDISPLAYKEY = 6
+MENU_DIALOGUE = 7
 
         ; Finish frame. Update frame and update score panel
         ;
@@ -170,13 +171,16 @@ UP_TextDone:    rts
 UM_RedrawNone:
 ClearPanelText: ldx #$00
                 ldy #$00
+                skip2
 
         ; Print text to panel, possibly multi-line
         ;
         ; Parameters: A,X text address, Y delay in game logic frames (25 = 1 sec)
         ; Returns: -
-        ; Modifies: A
+        ; Modifies: A,zpSrcLo,zpSrcHi,zpBitsLo,zpBitBuf
 
+PrintPanelTextIndefinite:
+                ldy #INDEFINITE_TEXT_DURATION
 PrintPanelText: sty textDelay
                 sta textLo
                 stx textHi
@@ -443,6 +447,7 @@ UM_SkillDisplay:ldx #MENU_NONE                  ;Exit either into inventory (fir
                 jsr SetMenuMode                 ;When returning to inventory, do not
                 dec menuCounter                 ;allow to enter pausemenu anymore until
 UM_SkillDisplayDone:                            ;fire released
+UM_RedrawDialogue:
                 rts
 
         ; Skill display when entered by keyboard
@@ -456,7 +461,9 @@ UM_SkillDisplayKey:
                 rts
 
         ; Levelup text
-        
+
+UM_Dialogue:    ldx #MENU_NONE
+                skip2
 UM_LevelUpMsg:  ldx #MENU_LEVELUPCHOICE
                 lda textTime
                 beq SetMenuMode2
@@ -585,8 +592,7 @@ UM_RedrawLevelUpChoice:
                 sty temp1
                 lda skillNameLo,y
                 ldx skillNameHi,y
-                ldy #INDEFINITE_TEXT_DURATION
-                jsr PrintPanelText
+                jsr PrintPanelTextIndefinite
                 ldx temp1
                 lda plrSkills,x
                 ldx zpBitsLo
@@ -670,8 +676,7 @@ LU_AtMaximum:   iny
 UM_RedrawSkillDisplay:
                 lda #<txtSkillDisplay
                 ldx #>txtSkillDisplay
-                ldy #INDEFINITE_TEXT_DURATION
-                jsr PrintPanelText
+                jsr PrintPanelTextIndefinite
                 ldx #11
                 jsr PXPM_XPLevel
                 ldx #31
@@ -697,8 +702,7 @@ UM_RedrawPauseMenu:
                 bne UM_PauseTextOK
                 lda #<txtPauseRetry
                 ldx #>txtPauseRetry
-UM_PauseTextOK: ldy #INDEFINITE_TEXT_DURATION
-                jsr PrintPanelText
+UM_PauseTextOK: jsr PrintPanelTextIndefinite
                 lda #<txtPauseSave
                 ldx #>txtPauseSave
                 jsr ContinuePanelText

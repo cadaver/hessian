@@ -1,11 +1,14 @@
         ; AI jumptable
 
-aiJumpTblLo:    dc.b <AI_Sniper
+aiJumpTblLo:    dc.b <AI_Idle
+                dc.b <AI_TurnTo
+                dc.b <AI_Sniper
                 dc.b <AI_Thug
 
-aiJumpTblHi:    dc.b >AI_Sniper
+aiJumpTblHi:    dc.b >AI_Idle
+                dc.b >AI_TurnTo
+                dc.b >AI_Sniper
                 dc.b >AI_Thug
-
 
         ; Item drop table
 

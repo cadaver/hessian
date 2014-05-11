@@ -1,30 +1,23 @@
                 processor 6502
 
-                mac VarBase
+                mac varbase
 NEXT_VAR        set {1}
                 endm
 
-                mac Var
+                mac var
 {1}             = NEXT_VAR
 NEXT_VAR        set NEXT_VAR + 1
                 endm
 
-                mac VarRange
+                mac varrange
 {1}             = NEXT_VAR
 NEXT_VAR        set NEXT_VAR + {2}
                 endm
 
-                mac CheckVarBase
+                mac checkvarbase
                 if NEXT_VAR > {1}
                     err
                 endif
-                endm
-
-                mac CodeStart
-                if NEXT_VAR > {1}
-                    err
-                endif
-                org {1}
                 endm
 
         ; BIT instruction for skipping the next 1- or 2-byte instruction
@@ -42,3 +35,43 @@ NEXT_VAR        set NEXT_VAR + {2}
                     err
                 endif
                 endm
+                
+        ; Scripting macros
+        
+                mac settrigger
+                lda #{3}
+                sta temp1
+                ldy #{1}
+                lda #<{2}
+                ldx #>{2}
+                jsr SetActorTrigger
+                endm
+                
+                mac removetrigger
+                ldy #{1}
+                jsr RemoveActorTrigger
+                endm
+                
+                mac speak
+                ldy #{1}
+                lda #<{2}
+                ldx #>{2}
+                jsr SpeakLine
+                endm
+
+                mac checkitem
+                lda #{1}
+                jsr FindItem
+                endm
+                
+                mac additem
+                lda #{1}
+                lda #{2}
+                jsr AddItem
+                endm
+                
+                mac removeitem
+                lda #{1}
+                jsr RemoveItem
+                endm
+
