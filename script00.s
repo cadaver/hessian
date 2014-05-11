@@ -833,4 +833,4 @@ optionMaxValue: dc.b 2,1,1
 
 saveList:       ds.b MAX_SAVES*SAVEDESCSIZE,0
 
-                CheckScriptEnd
+                checkscriptend

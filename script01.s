@@ -24,4 +24,4 @@ AT0101_NoShiv:  rts
 Line1:          dc.b 34,"FETCH ME THE SHIV.",34,0
 Line2:          dc.b 34,"YOU HAVE DONE WELL.",34,0
 
-                CheckScriptEnd
+                checkscriptend

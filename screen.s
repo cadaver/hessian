@@ -995,6 +995,7 @@ RedrawScreen:   lda blockY
                 sta SWDU_Sta+2
                 lda #SCROLLROWS
                 sta temp6
+                sta Irq1_LevelUpdate+1          ;Can animate level
                 ldx mapY
 RS_Loop:        stx temp7
                 jsr SWDU_Common

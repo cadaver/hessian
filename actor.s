@@ -131,7 +131,6 @@ DA_ItemFlashCounter:                            ;Get color override for items
                 tax
                 lda itemFlashTbl,x
                 sta SSpr_FlashColor+1
-                sta Irq1_LevelUpdate+1          ;Can animate level
                 lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
                 sta IA_PrevScrollX+1
                 lda scrollY
