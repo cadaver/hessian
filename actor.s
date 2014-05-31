@@ -21,19 +21,20 @@ MAX_NEARTRIGGER_XDIST = 2
 MAX_NEARTRIGGER_YDIST = 1
 
 AD_NUMSPRITES   = 0
-AD_SPRFILE      = 1
-AD_LEFTFRADD    = 2
-AD_NUMFRAMES    = 3                             ;For incrementing framepointer. Only significant if multiple sprites
-AD_FRAMES       = 4
+AD_COLOROVERRIDE = 1
+AD_SPRFILE      = 2
+AD_LEFTFRADD    = 3
+AD_NUMFRAMES    = 4                             ;For incrementing framepointer. Only significant if multiple sprites
+AD_FRAMES       = 5
 
-ADH_SPRFILE     = 1
-ADH_BASEFRAME   = 2
-ADH_BASEINDEX   = 3                             ;Index to a static 256-byte table for humanoid actor spriteframes
-ADH_LEFTFRADD   = 4
-ADH_SPRFILE2    = 5
-ADH_BASEFRAME2  = 6
-ADH_BASEINDEX2  = 7                             ;Index to a static 256-byte table for humanoid actor framenumbers
-ADH_LEFTFRADD2  = 8
+ADH_SPRFILE     = 2
+ADH_BASEFRAME   = 3
+ADH_BASEINDEX   = 4                             ;Index to a static 256-byte table for humanoid actor spriteframes
+ADH_LEFTFRADD   = 5
+ADH_SPRFILE2    = 6
+ADH_BASEFRAME2  = 7
+ADH_BASEINDEX2  = 8                             ;Index to a static 256-byte table for humanoid actor framenumbers
+ADH_LEFTFRADD2  = 9
 
 ONESPRITE       = $00
 TWOSPRITE       = $01
@@ -52,23 +53,22 @@ AL_SIZEHORIZ    = 5
 AL_SIZEUP       = 6
 AL_SIZEDOWN     = 7
 AL_INITIALHP    = 8
-AL_COLOROVERRIDE = 9
-AL_DMGMODIFY    = 10
-AL_KILLXP       = 11
-AL_SPAWNAIMODE  = 12
-AL_DROPITEMINDEX = 13
-AL_OFFENSE      = 14
-AL_DEFENSE      = 15
-AL_MOVEFLAGS    = 16
-AL_MOVESPEED    = 17
-AL_GROUNDACCEL  = 18
-AL_INAIRACCEL   = 19
-AL_FALLACCEL    = 20                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 21                          ;Gravity acceleration in longjump
-AL_BRAKING      = 22
-AL_HEIGHT       = 23                           ;Height for headbump check, negative
-AL_JUMPSPEED    = 24                           ;Negative
-AL_CLIMBSPEED   = 25
+AL_DMGMODIFY    = 9
+AL_KILLXP       = 10
+AL_SPAWNAIMODE  = 11
+AL_DROPITEMINDEX = 12
+AL_OFFENSE      = 13
+AL_DEFENSE      = 14
+AL_MOVEFLAGS    = 15
+AL_MOVESPEED    = 16
+AL_GROUNDACCEL  = 17
+AL_INAIRACCEL   = 18
+AL_FALLACCEL    = 19                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 20                          ;Gravity acceleration in longjump
+AL_BRAKING      = 21
+AL_HEIGHT       = 22                           ;Height for headbump check, negative
+AL_JUMPSPEED    = 23                           ;Negative
+AL_CLIMBSPEED   = 24
 
 GRP_NONE        = $00                           ;Does not collide/take damage
 GRP_HEROES      = $01
@@ -123,14 +123,15 @@ SPAWNINFRONT_PROBABILITY = $c0
         ; Modifies: A,X,Y,temp vars,actor ZP temp vars
 
 DrawActors:     inc DA_ItemFlashCounter+1
-DA_ItemFlashCounter:                            ;Get color override for items
+DA_ItemFlashCounter:                            ;Get color override for items + object marker
                 lda #$00
                 lsr
                 lsr
                 and #$03
                 tax
                 lda itemFlashTbl,x
-                sta SSpr_FlashColor+1
+                sta itemColor
+                sta objectMarkerColor
                 lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
                 sta IA_PrevScrollX+1
                 lda scrollY
@@ -219,18 +220,28 @@ DA_FillSpritesDone:
                 rts
 
 DrawActorSub:   stx actIndex
-                ldy #$0f                        ;Get flashing/flicker/color override:
-                lda actC,x                      ;$01-$0f = color override only
-                cmp #COLOR_ONETIMEFLASH         ;$40/$80 = flicker with sprite's own color
-                bcc DA_NoHitFlash               ;$4x/$8x = flicker with color override
-                and #$0f                        ;$f0-$ff = one time hit flash + color override
-                sta actC,x
+                lda actFlash,x                  ;Get programmatic color override
+                cmp #COLOR_ONETIMEFLASH         ;including one frame hit flash
+                bcc DA_NoHitFlash
+                lda #$00
+                sta actFlash,x
                 lda #$01
-DA_NoHitFlash:  sta GASS_ColorOr+1
+DA_NoHitFlash:  ldy #AD_COLOROVERRIDE
+                ora (actLo),y                   ;OR with actor's fixed color override
+                cmp #COLOR_FLICKER
+                bcc DA_NoFlicker
+                tay
+                txa
+                lsr                             ;Use actor index low bit to determine
+                tya                             ;which sprites flicker this frame
+                bcc DA_NoFlicker
+                ora #COLOR_INVISIBLE
+DA_NoFlicker:   sta GASS_ColorOr+1
+                ldy #$0f
                 and #$0f
-                beq DA_ColorOverrideDone
-                iny
-DA_ColorOverrideDone:
+                beq DA_KeepSpriteColor
+                ldy #$00
+DA_KeepSpriteColor:
                 sty GASS_ColorAnd+1
 DrawActorSub_NoColor:
                 ldy #AD_SPRFILE                 ;Get spritefile. Also called for invisible actors,
@@ -1120,15 +1131,11 @@ InitActor:      jsr GetActorLogicData
                 lda (actLo),y
                 sta actSizeD,x
                 plp
-                bne IA_SkipHealthColor
+                bne IA_SkipHealth
                 iny
                 lda (actLo),y
                 sta actHp,x
-                iny
-                lda (actLo),y
-                sta actC,x
-IA_SkipHealthColor:
-                rts
+IA_SkipHealth:  rts
 
         ; Check if two actors have collided. Actors further apart than 128 pixels
         ; are assumed to not collide, regardless of sizes
@@ -1265,9 +1272,8 @@ DA_Sub:         sbc temp8
                 lda #$00
 DA_NotDead:     sta actHp,x
                 php
-                lda actC,x                      ;Flash actor as a sign of damage
-                ora #$f0
-                sta actC,x
+                lda #COLOR_ONETIMEFLASH
+                sta actFlash,x
                 lda #SFX_DAMAGE
                 jsr PlaySfx
                 plp
@@ -1587,7 +1593,7 @@ GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actFd,y
                 sta actSX,y
                 sta actSY,y
-                sta actC,y
+                sta actFlash,y
                 sta actMB,y
                 sta actTime,y
                 cpy #MAX_COMPLEXACT
@@ -1647,19 +1653,6 @@ SWO_SetCoords:  lda actXL,x
                 adc temp4
                 sta actYH,y
                 sta actPrevYH,y
-                rts
-
-        ; Get flicker color override for actor based on low bit of actor index
-        ;
-        ; Parameters: A actor index
-        ; Returns: A color override value, either $40 or $c0
-        ; Modifies: A
-
-GetFlickerColorOverride:
-                ror
-                ror
-                and #COLOR_INVISIBLE
-                ora #COLOR_FLICKER
                 rts
 
         ; Calculate distance to target actor in blocks

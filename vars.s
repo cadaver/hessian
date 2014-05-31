@@ -63,7 +63,7 @@ actD:           ds.b MAX_ACT,0
 actHp:          ds.b MAX_ACT,0
 actF1:          ds.b MAX_ACT,0
 actFd:          ds.b MAX_ACT,0
-actC:           ds.b MAX_ACT,0
+actFlash:       ds.b MAX_ACT,0
 actSX:          ds.b MAX_ACT,0
 actSY:          ds.b MAX_ACT,0
 actPrevXL:      ds.b MAX_ACT,0
@@ -107,8 +107,6 @@ lvlSpawnPlot:   ds.b MAX_SPAWNERS,0
 
 lvlPropertiesStart:
 lvlName:        ds.b 16,0
-lvlWaterSplashColor:
-                dc.b 0
 lvlWaterDamage: dc.b 0
 lvlPropertiesEnd:
 

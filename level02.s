@@ -26,6 +26,7 @@ UL_Loop:        lda chars+23*8,x
                 org lvlLoadName
                 dc.b "TESTING",0
 
-                org lvlLoadWaterSplashColor
-                dc.b 0                          ;Water splash color override
+                org lvlLoadWaterDamage
                 dc.b 0                          ;Water damage
+                dc.b 0                          ;Water splash color override
+

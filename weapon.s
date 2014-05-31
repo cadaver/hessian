@@ -30,11 +30,10 @@ WD_LOCKANIMFRAME = 18
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
 WDB_BULLETDIRFRAME = 2
-WDB_FLICKERBULLET = 4
-WDB_THROW       = 8
-WDB_MELEE       = 16
-WDB_NOSKILLBONUS = 32
-WDB_LOCKANIMATION = 64
+WDB_THROW       = 4
+WDB_MELEE       = 8
+WDB_NOSKILLBONUS = 16
+WDB_LOCKANIMATION = 32
 WDB_FIREFROMHIP = 128
 
 NO_MODIFY       = 8
@@ -309,13 +308,6 @@ AH_FireDir:     lda #$00
                 iny
                 lda (wpnLo),y
                 sta actTime,x
-                lda wpnBits
-                and #WDB_FLICKERBULLET
-                beq AH_NoBulletFlicker
-                txa
-                jsr GetFlickerColorOverride
-                sta actC,x
-AH_NoBulletFlicker:
                 ldx actIndex                    ;If player, decrement ammo and apply skill bonus
                 bne AH_NoAmmoDecrement
                 lda magazineSize

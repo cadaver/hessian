@@ -84,6 +84,9 @@ LL_CopyLevelProperties:
                 sta lvlPropertiesStart,x
                 dex
                 bpl LL_CopyLevelProperties
+                lda lvlLoadWaterSplashColor
+                sta waterSplashColor1
+                sta waterSplashColor2
                 stx autoDeactObjNum             ;Reset object auto-deactivation (X=$ff)
 LL_ActorMode:   lda #$00                        ;Check if should copy leveldata actors
                 bpl LL_SkipLevelDataActors

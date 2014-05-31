@@ -172,10 +172,7 @@ MProj_LargeSplash:
                 lda #SFX_SPLASH
                 jsr PlaySfx
                 lda #ACT_WATERSPLASH
-MProj_SplashOK: jsr TransformBullet
-                lda lvlWaterSplashColor
-                sta actC,x
-                rts
+MProj_SplashOK: jmp TransformBullet
 
         ; Rocket update routine
         ;
@@ -193,9 +190,6 @@ MoveRocket:     lda actTime,x
                 bcc MRckt_NoSmoke
                 lda #ACT_SMOKETRAIL
                 jsr SpawnActor
-                tya
-                jsr GetFlickerColorOverride
-                sta actC,y
 MRckt_NoSmoke:  sec
                 jsr CheckBulletCollisions
                 bcs ExplodeGrenade
@@ -274,7 +268,6 @@ TransformBullet:sta actT,x
                 lda #$00
                 sta actF1,x
                 sta actFd,x
-                sta actC,x                      ;Remove flashing
                 rts
 
         ; Grenade update routine

@@ -200,5 +200,6 @@ lvlDataActF     = screen2+MAX_LVLDATAACT*2
 lvlDataActT     = screen2+MAX_LVLDATAACT*3
 lvlDataActWpn   = screen2+MAX_LVLDATAACT*4
 lvlLoadName     = screen2+MAX_LVLDATAACT*5
-lvlLoadWaterSplashColor = screen2+MAX_LVLDATAACT*5+16
+lvlLoadWaterDamage = screen2+MAX_LVLDATAACT*5+16
+lvlLoadWaterSplashColor = screen2+MAX_LVLDATAACT*5+17
 musicData       = $f800

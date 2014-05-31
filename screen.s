@@ -321,11 +321,9 @@ SSpr_CopyLoop1: ldx sprOrder,y
                 cmp #MAX_SPRY
                 bcs SSpr_CopyLoop1Done
                 sta sortSprY,y
-                lda sprC,x                      ;Check invisibility / flashing
+                lda sprC,x                      ;Check invisibility / flicker
                 bmi SSpr_CopyLoop1Skip
-                bne SSpr_NoFlash
-SSpr_FlashColor:lda #$00                        ;Black color indicates flashing from red
-SSpr_NoFlash:   sta sortSprC,y                  ;to yellow, used for items & object markers
+                sta sortSprC,y
                 lda sprF,x
                 sta sortSprF,y
                 lda sprXL,x

@@ -174,9 +174,8 @@ MH_DeathAnimDone:
                 lda actTime,x
                 cmp #DEATH_FLICKER_DELAY
                 bne MH_DeathDone
-                jsr GetFlickerColorOverride
-                ora actC,x
-                sta actC,x
+                lda #COLOR_FLICKER
+                sta actFlash,x
 MH_DeathDone:   rts
 MH_DeathRemove: jmp RemoveActor
 
@@ -1283,7 +1282,5 @@ CreateSplash:   lda #ACTI_FIRSTEFFECT
                 lda actYL,y                     ;Align to char boundary
                 and #$c0
                 sta actYL,y
-                lda lvlWaterSplashColor
-                sta actC,y
                 lda #SFX_SPLASH
                 jmp PlaySfx
