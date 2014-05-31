@@ -37,7 +37,17 @@ NEXT_VAR        set NEXT_VAR + {2}
                 endm
                 
         ; Scripting macros
-        
+
+                mac setscript
+                lda #<{1}
+                ldx #>{1}
+                jsr SetScript
+                endm
+                
+                mac stopscript
+                jsr StopScript
+                endm
+
                 mac settrigger
                 lda #{3}
                 sta temp1
@@ -46,7 +56,7 @@ NEXT_VAR        set NEXT_VAR + {2}
                 ldx #>{2}
                 jsr SetActorTrigger
                 endm
-                
+
                 mac removetrigger
                 ldy #{1}
                 jsr RemoveActorTrigger

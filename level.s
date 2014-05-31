@@ -700,9 +700,9 @@ ULO_CPNoItemNoWrap:
                 cpy ULO_CheckPickupIndex+1
                 bne ULO_CheckPickupLoop
                 lda displayedItemName           ;If no items, clear existing item name
-                beq ULO_CheckNearTrigger        ;text
+                beq ULO_CheckContinuousScript   ;text
                 jsr ClearPanelText
-                bcs ULO_CheckNearTrigger        ;C=1 when returning
+                bcs ULO_CheckContinuousScript   ;C=1 when returning
 ULO_HasItem:    sty ULO_CheckPickupIndex+1
                 lda textTime                    ;Make sure to not overwrite other game
                 bne ULO_SkipItemName            ;messages
@@ -718,15 +718,19 @@ ULO_HasItem:    sty ULO_CheckPickupIndex+1
 ULO_SkipItemName:
                 lda actCtrl+ACTI_PLAYER
                 cmp #JOY_DOWN
-                bne ULO_CheckNearTrigger
+                bne ULO_CheckContinuousScript
                 lda actFd+ACTI_PLAYER           ;If ducking, try picking up the item
-                beq ULO_CheckNearTrigger
+                beq ULO_CheckContinuousScript
                 lda actF1+ACTI_PLAYER
                 cmp #FR_DUCK
-                bne ULO_CheckNearTrigger
+                bne ULO_CheckContinuousScript
                 ldy ULO_CheckPickupIndex+1
                 jsr TryPickup
-
+ULO_CheckContinuousScript:
+                ldx scriptF                     ;Check for continuous script execution
+                bmi ULO_CheckNearTrigger
+                lda scriptEP
+                jsr ExecScript
 ULO_CheckNearTrigger:
                 ldx #ACTI_LASTNPC
                 lda actFlags,x

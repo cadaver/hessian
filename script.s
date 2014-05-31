@@ -118,6 +118,17 @@ ES_ParamA:      lda #$00
 ES_ParamX:      ldx #$00
 ES_ScriptJump:  jmp $1000
 
+        ; Set/stop a continuous script
+        ;
+        ; Parameters: A script entrypoint, X script file (negative = stop)
+        ; Returns: -
+        ; Modifies: -
+        
+StopScript:     ldx #$ff
+SetScript:      stx scriptF
+                sta scriptEP
+                rts
+
         ; NPC speak a line
         ;
         ; Parameters: Y actor type, A,X text address

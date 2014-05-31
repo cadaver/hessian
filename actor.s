@@ -44,7 +44,7 @@ HUMANOID        = $80
 
 COLOR_FLICKER   = $40
 COLOR_INVISIBLE = $80
-COLOR_ONETIMEFLASH = $f0
+COLOR_ONETIMEFLASH = $ff
 
 AL_UPDATEROUTINE = 0
 AL_DESTROYROUTINE = 2
@@ -221,10 +221,8 @@ DA_FillSpritesDone:
 
 DrawActorSub:   stx actIndex
                 lda actFlash,x                  ;Get programmatic color override
-                cmp #COLOR_ONETIMEFLASH         ;including one frame hit flash
-                bcc DA_NoHitFlash
-                lda #$00
-                sta actFlash,x
+                bpl DA_NoHitFlash               ;including one frame hit flash
+                inc actFlash,x
                 lda #$01
 DA_NoHitFlash:  ldy #AD_COLOROVERRIDE
                 ora (actLo),y                   ;OR with actor's fixed color override

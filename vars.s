@@ -123,6 +123,8 @@ plrFirearms:    dc.b 0
 plrMelee:       dc.b 0
 plrVitality:    dc.b 0
 plrReload:      dc.b 0
+scriptF:        dc.b $ff
+scriptEP:       dc.b 0
 plotBits:       ds.b MAX_PLOTBITS/8,0
 atType:         ds.b MAX_ACTORTRIGGERS+1,0
 atScriptF:      ds.b MAX_ACTORTRIGGERS,0

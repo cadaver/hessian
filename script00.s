@@ -367,6 +367,7 @@ IP_SkillCheatLoop:
 
                 settrigger ACT_TESTNPC,$0100,AT_NEAR ;Trigger for NPC mechanics testing
 
+                jsr StopScript                  ;Stop any continuous script
                 lda #START_LEVEL
                 sta levelNum
                 lda #$00                        ;Set startposition
