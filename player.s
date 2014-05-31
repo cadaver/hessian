@@ -38,15 +38,13 @@ INITIAL_INAIRACC = 1
 INITIAL_GROUNDBRAKE = 6
 INITIAL_JUMPSPEED = 40
 INITIAL_CLIMBSPEED = 84
-INITIAL_HEALTHRECHARGETIMER = 2
+INITIAL_HEALTHRECHARGETIMER = 3
 
 HEALTHRECHARGETIMER_RESET = $e0
 
 DIFFICULTY_EASY = 0
 DIFFICULTY_MEDIUM = 1
 DIFFICULTY_HARD = 2
-
-EASY_DMGMULTIPLIER_REDUCE = 2
 
 DROWNING_TIMER = 1
 DROWNING_TIMER_REPEAT = $f0
@@ -1227,22 +1225,17 @@ ApplySkills:
 
         ; Vitality: damage reduction, faster health recharge, slower drowning
 
-                ldy difficulty
-                lda plrVitality
-                adc #INITIAL_HEALTHRECHARGETIMER-1  ;C=1 here
-                cpy #DIFFICULTY_HARD                ;Hard level slows down health recharge
-                bcc AS_MediumOrEasy
-                lsr
-AS_MediumOrEasy:sta ULO_HealthRechargeRate+1
-                lda #NO_MODIFY
-                sec
-                sbc plrVitality
-                cpy #DIFFICULTY_MEDIUM              ;On Easy level damage multiplier is lower
-                bcs AS_MediumOrHard
-                sbc #EASY_DMGMULTIPLIER_REDUCE-1    ;C=0 here, becomes 1
-AS_MediumOrHard:sta plrDmgModify
+                lda #INITIAL_HEALTHRECHARGETIMER
+                adc plrVitality                     ;C=1 here
+                sbc difficulty                      ;C=0 here
+                sta ULO_HealthRechargeRate+1
+                lda difficulty
+                asl                                 ;Easy: base damage mod 6, medium 8, hard 10
+                adc #NO_MODIFY-1                    ;C=0 here
+                sbc plrVitality                     ;C=0 here
+                sta plrDmgModify
                 lda #DROWNING_TIMER_REPEAT/4
-                sbc plrVitality
+                sbc plrVitality                     ;C=1 here
                 asl
                 asl                                 ;C becomes 0
                 sta MH_PlayerDrowningTimerRepeat+1
