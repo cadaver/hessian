@@ -55,7 +55,9 @@ DROWNING_TIMER_REPEAT = $f0
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new joystick controls
+MovePlayer:     lda #AIH_AUTOSTOPLEDGE
+                sta actAIHelp
+                lda actCtrl+ACTI_PLAYER         ;Get new joystick controls
                 sta actPrevCtrl+ACTI_PLAYER
                 ldy #$00
                 cpy menuMode                    ;When in inventory, no controls (idle)
@@ -416,17 +418,22 @@ MH_NoWater:     lda actMB,x
                 cmp #MB_STARTFALLING
                 bcc MH_NoFallStart
                 jsr MH_ResetFall
-                lda actAIHelp,x                 ;Check AI autojumping or autoturning
-                cmp #AIH_AUTOJUMPLEDGE          ;when falling
-                bcs MH_AutoJump
-                and #AIH_AUTOTURNLEDGE
+                lda actAIHelp,x                 ;Check AI autojump/turn/stop on ledge
+                bmi MH_DoAutoJump
+                and #AIH_AUTOTURNLEDGE|AIH_AUTOSTOPLEDGE
                 beq MH_NoAutoJump
-                lda actSX,x
-                jsr MoveActorXNeg               ;Back off from the ledge
-                jsr MH_SetGrounded              ;Force grounded status
+                asl
                 sec
-                bne MH_DoAutoTurn
-MH_AutoJump:    ldy #AL_JUMPSPEED
+                php
+                lda actSX,x
+                jsr MoveActorXNeg
+                jsr MH_SetGrounded
+                plp
+                bmi MH_DoAutoTurn
+MH_DoAutoStop:  lda #$00
+                sta actSX,x
+                beq MH_NoAutoTurn
+MH_DoAutoJump:  ldy #AL_JUMPSPEED
                 lda (actLo),y
                 sta actSY,x
 MH_NoAutoJump:  lda actMB,x

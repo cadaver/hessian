@@ -55,8 +55,8 @@ end
 ;----------------
 IDLE
 TURNTO
-SNIPER
-THUG
+FOLLOW
+MODE3
 MODE4
 MODE5
 MODE6

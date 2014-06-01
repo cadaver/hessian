@@ -323,7 +323,7 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b HP_PLAYER                  ;Initial health
 plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
                 dc.b 0                          ;XP from kill
-                dc.b AIMODE_NONE                ;AI mode when spawned randomly + persistence disable
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly + persistence disable
                 dc.b ITEM_NONE                  ;Itemdrop table index or item override
                 dc.b $ff                        ;AI offense probability
                 dc.b $ff                        ;AI defense probability
@@ -467,7 +467,7 @@ alNPC:          dc.w MoveAIHuman                ;Update routine
                 dc.b HP_ENEMY                   ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.b 2                          ;XP from kill
-                dc.b AIMODE_THUG                ;AI mode when spawned randomly + persistence disable
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly + persistence disable
                 dc.b DROP_WEAPONMEDKITCREDITS   ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability
@@ -492,7 +492,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b HP_ENEMY                   ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.b 2                          ;XP from kill
-                dc.b AIMODE_THUG                ;AI mode when spawned randomly + persistence disable
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly + persistence disable
                 dc.b DROP_WEAPONMEDKITCREDITS   ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability

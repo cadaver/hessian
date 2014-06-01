@@ -499,8 +499,7 @@ UA_SpawnerEndCmp:cpx #SPAWNERSEARCH
         ; Build target list for AI & bullet collision
 
 BuildTargetList:ldx #ACTI_LASTNPC
-                ldy #$00                        ;Villain list index
-                sty temp1                       ;Hero list index
+                ldy #$00                        ;Target list index
 BTL_Loop:       lda actHp,x                     ;Actor must have nonzero health
                 beq BTL_Next
                 lda actFlags,x                  ;Actor must not be in bystander (none) group

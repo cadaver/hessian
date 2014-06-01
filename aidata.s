@@ -2,13 +2,11 @@
 
 aiJumpTblLo:    dc.b <AI_Idle
                 dc.b <AI_TurnTo
-                dc.b <AI_Sniper
-                dc.b <AI_Thug
+                dc.b <AI_Follow
 
 aiJumpTblHi:    dc.b >AI_Idle
                 dc.b >AI_TurnTo
-                dc.b >AI_Sniper
-                dc.b >AI_Thug
+                dc.b >AI_Follow
 
         ; Item drop table
 
