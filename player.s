@@ -430,6 +430,7 @@ MH_NoWater:     lda actMB,x
                 bmi MH_DoAutoTurn
 MH_DoAutoStop:  lda #$00
                 sta actSX,x
+                sta actMoveCtrl,x
                 beq MH_NoAutoTurn
 MH_DoAutoJump:  ldy #AL_JUMPSPEED
                 lda (actLo),y

@@ -8,6 +8,7 @@ AIH_AUTOJUMPLEDGE = $80
 AIMODE_IDLE     = 0
 AIMODE_TURNTO   = 1
 AIMODE_FOLLOW   = 2
+AIMODE_SNIPER   = 3
 
 NOTARGET        = $ff
 
@@ -32,6 +33,7 @@ MA_SkipAI:      jsr MoveHuman
 
 AI_Idle:        lda #$00
                 sta actCtrl,x
+                sta actMoveCtrl,x
                 rts
 
         ; Turn to player AI
@@ -44,7 +46,21 @@ AI_TurnTo:      ldy #ACTI_PLAYER
 
         ; Follow (pathfinding) AI
 
-AI_Follow:      jsr FindTarget                  ;Todo: do not call this, only for testing
+AI_Follow:      rts
+
+        ; Sniper AI
+
+AI_Sniper:      jsr FindTarget                  ;Todo: add proper aggression/defense code. Now is just a test
+                ldy actAITarget,x
+                bmi AI_Idle
+                lda actAIAttackHint,x           ;for attack hints
+                sta actCtrl,x
+                cmp #JOY_FIRE
+                bcc AI_NoFire
+                lda #$00
+AI_NoFire:      sta actMoveCtrl,x
+                lda #AIH_AUTOSTOPLEDGE
+                sta actAIHelp,x
                 rts
 
         ; Validate existing AI target / find new target
@@ -77,8 +93,9 @@ FT_PickTargetOK:tay
                 beq FT_NoTarget
 FT_CheckRoute:  cpx #ACTI_LASTNPC+1             ;If this is a homing bullet, there will be no navigation/route
                 bcs FT_CheckRoute2              ;check later, so check now
-                lda #$ff                        ;For NPCs, reset navigation information now until checked
+                lda #$00                        ;For NPCs, reset navigation information now until checked
                 sta actAIMoveHint,x
+                sta actAIAttackHint,x
                 tya
                 bcc FT_StoreTarget
 FT_CheckRoute2: tya
@@ -160,10 +177,63 @@ RC_NoRoute:     clc                             ;Route not found
         ; Returns: -
         ; Modifies: A,Y,temp regs
 
+CNH_NoRoute:    lda #$00
+                sta actAIMoveHint,x
+                sta actAIAttackHint,x
+                rts
 CheckNavigationHints:
                 bcc CNH_NoRoute
-CNH_HasRoute:   inc $d020
-                rts
-CNH_NoRoute:    lda #$ff
-                sta actAIMoveHint,x
+CNH_HasRoute:   ldy actAITarget,x               ;Check whether attack can be horizontal, vertical or diagonal
+                jsr GetActorDistance
+                ldy actWpn,x
+                lda temp8
+                beq CNH_Horizontal
+                lda temp6
+                beq CNH_Vertical
+                cmp temp8
+                beq CNH_Diagonal
+CNH_NoAttackDir:bcc CNH_GoVertical              ;Diagonal, but not completely: need to move either closer or away
+CNH_NeedLessDistance:
+                lda temp5
+                bmi CNH_NLDLeft
+CNH_NLDRight:   lda #JOY_RIGHT
+                bne CNH_StoreAttackHint
+CNH_NLDLeft:    lda #JOY_LEFT
+                bne CNH_StoreAttackHint
+CNH_GoVertical: asl                             ;If is closer to a fully vertical angle, reduce distance instead
+                cmp temp8
+                bcc CNH_NeedLessDistance
+CNH_NoAttackHint:
+                lda #$00                        ;Otherwise, it is not wise to go away from target, as target may
+                beq CNH_StoreAttackHint         ;be moving under a platform, where the routecheck is broken
+CNH_NeedMoreDistance:
+                lda temp5
+                bmi CNH_NLDRight
+                bpl CNH_NLDLeft
+CNH_Diagonal:
+CNH_Horizontal: lda temp6                       ;Verify horizontal distance too close / too far
+                cmp itemNPCMinDist-1,y
+                bcc CNH_NeedMoreDistance
+                cmp itemNPCMaxDist-1,y
+                bcs CNH_NeedLessDistance
+                lda #JOY_RIGHT|JOY_FIRE
+                ldy temp5
+                bpl CNH_AttackRight
+                lda #JOY_LEFT|JOY_FIRE
+CNH_AttackRight:ldy temp8                       ;If block-distance is zero, do not fire diagonally
+                beq CNH_StoreAttackHint
+CNH_AttackAboveOrBelow:
+                ldy temp7
+                beq CNH_StoreAttackHint
+                bpl CNH_AttackBelow
+CNH_AttackAbove:ora #JOY_UP|JOY_FIRE
+                bne CNH_StoreAttackHint
+CNH_AttackBelow:ora #JOY_DOWN|JOY_FIRE
+                bne CNH_StoreAttackHint
+CNH_Vertical:   lda temp8                       ;For vertical distance, only check if too far
+                cmp itemNPCMaxDist-1,y
+                lda #$00                        ;If so, currently there is no navigation hint
+                bcc CNH_AttackAboveOrBelow
+CNH_StoreAttackHint:
+                sta actAIAttackHint,x
                 rts

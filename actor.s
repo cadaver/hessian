@@ -1621,10 +1621,11 @@ GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actFallL,y
                 sta actWaterDamage,y
                 sta actAIHelp,y
+                sta actAIMoveHint,y
+                sta actAIAttackHint,y
                 lda #NOWEAPONFRAME
                 sta actWpnF,y
                 sta actAITarget,y               ;Start with no target & no route
-                sta actAIMoveHint,y
                 sec
 GFA_NotComplex: rts
 
@@ -1680,21 +1681,29 @@ GetActorDistance:
                 lda actYL,y
                 sec
                 sbc actYL,x
+                sta temp8
                 lda actYH,y
                 sbc actYH,x
                 sta temp7
                 bpl GAD_YDistPos
-                eor #$ff
+                bit temp8
+                bne GAD_YDistNegOK
+                sbc #$00
+GAD_YDistNegOK: eor #$ff
 GAD_YDistPos:   sta temp8
 GetActorXDistance:
                 lda actXL,y
                 sec
                 sbc actXL,x
+                sta temp6
                 lda actXH,y
                 sbc actXH,x
                 sta temp5
                 bpl GAD_XDistPos
-                eor #$ff
+                bit temp6
+                bne GAD_XDistNegOK
+                sbc #$00
+GAD_XDistNegOK: eor #$ff
 GAD_XDistPos:   sta temp6
                 rts
 
