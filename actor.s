@@ -514,6 +514,23 @@ BTL_Next:       dex
                 sta targetList,y
                 sty numTargets
 
+        ; Check navigation & attack hints for one actor at a time
+
+CN_Current:     ldx #ACTI_FIRSTNPC
+CN_Loop:        dex
+                bne CN_NotOver
+                ldx #ACTI_LASTNPC
+CN_NotOver:     lda actT,x
+                beq CN_Next
+                ldy actAITarget,x
+                bpl CN_Found
+CN_Next:        cpx CN_Current+1                ;Wrap search without finding a valid actor?
+                bne CN_Loop
+                beq UA_UpdateAll
+CN_Found:       stx CN_Current+1
+                jsr RouteCheck
+                jsr CheckNavigationHints
+
         ; Call update routines of all on-screen actors
 
 UA_UpdateAll:   ldx #MAX_ACT-1
@@ -1606,7 +1623,8 @@ GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actAIHelp,y
                 lda #NOWEAPONFRAME
                 sta actWpnF,y
-                sta actAITarget,y               ;Start with no target
+                sta actAITarget,y               ;Start with no target & no route
+                sta actAIMoveHint,y
                 sec
 GFA_NotComplex: rts
 
@@ -1678,74 +1696,6 @@ GetActorXDistance:
                 bpl GAD_XDistPos
                 eor #$ff
 GAD_XDistPos:   sta temp6
-                rts
-
-        ; Check if there is obstacles between actors
-        ;
-        ; Parameters: X actor index, Y target actor index
-        ; Returns: C=1 route OK, C=0 route fail
-        ; Modifies: A,Y,temp1-temp3, loader temp variables
-
-RouteCheck:     lda actXH,x
-                sta temp1
-                lda actMB,x                     ;If actor is grounded, check 1 block higher
-                eor #$01
-                lsr
-                lda actYH,x
-                sbc #$00
-                sta temp2
-                lda actXH,y
-                sta RC_CmpX+1
-                lda actMB,y                     ;If actor is grounded, check 1 block higher
-                eor #$01
-                lsr
-                lda actYH,y
-                sbc #$00
-                sta RC_CmpY+1
-                sta RC_CmpY2+1
-                lda #MAX_ROUTE_STEPS
-                sta temp3
-RC_Loop:        ldy temp1
-RC_CmpX:        cpy #$00
-                bcc RC_MoveRight
-                bne RC_MoveLeft
-                ldy temp2
-RC_CmpY:        cpy #$00
-                bcc RC_MoveDown
-                bne RC_MoveUp
-                rts                             ;C=1, route found
-RC_MoveRight:   iny
-                bcc RC_MoveXDone
-RC_MoveLeft:    dey
-RC_MoveXDone:   sty temp1
-                ldy temp2
-RC_CmpY2:       cpy #$00
-                bcc RC_MoveDown
-                beq RC_MoveYDone2
-RC_MoveUp:      dey
-                bcs RC_MoveYDone
-RC_MoveDown:    iny
-RC_MoveYDone:   sty temp2
-RC_MoveYDone2:  dec temp3
-                beq RC_NoRoute
-                lda mapTblLo,y
-                sta zpDestLo
-                lda mapTblHi,y
-                sta zpDestHi
-                ldy temp1
-                lda (zpDestLo),y                ;Take block from map
-                tay
-                lda blkTblLo,y
-                sta zpDestLo
-                lda blkTblHi,y
-                sta zpDestHi
-                ldy #2*4+2
-                lda (zpDestLo),y                ;Get char from block (middle)
-                tay
-                lda charInfo,y                  ;Get charinfo
-                and #CI_OBSTACLE
-                beq RC_Loop
-RC_NoRoute:     clc                             ;Route not found
                 rts
 
         ; Find NPC actor from screen by type

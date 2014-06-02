@@ -55,9 +55,7 @@ DROWNING_TIMER_REPEAT = $f0
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MovePlayer:     lda #AIH_AUTOSTOPLEDGE
-                sta actAIHelp
-                lda actCtrl+ACTI_PLAYER         ;Get new joystick controls
+MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new joystick controls
                 sta actPrevCtrl+ACTI_PLAYER
                 ldy #$00
                 cpy menuMode                    ;When in inventory, no controls (idle)

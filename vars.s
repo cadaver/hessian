@@ -92,6 +92,8 @@ actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0
 actAIMode:      ds.b MAX_COMPLEXACT,0
 actAIHelp:      ds.b MAX_COMPLEXACT,0
+actAIMoveHint:  ds.b MAX_COMPLEXACT,$ff
+actAIAttackHint:ds.b MAX_COMPLEXACT,0
 
         ; Level objects and spawner data (not saved)
 
