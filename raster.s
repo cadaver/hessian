@@ -48,6 +48,13 @@ Irq5_Wait:      lda $d012
         ; Raster interrupt 1. Show game screen
 
 Irq1:           jsr StartIrq
+                if SHOW_FRAME_DROP>0
+                ldy #$02
+                lda newFrame
+                beq Irq1_Late
+                ldy #$00
+Irq1_Late:      sty $d020
+                endif
                 lda #$00
                 sta newFrame
                 sta $d07a                       ;SCPU back to slow mode

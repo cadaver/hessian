@@ -185,6 +185,9 @@ CheckNavigationHints:
                 bcc CNH_NoRoute
 CNH_HasRoute:   ldy actAITarget,x               ;Check whether attack can be horizontal, vertical or diagonal
                 jsr GetActorDistance
+                jsr GetActorCharCoordX          ;If is on the screen edge, do not fire, but come closer
+                cmp #39                         ;(game can be too difficult otherwise)
+                bcs CNH_NeedLessDistance
                 ldy actWpn,x
                 lda temp8
                 beq CNH_Horizontal
