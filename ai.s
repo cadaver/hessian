@@ -5,6 +5,8 @@ AIH_AUTOSTOPLEDGE = $20
 AIH_AUTOTURNLEDGE = $40
 AIH_AUTOJUMPLEDGE = $80
 
+JOY_FREEMOVE    = $80
+
 AIMODE_IDLE     = 0
 AIMODE_TURNTO   = 1
 AIMODE_FOLLOW   = 2
@@ -51,15 +53,28 @@ AI_Follow:      rts
         ; Sniper AI
 
 AI_Sniper:      jsr FindTarget                  ;Todo: add proper aggression/defense code. Now is just a test
-                ldy actAITarget,x
+                ldy actAITarget,x               ;for attack hints
                 bmi AI_Idle
-                lda actAIAttackHint,x           ;for attack hints
+                lda actAIAttackHint,x
+                bmi AI_FreeMove
                 sta actCtrl,x
                 cmp #JOY_FIRE
                 bcc AI_NoFire
                 lda #$00
 AI_NoFire:      sta actMoveCtrl,x
                 lda #AIH_AUTOSTOPLEDGE
+                bne AI_StoreMovementHelp
+
+AI_FreeMove:    lda #JOY_RIGHT                  ;Move forward into facing direction, turn at walls / ledges
+                ldy actD,x
+                bpl AI_FreeMoveRight
+                lda #JOY_LEFT
+AI_FreeMoveRight:
+                sta actMoveCtrl,x
+                lda #$00
+                sta actCtrl,x
+                lda #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
+AI_StoreMovementHelp:
                 sta actAIHelp,x
                 rts
 
@@ -213,6 +228,12 @@ CNH_NoAttackHint:
                 lda #$00                        ;Otherwise, it is not wise to go away from target, as target may
                 beq CNH_StoreAttackHint         ;be moving under a platform, where the routecheck is broken
 CNH_NeedMoreDistance:
+                lda temp6                       ;If target is at same block (possibly using a melee weapon)
+                ora temp8                       ;break away into whatever direction available
+                bne CNH_NotAtSameBlock
+                lda #JOY_FREEMOVE
+                bne CNH_StoreAttackHint
+CNH_NotAtSameBlock:
                 lda temp5
                 bmi CNH_NLDRight
                 bpl CNH_NLDLeft
