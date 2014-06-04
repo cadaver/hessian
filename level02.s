@@ -30,3 +30,5 @@ UL_Loop:        lda chars+23*8,x
                 dc.b 0                          ;Water damage
                 dc.b 0                          ;Water splash color override
 
+                org blockInfo
+                incbin bg/level02.bli

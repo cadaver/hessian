@@ -14,6 +14,12 @@ AIMODE_SNIPER   = 3
 
 NOTARGET        = $ff
 
+BI_GROUND       = 1
+BI_OBSTACLE     = 2
+BI_CLIMB        = 4
+BI_STAIRSLEFT   = 8
+BI_STAIRSRIGHT  = 9
+
         ; AI character update routine
         ;
         ; Parameters: X actor index
@@ -143,6 +149,11 @@ RouteCheck:     lda actXH,x
                 sta RC_CmpY2+1
                 lda #MAX_ROUTE_STEPS
                 sta temp3
+                ldy temp2                       ;Take initial maprow
+                lda mapTblLo,y
+                sta zpDestLo
+                lda mapTblHi,y
+                sta zpDestHi
 RC_Loop:        ldy temp1
 RC_CmpX:        cpy #$00
                 bcc RC_MoveRight
@@ -164,24 +175,26 @@ RC_MoveUp:      dey
                 bcs RC_MoveYDone
 RC_MoveDown:    iny
 RC_MoveYDone:   sty temp2
-RC_MoveYDone2:  dec temp3
-                beq RC_NoRoute
-                lda mapTblLo,y
+                lda mapTblLo,y                  ;Take new maprow
                 sta zpDestLo
                 lda mapTblHi,y
                 sta zpDestHi
+RC_MoveYDone2:  dec temp3
+                beq RC_NoRoute
                 ldy temp1
                 lda (zpDestLo),y                ;Take block from map
+                lsr
                 tay
-                lda blkTblLo,y
-                sta zpDestLo
-                lda blkTblHi,y
-                sta zpDestHi
-                ldy #2*4+2
-                lda (zpDestLo),y                ;Get char from block (middle)
-                tay
-                lda charInfo,y                  ;Get charinfo
-                and #CI_OBSTACLE
+                lda blockInfo,y
+                bcs RC_UpperNybble              ;Blockinfo is packed into 4 bits per block
+RC_LowerNybble: and #$0f
+                bcc RC_CheckBlockInfo
+RC_UpperNybble: lsr
+                lsr
+                lsr
+                lsr
+RC_CheckBlockInfo:
+                and #BI_OBSTACLE
                 beq RC_Loop
 RC_NoRoute:     clc                             ;Route not found
                 rts

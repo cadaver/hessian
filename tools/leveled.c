@@ -66,6 +66,8 @@ unsigned char zonebg2[NUMZONES];
 unsigned char zonebg3[NUMZONES];
 unsigned char zonemusic[NUMZONES];
 
+unsigned char blockinfo[BLOCKS/2];
+
 char *actorname[256];
 char *itemname[256];
 char *modename[16];
@@ -239,6 +241,7 @@ void relocatezone(int x, int y);
 void reorganizedata(void);
 void optimizechars(void);
 void optimizeblocks(void);
+void updateblockinfo(void);
 
 extern unsigned char datafile[];
 
@@ -3129,6 +3132,44 @@ void optimizechars(void)
   findusedblocksandchars();
 }
 
+void updateblockinfo(void)
+{
+  int c, d;
+  for (c = 0; c < BLOCKS; c++)
+  {
+    char bi = 0;
+    if ((chinfo[blockdata[c*16+12]] & 1) && (chinfo[blockdata[c*16+9]] & 1) && (chinfo[blockdata[c*16+6]] & 1) && (chinfo[blockdata[c*16+3]] & 1))
+      bi = 8; // Stairs to up-right
+    else if ((chinfo[blockdata[c*16+15]] & 1) && (chinfo[blockdata[c*16+10]] & 1) && (chinfo[blockdata[c*16+5]] & 1) && (chinfo[blockdata[c*16]] & 1))
+      bi = 9; // Stairs to up-left
+    else
+    {
+      int gc = 0;
+
+      if (chinfo[blockdata[c*16+5]] & 2)
+        bi |= 2; // Obstacle
+      if (chinfo[blockdata[c*16+5]] & 4)
+        bi |= 4; // Ladder
+      for (d = 0; d < 16; d++)
+      {
+        if (chinfo[blockdata[c*16+d]] & 1)
+          gc++;
+      }
+      if (gc >= 4)
+        bi |= 1; // Ground
+    }
+    if ((c & 1) == 0)
+    {
+      blockinfo[c/2] &= 0xf0;
+      blockinfo[c/2] |= bi;
+    }
+    else
+    {
+      blockinfo[c/2] &= 0x0f;
+      blockinfo[c/2] |= (bi << 4);
+    }
+  }
+}
 
 void initstuff(void)
 {
@@ -3555,6 +3596,15 @@ void savealldata(void)
         writele16(handle, maxusedblocks*16);
         write8(handle, 0);
         write(handle, blockdata, maxusedblocks*16);
+        close(handle);
+      }
+      updateblockinfo();
+      strcpy(ib2, ib1);
+      strcat(ib2, ".bli");
+      handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
+      if (handle != -1)
+      {
+        write(handle, blockinfo, (maxusedblocks+1)/2);
         close(handle);
       }
       strcpy(ib2, ib1);

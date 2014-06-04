@@ -249,7 +249,7 @@ hessian.sid: hessiansid.s music00.bin music01.bin music02.bin music03.bin music0
 	music08.bin music09.bin music10.bin music11.bin music12.bin music13.bin music14.bin
 	dasm hessiansid.s -ohessian.sid -f3
 
-level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.chi bg/level00.chc bg/level00.chr bg/level00.lva bg/level00.lvr bg/level00.lvo
+level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.bli bg/level00.chi bg/level00.chc bg/level00.chr bg/level00.lva bg/level00.lvr bg/level00.lvo
 	filejoin bg/level00.lvo+bg/level00.lvr level00_1.bin
 	pack2 level00_1.bin level00_1.pak
 	dasm level00.s -olevel00_2.bin -f3
@@ -258,7 +258,7 @@ level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.chi bg/
 	pchunk2 bg/level00.blk level00_4.pak
 	filejoin level00_1.pak+level00_2.pak+level00_3.pak+level00_4.pak level00.pak
 
-level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.chi bg/level01.chc bg/level01.chr bg/level01.lva bg/level01.lvr bg/level01.lvo
+level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.bli bg/level01.chi bg/level01.chc bg/level01.chr bg/level01.lva bg/level01.lvr bg/level01.lvo
 	filejoin bg/level01.lvo+bg/level01.lvr level01_1.bin
 	pack2 level01_1.bin level01_1.pak
 	dasm level01.s -olevel01_2.bin -f3
@@ -267,7 +267,7 @@ level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.chi bg/
 	pchunk2 bg/level01.blk level01_4.pak
 	filejoin level01_1.pak+level01_2.pak+level01_3.pak+level01_4.pak level01.pak
 
-level02.pak: level02.s memory.s bg/level02.map bg/level02.blk bg/level02.chi bg/level02.chc bg/level02.chr bg/level02.lva bg/level02.lvr bg/level02.lvo
+level02.pak: level02.s memory.s bg/level02.map bg/level02.blk bg/level02.bli bg/level02.chi bg/level02.chc bg/level02.chr bg/level02.lva bg/level02.lvr bg/level02.lvo
 	filejoin bg/level02.lvo+bg/level02.lvr level02_1.bin
 	pack2 level02_1.bin level02_1.pak
 	dasm level02.s -olevel02_2.bin -f3

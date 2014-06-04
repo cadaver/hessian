@@ -1,5 +1,9 @@
                 org scriptCodeEnd
 
+        ; Note: variables may require alignment if code growth causes a lot of page
+        ; crossings to happen here, slowing down code. A known good (results in fast
+        ; code) value for ntChnPattPos is $5f49
+
         ; Playroutine variables
 
 ntChnPattPos:   dc.b 0
@@ -175,6 +179,9 @@ saveSlotChoice: dc.b 0
 improveList:    ds.b NUM_SKILLS+1,0
 targetList:     ds.b MAX_COMPLEXACT+1,0
 
-        ; Dynamic memory allocation area begins here
+sprOrTbl:       ds.b MAX_SPR*2,0
+sprAndTbl:      ds.b MAX_SPR*2,0
 
+        ; Dynamic allocation area begins here
+        
 fileAreaStart:
