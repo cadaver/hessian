@@ -183,17 +183,7 @@ RC_MoveYDone2:  dec temp3
                 beq RC_NoRoute
                 ldy temp1
                 lda (zpDestLo),y                ;Take block from map
-                lsr
-                tay
-                lda blockInfo,y
-                bcs RC_UpperNybble              ;Blockinfo is packed into 4 bits per block
-RC_LowerNybble: and #$0f
-                bcc RC_CheckBlockInfo
-RC_UpperNybble: lsr
-                lsr
-                lsr
-                lsr
-RC_CheckBlockInfo:
+                readblockinfo
                 and #BI_OBSTACLE
                 beq RC_Loop
 RC_NoRoute:     clc                             ;Route not found

@@ -29,13 +29,29 @@ NEXT_VAR        set NEXT_VAR + {2}
                 mac skip2
                 dc.b $2c
                 endm
-                
-                mac CheckScriptEnd
-                if * > $fffa
+
+                mac checkscriptend
+                if * > scriptCodeEnd
                     err
                 endif
                 endm
-                
+
+                mac readblockinfo
+                subroutine rbi
+                lsr
+                tay
+                lda blockInfo,y
+                bcs .1              ;Blockinfo is packed into 4 bits per block
+                and #$0f
+                bcc .2
+.1:             lsr
+                lsr
+                lsr
+                lsr
+.2:
+                subroutine rbiend
+                endm
+
         ; Scripting macros
 
                 mac setscript
