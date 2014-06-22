@@ -1623,7 +1623,7 @@ GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actAIHelp,y
                 sta actAIMoveHint,y
                 sta actAIAttackHint,y
-                lda #NOWEAPONFRAME
+                lda #NOTARGET
                 sta actWpnF,y
                 sta actAITarget,y               ;Start with no target & no route
                 sec

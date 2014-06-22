@@ -95,12 +95,7 @@ FindTarget:     ldy actAITarget,x
                 lda actHp,y                     ;When actor is removed (actT = 0) also health is zeroed
                 beq FT_Invalidate               ;so only checking for health is enough
 FT_TargetOK:    rts
-FT_Invalidate:  cpx #ACTI_LASTNPC+1
-                bcs FT_Invalidate2
-                lda #$00                        ;For NPCs, reset navigation information until have new target
-                sta actAIMoveHint,x
-                sta actAIAttackHint,x
-FT_Invalidate2: lda #NOTARGET
+FT_Invalidate:  lda #NOTARGET
 FT_StoreTarget: sta actAITarget,x
 FT_NoTarget:    rts
 FT_PickNew:     ldy numTargets
@@ -117,12 +112,19 @@ FT_PickTargetOK:tay
                 eor actFlags,y
                 and #AF_GROUPBITS
                 beq FT_NoTarget
-FT_CheckRoute:  tya                             ;Do not pick targets without line of sight to them
+FT_CheckRoute:  cpx #ACTI_LASTNPC+1             ;If this is a homing bullet, there will be no navigation/route
+                bcs FT_CheckRoute2              ;check later, so check now
+                lda #$00                        ;For NPCs, reset navigation information now until checked
+                sta actAIMoveHint,x
+                sta actAIAttackHint,x
+                tya
+                bcc FT_StoreTarget
+FT_CheckRoute2: tya
                 pha
                 jsr RouteCheck
                 pla
                 bcs FT_StoreTarget
-                bcc FT_NoTarget
+                rts
 
         ; Check if there is obstacles between actors
         ;
@@ -193,9 +195,8 @@ RC_NoRoute:     clc                             ;Route not found
         ; Returns: -
         ; Modifies: A,Y,temp regs
 
-CNH_NoRoute:    lda #$00
-                sta actAIMoveHint,x
-                sta actAIAttackHint,x
+CNH_NoRoute:    lda #NOTARGET                   ;If no route, forget the target (todo: do not do in all AI modes)
+                sta actAITarget,x
                 rts
 CheckNavigationHints:
                 bcc CNH_NoRoute
