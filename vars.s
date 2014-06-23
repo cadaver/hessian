@@ -179,9 +179,6 @@ saveSlotChoice: dc.b 0
 improveList:    ds.b NUM_SKILLS+1,0
 targetList:     ds.b MAX_COMPLEXACT+1,0
 
-sprOrTbl:       ds.b MAX_SPR*2,0
-sprAndTbl:      ds.b MAX_SPR*2,0
-
         ; Dynamic allocation area begins here
         
 fileAreaStart:

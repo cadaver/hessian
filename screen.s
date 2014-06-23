@@ -458,9 +458,6 @@ UF_WaitNormal:  lda $d011                       ;If no colorshift, just need to 
                 cmp #IRQ1_LINE-$05
                 bcs UF_WaitNormal
 UF_WaitColorShift:
-                if SHOW_COLORSCROLL_WAIT > 0
-                dec $d020
-                endif
 UF_WaitColorShiftLoop:
                 lda $d012                       ;Wait until we are near the scorescreen split
                 if REU_SCROLLING=0
@@ -472,9 +469,6 @@ UF_WaitColorShiftLoop:
 UF_ColorShiftLateCheck:
                 cmp #IRQ4_LINE
                 bcs UF_WaitColorShiftLoop
-                if SHOW_COLORSCROLL_WAIT > 0
-                inc $d020
-                endif
 UF_WaitDone:    if SHOW_FREE_TIME > 0
                 inc $d020
                 endif
@@ -1004,7 +998,7 @@ ScrollWorkREU:  ldy screen
                 sta $df02
                 sta $df06
                 sta $df08
-                sta temp6
+                sta DSR_AddHi+1
                 lda screenBaseTbl,y
                 sta $df03
                 lda mapY
@@ -1042,12 +1036,12 @@ ScrollWorkREU:  ldy screen
                 ldx #temp1
                 ldy #temp3
                 jsr Add16               ;REU window position ready in temp1,temp2
-                lda mapSizeX            ;Temp5,6 = map row length in REU memory
+                lda mapSizeX
                 asl
-                rol temp6
+                rol DSR_AddHi+1
                 asl
-                rol temp6
-                sta temp5
+                rol DSR_AddHi+1
+                sta DSR_AddLo+1
                 jsr DrawScreenREU       ;Fill the screen from first 64KB bank
                 lda #<colors            ;Then the colors from second 64KB bank
                 sta $df02
@@ -1057,22 +1051,21 @@ ScrollWorkREU:  ldy screen
                 sta $df06
 DrawScreenREU:  lda temp1
                 sta temp3
-                lda temp2
-                sta temp4
+                ldy temp2
                 ldx #SCROLLROWS
+                clc
 DSR_Loop:       lda temp3
                 sta $df04
-                clc
-                adc temp5
+DSR_AddLo:      adc #$00
                 sta temp3
-                lda temp4
+                tya
                 sta $df05
-                adc temp6
-                sta temp4
-                lda #40
-                sta $df07
+DSR_AddHi:      adc #$00
+                tay
+                lda #40                 ;Transfer a full row so that we don't have to touch
+                sta $df07               ;the C64 side address
                 lda #$91
-                sta $df01               ;Execute transfer for one row
+                sta $df01               ;Execute transfer REU -> C64
                 dex
                 bne DSR_Loop
 SW_NoWork:      rts
@@ -1248,7 +1241,7 @@ DMR_DoTransfer: lda temp4
                 lda temp7
                 sta $df08
                 lda #$90
-                sta $df01                       ;Execute transfer
+                sta $df01                       ;Execute transfer C64 -> REU
                 rts
 
                 endif

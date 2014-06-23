@@ -95,7 +95,7 @@ AMF_SWIM        = $80
 
 ADDACTOR_LEFT_LIMIT = 1
 ADDACTOR_TOP_LIMIT = 0
-ADDACTOR_RIGHT_LIMIT = 12
+ADDACTOR_RIGHT_LIMIT = 11
 ADDACTOR_BOTTOM_LIMIT = 8
 
 ORG_TEMP        = $00                           ;Temporary actor, may be overwritten by global or leveldata
@@ -457,7 +457,7 @@ UA_IndexNotOver:stx UA_AAStart+1
                 sta UA_AAEndCmp+1
 
         ; Process spawners
-        ; NOTE: spawners should be spaced 13 blocks apart horizontally for a continuous
+        ; NOTE: spawners should be spaced 12 blocks apart horizontally for a continuous
         ; spawn zone
 
 UA_SpawnerIndex:ldx #$00
@@ -562,7 +562,7 @@ UA_NoRemove:    ldy #AL_UPDATEROUTINE
                 iny
                 lda (actLo),y
                 sta UA_Jump+2
-UA_Jump:        jsr $0000
+UA_Jump:        jsr $0000                
 UA_Next:        dex
                 bpl UA_Loop
 
