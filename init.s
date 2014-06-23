@@ -382,7 +382,7 @@ DrawScreenREU:  ldy screen
                 sta $df02
                 lda #>colors
                 sta $df03
-                lda #$01
+                lda #REU_BANK_COLORS
                 sta $df06
 DrawScreenREUSub:
                 lda temp1
@@ -574,7 +574,7 @@ UBR_Lda:        lda $1000,x                     ;Copy block chars & colors to a 
                 lda #$00
                 sta $df08
                 jsr UBR_Rows                    ;Copy the chars to REU first, then the colors
-                lda #$01
+                lda #REU_BANK_COLORS
 UBR_Rows:       sta $df06
                 lda temp5
                 sta zpDestLo

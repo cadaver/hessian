@@ -17,6 +17,9 @@ GAMESCR1_D018   = $da
 GAMESCR2_D018   = $ca
 PANEL_D018      = $d8
 
+REU_BANK_CHARS  = $00                           ;High byte of REU address for chars & colors
+REU_BANK_COLORS = $01
+
         ; Blank the gamescreen and turn off sprites
         ; (return to normal display by calling UpdateFrame)
         ;
