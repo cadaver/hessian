@@ -1112,7 +1112,7 @@ UB_InsideZone:  lda mapTblLo,y
                 ldx SL_CSSBlockY+1
                 ldy screen
                 jsr UB_UpdateScreen
-                lda scrAdd                      ;If scrolling is in the phase of copying the screen
+UB_JumpToREU:   lda scrAdd                      ;If scrolling is in the phase of copying the screen
                 beq UB_Done                     ;must also write the block to the other screen
                 lda scrCounter
                 cmp #$04

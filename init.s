@@ -1,5 +1,7 @@
 scriptCodeStart:
 
+scriptCodeEnd   = scriptCodeStart+SCRIPTAREASIZE
+
         ; Initialize registers/variables at startup. This code is called only once and can be
         ; disposed after that.
         ;
@@ -121,15 +123,6 @@ ISpr_ClearCacheInUse:
                 dex
                 bpl ISpr_ClearCacheInUse
 
-        ; Load resident sprites
-
-                ldy #C_COMMON
-                jsr LoadSpriteFile
-                ldy #C_ITEM
-                jsr LoadSpriteFile
-                ldy #C_WEAPON
-                jsr LoadSpriteFile
-
         ; Initialize video registers and screen memory
 
 InitVideo:      jsr WaitBottom
@@ -190,6 +183,15 @@ IVid_InitScorePanel:
                 sta actHp+ACTI_PLAYER           ;even before starting the game so that
                 lda #ITEM_FISTS                 ;the panel looks nice
                 sta invType
+
+        ; Load resident sprites
+
+                ldy #C_COMMON
+                jsr LoadSpriteFile
+                ldy #C_ITEM
+                jsr LoadSpriteFile
+                ldy #C_WEAPON
+                jsr LoadSpriteFile
 
         ; Initialize raster IRQs
         ; Relies on loader init to have already disabled the timer interrupt
@@ -287,6 +289,11 @@ IRS_PatchLoop:  ldy #$00
                 jmp IRS_PatchLoop
 IRS_Done:       rts
 
+        ; REU scrolling code patches:
+        ; - 16 bytes destination address, or $0000 as endmark
+        ; - 16 bytes length
+        ; - <length> bytes of patch data
+
 REUScrollerPatches:
                 dc.w SL_XDone
                 dc.w 1
@@ -323,7 +330,6 @@ REU_ScrollWork:
                 rts
 DrawScreenREU:  ldy screen
                 lda #$00
-                sta $df0a
                 sta $df02
                 sta $df06
                 sta $df08
@@ -399,11 +405,11 @@ DSR_AddHi:      adc #$00
                 dex
                 bne DSR_Loop
                 rts
+
 DrawMapREU:     lda #$00
                 sta temp4                       ;Temp4,5=REU dest.pointer
                 sta temp5
                 sta temp7
-                sta $df0a
                 lda limitR
                 sta DMR_RowEndCheck+1
                 lda mapSizeX
@@ -518,6 +524,83 @@ DMR_Wait:       lda $d012                       ;Wait for scorescreen split to a
 DMR_WaitDone:   lda #$90
                 sta $df01                       ;Execute transfer C64 -> REU
 DMR_AllDone:    rts
+
+UpdateBlockREU: lda UB_Lda+1                    ;Copy block address
+                sta UBR_Lda+1
+                lda UB_Lda+2
+                sta UBR_Lda+2
+                ldx #$0f
+UBR_Lda:        lda $1000,x                     ;Copy block chars & colors to a temp buffer
+                sta tempBlockChars,x
+                tay
+                lda charColors,y
+                sta tempBlockColors,x
+                dex
+                bpl UBR_Lda
+                lda temp8                       ;Calculate REU position
+                sec
+                sbc limitU
+                ldy mapSizeX
+                ldx #temp5
+                jsr MulU
+                lda temp5
+                asl
+                rol temp6
+                asl
+                rol temp6
+                sta temp5
+                lda temp7
+                sec
+                sbc limitL
+                jsr Add8
+                lda temp5
+                asl
+                rol temp6
+                asl
+                rol temp6
+                sta temp5
+                lda #$00                        ;Calculate REU row add
+                sta zpBitsHi
+                lda mapSizeX
+                asl
+                rol zpBitsHi
+                asl
+                rol zpBitsHi
+                sta zpBitsLo
+                lda #<tempBlockChars
+                sta $df02
+                lda #>tempBlockChars
+                sta $df03
+                lda #$00
+                sta $df08
+                jsr UBR_Rows                    ;Copy the chars to REU first, then the colors
+                lda #$01
+UBR_Rows:       sta $df06
+                lda temp5
+                sta zpDestLo
+                lda temp6
+                sta zpDestHi
+                ldx #$04
+UBR_RowLoop:    lda zpDestLo
+                sta $df04
+                clc
+                adc zpBitsLo
+                sta zpDestLo
+                lda zpDestHi
+                sta $df05
+                adc zpBitsHi
+                sta zpDestHi
+                lda #4
+                sta $df07
+                lda #$90
+                sta $df01                       ;Execute transfer C64 -> REU
+                dex
+                bne UBR_RowLoop
+                rts
+UBR_End:
+                if UBR_End > RedrawScreen       ;Check that REU code isn't too large
+                err
+                endif
                 rend
 REU_ScrollWork_End:
 
@@ -535,28 +618,12 @@ REU_RedrawScreen:
                 rend
 REU_RedrawScreen_End:
 
+                dc.w UB_JumpToREU
+                dc.w REU_UB_JumpToREU_End-REU_UB_JumpToREU
+REU_UB_JumpToREU:
+                rorg UB_JumpToREU
+                jmp UpdateBlockREU
+                rend
+REU_UB_JumpToREU_End:
+
                 dc.w 0                          ;Endmark
-
-        ; Scorepanel chars
-
-textCharsCopy:  incbin bg/scorescr.chr
-
-        ; Scorepanel borders
-
-scorePanel:     dc.b 0,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,4
-                dc.b 5,"      ",6, "                        ",5,35,36,"    ",6
-                dc.b 7,8,8,8,8,8,9,10,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,11,8,8,8,8,8,9,12
-
-scorePanelColors:
-                ds.b 40,11
-                dc.b 11
-                ds.b 6,13
-                dc.b 11
-                ds.b 24,1
-                dc.b 11
-                ds.b 2,8
-                ds.b 4,1
-                dc.b 11
-                ds.b 40,11
-
-scriptCodeEnd   = scriptCodeStart+SCRIPTAREASIZE

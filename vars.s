@@ -182,3 +182,25 @@ targetList:     ds.b MAX_COMPLEXACT+1,0
         ; Dynamic allocation area begins here
         
 fileAreaStart:
+
+        ; Scorepanel chars (overwritten)
+
+textCharsCopy:  incbin bg/scorescr.chr
+
+        ; Scorepanel screen/color data (overwritten)
+
+scorePanel:     dc.b 0,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,4
+                dc.b 5,"      ",6, "                        ",5,35,36,"    ",6
+                dc.b 7,8,8,8,8,8,9,10,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,11,8,8,8,8,8,9,12
+
+scorePanelColors:
+                ds.b 40,11
+                dc.b 11
+                ds.b 6,13
+                dc.b 11
+                ds.b 24,1
+                dc.b 11
+                ds.b 2,8
+                ds.b 4,1
+                dc.b 11
+                ds.b 40,11
