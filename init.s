@@ -399,12 +399,13 @@ DSR_AddHi:      adc #$00
                 dex
                 bne DSR_Loop
                 rts
-DrawMapREU:     lda #$00                        ;Current blockrow
-                sta temp2
+DrawMapREU:     lda #$00
                 sta temp4                       ;Temp4,5=REU dest.pointer
                 sta temp5
                 sta temp7
                 sta $df0a
+                lda limitR
+                sta DMR_RowEndCheck+1
                 lda mapSizeX
                 asl
                 rol temp7
@@ -417,7 +418,9 @@ DMR_MapRowLoop: sty temp1
                 sta DMR_MapLda+1
                 lda mapTblHi,y
                 sta DMR_MapLda+2
-DMR_RowLoop:    lda #$00                        ;Screen & colorscreen destination pointers
+                lda #$00
+DMR_RowLoop:    sta DMR_BlockRow+1
+                lda #$00                        ;Screen & colorscreen destination pointers
                 sta zpDestLo
                 sta zpBitsLo
                 lda #>screen2
@@ -427,12 +430,11 @@ DMR_RowLoop:    lda #$00                        ;Screen & colorscreen destinatio
                 ldy limitL
                 clc
 DMR_Loop:       sty temp3
-DMR_MapLda:     lda $1000,y                     ;Take block from map
-                tay
-                lda blkTblLo,y
-                adc temp2
+DMR_MapLda:     ldx $1000,y                     ;Take block from map
+                lda blkTblLo,x
+DMR_BlockRow:   adc #$00
                 sta zpSrcLo
-                lda blkTblHi,y
+                lda blkTblHi,x
                 adc #$00
                 sta zpSrcHi
                 ldy #$00
@@ -468,21 +470,19 @@ DMR_MapLda:     lda $1000,y                     ;Take block from map
                 inc zpBitsHi
 DMR_NotOver:    ldy temp3
                 iny
-                cpy limitR                      ;Maprow done?
+DMR_RowEndCheck:cpy #$00                        ;Maprow done?
                 bcc DMR_Loop
                 lda #<screen2
                 sta $df02
                 lda #>screen2
                 sta $df03
                 lda #$00
-                sta $df06                       ;Screen data to first bank
                 jsr DMR_DoTransfer
                 lda #<colors
                 sta $df02
                 lda #>colors
                 sta $df03
                 lda #$01
-                sta $df06                       ;Color data to second bank
                 jsr DMR_DoTransfer
                 lda temp4                       ;Increment REU address for next row
                 clc
@@ -491,20 +491,18 @@ DMR_NotOver:    ldy temp3
                 lda temp5
                 adc temp7
                 sta temp5
-                lda temp2                       ;Move to next blockrow
+                lda DMR_BlockRow+1              ;Move to next blockrow
                 adc #$04
                 cmp #$10
                 bcs DMR_MapRowDone
-                sta temp2
                 jmp DMR_RowLoop
-DMR_MapRowDone: lda #$00                        ;Move to next maprow
-                sta temp2
-                ldy temp1
+DMR_MapRowDone: ldy temp1                       ;Move to next maprow
                 iny
                 cpy limitD
                 bcs DMR_AllDone
                 jmp DMR_MapRowLoop
-DMR_DoTransfer: lda temp4
+DMR_DoTransfer: sta $df06                       ;Color data to second bank
+                lda temp4
                 sta $df04
                 lda temp5
                 sta $df05
@@ -512,7 +510,12 @@ DMR_DoTransfer: lda temp4
                 sta $df07
                 lda temp7
                 sta $df08
-                lda #$90
+DMR_Wait:       lda $d012                       ;Wait for scorescreen split to avoid
+                cmp #IRQ3_LINE-$10              ;causing panel flickering
+                bcc DMR_WaitDone
+                cmp #IRQ4_LINE
+                bcc DMR_Wait
+DMR_WaitDone:   lda #$90
                 sta $df01                       ;Execute transfer C64 -> REU
 DMR_AllDone:    rts
                 rend
