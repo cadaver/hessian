@@ -1260,13 +1260,7 @@ DamageTargetActor:
         ; Returns: C=1 if actor is alive, C=0 if killed
         ; Modifies: A,Y,temp7-temp8,possibly other temp registers
 
-DamageActor:    cpx #ACTI_PLAYER
-                bne DA_NotPlayer
-                stx healthRecharge              ;If player hit, reset health recharge timer
-                if GODMODE_CHEAT>0
-                beq DA_Done
-                endif
-DA_NotPlayer:   sty temp7
+DamageActor:    sty temp7
                 pha
                 jsr GetActorLogicData
                 ldy #AL_DMGMODIFY
@@ -1277,7 +1271,14 @@ DA_NotPlayer:   sty temp7
                 cmp #DMG_MINIMUM                ;Always at least 2 points damage
                 bcs DA_NotMinDamage
                 lda #DMG_MINIMUM
-DA_NotMinDamage:sta temp8
+DA_NotMinDamage:
+                cpx #ACTI_PLAYER
+                bne DA_NotPlayer
+                stx healthRecharge              ;If player hit, reset health recharge timer
+                if GODMODE_CHEAT>0
+                txa
+                endif
+DA_NotPlayer:   sta temp8
                 lda actHp,x                     ;First check that there is health
                 beq DA_Done                     ;(prevent destroy being called multiple times)
                 sec
