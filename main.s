@@ -13,7 +13,6 @@ ITEM_CHEAT      = 1
 AMMO_CHEAT      = 0
 SKILL_CHEAT     = 0
 OPTIMIZE_SAVE   = 1                             ;Clean up temporary actors when saving/continuing
-REU_SCROLLING   = 0
 
         ; Memory configuration & loader symbols
 

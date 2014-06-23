@@ -115,9 +115,7 @@ SL_XNegOk2:     sta scrollX
                 bpl SL_XDone
 SL_XZero:       lda #$00
                 sta scrollCSX
-SL_XDone:       if REU_SCROLLING=0
-                stx SW_ColorShiftDir+1
-                endif
+SL_XDone:       stx SW_ColorShiftDir+1
                 lda scrollSY
                 sta scrollCSY
                 beq SL_YDone
@@ -164,8 +162,7 @@ SL_YNegOk2:     sta scrollY
                 bpl SL_YDone
 SL_YZero:       lda #$00
                 sta scrollCSY
-SL_YDone:       if REU_SCROLLING=0
-                stx SW_ShiftDir+1
+SL_YDone:       stx SW_ShiftDir+1
                 ldy screen                      ;Update scrollwork jumps now
                 lda screenBaseTbl,y
                 eor #$04
@@ -189,9 +186,7 @@ SL_YDone:       if REU_SCROLLING=0
                 sta SW_ColorJump+1
                 lda colorJumpTblHi,x
                 sta SW_ColorJump+2
-                else
-                clc
-                endif
+SL_DetermineSpeed:
                 lda scrollCSX                   ;Get absolute X-speed
                 bpl SL_XPos2
                 eor #$ff
@@ -443,10 +438,10 @@ SSpr_AllDone:
 UF_WaitPrevFrame:
                 lda newFrame                    ;Now wait until the previous new frame
                 bne UF_WaitPrevFrame            ;has been processed
-                if REU_SCROLLING=0
+UF_CheckNoColorScroll:
                 lda Irq1_Bg2+1                  ;Check for disabled colorscroll
                 bmi UF_WaitNormal
-                endif
+UF_CheckNoColorScrollDone:
                 lda scrCounter                  ;Is it the colorshift? (needs special timing)
                 cmp #$04
                 beq UF_WaitColorShift
@@ -460,11 +455,8 @@ UF_WaitNormal:  lda $d011                       ;If no colorshift, just need to 
 UF_WaitColorShift:
 UF_WaitColorShiftLoop:
                 lda $d012                       ;Wait until we are near the scorescreen split
-                if REU_SCROLLING=0
+UF_WaitColorShiftCheck:
                 cmp #IRQ3_LINE-$48
-                else
-                cmp #IRQ3_LINE-$28
-                endif
                 bcc UF_WaitColorShiftLoop
 UF_ColorShiftLateCheck:
                 cmp #IRQ4_LINE
@@ -512,7 +504,6 @@ UF_NoSprites:   sta Irq1_MaxSprY+1
                 lda #$80
                 sta newFrame
 
-                if REU_SCROLLING=0
 ScrollWork:     lda scrCounter
                 bne SW_NoScreenShift
                 lda scrAdd
@@ -980,106 +971,13 @@ SWDU_Sta:       sta screen1,x
                 jmp SWDU_GetBlock
 SWDU_Ready:     rts
 
-                else
-
-SW_ShiftColorsHoriz:
-SW_ShiftColorsDown:
-SW_ShiftColorsUp:
-SW_Shift1:
-SW_Shift2:
-
-ScrollWork:     lda scrCounter
-                cmp #$04
-                beq ScrollWorkREU
-                rts
-ScrollWorkREU:  ldy screen
-                lda #$00
-                sta $df0a
-                sta $df02
-                sta $df06
-                sta $df08
-                sta DSR_AddHi+1
-                lda screenBaseTbl,y
-                sta $df03
-                lda mapY
-                sec
-                sbc limitU
-                ldy mapSizeX
-                ldx #temp1
-                jsr MulU
-                lda temp1               ;Calculate start of window
-                asl                     ;from Y-map position
-                rol temp2
-                asl
-                rol temp2
-                asl
-                rol temp2
-                asl
-                rol temp2
-                sta temp1
-                lda blockY              ;Add Y-position within block
-                ldy mapSizeX
-                ldx #temp3
-                jsr MulU
-                lda mapX
-                sec
-                sbc limitL
-                jsr Add8                ;Add X-map position
-                lda temp3
-                asl
-                rol temp4
-                asl
-                rol temp4
-                sta temp3
-                lda blockX              ;Add X-position within block
-                jsr Add8
-                ldx #temp1
-                ldy #temp3
-                jsr Add16               ;REU window position ready in temp1,temp2
-                lda mapSizeX
-                asl
-                rol DSR_AddHi+1
-                asl
-                rol DSR_AddHi+1
-                sta DSR_AddLo+1
-                jsr DrawScreenREU       ;Fill the screen from first 64KB bank
-                lda #<colors            ;Then the colors from second 64KB bank
-                sta $df02
-                lda #>colors
-                sta $df03
-                lda #$01
-                sta $df06
-DrawScreenREU:  lda temp1
-                sta temp3
-                ldy temp2
-                ldx #SCROLLROWS
-                clc
-DSR_Loop:       lda temp3
-                sta $df04
-DSR_AddLo:      adc #$00
-                sta temp3
-                tya
-                sta $df05
-DSR_AddHi:      adc #$00
-                tay
-                lda #40                 ;Transfer a full row so that we don't have to touch
-                sta $df07               ;the C64 side address
-                lda #$91
-                sta $df01               ;Execute transfer REU -> C64
-                dex
-                bne DSR_Loop
-SW_NoWork:      rts
-
-                endif
-
         ; Redraw screen fully and center scrolling
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp1-temp7
 
-RedrawScreen:   if REU_SCROLLING=0
-                lda blockY
+RedrawScreen:   lda blockY
                 asl
                 asl
                 ora blockX
@@ -1117,134 +1015,6 @@ RS_Colors:      jsr SW_DrawColorsHorizTop
                 jsr SW_DrawColorsHorizBottom
                 dey
                 bpl RS_Colors
-
-                else
-
-DrawMapREU:     lda #$00                        ;Current blockrow
-                sta temp2
-                sta temp4                       ;Temp4,5=REU dest.pointer
-                sta temp5
-                sta temp7
-                sta $df0a
-                lda mapSizeX
-                asl
-                rol temp7
-                asl
-                rol temp7
-                sta temp6                       ;Temp6,7 = length of row in bytes
-                ldy limitU                      ;Current maprow
-DMR_MapRowLoop: sty temp1
-                lda mapTblLo,y
-                sta DMR_MapLda+1
-                lda mapTblHi,y
-                sta DMR_MapLda+2
-DMR_RowLoop:    lda #$00                        ;Screen & colorscreen destination pointers
-                sta zpDestLo
-                sta zpBitsLo
-                lda #>screen2
-                sta zpDestHi
-                lda #>colors
-                sta zpBitsHi
-                ldy limitL
-                clc
-DMR_Loop:       sty temp3
-DMR_MapLda:     lda $1000,y                     ;Take block from map
-                tay
-                lda blkTblLo,y
-                adc temp2
-                sta zpSrcLo
-                lda blkTblHi,y
-                adc #$00
-                sta zpSrcHi
-                ldy #$00
-                lda (zpSrcLo),y                 ;Copy chars & colors for one block's row
-                sta (zpDestLo),y
-                tax
-                lda charColors,x
-                sta (zpBitsLo),y
-                iny
-                lda (zpSrcLo),y
-                sta (zpDestLo),y
-                tax
-                lda charColors,x
-                sta (zpBitsLo),y
-                iny
-                lda (zpSrcLo),y
-                sta (zpDestLo),y
-                tax
-                lda charColors,x
-                sta (zpBitsLo),y
-                iny
-                lda (zpSrcLo),y
-                sta (zpDestLo),y
-                tax
-                lda charColors,x
-                sta (zpBitsLo),y
-                lda zpDestLo
-                adc #$04
-                sta zpDestLo
-                sta zpBitsLo
-                bcc DMR_NotOver
-                inc zpDestHi
-                inc zpBitsHi
-DMR_NotOver:    ldy temp3
-                iny
-                cpy limitR                      ;Maprow done?
-                bcc DMR_Loop
-                lda #<screen2
-                sta $df02
-                lda #>screen2
-                sta $df03
-                lda #$00
-                sta $df06                       ;Screen data to first bank
-                jsr DMR_DoTransfer
-                lda #<colors
-                sta $df02
-                lda #>colors
-                sta $df03
-                lda #$01
-                sta $df06                       ;Color data to second bank
-                jsr DMR_DoTransfer
-                lda temp4                       ;Increment REU address for next row
-                clc
-                adc temp6
-                sta temp4
-                lda temp5
-                adc temp7
-                sta temp5
-                lda temp2                       ;Move to next blockrow
-                adc #$04
-                cmp #$10
-                bcs DMR_MapRowDone
-                sta temp2
-                jmp DMR_RowLoop
-DMR_MapRowDone: lda #$00                        ;Move to next maprow
-                sta temp2
-                ldy temp1
-                iny
-                cpy limitD
-                bcs DMR_AllDone
-                jmp DMR_MapRowLoop
-DMR_AllDone:    ldy #$00
-                sty screen
-                lda #$01
-                sta Irq1_LevelUpdate+1          ;Can animate level
-                jsr ScrollWorkREU
-                jmp InitScroll
-                
-DMR_DoTransfer: lda temp4
-                sta $df04
-                lda temp5
-                sta $df05
-                lda temp6
-                sta $df07
-                lda temp7
-                sta $df08
-                lda #$90
-                sta $df01                       ;Execute transfer C64 -> REU
-                rts
-
-                endif
 
         ; Reset & center scrolling
         ;
