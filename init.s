@@ -560,13 +560,13 @@ UBR_Lda:        lda $1000,x                     ;Copy block chars & colors to a 
                 rol temp6
                 sta temp5
                 lda #$00                        ;Calculate REU row add
-                sta zpBitsHi
+                sta UBR_AddHi+1
                 lda mapSizeX
                 asl
-                rol zpBitsHi
+                rol UBR_AddHi+1
                 asl
-                rol zpBitsHi
-                sta zpBitsLo
+                rol UBR_AddHi+1
+                sta UBR_AddLo+1
                 lda #<tempBlockChars
                 sta $df02
                 lda #>tempBlockChars
@@ -578,18 +578,17 @@ UBR_Lda:        lda $1000,x                     ;Copy block chars & colors to a 
 UBR_Rows:       sta $df06
                 lda temp5
                 sta zpDestLo
-                lda temp6
-                sta zpDestHi
+                ldy temp6
                 ldx #$04
+                clc
 UBR_RowLoop:    lda zpDestLo
                 sta $df04
-                clc
-                adc zpBitsLo
+UBR_AddLo:      adc #$00
                 sta zpDestLo
-                lda zpDestHi
+                tya
                 sta $df05
-                adc zpBitsHi
-                sta zpDestHi
+UBR_AddHi:      adc #$00
+                tay
                 lda #4
                 sta $df07
                 lda #$90
