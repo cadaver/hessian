@@ -316,9 +316,16 @@ REU_UF_CheckNoColorScroll:
                 rend
 REU_UF_CheckNoColorScroll_End:
 
-                dc.w UF_WaitColorShiftCheck+1
-                dc.w 1
-                dc.b IRQ3_LINE-$28
+                dc.w UF_WaitColorShiftCheck
+                dc.w REU_UF_WaitColorShiftCheck_End-REU_UF_WaitColorShiftCheck
+REU_UF_WaitColorShiftCheck:
+                rorg UF_WaitColorShiftCheck
+                cmp #IRQ3_LINE-$28
+                bcc UF_WaitColorShiftLoop
+                cmp #IRQ4_LINE+$10
+                bcs UF_WaitColorShiftLoop
+                rend
+REU_UF_WaitColorShiftCheck_End:
 
                 dc.w ScrollWork
                 dc.w REU_ScrollWork_End-REU_ScrollWork
@@ -333,52 +340,42 @@ DrawScreenREU:  ldy screen
                 sta $df02
                 sta $df06
                 sta $df08
-                sta DSR_AddHi+1
                 lda screenBaseTbl,y
                 sta $df03
-                lda mapY
-                sec
-                sbc limitU
-                ldy mapSizeX
-                ldx #temp1
-                jsr MulU
-                lda temp1               ;Calculate start of window
-                asl                     ;from Y-map position
-                rol temp2
-                asl
-                rol temp2
-                asl
-                rol temp2
-                asl
-                rol temp2
+                ldx mapY
+                ldy limitU
+                lda mapTblLo,x                  ;Use maptbl to lookup the
+                sec                             ;multiply of mapSizeX with
+                sbc mapTblLo,y                  ;map Y-position
                 sta temp1
-                lda blockY              ;Add Y-position within block
-                ldy mapSizeX
+                lda mapTblHi,x
+                sbc mapTblHi,y
+                asl temp1
+                rol
+                asl temp1
+                rol
+                sta temp2
+                lda mapSizeX                    ;Add Y-position within block
+                ldy blockY
                 ldx #temp3
                 jsr MulU
+                ldy #temp3
+                ldx #temp1
+                jsr Add16
                 lda mapX
                 sec
                 sbc limitL
-                jsr Add8                ;Add X-map position
-                lda temp3
-                asl
-                rol temp4
-                asl
-                rol temp4
-                sta temp3
-                lda blockX              ;Add X-position within block
-                jsr Add8
-                ldx #temp1
-                ldy #temp3
-                jsr Add16               ;REU window position ready in temp1,temp2
-                lda mapSizeX
-                asl
-                rol DSR_AddHi+1
-                asl
-                rol DSR_AddHi+1
-                sta DSR_AddLo+1
-                jsr DrawScreenREUSub    ;Fill the screen from first 64KB bank
-                lda #<colors            ;Then the colors from second 64KB bank
+                jsr Add8                        ;Add X-map position
+                lda temp2
+                asl temp1
+                rol
+                asl temp1
+                rol
+                sta temp2
+                lda blockX                      ;Add X-position within block
+                jsr Add8                        ;Map position ready in temp1,temp2
+                jsr DrawScreenREUSub            ;Fill the screen from first 64KB bank
+                lda #<colors                    ;Then the colors from second 64KB bank
                 sta $df02
                 lda #>colors
                 sta $df03
@@ -398,10 +395,10 @@ DSR_AddLo:      adc #$00
                 sta $df05
 DSR_AddHi:      adc #$00
                 tay
-                lda #40                 ;Transfer a full row so that we don't have to touch
-                sta $df07               ;the C64 side address
+                lda #40                         ;Transfer a full row so that we don't
+                sta $df07                       ;have to touch the C64 side address
                 lda #$91
-                sta $df01               ;Execute transfer REU -> C64
+                sta $df01                       ;Execute transfer REU -> C64
                 dex
                 bne DSR_Loop
                 rts
@@ -418,6 +415,11 @@ DrawMapREU:     lda #$00
                 asl
                 rol temp7
                 sta temp6                       ;Temp6,7 = length of row in bytes
+                sta DSR_AddLo+1
+                sta UBR_AddLo+1
+                lda temp7
+                sta DSR_AddHi+1
+                sta UBR_AddHi+1
                 ldy limitU                      ;Current maprow
 DMR_MapRowLoop: sty temp1
                 lda mapTblLo,y
@@ -537,36 +539,30 @@ UBR_Lda:        lda $1000,x                     ;Copy block chars & colors to a 
                 sta tempBlockColors,x
                 dex
                 bpl UBR_Lda
-                lda temp8                       ;Calculate REU position
-                sec
-                sbc limitU
-                ldy mapSizeX
-                ldx #temp5
-                jsr MulU
-                lda temp5
-                asl
-                rol temp6
-                asl
-                rol temp6
+                ldx temp8
+                ldy limitU
+                lda mapTblLo,x                  ;Use maptbl to lookup the
+                sec                             ;multiply of mapSizeX with
+                sbc mapTblLo,y                  ;map Y-position
                 sta temp5
-                lda temp7
+                lda mapTblHi,x
+                sbc mapTblHi,y
+                asl temp5
+                rol
+                asl temp5
+                rol
+                sta temp6
+                lda temp7                       ;Add map X-position
                 sec
                 sbc limitL
+                ldx #temp5
                 jsr Add8
-                lda temp5
-                asl
-                rol temp6
-                asl
-                rol temp6
-                sta temp5
-                lda #$00                        ;Calculate REU row add
-                sta UBR_AddHi+1
-                lda mapSizeX
-                asl
-                rol UBR_AddHi+1
-                asl
-                rol UBR_AddHi+1
-                sta UBR_AddLo+1
+                lda temp6
+                asl temp5
+                rol
+                asl temp5
+                rol
+                sta temp6                       ;REU address ready in temp5,temp6
                 lda #<tempBlockChars
                 sta $df02
                 lda #>tempBlockChars
