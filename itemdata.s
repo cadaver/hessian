@@ -51,7 +51,6 @@ itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Medikit
                 dc.b 0                          ;Credits
 
-
 itemDefaultMaxCount:
                 dc.b 1                          ;Fists
                 dc.b 1                          ;Shiv
@@ -75,7 +74,6 @@ itemDefaultMaxCount:
                 dc.b 2                          ;Medikit
                 dc.b 250                        ;Credits
 
-
 itemMaxCountAdd:dc.b 0                          ;Fists
                 dc.b 0                          ;Shiv
                 dc.b 0                          ;Knife
@@ -97,32 +95,6 @@ itemMaxCountAdd:dc.b 0                          ;Fists
                 dc.b 1                          ;Homing drone
                 dc.b 1                          ;Medikit
                 dc.b 0                          ;Credits
-
-
-itemDefaultPickup:
-                dc.b 1                          ;Fists
-                dc.b 1                          ;Shiv
-                dc.b 1                          ;Knife
-                dc.b 1                          ;Nightstick
-                dc.b 1                          ;Bat
-                dc.b 5                          ;Pistol
-                dc.b 4                          ;Shotgun
-                dc.b 10                         ;Auto rifle
-                dc.b 3                          ;Sniper rifle
-                dc.b 50                         ;Minigun
-                dc.b 30                         ;Flamethrower
-                dc.b 10                         ;Sonic wave gun
-                dc.b 7                          ;Laser rifle
-                dc.b 5                          ;Plasma gun
-                dc.b 4                          ;EMP generator
-                dc.b 2                          ;Grenade launcher
-                dc.b 2                          ;Bazooka
-                dc.b 2                          ;Grenade
-                dc.b 1                          ;Homing drone
-                dc.b 1                          ;Medikit
-defaultCreditsPickup:
-                dc.b 5                          ;Credits
-
 
 itemMagazineSize:
                 dc.b MAG_INFINITE               ;Fists
@@ -146,6 +118,30 @@ itemMagazineSize:
                 dc.b 0                          ;Homing drone
                 dc.b 0                          ;Medikit
                 dc.b 0                          ;Credits
+                
+itemDefaultPickup:
+                dc.b 1                          ;Fists
+                dc.b 1                          ;Shiv
+                dc.b 1                          ;Knife
+                dc.b 1                          ;Nightstick
+                dc.b 1                          ;Bat
+                dc.b 5                          ;Pistol
+                dc.b 4                          ;Shotgun
+                dc.b 10                         ;Auto rifle
+                dc.b 3                          ;Sniper rifle
+                dc.b 50                         ;Minigun
+                dc.b 30                         ;Flamethrower
+                dc.b 10                         ;Sonic wave gun
+                dc.b 7                          ;Laser rifle
+                dc.b 5                          ;Plasma gun
+                dc.b 4                          ;EMP generator
+                dc.b 2                          ;Grenade launcher
+                dc.b 2                          ;Bazooka
+                dc.b 2                          ;Grenade
+                dc.b 1                          ;Homing drone
+                dc.b 1                          ;Medikit
+defaultCreditsPickup:
+                dc.b 5                          ;Credits
 
 itemNPCMinDist: dc.b 0                          ;Fists
                 dc.b 0                          ;Shiv

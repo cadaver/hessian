@@ -178,6 +178,13 @@ flipTbl:        dc.b %00000000,%01000000,%10000000,%11000000,%00010000,%01010000
                 dc.b %00001011,%01001011,%10001011,%11001011,%00011011,%01011011,%10011011,%11011011,%00101011,%01101011,%10101011,%11101011,%00111011,%01111011,%10111011,%11111011
                 dc.b %00001111,%01001111,%10001111,%11001111,%00011111,%01011111,%10011111,%11011111,%00101111,%01101111,%10101111,%11101111,%00111111,%01111111,%10111111,%11111111
 
+        ; Sprite variables
+
+sortSprY:       ds.b MAX_SPR*2,0
+sortSprX:       ds.b MAX_SPR*2,0
+sortSprD010:    ds.b MAX_SPR*2,0
+sortSprF:       ds.b MAX_SPR*2,0
+
         ; Char slope table
 
 slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
@@ -189,8 +196,116 @@ slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
                 dc.b $00,$00,$08,$08,$10,$10,$18,$18    ;Slope 6
                 dc.b $20,$20,$28,$28,$30,$30,$38,$38    ;Slope 7
 
+sortSprC:       ds.b MAX_SPR*2,0
+sprIrqLine:     ds.b MAX_SPR*2,0
 sprOrTbl:       ds.b MAX_SPR*2,0
-sprAndTbl:      ds.b MAX_SPR*2,0                
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
-d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
+sprAndTbl:      ds.b MAX_SPR*2,0
 
+        ; Playroutine variables
+
+ntChnPattPos:   dc.b 0
+ntChnCounter:   dc.b 0
+ntChnNewNote:   dc.b 0
+ntChnWavePos:   dc.b 0
+ntChnPulsePos:  dc.b 0
+ntChnWave:      dc.b 0
+ntChnPulse:     dc.b 0
+
+                dc.b 0,0,0,0,0,0,0
+                dc.b 0,0,0,0,0,0,0
+
+ntChnGate:      dc.b $fe
+ntChnTrans:     dc.b $ff
+ntChnCmd:       dc.b $01
+ntChnSongPos:   dc.b 0
+ntChnPattNum:   dc.b 0
+ntChnDuration:  dc.b 0
+ntChnNote:      dc.b 0
+
+                dc.b $fe,$ff,$01,0,0,0,0
+                dc.b $fe,$ff,$01,0,0,0,0
+
+ntChnFreqLo:    dc.b 0
+ntChnFreqHi:    dc.b 0
+ntChnWaveTime:  dc.b 0
+ntChnPulseTime: dc.b 0
+ntChnSfx:       dc.b 0
+ntChnSfxLo:     dc.b 0
+ntChnSfxHi:
+ntChnWaveOld:   dc.b 0
+
+                dc.b 0,0,0,0,0,0,0
+                dc.b 0,0,0,0,0,0,0
+
+        ; Last used save slot
+        
+saveSlotChoice: dc.b 0
+
+        ; Level properties, objects and spawner data (not saved)
+
+lvlObjX:        ds.b MAX_LVLOBJ,0
+lvlObjY:        ds.b MAX_LVLOBJ,0
+lvlObjB:        ds.b MAX_LVLOBJ,0
+lvlObjDL:       ds.b MAX_LVLOBJ,0
+lvlObjDH:       ds.b MAX_LVLOBJ,0
+lvlObjR:        ds.b MAX_LVLOBJ,0
+lvlSpawnT:      ds.b MAX_SPAWNERS,0
+lvlSpawnWpn:    ds.b MAX_SPAWNERS,0
+lvlSpawnPlot:   ds.b MAX_SPAWNERS,0
+lvlPropertiesStart:
+lvlName:        ds.b 16,0
+lvlWaterDamage: dc.b 0
+lvlPropertiesEnd:
+
+d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
+
+        ; Actor variables
+
+actXL:          ds.b MAX_ACT,0
+actXH:          ds.b MAX_ACT,0
+actYL:          ds.b MAX_ACT,0
+actYH:          ds.b MAX_ACT,0
+actT:           ds.b MAX_ACT,0
+actD:           ds.b MAX_ACT,0
+actHp:          ds.b MAX_ACT,0
+actF1:          ds.b MAX_ACT,0
+actFd:          ds.b MAX_ACT,0
+actFlash:       ds.b MAX_ACT,0
+actSX:          ds.b MAX_ACT,0
+actSY:          ds.b MAX_ACT,0
+actPrevXL:      ds.b MAX_ACT,0
+actPrevXH:      ds.b MAX_ACT,0
+actPrevYL:      ds.b MAX_ACT,0
+actPrevYH:      ds.b MAX_ACT,0
+actFlags:       ds.b MAX_ACT,0
+actSizeH:       ds.b MAX_ACT,0
+actSizeU:       ds.b MAX_ACT,0
+actSizeD:       ds.b MAX_ACT,0
+actTime:        ds.b MAX_ACT,0
+actMB:          ds.b MAX_ACT,0
+actAuxData:     ds.b MAX_ACT,0
+actAITarget:    ds.b MAX_ACT,0
+actLvlDataPos:  ds.b MAX_PERSISTENTACT,0
+actLvlDataOrg:  ds.b MAX_PERSISTENTACT,0
+actF2:          ds.b MAX_COMPLEXACT,0
+actCtrl:        ds.b MAX_COMPLEXACT,0
+actMoveCtrl:    ds.b MAX_COMPLEXACT,0
+actPrevCtrl:    ds.b MAX_COMPLEXACT,0
+actFall:        ds.b MAX_COMPLEXACT,0
+actFallL:       ds.b MAX_COMPLEXACT,0
+actWaterDamage: ds.b MAX_COMPLEXACT,0
+actWpn:         ds.b MAX_COMPLEXACT,ITEM_NONE
+actWpnF:        ds.b MAX_COMPLEXACT,$ff
+actAttackD:     ds.b MAX_COMPLEXACT,0
+actAIMode:      ds.b MAX_COMPLEXACT,0
+actAIHelp:      ds.b MAX_COMPLEXACT,0
+actAIMoveHint:  ds.b MAX_COMPLEXACT,$ff
+actAIAttackHint:ds.b MAX_COMPLEXACT,0
+
+        ; Chunk-file memory allocation variables
+
+fileLo:         ds.b MAX_CHUNKFILES,0
+fileHi:         ds.b MAX_CHUNKFILES,0
+fileNumObjects: ds.b MAX_CHUNKFILES,0
+fileAge:        ds.b MAX_CHUNKFILES,0

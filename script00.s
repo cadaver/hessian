@@ -28,7 +28,7 @@ titleTexts      = chars+608+168*2
 ;START_Y         = $0bc0
 
         ; Start from the testlevel
-        
+
 START_LEVEL     = $02
 START_X         = $0200
 START_Y         = $0400

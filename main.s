@@ -25,16 +25,16 @@ OPTIMIZE_SAVE   = 1                             ;Clean up temporary actors when 
 
                 include raster.s
                 include aligneddata.s
+                include leveldata.s
 
         ; Non-aligned data
 
+                include sounddata.s
                 include paneldata.s
-                include actordata.s
+                include aidata.s
                 include itemdata.s
                 include weapondata.s
-                include leveldata.s
-                include aidata.s
-                include sounddata.s
+                include actordata.s
                 include text.s
 
         ; Non-aligned game code
@@ -79,7 +79,3 @@ randomAreaEnd:
         ; Disposable init part, overwritten by loadable (script code)
 
                 include init.s
-
-        ; Game variables
-
-                include vars.s
