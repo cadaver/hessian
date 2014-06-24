@@ -360,13 +360,22 @@ GetBulletOffset:ldy actT,x
                 lda #MAX_SPR                    ;"Draw" the actor in a fake manner
                 sta sprIndex                    ;to get the last connect-spot
                 jsr DrawActorSub_NoColor
-                ldy #$03
-GBO_MulLoop:    asl temp1
+                lda temp1                       ;Multiply pixels back to map coordinates
+                asl
                 rol temp2
-                asl temp3
+                asl
+                rol temp2
+                asl
+                rol temp2
+                sta temp1
+                lda temp3
+                asl
                 rol temp4
-                dey
-                bne GBO_MulLoop
+                asl
+                rol temp4
+                asl
+                rol temp4
+                sta temp3
                 ldx actIndex
                 rts
 
@@ -401,8 +410,9 @@ MTD_Common:     tay
         ; Returns: A modified damage
         ; Modifies: A,Y,loader temp vars
 
-ModifyDamage:   cpy #$80
-                bcs MD_Subtract
+ModifyDamage:   cpy #NO_MODIFY                  ;Optimize the unmodified case
+                beq MD_Done
+                bmi MD_Subtract
                 stx zpBitsLo
                 ldx #zpSrcLo
                 jsr MulU
@@ -421,5 +431,5 @@ MD_Subtract:    sty zpSrcLo
                 bpl MD_SubtractNotOver          ;Do not allow to go below zero
                 lda #$00
 MD_SubtractNotOver:
-                rts
+MD_Done:        rts
 
