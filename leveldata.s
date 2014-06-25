@@ -69,7 +69,3 @@ saveYH:         dc.b 0
 saveT:          dc.b 0
 saveD:          dc.b 0
 saveStateEnd:
-
-improveList:    ds.b NUM_SKILLS+1,0
-targetList:     ds.b MAX_COMPLEXACT+1,0
-                

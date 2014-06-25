@@ -257,8 +257,14 @@ lvlName:        ds.b 16,0
 lvlWaterDamage: dc.b 0
 lvlPropertiesEnd:
 
-d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
+        ; Target list for AI / collision
+        ; Must not page-cross, as selfmodifying code is used to read it
+
+targetList:     ds.b MAX_COMPLEXACT+1,0
+targetListEnd:
+                if (targetList & $ff00) != ((targetListEnd-1) & $ff00)
+                    err
+                endif
 
         ; Actor variables
 
@@ -302,6 +308,12 @@ actAIMode:      ds.b MAX_COMPLEXACT,0
 actAIHelp:      ds.b MAX_COMPLEXACT,0
 actAIMoveHint:  ds.b MAX_COMPLEXACT,$ff
 actAIAttackHint:ds.b MAX_COMPLEXACT,0
+
+        ; Misc. tables/variables
+
+d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
+improveList:    ds.b NUM_SKILLS+1,0
 
         ; Chunk-file memory allocation variables
 

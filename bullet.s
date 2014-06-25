@@ -113,7 +113,7 @@ MSBlt_Cloud:    lda #$02
                 sbc #$02                        ;C=0, decrease damage by 3
                 sta actHp,x
                 inc actF1,x
-MSBlt_NoAnim:   
+MSBlt_NoAnim:
 
         ; Bullet update routine. Check collisions, then move
         ;
