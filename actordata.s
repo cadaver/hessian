@@ -96,8 +96,8 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adSmallSplash
                 dc.b <adObjectMarker
                 dc.b <adSpeechBubble
-                dc.b <adPlayer
-                dc.b <adPlayer
+                dc.b <adNPC
+                dc.b <adEnemy
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -121,11 +121,33 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adSmallSplash
                 dc.b >adObjectMarker
                 dc.b >adSpeechBubble
-                dc.b >adPlayer
-                dc.b >adPlayer
+                dc.b >adNPC
+                dc.b >adEnemy
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Color override
+                dc.b C_PLAYER                   ;Lower part spritefile number
+                dc.b 25                         ;Lower part base spritenumber
+                dc.b 0                          ;Lower part base index into the frametable
+                dc.b 32                         ;Lower part left frame add
+                dc.b C_PLAYER                   ;Upper part spritefile number
+                dc.b 0                          ;Upper part base spritenumber
+                dc.b 0                          ;Upper part base index into the frametable
+                dc.b 39                         ;Upper part left frame add
+
+adNPC:          dc.b HUMANOID                   ;Number of sprites
+                dc.b 8                          ;Color override
+                dc.b C_PLAYER                   ;Lower part spritefile number
+                dc.b 25                         ;Lower part base spritenumber
+                dc.b 0                          ;Lower part base index into the frametable
+                dc.b 32                         ;Lower part left frame add
+                dc.b C_PLAYER                   ;Upper part spritefile number
+                dc.b 0                          ;Upper part base spritenumber
+                dc.b 0                          ;Upper part base index into the frametable
+                dc.b 39                         ;Upper part left frame add
+
+adEnemy:        dc.b HUMANOID                   ;Number of sprites
+                dc.b 2                          ;Color override
                 dc.b C_PLAYER                   ;Lower part spritefile number
                 dc.b 25                         ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable

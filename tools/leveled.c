@@ -3148,7 +3148,7 @@ void updateblockinfo(void)
 
       if (chinfo[blockdata[c*16+5]] & 2)
         bi |= 2; // Obstacle
-      if (chinfo[blockdata[c*16+5]] & 4)
+      if (chinfo[blockdata[c*16+1]] & 4)
         bi |= 4; // Ladder
       for (d = 0; d < 16; d++)
       {

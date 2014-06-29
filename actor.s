@@ -208,6 +208,7 @@ DrawActorSub:   stx actIndex
                 bpl DA_NoHitFlash               ;including one frame hit flash
                 inc actFlash,x
                 lda #$01
+                bne DA_NoFlicker
 DA_NoHitFlash:  ldy #AD_COLOROVERRIDE
                 ora (actLo),y                   ;OR with actor's fixed color override
                 cmp #COLOR_FLICKER
@@ -498,7 +499,7 @@ BTL_Next:       dex
                 sta targetList,y
                 sty numTargets
 
-        ; Check navigation & attack hints for one actor at a time
+        ; Check AI navigation/attack hints for one actor at a time
 
 CN_Current:     ldx #ACTI_FIRSTNPC
 CN_Loop:        dex
@@ -512,8 +513,14 @@ CN_Next:        cpx CN_Current+1                ;Wrap search without finding a v
                 bne CN_Loop
                 beq UA_UpdateAll
 CN_Found:       stx CN_Current+1
-                jsr RouteCheck
-                jsr CheckNavigationHints
+                jsr RouteCheck                  ;Check line-of-sight to target
+                sta actRoute,x
+                lda actAIHelp,x
+                and #AIH_CHECKLEFT|AIH_CHECKRIGHT ;Check navigation (pathfinding) hints?
+                beq CN_NoNavigation
+                jsr NavigationCheck
+CN_NoNavigation:
+
 
         ; Call update routines of all on-screen actors
 
@@ -1606,8 +1613,6 @@ GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actFallL,y
                 sta actWaterDamage,y
                 sta actAIHelp,y
-                sta actAIMoveHint,y
-                sta actAIAttackHint,y
                 lda #NOTARGET
                 sta actWpnF,y
                 sta actAITarget,y               ;Start with no target & no route
