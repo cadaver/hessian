@@ -11,6 +11,7 @@ AIH_AUTOSTOPLEDGE   = $20
 AIH_AUTOTURNLEDGE   = $40
 AIH_AUTOJUMPLEDGE   = $80
 
+JOY_CLIMBSTAIRS     = $40
 JOY_FREEMOVE        = $80
 
 AIMODE_IDLE         = 0
@@ -47,24 +48,113 @@ MA_AIJump:      jsr $0000
 MA_SkipAI:      jsr MoveHuman
                 jmp AttackHuman
 
+        ; Follow (pathfinding) AI
+
+AI_FollowNoTarget:
+                jmp AI_Idle
+AI_Follow:      lda #$00                        ;Always go to player (TODO: test code, remove)
+                sta actAITarget,x
+                ldy actAITarget,x
+                bmi AI_FollowNoTarget
+                jsr GetActorDistance
+AI_CheckClimbing:
+                lda actF1,x                     ;Check for possibility to climb to target
+                cmp #FR_CLIMB
+                bcs AI_IsClimbing
+                lda temp7
+                bpl AI_NoStairCheck
+                lda actMB,x                     ;Check for climbing up a stair junction one char above
+                lsr                             ;(hack, this is something the player can do only by jumping)
+                bcc AI_NoStairCheck
+                lda #-1
+                jsr GetCharInfoOffset
+                lsr
+                bcc AI_NoStairCheck
+                lda #-8*8
+                jsr MoveActorY
+                jmp AI_NoClimbing
+AI_NoStairCheck:lda temp8                       ;Do not start climbing unless at least 1 block distance to target
+                beq AI_NoClimbing               ;TODO: should actually check whether target is reachably with the ladder
+AI_OKToClimb:   ldy #AL_MOVEFLAGS
+                lda (actLo),y
+                and #AMF_CLIMB
+                beq AI_NoClimbing
+AI_RecheckClimbDir:
+                lda temp7
+                bmi AI_CheckClimbUp
+AI_CheckClimbDown:
+                jsr GetCharInfo
+                and #CI_CLIMB
+                beq AI_NoClimbing
+                lda #JOY_DOWN
+                jmp AI_StoreMoveCtrl
+AI_CheckClimbUp:jsr GetCharInfo4Above
+                and #CI_CLIMB
+                beq AI_NoClimbing
+                lda #JOY_UP
+                jmp AI_StoreMoveCtrl
+AI_IsClimbing:  lda temp6                       ;If climbing the same ladder as target, stop if close
+                ora temp8
+                bne AI_ClimbingNotAtTarget
+                lda #$00
+                jmp AI_StoreMoveCtrl
+AI_ClimbingNotAtTarget:
+                lda actMoveCtrl,x               ;Restart climbing if was interrupted
+                and #JOY_UP|JOY_DOWN
+                beq AI_RecheckClimbDir
+                cmp #JOY_UP
+                beq AI_CheckExitUp
+AI_CheckExitDown:
+                jsr GetCharInfo                 ;If climbing down, exit when possible
+                and #CI_GROUND|CI_CLIMB         ;if target distance is less than block
+                lsr                             ;or cannot climb further down
+                beq AI_ExitLadder
+                lda temp8
+                bne AI_NoExitLadder
+                bcc AI_NoExitLadder
+AI_ExitLadder:  lda temp5                       ;When exiting the ladder, always face target
+                sta actD,x
+                jmp AI_FreeMove
+AI_NoExitLadder:rts
+AI_CheckExitUp: jsr GetCharInfo4Above
+                and #CI_CLIMB
+                beq AI_ExitLadder
+                lda temp8
+                bne AI_NoExitLadder
+                jsr GetCharInfo
+                lsr
+                bcs AI_ExitLadder
+                rts
+
+AI_NoClimbing:  lda temp8                       ;Check if already close enough to target
+                ora temp6
+                beq AI_Idle
+AI_NotAtTarget: lda actAIHelp,x                 ;Previous navigation searches still ongoing?
+                tay
+                and #AIH_CHECKLEFT|AIH_CHECKRIGHT
+                bne AI_NoNewSearch
+                tya
+                ora #AIH_CHECKLEFT|AIH_CHECKRIGHT|AIH_AUTOTURNWALL|AIH_AUTOTURNLEDGE
+                sta actAIHelp,x
+                and #AIH_FOUNDLEFT|AIH_FOUNDRIGHT ;Found route either on left or right?
+                beq AI_NoNewSearch
+                cmp #AIH_FOUNDLEFT|AIH_FOUNDRIGHT ;If both found, continue to current dir
+                beq AI_NoNewSearch              ;else turn to the correct direction
+                jmp AI_StoreMoveCtrl
+AI_NoNewSearch: jmp AI_FreeMove
+
+        ; Turn to AI
+
+AI_TurnTo:      ldy actAITarget,x
+                bmi AI_Idle
+                jsr GetActorDistance
+AI_TurnToTarget:lda temp5
+                sta actD,x                      ;Fall through
+
         ; Idle AI
 
 AI_Idle:        lda #$00
-                sta actCtrl,x
-                sta actMoveCtrl,x
-                rts
-
-        ; Turn to player AI
-
-AI_TurnTo:      ldy #ACTI_PLAYER
-                jsr GetActorDistance
-                lda temp5
-                sta actD,x
-                rts
-
-        ; Follow (pathfinding) AI
-
-AI_Follow:      rts
+                jmp AI_StoreMoveCtrl
 
         ; Sniper AI
 
@@ -77,26 +167,29 @@ AI_Sniper:      jsr FindTarget                  ;Todo: add proper aggression/def
                 jsr FT_PickNew
                 jmp AI_Idle
 AI_HasRoute:    jsr GetAttackDir
-                bmi AI_FreeMove
+                bmi AI_FreeMoveWithTurn
                 sta actCtrl,x
                 cmp #JOY_FIRE
                 bcc AI_NoFire
                 lda #$00
 AI_NoFire:      sta actMoveCtrl,x
                 lda #AIH_AUTOSTOPLEDGE
-                bne AI_StoreMovementHelp
+AI_StoreMovementHelp:
+                sta actAIHelp,x
+                rts
 
+AI_FreeMoveWithTurn:
+                lda #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
+                sta actAIHelp,x
 AI_FreeMove:    lda #JOY_RIGHT                  ;Move forward into facing direction, turn at walls / ledges
                 ldy actD,x
                 bpl AI_FreeMoveRight
                 lda #JOY_LEFT
 AI_FreeMoveRight:
+AI_StoreMoveCtrl:
                 sta actMoveCtrl,x
                 lda #$00
                 sta actCtrl,x
-                lda #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
-AI_StoreMovementHelp:
-                sta actAIHelp,x
                 rts
 
         ; Validate existing AI target / find new target
@@ -211,6 +304,35 @@ RC_NoRoute:     lda #ROUTE_NO
         ; Returns: actAIHelp modified
         ; Modifies: A,Y,temp variables
 
+NC_GoStraight:  pla
+                sta NC_GoStraightModifyX
+                lda actXH,y
+                sta NC_GoStraightTarget+1
+                sec
+                sbc actXH,x                     ;Consider the straight search always a failure if going
+                eor NC_GoStraightModifyX        ;into the wrong direction
+                and #$40
+                beq NC_StoreFailure2
+                ldy actXH,x
+NC_GoStraightLoop:
+NC_GoStraightTarget:
+                cpy #$00                        ;Target reached?
+                beq NC_StoreSuccess2
+                lda (zpDestLo),y
+                sty zpBitBuf
+                readblockinfo
+                ldy zpBitBuf
+                lsr                             ;If no continuous ground, failure
+                bcc NC_StoreFailure2
+NC_GoStraightModifyX:
+                iny
+                dec temp1
+                bne NC_GoStraightLoop           ;If the straight search does not terminate in an obstacle,
+NC_StoreFailure2:                               ;consider it a success
+                jmp NC_StoreFailure
+NC_StoreSuccess2:
+                jmp NC_StoreSuccess
+
 NavigationCheck:
                 lsr
                 lda #$c8                        ;INY
@@ -227,23 +349,40 @@ NC_Right:       pha
                 dey
                 lda mapTblLo,y                  ;Take the maprow above
                 sta zpSrcLo
-                lda mapTblLo,y
+                lda mapTblHi,y
                 sta zpSrcHi
                 ldy actAITarget,x
+                lda actYH,y                     ;Adjust target Y-position: if jumping/falling,
+                sta temp2                       ;set 1 block below
+                lda actMB,y
+                and #MB_GROUNDED
+                bne NC_TargetGrounded
+                inc temp2
+NC_TargetGrounded:
                 lda actYH,x
-                cmp actYH,y
-                beq NC_StoreFailure             ;If no Y-distance, the check is indecisive
+                cmp temp2
+                beq NC_GoStraight
                 bcs NC_GoUp
-
 NC_GoDown:      pla
                 sta NC_GoDownModifyX
+                cmp #$c8
+                lda #BI_STAIRSLEFT
+                adc #$00
+                sta NC_GoDownStairType+1        ;Store correct stair type for going down
                 ldy actXH,x
 NC_GoDownLoop:  lda (zpDestLo),y
+                sty zpBitBuf
                 readblockinfo
-                cmp #BI_CLIMB                   ;If found stairs/ladder leading down, success
-                bcs NC_StoreSuccess
-                and #BI_GROUND                  ;If no continuous ground, failure
-                beq NC_StoreFailure
+                ldy zpBitBuf
+NC_GoDownStairType:
+                cmp #BI_STAIRSLEFT              ;If found stairs leading down, success
+                beq NC_StoreSuccess
+                cmp #BI_STAIRSLEFT              ;Stairs to any direction are OK for continuing;
+                bcs NC_GoDownModifyX            ;there may be a ladder further on
+                lsr
+                and #BI_CLIMB/2                 ;Check for ladder
+                bne NC_StoreSuccess
+                bcc NC_StoreFailure             ;If no continuous ground, failure
 NC_GoDownModifyX:
                 iny
                 cpy limitR
@@ -255,10 +394,10 @@ NC_GoDownModifyX:
 
 NC_StoreFailure:lda actAIHelp,x
                 lsr
-                lda #$ff-AIH_CHECKRIGHT-AIH_FOUNDRIGHT
+                lda #$ff-AIH_CHECKLEFT-AIH_FOUNDLEFT
                 bcs NC_StoreFailureCommon
 NC_StoreFailureRight:
-                lda #$ff-AIH_CHECKLEFT-AIH_FOUNDLEFT
+                lda #$ff-AIH_CHECKRIGHT-AIH_FOUNDRIGHT
 NC_StoreFailureCommon:
                 and actAIHelp,x
 NC_StoreCommon: sta actAIHelp,x
@@ -268,26 +407,37 @@ NC_StoreSuccess:lda actAIHelp,x
                 bcs NC_StoreSuccessLeft
 NC_StoreSuccessRight:
                 lda actAIHelp,x
-                and #AIH_CHECKRIGHT
+                and #$ff-AIH_CHECKRIGHT
                 ora #AIH_FOUNDRIGHT
                 bne NC_StoreCommon
 NC_StoreSuccessLeft:
                 lda actAIHelp,x
-                and #AIH_CHECKLEFT
+                and #$ff-AIH_CHECKLEFT
                 ora #AIH_FOUNDLEFT
                 bne NC_StoreCommon
 
 NC_GoUp:        pla
                 sta NC_GoUpModifyX
+                cmp #$c8
+                lda #BI_STAIRSLEFT
+                adc #$00
+                eor #$01
+                sta NC_GoUpStairType+1          ;Store correct stair type for going up
                 ldy actXH,x
 NC_GoUpLoop:    lda (zpDestLo),y                ;First check that ground continues below feet, otherwise failure
+                sty zpBitBuf
                 readblockinfo
-                and #BI_GROUND
-                beq NC_StoreFailure
+                ldy zpBitBuf
+NC_GoUpStairType:
+                cmp #BI_STAIRSRIGHT
+                beq NC_StoreSuccess
+                lsr
+                bcc NC_StoreFailure
                 lda (zpSrcLo),y
                 readblockinfo
-                cmp #BI_CLIMB                   ;If found stairs/ladder leading up, success
-                bcs NC_StoreSuccess
+                ldy zpBitBuf
+                cmp #BI_CLIMB                   ;If found stairs/ladder leading up, success. The stairs can
+                bcs NC_StoreSuccess             ;be either orientation
 NC_GoUpModifyX:
                 iny
                 cpy limitR
@@ -296,7 +446,6 @@ NC_GoUpModifyX:
                 bcc NC_StoreFailure
                 dec temp1
                 bne NC_GoUpLoop
-                beq NC_StoreFailure
 
         ; Get attack controls for an AI actor that has a valid target, including "move away" controls
         ; if target is too close

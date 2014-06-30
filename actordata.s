@@ -517,15 +517,14 @@ alNPC:          dc.w MoveAIHuman                ;Update routine
                 dc.b $08                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB ;Move caps
                 dc.b 3*8                        ;Max. movement speed
-                dc.b 6*8                        ;Terminal falling speed
-                dc.b 8                          ;Ground movement acceleration
-                dc.b 3                          ;In air movement acceleration
+                dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
+                dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
                 dc.b 4                          ;Long jump gravity acceleration
-                dc.b 6                          ;Ground braking
+                dc.b INITIAL_GROUNDBRAKE         ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
-                dc.b -44                        ;Jump initial speed (negative)
-                dc.b 96                         ;Climbing speed
+                dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
+                dc.b INITIAL_CLIMBSPEED         ;Climbing speed
 
 alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
@@ -542,12 +541,11 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b $08                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB ;Move caps
                 dc.b 3*8                        ;Max. movement speed
-                dc.b 6*8                        ;Terminal falling speed
-                dc.b 8                          ;Ground movement acceleration
-                dc.b 3                          ;In air movement acceleration
+                dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
+                dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
                 dc.b 4                          ;Long jump gravity acceleration
-                dc.b 6                          ;Ground braking
+                dc.b INITIAL_GROUNDBRAKE         ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
-                dc.b -44                        ;Jump initial speed (negative)
-                dc.b 96                         ;Climbing speed
+                dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
+                dc.b INITIAL_CLIMBSPEED         ;Climbing speed

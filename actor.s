@@ -521,7 +521,6 @@ CN_Found:       stx CN_Current+1
                 jsr NavigationCheck
 CN_NoNavigation:
 
-
         ; Call update routines of all on-screen actors
 
 UA_UpdateAll:   ldx #MAX_ACT-1
@@ -1501,7 +1500,16 @@ ALA_Common:     lda lvlActX,x
                 beq ALA_NotItem
                 lda #MB_GROUNDED
                 sta actMB,x
-ALA_NotItem:    ldy #AT_ADD                     ;Run the ADD trigger routine
+ALA_NotItem:    ldy #AL_MOVEFLAGS               ;If the actor can climb and has been spawned in the middle
+                lda (actLo),y                   ;of a ladder (and no ground), init climbing mode
+                and #AMF_CLIMB                  ;Otherwise the actor will likely fall to death, as we have
+                beq ALA_NoInitClimb             ;falling damage
+                jsr GetCharInfo
+                and #CI_GROUND|CI_CLIMB
+                cmp #CI_CLIMB
+                bne ALA_NoInitClimb
+                jsr MH_InitClimb
+ALA_NoInitClimb:ldy #AT_ADD                     ;Run the ADD trigger routine
                 jmp ActorTrigger
 ALA_Fail:       rts
 ALA_IsItem:     lda #ACTI_FIRSTITEM
@@ -1521,7 +1529,7 @@ ALA_IsItem:     lda #ACTI_FIRSTITEM
 ALA_NoDefaultPickup:
                 sta actHp,y
                 ldx temp1
-                bpl ALA_Common
+                jmp ALA_Common
 
         ; Remove actor and return to leveldata if applicable
         ;
