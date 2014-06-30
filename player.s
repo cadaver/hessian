@@ -415,26 +415,19 @@ MH_NoWater:     lda actMB,x
                 cmp #MB_STARTFALLING
                 bcc MH_NoFallStart
                 jsr MH_ResetFall
-                lda actAIHelp,x                 ;Check AI autojump/turn/stop on ledge
-                bmi MH_DoAutoJump
+                lda actAIHelp,x                 ;Check AI autoturn/stop
                 and #AIH_AUTOTURNLEDGE|AIH_AUTOSTOPLEDGE
-                beq MH_NoAutoJump
-                asl
-                sec
+                beq MH_NoAutoTurn
                 php
                 lda actSX,x
                 jsr MoveActorXNeg
                 jsr MH_SetGrounded
                 plp
-                bmi MH_DoAutoTurn
+                bpl MH_DoAutoTurn
 MH_DoAutoStop:  lda #$00
                 sta actSX,x
                 sta actMoveCtrl,x
-                beq MH_NoAutoTurn
-MH_DoAutoJump:  ldy #AL_JUMPSPEED
-                lda (actLo),y
-                sta actSY,x
-MH_NoAutoJump:  lda actMB,x
+                beq MH_AutoTurnDone             ;C must be 1 after autoturn/stop (grounded)
 MH_NoFallStart: lsr                             ;Grounded bit to carry
                 and #MB_HITWALL/2
                 beq MH_NoAutoTurn
@@ -443,7 +436,7 @@ MH_NoFallStart: lsr                             ;Grounded bit to carry
                 beq MH_NoAutoTurn
 MH_DoAutoTurn:  lda actSX,x
                 eor actD,x
-                bmi MH_NoAutoTurn
+                bmi MH_AutoTurnDone
                 ldy #JOY_LEFT
                 lda actD,x
                 eor #$80
@@ -464,6 +457,7 @@ MH_NoAutoTurn:  bcs MH_NoIncFall                ;Check for increasing fall dista
                 bcc MH_NoIncFall
                 inc actFall,x
                 clc
+MH_AutoTurnDone:
 MH_NoIncFall:   ldy temp2                       ;If rolling, continue roll animation
                 bne MH_RollAnim
                 bcs MH_GroundAnim
