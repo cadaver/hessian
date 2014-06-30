@@ -504,7 +504,7 @@ alSpeechBubble: dc.w MoveSpeechBubble           ;Update routine
 
 alNPC:          dc.w MoveAIHuman                ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
-                dc.b GRP_HEROES|AF_ISORGANIC|AF_USETRIGGERS ;Actor flags
+                dc.b GRP_NONE|AF_ISORGANIC|AF_USETRIGGERS ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
@@ -515,7 +515,7 @@ alNPC:          dc.w MoveAIHuman                ;Update routine
                 dc.b DROP_WEAPONMEDKITCREDITS   ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense accumulator
                 dc.b $08                        ;AI defense probability
-                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB ;Move caps
+                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_NOFALLDAMAGE ;Move caps
                 dc.b 3*8                        ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
