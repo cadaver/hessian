@@ -137,9 +137,11 @@ AI_CheckExitUp: jsr GetCharInfo4Above
                 lsr
                 bcs AI_ExitLadder
                 rts
-AI_NoClimbing:  lda temp8                       ;Check if already close enough to target
-                ora temp6
-                beq AI_Idle
+AI_NoClimbing:  lda temp6                       ;Check if already close enough to target
+                ora temp8                       ;In that case turn toward target to prevent
+                bne AI_NotAtTarget              ;obvious bad navigations
+                sta actNav,x                    ;Clear all navigation flags when stopping
+                beq AI_TurnToTarget
 AI_NotAtTarget: lda actNav,x                    ;Previous navigation searches still ongoing?
                 tay
                 and #NAV_CHECKLEFT|NAV_CHECKRIGHT
