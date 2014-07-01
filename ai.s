@@ -1,14 +1,14 @@
-MAX_ROUTE_STEPS     = 10
-
+MAX_LINE_STEPS     = 10
 MAX_NAVIGATION_STEPS = 8
 
-AIH_CHECKLEFT       = $01
-AIH_CHECKRIGHT      = $02
-AIH_FOUNDLEFT       = $04
-AIH_FOUNDRIGHT      = $08
 AIH_AUTOTURNWALL    = $20
 AIH_AUTOTURNLEDGE   = $40
 AIH_AUTOSTOPLEDGE   = $80
+
+NAV_CHECKLEFT       = $01
+NAV_CHECKRIGHT      = $02
+NAV_FOUNDLEFT       = $04
+NAV_FOUNDRIGHT      = $08
 
 JOY_CLIMBSTAIRS     = $40
 JOY_FREEMOVE        = $80
@@ -26,9 +26,9 @@ BI_CLIMB            = 4
 BI_STAIRSLEFT       = 8
 BI_STAIRSRIGHT      = 9
 
-ROUTE_NOTCHECKED    = $00
-ROUTE_NO            = $01
-ROUTE_YES           = $80
+LINE_NOTCHECKED     = $00
+LINE_NO             = $40
+LINE_YES            = $80
 
         ; AI character update routine
         ;
@@ -53,6 +53,8 @@ AI_FollowNoTarget:
                 jmp AI_Idle
 AI_Follow:      lda #$00                        ;Always go to player (TODO: test code, remove)
                 sta actAITarget,x
+                lda #AIH_AUTOTURNWALL|AIH_AUTOTURNLEDGE
+                sta actAIHelp,x
                 ldy actAITarget,x
                 bmi AI_FollowNoTarget
                 jsr GetActorDistance
@@ -128,16 +130,16 @@ AI_CheckExitUp: jsr GetCharInfo4Above
 AI_NoClimbing:  lda temp8                       ;Check if already close enough to target
                 ora temp6
                 beq AI_Idle
-AI_NotAtTarget: lda actAIHelp,x                 ;Previous navigation searches still ongoing?
+AI_NotAtTarget: lda actNav,x                    ;Previous navigation searches still ongoing?
                 tay
-                and #AIH_CHECKLEFT|AIH_CHECKRIGHT
+                and #NAV_CHECKLEFT|NAV_CHECKRIGHT
                 bne AI_NoNewSearch
                 tya
-                ora #AIH_CHECKLEFT|AIH_CHECKRIGHT|AIH_AUTOTURNWALL|AIH_AUTOTURNLEDGE
-                sta actAIHelp,x
-                and #AIH_FOUNDLEFT|AIH_FOUNDRIGHT ;Found route either on left or right?
+                ora #NAV_CHECKLEFT|NAV_CHECKRIGHT
+                sta actNav,x
+                and #NAV_FOUNDLEFT|NAV_FOUNDRIGHT ;Found route either on left or right?
                 beq AI_NoNewSearch
-                cmp #AIH_FOUNDLEFT|AIH_FOUNDRIGHT ;If both found, continue to current dir
+                cmp #NAV_FOUNDLEFT|NAV_FOUNDRIGHT ;If both found, continue to current dir
                 beq AI_NoNewSearch              ;else turn to the correct direction
                 jmp AI_StoreMoveCtrl
 AI_NoNewSearch: jmp AI_FreeMove
@@ -160,12 +162,13 @@ AI_Idle:        lda #$00
 AI_Sniper:      jsr FindTarget                  ;Todo: add proper aggression/defense code. Now is just a test
                 ldy actAITarget,x               ;for attack direction finding
                 bmi AI_Idle
-                lda actRoute,x                  ;If route blocked, try to get new target
-                bmi AI_HasRoute
+                lda actLine,x                   ;If line-of-sight blocked, try to get new target
+                bmi AI_HasLineOfSight
                 beq AI_Idle
                 jsr FT_PickNew
                 jmp AI_Idle
-AI_HasRoute:    jsr GetAttackDir
+AI_HasLineOfSight:
+                jsr GetAttackDir
                 bmi AI_FreeMoveWithTurn
                 sta actCtrl,x
                 cmp #JOY_FIRE
@@ -219,26 +222,26 @@ FT_PickTargetOK:tay
                 eor actFlags,y
                 and #AF_GROUPBITS
                 beq FT_NoTarget
-FT_CheckRoute:  cpx #ACTI_LASTNPC+1             ;If this is a homing bullet, there will be no navigation/route
-                bcs FT_CheckRoute2              ;check later, so check now
-                lda #ROUTE_NOTCHECKED           ;For NPCs, reset route information now until checked
-                sta actRoute,x
+FT_CheckLine:   cpx #ACTI_LASTNPC+1             ;If this is a homing bullet, there will be no line-of-sight
+                bcs FT_CheckLine2               ;check later, so check now
+                lda #LINE_NOTCHECKED            ;For NPCs, reset line information now until checked
+                sta actLine,x
                 tya
                 bcc FT_StoreTarget
-FT_CheckRoute2: tya
+FT_CheckLine2:  tya
                 pha
-                jsr RouteCheck
+                jsr LineCheck
                 pla
                 bcs FT_StoreTarget
                 rts
 
-        ; Check if there is obstacles between actors
+        ; Check if there is obstacles (coarse line-of-sight) between actors
         ;
         ; Parameters: X actor index, Y target actor index
-        ; Returns: C=1 route OK, C=0 route fail
+        ; Returns: C=1 line-of-sight OK, C=0 line-of-sight fail
         ; Modifies: A,Y,temp1-temp3, loader temp variables
 
-RouteCheck:     lda actXH,x
+LineCheck:      lda actXH,x
                 sta temp1
                 lda actYL,x                     ;Check 1 block higher if low Y-pos < $80
                 asl
@@ -246,61 +249,59 @@ RouteCheck:     lda actXH,x
                 sbc #$00
                 sta temp2
                 lda actXH,y
-                sta RC_CmpX+1
+                sta LC_CmpX+1
                 lda actYL,y                     ;Check 1 block higher if low Y-pos < $80
                 asl
                 lda actYH,y
                 sbc #$00
-                sta RC_CmpY+1
-                sta RC_CmpY2+1
-                lda #MAX_ROUTE_STEPS
+                sta LC_CmpY+1
+                sta LC_CmpY2+1
+                lda #MAX_LINE_STEPS
                 sta temp3
                 ldy temp2                       ;Take initial maprow
                 lda mapTblLo,y
                 sta zpDestLo
                 lda mapTblHi,y
                 sta zpDestHi
-RC_Loop:        ldy temp1
-RC_CmpX:        cpy #$00
-                bcc RC_MoveRight
-                bne RC_MoveLeft
+LC_Loop:        ldy temp1
+LC_CmpX:        cpy #$00
+                bcc LC_MoveRight
+                bne LC_MoveLeft
                 ldy temp2
-RC_CmpY:        cpy #$00
-                bcc RC_MoveDown
-                bne RC_MoveUp
-                lda #ROUTE_YES
-                rts                             ;C=1, route found
-RC_MoveRight:   iny
-                bcc RC_MoveXDone
-RC_MoveLeft:    dey
-RC_MoveXDone:   sty temp1
+LC_CmpY:        cpy #$00
+                bcc LC_MoveDown
+                bne LC_MoveUp
+                rts                             ;C=1, line-of-sight found
+LC_MoveRight:   iny
+                bcc LC_MoveXDone
+LC_MoveLeft:    dey
+LC_MoveXDone:   sty temp1
                 ldy temp2
-RC_CmpY2:       cpy #$00
-                bcc RC_MoveDown
-                beq RC_MoveYDone2
-RC_MoveUp:      dey
-                bcs RC_MoveYDone
-RC_MoveDown:    iny
-RC_MoveYDone:   sty temp2
+LC_CmpY2:       cpy #$00
+                bcc LC_MoveDown
+                beq LC_MoveYDone2
+LC_MoveUp:      dey
+                bcs LC_MoveYDone
+LC_MoveDown:    iny
+LC_MoveYDone:   sty temp2
                 lda mapTblLo,y                  ;Take new maprow
                 sta zpDestLo
                 lda mapTblHi,y
                 sta zpDestHi
-RC_MoveYDone2:  dec temp3
-                beq RC_NoRoute
+LC_MoveYDone2:  dec temp3
+                beq LC_Fail
                 ldy temp1
                 lda (zpDestLo),y                ;Take block from map
                 readblockinfo
                 and #BI_OBSTACLE
-                beq RC_Loop
-RC_NoRoute:     lda #ROUTE_NO
-                clc                             ;Route not found
+                beq LC_Loop
+LC_Fail:        clc                             ;Line-of-sight not found
                 rts
 
         ; Check whether there is navigability to target on either left or right
         ;
-        ; Parameters: X actor index, A value of actAIHelp
-        ; Returns: actAIHelp modified
+        ; Parameters: X actor index, A value of actNav
+        ; Returns: actNav modified
         ; Modifies: A,Y,temp variables
 
 NC_GoStraight:  pla
@@ -391,28 +392,28 @@ NC_GoDownModifyX:
                 dec temp1
                 bne NC_GoDownLoop
 
-NC_StoreFailure:lda actAIHelp,x
+NC_StoreFailure:lda actNav,x
                 lsr
-                lda #$ff-AIH_CHECKLEFT-AIH_FOUNDLEFT
+                lda #$ff-NAV_CHECKLEFT-NAV_FOUNDLEFT
                 bcs NC_StoreFailureCommon
 NC_StoreFailureRight:
-                lda #$ff-AIH_CHECKRIGHT-AIH_FOUNDRIGHT
+                lda #$ff-NAV_CHECKRIGHT-NAV_FOUNDRIGHT
 NC_StoreFailureCommon:
-                and actAIHelp,x
-NC_StoreCommon: sta actAIHelp,x
+                and actNav,x
+NC_StoreCommon: sta actNav,x
                 rts
-NC_StoreSuccess:lda actAIHelp,x
+NC_StoreSuccess:lda actNav,x
                 lsr
                 bcs NC_StoreSuccessLeft
 NC_StoreSuccessRight:
-                lda actAIHelp,x
-                and #$ff-AIH_CHECKRIGHT
-                ora #AIH_FOUNDRIGHT
+                lda actNav,x
+                and #$ff-NAV_CHECKRIGHT
+                ora #NAV_FOUNDRIGHT
                 bne NC_StoreCommon
 NC_StoreSuccessLeft:
-                lda actAIHelp,x
-                and #$ff-AIH_CHECKLEFT
-                ora #AIH_FOUNDLEFT
+                lda actNav,x
+                and #$ff-NAV_CHECKLEFT
+                ora #NAV_FOUNDLEFT
                 bne NC_StoreCommon
 
 NC_GoUp:        pla
@@ -481,7 +482,7 @@ GAD_GoVertical: asl                             ;If is closer to a fully vertica
                 bcc GAD_NeedLessDistance
 GAD_NoAttackHint:
                 lda #$00                        ;Otherwise, it is not wise to go away from target, as target may
-                rts                             ;be moving under a platform, where the routecheck is broken
+                rts                             ;be moving under a platform, where the line-of-sight is broken
 GAD_NeedMoreDistance:
                 lda temp6                       ;If target is at same block (possibly using a melee weapon)
                 ora temp8                       ;break away into whatever direction available
