@@ -9,6 +9,8 @@ NAV_CHECKLEFT       = $01
 NAV_CHECKRIGHT      = $02
 NAV_FOUNDLEFT       = $04
 NAV_FOUNDRIGHT      = $08
+NAV_STAIRSLEFT      = $10
+NAV_STAIRSRIGHT     = $20
 
 JOY_CLIMBSTAIRS     = $40
 JOY_FREEMOVE        = $80
@@ -59,27 +61,36 @@ AI_Follow:      lda #$00                        ;Always go to player (TODO: test
                 bmi AI_FollowNoTarget
                 jsr GetActorDistance
 AI_CheckClimbing:
-                lda actF1,x                     ;Check for possibility to climb to target
+                lda actF1,x                     ;Already climbing?
                 cmp #FR_CLIMB
                 bcs AI_IsClimbing
-                lda temp7
-                bpl AI_NoStairCheck
-                lda actMB,x                     ;Check for climbing up a stair junction one char above
-                lsr                             ;(hack, this is something the player can do only by jumping)
-                bcc AI_NoStairCheck
-                lda #-1
-                jsr GetCharInfoOffset
+                lda actMB,x
                 lsr
-                bcc AI_NoStairCheck
+                bcc AI_InAir                    ;If in air, just do freemove to complete the jump/fall
+                lda temp7
+                bpl AI_NoStairsUp               ;If target is above,
+                lda #-1                         ;check for going up at a stairs junction
+                jsr GetCharInfoOffset           ;(Hack! Player must do this by jumping up)
+                lsr
+                bcc AI_NoStairsUp
                 lda #-8*8
                 jsr MoveActorY
                 jmp AI_NoClimbing
-AI_NoStairCheck:lda temp8                       ;Do not start climbing unless at least 1 block distance to target
-                beq AI_NoClimbing               ;TODO: should actually check whether target is reachably with the ladder
-AI_OKToClimb:   ldy #AL_MOVEFLAGS
+AI_NoStairsUp:  lda temp8                       ;Do not climb unless at least 1 block vertical distance
+                beq AI_NoClimbing
+                ldy #AL_MOVEFLAGS               ;Check first if the actor can actually climb
                 lda (actLo),y
                 and #AMF_CLIMB
                 beq AI_NoClimbing
+                lda temp6                       ;If there are stairs at the end of the left/right route
+                beq AI_OKToClimb                ;prefer them instead of climbing. Exception: if horizontally
+                lda #NAV_STAIRSLEFT             ;at the target, allow to climb
+                ldy actD,x
+                bmi AI_FacingLeft
+                asl
+AI_FacingLeft:  and actNav,x
+                bne AI_NoClimbing
+AI_OKToClimb:
 AI_RecheckClimbDir:
                 lda temp7
                 bmi AI_CheckClimbUp
@@ -115,7 +126,7 @@ AI_CheckExitDown:
                 bcc AI_NoExitLadder
 AI_ExitLadder:  lda temp5                       ;When exiting the ladder, always face target
                 sta actD,x
-                jmp AI_FreeMove
+AI_InAir:       jmp AI_FreeMove
 AI_NoExitLadder:rts
 AI_CheckExitUp: jsr GetCharInfo4Above
                 and #CI_CLIMB
@@ -126,7 +137,6 @@ AI_CheckExitUp: jsr GetCharInfo4Above
                 lsr
                 bcs AI_ExitLadder
                 rts
-
 AI_NoClimbing:  lda temp8                       ;Check if already close enough to target
                 ora temp6
                 beq AI_Idle
@@ -139,9 +149,9 @@ AI_NotAtTarget: lda actNav,x                    ;Previous navigation searches st
                 sta actNav,x
                 and #NAV_FOUNDLEFT|NAV_FOUNDRIGHT ;Found route either on left or right?
                 beq AI_NoNewSearch
-                cmp #NAV_FOUNDLEFT|NAV_FOUNDRIGHT ;If both found, continue to current dir
-                beq AI_NoNewSearch              ;else turn to the correct direction
-                jmp AI_StoreMoveCtrl
+                cmp #NAV_FOUNDLEFT|NAV_FOUNDRIGHT ;If yes, set new direction
+                beq AI_NoNewSearch
+AI_TurnToNewDir:jmp AI_StoreMoveCtrl
 AI_NoNewSearch: jmp AI_FreeMove
 
         ; Turn to AI
@@ -304,43 +314,34 @@ LC_Fail:        clc                             ;Line-of-sight not found
         ; Returns: actNav modified
         ; Modifies: A,Y,temp variables
 
-NC_GoStraight:  pla
-                sta NC_GoStraightModifyX
-                lda actXH,y
-                sta NC_GoStraightTarget+1
-                sec
-                sbc actXH,x                     ;Consider the straight search always a failure if going
-                eor NC_GoStraightModifyX        ;into the wrong direction
-                and #$40
-                beq NC_StoreFailure2
-                ldy actXH,x
-NC_GoStraightLoop:
-NC_GoStraightTarget:
-                cpy #$00                        ;Target reached?
-                beq NC_StoreSuccess2
-                lda (zpDestLo),y
-                sty zpBitBuf
-                readblockinfo
-                ldy zpBitBuf
-                lsr                             ;If no continuous ground, failure
-                bcc NC_StoreFailure2
-NC_GoStraightModifyX:
-                iny
-                dec temp1
-                bne NC_GoStraightLoop           ;If the straight search does not terminate in an obstacle,
-NC_StoreFailure2:                               ;consider it a success
-                jmp NC_StoreFailure
-NC_StoreSuccess2:
-                jmp NC_StoreSuccess
-
 NavigationCheck:
                 lsr
+                bcs NC_Left
                 lda #$c8                        ;INY
-                bcc NC_Right
-                lda #$88                        ;DEY
-NC_Right:       pha
+                sta temp3                       ;Horizontal movement instruction
+                lda #BI_STAIRSRIGHT
+                sta temp4                       ;Stair type for going down
+                lda actNav,x
+                and #$ff-NAV_CHECKRIGHT-NAV_FOUNDRIGHT-NAV_STAIRSRIGHT
+                sta actNav,x                    ;Reset bits
+                lda #NAV_FOUNDRIGHT
+                ldy #NAV_FOUNDRIGHT|NAV_STAIRSRIGHT
+                bne NC_Common
+NC_Left:        lda #$88                        ;DEY
+                sta temp3
+                lda #BI_STAIRSLEFT
+                sta temp4
+                lda actNav,x
+                and #$ff-NAV_CHECKLEFT-NAV_FOUNDLEFT-NAV_STAIRSLEFT
+                sta actNav,x
+                lda #NAV_FOUNDLEFT
+                ldy #NAV_FOUNDLEFT|NAV_STAIRSLEFT
+NC_Common:      sta temp5                       ;Success bit
+                sty temp6                       ;Stairs+success bit
                 lda #MAX_NAVIGATION_STEPS       ;Store maximum steps counter
                 sta temp1
+                lda #$00
+                sta temp7                       ;Ladder found-flag
                 ldy actYH,x
                 lda mapTblLo,y                  ;Take current maprow
                 sta zpDestLo
@@ -361,91 +362,105 @@ NC_Right:       pha
 NC_TargetGrounded:
                 lda actYH,x
                 cmp temp2
-                beq NC_GoStraight
-                bcs NC_GoUp
-NC_GoDown:      pla
+                bne NC_DownOrUp
+
+NC_GoStraight:  lda temp3
+                sta NC_GoStraightModifyX
+                lda actXH,y
+                sta NC_GoStraightTarget+1
+                sec
+                sbc actXH,x                     ;Consider the straight search always a failure if going
+                eor NC_GoStraightModifyX        ;into the wrong direction
+                and #$40
+                beq NC_Failure
+                ldy actXH,x
+NC_GoStraightLoop:
+NC_GoStraightTarget:
+                cpy #$00                        ;Target reached?
+                beq NC_Success
+                lda (zpDestLo),y
+                sty zpBitBuf
+                readblockinfo
+                ldy zpBitBuf
+                lsr                             ;If no continuous ground, failure
+                bcc NC_Failure
+NC_GoStraightModifyX:
+                iny
+                dec temp1                       ;If ran out of steps, the straight search is
+                bne NC_GoStraightLoop           ;considered a success
+                beq NC_Success
+
+NC_DownOrUp:    bcs NC_GoUp
+NC_GoDown:      lda temp3
                 sta NC_GoDownModifyX
-                cmp #$c8
-                lda #BI_STAIRSLEFT
-                adc #$00
-                sta NC_GoDownStairType+1        ;Store correct stair type for going down
                 ldy actXH,x
 NC_GoDownLoop:  lda (zpDestLo),y
                 sty zpBitBuf
                 readblockinfo
                 ldy zpBitBuf
 NC_GoDownStairType:
-                cmp #BI_STAIRSLEFT              ;If found stairs leading down, success
-                beq NC_StoreSuccess
+                cmp temp4                       ;If found stairs leading down, success
+                beq NC_SuccessStairs
                 cmp #BI_STAIRSLEFT              ;Stairs to any direction are OK for continuing;
                 bcs NC_GoDownModifyX            ;there may be a ladder further on
                 lsr
                 and #BI_CLIMB/2                 ;Check for ladder
-                bne NC_StoreSuccess
-                bcc NC_StoreFailure             ;If no continuous ground, failure
+                beq NC_GoDownNoLadder
+                inc temp7                       ;Store ladder flag for later
+NC_GoDownNoLadder:
+                bcc NC_Failure                  ;If no continuous ground, failure
 NC_GoDownModifyX:
                 iny
                 cpy limitR
-                bcs NC_StoreFailure             ;Got outside map, failure
+                bcs NC_Failure                  ;Got outside map, failure
                 cpy limitL
-                bcc NC_StoreFailure
+                bcc NC_Failure
                 dec temp1
                 bne NC_GoDownLoop
-
-NC_StoreFailure:lda actNav,x
-                lsr
-                lda #$ff-NAV_CHECKLEFT-NAV_FOUNDLEFT
-                bcs NC_StoreFailureCommon
-NC_StoreFailureRight:
-                lda #$ff-NAV_CHECKRIGHT-NAV_FOUNDRIGHT
-NC_StoreFailureCommon:
-                and actNav,x
-NC_StoreCommon: sta actNav,x
+            
+NC_Failure:     lda temp7                       ;If found a ladder during the down/up search, is actually
+                bne NC_Success                  ;a success
                 rts
-NC_StoreSuccess:lda actNav,x
-                lsr
-                bcs NC_StoreSuccessLeft
-NC_StoreSuccessRight:
-                lda actNav,x
-                and #$ff-NAV_CHECKRIGHT
-                ora #NAV_FOUNDRIGHT
-                bne NC_StoreCommon
-NC_StoreSuccessLeft:
-                lda actNav,x
-                and #$ff-NAV_CHECKLEFT
-                ora #NAV_FOUNDLEFT
-                bne NC_StoreCommon
+NC_Success:     lda temp5
+NC_SuccessCommon:
+                ora actNav,x
+                sta actNav,x
+                rts
+NC_SuccessStairs:
+                lda temp6                       ;If found stairs, it's a special case of success condition
+                bne NC_SuccessCommon            ;(more "valuable" than a ladder)
 
-NC_GoUp:        pla
+NC_GoUp:        lda temp3
                 sta NC_GoUpModifyX
-                cmp #$c8
-                lda #BI_STAIRSLEFT
-                adc #$00
+                lda temp4
                 eor #$01
-                sta NC_GoUpStairType+1          ;Store correct stair type for going up
+                sta temp4                       ;Correct stair type for going up
                 ldy actXH,x
 NC_GoUpLoop:    lda (zpDestLo),y                ;First check that ground continues below feet, otherwise failure
                 sty zpBitBuf
                 readblockinfo
                 ldy zpBitBuf
 NC_GoUpStairType:
-                cmp #BI_STAIRSRIGHT
-                beq NC_StoreSuccess
+                cmp temp4
+                beq NC_SuccessStairs
                 lsr
-                bcc NC_StoreFailure
+                bcc NC_Failure                  ;If no continuous ground, failure
                 lda (zpSrcLo),y
                 readblockinfo
                 ldy zpBitBuf
-                cmp #BI_CLIMB                   ;If found stairs/ladder leading up, success. The stairs can
-                bcs NC_StoreSuccess             ;be either orientation
-NC_GoUpModifyX:
-                iny
+                cmp #BI_STAIRSLEFT              ;If found stairs/ladder leading up, success. The stairs can
+                bcs NC_SuccessStairs            ;be either orientation
+                and #BI_CLIMB
+                beq NC_GoUpModifyX
+                inc temp7                       ;Store ladder flag for later
+NC_GoUpModifyX: iny
                 cpy limitR
-                bcs NC_StoreFailure             ;Got outside map, failure
+                bcs NC_Failure                  ;Got outside map, failure
                 cpy limitL
-                bcc NC_StoreFailure
+                bcc NC_Failure
                 dec temp1
                 bne NC_GoUpLoop
+                beq NC_Failure
 
         ; Get attack controls for an AI actor that has a valid target, including "move away" controls
         ; if target is too close
