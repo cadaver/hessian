@@ -3265,6 +3265,8 @@ void calculatepath()
     int bestdist = 0x7fffffff;
     int bestdir = -1;
 
+    printf("Testing subpaths at %d,%d, lastdirs is %d\n", csx, csy, lastdirsused);
+
     for (c = 0; c < 4; c++)
     {
       int first = 1;
@@ -3274,8 +3276,6 @@ void calculatepath()
       ty = csy;
       success[c] = -1;
       dirsused[c] = 0;
-
-      printf("Testing dir %d at %d,%d, lastdirs is %d\n", c, tx, ty, lastdirsused);
 
       for (;;)
       {
@@ -3307,13 +3307,13 @@ void calculatepath()
               dirsused[c] = 1;
               if (!first && (bi & 1)) // Ladder & ground
               {
-                printf("Up: found junction at %d,%d\n", tx, ty);
+                //printf("Up: found junction at %d,%d\n", tx, ty);
                 success[c] = 1; // Reached next junction
               }
               ty--;
               if (ty < 0)
               {
-                printf("Up: went outside map at %d,%d\n", tx, ty);
+                //printf("Up: went outside map at %d,%d\n", tx, ty);
                 success[c] = 0;
               }
               goto NEXT;
@@ -3336,7 +3336,7 @@ void calculatepath()
             }
             if ((bi & 1) && !first) // Ground
             {
-              printf("Up: found junction at %d,%d\n", tx, ty);
+              //printf("Up: found junction at %d,%d\n", tx, ty);
               success[c] = 1; // Reached next junction
               goto NEXT;
             }
@@ -3350,7 +3350,7 @@ void calculatepath()
                   goto NEXT;
               }
 
-              printf("Up: no route at %d,%d\n", tx, ty);
+              //printf("Up: no route at %d,%d\n", tx, ty);
               success[c] = 0;
               goto NEXT; // Not a valid up-route
             }
@@ -3372,13 +3372,13 @@ void calculatepath()
               dirsused[c] = 2;
               if ((bi & 1) && !first) // Ladder & ground
               {
-                printf("Down: found junction at %d,%d\n", tx, ty);
+                //printf("Down: found junction at %d,%d\n", tx, ty);
                 success[c] = 1; // Reached next junction
               }
               ty++;
               if (ty >= mapsy)
               {
-                printf("Down: went outside map at %d,%d\n", tx, ty);
+                //printf("Down: went outside map at %d,%d\n", tx, ty);
                 success[c] = 0;
               }
               goto NEXT;
@@ -3401,13 +3401,13 @@ void calculatepath()
             */
             if ((bi & 1) && !first) // Ground
             {
-              printf("Down: found junction at %d,%d\n", tx, ty);
+              //printf("Down: found junction at %d,%d\n", tx, ty);
               success[c] = 1; // Reached next junction
               goto NEXT;
             }
             else
             {
-              printf("Down: no route at %d,%d\n", tx, ty);
+              //printf("Down: no route at %d,%d\n", tx, ty);
               success[c] = 0;
               goto NEXT; // Not a valid up-route
             }
@@ -3425,28 +3425,35 @@ void calculatepath()
 
             if (foundjunction) // Found junction on last step?
             {
-              printf("Left: found junction at %d,%d\n", tx, ty);
+              //printf("Left: found junction at %d,%d\n", tx, ty);
               success[c] = 1; // Reached next junction
               goto NEXT;
             }
             dirsused[c] = 4;
             bia = getblockinfo(tx, ty-1);
             bi = getblockinfo(tx, ty);
-            if ((bia & 2) || ((bi & 1) == 0 && bi < 8))
+            if ((bia & 2) || ((bi & 1) == 0 && bi < 8 && bia < 8))
             {
-              printf("Left: wall or gap at %d,%d\n", tx, ty);
+              //printf("Left: wall or gap at %d,%d\n", tx, ty);
               success[c] = 0;
               goto NEXT; // Reached a wall or gap
             }
+            if ((bi & 1) == 0 && bi < 8 && bia >= 8)
+            {
+              ty--;
+              tempy[c][length[c]-1] = ty;
+              bia = getblockinfo(tx, ty-1);
+              bi = getblockinfo(tx, ty);
+            }
             if (!first && ((bia & 4) || bia >= 8))
             {
-              printf("Left: found junction at %d,%d\n", tx, ty);
+              //printf("Left: found junction at %d,%d\n", tx, ty);
               success[c] = 1; // Reached next junction
               goto NEXT;
             }
             if (!first && (bi & 4))
             {
-              printf("Left: found junction at %d,%d\n", tx, ty);
+              //printf("Left: found junction at %d,%d\n", tx, ty);
               success[c] = 1; // Reached next junction
               goto NEXT;
             }
@@ -3460,13 +3467,17 @@ void calculatepath()
             }
             if (bi == 9)
             {
-              dirsused[c] = 1;
-              ty--;
+              unsigned char bia2 = getblockinfo(tx-1,ty-1);
+              if ((bia2 & 1) || bia2 >= 8)
+              {
+                dirsused[c] = 1;
+                ty--;
+              }
             }
             tx--;
             if (tx < 0)
             {
-              printf("Left: outside map at %d,%d\n", tx, ty);
+              //printf("Left: outside map at %d,%d\n", tx, ty);
               success[c] = 0; // Went outside map
               goto NEXT;
             }
@@ -3484,7 +3495,7 @@ void calculatepath()
 
             if (foundjunction) // Found junction on last step?
             {
-              printf("Right: found junction at %d,%d\n", tx, ty);
+              //printf("Right: found junction at %d,%d\n", tx, ty);
               success[c] = 1; // Reached next junction
               goto NEXT;
             }
@@ -3492,28 +3503,39 @@ void calculatepath()
             dirsused[c] = 8;
             bia = getblockinfo(tx, ty-1);
             bi = getblockinfo(tx, ty);
-            if ((bia & 2) || ((bi & 1) == 0 && bi < 8))
+            if ((bia & 2) || ((bi & 1) == 0 && bi < 8 && bia < 8))
             {
-              printf("Right: wall or gap at %d,%d\n", tx, ty);
+              //printf("Right: wall or gap at %d,%d\n", tx, ty);
               success[c] = 0;
               goto NEXT; // Reached a wall or gap
             }
+            if ((bi & 1) == 0 && bi < 8 && bia >= 8)
+            {
+              ty--;
+              tempy[c][length[c]-1] = ty;
+              bia = getblockinfo(tx, ty-1);
+              bi = getblockinfo(tx, ty);
+            }
             if (!first && ((bia & 4) || bia >= 8))
             {
-              printf("Right: found junction at %d,%d\n", tx, ty);
+              //printf("Right: found junction at %d,%d\n", tx, ty);
               success[c] = 1; // Reached next junction
               goto NEXT;
             }
             if (!first && (bi & 4))
             {
-              printf("Right: found junction at %d,%d\n", tx, ty);
+              //printf("Right: found junction at %d,%d\n", tx, ty);
               success[c] = 1; // Reached next junction
               goto NEXT;
             }
             if (bi == 8)
             {
-              dirsused[c] = 1;
-              ty--;
+              unsigned char bia2 = getblockinfo(tx+1,ty-1);
+              if ((bia2 & 1) || bia2 >= 8)
+              {
+                dirsused[c] = 1;
+                ty--;
+              }
             }
             if (bi == 9)
             {
@@ -3526,7 +3548,7 @@ void calculatepath()
             tx++;
             if (tx < 0)
             {
-              printf("Right: outside map at %d,%d\n", tx, ty);
+              //printf("Right: outside map at %d,%d\n", tx, ty);
               success[c] = 0; // Went outside map
               goto NEXT;
             }
@@ -3538,7 +3560,8 @@ void calculatepath()
         first = 0;
         if (success[c] != -1)
         {
-          printf("Subpath %d terminated with code %d\n", c, success[c]);
+          if (success[c] == 1)
+            printf("Subpath %d from %d,%d to %d,%d success\n", c, csx, csy, tempx[c][length[c]-1], tempy[c][length[c]-1]);
           break;
         }
         if (d >= 256)
@@ -3562,7 +3585,7 @@ void calculatepath()
         dy = ey-pathey;
         if (dx < 0) dx = -dx;
         if (dy < 0) dy = -dy;
-        dist = dx+dy*2;
+        dist = dx+dy;
         // Give a penalty if a target is further up or down, but the endpoint doesn't give possibility to go there
         bi = getblockinfo(ex,ey);
         bia = getblockinfo(ex,ey-1);
