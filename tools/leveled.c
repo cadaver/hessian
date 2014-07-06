@@ -12,6 +12,7 @@
 #include "stb_image_write.h"
 
 #define MAPCOPYSIZE 4096
+#define MAXPATH 4096
 
 #define COLOR_DELAY 10
 #define NUMZONES 128
@@ -67,6 +68,15 @@ unsigned char zonebg3[NUMZONES];
 unsigned char zonemusic[NUMZONES];
 
 unsigned char blockinfo[BLOCKS/2];
+
+unsigned char pathx[MAXPATH];
+unsigned char pathy[MAXPATH];
+unsigned char pathsx;
+unsigned char pathsy;
+unsigned char pathex;
+unsigned char pathey;
+int pathlength;
+int pathmode = 0;
 
 char *actorname[256];
 char *itemname[256];
@@ -242,6 +252,10 @@ void reorganizedata(void);
 void optimizechars(void);
 void optimizeblocks(void);
 void updateblockinfo(void);
+unsigned char getblockinfo(int x, int y);
+void markpath(int x, int y);
+void calculatepath();
+void drawpath();
 
 extern unsigned char datafile[];
 
@@ -325,6 +339,7 @@ void gotopos(int x, int y)
 void level_mainloop(void)
 {
   findusedblocksandchars();
+  pathmode = 0;
 
   for (;;)
   {
@@ -372,6 +387,15 @@ void level_mainloop(void)
     }
 
     if (k == KEY_R) randomeditmode ^= 1;
+    if (k == KEY_P)
+    {
+      if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
+      {
+        int x = mapx+mousex/32;
+        int y = mapy+mousey/32;
+        markpath(x, y);
+      }
+    }
 
     if (randomeditmode)
     {
@@ -1516,6 +1540,9 @@ void drawmap(void)
   if (editmode == EM_LEVEL)
   {
     int x,y,c;
+    
+    drawpath();
+
     if (randomeditmode)
     {
       int sp = 0;
@@ -3170,6 +3197,431 @@ void updateblockinfo(void)
     }
   }
 }
+
+unsigned char getblockinfo(int x, int y)
+{
+  unsigned char blknum;
+  unsigned char bi;
+  if (x < 0 || x >= mapsx ||y < 0 || y >= mapsy)
+    return 2; // Obstacle
+  blknum = mapdata[y * mapsx + x];
+  if (blknum & 1)
+    bi = blockinfo[blknum/2] >> 4;
+  else
+    bi = blockinfo[blknum/2] & 0xf;
+  return bi;
+}
+
+void markpath(int x, int y)
+{
+  if (pathmode > 1)
+    pathmode = 0;
+
+  if (pathmode == 0)
+  {
+    printf("Mark path start: %d,%d\n", x, y);
+    pathsx = x;
+    pathsy = y;
+    pathmode++;
+  }
+  else if (pathmode == 1)
+  {
+    printf("Mark path end: %d,%d\n", x, y);
+    pathex = x;
+    pathey = y;
+    pathmode++;
+    calculatepath();
+  }
+}
+
+void calculatepath()
+{
+  unsigned char tempx[4][256];
+  unsigned char tempy[4][256];
+  unsigned char length[4];
+  unsigned char csx,csy, tx, ty, bi, bia;
+  int success[4];
+  int dirsused[4];
+  int lastdirsused = 0;
+  int iterations = 0;
+  int c;
+  pathlength = 0;
+  csx = pathsx;
+  csy = pathsy;
+
+  updateblockinfo();
+
+  printf("Calculate path from %d,%d to %d,%d\n", pathsx, pathsy, pathex, pathey);
+
+  // Check that start is valid
+  bi = getblockinfo(csx, csy);
+  if (bi == 2 || (bi < 8 && ((bi & 1) == 0)))
+    return;
+
+  printf("Path start is valid\n");
+
+  for (;;)
+  {
+    int bestdist = 0x7fffffff;
+    int bestdir = -1;
+
+    for (c = 0; c < 4; c++)
+    {
+      int first = 1;
+      int foundjunction = 0;
+      int d = 0;
+      tx = csx;
+      ty = csy;
+      success[c] = -1;
+      dirsused[c] = 0;
+
+      printf("Testing dir %d at %d,%d, lastdirs is %d\n", c, tx, ty, lastdirsused);
+
+      for (;;)
+      {
+        tempx[c][d] = tx;
+        tempy[c][d] = ty;
+        d++;
+        length[c] = d;
+
+        // Check for reaching path endpoint (destination)
+        if (tx == pathex && ty == pathey)
+        {
+          success[c] = 1;
+          goto NEXT;
+        }
+        switch (c)
+        {
+          case 0: // Up
+          {
+            // Eliminate going back
+            if (lastdirsused & 2)
+            {
+              success[c] = 0;
+              goto NEXT;
+            }
+
+            bi = getblockinfo(tx, ty);
+            if (bi & 4) // Ladder
+            {
+              dirsused[c] = 1;
+              if (!first && (bi & 1)) // Ladder & ground
+              {
+                printf("Up: found junction at %d,%d\n", tx, ty);
+                success[c] = 1; // Reached next junction
+              }
+              ty--;
+              if (ty < 0)
+              {
+                printf("Up: went outside map at %d,%d\n", tx, ty);
+                success[c] = 0;
+              }
+              goto NEXT;
+            }
+            else if (bi == 8) // Stairs up-right
+            {
+              dirsused[c] = 8;
+              tx++;
+              if ((getblockinfo(tx, ty) & 1) == 0)
+                ty--;
+              goto NEXT;
+            }
+            else if (bi == 9) // Stairs up-left
+            {
+              dirsused[c] = 4;
+              tx--;
+              if ((getblockinfo(tx, ty) & 1) == 0)
+                ty--;
+              goto NEXT;
+            }
+            if ((bi & 1) && !first) // Ground
+            {
+              printf("Up: found junction at %d,%d\n", tx, ty);
+              success[c] = 1; // Reached next junction
+              goto NEXT;
+            }
+            else
+            {
+              if (first)
+              {
+                ty--;
+                bi = getblockinfo(tx, ty);
+                if ((bi & 4) || bi >= 8)
+                  goto NEXT;
+              }
+
+              printf("Up: no route at %d,%d\n", tx, ty);
+              success[c] = 0;
+              goto NEXT; // Not a valid up-route
+            }
+          }
+          break;
+
+          case 1: // Down
+          {
+            // Eliminate going back
+            if (lastdirsused & 1)
+            {
+              success[c] = 0;
+              goto NEXT;
+            }
+
+            bi = getblockinfo(tx, ty);
+            if (bi & 4) // Ladder
+            {
+              dirsused[c] = 2;
+              if ((bi & 1) && !first) // Ladder & ground
+              {
+                printf("Down: found junction at %d,%d\n", tx, ty);
+                success[c] = 1; // Reached next junction
+              }
+              ty++;
+              if (ty >= mapsy)
+              {
+                printf("Down: went outside map at %d,%d\n", tx, ty);
+                success[c] = 0;
+              }
+              goto NEXT;
+            }
+            /*
+            else if (bi == 8) // Stairs down-left
+            {
+              dirsused[c] = 4;
+              ty++;
+              tx--;
+              goto NEXT;
+            }
+            else if (bi == 9) // Stairs down-right
+            {
+              dirsused[c] = 8;
+               ty++;
+               tx++;
+               goto NEXT;
+            }
+            */
+            if ((bi & 1) && !first) // Ground
+            {
+              printf("Down: found junction at %d,%d\n", tx, ty);
+              success[c] = 1; // Reached next junction
+              goto NEXT;
+            }
+            else
+            {
+              printf("Down: no route at %d,%d\n", tx, ty);
+              success[c] = 0;
+              goto NEXT; // Not a valid up-route
+            }
+          }
+          break;
+
+          case 2: // Left
+          {
+            // Eliminate going back
+            if (lastdirsused & 8)
+            {
+              success[c] = 0;
+              goto NEXT;
+            }
+
+            if (foundjunction) // Found junction on last step?
+            {
+              printf("Left: found junction at %d,%d\n", tx, ty);
+              success[c] = 1; // Reached next junction
+              goto NEXT;
+            }
+            dirsused[c] = 4;
+            bia = getblockinfo(tx, ty-1);
+            bi = getblockinfo(tx, ty);
+            if ((bia & 2) || ((bi & 1) == 0 && bi < 8))
+            {
+              printf("Left: wall or gap at %d,%d\n", tx, ty);
+              success[c] = 0;
+              goto NEXT; // Reached a wall or gap
+            }
+            if (!first && ((bia & 4) || bia >= 8))
+            {
+              printf("Left: found junction at %d,%d\n", tx, ty);
+              success[c] = 1; // Reached next junction
+              goto NEXT;
+            }
+            if (!first && (bi & 4))
+            {
+              printf("Left: found junction at %d,%d\n", tx, ty);
+              success[c] = 1; // Reached next junction
+              goto NEXT;
+            }
+            if (bi == 8)
+            {
+              dirsused[c] = 2;
+              ty++;
+              // Check if arrived at a junction by going down
+              if (getblockinfo(tx, ty) & 1)
+                foundjunction = 1;
+            }
+            if (bi == 9)
+            {
+              dirsused[c] = 1;
+              ty--;
+            }
+            tx--;
+            if (tx < 0)
+            {
+              printf("Left: outside map at %d,%d\n", tx, ty);
+              success[c] = 0; // Went outside map
+              goto NEXT;
+            }
+          }
+          break;
+
+          case 3: // Right
+          {
+            // Eliminate going back
+            if (lastdirsused & 4)
+            {
+              success[c] = 0;
+              goto NEXT;
+            }
+
+            if (foundjunction) // Found junction on last step?
+            {
+              printf("Right: found junction at %d,%d\n", tx, ty);
+              success[c] = 1; // Reached next junction
+              goto NEXT;
+            }
+
+            dirsused[c] = 8;
+            bia = getblockinfo(tx, ty-1);
+            bi = getblockinfo(tx, ty);
+            if ((bia & 2) || ((bi & 1) == 0 && bi < 8))
+            {
+              printf("Right: wall or gap at %d,%d\n", tx, ty);
+              success[c] = 0;
+              goto NEXT; // Reached a wall or gap
+            }
+            if (!first && ((bia & 4) || bia >= 8))
+            {
+              printf("Right: found junction at %d,%d\n", tx, ty);
+              success[c] = 1; // Reached next junction
+              goto NEXT;
+            }
+            if (!first && (bi & 4))
+            {
+              printf("Right: found junction at %d,%d\n", tx, ty);
+              success[c] = 1; // Reached next junction
+              goto NEXT;
+            }
+            if (bi == 8)
+            {
+              dirsused[c] = 1;
+              ty--;
+            }
+            if (bi == 9)
+            {
+              dirsused[c] = 2;
+              ty++;
+              // Check if arrived at a junction by going down
+              if (getblockinfo(tx, ty) & 1)
+                foundjunction = 1;
+            }
+            tx++;
+            if (tx < 0)
+            {
+              printf("Right: outside map at %d,%d\n", tx, ty);
+              success[c] = 0; // Went outside map
+              goto NEXT;
+            }
+          }
+          break;
+        }
+
+        NEXT:
+        first = 0;
+        if (success[c] != -1)
+        {
+          printf("Subpath %d terminated with code %d\n", c, success[c]);
+          break;
+        }
+        if (d >= 256)
+        {
+          printf("Subpath %d storage exceeded\n", c);
+          break;
+        }
+      }
+    }
+
+    // Check which successful direction goes closest to target
+    for (c = 0; c < 4; c++)
+    {
+      int dx,dy,dist;
+      unsigned char ex,ey;
+      ex = tempx[c][length[c]-1];
+      ey = tempy[c][length[c]-1];
+      if (success[c] == 1)
+      {
+        dx = ex-pathex;
+        dy = ey-pathey;
+        if (dx < 0) dx = -dx;
+        if (dy < 0) dy = -dy;
+        dist = dx+dy*2;
+        // Give a penalty if a target is further up or down, but the endpoint doesn't give possibility to go there
+        bi = getblockinfo(ex,ey);
+        bia = getblockinfo(ex,ey-1);
+        if (pathey > ey && ((bi & 4) == 0))
+          dist *= 2;
+        if (pathey < ey && (bia < 4))
+          dist *= 2;
+        if (dist < bestdist)
+        {
+          bestdir = c;
+          bestdist = dist;
+        }
+      }
+    }
+
+    // Copy the best sub-path to final path
+    if (bestdir >= 0)
+    {
+      printf("Best subpath from %d,%d: %d\n", csx, csy, bestdir);
+      for (c = 0; c < length[bestdir]; c++)
+      {
+        pathx[pathlength] = tempx[bestdir][c];
+        pathy[pathlength] = tempy[bestdir][c];
+        csx = tempx[bestdir][c];
+        csy = tempy[bestdir][c];
+        pathlength++;
+        if (pathlength >= MAXPATH)
+          return;
+      }
+      lastdirsused = dirsused[bestdir];
+    }
+    else
+    {
+      printf("Found no successful dir, pathfinding terminated\n");
+      return; // No next step found
+    }
+
+    iterations++;
+    if (iterations >= 256)
+      return;
+  }
+}
+
+void drawpath()
+{
+  int c;
+
+  if (pathmode == 1)
+    gfx_line((pathsx-mapx)*32+16,(pathsy-mapy)*32+16, (pathsx-mapx)*32+16,(pathsy-mapy)*32+16, 1);
+
+  if (pathmode < 2 || pathlength < 2)
+    return;
+
+  for (c = 0; c < pathlength - 1; c++)
+  {
+    gfx_line((pathx[c]-mapx)*32+16,(pathy[c]-mapy)*32+16, (pathx[c+1]-mapx)*32+16,(pathy[c+1]-mapy)*32+16, 1);
+  }
+}
+
 
 void initstuff(void)
 {
