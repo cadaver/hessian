@@ -1,16 +1,10 @@
-MAX_LINE_STEPS     = 10
+MAX_LINE_STEPS      = 10
+
 MAX_NAVIGATION_STEPS = 8
 
 AIH_AUTOTURNWALL    = $20
 AIH_AUTOTURNLEDGE   = $40
 AIH_AUTOSTOPLEDGE   = $80
-
-NAV_CHECKLEFT       = $01
-NAV_CHECKRIGHT      = $02
-NAV_FOUNDLEFT       = $04
-NAV_FOUNDRIGHT      = $08
-NAV_STAIRSLEFT      = $10
-NAV_STAIRSRIGHT     = $20
 
 JOY_CLIMBSTAIRS     = $40
 JOY_FREEMOVE        = $80
@@ -32,6 +26,12 @@ LINE_NOTCHECKED     = $00
 LINE_NO             = $40
 LINE_YES            = $80
 
+DIR_UP              = $00
+DIR_DOWN            = $01
+DIR_LEFT            = $02
+DIR_RIGHT           = $03
+DIR_NONE            = $ff
+
         ; AI character update routine
         ;
         ; Parameters: X actor index
@@ -51,110 +51,138 @@ MA_SkipAI:      jsr MoveHuman
 
         ; Follow (pathfinding) AI
 
-AI_FollowNoTarget:
-                jmp AI_Idle
-AI_Follow:      lda #$00                        ;Always go to player (TODO: test code, remove)
+AI_Follow:      lda #ACTI_PLAYER                ;Todo: do not hardcode player as target
                 sta actAITarget,x
-                lda #AIH_AUTOTURNWALL|AIH_AUTOTURNLEDGE
+                lda #AIH_AUTOSTOPLEDGE
                 sta actAIHelp,x
-                ldy actAITarget,x
-                bmi AI_FollowNoTarget
-                jsr GetActorDistance
-AI_CheckClimbing:
-                lda actF1,x                     ;Already climbing?
+                ldy actAITarget,x               ;Check distance to target: if less than one block,
+                jsr GetActorDistance            ;reset navigation
+                lda temp6
+                ora temp8
+                bne AI_FollowNotClose
+AI_FollowClose: sta actNavNewYH,x               ;When close to target, perform an idle reset
+                lda #$ff                        ;for the navigation system to not consume CPU
+                bne AI_FollowReset2
+AI_FollowNotClose:
+                lda actNavYH,x                  ;Has a current waypoint?
+                bpl AI_FollowGotoWaypoint
+                if SHOW_NAVIGATION > 0
+                lda #$00
+                sta actT+20
+                endif
+AI_FollowCopyNew:
+                lda actNavNewYH,x               ;Copy new waypoint if exists, or retry if failed
+                bmi AI_FollowIdle
+                bne AI_FollowHasNext
+AI_FollowReset: lda #$ff
+                sta actNavNewYH,x
+AI_FollowReset2:sta actNavYH,x
+AI_FollowIdle:  jmp AI_Idle
+AI_FollowHasNext:
+                sta actNavYH,x
+                lda actNavNewXH,x
+                sta actNavXH,x
+                lda actNavNewExclude,x
+                sta actNavExclude,x
+                lda #$ff
+                sta actNavNewYH,x               ;Then make already the next request
+AI_FollowGotoWaypoint:
+                if SHOW_NAVIGATION > 0
+                lda actNavXH,x
+                sta actXH+20
+                sta actPrevXH+20
+                lda actNavYH,x
+                sta actYH+20
+                sta actPrevYH+20
+                lda #$80
+                sta actXL+20
+                sta actPrevXL+20
+                lda #ACT_OBJECTMARKER
+                sta actT+20
+                endif
+                lda actF1,x
                 cmp #FR_CLIMB
-                bcs AI_IsClimbing
+                bcs AI_FollowClimbing
                 lda actMB,x
                 lsr
-                bcc AI_InAir                    ;If in air, just do freemove to complete the jump/fall
-                lda temp7
-                bpl AI_NoStairsUp               ;If target is above,
-                lda #-1                         ;check for going up at a stairs junction
-                jsr GetCharInfoOffset           ;(Hack! Player must do this by jumping up)
-                lsr
-                bcc AI_NoStairsUp
-                lda #-8*8
-                jsr MoveActorY
-                jmp AI_NoClimbing
-AI_NoStairsUp:  lda temp8                       ;Do not climb unless at least 1 block vertical distance
-                beq AI_NoClimbing
-                ldy #AL_MOVEFLAGS               ;Check first if the actor can actually climb
-                lda (actLo),y
-                and #AMF_CLIMB
-                beq AI_NoClimbing
-                lda temp6                       ;If there are stairs at the end of the left/right route
-                beq AI_OKToClimb                ;prefer them instead of climbing. Exception: if horizontally
-                lda #NAV_STAIRSLEFT             ;at the target, allow to climb
-                ldy actD,x
-                bmi AI_FacingLeft
-                asl
-AI_FacingLeft:  and actNav,x
-                bne AI_NoClimbing
-AI_OKToClimb:
-AI_RecheckClimbDir:
-                lda temp7
-                bmi AI_CheckClimbUp
-AI_CheckClimbDown:
-                jsr GetCharInfo
-                and #CI_CLIMB
-                beq AI_NoClimbing
-                lda #JOY_DOWN
-                jmp AI_StoreMoveCtrl
-AI_CheckClimbUp:jsr GetCharInfo4Above
-                and #CI_CLIMB
-                beq AI_NoClimbing
-                lda #JOY_UP
-                jmp AI_StoreMoveCtrl
-AI_IsClimbing:  lda temp6                       ;If climbing the same ladder as target, stop if close
-                ora temp8
-                bne AI_ClimbingNotAtTarget
-                lda #$00
-                jmp AI_StoreMoveCtrl
-AI_ClimbingNotAtTarget:
-                lda actMoveCtrl,x               ;Restart climbing if was interrupted
-                and #JOY_UP|JOY_DOWN
-                beq AI_RecheckClimbDir
-                cmp #JOY_UP
-                beq AI_CheckExitUp
-AI_CheckExitDown:
-                jsr GetCharInfo                 ;If climbing down, exit when possible
-                and #CI_GROUND|CI_CLIMB         ;if target distance is less than block
-                lsr                             ;or cannot climb further down
-                beq AI_ExitLadder
-                lda temp8
-                bne AI_NoExitLadder
-                bcc AI_NoExitLadder
-AI_ExitLadder:  lda temp5                       ;When exiting the ladder, always face target
-                sta actD,x
-AI_InAir:       jmp AI_FreeMove
-AI_NoExitLadder:rts
-AI_CheckExitUp: jsr GetCharInfo4Above
-                and #CI_CLIMB
-                beq AI_ExitLadder
-                lda temp8
-                bne AI_NoExitLadder
-                jsr GetCharInfo
-                lsr
-                bcs AI_ExitLadder
-                rts
-AI_NoClimbing:  lda temp6                       ;Check if already close enough to target
-                ora temp8                       ;In that case turn toward target to prevent
-                bne AI_NotAtTarget              ;obvious bad navigations
-                sta actNav,x                    ;Clear all navigation flags when stopping
-                beq AI_TurnToTarget
-AI_NotAtTarget: lda actNav,x                    ;Previous navigation searches still ongoing?
+                bcc AI_FollowJumping
+                lda actYH,x                     ;Check for stair junction climbing
+                cmp actNavYH,x
+                beq AI_FollowNoStairs
                 tay
-                and #NAV_CHECKLEFT|NAV_CHECKRIGHT
-                bne AI_NoNewSearch
-                tya
-                ora #NAV_CHECKLEFT|NAV_CHECKRIGHT
-                sta actNav,x
-                and #NAV_FOUNDLEFT|NAV_FOUNDRIGHT ;Found route either on left or right?
-                beq AI_NoNewSearch
-                cmp #NAV_FOUNDLEFT|NAV_FOUNDRIGHT ;If yes, set new direction
-                beq AI_NoNewSearch
-AI_TurnToNewDir:jmp AI_StoreMoveCtrl
-AI_NoNewSearch: jmp AI_FreeMove
+                rol temp8                       ;Up/down bit (C) to temp8
+                getmaprow                       ;Get blockinfo at feet
+                ldy actXH,x
+                getblockinfo
+                cmp #BI_STAIRSLEFT
+                bcs AI_FollowOnStairs
+                lsr
+                bcc AI_FollowNoStairs
+                ldy actYH,x                     ;Get blockinfo above
+                dey
+                getmaprow
+                ldy actXH,x
+                getblockinfo
+                cmp #BI_STAIRSLEFT
+                bcc AI_FollowNoStairs
+                beq AI_FollowStairsLeft
+AI_FollowStairsRight:
+                lda actXL,x                     ;Move to right edge of block
+                cmp #$c0
+                bcc AI_FollowRight
+AI_FollowClimbToStairs:
+                lda #-8*8
+                jmp MoveActorY
+AI_FollowStairsLeft:
+                lda actXL,x                     ;Move to left edge of block
+                cmp #$40
+                bcs AI_FollowLeft
+                bcc AI_FollowClimbToStairs
+AI_FollowOnStairs:
+                eor temp8
+                eor #$01
+                lsr
+                bpl AI_FollowRight
+
+AI_FollowJumping:
+                jmp AI_FreeMove
+AI_FollowClimbing:
+                lda actYH,x                     ;First climb to the correct block
+                cmp actNavYH,x
+                bne AI_FollowVertical3
+                lda actYL,x
+                cmp #$40
+                bcs AI_FollowVerticalUp         ;Then to the bottom of the block
+                                                ;Finally exit the ladder to left or right
+AI_FollowNoStairs:
+                lda actXH,x
+                cmp actNavXH,x
+                beq AI_FollowVertical
+AI_FollowHorizontal:
+AI_FollowRight: lda #JOY_RIGHT
+                bcc AI_FollowStoreCtrl
+AI_FollowLeft:  lda #JOY_LEFT
+AI_FollowStoreCtrl:
+                jmp AI_StoreMoveCtrl
+AI_FollowVertical:
+                lda actYH,x
+                cmp actNavYH,x
+                bne AI_FollowVertical2
+                jmp AI_FollowCopyNew            ;Reached waypoint (X & Y distance both zero?)
+AI_FollowVertical2:
+                rol temp8                       ;Store C to low bit of temp8
+                lda actXL,x                     ;Center on the ladder before climbing
+                cmp #$40
+                bcc AI_FollowRight
+                cmp #$c0
+                bcs AI_FollowLeft
+                lsr temp8                       ;Restore C
+AI_FollowVertical3:
+                lda #JOY_DOWN
+                bcc AI_FollowStoreCtrl
+AI_FollowVerticalUp:
+                lda #JOY_UP
+                bcs AI_FollowStoreCtrl
 
         ; Turn to AI
 
@@ -236,7 +264,7 @@ FT_PickTargetOK:tay
                 beq FT_NoTarget
 FT_CheckLine:   cpx #ACTI_LASTNPC+1             ;If this is a homing bullet, there will be no line-of-sight
                 bcs FT_CheckLine2               ;check later, so check now
-                lda #LINE_NOTCHECKED            ;For NPCs, reset line information now until checked
+                lda #LINE_NOTCHECKED            ;For NPCs, reset line-of-sight information now until checked
                 sta actLine,x
                 tya
                 bcc FT_StoreTarget
@@ -247,10 +275,10 @@ FT_CheckLine2:  tya
                 bcs FT_StoreTarget
                 rts
 
-        ; Check if there is obstacles (coarse line-of-sight) between actors
+        ; Check if there is obstacles between actors (coarse line-of-sight)
         ;
         ; Parameters: X actor index, Y target actor index
-        ; Returns: C=1 line-of-sight OK, C=0 line-of-sight fail
+        ; Returns: C=1 route OK, C=0 route fail
         ; Modifies: A,Y,temp1-temp3, loader temp variables
 
 LineCheck:      lda actXH,x
@@ -271,10 +299,7 @@ LineCheck:      lda actXH,x
                 lda #MAX_LINE_STEPS
                 sta temp3
                 ldy temp2                       ;Take initial maprow
-                lda mapTblLo,y
-                sta zpDestLo
-                lda mapTblHi,y
-                sta zpDestHi
+                getmaprow
 LC_Loop:        ldy temp1
 LC_CmpX:        cpy #$00
                 bcc LC_MoveRight
@@ -296,173 +321,15 @@ LC_MoveUp:      dey
                 bcs LC_MoveYDone
 LC_MoveDown:    iny
 LC_MoveYDone:   sty temp2
-                lda mapTblLo,y                  ;Take new maprow
-                sta zpDestLo
-                lda mapTblHi,y
-                sta zpDestHi
+                getmaprow
 LC_MoveYDone2:  dec temp3
-                beq LC_Fail
+                beq LC_NoLine
                 ldy temp1
-                lda (zpDestLo),y                ;Take block from map
-                readblockinfo
+                getblockinfo                   ;Read blockinfo from map
                 and #BI_OBSTACLE
                 beq LC_Loop
-LC_Fail:        clc                             ;Line-of-sight not found
+LC_NoLine:      clc                             ;Route not found
                 rts
-
-        ; Check whether there is navigability to target on either left or right
-        ;
-        ; Parameters: X actor index, A value of actNav
-        ; Returns: actNav modified
-        ; Modifies: A,Y,temp variables
-
-NavigationCheck:
-                lsr
-                bcs NC_Left
-                lda #$c8                        ;INY
-                sta temp3                       ;Horizontal movement instruction
-                lda #BI_STAIRSRIGHT
-                sta temp4                       ;Stair type for going down
-                lda actNav,x
-                and #$ff-NAV_CHECKRIGHT-NAV_FOUNDRIGHT-NAV_STAIRSRIGHT
-                sta actNav,x                    ;Reset bits
-                lda #NAV_FOUNDRIGHT
-                ldy #NAV_FOUNDRIGHT|NAV_STAIRSRIGHT
-                bne NC_Common
-NC_Left:        lda #$88                        ;DEY
-                sta temp3
-                lda #BI_STAIRSLEFT
-                sta temp4
-                lda actNav,x
-                and #$ff-NAV_CHECKLEFT-NAV_FOUNDLEFT-NAV_STAIRSLEFT
-                sta actNav,x
-                lda #NAV_FOUNDLEFT
-                ldy #NAV_FOUNDLEFT|NAV_STAIRSLEFT
-NC_Common:      sta temp5                       ;Success bit
-                sty temp6                       ;Stairs+success bit
-                lda #MAX_NAVIGATION_STEPS       ;Store maximum steps counter
-                sta temp1
-                lda #$00
-                sta temp7                       ;Ladder found-flag
-                ldy actYH,x
-                lda mapTblLo,y                  ;Take current maprow
-                sta zpDestLo
-                lda mapTblHi,y
-                sta zpDestHi
-                dey
-                lda mapTblLo,y                  ;Take the maprow above
-                sta zpSrcLo
-                lda mapTblHi,y
-                sta zpSrcHi
-                ldy actAITarget,x
-                lda actYH,y                     ;Adjust target Y-position: if jumping/falling,
-                sta temp2                       ;set 1 block below
-                lda actMB,y
-                and #MB_GROUNDED
-                bne NC_TargetGrounded
-                inc temp2
-NC_TargetGrounded:
-                lda actYH,x
-                cmp temp2
-                bne NC_DownOrUp
-
-NC_GoStraight:  lda temp3
-                sta NC_GoStraightModifyX
-                lda actXH,y
-                sta NC_GoStraightTarget+1
-                sec
-                sbc actXH,x                     ;Consider the straight search always a failure if going
-                eor NC_GoStraightModifyX        ;into the wrong direction
-                and #$40
-                beq NC_Failure
-                ldy actXH,x
-NC_GoStraightLoop:
-NC_GoStraightTarget:
-                cpy #$00                        ;Target reached?
-                beq NC_Success
-                lda (zpDestLo),y
-                sty zpBitBuf
-                readblockinfo
-                ldy zpBitBuf
-                lsr                             ;If no continuous ground, failure
-                bcc NC_Failure
-NC_GoStraightModifyX:
-                iny
-                dec temp1                       ;If ran out of steps, the straight search is
-                bne NC_GoStraightLoop           ;considered a success
-                beq NC_Success
-
-NC_DownOrUp:    bcs NC_GoUp
-NC_GoDown:      lda temp3
-                sta NC_GoDownModifyX
-                ldy actXH,x
-NC_GoDownLoop:  lda (zpDestLo),y
-                sty zpBitBuf
-                readblockinfo
-                ldy zpBitBuf
-NC_GoDownStairType:
-                cmp temp4                       ;If found stairs leading down, success
-                beq NC_SuccessStairs
-                cmp #BI_STAIRSLEFT              ;Stairs to any direction are OK for continuing;
-                bcs NC_GoDownModifyX            ;there may be a ladder further on
-                lsr
-                and #BI_CLIMB/2                 ;Check for ladder
-                beq NC_GoDownNoLadder
-                inc temp7                       ;Store ladder flag for later
-NC_GoDownNoLadder:
-                bcc NC_Failure                  ;If no continuous ground, failure
-NC_GoDownModifyX:
-                iny
-                cpy limitR
-                bcs NC_Failure                  ;Got outside map, failure
-                cpy limitL
-                bcc NC_Failure
-                dec temp1
-                bne NC_GoDownLoop
-            
-NC_Failure:     lda temp7                       ;If found a ladder during the down/up search, is actually
-                bne NC_Success                  ;a success
-                rts
-NC_Success:     lda temp5
-NC_SuccessCommon:
-                ora actNav,x
-                sta actNav,x
-                rts
-NC_SuccessStairs:
-                lda temp6                       ;If found stairs, it's a special case of success condition
-                bne NC_SuccessCommon            ;(more "valuable" than a ladder)
-
-NC_GoUp:        lda temp3
-                sta NC_GoUpModifyX
-                lda temp4
-                eor #$01
-                sta temp4                       ;Correct stair type for going up
-                ldy actXH,x
-NC_GoUpLoop:    lda (zpDestLo),y                ;First check that ground continues below feet, otherwise failure
-                sty zpBitBuf
-                readblockinfo
-                ldy zpBitBuf
-NC_GoUpStairType:
-                cmp temp4
-                beq NC_SuccessStairs
-                lsr
-                bcc NC_Failure                  ;If no continuous ground, failure
-                lda (zpSrcLo),y
-                readblockinfo
-                ldy zpBitBuf
-                cmp #BI_STAIRSLEFT              ;If found stairs/ladder leading up, success. The stairs can
-                bcs NC_SuccessStairs            ;be either orientation
-                and #BI_CLIMB
-                beq NC_GoUpModifyX
-                inc temp7                       ;Store ladder flag for later
-NC_GoUpModifyX: iny
-                cpy limitR
-                bcs NC_Failure                  ;Got outside map, failure
-                cpy limitL
-                bcc NC_Failure
-                dec temp1
-                bne NC_GoUpLoop
-                beq NC_Failure
 
         ; Get attack controls for an AI actor that has a valid target, including "move away" controls
         ; if target is too close
@@ -499,7 +366,7 @@ GAD_GoVertical: asl                             ;If is closer to a fully vertica
                 bcc GAD_NeedLessDistance
 GAD_NoAttackHint:
                 lda #$00                        ;Otherwise, it is not wise to go away from target, as target may
-                rts                             ;be moving under a platform, where the line-of-sight is broken
+                rts                             ;be moving under a platform, where the routecheck is broken
 GAD_NeedMoreDistance:
                 lda temp6                       ;If target is at same block (possibly using a melee weapon)
                 ora temp8                       ;break away into whatever direction available
@@ -535,4 +402,320 @@ GAD_Vertical:   lda temp8                       ;For vertical distance, only che
                 lda #$00                        ;If so, currently there is no navigation hint
                 bcc GAD_AttackAboveOrBelow
 GAD_Done:       tay                             ;Get flags of A
+                rts
+
+        ; Check for navigation routes to target
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp variables
+
+NavigationCheck:
+                lda actNavExclude,x
+                sta zpBitBuf
+                lda actNavXH,x                  ;Is the actor currently following the path?
+                ldy actNavYH,x                  ;If yes, use the last waypoint, else current
+                bpl NC_StoreStartPos            ;actor position
+NC_NotOnRoute:  lda #DIR_NONE
+                sta zpBitBuf
+                lda actXH,x
+                ldy actYH,x
+NC_StoreStartPos:
+                sta temp1
+                sta temp6
+                sty temp2
+                sty temp7
+                ldy actAITarget,x
+                lda actXH,y                     ;Get target's position (todo: could support also
+                sta temp3                       ;fixed waypoints)
+                lda actYH,y
+                sta temp4
+                lda actMB,y
+                lsr
+                bcs NC_TargetOnGround           ;If target is jumping, aim intentionally 1 block below
+                inc temp4
+NC_TargetOnGround:
+                lda temp1                       ;First check if already at target
+                cmp temp3
+                bne NC_NotAtTarget
+                lda temp2
+                cmp temp4
+                bne NC_NotAtTarget
+                jmp NC_NoRoute
+NC_NotAtTarget: lda #$ff
+                ldy #$03
+NC_ClearLoop:   sta routeYH,y                   ;Assume all subroutes (up, down, left, right) fail
+                dey
+                bpl NC_ClearLoop
+
+        ; Up subroute
+
+NC_Up:          lda zpBitBuf                    ;Check if up route should be excluded
+                bne NC_UpOK
+                jmp NC_Down
+NC_UpOK:        lda #MAX_NAVIGATION_STEPS       ;Step counter
+                sta temp5
+                jsr NC_GetBlockInfo
+                cmp #BI_STAIRSLEFT              ;Currently on stairs up?
+                bcs NC_UpStairs
+                ldy temp2
+                dey
+                jsr NC_GetBlockInfoDirect
+                cmp #BI_CLIMB                   ;Stairs or ladder above?
+                bcc NC_UpFail
+                cmp #BI_STAIRSLEFT
+                bcs NC_UpStairs2
+NC_UpLadder:    lda #DIR_DOWN
+                sta routeExclude                ;Store exclude dir for this subroute
+NC_UpLadderLoop:dec temp2                       ;Move up
+                jsr NC_GetBlockInfo
+                lsr                             ;Ground bit to C
+                and #BI_CLIMB/2                 ;Ladder ends -> fail
+                beq NC_UpFail
+                bcs NC_UpDone                   ;Found junction (ground)
+                lda temp1
+                cmp temp3
+                bne NC_UpNotAtTarget
+                lda temp2
+                cmp temp4
+                beq NC_UpDone                   ;Found target
+NC_UpNotAtTarget:
+                dec temp5                       ;Steps left?
+                bne NC_UpLadderLoop
+                beq NC_UpFail
+NC_UpDone:      lda temp1                       ;Store the subroute endpoint
+                sta routeXH
+                lda temp2
+                sta routeYH
+NC_UpFail:      jmp NC_Down
+NC_UpStairs2:   dec temp2                       ;Begin from the stairs above
+NC_UpStairs:
+NC_UpStairsLoop:lda temp1
+                cmp temp3
+                bne NC_UpStairsNotAtTarget
+                lda temp2
+                cmp temp4
+                beq NC_UpDone                   ;Found target
+NC_UpStairsNotAtTarget:
+                jsr NC_GetBlockInfo
+                cmp #BI_STAIRSLEFT
+                bcc NC_UpFail                   ;Move horizontally first to determine whether
+                beq NC_UpStairsMoveRight        ;the stairs continue up, or land at a junction
+NC_UpStairsMoveLeft:
+                lda #DIR_RIGHT
+                sta routeExclude
+                dec temp1
+                jmp NC_UpStairsMoveCommon
+NC_UpStairsMoveRight:
+                lda #DIR_LEFT
+                sta routeExclude
+                inc temp1
+NC_UpStairsMoveCommon:
+                getblockinfo
+                lsr                             ;Ground bit to C
+                bcs NC_UpDone                   ;Found junction?
+                dec temp2                       ;Otherwise move also up
+                dec temp5                       ;Steps left?
+                bne NC_UpStairsLoop
+                beq NC_UpFail
+
+        ; Down subroute
+
+NC_Down:        lda zpBitBuf                    ;Check if down route should be excluded
+                cmp #DIR_DOWN
+                beq NC_DownFail
+                lda temp6                       ;Reload position
+                sta temp1
+                lda temp7
+                sta temp2
+                jsr NC_GetBlockInfo
+                and #BI_CLIMB
+                beq NC_DownFail                 ;If not, subroute not possible
+                lda #MAX_NAVIGATION_STEPS       ;Step counter
+                sta temp5
+NC_DownLoop:    inc temp2                       ;Move down
+                jsr NC_GetBlockInfo
+                lsr                             ;Ground bit to C
+                bcs NC_DownDone                 ;Found junction
+                and #BI_CLIMB/2                 ;Ladder ends -> fail
+                beq NC_DownFail
+                lda temp1
+                cmp temp3
+                bne NC_DownNotAtTarget
+                lda temp2
+                cmp temp4
+                beq NC_DownDone                 ;Found target
+NC_DownNotAtTarget:
+                dec temp5                       ;Steps left?
+                bne NC_DownLoop
+                beq NC_DownFail
+NC_DownDone:    lda temp1                       ;Store the subroute endpoint
+                sta routeXH+1
+                lda temp2
+                sta routeYH+1
+NC_DownFail:    lda zpBitBuf
+                cmp #DIR_LEFT
+                beq NC_ExcludeLeft
+                lda #$02
+                sta NC_HorzDone+1
+                lda #$c6                        ;DEC zeropage
+                ldy #BI_STAIRSLEFT
+                jsr NC_Horz
+NC_ExcludeLeft: lda zpBitBuf
+                cmp #DIR_RIGHT
+                beq NC_ExcludeRight
+                lda #$03
+                sta NC_HorzDone+1
+                lda #$e6                        ;INC zeropage
+                ldy #BI_STAIRSRIGHT
+                jsr NC_Horz
+NC_ExcludeRight:
+
+        ; Subroutes done, determine best of them
+
+NC_SubroutesDone:
+                lda #$ff                        ;Best found subroute & distance
+                sta temp1
+                sta temp2
+                stx temp8
+                ldx #$03
+NC_CheckBestLoop:
+                lda routeYH,x                   ;Negative Y = failed
+                bmi NC_CheckBestNext
+                sec
+                sbc temp4
+                sta temp6                       ;Temp6 = signed Y-distance
+                bpl NC_CheckBestYOK
+                clc
+                eor #$ff
+                adc #$01
+NC_CheckBestYOK:sta temp5
+                lda routeXH,x
+                sec
+                sbc temp3
+                clc
+                bpl NC_CheckBestXOK
+                eor #$ff
+                adc #$01
+NC_CheckBestXOK:adc temp5                       ;A = current abs. distance to target
+                ldy temp6
+                beq NC_CheckBestNoPenalty
+                cpy #$80
+                ldy routeYH,x
+                bcs NC_CheckBestTargetBelow
+                dey
+NC_CheckBestTargetBelow:
+                pha                             ;If target is below but route endpoint
+                getmaprow                       ;doesn't give a possibility to go further
+                ldy routeXH,x                   ;below, add a "penalty". Likewise if target
+                getblockinfo                    ;is above
+                cmp #BI_CLIMB
+                pla
+                bcs NC_CheckBestNoPenalty
+                asl
+NC_CheckBestNoPenalty:
+                cmp temp2                       ;Better than last?
+                bcs NC_CheckBestNext
+                sta temp2
+                stx temp1
+NC_CheckBestNext:
+                dex
+                bpl NC_CheckBestLoop
+                ldx temp8
+                ldy temp1
+                bmi NC_NoRoute
+                lda routeExclude,y
+                sta actNavNewExclude,x
+                lda routeXH,y                    ;Store new waypoint for AI
+                sta actNavNewXH,x
+                lda routeYH,y
+NC_StoreNewYH:  sta actNavNewYH,x
+                rts
+NC_NoRoute:     lda #$00
+                beq NC_StoreNewYH
+
+        ; Horizontal subroute
+
+NC_Horz:        sta NC_HorzLoop
+                sta NC_HorzJunctionMove
+                sty NC_HorzStairsDown+1
+                lda NC_HorzDone+1               ;By default the opposite horizontal direction is excluded
+                eor #$01
+                sta NC_HorzExclude+1
+                lda #MAX_NAVIGATION_STEPS       ;Step counter
+                sta temp5
+                lda temp6                       ;Reload position
+                sta temp1
+                lda temp7
+                sta temp2
+                jsr NC_GetBlockInfo             ;Check if currently on stairs down
+                cmp NC_HorzStairsDown+1
+                beq NC_HorzMoveDown
+NC_HorzLoop:    dec temp1                       ;Move left/right
+                lda temp1                       ;Check for going outside the map horizontally
+                cmp limitL
+                bcc NC_HorzFail
+                cmp limitR
+                bcs NC_HorzFail
+                cmp temp3
+                bne NC_HorzNotAtTarget
+                lda temp2
+                cmp temp4
+                bne NC_HorzNotAtTarget
+NC_HorzDone:    ldy #$02
+                lda temp1                       ;Store the subroute endpoint
+                sta routeXH,y
+                lda temp2
+                sta routeYH,y
+NC_HorzExclude: lda #$00
+                sta routeExclude,y
+NC_HorzFail:    rts
+NC_HorzNotAtTarget:
+                jsr NC_GetBlockInfo
+                sta zpDestLo                    ;Store blockinfo at feet
+NC_HorzStairsDown:
+                cmp #BI_STAIRSLEFT              ;Check for moving down
+                beq NC_HorzMoveDown
+                and #BI_CLIMB                   ;If ladder down, found junction
+                bne NC_HorzDone
+                ldy temp2
+                dey
+                jsr NC_GetBlockInfoDirect
+                ;sta zpDestHi                   ;Store blockinfo above
+                cmp #BI_CLIMB                   ;Stairs or ladder above?
+                bcs NC_HorzMoveUp
+                lda zpDestLo
+                lsr                             ;Ground bit to C
+                bcc NC_HorzFail                 ;Fail if ground ended
+NC_HorzDecrement:
+                dec temp5                       ;Steps left?
+                beq NC_HorzFail
+                jmp NC_HorzLoop
+NC_HorzMoveDown:inc temp2                       ;Move down stairs
+                jsr NC_GetBlockInfo
+                lsr                             ;If hit level ground after moving down, found a stairs junction
+                bcc NC_HorzDecrement
+NC_HorzJunctionMove:
+                dec temp1
+                lda #DIR_UP                     ;In that case exclude the "up" direction next
+                sta NC_HorzExclude+1
+                beq NC_HorzDone
+NC_HorzMoveUp:  cmp #BI_STAIRSLEFT              ;If found a ladder above, it's a junction
+                bcc NC_HorzDone
+                lda zpDestLo
+                lsr
+                bcs NC_HorzDone                 ;If ground at feet and stairs leading up above, found a junction
+                dec temp2                       ;Else move up along the stairs, then check for reaching target
+                lda temp1
+                cmp temp3
+                bne NC_HorzDecrement
+                lda temp2
+                cmp temp4
+                beq NC_HorzDone
+
+NC_GetBlockInfo:ldy temp2
+NC_GetBlockInfoDirect:
+                getmaprow
+                ldy temp1
+                getblockinfo
                 rts

@@ -513,15 +513,14 @@ CN_Next:        cpx CN_Current+1                ;Wrap search without finding a v
                 bne CN_Loop
                 beq UA_UpdateAll
 CN_Found:       stx CN_Current+1
-                jsr LineCheck                  ;Check line-of-sight to target
+                jsr LineCheck                   ;Check line-of-sight to target
                 lda #LINE_YES
                 bcs CN_HasLineOfSight
                 lsr
 CN_HasLineOfSight:
                 sta actLine,x
-                lda actNav,x
-                and #NAV_CHECKLEFT|NAV_CHECKRIGHT ;Check navigation (pathfinding) hints?
-                beq CN_NoNavigation
+                lda actNavNewYH,x               ;Has a navigation (pathfinding) request?
+                bpl CN_NoNavigation
                 jsr NavigationCheck
 CN_NoNavigation:
 
@@ -1625,10 +1624,11 @@ GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actFallL,y
                 sta actWaterDamage,y
                 sta actAIHelp,y
-                sta actNav,y
+                sta actNavNewYH,y
                 lda #NOTARGET
+                sta actNavYH,y
                 sta actWpnF,y
-                sta actAITarget,y
+                sta actAITarget,y               ;Start with no target
                 sec
 GFA_NotComplex: rts
 

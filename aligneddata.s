@@ -307,13 +307,21 @@ actAttackD:     ds.b MAX_COMPLEXACT,0
 actAIMode:      ds.b MAX_COMPLEXACT,0
 actAIHelp:      ds.b MAX_COMPLEXACT,0
 actLine:        ds.b MAX_COMPLEXACT,0
-actNav:         ds.b MAX_COMPLEXACT,0
+actNavXH:       ds.b MAX_COMPLEXACT,0
+actNavYH:       ds.b MAX_COMPLEXACT,0
+actNavExclude:  ds.b MAX_COMPLEXACT,0
+actNavNewXH:    ds.b MAX_COMPLEXACT,0
+actNavNewYH:    ds.b MAX_COMPLEXACT,0
+actNavNewExclude:ds.b MAX_COMPLEXACT,0
 
         ; Misc. tables/variables
 
 d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 improveList:    ds.b NUM_SKILLS+1,0
+routeXH:        ds.b 4,0
+routeYH:        ds.b 4,0
+routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
 
         ; Chunk-file memory allocation variables
 
