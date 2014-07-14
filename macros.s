@@ -36,30 +36,6 @@ NEXT_VAR        set NEXT_VAR + {2}
                 endif
                 endm
 
-                mac getmaprow
-                lda mapTblLo,y
-                sta zpSrcLo
-                lda mapTblHi,y
-                sta zpSrcHi
-                endm
-                
-                mac getblockinfo
-                subroutine rbi
-                lda (zpSrcLo),y
-                lsr
-                tay
-                lda blockInfo,y
-                bcs .1              ;Blockinfo is packed into 4 bits per block
-                and #$0f
-                bcc .2
-.1:             lsr
-                lsr
-                lsr
-                lsr
-.2:
-                subroutine rbiend
-                endm
-
         ; Scripting macros
 
                 mac setscript

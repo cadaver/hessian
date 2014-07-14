@@ -109,20 +109,18 @@ AI_FollowGotoWaypoint:
                 lda actYH,x                     ;Check for stair junction climbing
                 cmp actNavYH,x
                 beq AI_FollowNoStairs
-                tay
                 rol temp8                       ;Up/down bit (C) to temp8
-                getmaprow                       ;Get blockinfo at feet
-                ldy actXH,x
-                getblockinfo
+                tay
+                lda actXH,x
+                jsr NC_GetBlockInfoXY
                 cmp #BI_STAIRSLEFT
                 bcs AI_FollowOnStairs
                 lsr
                 bcc AI_FollowNoStairs
                 ldy actYH,x                     ;Get blockinfo above
                 dey
-                getmaprow
-                ldy actXH,x
-                getblockinfo
+                lda actXH,x
+                jsr NC_GetBlockInfoXY
                 cmp #BI_STAIRSLEFT
                 bcc AI_FollowNoStairs
                 beq AI_FollowStairsLeft
@@ -299,7 +297,10 @@ LineCheck:      lda actXH,x
                 lda #MAX_LINE_STEPS
                 sta temp3
                 ldy temp2                       ;Take initial maprow
-                getmaprow
+                lda mapTblLo,y
+                sta zpSrcLo
+                lda mapTblHi,y
+                sta zpSrcHi
 LC_Loop:        ldy temp1
 LC_CmpX:        cpy #$00
                 bcc LC_MoveRight
@@ -321,11 +322,26 @@ LC_MoveUp:      dey
                 bcs LC_MoveYDone
 LC_MoveDown:    iny
 LC_MoveYDone:   sty temp2
-                getmaprow
+                lda mapTblLo,y
+                sta zpSrcLo
+                lda mapTblHi,y
+                sta zpSrcHi
 LC_MoveYDone2:  dec temp3
                 beq LC_NoLine
                 ldy temp1
-                getblockinfo                   ;Read blockinfo from map
+                lda (zpSrcLo),y
+                lsr
+                tay
+                lda blockInfo,y
+                bcs LC_BlockInfoHigh
+                and #$0f
+                bcc LC_BlockInfoReady
+LC_BlockInfoHigh:
+                lsr
+                lsr
+                lsr
+                lsr
+LC_BlockInfoReady:
                 and #BI_OBSTACLE
                 beq LC_Loop
 LC_NoLine:      clc                             ;Route not found
@@ -430,18 +446,24 @@ NC_StoreStartPos:
                 sta temp3                       ;fixed waypoints)
                 lda actYH,y
                 sta temp4
-                lda actMB,y
-                lsr
-                bcs NC_TargetOnGround           ;If target is jumping, aim intentionally 1 block below
+                tay
+                lda temp3
+                jsr NC_GetBlockInfoXY           ;Check if target is at a navigable block
+                and #BI_GROUND|BI_CLIMB|BI_STAIRSLEFT
+                bne NC_IsNavigable
                 inc temp4
-NC_TargetOnGround:
-                lda temp1                       ;First check if already at target
+                lda temp3
+                ldy temp4
+                jsr NC_GetBlockInfoXY           ;If not, check below
+                and #BI_GROUND|BI_CLIMB|BI_STAIRSLEFT
+                beq NC_NoRoute2
+NC_IsNavigable: lda temp1                       ;First check if already at target
                 cmp temp3
                 bne NC_NotAtTarget
                 lda temp2
                 cmp temp4
                 bne NC_NotAtTarget
-                jmp NC_NoRoute
+NC_NoRoute2:    jmp NC_NoRoute
 NC_NotAtTarget: lda #$ff
                 ldy #$03
 NC_ClearLoop:   sta routeYH,y                   ;Assume all subroutes (up, down, left, right) fail
@@ -460,7 +482,7 @@ NC_UpOK:        lda #MAX_NAVIGATION_STEPS       ;Step counter
                 bcs NC_UpStairs
                 ldy temp2
                 dey
-                jsr NC_GetBlockInfoDirect
+                jsr NC_GetBlockInfoY
                 cmp #BI_CLIMB                   ;Stairs or ladder above?
                 bcc NC_UpFail
                 cmp #BI_STAIRSLEFT
@@ -511,7 +533,7 @@ NC_UpStairsMoveRight:
                 sta routeExclude
                 inc temp1
 NC_UpStairsMoveCommon:
-                getblockinfo
+                jsr NC_GetBlockInfo
                 lsr                             ;Ground bit to C
                 bcs NC_UpDone                   ;Found junction?
                 dec temp2                       ;Otherwise move also up
@@ -606,10 +628,9 @@ NC_CheckBestXOK:adc temp5                       ;A = current abs. distance to ta
                 dey
 NC_CheckBestTargetBelow:
                 pha                             ;If target is below but route endpoint
-                getmaprow                       ;doesn't give a possibility to go further
-                ldy routeXH,x                   ;below, add a "penalty". Likewise if target
-                getblockinfo                    ;is above
-                cmp #BI_CLIMB
+                lda routeXH,x                   ;doesn't give a possibility to go further
+                jsr NC_GetBlockInfoXY           ;below, add a "penalty". Likewise if target
+                cmp #BI_CLIMB                   ;is above
                 pla
                 bcs NC_CheckBestNoPenalty
                 asl
@@ -650,7 +671,8 @@ NC_Horz:        sta NC_HorzLoop
                 sta temp2
                 jsr NC_GetBlockInfo             ;Check if currently on stairs down
                 cmp NC_HorzStairsDown+1
-                beq NC_HorzMoveDown
+                bne NC_HorzLoop
+                jmp NC_HorzMoveDown
 NC_HorzLoop:    dec temp1                       ;Move left/right
                 lda temp1                       ;Check for going outside the map horizontally
                 cmp limitL
@@ -680,7 +702,7 @@ NC_HorzStairsDown:
                 bne NC_HorzDone
                 ldy temp2
                 dey
-                jsr NC_GetBlockInfoDirect
+                jsr NC_GetBlockInfoY
                 ;sta zpDestHi                   ;Store blockinfo above
                 cmp #BI_CLIMB                   ;Stairs or ladder above?
                 bcs NC_HorzMoveUp
@@ -699,23 +721,45 @@ NC_HorzJunctionMove:
                 dec temp1
                 lda #DIR_UP                     ;In that case exclude the "up" direction next
                 sta NC_HorzExclude+1
-                beq NC_HorzDone
+                beq NC_HorzDone2
 NC_HorzMoveUp:  cmp #BI_STAIRSLEFT              ;If found a ladder above, it's a junction
-                bcc NC_HorzDone
+                bcc NC_HorzDone2
                 lda zpDestLo
                 lsr
-                bcs NC_HorzDone                 ;If ground at feet and stairs leading up above, found a junction
+                bcs NC_HorzDone2                ;If ground at feet and stairs leading up above, found a junction
                 dec temp2                       ;Else move up along the stairs, then check for reaching target
                 lda temp1
                 cmp temp3
                 bne NC_HorzDecrement
                 lda temp2
                 cmp temp4
-                beq NC_HorzDone
+                bne NC_HorzDecrement
+NC_HorzDone2:   jmp NC_HorzDone
+
+        ; Subroutine to get blockinfo
 
 NC_GetBlockInfo:ldy temp2
-NC_GetBlockInfoDirect:
-                getmaprow
-                ldy temp1
-                getblockinfo
+NC_GetBlockInfoY:
+                lda temp1
+NC_GetBlockInfoXY:
+                clc
+                adc mapTblLo,y
+                sta NC_GetBlockInfoLda+1
+                lda mapTblHi,y
+                adc #$00
+                sta NC_GetBlockInfoLda+2
+NC_GetBlockInfoLda:
+                lda $1000
+                lsr
+                tay
+                lda blockInfo,y
+                bcs NC_BlockInfoHigh
+                and #$0f
+                bcc NC_BlockInfoReady
+NC_BlockInfoHigh:
+                lsr
+                lsr
+                lsr
+                lsr
+NC_BlockInfoReady:
                 rts
