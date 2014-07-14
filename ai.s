@@ -109,12 +109,12 @@ AI_FollowGotoWaypoint:
                 lsr
                 bcc AI_FollowJumping
                 lda actYH,x                     ;Check for traversing stair junctions
+                tay
                 cmp actNavYH,x
-                beq AI_FollowCheckStairsLevel
-                bcc AI_FollowNoStairs
+                beq AI_FollowCheckStairsDownOrLevel
+                bcc AI_FollowCheckStairsDownOrLevel
 
-AI_FollowCheckStairsUp:
-                tay                             ;Get blockinfo above
+AI_FollowCheckStairsUp:                         ;Get blockinfo above
                 dey                             ;(if already on stairs, will not find anything)
                 lda actXH,x
                 jsr NC_GetBlockInfoXY
@@ -134,14 +134,27 @@ AI_FollowStairsLeft:
                 bcs AI_FollowLeft
                 bcc AI_FollowClimbToStairs
 
-AI_FollowCheckStairsLevel:
-                tay
+AI_FollowCheckStairsDownOrLevel:
+                php
                 lda actXH,x
                 jsr NC_GetBlockInfoXY
                 cmp #BI_STAIRSLEFT
-                bcc AI_FollowNoStairs
+                bcc AI_FollowNoStairs2
                 lsr
-                bcc AI_FollowNoStairs           ;If not a down junction, no need to jump
+                bcc AI_FollowNoStairs2          ;If not a down junction, no need to jump/correct dir
+                plp
+                beq AI_FollowCheckStairsLevel
+AI_FollowCheckStairsDown:
+                lda actYL,x                     ;While at the top half of the block, head to the block
+                bmi AI_FollowNoStairs           ;horizontal center to ensure we start actually going down
+                lda actXL,x
+                cmp #$80
+                jmp AI_FollowHorizontal
+AI_FollowNoStairs2:
+                plp
+                jmp AI_FollowNoStairs
+
+AI_FollowCheckStairsLevel:
                 and #$01
                 eor #$01                        ;Get reversed left/right stairs direction
                 sta temp1
@@ -151,11 +164,10 @@ AI_FollowClimbToStairs:
                 lda temp1
                 beq AI_FCTSRight
                 lda #$80
-AI_FCTSRight:   eor actSX,x                      ;Do not jump when current movement doesn't match stairs
+AI_FCTSRight:   eor actSX,x                     ;Do not jump when current direction doesn't match stairs
                 bmi AI_FollowNoStairs
-                lda #JOY_UP
-                jmp AI_StoreMoveCtrl
-
+                lda #JOY_UP                     ;Note: requires the NPC being capable of jumping
+                bne AI_FollowStoreCtrl
 AI_FollowJumping:
                 jmp AI_FreeMove
 
@@ -536,8 +548,8 @@ NC_UpStairsLoop:lda temp1
                 beq NC_UpDone                   ;Found target
 NC_UpStairsNotAtTarget:
                 jsr NC_GetBlockInfo
-                and #BI_STAIRSRIGHT             ;Disregard the ground junction bit
-                cmp #BI_STAIRSLEFT
+                lsr                             ;Junction bit to C
+                and #$01                        ;Leave direction bit
                 beq NC_UpStairsMoveRight        ;the stairs continue up, or land at a junction
 NC_UpStairsMoveLeft:
                 dec temp1
@@ -547,6 +559,9 @@ NC_UpStairsMoveRight:
                 inc temp1
                 lda #DIR_LEFT
 NC_UpStairsMoveCommon:
+                bcc NC_UpStairsMoveCommon2
+                lda #DIR_DOWN                   ;When going up a ground-stair junction, exclude
+NC_UpStairsMoveCommon2:                         ;down direction next
                 sta routeExclude
                 jsr NC_GetBlockInfo
                 lsr                             ;Ground bit to C
