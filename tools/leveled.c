@@ -3166,9 +3166,17 @@ void updateblockinfo(void)
   {
     char bi = 0;
     if ((chinfo[blockdata[c*16+12]] & 1) && (chinfo[blockdata[c*16+9]] & 1) && (chinfo[blockdata[c*16+6]] & 1) && (chinfo[blockdata[c*16+3]] & 1))
+    {
       bi = 8; // Stairs to up-right
+      if (chinfo[blockdata[c*16]] & 1)
+        bi |= 1; // Junction down
+    }
     else if ((chinfo[blockdata[c*16+15]] & 1) && (chinfo[blockdata[c*16+10]] & 1) && (chinfo[blockdata[c*16+5]] & 1) && (chinfo[blockdata[c*16]] & 1))
-      bi = 9; // Stairs to up-left
+    {
+      bi = 10; // Stairs to up-left
+      if (chinfo[blockdata[c*16+3]] & 1)
+        bi |= 1; // Junction down
+    }
     else
     {
       int gc = 0;
@@ -3271,6 +3279,7 @@ void calculatepath()
     {
       int first = 1;
       int foundjunction = 0;
+      int godownstairs = 0;
       int d = 0;
       tx = csx;
       ty = csy;
@@ -3318,7 +3327,7 @@ void calculatepath()
               }
               goto NEXT;
             }
-            else if (bi == 8) // Stairs up-right
+            else if (bi == 8 || bi == 10) // Stairs up-right
             {
               dirsused[c] = 8;
               tx++;
@@ -3326,7 +3335,7 @@ void calculatepath()
                 ty--;
               goto NEXT;
             }
-            else if (bi == 9) // Stairs up-left
+            else if (bi == 9 || bi == 11) // Stairs up-left
             {
               dirsused[c] = 4;
               tx--;
@@ -3367,6 +3376,9 @@ void calculatepath()
             }
 
             bi = getblockinfo(tx, ty);
+            if (first && bi >= 8 && (bi & 1))
+                godownstairs = 1; // Down at a stairs junction
+                
             if (bi & 4) // Ladder
             {
               dirsused[c] = 2;
@@ -3383,22 +3395,20 @@ void calculatepath()
               }
               goto NEXT;
             }
-            /*
-            else if (bi == 8) // Stairs down-left
+            else if (godownstairs && ((bi & 14) == 8)) // Stairs down-left
             {
-              dirsused[c] = 4;
+              dirsused[c] = 2;
               ty++;
               tx--;
               goto NEXT;
             }
-            else if (bi == 9) // Stairs down-right
+            else if (godownstairs && ((bi & 14) == 10)) // Stairs down-right
             {
-              dirsused[c] = 8;
+               dirsused[c] = 2;
                ty++;
                tx++;
                goto NEXT;
             }
-            */
             if ((bi & 1) && !first) // Ground
             {
               //printf("Down: found junction at %d,%d\n", tx, ty);
@@ -3432,7 +3442,7 @@ void calculatepath()
             dirsused[c] = 4;
             bia = getblockinfo(tx, ty-1);
             bi = getblockinfo(tx, ty);
-            if ((bia & 2) || ((bi & 1) == 0 && bi < 8 && bia < 8))
+            if ((bi & 1) == 0 && bi < 8 && bia < 8)
             {
               //printf("Left: wall or gap at %d,%d\n", tx, ty);
               success[c] = 0;
@@ -3451,7 +3461,7 @@ void calculatepath()
               success[c] = 1; // Reached next junction
               goto NEXT;
             }
-            if (!first && (bi & 4))
+            if (!first && ((bi & 4) || (bi >= 8 && (bi && 1))))
             {
               //printf("Left: found junction at %d,%d\n", tx, ty);
               success[c] = 1; // Reached next junction
@@ -3465,7 +3475,7 @@ void calculatepath()
               if (getblockinfo(tx, ty) & 1)
                 foundjunction = 1;
             }
-            if (bi == 9)
+            if (bi == 10 || bi == 11)
             {
               unsigned char bia2 = getblockinfo(tx-1,ty-1);
               if ((bia2 & 1) || bia2 >= 8)
@@ -3503,7 +3513,7 @@ void calculatepath()
             dirsused[c] = 8;
             bia = getblockinfo(tx, ty-1);
             bi = getblockinfo(tx, ty);
-            if ((bia & 2) || ((bi & 1) == 0 && bi < 8 && bia < 8))
+            if ((bi & 1) == 0 && bi < 8 && bia < 8)
             {
               //printf("Right: wall or gap at %d,%d\n", tx, ty);
               success[c] = 0;
@@ -3522,13 +3532,13 @@ void calculatepath()
               success[c] = 1; // Reached next junction
               goto NEXT;
             }
-            if (!first && (bi & 4))
+            if (!first && ((bi & 4) || (bi >= 8 && (bi && 1))))
             {
               //printf("Right: found junction at %d,%d\n", tx, ty);
               success[c] = 1; // Reached next junction
               goto NEXT;
             }
-            if (bi == 8)
+            if (bi == 8 || bi == 9)
             {
               unsigned char bia2 = getblockinfo(tx+1,ty-1);
               if ((bia2 & 1) || bia2 >= 8)
@@ -3537,7 +3547,7 @@ void calculatepath()
                 ty--;
               }
             }
-            if (bi == 9)
+            if (bi == 10)
             {
               dirsused[c] = 2;
               ty++;
@@ -3589,9 +3599,9 @@ void calculatepath()
         // Give a penalty if a target is further up or down, but the endpoint doesn't give possibility to go there
         bi = getblockinfo(ex,ey);
         bia = getblockinfo(ex,ey-1);
-        if (pathey > ey && ((bi & 4) == 0))
+        if (pathey > ey && bi < 4)
           dist *= 2;
-        if (pathey < ey && (bia < 4))
+        if (pathey < ey && bia < 4)
           dist *= 2;
         if (dist < bestdist)
         {

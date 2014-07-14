@@ -20,7 +20,9 @@ BI_GROUND           = 1
 BI_OBSTACLE         = 2
 BI_CLIMB            = 4
 BI_STAIRSLEFT       = 8
-BI_STAIRSRIGHT      = 9
+BI_STAIRSLEFTJUNCTION = 9
+BI_STAIRSRIGHT      = 10
+BI_STAIRSRIGHTJUNCTION = 11
 
 LINE_NOTCHECKED     = $00
 LINE_NO             = $40
@@ -53,7 +55,7 @@ MA_SkipAI:      jsr MoveHuman
 
 AI_Follow:      lda #ACTI_PLAYER                ;Todo: do not hardcode player as target
                 sta actAITarget,x
-                lda #AIH_AUTOSTOPLEDGE
+                lda #$00                        ;Do not use AI help modes
                 sta actAIHelp,x
                 ldy actAITarget,x               ;Check distance to target: if less than one block,
                 jsr GetActorDistance            ;reset navigation
@@ -100,50 +102,63 @@ AI_FollowGotoWaypoint:
                 lda #ACT_OBJECTMARKER
                 sta actT+20
                 endif
-                lda actF1,x
+                lda actF1,x                     ;Handle climbing as a special case
                 cmp #FR_CLIMB
                 bcs AI_FollowClimbing
-                lda actMB,x
+                lda actMB,x                     ;If jumping (should not be) just try to jump as far as possible
                 lsr
                 bcc AI_FollowJumping
-                lda actYH,x                     ;Check for stair junction climbing
+                lda actYH,x                     ;Check for traversing stair junctions
                 cmp actNavYH,x
-                beq AI_FollowNoStairs
-                rol temp8                       ;Up/down bit (C) to temp8
-                tay
-                lda actXH,x
-                jsr NC_GetBlockInfoXY
-                cmp #BI_STAIRSLEFT
-                bcs AI_FollowOnStairs
-                lsr
+                beq AI_FollowCheckStairsLevel
                 bcc AI_FollowNoStairs
-                ldy actYH,x                     ;Get blockinfo above
-                dey
+
+AI_FollowCheckStairsUp:
+                tay                             ;Get blockinfo above
+                dey                             ;(if already on stairs, will not find anything)
                 lda actXH,x
                 jsr NC_GetBlockInfoXY
                 cmp #BI_STAIRSLEFT
                 bcc AI_FollowNoStairs
+                and #$02                        ;Get left/right stairs direction
+                sta temp1
                 beq AI_FollowStairsLeft
 AI_FollowStairsRight:
                 lda actXL,x                     ;Move to right edge of block
                 cmp #$c0
                 bcc AI_FollowRight
-AI_FollowClimbToStairs:
-                lda #-8*8
-                jmp MoveActorY
+                bcs AI_FollowClimbToStairs
 AI_FollowStairsLeft:
                 lda actXL,x                     ;Move to left edge of block
                 cmp #$40
                 bcs AI_FollowLeft
                 bcc AI_FollowClimbToStairs
-AI_FollowOnStairs:
-                eor temp8
-                eor #$01
+
+AI_FollowCheckStairsLevel:
+                tay
+                lda actXH,x
+                jsr NC_GetBlockInfoXY
+                cmp #BI_STAIRSLEFT
+                bcc AI_FollowNoStairs
                 lsr
-                bpl AI_FollowRight
+                bcc AI_FollowNoStairs           ;If not a down junction, no need to jump
+                and #$01
+                eor #$01                        ;Get reversed left/right stairs direction
+                sta temp1
+                lda actYL,x
+                bpl AI_FollowNoStairs
+AI_FollowClimbToStairs:
+                lda temp1
+                beq AI_FCTSRight
+                lda #$80
+AI_FCTSRight:   eor actSX,x                      ;Do not jump when current movement doesn't match stairs
+                bmi AI_FollowNoStairs
+                lda #JOY_UP
+                jmp AI_StoreMoveCtrl
 
 AI_FollowJumping:
                 jmp AI_FreeMove
+
 AI_FollowClimbing:
                 lda actYH,x                     ;First climb to the correct block
                 cmp actNavYH,x
@@ -510,6 +525,7 @@ NC_UpDone:      lda temp1                       ;Store the subroute endpoint
                 lda temp2
                 sta routeYH
 NC_UpFail:      jmp NC_Down
+
 NC_UpStairs2:   dec temp2                       ;Begin from the stairs above
 NC_UpStairs:
 NC_UpStairsLoop:lda temp1
@@ -520,19 +536,18 @@ NC_UpStairsLoop:lda temp1
                 beq NC_UpDone                   ;Found target
 NC_UpStairsNotAtTarget:
                 jsr NC_GetBlockInfo
+                and #BI_STAIRSRIGHT             ;Disregard the ground junction bit
                 cmp #BI_STAIRSLEFT
-                bcc NC_UpFail                   ;Move horizontally first to determine whether
                 beq NC_UpStairsMoveRight        ;the stairs continue up, or land at a junction
 NC_UpStairsMoveLeft:
-                lda #DIR_RIGHT
-                sta routeExclude
                 dec temp1
-                jmp NC_UpStairsMoveCommon
+                lda #DIR_RIGHT
+                bne NC_UpStairsMoveCommon
 NC_UpStairsMoveRight:
-                lda #DIR_LEFT
-                sta routeExclude
                 inc temp1
+                lda #DIR_LEFT
 NC_UpStairsMoveCommon:
+                sta routeExclude
                 jsr NC_GetBlockInfo
                 lsr                             ;Ground bit to C
                 bcs NC_UpDone                   ;Found junction?
@@ -546,21 +561,53 @@ NC_UpStairsMoveCommon:
 NC_Down:        lda zpBitBuf                    ;Check if down route should be excluded
                 cmp #DIR_DOWN
                 beq NC_DownFail
+                lda #MAX_NAVIGATION_STEPS       ;Step counter
+                sta temp5
                 lda temp6                       ;Reload position
                 sta temp1
                 lda temp7
                 sta temp2
-                jsr NC_GetBlockInfo
+                jsr NC_GetBlockInfo             ;Check for ladder or a stairs junction down
+                tay
                 and #BI_CLIMB
-                beq NC_DownFail                 ;If not, subroute not possible
-                lda #MAX_NAVIGATION_STEPS       ;Step counter
-                sta temp5
-NC_DownLoop:    inc temp2                       ;Move down
+                bne NC_DownLadderLoop
+                tya
+                lsr                             ;Ground bit to C
+                bcc NC_DownFail                 ;If ordinary stairs (no junction), fail
+                and #BI_STAIRSLEFT/2
+                beq NC_DownFail
+                tya
+                bne NC_DownStairsHasBlockInfo
+NC_DownStairsLoop:
+                lda temp1
+                cmp temp3
+                bne NC_DownStairsNotAtTarget
+                lda temp2
+                cmp temp4
+                beq NC_DownDone                 ;Found target
+NC_DownStairsNotAtTarget:
+                jsr NC_GetBlockInfo
+NC_DownStairsHasBlockInfo:
+                and #BI_STAIRSRIGHT             ;Disregard the ground junction bit
+                cmp #BI_STAIRSLEFT
+                bcc NC_DownDone                 ;Found level ground
+                beq NC_DownStairsMoveLeft
+NC_DownStairsMoveRight:
+                inc temp1
+                bne NC_DownStairsMoveCommon
+NC_DownStairsMoveLeft:
+                dec temp1
+NC_DownStairsMoveCommon:
+                inc temp2
+                dec temp5
+                bne NC_DownStairsLoop           ;Steps left?
+                beq NC_DownFail
+
+NC_DownLadderLoop:
+                inc temp2                       ;Move down
                 jsr NC_GetBlockInfo
                 lsr                             ;Ground bit to C
                 bcs NC_DownDone                 ;Found junction
-                and #BI_CLIMB/2                 ;Ladder ends -> fail
-                beq NC_DownFail
                 lda temp1
                 cmp temp3
                 bne NC_DownNotAtTarget
@@ -569,7 +616,7 @@ NC_DownLoop:    inc temp2                       ;Move down
                 beq NC_DownDone                 ;Found target
 NC_DownNotAtTarget:
                 dec temp5                       ;Steps left?
-                bne NC_DownLoop
+                bne NC_DownLadderLoop
                 beq NC_DownFail
 NC_DownDone:    lda temp1                       ;Store the subroute endpoint
                 sta routeXH+1
@@ -696,10 +743,13 @@ NC_HorzNotAtTarget:
                 jsr NC_GetBlockInfo
                 sta zpDestLo                    ;Store blockinfo at feet
 NC_HorzStairsDown:
-                cmp #BI_STAIRSLEFT              ;Check for moving down
+                cmp #BI_STAIRSLEFT              ;Check for moving down (not a junction)
                 beq NC_HorzMoveDown
-                and #BI_CLIMB                   ;If ladder down, found junction
+                and #BI_GROUND|BI_CLIMB|BI_STAIRSLEFT ;Check for ladder down or stairs down + junction
+                beq NC_HorzNoJunction
+                cmp #BI_GROUND
                 bne NC_HorzDone
+NC_HorzNoJunction:
                 ldy temp2
                 dey
                 jsr NC_GetBlockInfoY
