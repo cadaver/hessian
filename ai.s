@@ -105,14 +105,10 @@ AI_FollowGotoWaypoint:
                 lda actF1,x                     ;Handle climbing as a special case
                 cmp #FR_CLIMB
                 bcs AI_FollowClimbing
-                lda actMB,x                     ;If jumping (should not be) just try to jump as far as possible
-                lsr
-                bcc AI_FollowJumping
-                lda actYH,x                     ;Check for traversing stair junctions
-                tay
-                cmp actNavYH,x
-                beq AI_FollowCheckStairsDownOrLevel
-                bcc AI_FollowCheckStairsDownOrLevel
+                ldy actYH,x                     ;Check for traversing stair junctions
+                lda actNavYH,x
+                cmp actYH,x
+                bcs AI_FollowCheckStairsDownOrLevel
 
 AI_FollowCheckStairsUp:                         ;Get blockinfo above
                 dey                             ;(if already on stairs, will not find anything)
@@ -144,11 +140,11 @@ AI_FollowCheckStairsDownOrLevel:
                 plp
                 beq AI_FollowCheckStairsLevel
 AI_FollowCheckStairsDown:
-                lda actYL,x                     ;While at the top half of the block, head to the block
-                bmi AI_FollowNoStairs           ;horizontal center to ensure we start actually going down
                 lda actXL,x
-                cmp #$80
-                jmp AI_FollowHorizontal
+                asl
+                ldy actYL,x                     ;While at the top of the block, head to the block
+                bne AI_FollowNoStairs           ;horizontal center to ensure we start actually going down
+                beq AI_FollowHorizontal
 AI_FollowNoStairs2:
                 plp
                 jmp AI_FollowNoStairs
@@ -170,7 +166,6 @@ AI_FollowCheckStairsLevel:
 AI_FollowClimbToStairs:
                 lda #-8*8                       ;Note: this is a movement the player can not do, but this
                 jsr MoveActorY                  ;way we don't have to rely on the NPC being able to jump
-AI_FollowJumping:
                 jmp AI_FreeMove
 
 AI_FollowClimbing:
@@ -769,9 +764,8 @@ NC_HorzStairsDown:
 NC_HorzNoJunction:
                 ldy temp2
                 dey
-                jsr NC_GetBlockInfoY
-                ;sta zpDestHi                   ;Store blockinfo above
-                cmp #BI_CLIMB                   ;Stairs or ladder above?
+                jsr NC_GetBlockInfoY            ;Check blockinfo above
+                cmp #BI_CLIMB                   ;Stairs or ladder?
                 bcs NC_HorzMoveUp
                 lda zpDestLo
                 lsr                             ;Ground bit to C
@@ -788,12 +782,12 @@ NC_HorzJunctionMove:
                 dec temp1
                 lda #DIR_UP                     ;In that case exclude the "up" direction next
                 sta NC_HorzExclude+1
-                beq NC_HorzDone2
+                beq NC_HorzDone
 NC_HorzMoveUp:  cmp #BI_STAIRSLEFT              ;If found a ladder above, it's a junction
-                bcc NC_HorzDone2
+                bcc NC_HorzDone
                 lda zpDestLo
                 lsr
-                bcs NC_HorzDone2                ;If ground at feet and stairs leading up above, found a junction
+                bcs NC_HorzDone                ;If ground at feet and stairs leading up above, found a junction
                 dec temp2                       ;Else move up along the stairs, then check for reaching target
                 lda temp1
                 cmp temp3
@@ -801,7 +795,7 @@ NC_HorzMoveUp:  cmp #BI_STAIRSLEFT              ;If found a ladder above, it's a
                 lda temp2
                 cmp temp4
                 bne NC_HorzDecrement
-NC_HorzDone2:   jmp NC_HorzDone
+                beq NC_HorzDone
 
         ; Subroutine to get blockinfo
 

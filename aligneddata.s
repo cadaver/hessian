@@ -314,18 +314,35 @@ actNavNewXH:    ds.b MAX_COMPLEXACT,0
 actNavNewYH:    ds.b MAX_COMPLEXACT,0
 actNavNewExclude:ds.b MAX_COMPLEXACT,0
 
-        ; Misc. tables/variables
-
-d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
-improveList:    ds.b NUM_SKILLS+1,0
-routeXH:        ds.b 4,0
-routeYH:        ds.b 4,0
-routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
-
         ; Chunk-file memory allocation variables
 
 fileLo:         ds.b MAX_CHUNKFILES,0
 fileHi:         ds.b MAX_CHUNKFILES,0
 fileNumObjects: ds.b MAX_CHUNKFILES,0
 fileAge:        ds.b MAX_CHUNKFILES,0
+
+        ; Frequency table
+
+ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
+                dc.w $0314,$0343,$0374,$03a9,$03e1,$041c
+                dc.w $045a,$049c,$04e2,$052d,$057c,$05cf
+                dc.w $0628,$0685,$06e8,$0752,$07c1,$0837
+                dc.w $08b4,$0939,$09c5,$0a5a,$0af7,$0b9e
+                dc.w $0c4f,$0d0a,$0dd1,$0ea3,$0f82,$106e
+                dc.w $1168,$1271,$138a,$14b3,$15ee,$173c
+                dc.w $189e,$1a15,$1ba2,$1d46,$1f04,$20dc
+                dc.w $22d0,$24e2,$2714,$2967,$2bdd,$2e79
+                dc.w $313c,$3429,$3744,$3a8d,$3e08,$41b8
+                dc.w $45a1,$49c5,$4e28,$52cd,$57ba,$5cf1
+                dc.w $6278,$6853,$6e87,$751a,$7c10,$8371
+                dc.w $8b42,$9389,$9c4f,$a59b,$af74,$b9e2
+                dc.w $c4f0,$d0a6,$dd0e,$ea33,$f820,$ffff
+
+        ; Misc. tables/variables
+
+d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
+improveList:
+routeXH:        ds.b 4,0
+routeYH:        ds.b 4,0
+routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT

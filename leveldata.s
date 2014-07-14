@@ -12,7 +12,7 @@
                 if LVLOBJTOTALSIZE > 255
                     err
                 endif
-                
+
         ; Player/world state
 
 playerStateStart:
