@@ -68,7 +68,7 @@ AI_FollowClose: sta actNavNewYH,x               ;When close to target, perform a
 AI_FollowNotClose:
                 lda actNavYH,x                  ;Has a current waypoint?
                 bpl AI_FollowGotoWaypoint
-                if SHOW_NAVIGATION > 0
+                if SHOW_NAVIGATION_TARGET > 0
                 lda #$00
                 sta actT+20
                 endif
@@ -89,7 +89,7 @@ AI_FollowHasNext:
                 lda #$ff
                 sta actNavNewYH,x               ;Then make already the next request
 AI_FollowGotoWaypoint:
-                if SHOW_NAVIGATION > 0
+                if SHOW_NAVIGATION_TARGET > 0
                 lda actNavXH,x
                 sta actXH+20
                 sta actPrevXH+20

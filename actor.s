@@ -521,7 +521,13 @@ CN_HasLineOfSight:
                 sta actLine,x
                 lda actNavNewYH,x               ;Has a navigation (pathfinding) request?
                 bpl CN_NoNavigation
+                if SHOW_NAVIGATION_TIME > 0
+                dec $d020
+                endif
                 jsr NavigationCheck
+                if SHOW_NAVIGATION_TIME > 0
+                inc $d020
+                endif
 CN_NoNavigation:
 
         ; Call update routines of all on-screen actors
