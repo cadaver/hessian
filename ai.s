@@ -121,7 +121,6 @@ AI_FollowCheckStairsUp:                         ;Get blockinfo above
                 cmp #BI_STAIRSLEFT
                 bcc AI_FollowNoStairs
                 and #$02                        ;Get left/right stairs direction
-                sta temp1
                 beq AI_FollowStairsLeft
 AI_FollowStairsRight:
                 lda actXL,x                     ;Move to right edge of block
@@ -155,19 +154,22 @@ AI_FollowNoStairs2:
                 jmp AI_FollowNoStairs
 
 AI_FollowCheckStairsLevel:
-                and #$01
-                eor #$01                        ;Get reversed left/right stairs direction
-                sta temp1
-                lda actYL,x
-                bpl AI_FollowNoStairs
+                lsr                             ;Get left/right stairs direction to high bit
+                ror
+                tay
+                lda actYL,x                     ;If at the top of stairs, OK
+                cmp #$40
+                bcc AI_FollowNoStairs
+                tya
+                eor actSX,x                     ;Do not jump when current direction doesn't match stairs
+                and #$80
+                bmi AI_FollowClimbToStairs
+                cpy #$80
+                jmp AI_FollowHorizontal         ;Instead move to top of stairs first
+
 AI_FollowClimbToStairs:
-                lda temp1
-                beq AI_FCTSRight
-                lda #$80
-AI_FCTSRight:   eor actSX,x                     ;Do not jump when current direction doesn't match stairs
-                bmi AI_FollowNoStairs
-                lda #JOY_UP                     ;Note: requires the NPC being capable of jumping
-                bne AI_FollowStoreCtrl
+                lda #-8*8                       ;Note: this is a movement the player can not do, but this
+                jsr MoveActorY                  ;way we don't have to rely on the NPC being able to jump
 AI_FollowJumping:
                 jmp AI_FreeMove
 
