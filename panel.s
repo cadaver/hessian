@@ -355,8 +355,8 @@ UM_NoCounter:   ldy itemIndex
                 beq UM_MoveRight
                 cmp #KEY_R
                 beq UM_Reload
-                cmp #KEY_H
-                beq UM_Heal
+                cmp #KEY_M
+                beq UM_Medkit
                 if ITEM_CHEAT>0
                 cmp #KEY_Z
                 beq UM_PrevItem
@@ -364,7 +364,7 @@ UM_NoCounter:   ldy itemIndex
                 beq UM_NextItem
                 endif
 UM_ControlDone: rts
-UM_Heal:        lda #ITEM_MEDKIT
+UM_Medkit:      lda #ITEM_MEDKIT
                 jsr FindItem
                 bcc UM_ControlDone
 UM_Reload:      jmp UseItem
