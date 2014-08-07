@@ -33,3 +33,5 @@ menuUpdateTblHi:dc.b >UM_None
                 dc.b >UM_PauseMenu
                 dc.b >UM_SkillDisplayKey
                 dc.b >UM_Dialogue
+
+healthFlashTbl: dc.b $0d,$0f,$09

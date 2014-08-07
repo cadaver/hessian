@@ -269,6 +269,7 @@ UseMedKit:      lda #HP_PLAYER
                 sta actHp+ACTI_PLAYER
                 lda #SFX_POWERUP
                 jsr PlaySfx
+                jsr FlashHealthBar
 UI_ReduceAmmo:  lda #USEITEM_ATTACK_DELAY       ;In case the item is removed, give an
                 sta actAttackD+ACTI_PLAYER      ;attack delay to prevent accidental
                 jmp DecreaseAmmoOne             ;fire if a weapon becomes selected next

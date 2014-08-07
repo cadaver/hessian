@@ -70,7 +70,18 @@ UP_EmptyCharsLoop:
 UP_EmptyCharsCmp:
                 cpx #HP_PLAYER/8
                 bcc UP_EmptyCharsLoop
-UP_HealthDone:  lda panelUpdateFlags
+UP_HealthDone:
+UP_HealthColor: ldy #$ff
+                bmi UP_HealthColorDone
+                lda healthFlashTbl,y
+                ldx #$05
+UP_HealthColorLoop:
+                sta colors+SCROLLROWS*40+41,x
+                dex
+                bpl UP_HealthColorLoop
+                dec UP_HealthColor+1
+UP_HealthColorDone:
+                lda panelUpdateFlags
                 lsr
                 bcc UP_SkipWeapon
                 ldy itemIndex
@@ -873,3 +884,13 @@ ConvertToBCD16: sta temp5
                 sty temp6
                 ldy #$10
                 bne CTB_Common
+
+        ; Request flashing of the health bar
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: Y
+
+FlashHealthBar: ldy #$02
+                sty UP_HealthColor+1
+                rts
