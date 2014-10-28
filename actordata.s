@@ -125,34 +125,38 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adEnemy
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
-                dc.b 0                          ;Color override
-                dc.b C_PLAYER                   ;Lower part spritefile number
-                dc.b 25                         ;Lower part base spritenumber
+                dc.b 0                          ;Lower part color override
+                dc.b C_PLAYER_BOTTOM            ;Lower part spritefile number
+                dc.b 0                          ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
-                dc.b C_PLAYER                   ;Upper part spritefile number
+adPlayerHairColor:
+                dc.b 0                          ;Upper part color override
+                dc.b C_PLAYER_FEMALE_TOP        ;Upper part spritefile number
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
 adNPC:          dc.b HUMANOID                   ;Number of sprites
-                dc.b 8                          ;Color override
-                dc.b C_PLAYER                   ;Lower part spritefile number
-                dc.b 25                         ;Lower part base spritenumber
+                dc.b 8                          ;Lower part color override
+                dc.b C_PLAYER_BOTTOM            ;Lower part spritefile number
+                dc.b 0                          ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
-                dc.b C_PLAYER                   ;Upper part spritefile number
+                dc.b 0                          ;Upper part color override
+                dc.b C_PLAYER_MALE_TOP          ;Upper part spritefile number
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
 adEnemy:        dc.b HUMANOID                   ;Number of sprites
-                dc.b 2                          ;Color override
-                dc.b C_PLAYER                   ;Lower part spritefile number
-                dc.b 25                         ;Lower part base spritenumber
+                dc.b 2                          ;Lower part color override
+                dc.b C_PLAYER_BOTTOM            ;Lower part spritefile number
+                dc.b 0                          ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
-                dc.b C_PLAYER                   ;Upper part spritefile number
+                dc.b 0                          ;Upper part color override
+                dc.b C_PLAYER_MALE_TOP          ;Upper part spritefile number
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add

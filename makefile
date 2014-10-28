@@ -30,7 +30,8 @@ clean:
 hessian.d64: boot.prg loader.pak main.pak loadpic.pak options.bin emptysave.bin savelist.bin logo.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak music13.pak music14.pak script00.pak \
-	script01.pak level00.pak level01.pak level02.pak common.pak item.pak weapon.pak player.pak
+	script01.pak level00.pak level01.pak level02.pak common.pak item.pak weapon.pak playermt.pak playerft.pak \
+	playerb.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -153,9 +154,9 @@ main.pak: actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutscene.s fi
 	pack2 main.bin main.pak
 
 loadpic.pak: loadpic.s loadsym.s mainsym.s pics/loadpic.iff
-	gfxconv pics\loadpic.iff loadpic.dat /r /b0 /o /nc /ns
-	gfxconv pics\loadpic.iff loadpicscr.dat /r /b0 /o /nc /nb
-	gfxconv pics\loadpic.iff loadpiccol.dat /r /b0 /o /nb /ns
+	gfxconv pics\loadpic.iff loadpic.dat -r -b0 -o -nc -ns
+	gfxconv pics\loadpic.iff loadpicscr.dat -r -b0 -o -nc -nb
+	gfxconv pics\loadpic.iff loadpiccol.dat -r -b0 -o -nb -ns
 	dasm loadpic.s  -oloadpic.bin -f3
 	pack2 loadpic.bin loadpic_1.pak
 	pack2 loadpic.dat loadpic_2.pak
@@ -173,8 +174,8 @@ savelist.bin: savelist.s mainsym.s
 	dasm savelist.s -osavelist.bin -f3
 
 logo.pak: pics/logo.iff logo.s
-	pic2chr pics/logo.iff logo.chr /m14 /n15 /x24 /y7 /c /s
-	pic2chr pics/logo.iff logoscr.dat /m14 /n15 /x24 /y7 /t
+	pic2chr pics/logo.iff logo.chr -m14 -n15 -x24 -y7 -c -s
+	pic2chr pics/logo.iff logoscr.dat -m14 -n15 -x24 -y7 -t
 	dasm logo.s -ologo.bin -f3
 	pack2 logo.bin logo.pak
 
@@ -286,5 +287,11 @@ item.pak: spr/item.spr
 weapon.pak: spr/weapon.spr
 	pchunk2 spr/weapon.spr weapon.pak
 
-player.pak: spr/player.spr
-	pchunk2 spr/player.spr player.pak
+playermt.pak: spr/playermt.spr
+	pchunk2 spr/playermt.spr playermt.pak
+
+playerft.pak: spr/playerft.spr
+	pchunk2 spr/playerft.spr playerft.pak
+
+playerb.pak: spr/playerb.spr
+	pchunk2 spr/playerb.spr playerb.pak

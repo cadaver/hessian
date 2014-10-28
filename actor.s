@@ -15,10 +15,11 @@ ADH_SPRFILE     = 2
 ADH_BASEFRAME   = 3
 ADH_BASEINDEX   = 4                             ;Index to a static 256-byte table for humanoid actor spriteframes
 ADH_LEFTFRADD   = 5
-ADH_SPRFILE2    = 6
-ADH_BASEFRAME2  = 7
-ADH_BASEINDEX2  = 8                             ;Index to a static 256-byte table for humanoid actor framenumbers
-ADH_LEFTFRADD2  = 9
+ADH_COLOROVERRIDE2 = 6
+ADH_SPRFILE2    = 7
+ADH_BASEFRAME2  = 8
+ADH_BASEINDEX2  = 9                             ;Index to a static 256-byte table for humanoid actor framenumbers
+ADH_LEFTFRADD2  = 10
 
 ONESPRITE       = $00
 TWOSPRITE       = $01
@@ -26,6 +27,7 @@ THREESPRITE     = $02
 FOURSPRITE      = $03
 HUMANOID        = $80
 
+COLOR_FIXEDOVERRIDE = $10
 COLOR_FLICKER   = $40
 COLOR_INVISIBLE = $80
 COLOR_ONETIMEFLASH = $ff
@@ -207,7 +209,7 @@ DrawActorSub:   stx actIndex
                 lda actFlash,x                  ;Get programmatic color override
                 bpl DA_NoHitFlash               ;including one frame hit flash
                 inc actFlash,x
-                lda #$01
+                lda #$01+COLOR_FIXEDOVERRIDE
                 bne DA_NoFlicker
 DA_NoHitFlash:  ldy #AD_COLOROVERRIDE
                 ora (actLo),y                   ;OR with actor's fixed color override
@@ -296,6 +298,20 @@ DA_HumanRight1: ldy #ADH_BASEINDEX
                 adc (actLo),y
                 ldx sprIndex
                 jsr GetAndStoreSprite
+                lda GASS_ColorOr+1              ;Humanoid can switch color override for the
+                and #$f0                        ;second part, unless hit flashing
+                cmp #COLOR_FIXEDOVERRIDE
+                beq DA_HumanNoOverride2
+                ldy #ADH_COLOROVERRIDE2
+                ora (actLo),y
+                sta GASS_ColorOr+1
+                ldy #$0f
+                and #$0f
+                beq DA_KeepSpriteColor2
+                ldy #$00
+DA_KeepSpriteColor2:
+                sty GASS_ColorAnd+1
+DA_HumanNoOverride2:
                 ldy #ADH_SPRFILE2               ;Get second part spritefile
                 lda (actLo),y
                 cmp sprFileNum
