@@ -1,11 +1,8 @@
                 include memory.s
 
-                org charColors
+                org chars-12*8
 
                 incbin bg/player.chr
-
-                org chars
-
                 incbin logo.chr
                 incbin logoscr.dat
 

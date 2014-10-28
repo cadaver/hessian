@@ -16,7 +16,7 @@ TITLE_PAGEDELAY = 561
 
 SAVEDESCSIZE    = 24
 
-logoStart       = charColors
+logoStart       = chars-12*8
 logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
@@ -443,25 +443,23 @@ IP_SkillCheatLoop:
         ; Draw player character for customization screen
 
 ErasePlayerCharacter:
-                ldx #$00
-                lda #$f0
-                bne DPC_Common
+                lda #$20
+                sta temp2
+                lda #<temp2
+                skip2
 DrawPlayerCharacter:
-                ldx #$0e
-                lda #$e0
-DPC_Common:     stx DPC_Color+1
+                lda #<temp1
+                sta DPC_Lda+1
                 ldy #$05
                 ldx plrSpriteFile
-                cpx #C_PLAYER_MALE_TOP
-                beq DPC_IsMale
-                adc #$05
-DPC_IsMale:     sta DPC_Char+1
+                lda drawPlayerCharTbl-C_PLAYER_MALE_TOP,x
+                sta temp1
 DPC_Loop:       ldx drawPlayerIndexTbl,y
-DPC_Char:       lda #$e0
+DPC_Lda:        lda temp1
                 sta screen1+14*40+25,x
 DPC_Color:      lda #$0e
                 sta colors+14*40+25,x
-                inc DPC_Char+1
+                inc temp1
                 dey
                 bpl DPC_Loop
                 rts
@@ -913,7 +911,10 @@ optionMaxValue: dc.b 2,1,1
 
 drawPlayerIndexTbl:
                 dc.b 81,80,41,40,1,0
-                
+
+drawPlayerCharTbl:
+                dc.b $f4,$fa
+
 customizeMinValue:
                 dc.b C_PLAYER_MALE_TOP,0
 customizeMaxValue:
