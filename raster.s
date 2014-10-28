@@ -20,7 +20,7 @@ StartIrq:       cld
                 lda #$35                        ;Ensure IO memory is available
                 sta $01
                 rts
-
+                
         ; IRQ redirector when Kernal is on
 
 RedirectIrq:    ldx $01
@@ -43,7 +43,7 @@ Irq5_Wait:      lda $d012
                 bcc Irq5_Wait
                 lda #PANEL_D018
                 sta $d018
-                jmp Irq2_AllDone
+                jmp Irq5_Continue
 
         ; Raster interrupt 1. Show game screen
 
@@ -366,4 +366,3 @@ Irq4_NoSCPU:    lda #IRQ1_LINE
                 lda #<Irq1
                 ldx #>Irq1
                 jmp SetNextIrq
-

@@ -173,7 +173,7 @@ options.bin: options.s mainsym.s
 savelist.bin: savelist.s mainsym.s
 	dasm savelist.s -osavelist.bin -f3
 
-logo.pak: pics/logo.iff logo.s
+logo.pak: pics/logo.iff logo.s bg/player.chr
 	pic2chr pics/logo.iff logo.chr -m14 -n15 -x24 -y7 -c -s
 	pic2chr pics/logo.iff logoscr.dat -m14 -n15 -x24 -y7 -t
 	dasm logo.s -ologo.bin -f3

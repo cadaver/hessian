@@ -16,7 +16,7 @@ TITLE_PAGEDELAY = 561
 
 SAVEDESCSIZE    = 24
 
-logoStart       = chars
+logoStart       = charColors
 logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
@@ -308,7 +308,61 @@ LoadGameCancel: jmp MainMenu
 
         ; Start new game
 
-StartNewGame:   jsr FadeOutAll
+StartNewGame:   lda #2
+                sta optionsMenuChoice
+                jsr FadeOutText
+                jsr ClearText
+                lda #<txtCharacter
+                ldx #>txtCharacter
+                jsr PrintPage
+CustomizeLoop:  lda textFadeDir                 ;Wait until text fade complete before drawing player
+                bne CustomizeSkipPlayer
+                jsr DrawPlayerCharacter
+                ldx plrHairColorIndex
+                lda plrHairColorTbl,x
+                sta Irq5_Bg3+1
+CustomizeSkipPlayer:
+                lda #11
+                sta temp1
+                lda optionsMenuChoice
+                asl
+                ldx #5
+                ldy #TEXTSTARTROW+2
+                jsr DrawChoiceArrow
+                jsr Update
+                lda optionsMenuChoice
+                ldx #2
+                jsr TitleMenuControl
+                sta optionsMenuChoice
+                jsr GetFireClick
+                bcs CustomizeSelect
+                jsr TitlePageDelayInteractive
+                bcc CustomizeLoop
+                jsr ErasePlayerCharacter
+                jmp TitleTexts                  ;Page delay expired, return to title
+CustomizeSelect:ldx optionsMenuChoice
+                cpx #2
+                beq ConfirmCharacter
+                lda plrSpriteFile,x
+                adc #$01
+                cmp customizeMaxValue,x
+                bcc CustomizeNotOver
+                lda customizeMinValue,x
+CustomizeNotOver:
+                sta plrSpriteFile,x
+                txa                             ;When switching male/female, reset hair to default color
+                bne CustomizeNoDefaultHairColor
+                ldy plrSpriteFile
+                lda defaultHairColorTbl-C_PLAYER_MALE_TOP,y
+                sta plrHairColorIndex
+CustomizeNoDefaultHairColor:
+                lda #SFX_SELECT
+                jsr PlaySfx
+                jmp CustomizeLoop
+
+ConfirmCharacter:
+                jsr ErasePlayerCharacter
+                jsr FadeOutAll
                 jsr SaveModifiedOptions
 InitPlayer:     lda #$00                        ;Init player state (level number, inventory selected item,
                 ldx #playerStateZPEnd-playerStateZPStart-1 ;experience, inventory items)
@@ -385,6 +439,32 @@ IP_SkillCheatLoop:
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
                 jmp CenterPlayer
 
+        ; Draw player character for customization screen
+
+ErasePlayerCharacter:
+                ldx #$00
+                lda #$f0
+                bne DPC_Common
+DrawPlayerCharacter:
+                ldx #$0e
+                lda #$e0
+DPC_Common:     stx DPC_Color+1
+                ldy #$05
+                ldx plrSpriteFile
+                cpx #C_PLAYER_MALE_TOP
+                beq DPC_IsMale
+                adc #$05
+DPC_IsMale:     sta DPC_Char+1
+DPC_Loop:       ldx drawPlayerIndexTbl,y
+DPC_Char:       lda #$e0
+                sta screen1+14*40+25,x
+DPC_Color:      lda #$0e
+                sta colors+14*40+25,x
+                inc DPC_Char+1
+                dey
+                bpl DPC_Loop
+                rts
+
         ; Save options if modified
 
 SaveModifiedOptions:
@@ -414,14 +494,12 @@ Update:         jsr Random                      ;Make game different according t
                 clc
                 adc textFade
                 sta textFade
-                cmp #$ff
-                bne UC_TextNotOverLow
+                bpl UC_TextNotOverLow
                 inc textFade
                 beq UC_StopTextFade
-UC_TextNotOverLow: 
-                cmp #16
-                bne UC_TextNotOverHigh
-                dec textFade
+UC_TextNotOverLow:
+                cmp #12
+                bcc UC_TextNotOverHigh
 UC_StopTextFade:lda #0
                 sta textFadeDir
 UC_TextNotOverHigh:
@@ -430,29 +508,24 @@ UC_TextNotOverHigh:
                 lsr
                 tay
                 lda textFadeTbl,y
-                ldx #39
-UC_UpdateTextLoop:
-M               set 0
-                repeat NUMTEXTROWS
-                sta colors+TEXTSTARTROW*40+M*40,x
-M               set M+1
-                repend
+                ldx #160
+UC_UpdateTextLoop:sta colors+TEXTSTARTROW*40-1,x
+                sta colors+TEXTSTARTROW*40+159,x
+UC_UpdateTextSkip2:
                 dex
-                bpl UC_UpdateTextLoop
+                bne UC_UpdateTextLoop
 UC_TextDone:    lda logoFadeDir
                 bne UC_HasLogoFade
                 rts
 UC_HasLogoFade: clc
                 adc logoFade
                 sta logoFade
-                cmp #$ff
-                bne UC_LogoNotOverLow
+                bpl UC_LogoNotOverLow
                 inc logoFade
                 beq UC_StopLogoFade
 UC_LogoNotOverLow:
-                cmp #16
-                bne UC_LogoNotOverHigh
-                dec logoFade
+                cmp #12
+                bcc UC_LogoNotOverHigh
 UC_StopLogoFade:lda #0
                 sta logoFadeDir
 UC_LogoNotOverHigh:
@@ -790,6 +863,14 @@ txtOptions:     dc.b $80+12,"GAME MODE",0
                 dc.b $80+12,"SOUND FX",0
                 dc.b 0
                 dc.b $80+12,"BACK",0
+                
+txtCharacter:   dc.b "CHARACTER CREATION",0
+                dc.b 0
+                dc.b $80+13,"MALE/FEMALE",0
+                dc.b 0
+                dc.b $80+13,"HAIR COLOR",0
+                dc.b 0
+                dc.b $80+13,"CONFIRM",0
 
 difficultyTxtLo:dc.b <txtEasy, <txtMedium, <txtHard
 difficultyTxtHi:dc.b >txtEasy, >txtMedium, >txtHard
@@ -829,6 +910,15 @@ textFadeTbl:    dc.b $00,$06,$03,$01
 
 optionMaxValue: dc.b 2,1,1
 
-saveList:       ds.b MAX_SAVES*SAVEDESCSIZE,0
+drawPlayerIndexTbl:
+                dc.b 81,80,41,40,1,0
+                
+customizeMinValue:
+                dc.b C_PLAYER_MALE_TOP,0
+customizeMaxValue:
+                dc.b C_PLAYER_BOTTOM,MAX_HAIR_COLORS
+                
+defaultHairColorTbl:
+                dc.b 2,0
 
                 checkscriptend

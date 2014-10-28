@@ -1215,3 +1215,12 @@ UB_Apply:       tay
                 adc temp5
                 sta (zpDestLo),y
                 rts
+
+        ;Non-aligned continuation of the panel split IRQ
+        
+Irq5_Continue:
+Irq5_Bg2:       lda #$0a
+                sta $d022
+Irq5_Bg3:       lda #$09
+                sta $d023
+                jmp Irq2_AllDone

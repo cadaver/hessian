@@ -34,6 +34,8 @@ DROP_WEAPONMEDKIT = $82
 DROP_WEAPONMEDKITCREDITS = $84
 DROPTABLERANDOM = 8                             ;Pick random choice from 8 consecutive indices
 
+MAX_HAIR_COLORS = 4
+
         ; Enemy random item drops
 
 itemDropTable:  dc.b ITEM_CREDITS
@@ -53,6 +55,11 @@ itemDropTable:  dc.b ITEM_CREDITS
 
 plrWeaponBonusTbl:
                 dc.b 8,10,12,14
+
+        ; Player customization hair colors
+        
+plrHairColorTbl:
+                dc.b 2,8,9,11
 
         ; Human Y-size reduce table based on animation
 
@@ -131,7 +138,8 @@ adPlayer:       dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
 adPlayerHairColor:
-                dc.b 0                          ;Upper part color override
+                dc.b 9                          ;Upper part color override
+adPlayerUpperSpriteFile:
                 dc.b C_PLAYER_FEMALE_TOP        ;Upper part spritefile number
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable

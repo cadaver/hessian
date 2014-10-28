@@ -1,10 +1,14 @@
                 include memory.s
 
+                org charColors
+
+                incbin bg/player.chr
+
                 org chars
 
                 incbin logo.chr
                 incbin logoscr.dat
-                
+
 titlePageTbl:   dc.w txtPressFire
                 dc.w txtInstructions
                 dc.w txtInstructions2
@@ -63,7 +67,7 @@ txtInstructions5:
                 dc.b "BLAST ENGULFS ONE SECTOR OF THE GROUP'S",0
                 dc.b "HOME CITY 'METROPOL' THEY MAY NO LONGER",0
                 dc.b "BE ABLE TO REMAIN SKEPTICAL...",0
-                
+
                 if * > screen2+SCROLLROWS*40
                     err
                 endif

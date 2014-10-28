@@ -243,6 +243,7 @@ saveSlotChoice: dc.b 0
 
         ; Level properties, objects and spawner data (not saved)
 
+saveList:
 lvlObjX:        ds.b MAX_LVLOBJ,0
 lvlObjY:        ds.b MAX_LVLOBJ,0
 lvlObjB:        ds.b MAX_LVLOBJ,0
