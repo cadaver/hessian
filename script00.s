@@ -352,8 +352,9 @@ CustomizeNotOver:
                 sta plrSpriteFile,x
                 txa                             ;When switching male/female, reset hair to default color
                 bne CustomizeNoDefaultHairColor
-                ldy plrSpriteFile
-                lda defaultHairColorTbl-C_PLAYER_MALE_TOP,y
+                lda plrSpriteFile
+                sec
+                sbc #C_PLAYER_MALE_TOP
                 sta plrHairColorIndex
 CustomizeNoDefaultHairColor:
                 lda #SFX_SELECT
@@ -917,8 +918,5 @@ customizeMinValue:
                 dc.b C_PLAYER_MALE_TOP,0
 customizeMaxValue:
                 dc.b C_PLAYER_BOTTOM,MAX_HAIR_COLORS
-                
-defaultHairColorTbl:
-                dc.b 2,0
 
                 checkscriptend
