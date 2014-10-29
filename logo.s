@@ -12,6 +12,9 @@ titlePageTbl:   dc.w txtPressFire
                 dc.w txtInstructions3
                 dc.w txtInstructions4
                 dc.w txtInstructions5
+                dc.w txtMainMenu
+                dc.w txtOptions
+                dc.w txtCharacter
 
 txtPressFire:   dc.b "A COVERT BITOPS PRODUCTION IN 2014",0
                 dc.b 0
@@ -64,6 +67,30 @@ txtInstructions5:
                 dc.b "BLAST ENGULFS ONE SECTOR OF THE GROUP'S",0
                 dc.b "HOME CITY 'METROPOL' THEY MAY NO LONGER",0
                 dc.b "BE ABLE TO REMAIN SKEPTICAL...",0
+
+txtMainMenu:    dc.b 0
+                dc.b $80+13,"START NEW GAME",0
+                dc.b 0
+                dc.b $80+13,"CONTINUE GAME",0
+                dc.b 0
+                dc.b $80+13,"OPTIONS",0
+                dc.b 0
+
+txtOptions:     dc.b $80+12,"GAME MODE",0
+                dc.b 0
+                dc.b $80+12,"MUSIC",0
+                dc.b 0
+                dc.b $80+12,"SOUND FX",0
+                dc.b 0
+                dc.b $80+12,"BACK",0
+
+txtCharacter:   dc.b "SETUP YOUR HESSIAN",0
+                dc.b 0
+                dc.b $80+13,"MALE/FEMALE",0
+                dc.b 0
+                dc.b $80+13,"HAIR COLOR",0
+                dc.b 0
+                dc.b $80+13,"CONFIRM",0
 
                 if * > screen2+SCROLLROWS*40
                     err

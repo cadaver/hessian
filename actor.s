@@ -1289,11 +1289,9 @@ DamageActor:    sty temp7
 DA_NotMinDamage:
                 cpx #ACTI_PLAYER
                 bne DA_NotPlayer
+DA_RuntimeHealthCheat:
                 stx healthRecharge              ;If player hit, reset health recharge timer
                 jsr FlashHealthBar              ;Also flash the health bar
-                if GODMODE_CHEAT>0
-                txa
-                endif
 DA_NotPlayer:   sta temp8
                 lda actHp,x                     ;First check that there is health
                 beq DA_Done                     ;(prevent destroy being called multiple times)

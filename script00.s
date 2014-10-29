@@ -16,6 +16,8 @@ TITLE_PAGEDELAY = 561
 
 SAVEDESCSIZE    = 24
 
+CHEATSTRING_LENGTH = 4
+
 logoStart       = chars-12*8
 logoScreen      = chars+608
 logoColors      = chars+608+168
@@ -153,8 +155,8 @@ EnterMainMenu:  lda #SFX_SELECT
 
 MainMenu:       jsr FadeOutText
                 jsr ClearText
-                lda #<txtMainMenu
-                ldx #>txtMainMenu
+                lda titleTexts+12
+                ldx titleTexts+13
                 jsr PrintPage
 MainMenuLoop:   lda #11
                 sta temp1
@@ -188,8 +190,8 @@ Options:        lda #0
                 sta optionsMenuChoice
                 jsr FadeOutText
                 jsr ClearText
-                lda #<txtOptions
-                ldx #>txtOptions
+                lda titleTexts+14
+                ldx titleTexts+15
                 jsr PrintPage
 RefreshOptions: lda #23
                 sta temp1
@@ -312,8 +314,8 @@ StartNewGame:   lda #2
                 sta optionsMenuChoice
                 jsr FadeOutText
                 jsr ClearText
-                lda #<txtCharacter
-                ldx #>txtCharacter
+                lda titleTexts+16
+                ldx titleTexts+17
                 jsr PrintPage
 RefreshCustomize:
                 jsr DrawPlayerCharacter
@@ -478,6 +480,32 @@ Update:         jsr Random                      ;Make game different according t
                 jsr GetControls
                 jsr FinishFrame
                 jsr WaitBottom
+
+        ; Check for cheat string (on the title text loop)
+
+CheckCheat:     lda keyType
+                bmi CC_NoCheat
+                ldx cheatIndex
+                cmp cheatString,x
+                bne CC_CheatWrong
+                inc cheatIndex
+                cpx #CHEATSTRING_LENGTH-1
+                bcc CC_NoCheat
+CC_ActivateCheat:
+                ldx #$01
+CC_ActivateCheatLoop:
+                lda DA_RuntimeHealthCheat,x
+                eor cheatEorTbl,x
+                sta DA_RuntimeHealthCheat,x
+                dex
+                bpl CC_ActivateCheatLoop
+                dec Irq1_Bg2+1
+                jsr WaitBottom
+                inc Irq1_Bg2+1
+CC_CheatWrong:  lda #$00
+                sta cheatIndex
+CC_NoCheat:
+
                 lda textFadeDir
                 beq UC_TextDone
                 clc
@@ -861,30 +889,6 @@ optionsMenuChoice:
                 
 optionsModified: dc.b 0
 
-txtMainMenu:    dc.b 0
-                dc.b $80+13,"START NEW GAME",0
-                dc.b 0
-                dc.b $80+13,"CONTINUE GAME",0
-                dc.b 0
-                dc.b $80+13,"OPTIONS",0
-                dc.b 0
-
-txtOptions:     dc.b $80+12,"GAME MODE",0
-                dc.b 0
-                dc.b $80+12,"MUSIC",0
-                dc.b 0
-                dc.b $80+12,"SOUND FX",0
-                dc.b 0
-                dc.b $80+12,"BACK",0
-
-txtCharacter:   dc.b "DEFINE THE HESSIAN",0
-                dc.b 0
-                dc.b $80+13,"MALE/FEMALE",0
-                dc.b 0
-                dc.b $80+13,"HAIR COLOR",0
-                dc.b 0
-                dc.b $80+13,"CONFIRM",0
-
 difficultyTxtLo:dc.b <txtEasy, <txtMedium, <txtHard
 difficultyTxtHi:dc.b >txtEasy, >txtMedium, >txtHard
 
@@ -893,8 +897,8 @@ txtMedium:      dc.b "MEDIUM",0
 txtHard:        dc.b "HARD  ",0
 txtOn:          dc.b "ON ",0
 txtOff:         dc.b "OFF",0
-txtLoadSlot:    dc.b "CONTINUE FROM SAVE",0
-txtSaveSlot:    dc.b "SAVE GAME TO SLOT",0
+txtLoadSlot:    dc.b "LOAD GAME FROM",0
+txtSaveSlot:    dc.b "SAVE GAME TO",0
 txtEmpty:       dc.b "EMPTY SLOT",0
 txtCancel:      dc.b "CANCEL",0
 txtSaveLevelAndXP:
@@ -936,5 +940,9 @@ customizeMinValue:
                 dc.b C_PLAYER_MALE_TOP,0
 customizeMaxValue:
                 dc.b C_PLAYER_BOTTOM,MAX_HAIR_COLORS
+
+cheatString:    dc.b KEY_K, KEY_V, KEY_L, KEY_T
+cheatIndex:     dc.b 0
+cheatEorTbl:    dc.b $2f, <healthRecharge
 
                 checkscriptend
