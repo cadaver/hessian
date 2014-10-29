@@ -315,14 +315,15 @@ StartNewGame:   lda #2
                 lda #<txtCharacter
                 ldx #>txtCharacter
                 jsr PrintPage
-CustomizeLoop:  lda textFadeDir                 ;Wait until text fade complete before drawing player
-                bne CustomizeSkipPlayer
+RefreshCustomize:
                 jsr DrawPlayerCharacter
                 ldx plrHairColorIndex
                 lda plrHairColorTbl,x
-                sta Irq5_Bg3+1
-CustomizeSkipPlayer:
-                lda #11
+                sta hairFadeTbl+3
+                ldy textFadeDir
+                bne CustomizeLoop
+                sta Irq5_Bg3+1                  ;When character fade done, update IRQ color directly
+CustomizeLoop:  lda #11
                 sta temp1
                 lda optionsMenuChoice
                 asl
@@ -338,7 +339,6 @@ CustomizeSkipPlayer:
                 bcs CustomizeSelect
                 jsr TitlePageDelayInteractive
                 bcc CustomizeLoop
-                jsr ErasePlayerCharacter
                 jmp TitleTexts                  ;Page delay expired, return to title
 CustomizeSelect:ldx optionsMenuChoice
                 cpx #2
@@ -359,10 +359,9 @@ CustomizeNotOver:
 CustomizeNoDefaultHairColor:
                 lda #SFX_SELECT
                 jsr PlaySfx
-                jmp CustomizeLoop
+                jmp RefreshCustomize
 
 ConfirmCharacter:
-                jsr ErasePlayerCharacter
                 jsr FadeOutAll
                 jsr SaveModifiedOptions
 InitPlayer:     lda #$00                        ;Init player state (level number, inventory selected item,
@@ -442,24 +441,15 @@ IP_SkillCheatLoop:
 
         ; Draw player character for customization screen
 
-ErasePlayerCharacter:
-                lda #$20
-                sta temp2
-                lda #<temp2
-                skip2
 DrawPlayerCharacter:
-                lda #<temp1
-                sta DPC_Lda+1
                 ldy #$05
                 ldx plrSpriteFile
                 lda drawPlayerCharTbl-C_PLAYER_MALE_TOP,x
-                sta temp1
+                sta DPC_Lda+1
 DPC_Loop:       ldx drawPlayerIndexTbl,y
-DPC_Lda:        lda temp1
+DPC_Lda:        lda #$00
                 sta screen1+14*40+25,x
-DPC_Color:      lda #$0e
-                sta colors+14*40+25,x
-                inc temp1
+DPC_Color:      inc DPC_Lda+1
                 dey
                 bpl DPC_Loop
                 rts
@@ -506,11 +496,34 @@ UC_TextNotOverHigh:
                 lsr
                 lsr
                 tay
+                lda hairFadeTbl,y
+                sta Irq5_Bg3+1
+                lda skinFadeTbl,y
+                sta Irq5_Bg2+1
                 lda textFadeTbl,y
+                sta UC_UpdateTextColorSC1+1
+                sta UC_UpdateTextColorSC2+1
+                lda mcTextFadeTbl,y
+                sta UC_UpdateTextColorMC1+1
+                sta UC_UpdateTextColorMC2+1
                 ldx #160
-UC_UpdateTextLoop:sta colors+TEXTSTARTROW*40-1,x
+UC_UpdateTextLoop:
+UC_UpdateTextColorSC1:
+                lda #$00
+                ldy screen1+TEXTSTARTROW*40-1,x
+                bpl UC_UpdateTextNoMC1
+UC_UpdateTextColorMC1:
+                lda #$00
+UC_UpdateTextNoMC1:
+                sta colors+TEXTSTARTROW*40-1,x
+UC_UpdateTextColorSC2:
+                lda #$00
+                ldy screen1+TEXTSTARTROW*40+159,x
+                bpl UC_UpdateTextNoMC2
+UC_UpdateTextColorMC2:
+                lda #$00
+UC_UpdateTextNoMC2:
                 sta colors+TEXTSTARTROW*40+159,x
-UC_UpdateTextSkip2:
                 dex
                 bne UC_UpdateTextLoop
 UC_TextDone:    lda logoFadeDir
@@ -733,6 +746,7 @@ M               set M+1
                 repend
                 dex
                 bpl ClearTextLoop
+                rts
 
         ; Print on/off texts for the options
 
@@ -862,8 +876,8 @@ txtOptions:     dc.b $80+12,"GAME MODE",0
                 dc.b $80+12,"SOUND FX",0
                 dc.b 0
                 dc.b $80+12,"BACK",0
-                
-txtCharacter:   dc.b "CHARACTER CREATION",0
+
+txtCharacter:   dc.b "DEFINE THE HESSIAN",0
                 dc.b 0
                 dc.b $80+13,"MALE/FEMALE",0
                 dc.b 0
@@ -905,7 +919,10 @@ logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
                 dc.b $08,$0b,$08,$0e,$08,$08,$08,$0b
                 dc.b $08,$09,$0a,$0b,$0c,$0d,$0e,$0f
 
+hairFadeTbl:    dc.b $00,$00,$06,$09
+skinFadeTbl:    dc.b $00,$09,$08,$0a
 textFadeTbl:    dc.b $00,$06,$03,$01
+mcTextFadeTbl:  dc.b $08,$08,$0e,$0e
 
 optionMaxValue: dc.b 2,1,1
 
