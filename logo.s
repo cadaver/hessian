@@ -84,7 +84,7 @@ txtOptions:     dc.b $80+12,"GAME MODE",0
                 dc.b 0
                 dc.b $80+12,"BACK",0
 
-txtCharacter:   dc.b "SETUP YOUR HESSIAN",0
+txtCharacter:   dc.b "CHARACTER SET-UP",0
                 dc.b 0
                 dc.b $80+13,"MALE/FEMALE",0
                 dc.b 0

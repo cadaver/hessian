@@ -83,11 +83,12 @@ AH_NoWeaponFrame:
                 sta actWpnF,x
                 rts
 
+MoveAndAttackHuman:
+                jsr MoveHuman
 AttackHuman:    ldy actWpn,x
                 beq AH_NoWeaponFrame
-                lda actF1,x                     ;No attacks/weapon if dead
-                cmp #FR_DIE
-                bcs AH_NoWeaponFrame
+                lda actHp,x                     ;No attacks/weapon if dead
+                beq AH_NoWeaponFrame
                 lda wpnTblLo-1,y
                 sta wpnLo
                 lda wpnTblHi-1,y
@@ -96,8 +97,7 @@ AttackHuman:    ldy actWpn,x
                 lda (wpnLo),y
                 sta wpnBits
                 txa                             ;Ammo check only for player
-                beq AH_AmmoCheck
-                jmp AH_NotPlayer
+                bne AH_NotPlayer
 AH_AmmoCheck:   ldy itemIndex                   ;Check for ammo & reloading
                 lda magazineSize
                 bmi AH_AmmoCheckOK              ;Infinite (melee weapon)

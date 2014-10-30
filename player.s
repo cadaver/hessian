@@ -89,8 +89,7 @@ MP_ControlMask: and #$ff
                 ora #JOY_DOWN
 MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
 MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
-                jsr MoveHuman                   ;Move player
-MP_Scroll:      jsr GetActorCharCoords          ;Then check scrolling
+MP_Scroll:      jsr GetActorCharCoords          ;Check scrolling
                 cmp #SCRCENTER_X-1
                 bcs MP_NotLeft1
                 dex
@@ -127,7 +126,7 @@ MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventor
                 ldx #ITEM_NONE
 MP_WeaponOK:    stx actWpn+ACTI_PLAYER
                 ldx #ACTI_PLAYER
-                jmp AttackHuman                 ;Finally handle attacks
+                jmp MoveAndAttackHuman          ;Finally move player and handle weapon
 
         ; Humanoid character move routine
         ;

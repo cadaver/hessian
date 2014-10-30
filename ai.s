@@ -48,8 +48,7 @@ MoveAIHuman:    lda actCtrl,x
                 lda aiJumpTblHi,y
                 sta MA_AIJump+2
 MA_AIJump:      jsr $0000
-MA_SkipAI:      jsr MoveHuman
-                jmp AttackHuman
+MA_SkipAI:      jmp MoveAndAttackHuman
 
         ; Follow (pathfinding) AI
 
