@@ -1,5 +1,6 @@
-DMG_MINIMUM     = 2
-DMG_WATER       = 2
+NOMODIFY        = $80
+
+DMG_WATER       = 2+NOMODIFY
 DMG_FISTS       = 4
 DMG_FLAMETHROWER = 5
 DMG_MINIGUN     = 5

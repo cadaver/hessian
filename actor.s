@@ -1257,37 +1257,57 @@ DamageSelf:     ldy #NODAMAGESRC
                 bcs DS_Alive
                 pla
                 pla
-                rts
+ATD_Skip:       rts
 
-        ; Damage target actor
+
+        ; Modify damage based on whether target is organic/nonorganic, then apply
         ;
-        ; Parameters: A damage amount, actIndex damage source actor, tgtActIndex target actor
-        ; Returns: C=1 if actor is alive, C=0 if killed
-        ; Modifies: A,Y,temp7-temp8,possibly other temp registers
+        ; Parameters: X bullet actor Y target actor
+        ; Returns: A modified damage
+        ; Modifies: A,Y,temp7,temp8,loader temp vars
 
-DamageTargetActor:
+ApplyTargetDamage:
+                lda actAuxData,x                ;Damage modifier
+                sta temp7
+                lda actHp,x                     ;Amount of damage
+                sta temp8
+                lda actFlags,y                  ;Check if target is organic
+                and #AF_ISORGANIC
+                beq ATD_NonOrganic
+ATD_Organic:    lda temp7
+                and #$0f
+                bpl ATD_Common
+ATD_NonOrganic: lda temp7
+                lsr
+                lsr
+                lsr
+                lsr
+ATD_Common:     tay
+                beq ATD_Skip                    ;If damage multiplier is actually zero, skip
+                lda temp8                       ;further processing, as the target should not be
+                jsr ModifyDamage                ;damaged at all
                 ldx tgtActIndex
                 ldy actIndex
 
         ; Damage actor, and destroy if health goes to zero
         ;
-        ; Parameters: A damage amount, X actor index, Y damage source actor if applicable or >=$80 if none
+        ; Parameters: A damage amount (>= $80 skip modify), X actor index, Y damage source actor if applicable or >=$80 if none
         ; Returns: C=1 if actor is alive, C=0 if killed
         ; Modifies: A,Y,temp7-temp8,possibly other temp registers
 
 DamageActor:    sty temp7
-                pha
+                tay
+                bpl DA_UseModify
+                and #$7f
+                bpl DA_SkipModify
+DA_UseModify:   pha
                 jsr GetActorLogicData
                 ldy #AL_DMGMODIFY
                 lda (actLo),y
                 tay
                 pla
                 jsr ModifyDamage
-                cmp #DMG_MINIMUM                ;Always at least 2 points damage
-                bcs DA_NotMinDamage
-                lda #DMG_MINIMUM
-DA_NotMinDamage:
-                cpx #ACTI_PLAYER
+DA_SkipModify:  cpx #ACTI_PLAYER
                 bne DA_NotPlayer
 DA_RuntimeHealthCheat:
                 stx healthRecharge              ;If player hit, reset health recharge timer

@@ -453,10 +453,7 @@ CBC_HasCollision:
                 lda temp7
                 bmi CBC_ReportOnly
                 sty tgtActIndex
-                jsr ModifyTargetDamage
-                tay
-                beq CBC_NoDamage
-                jsr DamageTargetActor
+                jsr ApplyTargetDamage
 CBC_NoDamage:   ldx actIndex
                 ldy #NODAMAGESRC                ;Destroy bullet with no damage source
                 pla
@@ -481,11 +478,8 @@ RD_Loop:        lda actT,y
                 jsr CheckActorCollision
                 bcc RD_Next
                 sty tgtActIndex
-                jsr ModifyTargetDamage
-                tay
-                beq RD_SkipDamage
-                jsr DamageTargetActor
-RD_SkipDamage:  ldx actIndex
+                jsr ApplyTargetDamage
+                ldx actIndex
                 ldy tgtActIndex
 RD_Next:        dey
                 bpl RD_Loop

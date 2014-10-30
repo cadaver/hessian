@@ -379,40 +379,14 @@ GetBulletOffset:ldy actT,x
                 ldx actIndex
                 rts
 
-        ; Modify damage based on whether target is organic/nonorganic
-        ;
-        ; Parameters: X bullet actor Y target actor
-        ; Returns: A modified damage
-        ; Modifies: A,Y,temp7,temp8,loader temp vars
-
-ModifyTargetDamage:
-                lda actAuxData,x                ;Damage modifier
-                sta temp7
-                lda actHp,x                     ;Amount of damage
-                sta temp8
-                lda actFlags,y                  ;Check if target is organic
-                and #AF_ISORGANIC
-                beq MTD_NonOrganic
-MTD_Organic:    lda temp7
-                and #$0f
-                bpl MTD_Common
-MTD_NonOrganic: lda temp7
-                lsr
-                lsr
-                lsr
-                lsr
-MTD_Common:     tay
-                lda temp8
-
         ; Modify damage
         ;
-        ; Parameters: A damage Y multiplier (8 = unmodified) or subtract (>= $80)
+        ; Parameters: A damage Y multiplier (8 = unmodified)
         ; Returns: A modified damage
         ; Modifies: A,Y,loader temp vars
 
 ModifyDamage:   cpy #NO_MODIFY                  ;Optimize the unmodified case
                 beq MD_Done
-                bmi MD_Subtract
                 stx zpBitsLo
                 ldx #zpSrcLo
                 jsr MulU
@@ -423,13 +397,7 @@ ModifyDamage:   cpy #NO_MODIFY                  ;Optimize the unmodified case
                 ror
                 lsr zpSrcHi
                 ror
-                ldx zpBitsLo
-                rts
-MD_Subtract:    sty zpSrcLo
-                clc
-                adc zpSrcLo
-                bpl MD_SubtractNotOver          ;Do not allow to go below zero
-                lda #$00
-MD_SubtractNotOver:
+                bne MD_NotZero
+                lda #$01                        ;Ensure at least 1 point damage
+MD_NotZero:     ldx zpBitsLo
 MD_Done:        rts
-
