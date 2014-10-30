@@ -1154,8 +1154,7 @@ RCP_ClearActorsLoop:
 CreatePlayerActor:
                 lda plrSpriteFile
                 sta adPlayerUpperSpriteFile
-                ldx plrHairColorIndex
-                lda plrHairColorTbl,x
+                lda plrHairColor
                 sta adPlayerHairColor
                 ldx #MAX_ACT-1                  ;Clear all actors when starting game
 RCP_ClearActorLoop:

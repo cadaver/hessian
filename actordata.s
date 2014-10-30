@@ -34,8 +34,6 @@ DROP_WEAPONMEDKIT = $82
 DROP_WEAPONMEDKITCREDITS = $84
 DROPTABLERANDOM = 8                             ;Pick random choice from 8 consecutive indices
 
-MAX_HAIR_COLORS = 5
-
         ; Enemy random item drops
 
 itemDropTable:  dc.b ITEM_CREDITS
@@ -55,11 +53,6 @@ itemDropTable:  dc.b ITEM_CREDITS
 
 plrWeaponBonusTbl:
                 dc.b 8,10,12,14
-
-        ; Player customization hair colors
-        
-plrHairColorTbl:
-                dc.b 9,2,8,4,11
 
         ; Human Y-size reduce table based on animation
 

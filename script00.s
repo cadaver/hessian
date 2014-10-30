@@ -18,6 +18,8 @@ SAVEDESCSIZE    = 24
 
 CHEATSTRING_LENGTH = 4
 
+MAX_HAIR_COLORS = 5
+
 logoStart       = chars-12*8
 logoScreen      = chars+608
 logoColors      = chars+608+168
@@ -317,10 +319,17 @@ StartNewGame:   lda #2
                 lda titleTexts+16
                 ldx titleTexts+17
                 jsr PrintPage
+                ldx #MAX_HAIR_COLORS-1          ;Reverse the hair color index from current actual color
+GetHairColorIndex:
+                lda plrHairColorTbl,x
+                cmp plrHairColor
+                beq HairColorFound
+                dex
+                bpl GetHairColorIndex
+HairColorFound: stx plrHairColorIndex
 RefreshCustomize:
                 jsr DrawPlayerCharacter
-                ldx plrHairColorIndex
-                lda plrHairColorTbl,x
+                lda plrHairColor
                 sta hairFadeTbl+3
                 ldy textFadeDir
                 bne CustomizeLoop
@@ -343,25 +352,33 @@ CustomizeLoop:  lda #11
                 bcc CustomizeLoop
                 jmp TitleTexts                  ;Page delay expired, return to title
 CustomizeSelect:ldx optionsMenuChoice
+                beq SelectGender
                 cpx #2
                 beq ConfirmCharacter
-                lda plrSpriteFile,x
-                adc #$01
-                cmp customizeMaxValue,x
-                bcc CustomizeNotOver
-                lda customizeMinValue,x
-CustomizeNotOver:
-                sta plrSpriteFile,x
-                txa                             ;When switching male/female, reset hair to default color
-                bne CustomizeNoDefaultHairColor
-                lda plrSpriteFile
-                sec
-                sbc #C_PLAYER_MALE_TOP
-                sta plrHairColorIndex
-CustomizeNoDefaultHairColor:
+SelectHairColor:ldx plrHairColorIndex
+                inx
+                cpx #MAX_HAIR_COLORS
+                bcc SelectHairColorNoWrap
+                ldx #$00
+SelectHairColorNoWrap:
+CustomizeCommon:stx plrHairColorIndex
+                lda plrHairColorTbl,x
+                sta plrHairColor
                 lda #SFX_SELECT
                 jsr PlaySfx
                 jmp RefreshCustomize
+SelectGender:   ldx plrSpriteFile
+                inx
+                cpx #C_PLAYER_FEMALE_TOP+1
+                bcc SelectGenderNoWrap
+                ldx #C_PLAYER_MALE_TOP
+SelectGenderNoWrap:
+                stx plrSpriteFile
+                txa
+                sec
+                sbc #C_PLAYER_MALE_TOP
+                tax
+                bpl CustomizeCommon
 
 ConfirmCharacter:
                 jsr FadeOutAll
@@ -936,10 +953,9 @@ drawPlayerIndexTbl:
 drawPlayerCharTbl:
                 dc.b $f4,$fa
 
-customizeMinValue:
-                dc.b C_PLAYER_MALE_TOP,0
-customizeMaxValue:
-                dc.b C_PLAYER_BOTTOM,MAX_HAIR_COLORS
+plrHairColorIndex:
+                dc.b 0
+plrHairColorTbl:dc.b 9,2,8,4,11
 
 cheatString:    dc.b KEY_K, KEY_V, KEY_L, KEY_T
 cheatIndex:     dc.b 0

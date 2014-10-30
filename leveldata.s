@@ -27,8 +27,7 @@ plrMelee:       dc.b 0
 plrVitality:    dc.b 0
 plrReload:      dc.b 0
 plrSpriteFile:  dc.b C_PLAYER_MALE_TOP
-plrHairColorIndex:
-                dc.b 0
+plrHairColor:   dc.b 9
 scriptF:        dc.b $ff
 scriptEP:       dc.b 0
 plotBits:       ds.b MAX_PLOTBITS/8,0
