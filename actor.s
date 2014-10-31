@@ -1267,7 +1267,7 @@ ATD_Skip:       rts
         ; Modifies: A,Y,temp7,temp8,loader temp vars
 
 ApplyTargetDamage:
-                lda actAuxData,x                ;Damage modifier
+                lda actBulletDmgMod-ACTI_FIRSTPLRBULLET,x ;Damage modifier
                 sta temp7
                 lda actHp,x                     ;Amount of damage
                 sta temp8

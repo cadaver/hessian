@@ -291,8 +291,8 @@ actSizeU:       ds.b MAX_ACT,0
 actSizeD:       ds.b MAX_ACT,0
 actTime:        ds.b MAX_ACT,0
 actMB:          ds.b MAX_ACT,0
-actAuxData:     ds.b MAX_ACT,0
 actAITarget:    ds.b MAX_ACT,0
+actBulletDmgMod:ds.b MAX_BULLETS,0
 actLvlDataPos:  ds.b MAX_PERSISTENTACT,0
 actLvlDataOrg:  ds.b MAX_PERSISTENTACT,0
 actF2:          ds.b MAX_COMPLEXACT,0

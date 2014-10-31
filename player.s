@@ -1152,10 +1152,6 @@ RCP_ClearActorsLoop:
         ; Modifies: A,X,Y,temp vars
 
 CreatePlayerActor:
-                lda plrSpriteFile
-                sta adPlayerUpperSpriteFile
-                lda plrHairColor
-                sta adPlayerHairColor
                 ldx #MAX_ACT-1                  ;Clear all actors when starting game
 RCP_ClearActorLoop:
                 jsr RemoveActor

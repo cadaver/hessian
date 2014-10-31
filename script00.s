@@ -307,6 +307,8 @@ RSF_End:        lda saveStateStart              ;If first byte zero, it's an emp
                 beq LoadSkipFade
                 jsr FadeOutAll
 LoadSkipFade:   jsr SaveModifiedOptions
+                lda saveState+plrAppearance-playerStateStart
+                jsr SetupPlayerAppearance
                 jmp RestartCheckpoint           ;Start loaded game
 LoadGameCancel: jmp MainMenu
 
@@ -319,17 +321,12 @@ StartNewGame:   lda #2
                 lda titleTexts+16
                 ldx titleTexts+17
                 jsr PrintPage
-                ldx #MAX_HAIR_COLORS-1          ;Reverse the hair color index from current actual color
-GetHairColorIndex:
-                lda plrHairColorTbl,x
-                cmp plrHairColor
-                beq HairColorFound
-                dex
-                bpl GetHairColorIndex
-HairColorFound: stx plrHairColorIndex
 RefreshCustomize:
                 jsr DrawPlayerCharacter
-                lda plrHairColor
+                lda plrAppearance
+                and #$7f
+                tax
+                lda plrHairColorTbl,x
                 sta hairFadeTbl+3
                 ldy textFadeDir
                 bne CustomizeLoop
@@ -352,33 +349,28 @@ CustomizeLoop:  lda #11
                 bcc CustomizeLoop
                 jmp TitleTexts                  ;Page delay expired, return to title
 CustomizeSelect:ldx optionsMenuChoice
-                beq SelectGender
+                beq CustomizeGender
                 cpx #2
                 beq ConfirmCharacter
-SelectHairColor:ldx plrHairColorIndex
-                inx
-                cpx #MAX_HAIR_COLORS
-                bcc SelectHairColorNoWrap
-                ldx #$00
-SelectHairColorNoWrap:
-CustomizeCommon:stx plrHairColorIndex
-                lda plrHairColorTbl,x
-                sta plrHairColor
+CustomizeHairColor:
+                inc plrAppearance
+                lda plrAppearance
+                and #$7f
+                cmp #MAX_HAIR_COLORS
+                bcc CustomizePlaySound
+                lda plrAppearance
+                and #$80
+                bcs CustomizeStore
+CustomizeGender:lda plrAppearance
+                eor #$80
+                and #$80
+                cmp #$80
+                adc #$00                        ;Setup default hair color when switching male/female
+CustomizeStore: sta plrAppearance
+CustomizePlaySound:
                 lda #SFX_SELECT
                 jsr PlaySfx
                 jmp RefreshCustomize
-SelectGender:   ldx plrSpriteFile
-                inx
-                cpx #C_PLAYER_FEMALE_TOP+1
-                bcc SelectGenderNoWrap
-                ldx #C_PLAYER_MALE_TOP
-SelectGenderNoWrap:
-                stx plrSpriteFile
-                txa
-                sec
-                sbc #C_PLAYER_MALE_TOP
-                tax
-                bpl CustomizeCommon
 
 ConfirmCharacter:
                 jsr FadeOutAll
@@ -453,6 +445,8 @@ IP_SkillCheatLoop:
                 sta saveYH
                 lda #ACT_PLAYER
                 sta saveT
+                lda plrAppearance
+                jsr SetupPlayerAppearance
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
@@ -462,15 +456,30 @@ IP_SkillCheatLoop:
 
 DrawPlayerCharacter:
                 ldy #$05
-                ldx plrSpriteFile
-                lda drawPlayerCharTbl-C_PLAYER_MALE_TOP,x
-                sta DPC_Lda+1
+                lda #$f4
+                ldx plrAppearance
+                bpl DPC_Male
+                lda #$fa
+DPC_Male:       sta DPC_Lda+1
 DPC_Loop:       ldx drawPlayerIndexTbl,y
 DPC_Lda:        lda #$00
                 sta screen1+14*40+25,x
 DPC_Color:      inc DPC_Lda+1
                 dey
                 bpl DPC_Loop
+                rts
+
+        ; Apply player customization (in A) to the actor data
+
+SetupPlayerAppearance:
+                cmp #$80
+                and #$7f
+                tax
+                lda #C_PLAYER_MALE_TOP
+                adc #$00
+                sta adPlayerUpperSpriteFile
+                lda plrHairColorTbl,x
+                sta adPlayerHairColor
                 rts
 
         ; Save options if modified
@@ -950,11 +959,6 @@ optionMaxValue: dc.b 2,1,1
 drawPlayerIndexTbl:
                 dc.b 81,80,41,40,1,0
 
-drawPlayerCharTbl:
-                dc.b $f4,$fa
-
-plrHairColorIndex:
-                dc.b 0
 plrHairColorTbl:dc.b 9,2,8,4,11
 
 cheatString:    dc.b KEY_K, KEY_V, KEY_L, KEY_T

@@ -304,7 +304,7 @@ AH_FireDir:     lda #$00
                 sta temp8
                 iny
                 lda (wpnLo),y
-                sta actAuxData,x                ;Damage mod nonorganic / organic
+                sta actBulletDmgMod-ACTI_FIRSTPLRBULLET,x ;Damage mod nonorganic / organic
                 iny
                 lda (wpnLo),y
                 sta actTime,x
