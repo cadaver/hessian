@@ -17,4 +17,4 @@ Story:
 
 Take control of Hessian, an ex-military member of a group known as 'Skeptics' that investigates potential end-of-the-world scenarios. As a mysterious energy blast engulfs one sector of the group's home city 'Metropol' they may no longer be able to remain skeptical...
 
-See also [http://cadaver.homeftp.net](CovertBitops homepage). 
+See also [CovertBitops homepage](http://cadaver.homeftp.net). 
