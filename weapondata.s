@@ -129,6 +129,7 @@ wdShiv:         dc.b WDB_MELEE                  ;Weapon bits
                 dc.b 1                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_MELEE                  ;Sound effect
+                dc.b $ff                        ;Climbing weapon frame
                 dc.b 61                         ;Idle weapon frame (right)
                 dc.b 61                         ;Idle weapon frame (left)
                 dc.b 62-2                       ;Attack weapon frames (right)
@@ -147,6 +148,7 @@ wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b 1                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_MELEE                  ;Sound effect
+                dc.b $ff                        ;Climbing weapon frame
                 dc.b 5                          ;Idle weapon frame (right)
                 dc.b 5                          ;Idle weapon frame (left)
                 dc.b 6-2                        ;Attack weapon frames (right)
@@ -165,6 +167,7 @@ wdNightstick:   dc.b WDB_MELEE                  ;Weapon bits
                 dc.b 1                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_MELEE                  ;Sound effect
+                dc.b $ff                        ;Climbing weapon frame
                 dc.b 36                         ;Idle weapon frame (right)
                 dc.b $80+36                     ;Idle weapon frame (left)
                 dc.b 37-1                       ;Attack weapon frames (right)
@@ -183,6 +186,7 @@ wdBat:          dc.b WDB_MELEE                  ;Weapon bits
                 dc.b 1                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_HEAVYMELEE             ;Sound effect
+                dc.b $ff                        ;Climbing weapon frame
                 dc.b 32                         ;Idle weapon frame (right)
                 dc.b $80+32                     ;Idle weapon frame (left)
                 dc.b 33-1                       ;Attack weapon frames (right)
@@ -201,6 +205,7 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME         ;Weapon bits
                 dc.b 12                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_PISTOL                 ;Sound effect
+                dc.b $ff                        ;Climbing weapon frame
                 dc.b 2                          ;Idle weapon frame (right)
                 dc.b $80+2                      ;Idle weapon frame (left)
                 dc.b 0                          ;Attack weapon frames (right)
@@ -220,6 +225,7 @@ wdShotgun:      dc.b WDB_BULLETDIRFRAME         ;Weapon bits
                 dc.b 14                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_SHOTGUN                ;Sound effect
+                dc.b 8                          ;Climbing weapon frame
                 dc.b 9                          ;Idle weapon frame (right)
                 dc.b $80+9                      ;Idle weapon frame (left)
                 dc.b 7                          ;Attack weapon frames (right)
@@ -239,6 +245,7 @@ wdAutoRifle:    dc.b WDB_BULLETDIRFRAME         ;Weapon bits
                 dc.b 14                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_AUTORIFLE              ;Sound effect
+                dc.b 13                         ;Climbing weapon frame
                 dc.b 14                         ;Idle weapon frame (right)
                 dc.b $80+14                     ;Idle weapon frame (left)
                 dc.b 12                         ;Attack weapon frames (right)
@@ -258,6 +265,7 @@ wdSniperRifle:  dc.b WDB_BULLETDIRFRAME         ;Weapon bits
                 dc.b 15                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_SNIPERRIFLE            ;Sound effect
+                dc.b 18                         ;Climbing weapon frame
                 dc.b 19                         ;Idle weapon frame (right)
                 dc.b $80+19                     ;Idle weapon frame (left)
                 dc.b 17                         ;Attack weapon frames (right)
@@ -277,6 +285,7 @@ wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_LOCKANIMATION|WDB_FIREFROMHIP ;Weapo
                 dc.b 15                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_MINIGUN                ;Sound effect
+                dc.b 63                         ;Climbing weapon frame
                 dc.b 23                         ;Idle weapon frame (right)
                 dc.b $80+23                     ;Idle weapon frame (left)
                 dc.b 22-1                       ;Attack weapon frames (right)
@@ -297,6 +306,7 @@ wdFlameThrower: dc.b WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOSKILLBONUS ;Weapon 
                 dc.b 7                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_FLAMETHROWER           ;Sound effect
+                dc.b 64                         ;Climbing weapon frame
                 dc.b 26                         ;Idle weapon frame (right)
                 dc.b $80+26                     ;Idle weapon frame (left)
                 dc.b 25-1                       ;Attack weapon frames (right)
@@ -317,6 +327,7 @@ wdSonicWaveGun: dc.b WDB_BULLETDIRFRAME         ;Weapon bits
                 dc.b 14                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_SONICWAVE              ;Sound effect
+                dc.b 46                         ;Climbing weapon frame
                 dc.b 47                         ;Idle weapon frame (right)
                 dc.b $80+47                     ;Idle weapon frame (left)
                 dc.b 45                         ;Attack weapon frames (right)
@@ -336,6 +347,7 @@ wdLaserRifle:   dc.b WDB_BULLETDIRFRAME         ;Weapon bits
                 dc.b 15                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_LASER                  ;Sound effect
+                dc.b 52                         ;Climbing weapon frame
                 dc.b 53                         ;Idle weapon frame (right)
                 dc.b $80+53                     ;Idle weapon frame (left)
                 dc.b 51                         ;Attack weapon frames (right)
@@ -355,6 +367,7 @@ wdPlasmaGun:    dc.b WDB_NONE                   ;Weapon bits
                 dc.b 13                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_PLASMA                 ;Sound effect
+                dc.b 57                         ;Climbing weapon frame
                 dc.b 58                         ;Idle weapon frame (right)
                 dc.b $80+58                     ;Idle weapon frame (left)
                 dc.b 56                         ;Attack weapon frames (right)
@@ -374,6 +387,7 @@ wdEMPGenerator: dc.b WDB_NOSKILLBONUS           ;Weapon bits
                 dc.b 4                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_EMP                    ;Sound effect
+                dc.b 46                         ;Climbing weapon frame
                 dc.b 50                         ;Idle weapon frame (right)
                 dc.b $80+50                     ;Idle weapon frame (left)
                 dc.b 50-2                       ;Attack weapon frames (right)
@@ -394,6 +408,7 @@ wdGrenadeLauncher:
                 dc.b 7                          ;Bullet speed in pixels
                 dc.b SPDTBL_LAUNCHER            ;Bullet speed table offset
                 dc.b SFX_GRENADELAUNCHER        ;Sound effect
+                dc.b 29                         ;Climbing weapon frame
                 dc.b 30                         ;Idle weapon frame (right)
                 dc.b $80+30                     ;Idle weapon frame (left)
                 dc.b 28                         ;Attack weapon frames (right)
@@ -413,6 +428,7 @@ wdBazooka:      dc.b WDB_BULLETDIRFRAME|WDB_NOSKILLBONUS|WDB_LOCKANIMATION ;Weap
                 dc.b 10                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_BAZOOKA                ;Sound effect
+                dc.b 41                         ;Climbing weapon frame
                 dc.b 42                         ;Idle weapon frame (right)
                 dc.b $80+42                     ;Idle weapon frame (left)
                 dc.b 40                         ;Attack weapon frames (right)

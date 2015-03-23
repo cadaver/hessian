@@ -15,17 +15,18 @@ WD_DAMAGEMOD    = 6
 WD_DURATION     = 7
 WD_BULLETSPEED  = 8
 WD_SPEEDTABLEOFFSET = 9
-WD_SFX          = 10
-WD_IDLEFR       = 11
-WD_IDLEFRLEFT   = 12
-WD_ATTACKFR     = 13
-WD_ATTACKFRLEFT = 14
-WD_PREPAREFR    = 15                            ;Melee weapons only
-WD_PREPAREFRLEFT = 16
-WD_RELOADDELAY  = 15                            ;Firearms only
-WD_RELOADSFX    = 16
-WD_RELOADDONESFX = 17
-WD_LOCKANIMFRAME = 18
+WD_SFX          = 10  
+WD_BACKFR       = 11
+WD_IDLEFR       = 12
+WD_IDLEFRLEFT   = 13
+WD_ATTACKFR     = 14
+WD_ATTACKFRLEFT = 15
+WD_PREPAREFR    = 16                            ;Melee weapons only
+WD_PREPAREFRLEFT = 17
+WD_RELOADDELAY  = 16                            ;Firearms only
+WD_RELOADSFX    = 17
+WD_RELOADDONESFX = 18
+WD_LOCKANIMFRAME = 19
 
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
@@ -48,6 +49,12 @@ RELOAD_FINISH_DELAY = 9                         ;Fixed delay before weapon can b
         ; Returns: -
         ; Modifies: A,Y
 
+AH_OnBackWeaponFrame:
+                cmp #FR_DIE
+                bcs AH_NoWeaponFrame
+                ldy #WD_BACKFR
+                bne AH_NoAttackRight
+
 AH_NoAttack:    lda actAttackD,x
                 beq AH_SetIdleWeaponFrame
                 bpl AH_DecrementDelay      ;Break incomplete melee attack
@@ -59,7 +66,7 @@ AH_SetIdleWeaponFrame:
                 lda actF1,x
                 sta actF2,x
                 cmp #FR_ENTER
-                bcs AH_NoWeaponFrame
+                bcs AH_OnBackWeaponFrame
                 lda wpnBits                 ;Check for animation lock (for weapons with
                 and #WDB_LOCKANIMATION      ;backpack)
                 beq AH_NoLockAnimation
@@ -69,13 +76,13 @@ AH_SetIdleWeaponFrame:
 AH_NoLockAnimation:
                 ldy #WD_IDLEFR
 AH_SetPrepareWeaponFrame:
-                lda wpnBits
-                lsr
-                bcs AH_NoWeaponFrame
                 lda actD,x
                 bpl AH_NoAttackRight
                 iny
 AH_NoAttackRight:
+                lda wpnBits
+                lsr
+                bcs AH_NoWeaponFrame
                 lda (wpnLo),y
                 skip2
 AH_NoWeaponFrame:
