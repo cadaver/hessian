@@ -2,6 +2,7 @@ IRQ1_LINE       = 12
 IRQ3_LINE       = SCROLLROWS*8+45
 IRQ4_LINE       = SCROLLROWS*8+54
 IRQ5_LINE       = 147
+IRQ6_LINE       = $fb
 
 PANEL_BG1       = $00
 PANEL_BG2       = $0b
@@ -11,16 +12,6 @@ TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
 
-        ; IRQ common startup code
-
-StartIrq:       cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
-                rts
-                
         ; IRQ redirector when Kernal is on
 
 RedirectIrq:    ldx $01
@@ -43,8 +34,12 @@ Irq5_Wait:      lda $d012
                 bcc Irq5_Wait
                 lda #PANEL_D018
                 sta $d018
-                jmp Irq5_Continue
-
+Irq5_Bg2:       lda #$0a
+                sta $d022
+Irq5_Bg3:       lda #$09
+                sta $d023
+                jmp Irq2_AllDone
+                
         ; Raster interrupt 1. Show game screen
 
 Irq1:           jsr StartIrq
@@ -58,8 +53,9 @@ Irq1_Late:      sty $d020
                 lda #$00
                 sta newFrame
                 sta $d07a                       ;SCPU back to slow mode
+                sta $d030                       ;C128 back to 1MHz
 Irq1_LevelUpdate:
-                lda #$00                       ;Animate level background?
+                lda #$00                        ;Animate level background?
                 beq Irq1_NoLevelUpdate
                 if SHOW_LEVELUPDATE_TIME>0
                 dec $d020
@@ -237,9 +233,9 @@ Irq2_Spr7Frame: sta screen1+$03f8
                 inx
 Irq2_ToSpr0:    jmp Irq2_Spr0
 
-                if (Irq2_Spr0 & $ff00) != (Irq2_Spr7 & $ff00)
-                err
-                endif
+                ;if (Irq2_Spr0 & $ff00) != (Irq2_Spr7 & $ff00)
+                ;err
+                ;endif
 
 Irq2_SprIrqDone:
                 ldy sprIrqLine,x                ;Get startline of next IRQ
@@ -332,6 +328,7 @@ N               set N+1
                 sta $01                         ;Restore $01 value
                 lda irqSaveA
                 rti
+                
 
         ;Raster interrupt 4. Show the scorepanel and play music
 
@@ -361,8 +358,7 @@ Irq4:           jsr StartIrq
                 lda fileOpen                    ;If file not open, switch SCPU to turbo mode
                 bne Irq4_NoSCPU                 ;during the bottom of the screen to prevent
                 sta $d07b                       ;slowdown during heavy game logic
-Irq4_NoSCPU:    lda #IRQ1_LINE
-                sta $d012
-                lda #<Irq1
-                ldx #>Irq1
-                jmp SetNextIrq
+Irq4_NoSCPU:    lda #<Irq6
+                ldx #>Irq6
+                ldy #IRQ6_LINE
+                jmp Irq6_End

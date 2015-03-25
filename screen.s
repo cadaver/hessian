@@ -17,9 +17,6 @@ GAMESCR1_D018   = $da
 GAMESCR2_D018   = $ca
 PANEL_D018      = $d8
 
-REU_BANK_CHARS  = $00                           ;High byte of REU address for chars & colors
-REU_BANK_COLORS = $01
-
         ; Blank the gamescreen and turn off sprites
         ; (return to normal display by calling UpdateFrame)
         ;
@@ -1215,12 +1212,3 @@ UB_Apply:       tay
                 adc temp5
                 sta (zpDestLo),y
                 rts
-
-        ;Non-aligned continuation of the panel split IRQ
-        
-Irq5_Continue:
-Irq5_Bg2:       lda #$0a
-                sta $d022
-Irq5_Bg3:       lda #$09
-                sta $d023
-                jmp Irq2_AllDone

@@ -28,16 +28,6 @@ OPTIMIZE_SAVE   = 1                             ;Clean up temporary actors when 
                 include aligneddata.s
                 include leveldata.s
 
-        ; Non-aligned data
-
-                include sounddata.s
-                include paneldata.s
-                include aidata.s
-                include itemdata.s
-                include weapondata.s
-                include actordata.s
-                include text.s
-
         ; Non-aligned game code
 
 randomAreaStart:
@@ -76,6 +66,16 @@ MainLoop:       jsr ScrollLogic
                 jmp MainLoop
 
 randomAreaEnd:
+
+        ; Non-aligned data
+
+                include sounddata.s
+                include paneldata.s
+                include aidata.s
+                include itemdata.s
+                include weapondata.s
+                include actordata.s
+                include text.s
 
         ; Disposable init part, overwritten by loadable (script code)
 
