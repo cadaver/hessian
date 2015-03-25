@@ -72,8 +72,9 @@ GB_Closed:      lda loadBuffer+2
 FastOpen:       ldx fileOpen                    ;A file already open? If so, do nothing
                 bne FO_Done                     ;(allows chaining of files)
                 inc fileOpen
+                txa                             ;Command 0 = load
                 sta $d07a                       ;SCPU to slow mode
-                lda #$00                        ;Command 0 = load
+                sta $d030                       ;C128 to 1Mhz mode
                 jsr FL_SendCommand
 FL_PreDelay:    inx                             ;Wait to make sure the drive has also set
                 bne FL_PreDelay                 ;lines high
@@ -1048,9 +1049,9 @@ ilSlowLoadStart:
                 jmp SlowOpen
                 jmp SlowSave
 
-SlowGetByte:    lda fileOpen
+SlowGetByte:    stx bufferStatus
+                lda fileOpen
                 beq SGB_Closed
-                stx bufferStatus
                 jsr KernalOnFast
                 jsr ChrIn
                 sta loadTempReg
@@ -1097,7 +1098,6 @@ SlowSave:       sta zpSrcLo
                 jsr Close
                 jsr SetFileName
                 ldy #$01                        ;Open for write
-                ldx fa
                 jsr SetLFSOpen
                 jsr ChkOut
                 ldy #$00
@@ -1122,7 +1122,6 @@ Store01Value:   sta $01
                 rts
 
 PrepareKernalIO:inc fileOpen                    ;Set fileopen indicator, raster delays are to be expected
-                sta $d07a                       ;SCPU to slow mode
                 lda fileNumber                  ;Convert filename
                 pha
                 lsr
@@ -1141,6 +1140,8 @@ PrepareKernalIO:inc fileOpen                    ;Set fileopen indicator, raster 
                 lsr                             ;setup necessary
                 bcc KernalOnFast
                 jsr SilenceSID
+                sta $d07a                       ;SCPU to slow mode
+                sta $d030                       ;C128 back to 1MHz mode
                 sta $d01a                       ;Raster IRQs off
                 sta $d015                       ;Sprites off
                 sta $d011                       ;Blank screen
