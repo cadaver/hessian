@@ -39,7 +39,7 @@ Irq5_Bg2:       lda #$0a
 Irq5_Bg3:       lda #$09
                 sta $d023
                 jmp Irq2_AllDone
-                
+
         ; Raster interrupt 1. Show game screen
 
 Irq1:           jsr StartIrq
@@ -50,10 +50,10 @@ Irq1:           jsr StartIrq
                 ldy #$00
 Irq1_Late:      sty $d020
                 endif
-                lda #$00
-                sta newFrame
-                sta $d07a                       ;SCPU back to slow mode
-                sta $d030                       ;C128 back to 1MHz
+                ldx #$00
+                stx newFrame
+                stx $d07a                       ;SCPU back to slow mode
+                stx $d030                       ;C128 back to 1MHz
 Irq1_LevelUpdate:
                 lda #$00                        ;Animate level background?
                 beq Irq1_NoLevelUpdate
@@ -112,10 +112,9 @@ Irq1_NoSprites: cpy #GAMESCR1_D018+1            ;Use split mode?
                 beq Irq1_SetupTextscreenSplit
                 jmp Irq2_AllDone
 Irq1_SetupTextscreenSplit:
-                lda #IRQ5_LINE
-                sta $d012
                 lda #<Irq5
                 ldx #>Irq5
+                ldy #IRQ5_LINE
                 jmp SetNextIrq
 Irq1_HasSprites:lda #<Irq2                      ;Set up the sprite display IRQ
                 sta $fffe
@@ -233,9 +232,9 @@ Irq2_Spr7Frame: sta screen1+$03f8
                 inx
 Irq2_ToSpr0:    jmp Irq2_Spr0
 
-                ;if (Irq2_Spr0 & $ff00) != (Irq2_Spr7 & $ff00)
-                ;err
-                ;endif
+                if (Irq2_Spr0 & $ff00) != (Irq2_Spr7 & $ff00)
+                err
+                endif
 
 Irq2_SprIrqDone:
                 ldy sprIrqLine,x                ;Get startline of next IRQ
@@ -269,13 +268,14 @@ Irq2_SprJump:   jmp Irq2_Spr0
 Irq2_AllDone:   lda #IRQ3_LINE
                 sec
                 sbc fileOpen
-                sta $d012
+                tay
                 sbc #$03
                 cmp $d012                       ;Late from the scorepanel IRQ?
                 bcc Irq2_LatePanel
                 lda #<Irq3
                 ldx #>Irq3
-SetNextIrq:     sta $fffe
+SetNextIrq:     sty $d012
+                sta $fffe
                 stx $ffff
 SetNextIrqNoAddress:
                 dec $d019                       ;Acknowledge raster IRQ
@@ -317,18 +317,12 @@ N               set 0
                 sta screen1+$3f8+N
 N               set N+1
                 repend
-                lda #IRQ4_LINE                  ;TODO: needs testing on IDE64 new firmware
-                sta $d012                       ;as IRQ delay may cause whole frame blanking (?)
+                stx irqSaveX
+                sty irqSaveY
                 lda #<Irq4
-                sta $fffe
-                lda #>Irq4
-                sta $ffff
-                dec $d019                       ;Acknowledge raster IRQ
-                lda irqSave01
-                sta $01                         ;Restore $01 value
-                lda irqSaveA
-                rti
-                
+                ldx #>Irq4
+                ldy #IRQ4_LINE
+                jmp SetNextIrq
 
         ;Raster interrupt 4. Show the scorepanel and play music
 
@@ -355,10 +349,21 @@ Irq4:           jsr StartIrq
                 if SHOW_PLAYROUTINE_TIME>0
                 inc $d020
                 endif
-                lda fileOpen                    ;If file not open, switch SCPU to turbo mode
-                bne Irq4_NoSCPU                 ;during the bottom of the screen to prevent
-                sta $d07b                       ;slowdown during heavy game logic
-Irq4_NoSCPU:    lda #<Irq6
+Irq4_End:       lda #<Irq6
                 ldx #>Irq6
                 ldy #IRQ6_LINE
-                jmp Irq6_End
+Irq4_EndJump:   jmp SetNextIrq
+
+        ;Raster interrupt 6. Set C128 to 2MHz mode at the bottom of the screen
+        ;and SCPU to turbo mode, if no loading going on
+
+Irq6:           jsr StartIrq
+                ldx fileOpen
+                bne Irq6_NoTurbo
+                inx
+                stx $d07b
+                stx $d030
+Irq6_NoTurbo:   lda #<Irq1
+                ldx #>Irq1
+                ldy #IRQ1_LINE
+                bne Irq4_EndJump

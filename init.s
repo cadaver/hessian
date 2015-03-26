@@ -199,15 +199,18 @@ IR_DetectNtsc2: cmp $d012
                 bcc IR_IsNtsc
                 lda #$ff
                 sta UF_ColorShiftLateCheck+1
-IR_IsNtsc:      lda $d030                       ;Detect C128 and disable Irq6 if not detected
+IR_IsNtsc:      lda $d030                       ;Detect C128/SCPU and disable Irq6 if neither detected
                 cmp #$ff                        ;to not waste CPU cycles
                 bne IR_IsC128
-                lda #$4c
-                sta Irq4_NoSCPU
-                lda #<Irq6_No2MHz
-                sta Irq4_NoSCPU+1
-                lda #>Irq6_No2MHz
-                sta Irq4_NoSCPU+2
+                lda $d0bc
+                bpl IR_IsSuperCPU
+                lda #<Irq1
+                sta Irq4_End+1
+                lda #>Irq1
+                sta Irq4_End+3
+                lda #IRQ1_LINE
+                sta Irq4_End+5
+IR_IsSuperCPU:
 IR_IsC128:      cli
 
         ; Initializations are complete. Start the main program

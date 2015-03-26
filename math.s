@@ -8,19 +8,6 @@ StartIrq:       cld
                 sta $01
                 rts
                 
-        ;Raster interrupt 6. Set C128 to 2MHz mode at the bottom of the screen
-
-Irq6:           jsr StartIrq
-                lda fileOpen
-                bne Irq6_No2MHz
-                lda #$01
-                sta $d030
-Irq6_No2MHz:    lda #<Irq1
-                ldx #>Irq1
-                ldy #IRQ1_LINE
-Irq6_End:       sty $d012
-                jmp SetNextIrq
-
         ; Add a 8-bit value to a 16-bit value
         ;
         ; Parameters: A value to be added, X zeropage base
