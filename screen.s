@@ -510,12 +510,9 @@ ScrollWork:     lda scrCounter
                 beq SW_NoWork
 SW_ShiftScreen:
 SW_ShiftDir:    ldx #$04
-                lda shiftEndTbl,x
-                pha
                 ldy shiftSrcTbl,x
-                lda shiftDestTbl,x
-                tax
-                pla
+                lda shiftOffsetTbl,x
+                clc
 SW_ScreenJump:  jmp SW_NoWork
 
 SW_NoScreenShift:
@@ -546,32 +543,56 @@ SW_NoWork:      rts
 
         ; Screen shifting routines
 
-SW_Shift1:      sta SW_Shift1End
+SW_Shift1:      adc #<SW_Shift1Loop
+                sta SW_Shift1Jump+1
+                if (SW_Shift1Loop & $ff) > $f9
+                lda #>SW_Shift1Loop
+                adc #$00
+                sta SW_Shift1Jump+2
+                endif
+                lda shiftEndTbl,x
+                sta SW_Shift1EndCmp+1
+                lda shiftDestTbl,x
+                tax
+                jmp SW_Shift1Jump
 SW_Shift1Loop:                                  ;Screen shift routine:
 N               set 0                           ;From screen1 to screen2
                 repeat SCROLLROWS
                 lda screen1-40+N*40,y
-                sta screen2+N*40,x
+                sta screen2-40+N*40,x
 N               set N+1
                 repend
-                dey
-                dex
-SW_Shift1End:   beq SW_Shift1Done
-                jmp SW_Shift1Loop
+                iny
+                inx
+SW_Shift1EndCmp:cpx #$00
+                bcs SW_Shift1Done
+SW_Shift1Jump:  jmp SW_Shift1Loop
 SW_Shift1Done:  rts
 
-SW_Shift2:      sta SW_Shift2End
+SW_Shift2:      adc #<SW_Shift2Loop
+                sta SW_Shift2Jump+1
+                if (SW_Shift2Loop & $ff) > $f9
+                lda #>SW_Shift2Loop
+                adc #$00
+                sta SW_Shift2Jump+2
+                endif
+                lda shiftEndTbl,x
+                sta SW_Shift2EndCmp+1
+                lda shiftDestTbl,x
+                tax
+                jmp SW_Shift2Jump
 SW_Shift2Loop:                                  ;Screen shift routine:
-N               set 0                           ;From screen2 to screen1
+N               set 0                           ;From screen 2to screen1
                 repeat SCROLLROWS
                 lda screen2-40+N*40,y
-                sta screen1+N*40,x
+                sta screen1-40+N*40,x
 N               set N+1
                 repend
-                dey
-                dex
-SW_Shift2End:   beq SW_Shift2Done
-                jmp SW_Shift2Loop
+                iny
+                inx
+SW_Shift2EndCmp:cpx #$00
+                bcs SW_Shift2Done
+SW_Shift2Jump:  jmp SW_Shift2Loop
 SW_Shift2Done:  rts
 
         ; Color shifting routines

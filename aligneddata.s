@@ -19,6 +19,7 @@ colorSrcTbl:    dc.b 37,38,1
 
 sprIrqAdvanceTbl:
                 dc.b -2,-3,-4,-5,-7,-8,-9,-10
+
 screenJumpTblLo:dc.b <SW_Shift1
                 dc.b <SW_Shift2
 screenJumpTblHi:dc.b >SW_Shift1
@@ -38,9 +39,9 @@ blockRightTbl:  dc.b $01,$02,$03,$80
                 dc.b $40+1,$40+2,$40+21
                 dc.b $40+24,$40+1,$40+2
 
-shiftDestTbl:   dc.b 38,38,37
-                dc.b 38,38,37
-                dc.b 38,38,37
+shiftDestTbl:   dc.b 41,40,40
+                dc.b 41,40,40
+                dc.b 1,0,0
 colorXTbl:      dc.b $ca,$ca,$e8
 colorSideTbl:   dc.b 0,-1,38
 
@@ -79,9 +80,9 @@ N               set N+32
                 dc.b $80+22,$80+23,$80+42
                 dc.b $80+45,$80+22,$80+23
 
-shiftSrcTbl:    dc.b 37,38,38
-                dc.b 77,78,78
-                dc.b 117,118,118
+shiftSrcTbl:    dc.b 0,0,1
+                dc.b 40,40,41
+                dc.b 40,40,41
 colorEndTbl:    dc.b -1,-1,39
 colorYTbl:      dc.b $88,$88,$c8
 
@@ -148,9 +149,9 @@ targetListAndTbl:
                 dc.b $c0+43,$c0+44,0
                 dc.b 0,$c0+43,$c0+44
 
-shiftEndTbl:    dc.b $f0,$30,$30
-                dc.b $f0,$30,$30
-                dc.b $f0,$30,$30
+shiftEndTbl:    dc.b 79,79,78
+                dc.b 79,79,78
+                dc.b 39,39,38
 
 pauseMenuArrowPosTbl:
                 dc.b 8,21
@@ -347,3 +348,6 @@ improveList:
 routeXH:        ds.b 4,0
 routeYH:        ds.b 4,0
 routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
