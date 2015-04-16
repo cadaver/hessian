@@ -924,23 +924,7 @@ SWDL_Not3:      lda temp1
                 bpl SWDL_GetBlock
 SWDL_Ready:     rts
 
-SW_DrawDown:    lda mapY                        ;Draw new blocks to bottom of
-                clc                             ;screen
-                adc #$05
-                tax
-                lda blockY
-                if SCROLLROWS > 21
-                adc #$01
-                cmp #$04
-                bcc SW_DDCalcDone
-                and #$03
-                inx
-                endif
-SW_DDCalcDone:  asl
-                asl
-                ora blockX
-                sta temp2
-                lda screen
+SW_DrawDown:    lda screen
                 eor #$01
                 tay
                 lda #<(screen1+SCROLLROWS*40-40)
@@ -948,22 +932,36 @@ SW_DDCalcDone:  asl
                 lda screenBaseTbl,y
                 ora #>(SCROLLROWS*40-40)
                 sta SWDU_Sta+2
-                bne SWDU_Common
-
-SW_DrawUp:      ldx mapY                     ;Draw new blocks to top of screen
+                lda mapY
+                clc
+                adc #$05
+                tax
                 lda blockY
-                asl
-                asl
-                ora blockX
-                sta temp2
-                lda screen
+                if SCROLLROWS > 21
+                adc #$01
+                cmp #$04
+                bcc SWDU_Common
+                and #$03
+                inx
+                bcs SWDU_Common
+                else
+                bpl SWDU_Common
+                endif
+
+SW_DrawUp:      lda screen
                 eor #$01
                 tay
                 lda #$00
                 sta SWDU_Sta+1
                 lda screenBaseTbl,y
                 sta SWDU_Sta+2
-SWDU_Common:    lda mapTblLo,x
+                ldx mapY
+                lda blockY
+SWDU_Common:    asl
+                asl
+                ora blockX
+                sta temp2
+                lda mapTblLo,x
                 sta temp3
                 lda mapTblHi,x
                 sta temp4
@@ -998,13 +996,7 @@ SWDU_Ready:     rts
         ; Returns: -
         ; Modifies: A,X,Y,temp1-temp7
 
-RedrawScreen:   lda blockY
-                asl
-                asl
-                ora blockX
-                sta temp1
-                sta temp2
-                ldy #$00
+RedrawScreen:   ldy #$00
                 sty screen
                 sty SWDU_Sta+1
                 lda screenBaseTbl,y
@@ -1012,23 +1004,25 @@ RedrawScreen:   lda blockY
                 lda #SCROLLROWS
                 sta temp6
                 sta Irq1_LevelUpdate+1          ;Can animate level
+                lda blockY
                 ldx mapY
-RS_Loop:        stx temp7
+RS_Loop:        sta temp1
+                stx temp7
                 jsr SWDU_Common
-                ldx temp7
                 lda SWDU_Sta+1
                 clc
                 adc #40
                 sta SWDU_Sta+1
                 bcc RS_NotOver1
                 inc SWDU_Sta+2
-RS_NotOver1:    ldy temp1
-                lda blockDownTbl,y
-                bpl RS_NotOver3
+RS_NotOver1:    ldx temp7
+                ldy temp1
+                iny
+                cpy #$04
+                bcc RS_NotOver2
+                ldy #$00
                 inx
-RS_NotOver2:    and #$0f
-RS_NotOver3:    sta temp1
-                sta temp2
+RS_NotOver2:    tya
                 dec temp6
                 bne RS_Loop
                 ldy #38                         ;Finally draw the colors
