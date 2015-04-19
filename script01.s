@@ -15,15 +15,15 @@ ActorTrigger0100:
                 rts
 
 ActorTrigger0101:
-                checkitem ITEM_SHIV
+                checkitem ITEM_KNIFE
                 bcc AT0101_NoShiv
                 removetrigger ACT_TESTNPC
-                removeitem ITEM_SHIV
+                removeitem ITEM_KNIFE
                 speak ACT_TESTNPC,Line2
                 setscript $0102
 AT0101_NoShiv:  rts
 
-Line1:          dc.b 34,"FETCH ME THE SHIV.",34,0
+Line1:          dc.b 34,"FETCH ME THE KNIFE.",34,0
 Line2:          dc.b 34,"YOU HAVE DONE WELL.",34,0
 
 TestContinuous0102:

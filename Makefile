@@ -114,9 +114,6 @@ sfx/bazooka.sfx: sfx/bazooka.ins
 sfx/reloadbazooka.sfx: sfx/reloadbazooka.ins
 	ins2nt2 sfx/reloadbazooka.ins sfx/reloadbazooka.sfx
 
-sfx/sonicwave.sfx: sfx/sonicwave.ins
-	ins2nt2 sfx/sonicwave.ins sfx/sonicwave.sfx
-
 sfx/heavymelee.sfx: sfx/heavymelee.ins
 	ins2nt2 sfx/heavymelee.ins sfx/heavymelee.sfx
 
@@ -146,8 +143,8 @@ main.pak: actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutscene.s fi
 	sounddata.s sprite.s text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/shotgun.sfx \
 	sfx/autorifle.sfx sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
-	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/sonicwave.sfx \
-	sfx/heavymelee.sfx sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/drone.sfx sfx/splash.sfx sfx/object.sfx
+	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/heavymelee.sfx \
+	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/drone.sfx sfx/splash.sfx sfx/object.sfx
 	dasm main.s -omain.bin -smain.tbl -f3
 	symbols main.tbl mainsym.s
 	symbols main.tbl >pagecross.txt

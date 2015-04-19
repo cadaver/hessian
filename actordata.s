@@ -7,22 +7,21 @@ ACT_BULLET      = 5
 ACT_SHOTGUNBULLET = 6
 ACT_RIFLEBULLET = 7
 ACT_FLAME       = 8
-ACT_SONICWAVE   = 9
-ACT_EMP         = 10
-ACT_LASER       = 11
-ACT_PLASMA      = 12
-ACT_LAUNCHERGRENADE = 13
-ACT_GRENADE     = 14
-ACT_ROCKET      = 15
-ACT_DRONE       = 16
-ACT_EXPLOSION   = 17
-ACT_SMOKETRAIL  = 18
-ACT_WATERSPLASH = 19
-ACT_SMALLSPLASH = 20
-ACT_OBJECTMARKER = 21
-ACT_SPEECHBUBBLE = 22
-ACT_TESTNPC     = 23
-ACT_TESTENEMY   = 24
+ACT_EMP         = 9
+ACT_LASER       = 10
+ACT_PLASMA      = 11
+ACT_LAUNCHERGRENADE = 12
+ACT_GRENADE     = 13
+ACT_ROCKET      = 14
+ACT_DRONE       = 15
+ACT_EXPLOSION   = 16
+ACT_SMOKETRAIL  = 17
+ACT_WATERSPLASH = 18
+ACT_SMALLSPLASH = 19
+ACT_OBJECTMARKER = 20
+ACT_SPEECHBUBBLE = 21
+ACT_TESTNPC     = 22
+ACT_TESTENEMY   = 23
 
 HP_PLAYER       = 48
 HP_ENEMY        = 12
@@ -36,8 +35,7 @@ DROPTABLERANDOM = 8                             ;Pick random choice from 8 conse
 
         ; Enemy random item drops
 
-itemDropTable:  dc.b ITEM_CREDITS
-                dc.b ITEM_OWNWEAPON
+itemDropTable:  dc.b ITEM_OWNWEAPON
                 dc.b ITEM_OWNWEAPON
                 dc.b ITEM_OWNWEAPON
                 dc.b ITEM_OWNWEAPON
@@ -46,8 +44,9 @@ itemDropTable:  dc.b ITEM_CREDITS
                 dc.b ITEM_OWNWEAPON
                 dc.b ITEM_OWNWEAPON
                 dc.b ITEM_MEDKIT
-                dc.b ITEM_CREDITS
-                dc.b ITEM_CREDITS
+                dc.b ITEM_MEDKIT
+                dc.b ITEM_MEDKIT
+                dc.b ITEM_MEDKIT
 
         ; Player weapon damage bonus according to weapon skill
 
@@ -82,7 +81,6 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adShotgunBullet
                 dc.b <adRifleBullet
                 dc.b <adFlame
-                dc.b <adSonicWave
                 dc.b <adEMP
                 dc.b <adLaser
                 dc.b <adPlasma
@@ -107,7 +105,6 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adShotgunBullet
                 dc.b >adRifleBullet
                 dc.b >adFlame
-                dc.b >adSonicWave
                 dc.b >adEMP
                 dc.b >adLaser
                 dc.b >adPlasma
@@ -166,9 +163,9 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
 itemColor:      dc.b 0                          ;Color override
                 dc.b C_ITEM                     ;Spritefile number
                 dc.b 0                          ;Left frame add
-                dc.b 3                          ;Number of frames
+                dc.b 19                         ;Number of frames
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 11,12,13,14,15,16,17,18,19,20
+                dc.b 11,12,13,14,15,16,17
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b COLOR_FLICKER              ;Color override
@@ -206,35 +203,27 @@ adFlame:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b 4                          ;Number of frames
                 dc.b 23,24,25,26                ;Frametable (first all frames of sprite1, then sprite2)
 
-adSonicWave:    dc.b ONESPRITE                  ;Number of sprites
-                dc.b COLOR_FLICKER              ;Color override
-                dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 10                         ;Number of frames
-                dc.b 37,38,39,40,41             ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 37,$80+38,$80+39,$80+40,41
-
 adEMP:          dc.b ONESPRITE                  ;Number of sprites
                 dc.b COLOR_FLICKER              ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 10                         ;Number of frames
-                dc.b 42,43,44,45                ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 37,38,39,40                ;Frametable (first all frames of sprite1, then sprite2)
 
 adLaser:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b COLOR_FLICKER              ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 10                         ;Number of frames
-                dc.b 46,47,48,$80+47,46         ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 46,$80+47,48,47,46
+                dc.b 41,42,43,$80+42,41         ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 41,$80+42,43,42,41
 
 adPlasma:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b COLOR_FLICKER              ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
-                dc.b 3                          ;Number of frames
-                dc.b 49,50,51                   ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 1                          ;Number of frames
+                dc.b 44                         ;Frametable (first all frames of sprite1, then sprite2)
 
 adLauncherGrenade:
                 dc.b ONESPRITE                  ;Number of sprites
@@ -264,7 +253,7 @@ adDrone:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 4                          ;Number of frames
-                dc.b 52,53,54,53                ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 45,46,47,46                ;Frametable (first all frames of sprite1, then sprite2)
 
 adExplosion:    dc.b ONESPRITE                  ;Number of sprites
                 dc.b 0                          ;Color override
@@ -286,7 +275,7 @@ waterSplashColor1:
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 5                          ;Number of frames
-                dc.b 55,56,57,58,59             ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 48,49,50,51,52             ;Frametable (first all frames of sprite1, then sprite2)
 
 adSmallSplash:  dc.b ONESPRITE                  ;Number of sprites
 waterSplashColor2:
@@ -294,7 +283,7 @@ waterSplashColor2:
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
-                dc.b 60,61,62                   ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 53,54,55                   ;Frametable (first all frames of sprite1, then sprite2)
 
 adObjectMarker: dc.b ONESPRITE                  ;Number of sprites
 objectMarkerColor:
@@ -302,14 +291,14 @@ objectMarkerColor:
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 1                          ;Number of frames
-                dc.b 63
+                dc.b 56
 
 adSpeechBubble: dc.b ONESPRITE                  ;Number of sprites
                 dc.b 0                          ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 1                          ;Number of frames
-                dc.b 64
+                dc.b 57
 
         ; Actor logic data
 
@@ -321,7 +310,6 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alShotgunBullet
                 dc.b <alBullet
                 dc.b <alFlame
-                dc.b <alSonicWave
                 dc.b <alEMP
                 dc.b <alLaser
                 dc.b <alPlasma
@@ -346,7 +334,6 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alShotgunBullet
                 dc.b >alBullet
                 dc.b >alFlame
-                dc.b >alSonicWave
                 dc.b >alEMP
                 dc.b >alLaser
                 dc.b >alPlasma
@@ -429,13 +416,6 @@ alFlame:        dc.w MoveFlame                  ;Update routine
                 dc.b 5                          ;Size up
                 dc.b 3                          ;Size down
 
-alSonicWave:    dc.w MoveBullet                 ;Update routine
-                dc.w RemoveActor                ;Destroy routine
-                dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 8                          ;Horizontal size
-                dc.b 8                          ;Size up
-                dc.b 8                          ;Size down
-
 alEMP:          dc.w MoveEMP                    ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
@@ -450,7 +430,7 @@ alLaser:        dc.w MoveBullet                 ;Update routine
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
 
-alPlasma:       dc.w MovePlasma                 ;Update routine
+alPlasma:       dc.w MoveBullet                 ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 7                          ;Horizontal size

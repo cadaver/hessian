@@ -971,10 +971,6 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 stx temp6
                 tax
                 sta actF1,y
-                jsr Random
-                and #$03                        ;In case going to drop credits, randomize amount
-                adc #$02
-                sta defaultCreditsPickup
                 lda itemDefaultPickup-1,x
                 sta actHp,y
                 lda #ITEM_YSPEED

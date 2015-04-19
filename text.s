@@ -1,7 +1,6 @@
         ; Item names
 
 itemNameLo:     dc.b <txtFists
-                dc.b <txtShiv
                 dc.b <txtKnife
                 dc.b <txtNightstick
                 dc.b <txtBat
@@ -11,7 +10,6 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtSniperRifle
                 dc.b <txtMinigun
                 dc.b <txtFlameThrower
-                dc.b <txtSonicWaveGun
                 dc.b <txtLaserRifle
                 dc.b <txtPlasmaGun
                 dc.b <txtEMPGenerator
@@ -24,7 +22,6 @@ itemNameLo:     dc.b <txtFists
 
 
 itemNameHi:     dc.b >txtFists
-                dc.b >txtShiv
                 dc.b >txtKnife
                 dc.b >txtNightstick
                 dc.b >txtBat
@@ -34,7 +31,6 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtSniperRifle
                 dc.b >txtMinigun
                 dc.b >txtFlameThrower
-                dc.b >txtSonicWaveGun
                 dc.b >txtLaserRifle
                 dc.b >txtPlasmaGun
                 dc.b >txtEMPGenerator
@@ -47,7 +43,6 @@ itemNameHi:     dc.b >txtFists
 
 
 txtFists:       dc.b "FISTS",0
-txtShiv:        dc.b "SHIV",0
 txtKnife:       dc.b "COMBAT KNIFE",0
 txtNightstick:  dc.b "NIGHTSTICK",0
 txtBat:         dc.b "BAT",0
@@ -57,7 +52,6 @@ txtAutoRifle:   dc.b "AUTO RIFLE",0
 txtSniperRifle: dc.b "SNIPER RIFLE",0
 txtMinigun:     dc.b "MINIGUN",0
 txtFlameThrower:dc.b "FLAMETHROWER",0
-txtSonicWaveGun:dc.b "SONIC WAVE GUN",0
 txtLaserRifle:  dc.b "LASER RIFLE",0
 txtPlasmaGun:   dc.b "PLASMA GUN",0
 txtEMPGenerator:dc.b "EMP GENERATOR",0

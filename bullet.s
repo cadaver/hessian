@@ -164,7 +164,7 @@ MProj_NoWaterAbove:
                 jsr MoveActorXNeg               ;Move actor halfway back in X-dir
                 jsr NoInterpolation
                 lda actT,x
-                cmp #ACT_SONICWAVE
+                cmp #ACT_LASER
                 bcs MProj_LargeSplash
                 lda #ACT_SMALLSPLASH
                 bne MProj_SplashOK
@@ -343,23 +343,6 @@ MEMP_ColorDone: jsr RadiusDamage
                 cmp #$04
                 bcc MEMP_NoAnim
                 jmp RemoveActor
-
-        ; Plasma update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MovePlasma:     lda #$02
-                jsr AnimationDelay
-                bcc MPls_NoAnim
-                lda actF1,x
-                adc #$00
-                cmp #$03
-                bcc MPls_AnimDone
-                lda #$00
-MPls_AnimDone:  sta actF1,x
-MPls_NoAnim:    jmp MoveBullet
 
         ; Drone update routine
         ;

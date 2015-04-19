@@ -8,26 +8,25 @@ SFX_AUTORIFLE       = $06
 SFX_SNIPERRIFLE     = $07
 SFX_MINIGUN         = $08
 SFX_FLAMETHROWER    = $09
-SFX_SONICWAVE       = $0a
-SFX_LASER           = $0b
-SFX_PLASMA          = $0c
-SFX_EMP             = $0d
-SFX_GRENADELAUNCHER = $0e
-SFX_BAZOOKA         = $0f
-SFX_DRONE           = $10
-SFX_RELOAD          = $11
-SFX_COCKWEAPON      = $12
-SFX_COCKSHOTGUN     = $13
-SFX_RELOADFLAMER    = $14
-SFX_RELOADBAZOOKA   = $15
-SFX_POWERUP         = $16
-SFX_SELECT          = $17
-SFX_PICKUP          = $18
-SFX_OBJECT          = $19
-SFX_SPLASH          = $1a
-SFX_DAMAGE          = $1b
-SFX_DEATH           = $1c
-SFX_EXPLOSION       = $1d
+SFX_LASER           = $0a
+SFX_PLASMA          = $0b
+SFX_EMP             = $0c
+SFX_GRENADELAUNCHER = $0d
+SFX_BAZOOKA         = $0e
+SFX_DRONE           = $0f
+SFX_RELOAD          = $10
+SFX_COCKWEAPON      = $11
+SFX_COCKSHOTGUN     = $12
+SFX_RELOADFLAMER    = $13
+SFX_RELOADBAZOOKA   = $14
+SFX_POWERUP         = $15
+SFX_SELECT          = $16
+SFX_PICKUP          = $17
+SFX_OBJECT          = $18
+SFX_SPLASH          = $19
+SFX_DAMAGE          = $1a
+SFX_DEATH           = $1b
+SFX_EXPLOSION       = $1c
 
         ; Music relocation tables
 
@@ -109,7 +108,6 @@ sfxTblLo:       dc.b <sfxThrow
                 dc.b <sfxSniperRifle
                 dc.b <sfxMinigun
                 dc.b <sfxFlamer
-                dc.b <sfxSonicWave
                 dc.b <sfxLaser
                 dc.b <sfxPlasma
                 dc.b <sfxEMP
@@ -140,7 +138,6 @@ sfxTblHi:       dc.b >sfxThrow
                 dc.b >sfxSniperRifle
                 dc.b >sfxMinigun
                 dc.b >sfxFlamer
-                dc.b >sfxSonicWave
                 dc.b >sfxLaser
                 dc.b >sfxPlasma
                 dc.b >sfxEMP
@@ -184,7 +181,6 @@ sfxMinigun:     include sfx/minigun.sfx
 sfxShotgun:     include sfx/shotgun.sfx
 sfxLaser:       include sfx/laser.sfx
 sfxPlasma:      include sfx/plasma.sfx
-sfxSonicWave:   include sfx/sonicwave.sfx
 sfxLauncher:    include sfx/launcher.sfx
 sfxSniperRifle: include sfx/sniperrifle.sfx
 sfxBazooka:     include sfx/bazooka.sfx
