@@ -658,7 +658,7 @@ AAOG_Done:      rts
 
 UpdateLevelObjects:
                 lda menuMode
-                cmp #MENU_LEVELUPMSG
+                cmp #MENU_PAUSE
                 bcs ULO_IsPaused
                 ldy autoDeactObjNum
                 bmi ULO_NoAutoDeact

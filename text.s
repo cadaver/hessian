@@ -41,7 +41,6 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtMedKit
                 dc.b >txtCredits
 
-
 txtFists:       dc.b "FISTS",0
 txtKnife:       dc.b "COMBAT KNIFE",0
 txtNightstick:  dc.b "NIGHTSTICK",0
@@ -62,36 +61,12 @@ txtHomingDrone: dc.b "HOMING DRONE",0
 txtMedKit:      dc.b "MEDKIT",0
 txtCredits:     dc.b "CREDITS",0
 
-        ; Skill names
-
-skillNameLo:    dc.b <txtAgility
-                dc.b <txtCarrying
-                dc.b <txtFirearms
-                dc.b <txtMelee
-                dc.b <txtVitality
-
-skillNameHi:    dc.b >txtAgility
-                dc.b >txtCarrying
-                dc.b >txtFirearms
-                dc.b >txtMelee
-                dc.b >txtVitality
-
-txtAgility:     dc.b "AGILITY",0
-txtCarrying:    dc.b "CARRYING",0
-txtFirearms:    dc.b "FIREARMS",0
-txtMelee:       dc.b "MELEE",0
-txtVitality:    dc.b "VITALITY",0
-
         ; Game messages
 
 txtPickedUp:    dc.b "GOT ",0
 txtRequired:    dc.b "NEED ",0
 txtInf:         dc.b "*INF"
 txtLoad:        dc.b "LOAD"
-txtXP:          dc.b "XP, "
-txtSkillDisplay:dc.b "LV.           A C F M V",0
-txtLevelUp:     dc.b "LEVELED UP TO LV."
-txtLevelUpLevel:dc.b "    PICK SKILL TO IMPROVE",0
 txtPauseResume: dc.b " RESUME GAME",0
 txtPauseRetry:  dc.b " CONTINUE   ",0
 txtPauseSave:   dc.b "  SAVE&EXIT",0

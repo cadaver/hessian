@@ -366,7 +366,7 @@ AddAllActorsNextFrame:
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
 UpdateActors:   lda menuMode                    ;If game paused, only do InterpolateActors
-                cmp #MENU_LEVELUPMSG            ;and only update actor flashing
+                cmp #MENU_PAUSE                 ;and only update actor flashing
                 bcc GetActorBorders             ;(in InterpolateActors)
                 lda #$00                        ;Stop scrolling when actors aren't moving
                 sta scrollSX
@@ -1344,11 +1344,8 @@ DestroyActor:   sty DA_DamageSrc+1
                 iny
                 lda (actLo),y
                 sta DA_Jump+2
-                bcs DA_NoXP                     ;Give XP if damage source is a player bullet
-                ldy #AL_KILLXP
-                lda (actLo),y
-                jsr GiveXP
-DA_NoXP:        ldy #AT_DESTROY                 ;Run the DESTROY trigger
+                bcs DA_NoScore                  ;TODO: give points if damage source is a player bullet
+DA_NoScore      ldy #AT_DESTROY                 ;Run the DESTROY trigger
                 jsr ActorTrigger
 DA_DamageSrc:   ldy #$00
 DA_Jump:        jsr $0000

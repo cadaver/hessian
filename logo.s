@@ -10,8 +10,6 @@ titlePageTbl:   dc.w txtPressFire
                 dc.w txtInstructions
                 dc.w txtInstructions2
                 dc.w txtInstructions3
-                dc.w txtInstructions4
-                dc.w txtInstructions5
                 dc.w txtMainMenu
                 dc.w txtOptions
                 dc.w txtCharacter
@@ -29,8 +27,8 @@ txtInstructions:dc.b "USE JOYSTICK IN PORT 2 AND KEYS",0
                 dc.b ", .     SELECT ITEM",0
                 dc.b $80+11,"R       RELOAD",0
                 dc.b $80+11,"M       USE MEDKIT",0
-                dc.b "S       VIEW SKILLS",0
                 dc.b "RUNSTOP PAUSE MENU",0
+                dc.b 0
 
 txtInstructions2:
                 dc.b "MOVEMENT CONTROLS (FIRE NOT PRESSED)",0
@@ -44,29 +42,11 @@ txtInstructions2:
 txtInstructions3:
                 dc.b "TO ATTACK, PRESS FIRE AND DIRECTION",0
                 dc.b 0
-                dc.b "HOLD FIRE FOR INVENTORY, THEN PRESS LEFT",0
-                dc.b "OR RIGHT TO SELECT ITEMS, DOWN TO RELOAD",0
-                dc.b "OR USE ITEM, AND UP TO VIEW SKILLS",0
+                dc.b "HOLD FIRE TO ENTER INVENTORY. WHILE FIRE",0
+                dc.b "IS HELD, PRESS LEFT OR RIGHT TO SELECT",0
+                dc.b "ITEMS. PRESS DOWN TO RELOAD OR USE ITEM",0
                 dc.b 0
                 dc.b "HOLD FIRE LONGER FOR PAUSE MENU",0
-
-txtInstructions4:
-                dc.b "SKILLS (GAIN EXPERIENCE TO ADVANCE)",0
-                dc.b 0
-                dc.b $80,"AGILITY   TURN/CLIMB FASTER, JUMP HIGHER",0
-                dc.b $80,"CARRYING  CARRY MORE WEAPONS + AMMO",0
-                dc.b $80,"FIREARMS  MORE DAMAGE AND FASTER RELOAD",0
-                dc.b $80,"MELEE     MORE MELEE DAMAGE",0
-                dc.b $80,"VITALITY  RESIST DAMAGE, RECOVER FASTER",0
-
-txtInstructions5:
-                dc.b "TAKE CONTROL OF HESSIAN, AN EX-MILITARY",0
-                dc.b "MEMBER OF A GROUP KNOWN AS 'SKEPTICS'",0
-                dc.b "THAT INVESTIGATES POTENTIAL END-OF-THE-",0
-                dc.b "WORLD SCENARIOS. AS A MYSTERIOUS ENERGY",0
-                dc.b "BLAST ENGULFS ONE SECTOR OF THE GROUP'S",0
-                dc.b "HOME CITY 'METROPOL' THEY MAY NO LONGER",0
-                dc.b "BE ABLE TO REMAIN SKEPTICAL...",0
 
 txtMainMenu:    dc.b 0
                 dc.b $80+13,"START NEW GAME",0
@@ -76,7 +56,7 @@ txtMainMenu:    dc.b 0
                 dc.b $80+13,"OPTIONS",0
                 dc.b 0
 
-txtOptions:     dc.b $80+12,"GAME MODE",0
+txtOptions:     dc.b $80+12,"SKILL",0
                 dc.b 0
                 dc.b $80+12,"MUSIC",0
                 dc.b 0

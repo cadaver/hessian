@@ -344,7 +344,6 @@ ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
 
 d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
-improveList:
 routeXH:        ds.b 4,0
 routeYH:        ds.b 4,0
 routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT

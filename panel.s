@@ -12,12 +12,8 @@ REDRAW_AMMO     = $02
 
 MENU_NONE       = 0
 MENU_INVENTORY  = 1
-MENU_SKILLDISPLAY = 2
-MENU_LEVELUPMSG = 3
-MENU_LEVELUPCHOICE = 4
-MENU_PAUSE      = 5
-MENU_SKILLDISPLAYKEY = 6
-MENU_DIALOGUE = 7
+MENU_PAUSE      = 2
+MENU_DIALOGUE   = 3
 
         ; Finish frame. Update frame and update score panel
         ;
@@ -318,17 +314,12 @@ SMM_Redraw:     lda menuRedrawTblLo,x
                 lda menuRedrawTblHi,x
                 sta SMM_RedrawJump+2
                 lda #SFX_SELECT
-                cpx #MENU_LEVELUPMSG
-                bne SMM_SoundOK
-                lda #SFX_POWERUP
-SMM_SoundOK:    jsr PlaySfx
+                jsr PlaySfx
 SMM_RedrawJump: jmp $0000
 
         ; Menu logic routines
 
         ; None
-
-UM_PrintXP:     jmp PrintXPMessage
 
 UM_None:        lda actT+ACTI_PLAYER            ;If vanished after death, forcibly enter pause menu
                 beq SetGameOverMenu
@@ -336,17 +327,7 @@ UM_None:        lda actT+ACTI_PLAYER            ;If vanished after death, forcib
                 lda keyType                     ;Enter pause menu manually by pressing RUN/STOP
                 cmp #KEY_RUNSTOP
                 beq SetMenuMode
-                ldx #MENU_SKILLDISPLAYKEY
-                cmp #KEY_S
-                beq SetMenuMode
-                ldx #MENU_LEVELUPMSG
-                lda lastReceivedXP              ;If XP received, show XP message now
-                bne UM_PrintXP
-                lda textTime
-                bne UM_NoLevelUp
-                lda levelUp                     ;Check for pending levelup: begin if no other
-                bne SetMenuMode                 ;messages being displayed
-UM_NoLevelUp:   ldx #MENU_INVENTORY             ;Check for entering inventory by holding firebutton;
+                ldx #MENU_INVENTORY             ;Check for entering inventory by holding firebutton;
                 ldy #$ff                        ;if a direction simultaneously held, halt the
                 lda joystick                    ;counter until fire released
                 cmp #JOY_FIRE
@@ -382,11 +363,8 @@ UM_Reload:      jmp UseItem
 
         ; Inventory
         
-UM_Inventory:   ldx #MENU_SKILLDISPLAY          ;Check for entering skill display screen
+UM_Inventory:   ldx #MENU_NONE                  ;Check for exiting inventory or waiting for
                 lda joystick
-                cmp #JOY_FIRE+JOY_UP
-                beq SetMenuMode2
-                ldx #MENU_NONE                  ;Check for exiting inventory or waiting for
                 ldy #$ff                        ;pause menu
                 cmp #JOY_FIRE
                 bcc SetMenuMode2
@@ -446,36 +424,9 @@ RedrawMenu:     ldx menuMode
                 jmp SMM_Redraw
 SetMenuMode2:   jmp SetMenuMode
 
-        ; Skill display
-
-UM_SkillDisplay:ldx #MENU_NONE                  ;Exit either into inventory (fire held)
-                lda joystick                    ;or to NONE mode (fire released)
-                cmp #JOY_FIRE
-                bcc SetMenuMode2
-                inx
-                cmp #JOY_FIRE+JOY_UP
-                beq UM_SkillDisplayDone
-                jsr SetMenuMode                 ;When returning to inventory, do not
-                dec menuCounter                 ;allow to enter pausemenu anymore until
-UM_SkillDisplayDone:                            ;fire released
-UM_RedrawDialogue:
-                rts
-
-        ; Skill display when entered by keyboard
-
-UM_SkillDisplayKey:
-                ldx #MENU_NONE                  ;Exit with fire or any key
-                jsr GetFireClick
-                bcs SetMenuMode2
-                lda keyType
-                bpl SetMenuMode2
-                rts
-
-        ; Levelup text
+        ; Dialogue
 
 UM_Dialogue:    ldx #MENU_NONE
-                skip2
-UM_LevelUpMsg:  ldx #MENU_LEVELUPCHOICE
                 lda textTime
                 beq SetMenuMode2
                 jsr GetFireClick                ;Speed up levelup text by pressing fire
@@ -484,39 +435,11 @@ UM_LevelUpMsg:  ldx #MENU_LEVELUPCHOICE
                 sta textTime
 UM_LUNoFire:    rts
 
-        ; Levelup choice
+        ; Pause menu
 
-UM_LevelUpChoice:
-                ldy menuCounter
-                jsr GetFireClick
-                bcs UM_LUFinish
-                jsr MenuControl
-                lsr
-                bcs UM_LUMoveLeft
-                lsr
-                bcs UM_LUMoveRight
-UM_LUMoveDone:  rts
-UM_LUMoveLeft:  tya
-                beq UM_LUMoveDone
-                dec menuCounter
-                bpl RedrawMenu
-UM_LUMoveRight: lda improveList+1,y
-                bmi UM_LUMoveDone
-                inc menuCounter
-                bpl RedrawMenu
-UM_LUFinish:    ldx improveList,y
-                inc plrSkills,x
-                lda #SFX_POWERUP
-                jsr PlaySfx
-                jsr ApplySkills
-                txa                             ;Hack: give 0 XP now to correctly process several
-                jsr GiveXP                      ;levelups in a row
 UM_PauseMenuExit:
                 ldx #MENU_NONE
                 beq SetMenuMode2
-
-        ; Pause menu
-
 UM_PauseMenuLeft:
                 tya
                 beq UM_PauseMenuDone
@@ -594,116 +517,6 @@ UM_NoLeftArrow: sta screen1+SCROLLROWS*40+40+8
 UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+31
                 jmp SetPanelRedrawItemAmmo      ;Redraw item & ammo next time panel is updated
 
-        ; Levelup skill select
-
-UM_RedrawLevelUpChoice:
-                inc textLeftMargin
-                ldx menuCounter
-                ldy improveList,x
-                sty temp1
-                lda skillNameLo,y
-                ldx skillNameHi,y
-                jsr PrintPanelTextIndefinite
-                ldx temp1
-                lda plrSkills,x
-                ldx zpBitsLo
-                inx
-                clc
-                adc #$31
-                pha
-                jsr PrintPanelChar
-                lda #"-"
-                jsr PrintPanelChar
-                lda #">"
-                jsr PrintPanelChar
-                pla
-                adc #1
-                jsr PrintPanelChar
-                ldx menuCounter
-                ldy improveList+1,x
-                bpl UM_RedrawCommon
-                ldy #$00
-                bpl UM_RedrawCommon
-
-        ; Levelup message. Also actually levels up the player character
-
-UM_RedrawLevelUpMsg:
-                inc xpLevel
-                ldx #<xpLo
-                ldy #<xpLimitLo
-                jsr Sub16
-                lda xpLevel
-                cmp #MAX_LEVEL
-                bcc LU_NotMaxLevel
-                lda #<999
-                sta xpLimitLo
-                lda #>999
-                sta xpLimitHi
-                bne LU_XPLimitDone
-LU_NotMaxLevel: lda #NEXT_XPLIMIT
-                ldx #<xpLimitLo
-                jsr Add8
-LU_XPLimitDone: lda #HP_PLAYER
-                sta actHp+ACTI_PLAYER           ;Fill health when leveled up
-                lda #$20
-                ldx #2
-LU_ClearLevelText:
-                sta txtLevelUpLevel,x
-                dex
-                bpl LU_ClearLevelText
-                lda xpLevel
-                jsr ConvertToBCD8
-                ldx #80
-                jsr PrintBCDDigitsNoZeroes
-LU_CopyLevelText:
-                lda screen1+23*40-1,x
-                sta txtLevelUpLevel-81,x
-                dex
-                cpx #81
-                bcs LU_CopyLevelText
-                lda #<txtLevelUp
-                ldx #>txtLevelUp
-                ldy #XP_TEXT_DURATION
-                jsr PrintPanelText
-                ldx #$00
-                ldy #$00
-                sty levelUp                     ;Reset pending levelup flag
-LU_BuildSkillList:
-                lda plrSkills,y                 ;Build list of skills that can be improved
-                cmp #MAX_SKILL
-                bcs LU_AtMaximum
-                tya
-                sta improveList,x
-                inx
-LU_AtMaximum:   iny
-                cpy #NUM_SKILLS
-                bcc LU_BuildSkillList
-                lda #$ff
-                sta improveList,x               ;Endmark
-                rts
-
-        ; Show XP & skills
-
-UM_RedrawSkillDisplay:
-                lda #<txtSkillDisplay
-                ldx #>txtSkillDisplay
-                jsr PrintPanelTextIndefinite
-                ldx #11
-                jsr PXPM_XPLevel
-                ldx #31
-                ldy #NUM_SKILLS-1
-UM_SkillLoop:   lda plrSkills,y
-                clc
-                adc #17
-                sta screen1+SCROLLROWS*40+40,x
-                lda #$0d
-                sta colors+SCROLLROWS*40+40,x
-                dex
-                dex
-                dey
-                bpl UM_SkillLoop
-                rts
-
         ; Pause menu
 
 UM_RedrawPauseMenu:
@@ -728,6 +541,7 @@ UM_PauseMenuSpace:
                 sta screen1+SCROLLROWS*40+40,x
                 dey
                 bpl UM_PauseMenuArrowLoop
+UM_RedrawDialogue:
                 rts
 
         ; Check for joystick left/right movement in menu, taking movement delay into account
@@ -755,41 +569,6 @@ MC_NormalDelay: stx menuMoveDelay
                 lsr
                 lsr
                 rts
-
-        ; Print message of received XP
-        ;
-        ; Parameters: A XP amount
-        ; Returns: -
-        ; Modifies: A,X,Y,temp vars,loader temp vars
-
-PrintXPMessage: jsr ConvertToBCD8
-                jsr ClearPanelText
-                lda #XP_TEXT_DURATION*2
-                sta textTime
-                lda #$00
-                sta lastReceivedXP
-                ldx textLeftMargin
-                lda #"+"
-                jsr PrintPanelChar
-                jsr Print3BCDDigitsNoZeroes
-                inx
-                ldy #$00
-PXPM_Text:      lda txtXP,y
-                jsr PrintPanelChar
-                iny
-                cpy #$07
-                bcc PXPM_Text
-PXPM_XPLevel:   lda xpLevel
-                jsr ConvertToBCD8
-                jsr PrintBCDDigitsNoZeroes
-                inx
-                lda xpLo
-                ldy xpHi
-                jsr ConvertAndPrint3BCDDigits
-                lda #"/"
-                jsr PrintPanelChar
-                lda xpLimitLo
-                ldy xpLimitHi
 
 ConvertAndPrint3BCDDigits:
                 jsr ConvertToBCD16

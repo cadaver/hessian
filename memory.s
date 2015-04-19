@@ -135,7 +135,6 @@ SCROLLROWS      = 22
                 var displayedItemName           ;Misc. game variables
                 var displayedHealth
                 var healthRecharge
-                var lastReceivedXP
 
                 var difficulty                  ;Game options
                 var musicMode
@@ -143,12 +142,6 @@ SCROLLROWS      = 22
 
                 var levelNum                    ;Player state
                 var itemIndex
-                var levelUp
-                var xpLo
-                var xpHi
-                var xpLevel
-                var xpLimitLo
-                var xpLimitHi
                 var nextTempLvlActIndex
 
 playerStateZPStart = levelNum

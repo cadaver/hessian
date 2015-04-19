@@ -6,7 +6,7 @@
 LOGOSTARTROW    = 1
 TEXTSTARTROW    = 12
 NUMTEXTROWS     = 8
-NUMTITLEPAGES   = 6
+NUMTITLEPAGES   = 4
 
 LOAD_GAME       = 0
 SAVE_GAME       = 1
@@ -111,7 +111,7 @@ SaveGameExec:   jsr FadeOutText
                 lda saveSlotChoice
                 jsr GetSaveListPos
                 ldx #$00
-CopySaveDesc:   lda saveStateStart,x            ;Copy levelname & player XP to the savegamelist
+CopySaveDesc:   lda saveStateStart,x            ;Copy levelname to the savegamelist (TODO: score)
                 sta saveList,y
                 iny
                 inx
@@ -157,8 +157,8 @@ EnterMainMenu:  lda #SFX_SELECT
 
 MainMenu:       jsr FadeOutText
                 jsr ClearText
-                lda titleTexts+12
-                ldx titleTexts+13
+                lda titleTexts+NUMTITLEPAGES*2
+                ldx titleTexts+NUMTITLEPAGES*2+1
                 jsr PrintPage
 MainMenuLoop:   lda #11
                 sta temp1
@@ -192,10 +192,10 @@ Options:        lda #0
                 sta optionsMenuChoice
                 jsr FadeOutText
                 jsr ClearText
-                lda titleTexts+14
-                ldx titleTexts+15
+                lda titleTexts+NUMTITLEPAGES*2+2
+                ldx titleTexts+NUMTITLEPAGES*2+3
                 jsr PrintPage
-RefreshOptions: lda #23
+RefreshOptions: lda #22
                 sta temp1
                 ldy difficulty
                 lda difficultyTxtLo,y
@@ -263,7 +263,7 @@ LoadTextOK:     jsr PrintTextCenter
                 sta temp2
                 jsr ScanSaves
                 jsr ResetPage
-LoadGameLoop:   lda #3
+LoadGameLoop:   lda #10
                 sta temp1
                 lda saveSlotChoice
                 ldx #MAX_SAVES+1
@@ -318,8 +318,8 @@ StartNewGame:   lda #2
                 sta optionsMenuChoice
                 jsr FadeOutText
                 jsr ClearText
-                lda titleTexts+16
-                ldx titleTexts+17
+                lda titleTexts+NUMTITLEPAGES*2+4
+                ldx titleTexts+NUMTITLEPAGES*2+5
                 jsr PrintPage
 RefreshCustomize:
                 jsr DrawPlayerCharacter
@@ -412,8 +412,6 @@ IP_InitLevelData:
                 sta lvlDataActBits-1,x          ;Assume all leveldata-actors exist at start
                 dex
                 bne IP_InitLevelData
-                lda #<FIRST_XPLIMIT
-                sta xpLimitLo
                 #if SKILL_CHEAT>0
                 lda #SKILL_CHEAT
                 ldx #4
@@ -421,13 +419,8 @@ IP_SkillCheatLoop:
                 sta plrAgility,x
                 dex
                 bpl IP_SkillCheatLoop
-                lda #MAX_LEVEL
-                sta xpLevel
-                lda #ITEM_FISTS
-                else
-                lda #1
-                sta xpLevel
                 endif
+                lda #ITEM_FISTS
                 sta invType                     ;1 = fists
                 jsr StopScript                  ;Stop any continuous script
                 lda #START_LEVEL
@@ -624,7 +617,7 @@ UC_LogoDone:    rts
 
         ; Load savegamelist and print savegame descriptions
 
-ScanSaves:      lda #F_SAVELIST                 ;Load the savegamelist which contains levelnames & player XPs
+ScanSaves:      lda #F_SAVELIST                 ;Load the savegamelist which contains levelnames & player state
                 jsr MakeFileName_Direct         ;from all savegames
                 jsr OpenFile
                 lda #0
@@ -641,7 +634,7 @@ ReadSaveList:   jsr GetByte
                 sta saveList,x
                 inx
                 bcc ReadSaveList
-ScanSaveLoop:   lda #5
+ScanSaveLoop:   lda #12
                 sta temp1
                 lda temp3
                 jsr GetSaveListPos
@@ -667,41 +660,6 @@ GetSaveDescription:
                 adc #$00
                 sta zpSrcHi
                 jsr PrintTextContinue
-                lda #$20                        ;Level / XP / XP limit
-                sta txtSaveLevel
-                sta txtSaveLevel+1
-                ldx temp8
-                lda saveList+21,x
-                jsr ConvertToBCD8
-                ldx #80
-                jsr PrintBCDDigitsNoZeroes
-CopyLevelText:  lda screen1+SCROLLROWS*40+40-1,x
-                sta txtSaveLevel-81,x
-                dex
-                cpx #81
-                bcs CopyLevelText
-                ldx temp8
-                lda saveList+19,x
-                ldy saveList+20,x
-                ldx #80
-                jsr ConvertAndPrint3BCDDigits
-                lda #"/"
-                sta screen1+SCROLLROWS*40+120+3
-                ldx temp8
-                lda saveList+22,x
-                ldy saveList+23,x
-                ldx #84
-                jsr ConvertAndPrint3BCDDigits
-CopyXPText:     lda screen1+SCROLLROWS*40+40-1,x
-                sta txtSaveXP-81,x
-                dex
-                cpx #81
-                bcs CopyXPText
-                lda #22
-                sta temp1
-                lda #<txtSaveLevelAndXP
-                ldx #>txtSaveLevelAndXP
-                jsr PrintText
                 jmp SaveDone
 
         ; Pick choice by joystick up/down
@@ -889,7 +847,7 @@ GetRowAddress:  lda #40
                 rts
 
         ; Get index of entry A in savegamelist
-        
+
 GetSaveListPos: sta temp8
                 asl
                 adc temp8
@@ -918,19 +876,15 @@ optionsModified: dc.b 0
 difficultyTxtLo:dc.b <txtEasy, <txtMedium, <txtHard
 difficultyTxtHi:dc.b >txtEasy, >txtMedium, >txtHard
 
-txtEasy:        dc.b "EASY  ",0
+txtEasy:        dc.b "CASUAL",0
 txtMedium:      dc.b "MEDIUM",0
-txtHard:        dc.b "HARD  ",0
+txtHard:        dc.b "EXPERT",0
 txtOn:          dc.b "ON ",0
 txtOff:         dc.b "OFF",0
 txtLoadSlot:    dc.b "LOAD GAME FROM",0
 txtSaveSlot:    dc.b "SAVE GAME TO",0
 txtEmpty:       dc.b "EMPTY SLOT",0
 txtCancel:      dc.b "CANCEL",0
-txtSaveLevelAndXP:
-                dc.b "LV."
-txtSaveLevel:   dc.b "   "
-txtSaveXP:      dc.b "   /   ",0,0
 
 mainMenuJumpTblLo:
                 dc.b <StartNewGame

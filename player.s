@@ -27,9 +27,6 @@ HUMAN_MAX_YSPEED = 6*8
 DAMAGING_FALL_DISTANCE = 4
 MIN_ROLLSAVE_SPEED = 24
 
-FIRST_XPLIMIT   = 100
-NEXT_XPLIMIT    = 50
-MAX_LEVEL       = 16
 MAX_SKILL       = 3
 
 INITIAL_GROUNDACC = 5
@@ -989,39 +986,6 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 ldx temp6
                 rts
 
-        ; Give experience points to player, check for leveling
-        ;
-        ; Parameters: A XP amount
-        ; Returns: -
-        ; Modifies: A,loader temp vars
-
-GiveXP:         pha
-                stx zpSrcLo
-                sty zpSrcHi
-                ldx #<xpLo
-                jsr Add8
-                pla
-                clc
-                adc lastReceivedXP
-                bcs GXP_TooMuchXP               ;If last received XP overflows,
-                sta lastReceivedXP              ;disregard the latest addition
-GXP_TooMuchXP:  ldy #<xpLimitLo                 ;(should not happen)
-                jsr Cmp16
-                bcc GXP_Done
-                lda xpLevel
-                cmp #MAX_LEVEL
-                bcc GXP_NoMaxLevel
-                lda xpLimitLo                   ;Clamp XP on last level
-                sta xpLo
-                lda xpLimitHi
-                sta xpHi
-                bne GXP_Done
-GXP_NoMaxLevel: sta levelUp                     ;Mark pending levelup
-GXP_Done:       jmp PSfx_Done                   ;Hack: PlaySfx ends similarly
-                ;ldx zpSrcLo
-                ;ldy zpSrcHi
-                ;rts
-
         ; Save an in-memory checkpoint. All actors must be removed from screen at this point
         ;
         ; Parameters: -
@@ -1168,11 +1132,11 @@ LoadPlayerActorVars:
                 dex
                 bpl LoadPlayerActorVars
                 inx                             ;X=0
-                stx lastReceivedXP
                 jsr InitActor
                 jsr SetPanelRedrawItemAmmo
 
         ; Apply skill effects
+        ; TODO: refactor to use on/off upgrades
         ;
         ; Parameters: -
         ; Returns: X=0
