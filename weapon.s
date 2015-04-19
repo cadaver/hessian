@@ -92,8 +92,9 @@ MoveAndAttackHuman:
                 jsr MoveHuman
 AttackHuman:    ldy actWpn,x
                 beq AH_NoWeaponFrame
-                lda actHp,x                     ;No attacks/weapon if dead
-                beq AH_NoWeaponFrame
+                lda actF1,x                     ;No attacks/weapon if dead / rolling / swimming
+                cmp #FR_DIE
+                bcs AH_NoWeaponFrame
                 lda wpnTblLo-1,y
                 sta wpnLo
                 lda wpnTblHi-1,y
@@ -116,7 +117,7 @@ AH_HasFullMagReserve:
                 bmi AH_BeginReload
                 cmp temp1
                 lda actAttackD+ACTI_PLAYER
-                bne AH_NoAttack                 ;While ongoing, keep weapon in down position
+                bne AH_NoAttack2                ;While ongoing, keep weapon in down position
                 bcs AH_ReloadComplete           ;Reload finished?
                 lda actCtrl+ACTI_PLAYER
                 cmp #JOY_FIRE
