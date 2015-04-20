@@ -466,6 +466,20 @@ SS_Sub:         sta $d400,x
                 sta $d40e,x
                 rts
 
+        ; IRQ redirector when Kernal is on
+
+RedirectIrq:    ldx $01
+                lda #$35                        ;Note: this will necessarily have overhead,
+                sta $01                         ;which means that the sensitive IRQs like
+                lda #>RI_Return                 ;the panel-split should take extra advance
+                pha
+                lda #<RI_Return
+                pha
+                php
+                jmp ($fffe)
+RI_Return:      stx $01
+                jmp $ea81
+
         ; NMI routine
 
 NMI:            rti
@@ -488,8 +502,6 @@ InitLoader:     ldx #$ff                        ;Init stackpointer
                 sei
                 sta $d07f                       ;Disable SCPU hardware regs
                 sta $d07a                       ;SCPU to slow mode
-                lda #$7f                        ;Disable & acknowledge IRQ sources
-                sta $dc0d
                 ldx #$00
                 stx $d01a
                 stx $d015
@@ -504,7 +516,9 @@ IL_DetectNtsc2: cmp $d012
                 bcc IL_IsNtsc
                 lda #$2c                        ;Adjust 2-bit fastload transfer
                 sta FL_Delay                    ;delay for PAL
-IL_IsNtsc:      lda $dc0d
+IL_IsNtsc:      lda #$7f                        ;Disable & acknowledge IRQ sources
+                sta $dc0d
+                lda $dc0d
                 inc $d019
                 lda #<NMI                       ;Set NMI vector
                 sta $0318
@@ -514,6 +528,10 @@ IL_IsNtsc:      lda $dc0d
                 sta $0319
                 sta $fffb
                 sta $ffff
+                lda #<RedirectIrq               ;Setup the IRQ redirector for Kernal on mode
+                sta $0314
+                lda #>RedirectIrq
+                sta $0315
                 lda #$81                        ;Run Timer A once to disable NMI from Restore keypress
                 sta $dd0d                       ;Timer A interrupt source
                 lda #$01                        ;Timer A count ($0001)
@@ -636,10 +654,10 @@ IL_StartFastLoad:
 
 IL_Done:        lda #$35                        ;Loader needs Kernal off to use the buffers
                 sta $01                         ;under ROM
-                lda #<loaderCodeEnd             ;Load & show loading picture
-                ldx #>loaderCodeEnd
+                lda #<introStart                ;Load the intro
+                ldx #>introStart
                 jsr LoadFile
-                jmp loaderCodeEnd
+                jmp introCodeStart
 
 UploadDriveCode:sta loadTempReg                 ;Number of "packets" to send
                 stx zpSrcLo

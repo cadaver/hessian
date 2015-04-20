@@ -733,7 +733,7 @@ ResetTitlePageDelay:
                 lda #0
                 sta titlePageDelayLo
                 sta titlePageDelayHi
-                rts
+FOT_Done:       rts
 
         ; Wait until text faded out
 
@@ -741,10 +741,10 @@ FadeOutAll:     lda #-1
                 sta logoFadeDir
 FadeOutText:    lda #-1
                 sta textFadeDir
-FOT_Wait:       jsr Update
-                lda textFade
-                bne FOT_Wait
-                rts
+FOT_Wait:       lda textFade
+                beq FOT_Done
+                jsr Update
+                jmp FOT_Wait
 
         ; Clear text rows
         

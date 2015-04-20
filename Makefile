@@ -27,7 +27,7 @@ clean:
 	-rm e?
 	-rm f?
 
-hessian.d64: boot.prg loader.pak main.pak loadpic.pak options.bin emptysave.bin savelist.bin logo.pak \
+hessian.d64: boot.prg loader.pak main.pak options.bin emptysave.bin savelist.bin logo.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak \
 	script01.pak level00.pak level01.pak level02.pak common.pak item.pak weapon.pak playermt.pak playerft.pak \
@@ -138,28 +138,29 @@ sfx/object.sfx: sfx/object.ins
 levelactors.s: bg/level00.lva bg/level00.lvo bg/level01.lva bg/level01.lvo bg/level02.lva bg/level02.lvo
 	countobj
 
-main.pak: actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutscene.s file.s init.s item.s itemdata.s level.s leveldata.s \
+main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutscene.s file.s init.s item.s itemdata.s level.s leveldata.s \
 	levelactors.s macros.s main.s math.s memory.s panel.s paneldata.s physics.s player.s plot.s raster.s screen.s script.s sound.s \
 	sounddata.s sprite.s text.s weapon.s weapondata.s loader.pak bg/scorescr.chr sfx/pistol.sfx sfx/shotgun.sfx \
 	sfx/autorifle.sfx sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
 	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/heavymelee.sfx \
-	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/drone.sfx sfx/splash.sfx sfx/object.sfx
+	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/drone.sfx sfx/splash.sfx sfx/object.sfx \
+	pics/covert.iff  pics/loadpic.iff loadermusic.bin
+	pic2chr pics/covert.iff covert.chr -b11 -m12 -n13 -c -s -x30 -y4
+	pic2chr pics/covert.iff covertscr.dat -b11 -m12 -n13 -x30 -y4 -t -c
+	gfxconv pics/loadpic.iff loadpic.dat -r -b0 -o -nc -ns
+	gfxconv pics/loadpic.iff loadpicscr.dat -r -b0 -o -nc -nb
+	gfxconv pics/loadpic.iff loadpiccol.dat -r -b0 -o -nb -ns
 	dasm main.s -omain.bin -smain.tbl -f3
 	symbols main.tbl mainsym.s
 	symbols main.tbl >pagecross.txt
-	pack2 main.bin main.pak
-
-loadpic.pak: loadpic.s loadsym.s mainsym.s pics/loadpic.iff
-	gfxconv pics\loadpic.iff loadpic.dat -r -b0 -o -nc -ns
-	gfxconv pics\loadpic.iff loadpicscr.dat -r -b0 -o -nc -nb
-	gfxconv pics\loadpic.iff loadpiccol.dat -r -b0 -o -nb -ns
-	dasm loadpic.s  -oloadpic.bin -f3
-	pack2 loadpic.bin loadpic_1.pak
-	pack2 loadpic.dat loadpic_2.pak
-	pack2 loadpicscr.dat loadpic_3.pak
-	pack2 loadpiccol.dat loadpic_4.pak
-	filejoin loadpic_1.pak+loadpic_2.pak+loadpic_3.pak+loadpic_4.pak loadpic.pak
+	dasm intro.s -ointro.bin -f3
+	pack2 intro.bin main_1.pak
+	pack2 loadpic.dat main_2.pak
+	pack2 loadpicscr.dat main_3.pak
+	pack2 loadpiccol.dat main_4.pak
+	pack2 main.bin main_5.pak
+	filejoin main_1.pak+main_2.pak+main_3.pak+main_4.pak+main_5.pak main.pak
 
 emptysave.bin: emptysave.s mainsym.s
 	dasm emptysave.s -oemptysave.bin -f3
@@ -186,7 +187,9 @@ script01.pak: script01.s memory.s mainsym.s
 
 loadermusic.bin: music/hessianmusic.d64
 	d642prg music/hessianmusic.d64 loader.bin loadermusic.bin -h
-	pack2 music00.bin music00.pak
+
+loadermusic2.bin: music/hessianmusic.d64
+	d642prg music/hessianmusic.d64 loader2.bin loadermusic2.bin -h
 
 music00.pak: music/hessianmusic.d64
 	d642prg music/hessianmusic.d64 title.bin music00.bin -h
@@ -241,7 +244,7 @@ music12.pak: music/hessianmusic.d64
 	pack2 music12.bin music12.pak
 
 hessian.sid: hessiansid.s music00.bin music01.bin music02.bin music03.bin music04.bin music05.bin music06.bin music07.bin \
-	music08.bin music09.bin music10.bin music11.bin music12.bin loadermusic.bin
+	music08.bin music09.bin music10.bin music11.bin music12.bin loadermusic2.bin
 	dasm hessiansid.s -ohessian.sid -f3
 
 level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.bli bg/level00.chi bg/level00.chc bg/level00.chr bg/level00.lva bg/level00.lvr bg/level00.lvo

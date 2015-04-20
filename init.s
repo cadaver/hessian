@@ -21,7 +21,6 @@ InitZP:         sta joystick,x
 
         ; Initialize playroutine
 
-                sta $d415                       ;Filter lowbyte
                 sta ntFiltPos
                 sta ntFiltTime
                 lda #$7f
@@ -95,14 +94,20 @@ ISpr_ClearCacheInUse:
                 dex
                 bpl ISpr_ClearCacheInUse
 
+        ; Load resident sprites
+
+                ldy #C_COMMON
+                jsr LoadSpriteFile
+                ldy #C_ITEM
+                jsr LoadSpriteFile
+                ldy #C_WEAPON
+                jsr LoadSpriteFile
+
         ; Initialize video registers and screen memory
 
 InitVideo:      jsr WaitBottom
-                lda $dd00                       ;Set game videobank
-                and #$fc
-                sta $dd00
-                lda #$00
-                sta $d011                       ;Blank screen
+                lda #$00                        ;Blank screen
+                sta $d011
                 sta $d01b                       ;Sprites on top of BG
                 sta $d01d                       ;Sprite X-expand off
                 sta $d017                       ;Sprite Y-expand off
@@ -156,14 +161,19 @@ IVid_InitScorePanel:
                 lda #ITEM_FISTS                 ;the panel looks nice
                 sta invType
 
-        ; Load resident sprites
+        ; Fade out loading music now
 
-                ldy #C_COMMON
-                jsr LoadSpriteFile
-                ldy #C_ITEM
-                jsr LoadSpriteFile
-                ldy #C_WEAPON
-                jsr LoadSpriteFile
+                lda fastLoadMode
+                cmp #$01
+                beq InitRaster
+FadeMusicLoop:  ldy #$08
+FadeMusicDelay: jsr WaitBottom
+                dey
+                bne FadeMusicDelay
+                lda musicData+$8c
+                beq InitRaster
+                dec musicData+$8c
+                bpl FadeMusicLoop
 
         ; Initialize raster IRQs
         ; Relies on loader init to have already disabled the timer interrupt
@@ -172,17 +182,12 @@ InitRaster:     sei
                 lda #$35
                 sta irqSave01
                 sta $01
-                lda #<RedirectIrq               ;Setup the IRQ redirector for Kernal off mode
-                sta $0314
-                lda #>RedirectIrq
-                sta $0315
                 lda #<Irq1                      ;Set initial IRQ vector
                 sta $fffe
                 lda #>Irq1
                 sta $ffff
-                lda $d011
-                and #$7f                        ;High bit of interrupt position = 0
-                sta $d011
+                lda #$00                        ;IRQs disabled until the screen is ready to be drawn
+                sta $d01a
                 lda #IRQ1_LINE                  ;Line where next IRQ happens
                 sta $d012
                 lda fastLoadMode                ;If not using fastloader, disable MinSprY/MaxSprY writing

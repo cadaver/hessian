@@ -17,6 +17,16 @@ GAMESCR1_D018   = $da
 GAMESCR2_D018   = $ca
 PANEL_D018      = $d8
 
+        ; IRQ common startup code
+
+StartIrq:       cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+                rts
+                
         ; Blank the gamescreen and turn off sprites
         ; (return to normal display by calling UpdateFrame)
         ;

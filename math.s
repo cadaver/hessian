@@ -1,13 +1,3 @@
-        ; IRQ common startup code
-
-StartIrq:       cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
-                rts
-                
         ; Add a 8-bit value to a 16-bit value
         ;
         ; Parameters: A value to be added, X zeropage base

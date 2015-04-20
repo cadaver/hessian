@@ -12,20 +12,6 @@ TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
 
-        ; IRQ redirector when Kernal is on
-
-RedirectIrq:    ldx $01
-                lda #$35                        ;Note: this will necessarily have overhead,
-                sta $01                         ;which means that the sensitive IRQs like
-                lda #>RI_Return                 ;the panel-split should take extra advance
-                pha
-                lda #<RI_Return
-                pha
-                php
-                jmp ($fffe)
-RI_Return:      stx $01
-                jmp $ea81
-
         ; Raster interrupt 5. Text screen split
 
 Irq5:           jsr StartIrq

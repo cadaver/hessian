@@ -705,4 +705,4 @@ module9:        incbin music09.bin
 module10:       incbin music10.bin
 module11:       incbin music11.bin
 module12:       incbin music12.bin
-module13:       incbin loadermusic.bin
+module13:       incbin loadermusic2.bin
