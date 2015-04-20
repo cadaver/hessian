@@ -78,9 +78,6 @@ PauseLoop:      jsr WaitBottom                  ;to show the logo a little longe
 NoPause:        lda #<$2000
                 ldx #>$2000
                 jsr LoadFile                    ;Load bitmap data attached to this file
-                lda #<$e800
-                ldx #>$e800
-                jsr LoadFile                    ;Load screen data
 
                 lda #$34                        ;Copy bitmap to proper videobank
                 sta $01                         ;(loader does not support loading under I/O)
@@ -111,7 +108,10 @@ FadeOutLoop:    jsr SetLogoColors
                 lda #$a0
                 sta $d018
                 ldx #$00
-                stx $d011                       ;Blank screen while colors are being loaded
+                stx $d011                       ;Blank screen now until ready to show
+                lda #<$e800
+                ldx #>$e800
+                jsr LoadFile                    ;Load screen & color data
                 lda #<$d800
                 ldx #>$d800
                 jsr LoadFile
