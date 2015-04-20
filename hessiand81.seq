@@ -29,8 +29,6 @@ write 29 @8:
 write 2a @8:
 write 2b @8:
 write 2c @8:
-write 2d @8:
-write 2e @8:
 write 30 @8:
 write 31 @8:
 write 70 @8:
