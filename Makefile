@@ -196,15 +196,15 @@ music00.pak: music/hessianmusic.d64
 	pack2 music00.bin music00.pak
 
 music01.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 gameover.bin music01.bin -h
+	d642prg music/hessianmusic.d64 destruction.bin music01.bin -h
 	pack2 music01.bin music01.pak
 
 music02.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 destruction.bin music02.bin -h
+	d642prg music/hessianmusic.d64 victory.bin music02.bin -h
 	pack2 music02.bin music02.pak
 
 music03.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 victory.bin music03.bin -h
+	d642prg music/hessianmusic.d64 gameover.bin music03.bin -h
 	pack2 music03.bin music03.pak
 
 music04.pak: music/hessianmusic.d64

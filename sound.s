@@ -17,9 +17,9 @@ NT_FIRSTWAVE        = $09
 
 MUSIC_SILENCE       = $00
 MUSIC_TITLE         = $01
-MUSIC_GAMEOVER      = $04
-MUSIC_ENDING1       = $08
-MUSIC_ENDING2       = $0c
+MUSIC_ENDING1       = $04
+MUSIC_ENDING2       = $08
+MUSIC_GAMEOVER      = $0c
 MUSIC_MYSTERY       = $10
 MUSIC_OUTSIDE       = $14
 MUSIC_OFFICES       = $18
@@ -30,7 +30,7 @@ MUSIC_HIDEOUT       = $28
 MUSIC_NETHER        = $2c
 MUSIC_ASSAULT       = $30
 
-FIRST_INGAME_SONG   = $10
+FIRST_INGAME_SONG   = MUSIC_GAMEOVER
 
         ; Play a song. Load if necessary. Do not reinit if already playing
         ;
