@@ -103,6 +103,20 @@ ISpr_ClearCacheInUse:
                 ldy #C_WEAPON
                 jsr LoadSpriteFile
 
+        ; Fade out loading music now
+
+                lda fastLoadMode
+                cmp #$01
+                beq InitVideo
+FadeMusicLoop:  ldy #$08
+FadeMusicDelay: jsr WaitBottom
+                dey
+                bne FadeMusicDelay
+                lda musicData+$8c
+                beq InitVideo
+                dec musicData+$8c
+                bpl FadeMusicLoop
+
         ; Initialize video registers and screen memory
 
 InitVideo:      jsr WaitBottom
@@ -160,20 +174,6 @@ IVid_InitScorePanel:
                 sta actHp+ACTI_PLAYER           ;even before starting the game so that
                 lda #ITEM_FISTS                 ;the panel looks nice
                 sta invType
-
-        ; Fade out loading music now
-
-                lda fastLoadMode
-                cmp #$01
-                beq InitRaster
-FadeMusicLoop:  ldy #$08
-FadeMusicDelay: jsr WaitBottom
-                dey
-                bne FadeMusicDelay
-                lda musicData+$8c
-                beq InitRaster
-                dec musicData+$8c
-                bpl FadeMusicLoop
 
         ; Initialize raster IRQs
         ; Relies on loader init to have already disabled the timer interrupt

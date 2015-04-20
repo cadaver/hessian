@@ -67,6 +67,14 @@ FadeInLoop:     inx
                 cpx #LOGO_FADE_FRAMES
                 bcc FadeInLoop
 
+                lda fastLoadMode
+                cmp #$01
+                beq NoPause
+                ldx #100                        ;If using fastloading, pause for 2 seconds
+PauseLoop:      jsr WaitBottom                  ;to show the logo a little longer
+                dex
+                bne PauseLoop
+
 NoPause:        lda #<$2000
                 ldx #>$2000
                 jsr LoadFile                    ;Load bitmap data attached to this file
