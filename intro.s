@@ -70,7 +70,7 @@ FadeInLoop:     inx
                 lda fastLoadMode
                 cmp #$01
                 beq NoPause
-                ldx #100                        ;If using fastloading, pause for 2 seconds
+                ldx #75                         ;If using fastloading, pause for 1.5 seconds
 PauseLoop:      jsr WaitBottom                  ;to show the logo a little longer
                 dex
                 bne PauseLoop
