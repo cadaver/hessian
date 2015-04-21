@@ -303,8 +303,11 @@ UM_UpdateJump:  jmp $0000
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,loader temp vars
 
-SetGameOverMenu:lda #MUSIC_GAMEOVER
+SetGameOverMenu:lda fastLoadMode                ;In Kernal loading mode, do not load the tune
+                beq SkipGameOverMusic           ;as it would blank the screen and take a long time
+                lda #MUSIC_GAMEOVER
                 jsr PlaySong
+SkipGameOverMusic:
                 ldx #MENU_PAUSE
 SetMenuMode:    stx menuMode
                 lda #$00

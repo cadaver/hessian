@@ -46,7 +46,6 @@ DrawLogo:       lda covertLogoData,x
                 lda #$1b
                 sta $d011                       ;Show logo
                 lda fastLoadMode
-                cmp #$01
                 beq NoMusic                     ;If not using Kernal slow loading, play music now
                 sei
                 lda #$00
@@ -68,7 +67,6 @@ FadeInLoop:     inx
                 bcc FadeInLoop
 
                 lda fastLoadMode
-                cmp #$01
                 beq NoPause
                 ldx #75                         ;If using fastloading, pause for 1.5 seconds
 PauseLoop:      jsr WaitBottom                  ;to show the logo a little longer

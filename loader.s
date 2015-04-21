@@ -11,6 +11,10 @@ IRQ_SPEED       = $20           ;$1c07 (head movement speed)
 
 MW_LENGTH       = 32            ;Bytes in one M-W command
 
+LOAD_KERNAL     = $00           ;Load using Kernal and do not allow interrupts
+LOAD_FAKEFAST   = $01           ;Load using Kernal, interrupts allowed
+LOAD_FAST       = $80           ;(or any other negative value) Load using custom serial protocol, Kernal not used at all after startup
+
 tablBi          = depackBuffer
 tablLo          = depackBuffer + 52
 tablHi          = depackBuffer + 104
@@ -489,7 +493,7 @@ NMI:            rti
 tablBit:        dc.b 2,4,4                       ;Exomizer static tables
 tablOff:        dc.b 48,32,16
 fileNumber:     dc.b $01                        ;01 = initial filenumber for the loading picture
-fastLoadMode:   dc.b $01
+fastLoadMode:   dc.b LOAD_KERNAL
 
 loaderCodeEnd:                                  ;Resident code ends here!
 
@@ -584,8 +588,8 @@ IL_DDSendMR:    lda ilMRString,x                ;Send M-R command (backwards)
                 lda $a5                         ;If serial bus delay counter is
                 cmp #$aa                        ;unchanged, it's probably VICE's
                 bne IL_NoFastLoad               ;virtual device trap
-IL_NoSerial:    lda #$80                        ;Serial bus not used: switch to
-                sta fastLoadMode                ;"fake" IRQ-loading mode
+IL_NoSerial:    inc fastLoadMode                ;Serial bus not used: switch to
+                                                ;"fake" IRQ-loading mode
 IL_NoFastLoad:  ldx #ilSlowLoadEnd-ilSlowLoadStart
 IL_CopySlowLoad:lda ilSlowLoadStart-1,x         ;Copy slowload routines
                 sta OpenFile-1,x
@@ -593,7 +597,7 @@ IL_CopySlowLoad:lda ilSlowLoadStart-1,x         ;Copy slowload routines
                 bne IL_CopySlowLoad
                 jmp IL_Done
 
-IL_FastLoadOK:  dec fastLoadMode                ;Use normal IRQ-loading
+IL_FastLoadOK:  sta fastLoadMode                ;Use non-Kernal IRQ loading
                 txa                             ;1541?
                 beq IL_Is1541
                 lda #>DrvMain_Not1541           ;If not, skip the $1c07 write
@@ -1153,7 +1157,7 @@ PrepareKernalIO:inc fileOpen                    ;Set fileopen indicator, raster 
                 jsr CFN_Sub
                 jsr WaitBottom
                 lda fastLoadMode                ;In fake-IRQload mode IRQs continue,
-                bmi KernalOnFast                ;so no setup necessary
+                bne KernalOnFast                ;so no setup necessary
                 lda $d01a                       ;If raster IRQs not yet active, no
                 lsr                             ;setup necessary
                 bcc KernalOnFast

@@ -106,7 +106,6 @@ ISpr_ClearCacheInUse:
         ; Fade out loading music now
 
                 lda fastLoadMode
-                cmp #$01
                 beq InitVideo
 FadeMusicLoop:  ldy #$08
 FadeMusicDelay: jsr WaitBottom
@@ -190,8 +189,8 @@ InitRaster:     sei
                 sta $d01a
                 lda #IRQ1_LINE                  ;Line where next IRQ happens
                 sta $d012
-                lda fastLoadMode                ;If not using fastloader, disable MinSprY/MaxSprY writing
-                beq IR_UseFastLoad
+                lda fastLoadMode                ;If not using serial fastloading, disable MinSprY/MaxSprY writing
+                bmi IR_UseFastLoad
                 lda #$2c
                 sta Irq1_StoreMinSprY
                 sta Irq1_StoreMaxSprY

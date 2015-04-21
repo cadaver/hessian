@@ -303,7 +303,6 @@ RSF_Loop:       jsr GetByte
 RSF_End:        lda saveStateStart              ;If first byte zero, it's an empty file (no save)
                 beq LoadGameLoop
                 lda fastLoadMode                ;Fade out screen, unless in slowload mode
-                cmp #$01
                 beq LoadSkipFade
                 jsr FadeOutAll
 LoadSkipFade:   jsr SaveModifiedOptions
