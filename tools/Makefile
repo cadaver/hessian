@@ -1,4 +1,4 @@
-all: d642prg.exe filejoin.exe gfxconv.exe gt2nt2.exe invert.exe lpack.exe ldepack.exe countobj.exe makedisk.exe pack2.exe pchunk2.exe pic2chr.exe mchunk.exe leveled.exe spred.exe symbols.exe ins2nt2.exe
+all: d642prg.exe filejoin.exe gfxconv.exe gt2nt2.exe invert.exe lpack.exe ldepack.exe countobj.exe makedisk.exe pack2.exe pchunk2.exe pic2chr.exe prg2d64.exe mchunk.exe leveled.exe spred.exe symbols.exe ins2nt2.exe
 
 clean:
 	del *.exe
@@ -60,6 +60,9 @@ pchunk2.exe: pchunk2.c
 
 pack2.exe: pack2.c
 	gcc pack2.c -opack2.exe
+
+prg2d64.exe: prg2d64.c
+	gcc prg2d64.c -oprg2d64.exe
 
 mchunk.exe: mchunk.c
 	gcc mchunk.c -omchunk.exe
