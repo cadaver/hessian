@@ -175,8 +175,6 @@ playerStateZPEnd = nextTempLvlActIndex+1
 
         ; Memory areas and non-zeropage variables
 
-depackCodeStart = $0100
-
 sprF            = $0100
 sprC            = $0118
 sprAct          = $0130

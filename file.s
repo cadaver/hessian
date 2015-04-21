@@ -9,8 +9,8 @@ C_PLAYER_FEMALE_TOP = 6
 C_PLAYER_BOTTOM = 7
 C_FIRSTPURGEABLE = C_PLAYER_MALE_TOP
 
-F_LOGO          = $02
-F_SPRITE        = $03
+F_LOGO          = $01
+F_SPRITE        = $02
 F_LEVEL         = $10
 F_MUSIC         = $20
 F_SCRIPT        = $30

@@ -492,23 +492,18 @@ NMI:            rti
 
 tablBit:        dc.b 2,4,4                       ;Exomizer static tables
 tablOff:        dc.b 48,32,16
-fileNumber:     dc.b $01                        ;01 = initial filenumber for the loading picture
+fileNumber:     dc.b $00                         ;Initial filenumber for the concatenated intro + main part
 fastLoadMode:   dc.b LOAD_KERNAL
 
 loaderCodeEnd:                                  ;Resident code ends here!
 
         ; Loader initialization
 
-InitLoader:     ldx #$ff                        ;Init stackpointer
-                txs
-                lda #$02                        ;Close the file loaded from
-                jsr Close
-                sei
+InitLoader:     sei
                 sta $d07f                       ;Disable SCPU hardware regs
-                sta $d07a                       ;SCPU to slow mode
-                ldx #$00
-                stx $d01a
-                stx $d015
+                jsr WaitBottom
+                jsr ilSlowLoadStart+InitRegs-OpenFile
+                dex                             ;X=1 on return from InitRegs
                 stx $d020
                 stx messages                    ;Disable KERNAL messages
                 stx fileOpen                    ;Clear fileopen indicator
@@ -543,9 +538,6 @@ IL_IsNtsc:      lda #$7f                        ;Disable & acknowledge IRQ sourc
                 stx $dd05
                 lda #%00011001                  ;Run Timer A in one-shot mode
                 sta $dd0e
-                lda $dc01                       ;If space held down when starting,
-                and #$10                        ;revert to slow (compatible) loading
-                beq IL_NoFastLoad
 
 IL_DetectDrive: lda #$aa
                 sta $a5
@@ -1161,7 +1153,7 @@ PrepareKernalIO:inc fileOpen                    ;Set fileopen indicator, raster 
                 lda $d01a                       ;If raster IRQs not yet active, no
                 lsr                             ;setup necessary
                 bcc KernalOnFast
-                jsr SilenceSID
+InitRegs:       jsr SilenceSID
                 sta $d07a                       ;SCPU to slow mode
                 sta $d030                       ;C128 back to 1MHz mode
                 sta $d01a                       ;Raster IRQs off

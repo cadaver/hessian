@@ -178,6 +178,8 @@ IVid_InitScorePanel:
         ; Relies on loader init to have already disabled the timer interrupt
 
 InitRaster:     sei
+                ldx #$ff
+                txs
                 lda #$35
                 sta irqSave01
                 sta $01
