@@ -539,6 +539,20 @@ IL_IsNtsc:      lda #$7f                        ;Disable & acknowledge IRQ sourc
                 lda #%00011001                  ;Run Timer A in one-shot mode
                 sta $dd0e
 
+                ldx #25                         ;Wait 1/2 seconds before checking safe mode
+IL_StartDelay:  jsr WaitBottom                  ;keypress (fire or space)
+                dex
+                bpl IL_StartDelay
+                lda $dc00
+                and #$10
+                beq IL_SafeMode
+                lda $dc01
+                and #$10
+                bne IL_DetectDrive
+IL_SafeMode:    lda #$06
+                sta $d020
+                jmp IL_NoFastLoad
+
 IL_DetectDrive: lda #$aa
                 sta $a5
                 lda #(ilDriveCodeEnd-ilDriveCode+MW_LENGTH-1)/MW_LENGTH

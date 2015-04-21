@@ -22,6 +22,7 @@ LOGO_FADE_FRAMES = 4
                 lda #$08
                 ldx #$00
                 stx $d415                       ;Set filter lowbyte for all subsequent music
+                stx $d020
                 stx $d021
                 stx $d022
                 stx $d023

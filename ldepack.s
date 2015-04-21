@@ -10,10 +10,22 @@ dpLength        = $fe
 dpBits          = $ff
 
                 org $0801
-                
-                dc.b $0b,$08,$0a,$00,$9e
-                dc.b $32,$30,$36,$31
-                dc.b $00,$00,$00
+
+line1:          dc.w line2
+                dc.w 0
+                dc.b $8f," HOLD SPACE OR FIRE ON START TO",0
+
+line2:          dc.w line3
+                dc.w 1
+                dc.b $8f," DISABLE FASTLOADER (SAFE MODE)",0
+
+line3:          dc.w line4
+                dc.w 2
+                dc.b $9e," 2136",0
+
+line4:          dc.b 0,0
+
+                org $0858
 
                 ldx #depackCodeEnd-depackCodeStart-1
 CopyCodeLoop:   lda depackCodeStart,x
