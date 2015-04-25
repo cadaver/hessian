@@ -11,6 +11,16 @@ TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
 
+        ; IRQ common startup code
+
+StartIrq:       cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+                rts
+
         ; Raster interrupt 5. Text screen split
 
 Irq5:           jsr StartIrq
@@ -58,14 +68,8 @@ Irq1_StoreMaxSprY:
                 sty FL_MaxSprY+1
 Irq1_ScrollX:   lda #$17
                 sta $d016
-Irq1_ScrollY:   lda #$57                        ;Check if panel split IRQ needs to blank the
-                sta $d011                       ;screen early due to badline
-                tax
-                ora #$07
-                cpx #$15
-                bne Irq1_NoBadLine
-                ora #$40
-Irq1_NoBadLine: sta Irq3_D011+1
+Irq1_ScrollY:   lda #$57
+                sta $d011
 Irq1_Screen:    ldy #GAMESCR1_D018
                 sty $d018
 Irq1_Bg1:       lda #$06
@@ -268,44 +272,45 @@ SetNextIrqNoAddress:
                 ldy irqSaveY
                 rti
 
-Irq2_LatePanel: ldx irqSaveX
-                ldy irqSaveY
+Irq2_LatePanel: ldy irqSaveY
                 bcc Irq3_Wait
 
         ; Raster interrupt 3. Gamescreen / scorepanel split
 
 Irq3:           sta irqSaveA
+                stx irqSaveX
                 lda #$35
                 sta $01                         ;Ensure IO memory is available
-Irq3_Wait:      lda $d012
-                cmp #IRQ3_LINE+1
-                bcc Irq3_Wait
-                nop
-                nop
-Irq3_D011:      lda #$57                        ;Stabilize Y-scrolling
+                lda $d011
+                ldx #IRQ3_LINE
+Irq3_Wait:      cpx $d012
+                bcs Irq3_Wait
+                cmp #$15
+                bne Irq3_NoBadLine
+Irq3_Blank:     lda #$57                        ;Immediate blanking if badline
                 sta $d011
-                cmp #$57
-                beq Irq3_NoDelay
-                lda #$07
-Irq3_Delay:     sbc #$01
-                bne Irq3_Delay
-                lda #$57
-                sta $d011
-Irq3_NoDelay:   lda #PANEL_D018                 ;Set panelscreen screen ptr.
+                lda #PANEL_D018                 ;Set panelscreen screen ptr.
                 sta $d018
-                lda #PANEL_BG1                  ;Set scorepanel multicolors
+                bne Irq3_SplitDone
+Irq3_NoBadLine: ora #$07                        ;No badline: stabilize Y-scroll first
+                sta $d011
+                nop
+                ldx #5
+Irq3_Delay:     dex
+                bpl Irq3_Delay
+                bmi Irq3_Blank
+Irq3_SplitDone: lda #PANEL_BG1                  ;Set scorepanel multicolors
                 sta $d021
                 lda #PANEL_BG2
                 sta $d022
                 lda #PANEL_BG3
                 sta $d023
                 cld
-                stx irqSaveX
                 sty irqSaveY
                 lsr newFrame                    ;Mark frame update available
-Irq3_Wait2:     lda $d012
-                cmp #IRQ3_LINE+3
-                bcc Irq3_Wait2
+                ldx #IRQ3_LINE+2
+Irq3_Wait2:     cpx $d012
+                bcs Irq3_Wait2
                 lda #$18
                 sta $d016
                 lda #$1f                        ;Switch screen back on
@@ -335,13 +340,3 @@ Irq4_NoTurbo:   lda #<Irq1
                 ldx #>Irq1
                 ldy #IRQ1_LINE
                 bne Irq3_EndJump
-                
-        ; IRQ common startup code
-
-StartIrq:       cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
-                rts
