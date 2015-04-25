@@ -452,7 +452,7 @@ UF_WaitColorShift:
 UF_WaitColorShiftLoop:
                 lda $d012                       ;Wait until we are near the scorescreen split
 UF_WaitColorShiftCheck:                         ;but not over it
-                cmp #IRQ3_LINE-$48
+                cmp #IRQ3_LINE-SCROLLSPLIT*8+8
                 bcc UF_WaitColorShiftLoop
 UF_ColorShiftLateCheck:
                 cmp #IRQ3_LINE+$10
@@ -548,11 +548,9 @@ SW_NoWork:      rts
 
 SW_Shift1:      adc #<SW_Shift1Loop
                 sta SW_Shift1Jump+1
-                if SW_Shift1Loop & $ff > $f9
                 lda #>SW_Shift1Loop
                 adc #$00
                 sta SW_Shift1Jump+2
-                endif
                 lda shiftEndTbl,x
                 sta SW_Shift1EndCmp+1
                 lda shiftDestTbl,x
@@ -574,11 +572,9 @@ SW_Shift1Done:  rts
 
 SW_Shift2:      adc #<SW_Shift2Loop
                 sta SW_Shift2Jump+1
-                if SW_Shift2Loop & $ff > $f9
                 lda #>SW_Shift2Loop
                 adc #$00
                 sta SW_Shift2Jump+2
-                endif
                 lda shiftEndTbl,x
                 sta SW_Shift2EndCmp+1
                 lda shiftDestTbl,x

@@ -329,32 +329,33 @@ DA_HumanNoWeapon:
 
 AddAllActorsNextFrame:
                 lda #$00
-                sta UA_AAStart+1
+                sta AA_Start+1
                 lda #MAX_LVLACT
-                sta UA_AAEndCmp+1
+                sta AA_EndCmp+1
                 rts
 
-        ; Update actors. Build first collision lists for bullet collisions. Also add
-        ; and remove actors from/to leveldata when crossing the screen edges. Followed
-        ; by InterpolateActors
+        ; Check if the game is paused. Trigger level chars update if not paused
+        ;
+        ; Parameters: -
+        ; Returns: C=0 not paused, C=1 paused
+        ; Modifies: A
+        
+CheckPause:     lda menuMode
+                cmp #MENU_PAUSE
+                bcs CP_Paused
+                inc Irq1_LevelUpdate+1
+CP_Paused:      rts
+
+        ; Add actors, process spawners and pathfinding AI. Do nothing if game is paused
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-UpdateActors:   lda menuMode                    ;If game paused, only do InterpolateActors
-                cmp #MENU_PAUSE                 ;and only update actor flashing
-                bcc GetActorBorders             ;(in InterpolateActors)
-                lda #$00                        ;Stop scrolling when actors aren't moving
-                sta scrollSX
-                sta scrollSY
-                jmp InterpolateActors
-
-        ; Calculate border coordinates for adding/removing actors
-
-GetActorBorders:lda #$02                        ;Also animate level when actors move
-                sta Irq1_LevelUpdate+1
-                lda mapX                        ;Calculate borders for add/removechecks
+AddActors:      jsr CheckPause
+                bcc AA_NoPause
+                rts
+AA_NoPause:     lda mapX                        ;Calculate borders for add/removechecks
                 sec
                 sbc #ADDACTOR_LEFT_LIMIT
                 bcs GAB_LeftOK1
@@ -363,7 +364,7 @@ GAB_LeftOK1:    cmp limitL
                 bcs GAB_LeftOK2
                 lda limitL
 GAB_LeftOK2:    sta UA_RALeftCheck+1            ;Left border
-                sta UA_AALeftCheck+1
+                sta AA_LeftCheck+1
                 sta UA_SpawnerLeftCheck+1
                 lda mapX
                 clc
@@ -374,7 +375,7 @@ GAB_RightOK1:   cmp limitR
                 bcc GAB_RightOK2
                 lda limitR
 GAB_RightOK2:   sta UA_RARightCheck+1           ;Right border
-                sta UA_AARightCheck+1
+                sta AA_RightCheck+1
                 sta UA_SpawnerRightCheck+1
                 lda mapY
                 ;sec
@@ -385,7 +386,7 @@ GAB_TopOK1:     cmp limitU
                 bcs GAB_TopOK2
                 lda limitU
 GAB_TopOK2:     sta UA_RATopCheck+1             ;Top border
-                sta UA_AATopCheck+1
+                sta AA_TopCheck+1
                 sta UA_SpawnerTopCheck+1
                 lda mapY
                 clc
@@ -396,45 +397,42 @@ GAB_BottomOK1:  cmp limitD
                 bcc GAB_BottomOK2
                 lda limitD
 GAB_BottomOK2:  sta UA_RABottomCheck+1          ;Bottom border
-                sta UA_AABottomCheck+1
+                sta AA_BottomCheck+1
                 sta UA_SpawnerBottomCheck+1
 
         ; Add actors from leveldata to screen
 
-AddActors:
-UA_AAStart:     ldx #$00
-UA_AddActorsLoop:
-                lda lvlActT,x
-                beq UA_AASkip
+AA_Start:       ldx #$00
+AA_Loop:        lda lvlActT,x
+                beq AA_Skip
                 lda lvlActOrg,x                 ;Must be either a current level's leveldata actor,
                 bmi UA_LevelOK                  ;or a global/temp actor with matching level
                 and #ORG_LEVELNUM
                 cmp levelNum
-                bne UA_AASkip
+                bne AA_Skip
 UA_LevelOK:     lda lvlActX,x
-UA_AALeftCheck: cmp #$00
-                bcc UA_AASkip
-UA_AARightCheck:cmp #$00
-                bcs UA_AASkip
+AA_LeftCheck:   cmp #$00
+                bcc AA_Skip
+AA_RightCheck:  cmp #$00
+                bcs AA_Skip
                 lda lvlActY,x
-UA_AATopCheck:  cmp #$00
-                bcc UA_AASkip
-UA_AABottomCheck:
-                cmp #$00
-                bcs UA_AASkip
+AA_TopCheck:    cmp #$00
+                bcc AA_Skip
+AA_BottomCheck: cmp #$00
+                bcs AA_Skip
                 jsr AddLevelActor
                 ldx temp1
-UA_AASkip:      inx
-UA_AAEndCmp:    cpx #LVLACTSEARCH
-                bne UA_AddActorsLoop
+AA_Skip:        inx
+AA_EndCmp:      cpx #LVLACTSEARCH
+                bne AA_Loop
                 cpx #MAX_LVLACT
-                bcc UA_IndexNotOver
+                bcc AA_IndexNotOver
                 ldx #$00
                 clc
-UA_IndexNotOver:stx UA_AAStart+1
+AA_IndexNotOver:stx AA_Start+1
                 txa
                 adc #LVLACTSEARCH
-                sta UA_AAEndCmp+1
+                sta AA_EndCmp+1
 
         ; Process spawners
         ; NOTE: spawners should be spaced 12 blocks apart horizontally for a continuous
@@ -506,7 +504,7 @@ CN_NotOver:     lda actT,x
                 bpl CN_Found
 CN_Next:        cpx CN_Current+1                ;Wrap search without finding a valid actor?
                 bne CN_Loop
-                beq UA_UpdateAll
+                beq CN_Done
 CN_Found:       stx CN_Current+1
                 jsr LineCheck                   ;Check line-of-sight to target
                 lda #LINE_YES
@@ -515,7 +513,7 @@ CN_Found:       stx CN_Current+1
 CN_HasLineOfSight:
                 sta actLine,x
                 lda actNavNewYH,x               ;Has a navigation (pathfinding) request?
-                bpl CN_NoNavigation
+                bpl CN_Done
                 if SHOW_NAVIGATION_TIME > 0
                 dec $d020
                 endif
@@ -523,11 +521,21 @@ CN_HasLineOfSight:
                 if SHOW_NAVIGATION_TIME > 0
                 inc $d020
                 endif
-CN_NoNavigation:
+CN_Done:        rts
 
-        ; Call update routines of all on-screen actors
+        ; Call update routines of all actors, then interpolate. If game is paused, only interpolate
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars,actor temp vars
 
-UA_UpdateAll:   ldx #MAX_ACT-1
+UpdateActors:   jsr CheckPause
+                bcc UA_OK
+                lda #$00                        ;Stop scrolling when paused
+                sta scrollSX
+                sta scrollSY
+                jmp InterpolateActors
+UA_OK:          ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex

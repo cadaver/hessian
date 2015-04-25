@@ -1,7 +1,7 @@
 SHOW_FREE_TIME = 0
 SHOW_FREE_MEMORY = 0
-SHOW_FRAME_DROP = 1
-SHOW_SCROLLWORK_TIME = 0
+SHOW_FRAME_DROP = 0
+SHOW_SCROLLWORK_TIME = 1
 SHOW_PLAYROUTINE_TIME = 0
 SHOW_LEVELUPDATE_TIME = 0
 SHOW_SPRITEDEPACK_TIME = 0
@@ -55,6 +55,7 @@ StartMainLoop:  ldx #$ff
                 txs
 MainLoop:       jsr ScrollLogic
                 jsr DrawActors
+                jsr AddActors
                 jsr FinishFrame
                 jsr ScrollLogic
                 jsr GetControls
