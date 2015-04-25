@@ -935,11 +935,7 @@ CP_NotOverLeft: cmp temp1
                 ldx #1
 CP_NotOverRight:sta mapX
                 stx blockX
-                if SCROLLROWS > 21
                 lda #$80
-                else
-                lda #$c0
-                endif
                 clc
                 adc actYL+ACTI_PLAYER
                 php
@@ -960,19 +956,10 @@ CP_OverUp:      lda limitU
 CP_NotOverUp:   cmp temp2
                 bcc CP_NotOverDown
                 bne CP_OverDown
-                if SCROLLROWS > 21
-                cpy #$02
+                cpy #$01
                 bcc CP_NotOverDown
-                else
-                cpy #$03
-                bcc CP_NotOverDown
-                endif
 CP_OverDown:    lda temp2
-                if SCROLLROWS > 21
-                ldy #$02
-                else
-                ldy #$03
-                endif
+                ldy #$01
 CP_NotOverDown: sta mapY
                 sty blockY
                 jsr RedrawScreen
