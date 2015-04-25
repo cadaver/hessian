@@ -136,36 +136,40 @@ InitVideo:      jsr WaitBottom
                 sta $d00d
                 sta $d00f
                 sta $d015                       ;All sprites on and to the bottom
-                jsr WaitBottom
-                ldx #$00                        ;Sprites off now
-                stx $d015
+                jsr WaitBottom                  ;(some C64's need to "warm up" sprites
+                ldx #$00                        ;to avoid one frame flash when they're
+                stx $d015                       ;actually used for the first time)
                 stx $d026                       ;Set sprite multicolors
                 lda #$0a
                 sta $d025
                 ldx #$00
 IVid_CopyTextChars:
                 lda textCharsCopy,x
-                sta textChars,x
-                lda textCharsCopy+$100,x
                 sta textChars+$100,x
-                lda textCharsCopy+$200,x
+                lda textCharsCopy+$100,x
                 sta textChars+$200,x
+                lda textCharsCopy+$200,x
+                sta textChars+$300,x
                 inx
                 bne IVid_CopyTextChars
+                ldx #7
+                lda #EMPTYSPRITEFRAME
+IVid_SetEmptySpriteFrame:
+                sta panelScreen+1016,x
+                dex
+                bpl IVid_SetEmptySpriteFrame
                 ldx #39
 IVid_InitScorePanel:
+                lda #$20
+                sta panelScreen+22*40,x
                 lda scorePanel,x
-                sta screen1+SCROLLROWS*40,x
+                sta panelScreen+23*40,x
                 lda scorePanelColors,x
-                sta colors+SCROLLROWS*40,x
+                sta colors+23*40,x
                 lda scorePanel+40,x
-                sta screen1+SCROLLROWS*40+40,x
+                sta panelScreen+24*40,x
                 lda scorePanelColors+40,x
-                sta colors+SCROLLROWS*40+40,x
-                lda scorePanel+80,x
-                sta screen1+SCROLLROWS*40+80,x
-                lda scorePanelColors+80,x
-                sta colors+SCROLLROWS*40+80,x
+                sta colors+24*40,x
                 dex
                 bpl IVid_InitScorePanel
 
@@ -205,17 +209,17 @@ IR_DetectNtsc2: cmp $d012
                 bcc IR_IsNtsc
                 lda #$ff
                 sta UF_ColorShiftLateCheck+1
-IR_IsNtsc:      lda $d030                       ;Detect C128/SCPU and disable Irq6 if neither detected
+IR_IsNtsc:      lda $d030                       ;Detect C128/SCPU and disable Irq4 if neither detected
                 cmp #$ff                        ;to not waste CPU cycles
                 bne IR_IsC128
                 lda $d0bc
                 bpl IR_IsSuperCPU
                 lda #<Irq1
-                sta Irq4_End+1
+                sta Irq3_End+1
                 lda #>Irq1
-                sta Irq4_End+3
+                sta Irq3_End+3
                 lda #IRQ1_LINE
-                sta Irq4_End+5
+                sta Irq3_End+5
 IR_IsSuperCPU:
 IR_IsC128:      cli
 
@@ -232,12 +236,16 @@ textCharsCopy:  incbin bg/scorescr.chr
 
         ; Scorepanel screen/color data (overwritten)
 
-scorePanel:     dc.b 0,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,4
-                dc.b 5,"      ",6, "                        ",5,35,36,"    ",6
-                dc.b 7,8,8,8,8,8,9,10,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,11,8,8,8,8,8,9,12
+scorePanel:     dc.b 35,"      ",35,"                        ",35,91,92,"    ",35
+                dc.b 36
+                ds.b 6,61
+                dc.b 104
+                ds.b 24,61
+                dc.b 104
+                ds.b 6,61
+                dc.b 105
 
 scorePanelColors:
-                ds.b 40,11
                 dc.b 11
                 ds.b 6,13
                 dc.b 11

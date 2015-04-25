@@ -1,8 +1,7 @@
 IRQ1_LINE       = 12
-IRQ3_LINE       = SCROLLROWS*8+45
-IRQ4_LINE       = SCROLLROWS*8+54
+IRQ3_LINE       = SCROLLROWS*8+44
+IRQ4_LINE       = $fb
 IRQ5_LINE       = 147
-IRQ6_LINE       = $fb
 
 PANEL_BG1       = $00
 PANEL_BG2       = $0b
@@ -18,7 +17,7 @@ Irq5:           jsr StartIrq
 Irq5_Wait:      lda $d012
                 cmp #IRQ5_LINE+3
                 bcc Irq5_Wait
-                lda #PANEL_D018
+                lda #TEXTSCR_D018
                 sta $d018
 Irq5_Bg2:       lda #$0a
                 sta $d022
@@ -63,11 +62,8 @@ Irq1_ScrollY:   lda #$57                        ;Check if panel split IRQ needs 
                 sta $d011                       ;screen early due to badline
                 tax
                 ora #$07
-                ;cpy #IRQ3_LINE
-                ;bcs Irq1_SpritesAtSplit
-                cpx #$16
+                cpx #$15
                 bne Irq1_NoBadLine
-Irq1_SpritesAtSplit:
                 ora #$40
 Irq1_NoBadLine: sta Irq3_D011+1
 Irq1_Screen:    ldy #GAMESCR1_D018
@@ -287,7 +283,7 @@ Irq3_Wait:      lda $d012
                 nop
                 nop
 Irq3_D011:      lda #$57                        ;Stabilize Y-scrolling
-                sta $d011                       ;immediately
+                sta $d011
                 cmp #$57
                 beq Irq3_NoDelay
                 lda #$07
@@ -297,36 +293,22 @@ Irq3_Delay:     sbc #$01
                 sta $d011
 Irq3_NoDelay:   lda #PANEL_D018                 ;Set panelscreen screen ptr.
                 sta $d018
-                lda #EMPTYSPRITEFRAME           ;Set empty spriteframe
-N               set 0
-                repeat 8
-                sta screen1+$3f8+N
-N               set N+1
-                repend
-                stx irqSaveX
-                sty irqSaveY
-                lda #<Irq4
-                ldx #>Irq4
-                ldy #IRQ4_LINE
-                jmp SetNextIrq
-
-        ;Raster interrupt 4. Show the scorepanel and play music
-
-Irq4:           jsr StartIrq
-                lda #$18
-                sta $d016
                 lda #PANEL_BG1                  ;Set scorepanel multicolors
                 sta $d021
                 lda #PANEL_BG2
                 sta $d022
                 lda #PANEL_BG3
                 sta $d023
+                cld
+                stx irqSaveX
+                sty irqSaveY
                 lsr newFrame                    ;Mark frame update available
-                if SCROLLROWS > 21
+Irq3_Wait2:     lda $d012
+                cmp #IRQ3_LINE+3
+                bcc Irq3_Wait2
+                lda #$18
+                sta $d016
                 lda #$1f                        ;Switch screen back on
-                else
-                lda #$17
-                endif
                 sta $d011
                 if SHOW_PLAYROUTINE_TIME>0
                 dec $d020
@@ -335,21 +317,31 @@ Irq4:           jsr StartIrq
                 if SHOW_PLAYROUTINE_TIME>0
                 inc $d020
                 endif
-Irq4_End:       lda #<Irq6
-                ldx #>Irq6
-                ldy #IRQ6_LINE
-Irq4_EndJump:   jmp SetNextIrq
+Irq3_End:       lda #<Irq4
+                ldx #>Irq4
+                ldy #IRQ4_LINE
+Irq3_EndJump:   jmp SetNextIrq
 
-        ;Raster interrupt 6. Set C128 to 2MHz mode at the bottom of the screen
+        ;Raster interrupt 4. Set C128 to 2MHz mode at the bottom of the screen
         ;and SCPU to turbo mode, if no loading going on
 
-Irq6:           jsr StartIrq
+Irq4:           jsr StartIrq
                 ldx fileOpen
-                bne Irq6_NoTurbo
+                bne Irq4_NoTurbo
                 inx
                 stx $d07b
                 stx $d030
-Irq6_NoTurbo:   lda #<Irq1
+Irq4_NoTurbo:   lda #<Irq1
                 ldx #>Irq1
                 ldy #IRQ1_LINE
-                bne Irq4_EndJump
+                bne Irq3_EndJump
+                
+        ; IRQ common startup code
+
+StartIrq:       cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+                rts

@@ -38,7 +38,7 @@ MAX_BULLETS = ACTI_LASTNPCBULLET-ACTI_FIRSTPLRBULLET+1
 
 SAVEDESCSIZE    = 24
 SCRIPTAREASIZE  = 8*256
-SCROLLROWS      = 22
+SCROLLROWS      = 23
 
         ; Zeropage variables
 
@@ -188,8 +188,10 @@ spriteCache     = $d000
 fileAreaEnd     = spriteCache
 colors          = $d800
 textChars       = $e000
-mapTblLo        = $e300
-mapTblHi        = $e380
+emptySprite     = $e300
+panelScreen     = $e000
+mapTblLo        = $e000
+mapTblHi        = $e080
 blkTblLo        = $e400
 loadBuffer      = mapTblLo
 blkTblHi        = $e4c0
@@ -202,8 +204,6 @@ introStart      = $ec00
 screen2         = $f000
 screen1         = $f400
 blockInfo       = screen2+SCROLLROWS*40
-tempBlockChars  = screen2+SCROLLROWS*40+96
-tempBlockColors = screen2+SCROLLROWS*40+112
 lvlDataActX     = screen2
 lvlDataActY     = screen2+MAX_LVLDATAACT
 lvlDataActF     = screen2+MAX_LVLDATAACT*2

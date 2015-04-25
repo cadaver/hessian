@@ -822,7 +822,7 @@ DrawChoiceArrow:sta zpSrcLo
 DCA_Loop:       lda #$20
                 cpx zpSrcLo
                 bne DCA_NoArrow
-                lda #22
+                lda #62
 DCA_NoArrow:    sta (zpDestLo),y
                 lda zpDestLo
                 clc

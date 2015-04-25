@@ -1,7 +1,7 @@
 SCROLLSPLIT     = 11
 
 SCRCENTER_X     = 19
-SCRCENTER_Y     = SCROLLROWS-8
+SCRCENTER_Y     = SCROLLROWS-9
 
 CI_GROUND       = 1                             ;Char info bits
 CI_OBSTACLE     = 2
@@ -15,18 +15,9 @@ CI_SLOPE3       = 128
 
 GAMESCR1_D018   = $da
 GAMESCR2_D018   = $ca
-PANEL_D018      = $d8
+TEXTSCR_D018    = $d8
+PANEL_D018      = $88
 
-        ; IRQ common startup code
-
-StartIrq:       cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
-                rts
-                
         ; Blank the gamescreen and turn off sprites
         ; (return to normal display by calling UpdateFrame)
         ;
@@ -136,11 +127,7 @@ SL_YPos:        lda mapY                        ;Are we on the edge of map?
                 cmp limitD
                 bcc SL_YPosOk
                 lda blockY
-                if SCROLLROWS > 21
-                cmp #$02
-                else
-                cmp #$03
-                endif
+                cmp #$01
                 bcs SL_YZero
 SL_YPosOk:      lda blockY                      ;Update block & map-coords
                 adc #$01
@@ -469,7 +456,7 @@ UF_WaitColorShiftCheck:                         ;but not over it
                 cmp #IRQ3_LINE-$48
                 bcc UF_WaitColorShiftLoop
 UF_ColorShiftLateCheck:
-                cmp #IRQ4_LINE
+                cmp #IRQ3_LINE+$10
                 bcs UF_WaitColorShiftLoop
 UF_WaitDone:    if SHOW_FREE_TIME > 0
                 inc $d020
@@ -514,6 +501,13 @@ UF_NoSprites:   sta Irq1_MaxSprY+1
                 lda #$80
                 sta newFrame
 
+                if SHOW_SCROLLWORK_TIME>0
+                dec $d020
+                jsr ScrollWork
+                inc $d020
+                rts
+                endif
+
 ScrollWork:     lda scrCounter
                 bne SW_NoScreenShift
                 lda scrAdd
@@ -550,60 +544,6 @@ SW_DBXDone:     lda scrollCSY
 SW_DBDown:      jmp SW_DrawDown
 SW_DBUp:        jmp SW_DrawUp
 SW_NoWork:      rts
-
-        ; Screen shifting routines
-
-SW_Shift1:      adc #<SW_Shift1Loop
-                sta SW_Shift1Jump+1
-                if (SW_Shift1Loop & $ff) > $f9
-                lda #>SW_Shift1Loop
-                adc #$00
-                sta SW_Shift1Jump+2
-                endif
-                lda shiftEndTbl,x
-                sta SW_Shift1EndCmp+1
-                lda shiftDestTbl,x
-                tax
-                jmp SW_Shift1Jump
-SW_Shift1Loop:                                  ;Screen shift routine:
-N               set 0                           ;From screen1 to screen2
-                repeat SCROLLROWS
-                lda screen1-40+N*40,y
-                sta screen2-40+N*40,x
-N               set N+1
-                repend
-                iny
-                inx
-SW_Shift1EndCmp:cpx #$00
-                bcs SW_Shift1Done
-SW_Shift1Jump:  jmp SW_Shift1Loop
-SW_Shift1Done:  rts
-
-SW_Shift2:      adc #<SW_Shift2Loop
-                sta SW_Shift2Jump+1
-                if (SW_Shift2Loop & $ff) > $f9
-                lda #>SW_Shift2Loop
-                adc #$00
-                sta SW_Shift2Jump+2
-                endif
-                lda shiftEndTbl,x
-                sta SW_Shift2EndCmp+1
-                lda shiftDestTbl,x
-                tax
-                jmp SW_Shift2Jump
-SW_Shift2Loop:                                  ;Screen shift routine:
-N               set 0                           ;From screen 2to screen1
-                repeat SCROLLROWS
-                lda screen2-40+N*40,y
-                sta screen1-40+N*40,x
-N               set N+1
-                repend
-                iny
-                inx
-SW_Shift2EndCmp:cpx #$00
-                bcs SW_Shift2Done
-SW_Shift2Jump:  jmp SW_Shift2Loop
-SW_Shift2Done:  rts
 
         ; Color shifting routines
 
@@ -865,6 +805,60 @@ SW_DrawColorsDownLdx3:
                 bpl SW_DrawColorsDownLoop
                 rts
 
+        ; Screen shifting routines
+
+SW_Shift1:      adc #<SW_Shift1Loop
+                sta SW_Shift1Jump+1
+                if (SW_Shift1Loop & $ff) > $f9
+                lda #>SW_Shift1Loop
+                adc #$00
+                sta SW_Shift1Jump+2
+                endif
+                lda shiftEndTbl,x
+                sta SW_Shift1EndCmp+1
+                lda shiftDestTbl,x
+                tax
+                jmp SW_Shift1Jump
+SW_Shift1Loop:                                  ;Screen shift routine:
+N               set 0                           ;From screen1 to screen2
+                repeat SCROLLROWS
+                lda screen1-40+N*40,y
+                sta screen2-40+N*40,x
+N               set N+1
+                repend
+                iny
+                inx
+SW_Shift1EndCmp:cpx #$00
+                bcs SW_Shift1Done
+SW_Shift1Jump:  jmp SW_Shift1Loop
+SW_Shift1Done:  rts
+
+SW_Shift2:      adc #<SW_Shift2Loop
+                sta SW_Shift2Jump+1
+                if (SW_Shift2Loop & $ff) > $f9
+                lda #>SW_Shift2Loop
+                adc #$00
+                sta SW_Shift2Jump+2
+                endif
+                lda shiftEndTbl,x
+                sta SW_Shift2EndCmp+1
+                lda shiftDestTbl,x
+                tax
+                jmp SW_Shift2Jump
+SW_Shift2Loop:                                  ;Screen shift routine:
+N               set 0                           ;From screen 2to screen1
+                repeat SCROLLROWS
+                lda screen2-40+N*40,y
+                sta screen1-40+N*40,x
+N               set N+1
+                repend
+                iny
+                inx
+SW_Shift2EndCmp:cpx #$00
+                bcs SW_Shift2Done
+SW_Shift2Jump:  jmp SW_Shift2Loop
+SW_Shift2Done:  rts
+
         ; New blocks drawing routines
 
 SW_DrawRight:   lda blockX
@@ -947,16 +941,12 @@ SW_DrawDown:    lda screen
                 adc #$05
                 tax
                 lda blockY
-                if SCROLLROWS > 21
-                adc #$01
+                adc #$02
                 cmp #$04
                 bcc SWDU_Common
                 and #$03
                 inx
                 bcs SWDU_Common
-                else
-                bpl SWDU_Common
-                endif
 
 SW_DrawUp:      lda screen
                 eor #$01

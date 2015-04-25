@@ -45,9 +45,9 @@ UP_RedrawHealth:ldx #$00
                 lsr
                 beq UP_NoWholeChars
                 sta zpSrcLo
-                lda #$10
+                lda #109
 UP_WholeCharsLoop:
-                sta screen1+SCROLLROWS*40+41,x
+                sta panelScreen+23*40+1,x
                 inx
                 cpx zpSrcLo
                 bcc UP_WholeCharsLoop
@@ -55,13 +55,13 @@ UP_NoWholeChars:lda displayedHealth
                 and #$03
                 beq UP_NoHalfChar
                 clc
-                adc #$0c
-                sta screen1+SCROLLROWS*40+41,x
+                adc #105
+                sta panelScreen+23*40+1,x
                 inx
 UP_NoHalfChar:  lda #$20
                 bne UP_EmptyCharsCmp
 UP_EmptyCharsLoop:
-                sta screen1+SCROLLROWS*40+41,x
+                sta panelScreen+23*40+1,x
                 inx
 UP_EmptyCharsCmp:
                 cpx #HP_PLAYER/8
@@ -72,7 +72,7 @@ UP_HealthColor: ldy #$ff
                 lda healthFlashTbl,y
                 ldx #$05
 UP_HealthColorLoop:
-                sta colors+SCROLLROWS*40+41,x
+                sta colors+23*40+1,x
                 dex
                 bpl UP_HealthColorLoop
                 dec UP_HealthColor+1
@@ -98,7 +98,7 @@ UP_HealthColorDone:
                 lda (zpSrcLo),y
                 sta zpBitBuf                    ;Slice bitmask
                 ldy #SPRH_DATA
-                ldx #$00
+                ldx #$01
                 jsr UP_DrawSlice
                 lsr zpBitBuf
                 inx
@@ -135,7 +135,7 @@ UP_Firearm:     lda plrReload
                 bcc UP_MagCountOK
                 lda #$09
 UP_MagCountOK:  ora #$30
-                sta screen1+SCROLLROWS*40+40+38
+                sta panelScreen+23*40+38
                 bne UP_SkipAmmo
 UP_Consumable:  lda invType,y                   ;Draw the X for real consumables, but
                 cmp #ITEM_FIRST_CONSUMABLE      ;not for weapons such as the minigun
@@ -143,7 +143,7 @@ UP_Consumable:  lda invType,y                   ;Draw the X for real consumables
                 lda #32
                 skip2
 UP_IsConsumable:lda #42
-                sta screen1+SCROLLROWS*40+40+35
+                sta panelScreen+23*40+35
                 lda invCount,y
                 jsr ConvertToBCD8
                 ldx #36
@@ -155,7 +155,7 @@ UP_MeleeWeapon: ldy #$03
                 ldx #$03
 UP_MeleeWeaponLoop:
                 lda txtInf,y
-                sta screen1+SCROLLROWS*40+40+35,x
+                sta panelScreen+23*40+35,x
                 dey
                 dex
                 bpl UP_MeleeWeaponLoop
@@ -257,7 +257,8 @@ UP_SpaceLoopDone:
                 bcs UP_EndLine
 
 UP_DrawSlice:   txa
-                ora #$07
+                clc
+                adc #$07
                 sta zpDestLo
 UP_DrawSliceLoop:
                 lda zpBitBuf
@@ -265,7 +266,7 @@ UP_DrawSliceLoop:
                 beq UP_EmptySlice
                 lda (zpSrcLo),y
                 iny
-UP_EmptySlice:  sta textChars+35*8,x
+UP_EmptySlice:  sta textChars+91*8,x
                 inx
                 cpx zpDestLo
                 bcc UP_DrawSliceLoop
@@ -486,8 +487,6 @@ UM_ResumeOrRetry:
 
         ; Menu redraw routines
 
-        ; None
-
         ; Inventory
 
 UM_RedrawInventory:
@@ -511,13 +510,13 @@ UM_DrawSelectionArrows:
                 lda #$20
                 cpx #$00
                 beq UM_NoLeftArrow
-                lda #21
-UM_NoLeftArrow: sta screen1+SCROLLROWS*40+40+8
+                lda #60
+UM_NoLeftArrow: sta panelScreen+23*40+8
                 lda #$20
                 cpy #$00
                 beq UM_NoRightArrow
-                lda #22
-UM_NoRightArrow:sta screen1+SCROLLROWS*40+40+31
+                lda #62
+UM_NoRightArrow:sta panelScreen+23*40+31
                 jmp SetPanelRedrawItemAmmo      ;Redraw item & ammo next time panel is updated
 
         ; Pause menu
@@ -539,9 +538,9 @@ UM_PauseMenuArrowLoop:
                 lda #$20
                 cpy menuCounter
                 bne UM_PauseMenuSpace
-                lda #22
+                lda #62
 UM_PauseMenuSpace:
-                sta screen1+SCROLLROWS*40+40,x
+                sta panelScreen+23*40,x
                 dey
                 bpl UM_PauseMenuArrowLoop
 UM_RedrawDialogue:
@@ -598,14 +597,14 @@ PrintBCDDigits: pha
                 lsr
                 lsr
                 ora #$30
-                sta screen1+SCROLLROWS*40+40,x
+                sta panelScreen+23*40,x
                 inx
                 pla
 PrintBCDDigit:  and #$0f
                 ora #$30
-PrintPanelChar: sta screen1+SCROLLROWS*40+40,x
+PrintPanelChar: sta panelScreen+23*40,x
                 lda #$01
-                sta colors+SCROLLROWS*40+40,x
+                sta colors+23*40,x
                 inx
                 rts
 
