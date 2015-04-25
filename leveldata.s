@@ -20,7 +20,7 @@ invType:        ds.b MAX_INVENTORYITEMS,0
 invCount:       ds.b MAX_INVENTORYITEMS,0
 invMag:         ds.b MAX_INVENTORYITEMS,0
 plrSkills:
-        ; TODO: refactor with binary updates
+        ; TODO: refactor with binary upgrades
 plrAgility:     dc.b 0
 plrCarrying:    dc.b 0
 plrFirearms:    dc.b 0

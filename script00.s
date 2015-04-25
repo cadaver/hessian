@@ -462,6 +462,7 @@ DPC_Color:      inc DPC_Lda+1
                 rts
 
         ; Apply player customization (in A) to the actor data
+        ; TODO: remove once new protagonist sprite has been drawn
 
 SetupPlayerAppearance:
                 cmp #$80
@@ -471,7 +472,7 @@ SetupPlayerAppearance:
                 adc #$00
                 sta adPlayerUpperSpriteFile
                 lda plrHairColorTbl,x
-                sta adPlayerHairColor
+                ;sta adPlayerHairColor
                 rts
 
         ; Save options if modified

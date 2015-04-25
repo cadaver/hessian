@@ -45,13 +45,10 @@ Irq1:           jsr StartIrq
                 ldy #$00
 Irq1_Late:      sty $d020
                 endif
-                ldx #$00
-                stx newFrame
-                stx $d07a                       ;SCPU back to slow mode
-                stx $d030                       ;C128 back to 1MHz
 Irq1_LevelUpdate:
                 lda #$00                        ;Animate level background?
                 beq Irq1_NoLevelUpdate
+                dec Irq1_LevelUpdate+1
                 if SHOW_LEVELUPDATE_TIME>0
                 dec $d020
                 endif
@@ -60,6 +57,10 @@ Irq1_LevelUpdate:
                 inc $d020
                 endif
 Irq1_NoLevelUpdate:
+                ldx #$00
+                stx newFrame
+                stx $d07a                       ;SCPU back to slow mode
+                stx $d030                       ;C128 back to 1MHz
 Irq1_MinSprY:   lda #$00
 Irq1_StoreMinSprY:
                 sta FL_MinSprY+1

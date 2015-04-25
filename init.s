@@ -1,6 +1,5 @@
 scriptCodeStart:
 scriptCodeEnd   = scriptCodeStart+SCRIPTAREASIZE
-fileAreaStart   = scriptCodeEnd
 
         ; Initialize registers/variables at startup. This code is called only once and can be
         ; disposed after that.
@@ -255,3 +254,5 @@ scorePanelColors:
                 ds.b 4,1
                 dc.b 11
                 ds.b 40,11
+                
+                org scriptCodeEnd

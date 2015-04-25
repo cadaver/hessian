@@ -35,6 +35,7 @@ WDB_THROW       = 4
 WDB_MELEE       = 8
 WDB_NOSKILLBONUS = 16
 WDB_LOCKANIMATION = 32
+WDB_FLICKERBULLET = 64
 WDB_FIREFROMHIP = 128
 
 NO_MODIFY       = 8
@@ -314,7 +315,12 @@ AH_FireDir:     lda #$00
                 iny
                 lda (wpnLo),y
                 sta actTime,x
-                ldx actIndex                    ;If player, decrement ammo and apply skill bonus
+                lda wpnBits                     ;Use flickering for bullets?
+                asl
+                bpl AH_NoFlicker
+                lda #COLOR_FLICKER
+                sta actFlash,x
+AH_NoFlicker:   ldx actIndex                    ;If player, decrement ammo and apply skill bonus
                 bne AH_NoAmmoDecrement
                 lda magazineSize
                 bmi AH_PlayerMeleeBonus

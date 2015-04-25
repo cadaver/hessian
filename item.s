@@ -246,7 +246,10 @@ MoveItem:       lda actMB,x                     ;Skip movement if grounded and s
                 sta actSY,x                     ;flag
                 lda #$00
                 sta actMB,x
-MoveItem_Done:  rts
+MoveItem_Done:  
+FlashActor:     lda #$01
+                sta actFlash,x
+                rts
 
         ; Use an inventory item
         ;

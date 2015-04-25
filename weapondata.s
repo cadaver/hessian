@@ -169,7 +169,7 @@ wdBat:          dc.b WDB_MELEE                  ;Weapon bits
                 dc.b $80+33                     ;Prepare weapon frame (right)
                 dc.b 33                         ;Prepare weapon frame (left)
 
-wdPistol:       dc.b WDB_BULLETDIRFRAME         ;Weapon bits
+wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 7                          ;Attack delay
@@ -189,7 +189,7 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME         ;Weapon bits
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKWEAPON             ;Reload finished sound
 
-wdShotgun:      dc.b WDB_BULLETDIRFRAME         ;Weapon bits
+wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 10                         ;Attack delay
@@ -209,7 +209,7 @@ wdShotgun:      dc.b WDB_BULLETDIRFRAME         ;Weapon bits
                 dc.b SFX_OBJECT                 ;Reload sound
                 dc.b SFX_COCKSHOTGUN            ;Reload finished sound
 
-wdAutoRifle:    dc.b WDB_BULLETDIRFRAME         ;Weapon bits
+wdAutoRifle:    dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 3                          ;Attack delay
@@ -229,7 +229,7 @@ wdAutoRifle:    dc.b WDB_BULLETDIRFRAME         ;Weapon bits
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKWEAPON             ;Reload finished sound
 
-wdSniperRifle:  dc.b WDB_BULLETDIRFRAME         ;Weapon bits
+wdSniperRifle:  dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 13                         ;Attack delay
@@ -249,7 +249,7 @@ wdSniperRifle:  dc.b WDB_BULLETDIRFRAME         ;Weapon bits
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKSHOTGUN            ;Reload finished sound
 
-wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_LOCKANIMATION|WDB_FIREFROMHIP ;Weapon bits
+wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
                 dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 2                          ;Attack delay
@@ -270,7 +270,7 @@ wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_LOCKANIMATION|WDB_FIREFROMHIP ;Weapo
                 dc.b SFX_COCKWEAPON             ;Reload finished sound
                 dc.b FR_WALK+2                  ;Lock animation upper body frame
 
-wdFlameThrower: dc.b WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOSKILLBONUS ;Weapon bits
+wdFlameThrower: dc.b WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOSKILLBONUS|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
                 dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 2                          ;Attack delay
@@ -291,7 +291,7 @@ wdFlameThrower: dc.b WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOSKILLBONUS ;Weapon 
                 dc.b SFX_RELOADFLAMER           ;Reload finished sound
                 dc.b FR_WALK+2                  ;Lock animation upper body frame
 
-wdLaserRifle:   dc.b WDB_BULLETDIRFRAME         ;Weapon bits
+wdLaserRifle:   dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 7                          ;Attack delay
@@ -311,7 +311,7 @@ wdLaserRifle:   dc.b WDB_BULLETDIRFRAME         ;Weapon bits
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_POWERUP                ;Reload finished sound
 
-wdPlasmaGun:    dc.b WDB_NONE                   ;Weapon bits
+wdPlasmaGun:    dc.b WDB_FLICKERBULLET          ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 8                          ;Attack delay
@@ -331,7 +331,7 @@ wdPlasmaGun:    dc.b WDB_NONE                   ;Weapon bits
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_POWERUP                ;Reload finished sound
 
-wdEMPGenerator: dc.b WDB_NOSKILLBONUS           ;Weapon bits
+wdEMPGenerator: dc.b WDB_NOSKILLBONUS|WDB_FLICKERBULLET           ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction
                 dc.b AIM_HORIZONTAL+1           ;First invalid aim direction
                 dc.b 20                         ;Attack delay

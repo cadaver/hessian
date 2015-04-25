@@ -190,6 +190,8 @@ MoveRocket:     lda actTime,x
                 bcc MRckt_NoSmoke
                 lda #ACT_SMOKETRAIL
                 jsr SpawnActor
+                lda #COLOR_FLICKER
+                sta actFlash,y
 MRckt_NoSmoke:  sec
                 jsr CheckBulletCollisions
                 bcs ExplodeGrenade

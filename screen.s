@@ -31,7 +31,6 @@ BlankScreen:    jsr WaitBottom
 BS_Common:      ldx #$00
                 stx Irq1_D015+1
                 stx Irq1_MaxSprY+1
-                stx Irq1_LevelUpdate+1          ;Stop any level animation
                 rts
 
         ; Perform scrolling logic
@@ -545,6 +544,60 @@ SW_DBDown:      jmp SW_DrawDown
 SW_DBUp:        jmp SW_DrawUp
 SW_NoWork:      rts
 
+        ; Screen shifting routines
+
+SW_Shift1:      adc #<SW_Shift1Loop
+                sta SW_Shift1Jump+1
+                if SW_Shift1Loop & $ff > $f9
+                lda #>SW_Shift1Loop
+                adc #$00
+                sta SW_Shift1Jump+2
+                endif
+                lda shiftEndTbl,x
+                sta SW_Shift1EndCmp+1
+                lda shiftDestTbl,x
+                tax
+                jmp SW_Shift1Jump
+SW_Shift1Loop:                                  ;Screen shift routine:
+N               set 0                           ;From screen1 to screen2
+                repeat SCROLLROWS
+                lda screen1-40+N*40,y
+                sta screen2-40+N*40,x
+N               set N+1
+                repend
+                iny
+                inx
+SW_Shift1EndCmp:cpx #$00
+                bcs SW_Shift1Done
+SW_Shift1Jump:  jmp SW_Shift1Loop
+SW_Shift1Done:  rts
+
+SW_Shift2:      adc #<SW_Shift2Loop
+                sta SW_Shift2Jump+1
+                if SW_Shift2Loop & $ff > $f9
+                lda #>SW_Shift2Loop
+                adc #$00
+                sta SW_Shift2Jump+2
+                endif
+                lda shiftEndTbl,x
+                sta SW_Shift2EndCmp+1
+                lda shiftDestTbl,x
+                tax
+                jmp SW_Shift2Jump
+SW_Shift2Loop:                                  ;Screen shift routine:
+N               set 0                           ;From screen 2to screen1
+                repeat SCROLLROWS
+                lda screen2-40+N*40,y
+                sta screen1-40+N*40,x
+N               set N+1
+                repend
+                iny
+                inx
+SW_Shift2EndCmp:cpx #$00
+                bcs SW_Shift2Done
+SW_Shift2Jump:  jmp SW_Shift2Loop
+SW_Shift2Done:  rts
+
         ; Color shifting routines
 
 SW_ShiftColorsUp:
@@ -805,60 +858,6 @@ SW_DrawColorsDownLdx3:
                 bpl SW_DrawColorsDownLoop
                 rts
 
-        ; Screen shifting routines
-
-SW_Shift1:      adc #<SW_Shift1Loop
-                sta SW_Shift1Jump+1
-                if (SW_Shift1Loop & $ff) > $f9
-                lda #>SW_Shift1Loop
-                adc #$00
-                sta SW_Shift1Jump+2
-                endif
-                lda shiftEndTbl,x
-                sta SW_Shift1EndCmp+1
-                lda shiftDestTbl,x
-                tax
-                jmp SW_Shift1Jump
-SW_Shift1Loop:                                  ;Screen shift routine:
-N               set 0                           ;From screen1 to screen2
-                repeat SCROLLROWS
-                lda screen1-40+N*40,y
-                sta screen2-40+N*40,x
-N               set N+1
-                repend
-                iny
-                inx
-SW_Shift1EndCmp:cpx #$00
-                bcs SW_Shift1Done
-SW_Shift1Jump:  jmp SW_Shift1Loop
-SW_Shift1Done:  rts
-
-SW_Shift2:      adc #<SW_Shift2Loop
-                sta SW_Shift2Jump+1
-                if (SW_Shift2Loop & $ff) > $f9
-                lda #>SW_Shift2Loop
-                adc #$00
-                sta SW_Shift2Jump+2
-                endif
-                lda shiftEndTbl,x
-                sta SW_Shift2EndCmp+1
-                lda shiftDestTbl,x
-                tax
-                jmp SW_Shift2Jump
-SW_Shift2Loop:                                  ;Screen shift routine:
-N               set 0                           ;From screen 2to screen1
-                repeat SCROLLROWS
-                lda screen2-40+N*40,y
-                sta screen1-40+N*40,x
-N               set N+1
-                repend
-                iny
-                inx
-SW_Shift2EndCmp:cpx #$00
-                bcs SW_Shift2Done
-SW_Shift2Jump:  jmp SW_Shift2Loop
-SW_Shift2Done:  rts
-
         ; New blocks drawing routines
 
 SW_DrawRight:   lda blockX
@@ -1003,7 +1002,6 @@ RedrawScreen:   ldy #$00
                 sta SWDU_Sta+2
                 lda #SCROLLROWS
                 sta temp6
-                sta Irq1_LevelUpdate+1          ;Can animate level
                 lda blockY
                 ldx mapY
 RS_Loop:        sta temp1

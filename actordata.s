@@ -122,13 +122,10 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adEnemy
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
-                dc.b 0                          ;Lower part color override
                 dc.b C_PLAYER_BOTTOM            ;Lower part spritefile number
                 dc.b 0                          ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
-adPlayerHairColor:
-                dc.b 9                          ;Upper part color override
 adPlayerUpperSpriteFile:
                 dc.b C_PLAYER_FEMALE_TOP        ;Upper part spritefile number
                 dc.b 0                          ;Upper part base spritenumber
@@ -136,31 +133,26 @@ adPlayerUpperSpriteFile:
                 dc.b 39                         ;Upper part left frame add
 
 adNPC:          dc.b HUMANOID                   ;Number of sprites
-                dc.b 8                          ;Lower part color override
                 dc.b C_PLAYER_BOTTOM            ;Lower part spritefile number
                 dc.b 0                          ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
-                dc.b 0                          ;Upper part color override
                 dc.b C_PLAYER_MALE_TOP          ;Upper part spritefile number
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
 adEnemy:        dc.b HUMANOID                   ;Number of sprites
-                dc.b 2                          ;Lower part color override
                 dc.b C_PLAYER_BOTTOM            ;Lower part spritefile number
                 dc.b 0                          ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
-                dc.b 0                          ;Upper part color override
                 dc.b C_PLAYER_MALE_TOP          ;Upper part spritefile number
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
 adItem:         dc.b ONESPRITE                  ;Number of sprites
-itemColor:      dc.b 0                          ;Color override
                 dc.b C_ITEM                     ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 19                         ;Number of frames
@@ -168,7 +160,6 @@ itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of
                 dc.b 11,12,13,14,15,16,17
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
-                dc.b COLOR_FLICKER              ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 20                         ;Number of frames
@@ -178,7 +169,6 @@ adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b 5,$80+6,7,6,5
 
 adShotgunBullet:dc.b ONESPRITE                  ;Number of sprites
-                dc.b COLOR_FLICKER              ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 14                         ;Number of frames
@@ -187,7 +177,6 @@ adShotgunBullet:dc.b ONESPRITE                  ;Number of sprites
                 dc.b 14,15,16,17
 
 adRifleBullet:  dc.b ONESPRITE                  ;Number of sprites
-                dc.b COLOR_FLICKER              ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 20                         ;Number of frames
@@ -197,21 +186,18 @@ adRifleBullet:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b 5,$80+6,7,6,5
 
 adFlame:        dc.b ONESPRITE                  ;Number of sprites
-                dc.b COLOR_FLICKER              ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 4                          ;Number of frames
                 dc.b 23,24,25,26                ;Frametable (first all frames of sprite1, then sprite2)
 
 adEMP:          dc.b ONESPRITE                  ;Number of sprites
-                dc.b COLOR_FLICKER              ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 10                         ;Number of frames
                 dc.b 37,38,39,40                ;Frametable (first all frames of sprite1, then sprite2)
 
 adLaser:        dc.b ONESPRITE                  ;Number of sprites
-                dc.b COLOR_FLICKER              ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 10                         ;Number of frames
@@ -219,7 +205,6 @@ adLaser:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b 41,$80+42,43,42,41
 
 adPlasma:       dc.b ONESPRITE                  ;Number of sprites
-                dc.b COLOR_FLICKER              ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 1                          ;Number of frames
@@ -227,21 +212,18 @@ adPlasma:       dc.b ONESPRITE                  ;Number of sprites
 
 adLauncherGrenade:
                 dc.b ONESPRITE                  ;Number of sprites
-                dc.b 0                          ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
                 dc.b 27,28,29                   ;Frametable (first all frames of sprite1, then sprite2)
 
 adGrenade:      dc.b ONESPRITE                  ;Number of sprites
-                dc.b 0                          ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 1                          ;Number of frames
                 dc.b 13                         ;Frametable (first all frames of sprite1, then sprite2)
 
 adRocket:       dc.b ONESPRITE                  ;Number of sprites
-                dc.b 0                          ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 10                         ;Number of frames
@@ -249,21 +231,18 @@ adRocket:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b 30,$80+31,$80+32,$80+33,34
 
 adDrone:        dc.b ONESPRITE                  ;Number of sprites
-                dc.b 0                          ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 4                          ;Number of frames
                 dc.b 45,46,47,46                ;Frametable (first all frames of sprite1, then sprite2)
 
 adExplosion:    dc.b ONESPRITE                  ;Number of sprites
-                dc.b 0                          ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 5                          ;Number of frames
                 dc.b 0,1,2,3,4                  ;Frametable (first all frames of sprite1, then sprite2)
 
 adSmokeTrail:   dc.b ONESPRITE                  ;Number of sprites
-                dc.b COLOR_FLICKER              ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 2                          ;Number of frames
@@ -271,7 +250,6 @@ adSmokeTrail:   dc.b ONESPRITE                  ;Number of sprites
 
 adWaterSplash:  dc.b ONESPRITE                  ;Number of sprites
 waterSplashColor1:
-                dc.b 0                          ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 5                          ;Number of frames
@@ -279,22 +257,18 @@ waterSplashColor1:
 
 adSmallSplash:  dc.b ONESPRITE                  ;Number of sprites
 waterSplashColor2:
-                dc.b 0                          ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
                 dc.b 53,54,55                   ;Frametable (first all frames of sprite1, then sprite2)
 
 adObjectMarker: dc.b ONESPRITE                  ;Number of sprites
-objectMarkerColor:
-                dc.b 0                          ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 1                          ;Number of frames
                 dc.b 56
 
 adSpeechBubble: dc.b ONESPRITE                  ;Number of sprites
-                dc.b 0                          ;Color override
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 1                          ;Number of frames
@@ -513,7 +487,7 @@ alNPC:          dc.w MoveAIHuman                ;Update routine
 
 alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
-                dc.b GRP_THUGS|AF_ISORGANIC     ;Actor flags
+                dc.b GRP_ENEMIES|AF_ISORGANIC   ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down

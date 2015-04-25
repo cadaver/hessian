@@ -155,7 +155,7 @@ shiftEndTbl:    dc.b 79,79,78
 
 pauseMenuArrowPosTbl:
                 dc.b 8,21
-                
+
 itemFlashTbl:   dc.b 10,7,1,7
 
                 org nextSliceTbl+$100
@@ -199,8 +199,6 @@ slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
 
 sortSprC:       ds.b MAX_SPR*2,0
 sprIrqLine:     ds.b MAX_SPR*2,0
-sprOrTbl:       ds.b MAX_SPR*2,0
-sprAndTbl:      ds.b MAX_SPR*2,0
 
         ; Playroutine variables
 

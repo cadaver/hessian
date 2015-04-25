@@ -602,7 +602,7 @@ GetZoneCenterX: lda limitL
                 adc limitR
                 ror
                 sta temp8
-MObjMarker_OK:  rts
+                rts
 
         ; Object marker update routine
         ;
@@ -615,6 +615,7 @@ MObjMarker_Cmp: lda #$00                        ;Check if levelobjectnumber has 
                 cmp lvlObjNum                   ;and disappear in that case
                 beq MObjMarker_OK
                 jmp RemoveActor
+MObjMarker_OK:  jmp FlashActor
 
         ; Align actor to center of block and ground level, ground must be below
         ;

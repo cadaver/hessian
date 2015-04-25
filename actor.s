@@ -5,21 +5,19 @@ MAX_NEARTRIGGER_XDIST = 2
 MAX_NEARTRIGGER_YDIST = 1
 
 AD_NUMSPRITES   = 0
-AD_COLOROVERRIDE = 1
-AD_SPRFILE      = 2
-AD_LEFTFRADD    = 3
-AD_NUMFRAMES    = 4                             ;For incrementing framepointer. Only significant if multiple sprites
-AD_FRAMES       = 5
+AD_SPRFILE      = 1
+AD_LEFTFRADD    = 2
+AD_NUMFRAMES    = 3                             ;For incrementing framepointer. Only significant if multiple sprites
+AD_FRAMES       = 4
 
-ADH_SPRFILE     = 2
-ADH_BASEFRAME   = 3
-ADH_BASEINDEX   = 4                             ;Index to a static 256-byte table for humanoid actor spriteframes
-ADH_LEFTFRADD   = 5
-ADH_COLOROVERRIDE2 = 6
-ADH_SPRFILE2    = 7
-ADH_BASEFRAME2  = 8
-ADH_BASEINDEX2  = 9                             ;Index to a static 256-byte table for humanoid actor framenumbers
-ADH_LEFTFRADD2  = 10
+ADH_SPRFILE     = 1
+ADH_BASEFRAME   = 2
+ADH_BASEINDEX   = 3                             ;Index to a static 256-byte table for humanoid actor spriteframes
+ADH_LEFTFRADD   = 4
+ADH_SPRFILE2    = 5
+ADH_BASEFRAME2  = 6
+ADH_BASEINDEX2  = 7                             ;Index to a static 256-byte table for humanoid actor framenumbers
+ADH_LEFTFRADD2  = 8
 
 ONESPRITE       = $00
 TWOSPRITE       = $01
@@ -27,7 +25,6 @@ THREESPRITE     = $02
 FOURSPRITE      = $03
 HUMANOID        = $80
 
-COLOR_FIXEDOVERRIDE = $10
 COLOR_FLICKER   = $40
 COLOR_INVISIBLE = $80
 COLOR_ONETIMEFLASH = $ff
@@ -58,12 +55,9 @@ AL_CLIMBSPEED   = 24
 
 GRP_NONE        = $00                           ;Does not collide/take damage
 GRP_HEROES      = $01
-GRP_GOVERNMENT  = $02
-GRP_THUGS       = $03
-GRP_ANIMALS     = $04
-GRP_SYNDICATE   = $05
-GRP_THRONE      = $06
-GRP_ALIENS      = $07
+GRP_ENEMIES     = $02
+GRP_ROBOTS      = $03
+GRP_BEASTS      = $04
 
 AF_GROUPBITS    = $07
 AF_INITONLYSIZE = $08
@@ -116,8 +110,7 @@ DA_ItemFlashCounter:                            ;Get color override for items + 
                 and #$03
                 tax
                 lda itemFlashTbl,x
-                sta itemColor
-                sta objectMarkerColor
+                sta FlashActor+1
                 lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
                 sta IA_PrevScrollX+1
                 lda scrollY
@@ -205,22 +198,20 @@ DA_FillSpritesDone:
                 sta DA_LastSprIndex+1
                 rts
 
+DA_HitFlash:     inc actFlash,x
+                lda #$01
+                bne DA_NoFlicker
+
 DrawActorSub:   stx actIndex
                 lda actFlash,x                  ;Get programmatic color override
-                bpl DA_NoHitFlash               ;including one frame hit flash
-                inc actFlash,x
-                lda #$01+COLOR_FIXEDOVERRIDE
-                bne DA_NoFlicker
-DA_NoHitFlash:  ldy #AD_COLOROVERRIDE
-                ora (actLo),y                   ;OR with actor's fixed color override
+                bmi DA_HitFlash                 ;including one frame hit flash
                 cmp #COLOR_FLICKER
                 bcc DA_NoFlicker
-                tay
-                txa
-                lsr                             ;Use actor index low bit to determine
-                tya                             ;which sprites flicker this frame
-                bcc DA_NoFlicker
-                ora #COLOR_INVISIBLE
+                txa                             ;Use actor index low bit to determine
+                and #$01
+                lsr                             ;which sprites flicker this frame
+                ror
+                ora #COLOR_FLICKER
 DA_NoFlicker:   sta GASS_ColorOr+1
                 ldy #$0f
                 and #$0f
@@ -298,20 +289,6 @@ DA_HumanRight1: ldy #ADH_BASEINDEX
                 adc (actLo),y
                 ldx sprIndex
                 jsr GetAndStoreSprite
-                lda GASS_ColorOr+1              ;Humanoid can switch color override for the
-                and #$f0                        ;second part, unless hit flashing
-                cmp #COLOR_FIXEDOVERRIDE
-                beq DA_HumanNoOverride2
-                ldy #ADH_COLOROVERRIDE2
-                ora (actLo),y
-                sta GASS_ColorOr+1
-                ldy #$0f
-                and #$0f
-                beq DA_KeepSpriteColor2
-                ldy #$00
-DA_KeepSpriteColor2:
-                sty GASS_ColorAnd+1
-DA_HumanNoOverride2:
                 ldy #ADH_SPRFILE2               ;Get second part spritefile
                 lda (actLo),y
                 cmp sprFileNum
@@ -375,7 +352,9 @@ UpdateActors:   lda menuMode                    ;If game paused, only do Interpo
 
         ; Calculate border coordinates for adding/removing actors
 
-GetActorBorders:lda mapX                        ;Calculate borders for add/removechecks
+GetActorBorders:lda #$02                        ;Also animate level when actors move
+                sta Irq1_LevelUpdate+1
+                lda mapX                        ;Calculate borders for add/removechecks
                 sec
                 sbc #ADDACTOR_LEFT_LIMIT
                 bcs GAB_LeftOK1
