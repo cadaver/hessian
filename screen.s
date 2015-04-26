@@ -453,14 +453,14 @@ UF_WaitNormal:  lda $d011                       ;If no colorshift, just need to 
                 cmp #IRQ1_LINE-$05
                 bcs UF_WaitNormal
 UF_WaitColorShift:
-UF_WaitColorShiftLoop:
+                lda $d011
+                bmi UF_WaitColorShift
                 lda $d012                       ;Wait until we are near the scorescreen split
-UF_WaitColorShiftCheck:                         ;but not over it
-                cmp #IRQ3_LINE-SCROLLSPLIT*8+10
-                bcc UF_WaitColorShiftLoop
+                cmp #IRQ3_LINE-SCROLLSPLIT*8+10 ;but not over it
+                bcc UF_WaitColorShift
 UF_ColorShiftLateCheck:
                 cmp #IRQ3_LINE+$10
-                bcs UF_WaitColorShiftLoop
+                bcs UF_WaitColorShift
 UF_WaitDone:    if SHOW_FRAME_TIME > 0
                 lda #$03
                 sta $d020

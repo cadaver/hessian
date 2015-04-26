@@ -58,7 +58,7 @@ MainLoop:       if SHOW_FRAME_TIME > 0
                 jsr AddActors
                 jsr FinishFrame
                 if SHOW_FRAME_TIME > 0
-                lda #$02
+                lda #$0a
                 sta $d020
                 endif
                 jsr ScrollLogic
