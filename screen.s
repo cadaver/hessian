@@ -459,7 +459,7 @@ UF_WaitColorShift:
 UF_WaitColorShiftLoop:
                 lda $d012                       ;Wait until we are near the scorescreen split
 UF_WaitColorShiftCheck:                         ;but not over it
-                cmp #IRQ3_LINE-SCROLLSPLIT*8+6
+                cmp #IRQ3_LINE-SCROLLSPLIT*8+10
                 bcc UF_WaitColorShiftLoop
 UF_ColorShiftLateCheck:
                 cmp #IRQ3_LINE+$10
