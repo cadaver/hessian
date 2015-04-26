@@ -259,8 +259,7 @@ UpdateFrame:    lda #$01                        ;Re-enable raster IRQs after loa
                 ldx #$ff                        ;Make sure the sort endmark is intact (may have been
                 stx sprY+MAX_SPR                ;overwritten if ran out of sprites)
                 inx
-                stx temp6                       ;D010 bits for first IRQ
-                stx temp7                       ;Scrollwork done flag
+                stx temp3                       ;D010 bits for first IRQ
                 txa
 SSpr_Loop1:     ldy sprOrder,x                  ;Check for coordinates being in order
                 cmp sprY,y
@@ -288,14 +287,7 @@ SSpr_NoSwap2:   inx
                 cpx #MAX_SPR
                 bne SSpr_Loop1
 
-SSpr_SortDone:  lda newFrame                    ;New frame still waiting for IRQ?
-                beq SSpr_NoWait
-                lda scrCounter                  ;If scrollwork is not in the color phase,
-                cmp #$04                        ;can do it early instead of waiting
-                beq SSpr_WaitBegin              ;(updating the hidden doublebuffer half)
-                inc temp7
-                jsr ScrollWork
-SSpr_WaitBegin: if SHOW_FRAME_TIME > 0
+SSpr_SortDone:  if SHOW_FRAME_TIME > 0          ;Wait now for the previous frame to finish
                 lda #$00
                 sta $d020
                 endif
@@ -305,7 +297,7 @@ SSpr_Wait:      lda newFrame
                 lda #$03
                 sta $d020
                 endif
-SSpr_NoWait:    ldx #$00
+                ldx #$00
 SSpr_FindFirst: ldy sprOrder,x                  ;Find upmost visible sprite
                 lda sprY,y
                 cmp #MIN_SPRY
@@ -337,15 +329,15 @@ SSpr_CopyLoop1: ldx sprOrder,y
                 sta sortSprX,y
                 lda sprXH,x
                 beq SSpr_CopyLoop1MsbLow
-                lda temp6
+                lda temp3
                 ora sprOrTbl,y
-                sta temp6
+                sta temp3
 SSpr_CopyLoop1MsbLow:
                 iny
 SSpr_CopyLoop1End:
                 cpy #$00
                 bcc SSpr_CopyLoop1
-                lda temp6
+                lda temp3
                 sta sortSprD010-1,y
                 lda sortSprC-1,y                ;Make first IRQ endmark
                 ora #$80
@@ -355,7 +347,7 @@ SSpr_CopyLoop1End:
                 bcs SSpr_CopyLoop2
 
 SSpr_CopyLoop1Done:
-                lda temp6
+                lda temp3
                 sta sortSprD010-1,y
                 sty temp1                       ;Store sorted sprite end index
                 cpy firstSortSpr                ;Any sprites at all?
@@ -504,15 +496,10 @@ UF_NoSprites2:  sta Irq1_D015+1
 UF_NoSprites:   sta Irq1_MaxSprY+1
                 dec newFrame                    ;$ff = process new frame
                 if SHOW_FRAME_TIME > 0
-                lda temp7
-                bne UF_FrameDone
                 jsr ScrollWork
-UF_FrameDone:   lda #$00
+                lda #$00
                 sta $d020
                 rts
-                else
-                lda temp7                       ;Was scrollwork performed already?
-                bne SW_NoWork
                 endif
                 
         ; Shift the screen memory, draw new blocks or shift colors according to the

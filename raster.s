@@ -1,4 +1,4 @@
-IRQ1_LINE       = 8
+IRQ1_LINE       = MIN_SPRY-20                   ;Allow 10 lines for loading the sprites + 10 for frameupdate & char animation
 IRQ3_LINE       = SCROLLROWS*8+44
 IRQ4_LINE       = $fb
 IRQ5_LINE       = 147
