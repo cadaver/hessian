@@ -1,4 +1,4 @@
-IRQ1_LINE       = 12
+IRQ1_LINE       = 8
 IRQ3_LINE       = SCROLLROWS*8+44
 IRQ4_LINE       = $fb
 IRQ5_LINE       = 147
@@ -274,7 +274,7 @@ SetNextIrqNoAddress:
                 rti
 
 Irq2_LatePanel: ldy irqSaveY
-                bcc Irq3_Wait
+                bcc Irq3_Direct
 
         ; Raster interrupt 3. Gamescreen / scorepanel split
 
@@ -282,7 +282,7 @@ Irq3:           sta irqSaveA
                 stx irqSaveX
                 lda #$35
                 sta $01                         ;Ensure IO memory is available
-                lda $d011
+Irq3_Direct:    lda $d011
                 ldx #IRQ3_LINE
 Irq3_Wait:      cpx $d012
                 bcs Irq3_Wait
@@ -308,7 +308,7 @@ Irq3_SplitDone: lda #PANEL_BG1                  ;Set scorepanel multicolors
                 sta $d023
                 cld
                 sty irqSaveY
-                lsr newFrame                    ;Mark frame update available
+                lsr newFrame                    ;Mark current sprites done
                 ldx #IRQ3_LINE+2
 Irq3_Wait2:     cpx $d012
                 bcs Irq3_Wait2

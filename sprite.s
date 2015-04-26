@@ -1,6 +1,6 @@
 MAX_SPRX        = 335
 MIN_SPRY        = 34
-MAX_SPRY        = SCROLLROWS*8+46
+MAX_SPRY        = IRQ3_LINE-1
 
 FIRSTCACHEFRAME = (spriteCache-$c000)/$40
 EMPTYSPRITEFRAME = (emptySprite-$c000)/$40
