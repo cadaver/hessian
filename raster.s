@@ -11,16 +11,6 @@ TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
 
-        ; IRQ common startup code
-
-StartIrq:       cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
-                rts
-
         ; Raster interrupt 5. Text screen split
 
 Irq5:           jsr StartIrq
@@ -52,11 +42,11 @@ Irq1_LevelUpdate:
                 lda #$00                        ;Animate level background?
                 beq Irq1_NoLevelUpdate
                 if SHOW_LEVELUPDATE_TIME > 0
-                dec $d020
+                inc $d020
                 endif
                 jsr UpdateLevel
                 if SHOW_LEVELUPDATE_TIME > 0
-                inc $d020
+                dec $d020
                 endif
 Irq1_NoLevelUpdate:
 Irq1_NoNewFrame:ldx #$00
@@ -317,11 +307,11 @@ Irq3_Wait2:     cpx $d012
                 lda #$1f                        ;Switch screen back on
                 sta $d011
                 if SHOW_PLAYROUTINE_TIME>0
-                dec $d020
+                inc $d020
                 endif
                 jsr PlayRoutine                 ;Play music/sound effects
                 if SHOW_PLAYROUTINE_TIME>0
-                inc $d020
+                dec $d020
                 endif
 Irq3_End:       lda #<Irq4
                 ldx #>Irq4
@@ -341,3 +331,13 @@ Irq4_NoTurbo:   lda #<Irq1
                 ldx #>Irq1
                 ldy #IRQ1_LINE
                 bne Irq3_EndJump
+
+        ; IRQ common startup code
+
+StartIrq:       cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+                rts

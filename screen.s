@@ -40,11 +40,7 @@ BS_Common:      ldx #$00
         ; Returns: -
         ; Modifies: A,X,Y
 
-ScrollLogic:    if SHOW_STACKPOINTER>0
-                tsx
-                stx $d020
-                endif
-                lda scrAdd                      ;If speed is zero, look out
+ScrollLogic:    lda scrAdd                      ;If speed is zero, look out
                 beq SL_GetNewSpeed              ;for a new speed-setting
                 clc
                 adc scrCounter                  ;Update workcounter
@@ -253,6 +249,10 @@ SL_CSSMapY:     lda #$00
 
 UpdateFrame:    lda #$01                        ;Re-enable raster IRQs after loading/saving
                 sta $d01a
+                if SHOW_FRAME_TIME > 0
+                lda #$03
+                sta $d020
+                endif
                 lda firstSortSpr                ;Switch sprite doublebuffer side
                 eor #MAX_SPR
                 sta firstSortSpr
@@ -294,20 +294,16 @@ SSpr_SortDone:  lda newFrame                    ;New frame still waiting for IRQ
                 cmp #$04                        ;can do it early instead of waiting
                 beq SSpr_WaitBegin              ;(updating the hidden doublebuffer half)
                 inc temp7
-                if SHOW_SCROLLWORK_TIME > 0
-                dec $d020
-                endif
                 jsr ScrollWork
-                if SHOW_SCROLLWORK_TIME > 0
-                inc $d020
-                endif
-SSpr_WaitBegin: if SHOW_FREE_TIME > 0
-                dec $d020
+SSpr_WaitBegin: if SHOW_FRAME_TIME > 0
+                lda #$00
+                sta $d020
                 endif
 SSpr_Wait:      lda newFrame
                 bne SSpr_Wait
-                if SHOW_FREE_TIME > 0
-                inc $d020
+                if SHOW_FRAME_TIME > 0
+                lda #$03
+                sta $d020
                 endif
 SSpr_NoWait:    ldx #$00
 SSpr_FindFirst: ldy sprOrder,x                  ;Find upmost visible sprite
@@ -442,8 +438,9 @@ SSpr_FinalEndMark:
                 lda #$00                        ;Make final endmark
                 sta sprIrqLine-1,y
 
-SSpr_AllDone:   if SHOW_FREE_TIME > 0
-                dec $d020
+SSpr_AllDone:   if SHOW_FRAME_TIME > 0
+                lda #$00
+                sta $d020
                 endif
                 lda scrCounter                  ;Is it the colorshift? (needs special timing)
                 cmp #$04
@@ -464,8 +461,9 @@ UF_WaitColorShiftCheck:                         ;but not over it
 UF_ColorShiftLateCheck:
                 cmp #IRQ3_LINE+$10
                 bcs UF_WaitColorShiftLoop
-UF_WaitDone:    if SHOW_FREE_TIME > 0
-                inc $d020
+UF_WaitDone:    if SHOW_FRAME_TIME > 0
+                lda #$03
+                sta $d020
                 endif
                 lda scrollX                     ;Copy scrolling and screen number
                 eor #$07
@@ -505,15 +503,18 @@ UF_NoSprites2:  sta Irq1_D015+1
                 adc #22
 UF_NoSprites:   sta Irq1_MaxSprY+1
                 dec newFrame                    ;$ff = process new frame
+                if SHOW_FRAME_TIME > 0
+                lda temp7
+                bne UF_FrameDone
+                jsr ScrollWork
+UF_FrameDone:   lda #$00
+                sta $d020
+                rts
+                else
                 lda temp7                       ;Was scrollwork performed already?
                 bne SW_NoWork
-                if SHOW_SCROLLWORK_TIME > 0
-                dec $d020
-                jsr ScrollWork
-                inc $d020
-                rts
                 endif
-
+                
         ; Shift the screen memory, draw new blocks or shift colors according to the
         ; scrolling progress (srcCounter)
         ;

@@ -1,13 +1,11 @@
-SHOW_FREE_TIME = 0
 SHOW_FREE_MEMORY = 0
-SHOW_SCROLLWORK_TIME = 0
-SHOW_PLAYROUTINE_TIME = 0
-SHOW_LEVELUPDATE_TIME = 0
+SHOW_FRAME_TIME = 1
+SHOW_PLAYROUTINE_TIME = 1
+SHOW_LEVELUPDATE_TIME = 1
 SHOW_SPRITEDEPACK_TIME = 0
 SHOW_NAVIGATION_TIME = 0
 SHOW_NAVIGATION_TARGET = 0
 OPTIMIZE_SPRITEIRQS = 1
-SHOW_STACKPOINTER = 0
 
 ITEM_CHEAT      = 1
 AMMO_CHEAT      = 0
@@ -51,13 +49,21 @@ randomAreaStart:
 
 StartMainLoop:  ldx #$ff
                 txs
-MainLoop:       jsr ScrollLogic
+MainLoop:       if SHOW_FRAME_TIME > 0
+                lda #$02
+                sta $d020
+                endif
+                jsr ScrollLogic
                 jsr DrawActors
                 jsr AddActors
                 jsr FinishFrame
+                if SHOW_FRAME_TIME > 0
+                lda #$02
+                sta $d020
+                endif
                 jsr ScrollLogic
                 jsr GetControls
-                jsr UpdateMenu
+                jsr UpdateMenu 
                 jsr UpdateActors
                 jsr FinishFrame
                 jsr UpdateLevelObjects

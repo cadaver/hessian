@@ -504,11 +504,11 @@ CN_HasLineOfSight:
                 lda actNavNewYH,x               ;Has a navigation (pathfinding) request?
                 bpl CN_Done
                 if SHOW_NAVIGATION_TIME > 0
-                dec $d020
+                inc $d020
                 endif
                 jsr NavigationCheck
                 if SHOW_NAVIGATION_TIME > 0
-                inc $d020
+                dec $d020
                 endif
 CN_Done:        rts
 
