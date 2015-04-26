@@ -287,12 +287,12 @@ SSpr_NoSwap2:   inx
                 cpx #MAX_SPR
                 bne SSpr_Loop1
 
-SSpr_SortDone:  if SHOW_FRAME_TIME > 0          ;Wait now for the previous frame to finish
+SSpr_SortDone:  if SHOW_FRAME_TIME > 0          ;Wait for current sprites to finish
                 lda #$00
                 sta $d020
                 endif
 SSpr_Wait:      lda newFrame
-                bne SSpr_Wait
+                bmi SSpr_Wait
                 if SHOW_FRAME_TIME > 0
                 lda #$03
                 sta $d020
@@ -434,6 +434,8 @@ SSpr_AllDone:   if SHOW_FRAME_TIME > 0
                 lda #$00
                 sta $d020
                 endif
+UF_WaitFrame:   lda newFrame                    ;Wait for previous frameupdate to finish
+                bne UF_WaitFrame
                 lda scrCounter                  ;Is it the colorshift? (needs special timing)
                 cmp #$04
                 beq UF_WaitColorShift

@@ -37,7 +37,8 @@ Irq1_NtscDelayNoWrap:
                 sta ntscDelay
                 and newFrame
                 beq Irq1_NoNewFrame
-                inc newFrame                    ;Newframe indicator back to 0
+                lda #$00
+                sta newFrame                    ;Newframe indicator back to 0
 Irq1_LevelUpdate:
                 lda #$00                        ;Animate level background?
                 beq Irq1_NoLevelUpdate
@@ -49,9 +50,9 @@ Irq1_LevelUpdate:
                 dec $d020
                 endif
 Irq1_NoLevelUpdate:
-Irq1_NoNewFrame:ldx #$00
-                stx $d07a                       ;SCPU back to slow mode
-                stx $d030                       ;C128 back to 1MHz
+Irq1_NoNewFrame:lda #$00
+                sta $d07a                       ;SCPU back to slow mode
+                sta $d030                       ;C128 back to 1MHz
 Irq1_MinSprY:   lda #$00                        ;Copy new min/max sprite Y range to know
 Irq1_StoreMinSprY:                              ;when fastloader can transfer data
                 sta FL_MinSprY+1
@@ -299,6 +300,7 @@ Irq3_SplitDone: lda #PANEL_BG1                  ;Set scorepanel multicolors
                 sta $d023
                 cld
                 sty irqSaveY
+                lsr newFrame                    ;Can update sprites now
                 ldx #IRQ3_LINE+2
 Irq3_Wait2:     cpx $d012
                 bcs Irq3_Wait2
