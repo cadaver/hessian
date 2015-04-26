@@ -308,7 +308,6 @@ Irq3_SplitDone: lda #PANEL_BG1                  ;Set scorepanel multicolors
                 sta $d023
                 cld
                 sty irqSaveY
-                lsr newFrame                    ;Mark current sprites done
                 ldx #IRQ3_LINE+2
 Irq3_Wait2:     cpx $d012
                 bcs Irq3_Wait2

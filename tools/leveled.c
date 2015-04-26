@@ -897,10 +897,6 @@ void zone_mainloop(void)
     {
       zonebg1[zonenum] ^= 128;
     }
-    if (k == KEY_C)
-    {
-      zonebg2[zonenum] ^= 128;
-    }
     if (k == KEY_N)
     {
       zonemusic[zonenum]--;
@@ -1520,8 +1516,6 @@ void drawmap(void)
     sprintf(textbuffer, "COLORS %01X %01X %01X", zonebg1[zonenum] & 15, zonebg2[zonenum] & 15, zonebg3[zonenum] & 15);
     if (zonebg1[zonenum] & 128)
       strcat(textbuffer, " (NOSAVE)");
-    if (zonebg2[zonenum] & 128)
-      strcat(textbuffer, " (NOCOLORSCR)");
     printtext_color(textbuffer, 80,175,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "MUSIC %02X-%01X", zonemusic[zonenum] / 4, zonemusic[zonenum] % 4);
     printtext_color(textbuffer, 80,185,SPR_FONTS,COL_WHITE);
