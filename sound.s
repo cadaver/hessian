@@ -240,7 +240,9 @@ Play_MasterVolume:
 
         ;Update duration counter
 
-Play_ChnExec:   inc ntChnCounter,x
+Play_ChnExec:   lda ntscDelay                   ;If NTSC delay, only update pulse/wave
+                beq Play_JumpToPulse
+                inc ntChnCounter,x
                 bne Play_NoPattern
 
         ;Get data from pattern
@@ -468,7 +470,7 @@ Play_NoteNum:   lda ntFreqTbl-24,y
                 sta ntChnFreqLo,x
                 sta $d400,x
                 lda ntFreqTbl-23,y
-Play_StoreFreqHi: 
+Play_StoreFreqHi:
                 sta $d401,x
                 sta ntChnFreqHi,x
 Play_WaveDone:  lda ntChnWave,x
@@ -522,7 +524,7 @@ Play_FreqSub:   lda ntChnFreqLo,x
                 jmp Play_StoreFreqHi
 
           ;Sound effect hard restart
-          
+
 Play_SfxHRFirstWave:
                 lda #NT_FIRSTWAVE
                 sta ntChnWave,x

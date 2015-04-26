@@ -18,7 +18,7 @@ InitZP:         sta joystick,x
                 dex
                 bpl InitZP
 
-        ; Initialize playroutine
+        ; Initialize playroutine / raster IRQ variables
 
                 sta ntFiltPos
                 sta ntFiltTime
@@ -199,14 +199,11 @@ InitRaster:     sei
                 lda #$2c
                 sta Irq1_StoreMinSprY
                 sta Irq1_StoreMaxSprY
-IR_UseFastLoad:
-IR_DetectNtsc1: lda $d012                       ;Detect PAL/NTSC again
-IR_DetectNtsc2: cmp $d012
-                beq IR_DetectNtsc2
-                bmi IR_DetectNtsc1
-                cmp #$20
-                bcc IR_IsNtsc
-                lda #$ff
+IR_UseFastLoad: lda #$01
+                sta ntscDelay
+                lda ntscFlag
+                bne IR_IsNtsc
+                lda #$ff                        ;On PAL the colorshift check can be made more forgiving
                 sta UF_ColorShiftLateCheck+1
 IR_IsNtsc:      lda $d030                       ;Detect C128/SCPU and disable Irq4 if neither detected
                 cmp #$ff                        ;to not waste CPU cycles

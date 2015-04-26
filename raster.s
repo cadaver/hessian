@@ -38,31 +38,32 @@ Irq5_Bg3:       lda #$09
         ; Raster interrupt 1. Show game screen
 
 Irq1:           jsr StartIrq
-                if SHOW_FRAME_DROP>0
-                ldy #$02
-                lda newFrame
-                beq Irq1_Late
-                ldy #$00
-Irq1_Late:      sty $d020
-                endif
+                lda ntscDelay
+                sec
+                sbc ntscFlag
+                bpl Irq1_NtscDelayNoWrap
+                lda #$05
+Irq1_NtscDelayNoWrap:
+                sta ntscDelay
+                and newFrame
+                beq Irq1_NoNewFrame
+                inc newFrame                    ;Newframe indicator back to 0
 Irq1_LevelUpdate:
                 lda #$00                        ;Animate level background?
                 beq Irq1_NoLevelUpdate
-                dec Irq1_LevelUpdate+1
-                if SHOW_LEVELUPDATE_TIME>0
+                if SHOW_LEVELUPDATE_TIME > 0
                 dec $d020
                 endif
                 jsr UpdateLevel
-                if SHOW_LEVELUPDATE_TIME>0
+                if SHOW_LEVELUPDATE_TIME > 0
                 inc $d020
                 endif
 Irq1_NoLevelUpdate:
-                ldx #$00
-                stx newFrame
+Irq1_NoNewFrame:ldx #$00
                 stx $d07a                       ;SCPU back to slow mode
                 stx $d030                       ;C128 back to 1MHz
-Irq1_MinSprY:   lda #$00
-Irq1_StoreMinSprY:
+Irq1_MinSprY:   lda #$00                        ;Copy new min/max sprite Y range to know
+Irq1_StoreMinSprY:                              ;when fastloader can transfer data
                 sta FL_MinSprY+1
 Irq1_MaxSprY:   ldy #$00
 Irq1_StoreMaxSprY:

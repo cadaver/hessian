@@ -490,9 +490,9 @@ NMI:            rti
 
         ; Loader runtime data
 
-tablBit:        dc.b 2,4,4                       ;Exomizer static tables
+tablBit:        dc.b 2,4,4                      ;Exomizer static tables
 tablOff:        dc.b 48,32,16
-fileNumber:     dc.b $00                         ;Initial filenumber for the concatenated intro + main part
+fileNumber:     dc.b $00                        ;Initial filenumber for the concatenated intro + main part
 fastLoadMode:   dc.b LOAD_KERNAL
 
 loaderCodeEnd:                                  ;Resident code ends here!
@@ -507,6 +507,7 @@ InitLoader:     sei
                 stx $d020
                 stx messages                    ;Disable KERNAL messages
                 stx fileOpen                    ;Clear fileopen indicator
+                inx
 IL_DetectNtsc1: lda $d012                       ;Detect PAL/NTSC
 IL_DetectNtsc2: cmp $d012
                 beq IL_DetectNtsc2
@@ -515,7 +516,9 @@ IL_DetectNtsc2: cmp $d012
                 bcc IL_IsNtsc
                 lda #$2c                        ;Adjust 2-bit fastload transfer
                 sta FL_Delay                    ;delay for PAL
-IL_IsNtsc:      lda #$7f                        ;Disable & acknowledge IRQ sources
+                dex
+IL_IsNtsc:      stx ntscFlag
+                lda #$7f                        ;Disable & acknowledge IRQ sources
                 sta $dc0d
                 lda $dc0d
                 inc $d019

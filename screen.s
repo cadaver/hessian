@@ -31,6 +31,7 @@ BlankScreen:    jsr WaitBottom
 BS_Common:      ldx #$00
                 stx Irq1_D015+1
                 stx Irq1_MaxSprY+1
+                stx Irq1_LevelUpdate+1          ;Disable level animation by default
                 rts
 
         ; Perform scrolling logic
@@ -503,11 +504,10 @@ UF_NoSprites2:  sta Irq1_D015+1
                 lda sortSprY-1,y
                 adc #22
 UF_NoSprites:   sta Irq1_MaxSprY+1
-                lda #$80
-                sta newFrame
+                dec newFrame                    ;$ff = process new frame
                 lda temp7                       ;Was scrollwork performed already?
                 bne SW_NoWork
-                if SHOW_SCROLLWORK_TIME>0
+                if SHOW_SCROLLWORK_TIME > 0
                 dec $d020
                 jsr ScrollWork
                 inc $d020

@@ -334,25 +334,14 @@ AddAllActorsNextFrame:
                 sta AA_EndCmp+1
                 rts
 
-        ; Check if the game is paused. Trigger level chars update if not paused
-        ;
-        ; Parameters: -
-        ; Returns: C=0 not paused, C=1 paused
-        ; Modifies: A
-        
-CheckPause:     lda menuMode
-                cmp #MENU_PAUSE
-                bcs CP_Paused
-                inc Irq1_LevelUpdate+1
-CP_Paused:      rts
-
         ; Add actors, process spawners and pathfinding AI. Do nothing if game is paused
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-AddActors:      jsr CheckPause
+AddActors:      lda menuMode
+                cmp #MENU_PAUSE
                 bcc AA_NoPause
                 rts
 AA_NoPause:     lda mapX                        ;Calculate borders for add/removechecks
@@ -529,13 +518,17 @@ CN_Done:        rts
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-UpdateActors:   jsr CheckPause
-                bcc UA_OK
-                lda #$00                        ;Stop scrolling when paused
-                sta scrollSX
+UpdateActors:   lda menuMode
+                cmp #MENU_PAUSE
+                bcc UA_NoPause
+                lda #$00                        ;Stop scrolling & level animation when paused
+                sta scrollSX                    ;and only interpolate
                 sta scrollSY
+                sta Irq1_LevelUpdate+1
                 jmp InterpolateActors
-UA_OK:          ldx #MAX_ACT-1
+
+UA_NoPause:     ldx #MAX_ACT-1
+                stx Irq1_LevelUpdate+1
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex

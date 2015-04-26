@@ -69,7 +69,10 @@ FadeInLoop:     inx
 
                 lda fastLoadMode
                 beq NoPause
-                ldx #70                         ;If using fastloading, pause for roughly 1.5 seconds
+                ldx #70
+                lda ntscFlag
+                beq PauseLoop
+                ldx #84                         ;If using fastloading, pause for roughly 1.5 seconds
 PauseLoop:      jsr WaitBottom                  ;to show the logo a little longer
                 dex
                 bne PauseLoop
@@ -145,6 +148,20 @@ MusicIrq:       sta irqSaveA
                 sta irqSave01
                 lda #$35
                 sta $01
+                ldx #$00
+NtscDelay:      lda #$00
+                sec
+                sbc ntscFlag
+                bpl DelayNotOver
+                lda #$05
+                inx
+DelayNotOver:   sta NtscDelay+1
+                lda musicPatch,x                ;Patch out the duration advance
+                sta musicData+$9a               ;every 6th frame on NTSC
+                lda musicPatch+2,x
+                sta musicData+$9b
+                lda musicPatch+4,x
+                sta musicData+$9c
                 jsr musicData+3
                 dec $d019
                 lda irqSave01
@@ -154,6 +171,7 @@ MusicIrq:       sta irqSaveA
                 ldy irqSaveY
                 rti
 
+musicPatch:     dc.b $fe,$4c,$5c,$ac,$fb,$f9
 logoColors:     dc.b 0,0,0,0,11,12,13
 
 covertLogoData: incbin covertscr.dat

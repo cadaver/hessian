@@ -47,6 +47,7 @@ SCROLLROWS      = 23
                 var loadTempReg                 ;Loader variables
                 var bufferStatus
                 var fileOpen
+                var ntscFlag
 
                 var zpLenLo                     ;Exomizer 2 depackroutine variables
                 var zpSrcLo
@@ -157,6 +158,7 @@ playerStateZPEnd = nextTempLvlActIndex+1
                 varrange sprXH,MAX_SPR+1
 
                 var newFrame                    ;Frame update/raster IRQ variables
+                var ntscDelay
                 var irqSaveA
                 var irqSaveX
                 var irqSaveY

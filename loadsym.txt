@@ -10,6 +10,7 @@ SilenceSID
 FL_MinSprY
 FL_MaxSprY
 fastLoadMode
+ntscFlag
 fileNumber
 loaderCodeEnd
 MULTISIDE
