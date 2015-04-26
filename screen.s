@@ -252,14 +252,6 @@ SL_CSSMapY:     lda #$00
 
 UpdateFrame:    lda #$01                        ;Re-enable raster IRQs after loading/saving
                 sta $d01a
-                if SHOW_FREE_TIME > 0
-                dec $d020
-                endif
-UF_Wait:        lda newFrame                    ;Wait until sprite IRQs are done with the current sprites
-                bmi UF_Wait
-                if SHOW_FREE_TIME > 0
-                inc $d020
-                endif
                 lda firstSortSpr                ;Switch sprite doublebuffer side
                 eor #MAX_SPR
                 sta firstSortSpr
@@ -308,6 +300,15 @@ SSpr_FirstFound:txa
                 tya
                 adc #8-1                        ;C=1
                 sta SSpr_CopyLoop1End+1         ;Set endpoint for first copyloop
+
+                if SHOW_FREE_TIME > 0
+                dec $d020
+                endif
+SSpr_Wait:      lda newFrame                    ;Wait until sprite IRQs are done with the current sprites
+                bmi SSpr_Wait                   ;before starting to modify the sorted sprite arrays
+                if SHOW_FREE_TIME > 0
+                inc $d020
+                endif
                 bpl SSpr_CopyLoop1
 
 SSpr_CopyLoop1Skip:
@@ -452,7 +453,7 @@ UF_WaitColorShift:
 UF_WaitColorShiftLoop:
                 lda $d012                       ;Wait until we are near the scorescreen split
 UF_WaitColorShiftCheck:                         ;but not over it
-                cmp #IRQ3_LINE-SCROLLSPLIT*8+8
+                cmp #IRQ3_LINE-SCROLLSPLIT*8+6
                 bcc UF_WaitColorShiftLoop
 UF_ColorShiftLateCheck:
                 cmp #IRQ3_LINE+$10
