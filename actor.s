@@ -334,17 +334,26 @@ AddAllActorsNextFrame:
                 sta AA_EndCmp+1
                 rts
 
-        ; Add actors, process spawners and pathfinding AI. Do nothing if game is paused
+        ; Call update routines of all actors, then interpolate. If game is paused, only interpolate
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-AddActors:      lda menuMode
+UpdateActors:   lda menuMode
                 cmp #MENU_PAUSE
-                bcc AA_NoPause
-                rts
-AA_NoPause:     lda mapX                        ;Calculate borders for add/removechecks
+                bcc UA_NoPause
+                lda #$00                        ;Stop scrolling & level animation when paused
+                sta scrollSX                    ;and only interpolate
+                sta scrollSY
+                sta Irq4_LevelUpdate+1
+                jmp InterpolateActors
+
+UA_NoPause:
+
+        ; Get screen border map coordinates for adding/removing actors
+        
+GetActorBorders:lda mapX                        ;Calculate borders for add/removechecks
                 sec
                 sbc #ADDACTOR_LEFT_LIMIT
                 bcs GAB_LeftOK1
@@ -510,25 +519,12 @@ CN_HasLineOfSight:
                 if SHOW_NAVIGATION_TIME > 0
                 dec $d020
                 endif
-CN_Done:        rts
+CN_Done:
 
-        ; Call update routines of all actors, then interpolate. If game is paused, only interpolate
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,temp vars,actor temp vars
+        ; Call move routines of all actors
 
-UpdateActors:   lda menuMode
-                cmp #MENU_PAUSE
-                bcc UA_NoPause
-                lda #$00                        ;Stop scrolling & level animation when paused
-                sta scrollSX                    ;and only interpolate
-                sta scrollSY
-                sta Irq1_LevelUpdate+1
-                jmp InterpolateActors
-
-UA_NoPause:     ldx #MAX_ACT-1
-                stx Irq1_LevelUpdate+1
+                ldx #MAX_ACT-1
+                stx Irq4_LevelUpdate+1
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex

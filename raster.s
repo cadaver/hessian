@@ -1,6 +1,6 @@
-IRQ1_LINE       = MIN_SPRY-20                   ;Allow 10 lines for loading the sprites + 10 for frameupdate & char animation
+IRQ1_LINE       = MIN_SPRY-12                   ;Allow 12 lines for loading the sprites & frameupdate
 IRQ3_LINE       = SCROLLROWS*8+44
-IRQ4_LINE       = $fb
+IRQ4_LINE       = 251
 IRQ5_LINE       = 147
 
 PANEL_BG1       = $00
@@ -10,6 +10,16 @@ PANEL_BG3       = $0c
 TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
+
+        ; IRQ common startup code
+
+StartIrq:       cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+                rts
 
         ; Raster interrupt 5. Text screen split
 
@@ -28,37 +38,18 @@ Irq5_Bg3:       lda #$09
         ; Raster interrupt 1. Show game screen
 
 Irq1:           jsr StartIrq
+                ldx #$00
                 lda ntscDelay
-                sec
-                sbc ntscFlag
-                bpl Irq1_NtscDelayNoWrap
-                lda #$05
-Irq1_NtscDelayNoWrap:
-                sta ntscDelay
                 and newFrame
-                beq Irq1_NoNewFrame
-                lda #$00
-                sta newFrame                    ;Newframe indicator back to 0
-Irq1_LevelUpdate:
-                lda #$00                        ;Animate level background?
-                beq Irq1_NoLevelUpdate
-                if SHOW_LEVELUPDATE_TIME > 0
-                inc $d020
-                endif
-                jsr UpdateLevel
-                if SHOW_LEVELUPDATE_TIME > 0
-                dec $d020
-                endif
-Irq1_NoLevelUpdate:
-Irq1_NoNewFrame:lda #$00
-                sta $d07a                       ;SCPU back to slow mode
-                sta $d030                       ;C128 back to 1MHz
+                beq Irq1_NoFrameReset           ;Reset frame update if applicable
+                stx newFrame
+Irq1_NoFrameReset:
 Irq1_MinSprY:   lda #$00                        ;Copy new min/max sprite Y range to know
 Irq1_StoreMinSprY:                              ;when fastloader can transfer data
                 sta FL_MinSprY+1
-Irq1_MaxSprY:   ldy #$00
+Irq1_MaxSprY:   lda #$00
 Irq1_StoreMaxSprY:
-                sty FL_MaxSprY+1
+                sta FL_MaxSprY+1
 Irq1_ScrollX:   lda #$17
                 sta $d016
 Irq1_ScrollY:   lda #$57
@@ -84,6 +75,8 @@ Irq1_ScreenFrame:
                 sta Irq2_Spr6Frame+2
                 sta Irq2_Spr7Frame+2
 Irq1_NoScreenFrameChange:
+                stx $d07a                       ;SCPU back to slow mode
+                stx $d030                       ;C128 back to 1MHz
 Irq1_D015:      lda #$00
                 sta $d015
                 bne Irq1_HasSprites
@@ -320,8 +313,8 @@ Irq3_End:       lda #<Irq4
                 ldy #IRQ4_LINE
 Irq3_EndJump:   jmp SetNextIrq
 
-        ;Raster interrupt 4. Set C128 to 2MHz mode at the bottom of the screen
-        ;and SCPU to turbo mode, if no loading going on
+        ;Raster interrupt 4. Set C128 to 2MHz mode and SCPU to turbo mode,
+        ;if no loading going on. Also animate level graphics
 
 Irq4:           jsr StartIrq
                 ldx fileOpen
@@ -329,17 +322,26 @@ Irq4:           jsr StartIrq
                 inx
                 stx $d07b
                 stx $d030
-Irq4_NoTurbo:   lda #<Irq1
+Irq4_NoTurbo:   lda ntscDelay
+                sec
+                sbc ntscFlag
+                bpl Irq4_NtscDelayNoWrap
+                lda #$05
+Irq4_NtscDelayNoWrap:
+                sta ntscDelay
+                beq Irq4_NoLevelUpdate
+Irq4_LevelUpdate:
+                lda #$00                        ;Animate level background?
+                beq Irq4_NoLevelUpdate
+                if SHOW_LEVELUPDATE_TIME > 0
+                inc $d020
+                endif
+                jsr UpdateLevel
+                if SHOW_LEVELUPDATE_TIME > 0
+                dec $d020
+                endif
+Irq4_NoLevelUpdate:
+                lda #<Irq1
                 ldx #>Irq1
                 ldy #IRQ1_LINE
                 bne Irq3_EndJump
-
-        ; IRQ common startup code
-
-StartIrq:       cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
-                rts

@@ -84,6 +84,7 @@ SCROLLROWS      = 23
                 var scrollCSY
                 var scrCounter
                 var scrAdd
+                var scrollWorkFlag
                 var blockX
                 var blockY
                 var mapX

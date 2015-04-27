@@ -31,7 +31,7 @@ BlankScreen:    jsr WaitBottom
 BS_Common:      ldx #$00
                 stx Irq1_D015+1
                 stx Irq1_MaxSprY+1
-                stx Irq1_LevelUpdate+1          ;Disable level animation by default
+                stx Irq4_LevelUpdate+1          ;Disable level animation by default
                 rts
 
         ; Perform scrolling logic
@@ -40,7 +40,8 @@ BS_Common:      ldx #$00
         ; Returns: -
         ; Modifies: A,X,Y
 
-ScrollLogic:    lda scrAdd                      ;If speed is zero, look out
+ScrollLogic:    inc scrollWorkFlag              ;ScrollWork will be needed
+                lda scrAdd                      ;If speed is zero, look out
                 beq SL_GetNewSpeed              ;for a new speed-setting
                 clc
                 adc scrCounter                  ;Update workcounter
@@ -237,20 +238,37 @@ SL_CSSMapY:     lda #$00
                 sta DA_SprSubYH+1
                 rts
 
+        ; Re-enable raster interrupts, wait for new frame indicator and perform scrollwork
+        ;
+        ; Parameters: A Bit pattern to wait to clear
+        ; Returns: -
+        ; Modifies: A,X,Y,temp1-temp5,temp8
+
+WaitFrame:      sta temp8
+                lda #$01                        ;If raster interrupts would not be enabled, the program
+                sta $d01a                       ;would wait forever
+WF_Loop:        lda newFrame
+                and temp8
+                beq WF_Done
+                lda scrCounter                  ;Can not perform scrollwork early if colorshift
+                cmp #$04
+                beq WF_Loop
+                jsr ScrollWork
+                jmp WF_Loop
+WF_Done:        rts
+
         ; Sort sprites, set new frame to be displayed and perform scrollwork
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,X,Y,temp1-temp6
+        ; Modifies: A,X,Y,temp1-temp8
 
                 if sprOrder < MAX_SPR+1         ;Ensure that a zeropage addressing trick works
                 err
                 endif
 
-UpdateFrame:    lda #$01                        ;Re-enable raster IRQs after loading/saving
-                sta $d01a
-                if SHOW_FRAME_TIME > 0
-                lda #$03
+UpdateFrame:    if SHOW_SPRITESORT_TIME > 0
+                lda #$0a
                 sta $d020
                 endif
                 lda firstSortSpr                ;Switch sprite doublebuffer side
@@ -259,7 +277,7 @@ UpdateFrame:    lda #$01                        ;Re-enable raster IRQs after loa
                 ldx #$ff                        ;Make sure the sort endmark is intact (may have been
                 stx sprY+MAX_SPR                ;overwritten if ran out of sprites)
                 inx
-                stx temp3                       ;D010 bits for first IRQ
+                stx temp6                       ;D010 bits for first IRQ
                 txa
 SSpr_Loop1:     ldy sprOrder,x                  ;Check for coordinates being in order
                 cmp sprY,y
@@ -286,17 +304,12 @@ SSpr_NoSwap1:   lda sprY,y
 SSpr_NoSwap2:   inx
                 cpx #MAX_SPR
                 bne SSpr_Loop1
-
-SSpr_SortDone:  if SHOW_FRAME_TIME > 0          ;Wait for current sprites to finish
+                if SHOW_SPRITESORT_TIME > 0
                 lda #$00
                 sta $d020
                 endif
-SSpr_Wait:      lda newFrame
-                bmi SSpr_Wait
-                if SHOW_FRAME_TIME > 0
-                lda #$03
-                sta $d020
-                endif
+                lda #$80                        ;Wait until last set sprites have displayed
+                jsr WaitFrame                   ;and the second doublebuffer half is free
                 ldx #$00
 SSpr_FindFirst: ldy sprOrder,x                  ;Find upmost visible sprite
                 lda sprY,y
@@ -329,15 +342,15 @@ SSpr_CopyLoop1: ldx sprOrder,y
                 sta sortSprX,y
                 lda sprXH,x
                 beq SSpr_CopyLoop1MsbLow
-                lda temp3
+                lda temp6
                 ora sprOrTbl,y
-                sta temp3
+                sta temp6
 SSpr_CopyLoop1MsbLow:
                 iny
 SSpr_CopyLoop1End:
                 cpy #$00
                 bcc SSpr_CopyLoop1
-                lda temp3
+                lda temp6
                 sta sortSprD010-1,y
                 lda sortSprC-1,y                ;Make first IRQ endmark
                 ora #$80
@@ -347,9 +360,9 @@ SSpr_CopyLoop1End:
                 bcs SSpr_CopyLoop2
 
 SSpr_CopyLoop1Done:
-                lda temp3
+                lda temp6
                 sta sortSprD010-1,y
-                sty temp1                       ;Store sorted sprite end index
+                sty temp7                       ;Store sorted sprite end index
                 cpy firstSortSpr                ;Any sprites at all?
                 beq SSpr_NoSprites
                 lda sortSprC-1,y                ;Make first (and final) IRQ endmark
@@ -389,9 +402,9 @@ SSpr_CopyLoop2MsbDone:
                 bne SSpr_CopyLoop2
 
 SSpr_CopyLoop2Done:
-                sty temp1                       ;Store sorted sprite end index
+                sty temp7                       ;Store sorted sprite end index
                 ldy SSpr_CopyLoop1End+1         ;Go back to the second IRQ start
-                cpy temp1
+                cpy temp7
                 beq SSpr_FinalEndMark
 SSpr_IrqLoop:   sty temp2                       ;Store IRQ startindex
                 lda sortSprY,y                  ;C=0 here
@@ -404,7 +417,7 @@ SSpr_IrqLoop:   sty temp2                       ;Store IRQ startindex
                 endif
                 sta SSpr_IrqYCmp2+1
 SSpr_IrqSprLoop:iny
-                cpy temp1
+                cpy temp7
                 bcs SSpr_IrqDone
                 if OPTIMIZE_SPRITEIRQS > 0
                 lda sortSprY-8,y                ;Add next sprite to this IRQ?
@@ -424,18 +437,14 @@ SSpr_IrqDone:   tya
                 lda sortSprC-1,y                ;Make endmark
                 ora #$80
                 sta sortSprC-1,y
-                cpy temp1                       ;Sprites left?
+                cpy temp7                       ;Sprites left?
                 bcc SSpr_IrqLoop
 SSpr_FinalEndMark:
                 lda #$00                        ;Make final endmark
                 sta sprIrqLine-1,y
 
-SSpr_AllDone:   if SHOW_FRAME_TIME > 0
-                lda #$00
-                sta $d020
-                endif
-UF_WaitFrame:   lda newFrame                    ;Wait for previous frameupdate to finish
-                bne UF_WaitFrame
+SSpr_AllDone:   lda #$ff                        ;Wait for previous frameupdate to finish
+                jsr WaitFrame
                 lda scrCounter                  ;Is it the colorshift? (needs special timing)
                 cmp #$04
                 beq UF_WaitColorShift
@@ -455,11 +464,7 @@ UF_WaitColorShift:
 UF_ColorShiftLateCheck:
                 cmp #IRQ3_LINE+$10
                 bcs UF_WaitColorShift
-UF_WaitDone:    if SHOW_FRAME_TIME > 0
-                lda #$03
-                sta $d020
-                endif
-                lda scrollX                     ;Copy scrolling and screen number
+UF_WaitDone:    lda scrollX                     ;Copy scrolling and screen number
                 eor #$07
                 ora #$10
                 sta Irq1_ScrollX+1
@@ -476,7 +481,8 @@ UF_WaitDone:    if SHOW_FRAME_TIME > 0
                 beq UF_NoSprites2
 UF_ShowSprites: lda screenFrameTbl,x
                 sta Irq1_ScreenFrame+1
-                tya                             ;Check which sprites are on
+                lda temp7                       ;Check which sprites are on
+                tay
                 sec
                 sbc firstSortSpr
                 cmp #$09
@@ -492,48 +498,51 @@ UF_NoSprites2:  sta Irq1_D015+1
                 sec
                 sbc #$04
                 sta Irq1_MinSprY+1
-                ldy temp1
                 lda sortSprY-1,y
                 adc #22
 UF_NoSprites:   sta Irq1_MaxSprY+1
                 dec newFrame                    ;$ff = process new frame
-                if SHOW_FRAME_TIME > 0
-                jsr ScrollWork
-                lda #$00
-                sta $d020
-                rts
-                endif
-                
+
         ; Shift the screen memory, draw new blocks or shift colors according to the
-        ; scrolling progress (srcCounter)
+        ; scrolling progress (scrCounter)
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp1-temp5
 
-ScrollWork:     lda scrCounter
-                bne SW_NoScreenShift
-                lda scrAdd
+ScrollWork:     lda scrollWorkFlag              ;Already called this frame?
                 beq SW_NoWork
-SW_ShiftScreen:
+                dec scrollWorkFlag
+                if SHOW_SCROLLWORK_TIME > 0
+                lda #$07
+                sta $d020
+                jsr SW_Decision
+                lda #$00
+                sta $d020
+                rts
+                endif
+SW_Decision:    lda scrCounter
+                beq SW_ShiftScreen
+                cmp #$04
+                beq SW_ShiftColors
+                cmp #$02
+                beq SW_DrawBlocks
+SW_NoWork:      rts
+
+SW_ShiftScreen: lda scrAdd                      ;When not scrolling, scrCounter remains at 0
+                beq SW_NoWork                   ;so check speed to not shift unnecessarily
 SW_ShiftDir:    ldx #$04
                 ldy shiftSrcTbl,x
                 lda shiftOffsetTbl,x
                 clc
 SW_ScreenJump:  jmp SW_NoWork
 
-SW_NoScreenShift:
-                cmp #$04
-                bne SW_NoShiftColors
 SW_ShiftColors:
 SW_ColorShiftDir:
                 ldx #$00
                 stx temp1
 SW_ColorJump:   jmp SW_NoWork
 
-SW_NoShiftColors:
-                cmp #$02
-                bne SW_NoWork
 SW_DrawBlocks:  lda scrollCSX
                 beq SW_DBXDone
                 bmi SW_DBLeft
@@ -545,7 +554,6 @@ SW_DBXDone:     lda scrollCSY
                 bmi SW_DBUp
 SW_DBDown:      jmp SW_DrawDown
 SW_DBUp:        jmp SW_DrawUp
-SW_NoWork:      rts
 
         ; Screen shifting routines
 
@@ -996,6 +1004,7 @@ SWDU_Ready:     rts
 
 RedrawScreen:   ldy #$00
                 sty screen
+                sty scrollWorkFlag              ;Scrollwork not needed after redraw
                 sty SWDU_Sta+1
                 lda screenBaseTbl,y
                 sta SWDU_Sta+2

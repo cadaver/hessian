@@ -70,11 +70,22 @@ KEY_Q           = 62
 KEY_RUNSTOP     = 63
 KEY_NONE        = $ff
 
-        ; Read joystick + scan the keyboard.
+        ; Read joystick + scan the keyboard. Wait and perform scrollwork if frame update
+        ; still in progress, to prevent too much input latency build-up
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,zpSrcLo
+        ; Modifies: A,X,Y,zpSrcLo,temp1-temp5 (if ScrollWork called),temp8
+
+GetControlsWaitFrame:
+                lda #$80                        ;Wait for last set sprites to begin to display
+                jsr WaitFrame
+
+        ; Read joystick + scan the keyboard
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,zpSrcLo
 
 GetControls:    lda #$ff
                 sta $dc00

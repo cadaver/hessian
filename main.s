@@ -1,7 +1,9 @@
 SHOW_FREE_MEMORY = 0
-SHOW_FRAME_TIME = 1
-SHOW_PLAYROUTINE_TIME = 0
-SHOW_LEVELUPDATE_TIME = 0
+SHOW_ACTOR_TIME = 1
+SHOW_SPRITESORT_TIME = 1
+SHOW_SCROLLWORK_TIME = 1
+SHOW_PLAYROUTINE_TIME = 1
+SHOW_LEVELUPDATE_TIME = 1
 SHOW_SPRITEDEPACK_TIME = 0
 SHOW_NAVIGATION_TIME = 0
 SHOW_NAVIGATION_TARGET = 0
@@ -49,22 +51,29 @@ randomAreaStart:
 
 StartMainLoop:  ldx #$ff
                 txs
-MainLoop:       if SHOW_FRAME_TIME > 0
+MainLoop:       jsr ScrollLogic
+                if SHOW_ACTOR_TIME > 0
                 lda #$02
                 sta $d020
                 endif
-                jsr ScrollLogic
                 jsr DrawActors
-                jsr AddActors
-                jsr FinishFrame
-                if SHOW_FRAME_TIME > 0
-                lda #$0a
+                if SHOW_ACTOR_TIME > 0
+                lda #$00
                 sta $d020
                 endif
+                jsr FinishFrame
                 jsr ScrollLogic
-                jsr GetControls
-                jsr UpdateMenu 
+                jsr GetControlsWaitFrame
+                jsr UpdateMenu
+                if SHOW_ACTOR_TIME > 0
+                lda #$02
+                sta $d020
+                endif
                 jsr UpdateActors
+                if SHOW_ACTOR_TIME > 0
+                lda #$00
+                sta $d020
+                endif
                 jsr FinishFrame
                 jsr UpdateLevelObjects
                 jmp MainLoop
