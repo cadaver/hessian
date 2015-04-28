@@ -178,12 +178,13 @@ playerStateZPEnd = nextTempLvlActIndex+1
 
         ; Memory areas and non-zeropage variables
 
-sprF            = $0100
-sprC            = $0118
-sprAct          = $0130
-cacheSprAge     = $0148
+cacheSprAge     = $0100
+sprF            = $0140
+vColBuf         = $0158
 cacheSprFile    = $0200
+sprC            = $0240
 cacheSprFrame   = $02a7
+sprAct          = $02e7
 
 mainCodeStart   = $0334
 
