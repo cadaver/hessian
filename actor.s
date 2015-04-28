@@ -321,7 +321,7 @@ DA_HumanWpnF:   lda #$00
 DA_HumanNoWeapon:
                 jmp DA_ActorSubDone
 
-        ; Set all actors to be added on next frame
+        ; Set all actors to be added on screen. Used on level transitions
         ;
         ; Parameters: -
         ; Returns: -
@@ -332,30 +332,23 @@ AddAllActorsNextFrame:
                 sta AA_Start+1
                 lda #MAX_LVLACT
                 sta AA_EndCmp+1
-                rts
+AA_Paused:      rts
 
-        ; Call update routines of all actors, then interpolate. If game is paused, only interpolate
+        ; Add actors to screen and perform other miscellaneous tasks, like spawners and navigation AI
+        ; Do nothing if game paused
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,X,Y,temp vars,actor temp vars
+        ; Modifies: A,X,Y,temp regs
 
-UpdateActors:   lda menuMode
+AddActors:      lda menuMode
                 cmp #MENU_PAUSE
-                bcc UA_NoPause
-                lda #$00                        ;Stop scrolling & level animation when paused
-                sta scrollSX                    ;and only interpolate
-                sta scrollSY
-                sta Irq4_LevelUpdate+1
-                jmp InterpolateActors
-
-UA_NoPause:
+                bcs AA_Paused
 
         ; Get screen border map coordinates for adding/removing actors
-        
+
 GetActorBorders:lda mapX                        ;Calculate borders for add/removechecks
-                sec
-                sbc #ADDACTOR_LEFT_LIMIT
+                sbc #ADDACTOR_LEFT_LIMIT-1      ;C=0 here
                 bcs GAB_LeftOK1
                 lda #$00
 GAB_LeftOK1:    cmp limitL
@@ -519,12 +512,24 @@ CN_HasLineOfSight:
                 if SHOW_NAVIGATION_TIME > 0
                 dec $d020
                 endif
-CN_Done:
+CN_Done:        rts
 
-        ; Call move routines of all actors
+        ; Call update routines of all actors, then interpolate. If game is paused, only interpolate
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars,actor temp vars
 
+UA_Paused:      ldx #$00                        ;Stop scrolling & level animation when paused
+                stx scrollSX                    ;and only interpolate
+                stx scrollSY
+                beq InterpolateActors
+
+UpdateActors:   lda menuMode
+                cmp #MENU_PAUSE
+                bcs UA_Paused
                 ldx #MAX_ACT-1
-                stx Irq4_LevelUpdate+1
+                stx Irq4_LevelUpdate+1          ;Enable level animation when unpaused
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex
@@ -553,14 +558,15 @@ UA_NoRemove:    ldy #AL_UPDATEROUTINE
                 iny
                 lda (actLo),y
                 sta UA_Jump+2
-UA_Jump:        jsr $0000                
+UA_Jump:        jsr $0000
 UA_Next:        dex
                 bpl UA_Loop
 
         ; Interpolate actors' movement each second frame
 
 InterpolateActors:
-                lda scrollX                     ;Calculate how much the scrolling has changed
+                stx Irq4_LevelUpdate+1          ;Enable/disable level char animation
+                lda scrollX
                 sec
 IA_PrevScrollX: sbc #$00
                 bmi IA_ScrollXNeg

@@ -966,6 +966,7 @@ CP_NotOverDown: sta mapY
                 jsr RedrawScreen
                 sty ULO_COLastCheckY+1          ;Reset object search (Y=$ff)
                 jsr AddAllActorsNextFrame
+                jsr AddActors
                 jsr GetControls
                 jsr UpdateActors                ;Update actors once first
                                                 ;Fall through to main loop

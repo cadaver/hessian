@@ -57,6 +57,7 @@ MainLoop:       jsr ScrollLogic
                 sta $d020
                 endif
                 jsr DrawActors
+                jsr AddActors
                 if SHOW_ACTOR_TIME > 0
                 lda #$00
                 sta $d020
