@@ -187,7 +187,7 @@ PrintHexDigit:  cmp #$0a
                 adc #$06
 PrintHexDigit_IsNumber:
                 adc #$30
-                sta screen1+SCROLLROWS*40,x
+                sta panelScreen+SCROLLROWS*40,x
                 lda #$01
                 sta colors+SCROLLROWS*40,x
                 inx
