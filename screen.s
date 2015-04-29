@@ -1086,14 +1086,12 @@ UB_InsideZone:  lda mapTblLo,y
                 lda SL_CSSMapY+1
                 sta zpSrcHi
                 lda #$91
-                sta UB_StaColor
-                lda #zpBitsLo
-                sta UB_StaColor+1
+                sta UB_Sta2
                 lda SL_CSSBlockX+1
                 ldx SL_CSSBlockY+1
                 ldy screen
                 jsr UB_UpdateScreen
-UB_JumpToREU:   lda scrAdd                      ;If scrolling is in the phase of copying the screen
+                lda scrAdd                      ;If scrolling is in the phase of copying the screen
                 beq UB_Done                     ;must also write the block to the other screen
                 lda scrCounter
                 cmp #$04
@@ -1105,9 +1103,8 @@ UB_JumpToREU:   lda scrAdd                      ;If scrolling is in the phase of
                 lda screen
                 eor #$01
                 tay
-                lda #$ea                        ;Disable color-RAM write from the second loop
-                sta UB_StaColor
-                sta UB_StaColor+1
+                lda #$24                        ;Disable color-RAM write from the second loop
+                sta UB_Sta2
                 lda blockX
                 ldx blockY
 UB_UpdateScreen:sta zpBitsLo
@@ -1137,39 +1134,27 @@ UB_UpdateScreen:sta zpBitsLo
 UB_Row:         lda temp6
                 cmp #SCROLLROWS
                 bcs UB_SkipRow
-                ldy #$00
-                sty zpDestHi
-                sta zpBitBuf
-                asl
-                rol zpDestHi
-                asl
-                rol zpDestHi
-                adc zpBitBuf
-                bcc UB_NotOver
-                inc zpDestHi
-UB_NotOver:     asl
-                rol zpDestHi
-                asl
-                rol zpDestHi
-                asl
-                rol zpDestHi
-                sta zpDestLo
-                sta zpBitsLo
+                stx zpBitBuf
+                ldy #40
+                ldx #zpDestLo
+                jsr MulU
+                ldx zpBitBuf
                 ldy loadTempReg
-                lda zpDestHi
                 ora screenBaseTbl,y
                 sta zpDestHi
                 and #$03
                 ora #>colors
                 sta zpBitsHi
+                lda zpDestLo
+                sta zpBitsLo
                 ldy temp5
 UB_Column:      cpy #39
                 bcs UB_SkipColumn
 UB_Lda:         lda $1000,x                     ;Take char from block
                 sta (zpDestLo),y                ;Store char
-                sta UB_LdaColor+1
-UB_LdaColor:    lda charColors
-UB_StaColor:    sta (zpBitsLo),y                ;Store color
+                sta UB_Lda2+1
+UB_Lda2:        lda charColors
+UB_Sta2:        sta (zpBitsLo),y                ;Store color
 UB_SkipColumn:  iny
                 inx
                 txa
