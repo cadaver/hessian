@@ -141,7 +141,6 @@ InitVideo:      jsr WaitBottom
                 stx $d026                       ;Set sprite multicolors
                 lda #$0a
                 sta $d025
-                ldx #$00
 IVid_CopyTextChars:
                 lda textCharsCopy,x
                 sta textChars+$100,x
