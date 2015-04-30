@@ -18,9 +18,7 @@ SAVEDESCSIZE    = 24
 
 CHEATSTRING_LENGTH = 4
 
-MAX_HAIR_COLORS = 5
-
-logoStart       = chars-12*8
+logoStart       = chars
 logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
@@ -308,73 +306,12 @@ RSF_End:        lda saveStateStart              ;If first byte zero, it's an emp
                 beq LoadSkipFade
                 jsr FadeOutAll
 LoadSkipFade:   jsr SaveModifiedOptions
-                lda saveState+plrAppearance-playerStateStart
-                jsr SetupPlayerAppearance
                 jmp RestartCheckpoint           ;Start loaded game
 LoadGameCancel: jmp MainMenu
 
         ; Start new game
 
-StartNewGame:   lda #2
-                sta optionsMenuChoice
-                jsr FadeOutText
-                jsr ClearText
-                lda titleTexts+NUMTITLEPAGES*2+4
-                ldx titleTexts+NUMTITLEPAGES*2+5
-                jsr PrintPage
-RefreshCustomize:
-                jsr DrawPlayerCharacter
-                lda plrAppearance
-                and #$7f
-                tax
-                lda plrHairColorTbl,x
-                sta hairFadeTbl+3
-                ldy textFadeDir
-                bne CustomizeLoop
-                sta Irq5_Bg3+1                  ;When character fade done, update IRQ color directly
-CustomizeLoop:  lda #11
-                sta temp1
-                lda optionsMenuChoice
-                asl
-                ldx #5
-                ldy #TEXTSTARTROW+2
-                jsr DrawChoiceArrow
-                jsr Update
-                lda optionsMenuChoice
-                ldx #2
-                jsr TitleMenuControl
-                sta optionsMenuChoice
-                jsr GetFireClick
-                bcs CustomizeSelect
-                jsr TitlePageDelayInteractive
-                bcc CustomizeLoop
-                jmp TitleTexts                  ;Page delay expired, return to title
-CustomizeSelect:ldx optionsMenuChoice
-                beq CustomizeGender
-                cpx #2
-                beq ConfirmCharacter
-CustomizeHairColor:
-                inc plrAppearance
-                lda plrAppearance
-                and #$7f
-                cmp #MAX_HAIR_COLORS
-                bcc CustomizePlaySound
-                lda plrAppearance
-                and #$80
-                bcs CustomizeStore
-CustomizeGender:lda plrAppearance
-                eor #$80
-                and #$80
-                cmp #$80
-                adc #$00                        ;Setup default hair color when switching male/female
-CustomizeStore: sta plrAppearance
-CustomizePlaySound:
-                lda #SFX_SELECT
-                jsr PlaySfx
-                jmp RefreshCustomize
-
-ConfirmCharacter:
-                jsr FadeOutAll
+StartNewGame:   jsr FadeOutAll
                 jsr SaveModifiedOptions
 InitPlayer:     lda #$00                        ;Init player state (level number, inventory selected item,
                 ldx #playerStateZPEnd-playerStateZPStart-1 ;experience, inventory items)
@@ -439,43 +376,10 @@ IP_SkillCheatLoop:
                 sta saveYH
                 lda #ACT_PLAYER
                 sta saveT
-                lda plrAppearance
-                jsr SetupPlayerAppearance
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
                 jmp CenterPlayer
-
-        ; Draw player character for customization screen
-
-DrawPlayerCharacter:
-                ldy #$05
-                lda #$f4
-                ldx plrAppearance
-                bpl DPC_Male
-                lda #$fa
-DPC_Male:       sta DPC_Lda+1
-DPC_Loop:       ldx drawPlayerIndexTbl,y
-DPC_Lda:        lda #$00
-                sta screen1+14*40+25,x
-DPC_Color:      inc DPC_Lda+1
-                dey
-                bpl DPC_Loop
-                rts
-
-        ; Apply player customization (in A) to the actor data
-        ; TODO: remove once new protagonist sprite has been drawn
-
-SetupPlayerAppearance:
-                cmp #$80
-                and #$7f
-                tax
-                lda #C_PLAYER_MALE_TOP
-                adc #$00
-                sta adPlayerUpperSpriteFile
-                lda plrHairColorTbl,x
-                ;sta adPlayerHairColor
-                rts
 
         ; Save options if modified
 
@@ -545,33 +449,10 @@ UC_TextNotOverHigh:
                 lsr
                 lsr
                 tay
-                lda hairFadeTbl,y
-                sta Irq5_Bg3+1
-                lda skinFadeTbl,y
-                sta Irq5_Bg2+1
                 lda textFadeTbl,y
-                sta UC_UpdateTextColorSC1+1
-                sta UC_UpdateTextColorSC2+1
-                lda mcTextFadeTbl,y
-                sta UC_UpdateTextColorMC1+1
-                sta UC_UpdateTextColorMC2+1
                 ldx #160
 UC_UpdateTextLoop:
-UC_UpdateTextColorSC1:
-                lda #$00
-                ldy screen1+TEXTSTARTROW*40-1,x
-                bpl UC_UpdateTextNoMC1
-UC_UpdateTextColorMC1:
-                lda #$00
-UC_UpdateTextNoMC1:
                 sta colors+TEXTSTARTROW*40-1,x
-UC_UpdateTextColorSC2:
-                lda #$00
-                ldy screen1+TEXTSTARTROW*40+159,x
-                bpl UC_UpdateTextNoMC2
-UC_UpdateTextColorMC2:
-                lda #$00
-UC_UpdateTextNoMC2:
                 sta colors+TEXTSTARTROW*40+159,x
                 dex
                 bne UC_UpdateTextLoop
@@ -905,17 +786,9 @@ logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
                 dc.b $08,$0b,$08,$0e,$08,$08,$08,$0b
                 dc.b $08,$09,$0a,$0b,$0c,$0d,$0e,$0f
 
-hairFadeTbl:    dc.b $00,$00,$06,$09
-skinFadeTbl:    dc.b $00,$09,$08,$0a
 textFadeTbl:    dc.b $00,$06,$03,$01
-mcTextFadeTbl:  dc.b $08,$08,$0e,$0e
 
 optionMaxValue: dc.b 2,1,1
-
-drawPlayerIndexTbl:
-                dc.b 81,80,41,40,1,0
-
-plrHairColorTbl:dc.b 9,2,8,4,11
 
 cheatString:    dc.b KEY_K, KEY_V, KEY_L, KEY_T
 cheatIndex:     dc.b 0

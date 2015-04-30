@@ -30,7 +30,7 @@ clean:
 hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak \
-	script01.pak level00.pak level01.pak level02.pak common.pak item.pak weapon.pak playermt.pak playerft.pak \
+	script01.pak level00.pak level01.pak level02.pak common.pak item.pak weapon.pak playert.pak \
 	playerb.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
@@ -166,7 +166,7 @@ options.bin: options.s mainsym.s
 savelist.bin: savelist.s mainsym.s
 	dasm savelist.s -osavelist.bin -f3
 
-logo.pak: pics/logo.iff logo.s bg/player.chr
+logo.pak: pics/logo.iff logo.s
 	pic2chr pics/logo.iff logo.chr -m14 -n15 -x24 -y7 -c -s
 	pic2chr pics/logo.iff logoscr.dat -m14 -n15 -x24 -y7 -t
 	dasm logo.s -ologo.bin -f3
@@ -278,11 +278,8 @@ item.pak: spr/item.spr
 weapon.pak: spr/weapon.spr
 	pchunk2 spr/weapon.spr weapon.pak
 
-playermt.pak: spr/playermt.spr
-	pchunk2 spr/playermt.spr playermt.pak
-
-playerft.pak: spr/playerft.spr
-	pchunk2 spr/playerft.spr playerft.pak
+playert.pak: spr/playert.spr
+	pchunk2 spr/playert.spr playert.pak
 
 playerb.pak: spr/playerb.spr
 	pchunk2 spr/playerb.spr playerb.pak

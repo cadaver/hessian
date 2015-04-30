@@ -4,9 +4,8 @@ logo.pak 01
 common.pak 02
 item.pak 03
 weapon.pak 04
-playermt.pak 05
-playerft.pak 06
-playerb.pak 07
+playert.pak 05
+playerb.pak 06
 level00.pak 10
 level01.pak 11
 level02.pak 12

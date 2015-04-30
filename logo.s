@@ -1,8 +1,7 @@
                 include memory.s
 
-                org chars-12*8
+                org chars
 
-                incbin bg/player.chr
                 incbin logo.chr
                 incbin logoscr.dat
 
@@ -12,7 +11,6 @@ titlePageTbl:   dc.w txtPressFire
                 dc.w txtInstructions3
                 dc.w txtMainMenu
                 dc.w txtOptions
-                dc.w txtCharacter
 
 txtPressFire:   dc.b "A COVERT BITOPS PRODUCTION IN 2015",0
                 dc.b 0
@@ -63,14 +61,6 @@ txtOptions:     dc.b $80+12,"SKILL",0
                 dc.b $80+12,"SOUND FX",0
                 dc.b 0
                 dc.b $80+12,"BACK",0
-
-txtCharacter:   dc.b "CHARACTER SET-UP",0
-                dc.b 0
-                dc.b $80+13,"MALE/FEMALE",0
-                dc.b 0
-                dc.b $80+13,"HAIR COLOR",0
-                dc.b 0
-                dc.b $80+13,"CONFIRM",0
 
                 if * > screen2+SCROLLROWS*40
                     err
