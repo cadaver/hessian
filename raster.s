@@ -1,7 +1,7 @@
 IRQ1_LINE       = MIN_SPRY-12                   ;Allow 12 lines for loading the sprites & frameupdate
 IRQ3_LINE       = SCROLLROWS*8+44
 IRQ4_LINE       = 251
-IRQ5_LINE       = 147
+IRQ5_LINE       = 143
 
 PANEL_BG1       = $00
 PANEL_BG2       = $0b
