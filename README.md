@@ -13,4 +13,6 @@ Technical details:
 - Loader based on the CovertBitops Loader V2.24 (1541/1581/FD/HD/IDE64)
 - Exomizer2 compression
 
+"The whole idea, how everything got started, demanded visionary madness. How mankind would survive the journey to another planet, if the need arose. The answer: not as humans..."
+
 See also [CovertBitops homepage](http://cadaver.homeftp.net).
