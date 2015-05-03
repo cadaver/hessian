@@ -82,9 +82,9 @@ UpdatePanel:    lda actHp+ACTI_PLAYER
                 ldx #$00
                 jsr DrawHealthBar
                 lda battery
-                cmp #$01
-                lda battery+1                   ;Add lowbyte to the displayed value
-                adc #$00                        ;so that decrementing goes smoothly
+                asl
+                lda battery+1                   ;Round upward from battery lowbyte
+                adc #$00
                 ldx #$01
                 jsr DrawHealthBar
                 if SHOW_BATTERY > 0
