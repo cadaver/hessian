@@ -36,7 +36,7 @@ INITIAL_JUMPSPEED = 40
 INITIAL_CLIMBSPEED = 84
 INITIAL_HEALTHRECHARGETIMER = 3
 
-HEALTHRECHARGETIMER_RESET = $e0
+HEALTHRECHARGETIMER_RESET = $d0
 
 DIFFICULTY_EASY = 0
 DIFFICULTY_MEDIUM = 1
@@ -45,23 +45,23 @@ DIFFICULTY_HARD = 2
 DROWNING_TIMER = 1
 DROWNING_TIMER_REPEAT = $f0
 
-MAX_BATTERY     = 28
+MAX_BATTERY     = 56
 LOW_BATTERY = MAX_BATTERY/7*2
 LOW_HEALTH = HP_PLAYER/7*2
 
-DRAIN_WALK      = 4                             ;When animation wraps
-DRAIN_SWIM      = 12                            ;When animation wraps
-DRAIN_CLIMB     = 2                             ;At each movement step
-DRAIN_JUMP      = 10
-DRAIN_ROLL      = 12
-DRAIN_RESTOREHEALTH = 32
-DRAIN_MELEE     = 8
-DRAIN_HEAVYMELEE = 10
-DRAIN_THROW     = 12
-DRAIN_SHOOT     = 6
-DRAIN_SHOOTHEAVY = 8
-DRAIN_SHOOTAUTO = 4
-DRAIN_EMP       = 64
+DRAIN_WALK      = 6                             ;When animation wraps
+DRAIN_SWIM      = 18                            ;When animation wraps
+DRAIN_CLIMB     = 3                             ;At each movement step
+DRAIN_JUMP      = 16
+DRAIN_ROLL      = 18
+DRAIN_RESTOREHEALTH = 64
+DRAIN_MELEE     = 16
+DRAIN_HEAVYMELEE = 20
+DRAIN_THROW     = 24
+DRAIN_SHOOT     = 12
+DRAIN_SHOOTHEAVY = 16
+DRAIN_SHOOTAUTO = 8
+DRAIN_EMP       = 128
 
 
         ; Player update routine
@@ -1265,7 +1265,6 @@ ApplySkills:
 
                 lda #INITIAL_HEALTHRECHARGETIMER
                 adc plrVitality                     ;C=1 here
-                sbc difficulty                      ;C=0 here
                 sta ULO_HealthRechargeRate+1
                 lda difficulty
                 asl                                 ;Easy: base damage mod 6, medium 8, hard 10
