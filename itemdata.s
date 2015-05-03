@@ -17,11 +17,12 @@ ITEM_BAZOOKA    = 15
 ITEM_GRENADE    = 16
 ITEM_HOMINGDRONE = 17
 ITEM_MEDKIT     = 18
+ITEM_BATTERY    = 19
 
 ITEM_FIRST_FIREARM = ITEM_PISTOL
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
 ITEM_FIRST_NONWEAPON = ITEM_MEDKIT
-ITEM_FIRST_IMPORTANT = ITEM_MEDKIT+1
+ITEM_FIRST_IMPORTANT = ITEM_BATTERY+1
 
 MAG_INFINITE = $ff
 
@@ -43,6 +44,7 @@ itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Grenade
                 dc.b 0                          ;Homing drone
                 dc.b 0                          ;Medikit
+                dc.b 0                          ;Battery
 
 itemDefaultMaxCount:
                 dc.b 1                          ;Fists
@@ -62,7 +64,8 @@ itemDefaultMaxCount:
                 dc.b 4                          ;Bazooka
                 dc.b 5                          ;Grenade
                 dc.b 3                          ;Homing drone
-                dc.b 2                          ;Medikit
+                dc.b 2                          ;Medikit 
+                dc.b 2                          ;Battery
 
 itemMaxCountAdd:dc.b 0                          ;Fists
                 dc.b 0                          ;Knife
@@ -82,6 +85,7 @@ itemMaxCountAdd:dc.b 0                          ;Fists
                 dc.b 2                          ;Grenade
                 dc.b 1                          ;Homing drone
                 dc.b 1                          ;Medikit
+                dc.b 1                          ;Battery
 
 itemMagazineSize:
                 dc.b MAG_INFINITE               ;Fists
@@ -102,6 +106,7 @@ itemMagazineSize:
                 dc.b 0                          ;Grenade
                 dc.b 0                          ;Homing drone
                 dc.b 0                          ;Medikit
+                dc.b 0                          ;Battery
 
 itemDefaultPickup:
                 dc.b 1                          ;Fists
@@ -122,6 +127,7 @@ itemDefaultPickup:
                 dc.b 2                          ;Grenade
                 dc.b 1                          ;Homing drone
                 dc.b 1                          ;Medikit
+                dc.b 1                          ;Battery
 
 itemNPCMinDist: dc.b 0                          ;Fists
                 dc.b 0                          ;Knife

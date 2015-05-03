@@ -172,7 +172,9 @@ PrintFreeMem:   ldx #0
                 lda #>fileAreaEnd
                 sbc freeMemHi
                 jsr PrintHexByte
-                pla
+                pla        
+                endif
+                if SHOW_FREE_MEMORY > 0 || SHOW_BATTERY > 0
 PrintHexByte:   pha
                 lsr
                 lsr

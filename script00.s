@@ -25,22 +25,24 @@ titleTexts      = chars+608+168*2
 
         ; Start from ship
 
-;START_LEVEL     = $00
-;START_X         = $0780
-;START_Y         = $0bc0
+START_LEVEL     = $00
+START_X         = $0780
+START_Y         = $0bc0
 
         ; Start from the testlevel
 
-START_LEVEL     = $02
-START_X         = $0200
-START_Y         = $0400
+;START_LEVEL     = $02
+;START_X         = $0200
+;START_Y         = $0400
 
                 org scriptCodeStart
 
                 dc.w TitleScreen
 
 TitleScreen:    jsr BlankScreen
-                jsr ClearPanelText
+                lda #$00                        ;Ensure the "none" panel mode
+                sta menuMode                    ;(show healthbars)
+                jsr UM_RedrawNone
                 jsr InitScroll                  ;Make sure no scrolling
 
         ; Load logo chars & clear screen
@@ -314,17 +316,14 @@ LoadGameCancel: jmp MainMenu
 StartNewGame:   jsr FadeOutAll
                 jsr SaveModifiedOptions
 InitPlayer:     lda #$00                        ;Init player state (level number, inventory selected item,
-                ldx #playerStateZPEnd-playerStateZPStart-1 ;experience, inventory items)
+                ldx #playerStateZPEnd-playerStateZPStart-1 ;inventory items)
 IP_InitZPState: sta playerStateZPStart,x
                 dex
                 bpl IP_InitZPState
-                ldx #MAX_INVENTORYITEMS-1
-IP_InitInventory:
-                sta invType,x
-                sta invCount,x
-                sta invMag,x
+                ldx #playerStateZeroEnd-playerStateStart-1
+IP_InitState:   sta playerStateStart,x
                 dex
-                bpl IP_InitInventory
+                bpl IP_InitState
                 ldx #MAX_PLOTBITS/8-1           ;Clear plotbits
 IP_InitPlotBits:sta plotBits,x
                 dex
@@ -365,6 +364,7 @@ IP_SkillCheatLoop:
                 sta levelNum
                 lda #$00                        ;Set startposition
                 sta plrReload
+                sta battery
                 sta saveD
                 lda #<START_X
                 sta saveXL
@@ -376,6 +376,10 @@ IP_SkillCheatLoop:
                 sta saveYH
                 lda #ACT_PLAYER
                 sta saveT
+                lda #HP_PLAYER
+                sta saveHP
+                lda #MAX_BATTERY
+                sta battery+1
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
@@ -417,13 +421,15 @@ CheckCheat:     lda keyType
                 cpx #CHEATSTRING_LENGTH-1
                 bcc CC_NoCheat
 CC_ActivateCheat:
-                ldx #$01
-CC_ActivateCheatLoop:
-                lda DA_RuntimeHealthCheat,x
-                eor cheatEorTbl,x
-                sta DA_RuntimeHealthCheat,x
-                dex
-                bpl CC_ActivateCheatLoop
+                lda DA_ResetRecharge            ;Disable player damage & battery drain
+                eor #$2f
+                sta DA_ResetRecharge
+                lda DA_ResetRecharge+1
+                eor #<healthRecharge
+                sta DA_ResetRecharge+1
+                lda DrainBatteryNoCheck
+                eor #$ed
+                sta DrainBatteryNoCheck
                 dec Irq1_Bg2+1
                 jsr WaitBottom
                 inc Irq1_Bg2+1
@@ -792,6 +798,5 @@ optionMaxValue: dc.b 2,1,1
 
 cheatString:    dc.b KEY_K, KEY_V, KEY_L, KEY_T
 cheatIndex:     dc.b 0
-cheatEorTbl:    dc.b $2f, <healthRecharge
 
                 checkscriptend

@@ -45,6 +45,25 @@ DIFFICULTY_HARD = 2
 DROWNING_TIMER = 1
 DROWNING_TIMER_REPEAT = $f0
 
+MAX_BATTERY     = 28
+LOW_BATTERY = MAX_BATTERY/7*2
+LOW_HEALTH = HP_PLAYER/7*2
+
+DRAIN_WALK      = 4                             ;When animation wraps
+DRAIN_SWIM      = 12                            ;When animation wraps
+DRAIN_CLIMB     = 2                             ;At each movement step
+DRAIN_JUMP      = 10
+DRAIN_ROLL      = 12
+DRAIN_RESTOREHEALTH = 32
+DRAIN_MELEE     = 8
+DRAIN_HEAVYMELEE = 10
+DRAIN_THROW     = 12
+DRAIN_SHOOT     = 6
+DRAIN_SHOOTHEAVY = 8
+DRAIN_SHOOTAUTO = 4
+DRAIN_EMP       = 64
+
+
         ; Player update routine
         ;
         ; Parameters: X actor index
@@ -381,6 +400,8 @@ MH_NoInitClimbUp:
 MH_StartJump:   ldy #AL_JUMPSPEED
                 lda (actLo),y
                 sta actSY,x
+                lda #DRAIN_JUMP
+                jsr DrainBattery
                 jsr MH_ResetFall
                 jsr MH_ResetGrounded
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
@@ -524,6 +545,8 @@ MH_OldDir:      eor #$00
                 bne MH_NoNewRoll                ;Also, must not have turned
 MH_StartRoll:   lda #$00
                 sta actFd,x
+                lda #DRAIN_ROLL
+                jsr DrainBattery
                 lda #FR_ROLL
                 jmp MH_AnimDone
 MH_NoNewRoll:   lda temp3
@@ -593,8 +616,10 @@ MH_WalkAnimSpeedPos:
                 adc #$00
                 cmp #FR_WALK+8
                 bcc MH_AnimDone
+                lda #DRAIN_WALK                 ;Drain battery when the walk animation wraps
+                jsr DrainBattery
                 lda #FR_WALK
-                bcs MH_AnimDone
+                bne MH_AnimDone
 MH_StandAnim:   lda #$00
                 sta actFd,x
                 lda #FR_STAND
@@ -731,6 +756,8 @@ MH_ClimbAnimDown:
                 sta actF2,x
                 tya
                 jsr MoveActorY
+                lda #DRAIN_CLIMB
+                jsr DrainBattery
                 jmp NoInterpolation
 
 MH_Swimming:    ldy #AL_MOVESPEED
@@ -830,6 +857,8 @@ MH_NotSwimmingUp:
                 adc #$00
                 cmp #FR_SWIM+4
                 bcc MH_SwimAnimDone
+                lda #DRAIN_SWIM
+                jsr DrainBattery                ;Drain battery when the animation wraps
                 lda #FR_SWIM
 MH_SwimAnimDone:jmp MH_AnimDone
 
@@ -858,6 +887,45 @@ MH_GetSignedHalfSpeed:
                 eor #$ff
                 adc #$01
 MH_GSHSDone:    rts
+
+        ; Drain battery charge
+        ;
+        ; Parameters: A amount of drain, X=0
+        ; Returns: -
+        ; Modifies: A (Y,temp regs if player actor killed)
+
+DrainBattery:   cpx #ACTI_PLAYER
+                bne DB_Done
+DrainBatteryNoCheck:
+                sta DB_Amount+1
+                lda battery
+                sec
+DB_Amount:      sbc #$00
+                sta battery
+                bcs DB_Done
+                dec battery+1
+                bpl DB_Done
+                lda #$00
+                sta battery
+                sta battery+1
+DB_Done:        rts
+
+        ; Add score
+        ;
+        ; Parameters: A score lowbyte, Y score highbyte
+        ; Returns: -
+        ; Modifies: A
+        
+AddScore:       clc
+                adc score
+                sta score
+                tya
+                adc score+1
+                sta score+1
+                bcc AS_Done
+                inc score+2
+AS_Done:        lda #REDRAW_SCORE
+                jmp SetPanelRedraw
 
         ; Humanoid character destroy routine
         ;
@@ -992,8 +1060,7 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
         ; Returns: -
         ; Modifies: A,X,Y,temp regs
 
-SaveCheckpoint:
-                if OPTIMIZE_SAVE>0
+SaveCheckpoint: if OPTIMIZE_SAVE>0
                 jsr SaveLevelActorState
                 ldx #MAX_LVLACT-1
                 ldy #$00
@@ -1043,8 +1110,8 @@ SCP_ZPState:    lda playerStateZPStart-1,x
                 lda #<saveState
                 ldx #>saveState
                 jsr SaveState_CopyMemory
-                ldx #5
-                ldy #5*MAX_ACT
+                ldx #6
+                ldy #6*MAX_ACT
 StorePlayerActorVars:
                 lda actXL+ACTI_PLAYER,y
                 sta saveXL,x
@@ -1054,7 +1121,19 @@ StorePlayerActorVars:
                 tay
                 dex
                 bpl StorePlayerActorVars
-                rts
+                lda saveHP                      ;Ensure minimum health & battery level when saving
+                cmp #LOW_HEALTH
+                bcs SCP_HealthOK
+                lda #LOW_HEALTH
+                sta saveHP
+SCP_HealthOK:   lda saveBattery+1
+                cmp #LOW_BATTERY
+                bcs SCP_BatteryOK
+                lda #LOW_BATTERY
+                sta saveBattery+1
+                lda #$00
+                sta saveBattery
+SCP_BatteryOK:  rts
 
         ; Restore an in-memory checkpoint
         ;
@@ -1120,8 +1199,8 @@ RCP_ClearActorLoop:
                 jsr LoadLevel
                 ldy #ACTI_PLAYER
                 jsr GFA_Found
-                ldx #5
-                ldy #5*MAX_ACT
+                ldx #6
+                ldy #6*MAX_ACT
 LoadPlayerActorVars:
                 lda saveXL,x
                 sta actXL+ACTI_PLAYER,y
@@ -1133,7 +1212,8 @@ LoadPlayerActorVars:
                 bpl LoadPlayerActorVars
                 inx                             ;X=0
                 jsr InitActor
-                jsr SetPanelRedrawItemAmmo
+                lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE
+                sta panelUpdateFlags
 
         ; Apply skill effects
         ; TODO: refactor to use on/off upgrades

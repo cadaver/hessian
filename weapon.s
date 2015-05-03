@@ -15,18 +15,19 @@ WD_DAMAGEMOD    = 6
 WD_DURATION     = 7
 WD_BULLETSPEED  = 8
 WD_SPEEDTABLEOFFSET = 9
-WD_SFX          = 10  
-WD_BACKFR       = 11
-WD_IDLEFR       = 12
-WD_IDLEFRLEFT   = 13
-WD_ATTACKFR     = 14
-WD_ATTACKFRLEFT = 15
-WD_PREPAREFR    = 16                            ;Melee weapons only
-WD_PREPAREFRLEFT = 17
-WD_RELOADDELAY  = 16                            ;Firearms only
-WD_RELOADSFX    = 17
-WD_RELOADDONESFX = 18
-WD_LOCKANIMFRAME = 19
+WD_SFX          = 10 
+WD_BATTERYDRAIN = 11
+WD_BACKFR       = 12
+WD_IDLEFR       = 13
+WD_IDLEFRLEFT   = 14
+WD_ATTACKFR     = 15
+WD_ATTACKFRLEFT = 16
+WD_PREPAREFR    = 17                            ;Melee weapons only
+WD_PREPAREFRLEFT = 18
+WD_RELOADDELAY  = 17                            ;Firearms only
+WD_RELOADSFX    = 18
+WD_RELOADDONESFX = 19
+WD_LOCKANIMFRAME = 20
 
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
@@ -348,7 +349,10 @@ AH_NoAmmoDecrement:
                 sta actAttackD,x
                 ldy #WD_SFX
                 lda (wpnLo),y
-                jmp PlaySfx
+                jsr PlaySfx
+                iny
+                lda (wpnLo),y                   ;If player, drain battery from attacks
+                jmp DrainBattery
 AH_InsideWall:  jsr RemoveActor
                 ldx actIndex
                 rts

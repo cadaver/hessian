@@ -168,7 +168,7 @@ SetPanelRedrawItemAmmo:
                 SKIP2
 SetPanelRedrawAmmo:
                 lda #REDRAW_AMMO
-                ora panelUpdateFlags
+SetPanelRedraw: ora panelUpdateFlags
                 sta panelUpdateFlags
 RI_NotFound:    rts
 
@@ -264,15 +264,28 @@ UseItem:        lda actHp+ACTI_PLAYER           ;Can't use/reload after dying
                 bcc UI_Reload
                 cmp #ITEM_MEDKIT
                 beq UseMedKit
+                cmp #ITEM_BATTERY
+                beq UseBattery
 UI_Dead:
+UB_FullBattery:
 UMK_FullHealth: rts
+UseBattery:     lda battery+1
+                cmp #MAX_BATTERY
+                bcs UB_FullBattery
+                adc #MAX_BATTERY/2
+                cmp #MAX_BATTERY
+                bcc UB_NotOver
+                lda #$00
+                sta battery
+                lda #MAX_BATTERY
+UB_NotOver:     sta battery+1
+                bne UMK_PlaySound
 UseMedKit:      lda #HP_PLAYER
                 cmp actHp+ACTI_PLAYER
                 beq UMK_FullHealth
                 sta actHp+ACTI_PLAYER
-                lda #SFX_POWERUP
+UMK_PlaySound:  lda #SFX_POWERUP
                 jsr PlaySfx
-                jsr FlashHealthBar
 UI_ReduceAmmo:  lda #USEITEM_ATTACK_DELAY       ;In case the item is removed, give an
                 sta actAttackD+ACTI_PLAYER      ;attack delay to prevent accidental
                 jmp DecreaseAmmoOne             ;fire if a weapon becomes selected next

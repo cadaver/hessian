@@ -335,6 +335,8 @@ MoveEMP:        lda actTime,x                   ;TODO: should possibly not manip
                 bne MEMP_ColorDone
 MEMP_Restore:   jsr SetZoneColors
 MEMP_ColorDone: jsr RadiusDamage
+                lda #DRAIN_EMP                  ;EMP also damages player battery charge
+                jsr DrainBatteryNoCheck
                 lda actSX,x
                 jsr MoveActorX
                 lda #1

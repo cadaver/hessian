@@ -18,8 +18,7 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtGrenade
                 dc.b <txtHomingDrone
                 dc.b <txtMedKit
-                dc.b <txtCredits
-
+                dc.b <txtBattery
 
 itemNameHi:     dc.b >txtFists
                 dc.b >txtKnife
@@ -39,7 +38,7 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtGrenade
                 dc.b >txtHomingDrone
                 dc.b >txtMedKit
-                dc.b >txtCredits
+                dc.b >txtBattery
 
 txtFists:       dc.b "FISTS",0
 txtKnife:       dc.b "COMBAT KNIFE",0
@@ -59,7 +58,7 @@ txtBazooka:     dc.b "BAZOOKA",0
 txtGrenade:     dc.b "GRENADES",0
 txtHomingDrone: dc.b "HOMING DRONE",0
 txtMedKit:      dc.b "MEDKIT",0
-txtCredits:     dc.b "CREDITS",0
+txtBattery:     dc.b "BATTERY",0
 
         ; Game messages
 
@@ -67,9 +66,9 @@ txtPickedUp:    dc.b "GOT ",0
 txtRequired:    dc.b "NEED ",0
 txtInf:         dc.b "*INF"
 txtLoad:        dc.b "LOAD"
-txtPauseResume: dc.b " RESUME GAME",0
-txtPauseRetry:  dc.b " CONTINUE   ",0
-txtPauseSave:   dc.b "  SAVE&EXIT",0
+txtPauseResume: dc.b " RESUME",0
+txtPauseRetry:  dc.b " RETRY",0
+txtPauseSave:   dc.b "SAVE&EXIT",0
 
         ; System messages
 

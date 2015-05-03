@@ -84,9 +84,6 @@ LL_CopyLevelProperties:
                 sta lvlPropertiesStart,x
                 dex
                 bpl LL_CopyLevelProperties
-                lda lvlLoadWaterSplashColor
-                sta waterSplashColor1
-                sta waterSplashColor2
                 stx autoDeactObjNum             ;Reset object auto-deactivation (X=$ff)
 LL_ActorMode:   lda #$00                        ;Check if should copy leveldata actors
                 bpl LL_SkipLevelDataActors
@@ -651,13 +648,24 @@ ULO_PlayerDead
 AAOG_Done:      rts
 
         ; Update level objects. Handle operation, auto-deactivation and actually entering doors.
-        ; Also check for picking up items and player health regeneration
+        ; Also check for picking up items, player health regeneration and incrementing game clock
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
 UpdateLevelObjects:
+                ldx #$03
+                sec
+ULO_IncreaseTime:
+                lda time,x                      ;time+3 = frames
+                adc #$00                        ;time = hours
+                cmp timeMaxTbl,x
+                bcc ULO_TimeNotOver
+                lda #$00
+ULO_TimeNotOver:sta time,x                      ;Note: game time is also increased while paused
+                dex                             ;to mark total session length including time spent
+                bpl ULO_IncreaseTime            ;reading dialogue
                 lda menuMode
                 cmp #MENU_PAUSE
                 bcs ULO_IsPaused
@@ -672,22 +680,29 @@ ULO_NoAutoDeact:lda actHp+ACTI_PLAYER           ;Restore health if not dead and 
                 beq ULO_PlayerDead              ;full health
                 cmp #HP_PLAYER
                 bcs ULO_CheckPickup
+                lda battery+1                   ;No recharge if low battery
+                cmp #LOW_BATTERY
+                bcc ULO_CheckPickup
                 lda healthRecharge
 ULO_HealthRechargeRate:
                 adc #INITIAL_HEALTHRECHARGETIMER
                 bcc ULO_NoRecharge
+                lda #DRAIN_RESTOREHEALTH
+                jsr DrainBatteryNoCheck
                 inc actHp+ACTI_PLAYER
                 lda #HEALTHRECHARGETIMER_RESET  ;Recharge faster after first unit
 ULO_NoRecharge: sta healthRecharge
 ULO_CheckPickup:ldx #ACTI_PLAYER
                 lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
-                cmp limitD
+                cmp limitD                      ;or if battery runs out
                 bcc ULO_NotOutside
-                beq ULO_NotOutside
-                jmp DestroyActor
-ULO_NotOutside:                                 ;Check if player is colliding with an item
-ULO_CheckPickupIndex:                           ;If was at an item last frame, continue search
-                ldy #ACTI_FIRSTITEM             ;from it
+                beq ULO_Outside
+ULO_NotOutside: lda battery
+                ora battery+1
+                bne ULO_CheckPickupIndex
+ULO_Outside:    jmp DestroyActor
+ULO_CheckPickupIndex:                           ;Check if player is colliding with an item
+                ldy #ACTI_FIRSTITEM             ;If was at an item last frame, continue search from that
 ULO_CheckPickupLoop:
                 lda actT,y
                 beq ULO_CPNoItem

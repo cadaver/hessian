@@ -154,9 +154,9 @@ shiftEndTbl:    dc.b 79,79,78
                 dc.b 39,39,38
 
 pauseMenuArrowPosTbl:
-                dc.b 8,21
+                dc.b 9,20
 
-itemFlashTbl:   dc.b 10,7,1,7
+itemFlashTbl:   dc.b 7,10,7,1
 
                 org nextSliceTbl+$100
 
@@ -348,3 +348,5 @@ routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
 shiftOffsetTbl: dc.b 6,6,6
                 dc.b 0,0,0
                 dc.b 6,6,6
+healthBarPosTbl:dc.b 11,23
+timeMaxTbl:     dc.b 99,60,60,25

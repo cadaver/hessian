@@ -23,7 +23,7 @@ ACT_SPEECHBUBBLE = 21
 ACT_TESTNPC     = 22
 ACT_TESTENEMY   = 23
 
-HP_PLAYER       = 48
+HP_PLAYER       = 56
 HP_ENEMY        = 12
 
 ITEM_OWNWEAPON = 0
@@ -156,7 +156,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b 0                          ;Left frame add
                 dc.b 19                         ;Number of frames
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 11,12,13,14,15,16,17
+                dc.b 11,12,13,14,15,16,17,18
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -248,14 +248,12 @@ adSmokeTrail:   dc.b ONESPRITE                  ;Number of sprites
                 dc.b 35,36                      ;Frametable (first all frames of sprite1, then sprite2)
 
 adWaterSplash:  dc.b ONESPRITE                  ;Number of sprites
-waterSplashColor1:
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 5                          ;Number of frames
                 dc.b 48,49,50,51,52             ;Frametable (first all frames of sprite1, then sprite2)
 
 adSmallSplash:  dc.b ONESPRITE                  ;Number of sprites
-waterSplashColor2:
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
@@ -325,13 +323,13 @@ actLogicTblHi:  dc.b >alPlayer
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
-                dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK ;Actor flags
+                dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
                 dc.b HP_PLAYER                  ;Initial health
 plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
-                dc.b 0                          ;XP from kill
+                dc.w 0                          ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly + persistence disable
                 dc.b ITEM_NONE                  ;Itemdrop table index or item override
                 dc.b $ff                        ;AI offense probability
@@ -468,7 +466,7 @@ alNPC:          dc.w MoveAIHuman                ;Update routine
                 dc.b 0                          ;Size down
                 dc.b HP_ENEMY                   ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.b 2                          ;XP from kill
+                dc.w 0                          ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly + persistence disable
                 dc.b DROP_WEAPONMEDKITCREDITS   ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense accumulator
@@ -492,7 +490,7 @@ alEnemy:        dc.w MoveAIHuman                ;Update routine
                 dc.b 0                          ;Size down
                 dc.b HP_ENEMY                   ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.b 2                          ;XP from kill
+                dc.w 25                         ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly + persistence disable
                 dc.b DROP_WEAPONMEDKITCREDITS   ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense accumulator

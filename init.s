@@ -49,11 +49,11 @@ LoadOptionsDone:
 
         ; Initialize panel text printing
 
-                lda #8
+                lda #9
                 sta textLeftMargin
-                lda #32
+                lda #31
                 sta textRightMargin
-                lda #REDRAW_ITEM+REDRAW_AMMO
+                lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE
                 sta panelUpdateFlags
 
         ;Initialize the sprite multiplexing system
@@ -173,6 +173,8 @@ IVid_InitScorePanel:
 
                 lda #HP_PLAYER                  ;Init health & fists item immediately
                 sta actHp+ACTI_PLAYER           ;even before starting the game so that
+                lda #MAX_BATTERY
+                sta battery+1
                 lda #ITEM_FISTS                 ;the panel looks nice
                 sta invType
 
@@ -219,24 +221,29 @@ textCharsCopy:  incbin bg/scorescr.chr
 
         ; Scorepanel screen/color data (overwritten)
 
-scorePanel:     dc.b 35,"      ",35,"                        ",35,91,92,"    ",35
+scorePanel:     dc.b 35,"       ",35,"                      ",35,"       ",35
                 dc.b 36
-                ds.b 6,61
-                dc.b 104
-                ds.b 24,61
-                dc.b 104
-                ds.b 6,61
-                dc.b 105
+                ds.b 7,40
+                dc.b 41,40,104,61,61,61,61,61,61,61
+                ds.b 4,40
+                dc.b 105,61,61,61,61,61,61,61,40,41
+                ds.b 7,40
+                dc.b 59
 
 scorePanelColors:
                 dc.b 11
-                ds.b 6,13
+                ds.b 7,1
                 dc.b 11
-                ds.b 24,1
+                ds.b 22,1
                 dc.b 11
-                ds.b 2,8
-                ds.b 4,1
+                ds.b 7,1
                 dc.b 11
-                ds.b 40,11
-                
+                ds.b 10,11
+                dc.b 1
+                ds.b 7,9
+                ds.b 4,11
+                dc.b 1
+                ds.b 7,9
+                ds.b 10,11
+
                 org scriptCodeEnd

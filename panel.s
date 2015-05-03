@@ -5,15 +5,63 @@ MENU_MOVEDELAY  = 3
 
 INDEFINITE_TEXT_DURATION = $7f
 INVENTORY_TEXT_DURATION = 50
-XP_TEXT_DURATION = 50
 
 REDRAW_ITEM     = $01
 REDRAW_AMMO     = $02
+REDRAW_SCORE    = $04
 
 MENU_NONE       = 0
 MENU_INVENTORY  = 1
 MENU_PAUSE      = 2
 MENU_DIALOGUE   = 3
+
+HEALTHBAR_LENGTH = 7
+
+        ; Subroutine to animate & draw a health bar
+        ;
+        ; Parameters: A value to display, X healthbar index (0 = health, 1 = battery), Y position
+        ; Returns: -
+        ; Modifies: A,X,Y,temp1-temp2
+
+DrawHealthBar:  cmp displayedHealth,x
+                beq DHB_Done
+                bcc DHB_Decrement
+DHB_Increment:  inc displayedHealth,x
+                skip2
+DHB_Decrement:  dec displayedHealth,x
+                lda healthBarPosTbl,x           ;Start position
+                tay
+                clc
+                adc #HEALTHBAR_LENGTH           ;End position
+                sta temp2
+                lda displayedHealth,x
+                lsr
+                lsr
+                clc
+                adc healthBarPosTbl,x
+                sta temp1                       ;Whole chars end position
+                lda #109
+DHB_WholeCharsLoop:
+                cpy temp1
+                bcs DHB_WholeCharsDone
+                sta panelScreen+24*40,y
+                iny
+                bne DHB_WholeCharsLoop
+DHB_WholeCharsDone:
+                lda displayedHealth,x
+                and #$03
+                beq DHB_NoHalfChar
+                adc #104                        ;C=1
+                sta panelScreen+24*40,y
+                iny
+DHB_NoHalfChar: lda #61
+DHB_EmptyCharsLoop:
+                cpy temp2
+                bcs DHB_Done
+                sta panelScreen+24*40,y
+                iny
+                bne DHB_EmptyCharsLoop
+DHB_Done:       rts
 
         ; Finish frame. Update frame and update score panel
         ;
@@ -31,55 +79,33 @@ FinishFrame:    jsr UpdateFrame
 
 UpdatePanel:    lda actHp+ACTI_PLAYER
                 lsr
-                cmp displayedHealth
-                beq UP_HealthDone
-                bcs UP_IncrementHealth
-UP_DecrementHealth:
-                dec displayedHealth
-                skip2
-UP_IncrementHealth:
-                inc displayedHealth
-UP_RedrawHealth:ldx #$00
-                lda displayedHealth
-                lsr
-                lsr
-                beq UP_NoWholeChars
-                sta zpSrcLo
-                lda #109
-UP_WholeCharsLoop:
-                sta panelScreen+23*40+1,x
-                inx
-                cpx zpSrcLo
-                bcc UP_WholeCharsLoop
-UP_NoWholeChars:lda displayedHealth
-                and #$03
-                beq UP_NoHalfChar
-                clc
-                adc #105
-                sta panelScreen+23*40+1,x
-                inx
-UP_NoHalfChar:  lda #$20
-                bne UP_EmptyCharsCmp
-UP_EmptyCharsLoop:
-                sta panelScreen+23*40+1,x
-                inx
-UP_EmptyCharsCmp:
-                cpx #HP_PLAYER/8
-                bcc UP_EmptyCharsLoop
-UP_HealthDone:
-UP_HealthColor: ldy #$ff
-                bmi UP_HealthColorDone
-                lda healthFlashTbl,y
-                ldx #$05
-UP_HealthColorLoop:
-                sta colors+23*40+1,x
-                dex
-                bpl UP_HealthColorLoop
-                dec UP_HealthColor+1
-UP_HealthColorDone:
-                lda panelUpdateFlags
-                lsr
+                ldx #$00
+                jsr DrawHealthBar
+                lda battery
+                cmp #$01
+                lda battery+1                   ;Add lowbyte to the displayed value
+                adc #$00                        ;so that decrementing goes smoothly
+                ldx #$01
+                jsr DrawHealthBar
+                if SHOW_BATTERY > 0
+                ldx #4
+                lda battery+1
+                jsr PrintHexByte
+                lda battery
+                jsr PrintHexByte
+                endif
+                lsr panelUpdateFlags
                 bcc UP_SkipWeapon
+                ldx #91
+                stx panelScreen+23*40+32
+                inx
+                stx panelScreen+23*40+33
+                inx
+                stx panelScreen+23*40+34
+                lda #$08
+                sta colors+23*40+32
+                sta colors+23*40+33
+                sta colors+23*40+34
                 ldy itemIndex
                 ldx invType,y
                 lda itemFrames,x
@@ -103,20 +129,22 @@ UP_HealthColorDone:
                 lsr zpBitBuf
                 inx
                 jsr UP_DrawSlice
-UP_SkipWeapon:  lda panelUpdateFlags
-                and #REDRAW_AMMO
-                beq UP_SkipAmmo
+                lsr zpBitBuf
+                inx
+                jsr UP_DrawSlice
+UP_SkipWeapon:  lsr panelUpdateFlags
+                bcc UP_SkipAmmo
                 ldy itemIndex
                 ldx invType,y
                 lda itemMagazineSize-1,x
-                sta temp4
+                sta temp2
                 beq UP_Consumable
                 bmi UP_MeleeWeapon
 UP_Firearm:     lda plrReload
                 bne UP_Reloading
                 lda invMag,y                    ;Print rounds in magazine
                 jsr ConvertToBCD8
-                lda temp7
+                lda temp6
                 ldx #35
                 jsr PrintBCDDigits
                 lda #"/"
@@ -125,7 +153,7 @@ UP_Firearm:     lda plrReload
                 lda invCount,y                  ;Get ammo in reserve
                 sec
                 sbc invMag,y
-                ldy temp4
+                ldy temp2
                 ldx #temp7
                 jsr DivU                        ;Divide by magazine size, add one
                 cmp #$01                        ;if there's a remainder
@@ -159,9 +187,22 @@ UP_MeleeWeaponLoop:
                 dey
                 dex
                 bpl UP_MeleeWeaponLoop
-UP_SkipAmmo:    lda #$00
-                sta panelUpdateFlags
-                lda textTime
+UP_SkipAmmo:    lsr panelUpdateFlags
+                bcc UP_SkipScore
+                lda score
+                ldx score+1
+                ldy score+2
+                jsr ConvertToBCD24
+                ldx #1
+                lda temp8
+                jsr PrintBCDDigits
+                lda temp7
+                jsr PrintBCDDigits
+                lda temp6
+                jsr PrintBCDDigits
+                lda #"0"                        ;The final 0 is fixed, ie. score is internally stored
+                jsr PrintPanelChar              ;as divided by 10
+UP_SkipScore:   lda textTime
                 beq UP_TextDone
                 cmp #INDEFINITE_TEXT_DURATION*2
                 bcs UP_TextDone
@@ -178,7 +219,7 @@ UP_TextDone:    rts
 UM_RedrawNone:
 ClearPanelText: ldx #$00
                 ldy #$00
-                skip2
+                beq PrintPanelText
 
         ; Print text to panel, possibly multi-line
         ;
@@ -285,7 +326,7 @@ ContinuePanelText:
                 ldx zpBitsLo
                 jmp UP_ContinueText
 
-        ; Update menu system (inventory) in the panel. Also handle XP messages and leveling up
+        ; Update menu system (inventory / pause / dialogue) in the panel.
         ;
         ; Parameters: -
         ; Returns: -
@@ -353,6 +394,8 @@ UM_NoCounter:   ldy itemIndex
                 beq UM_Reload
                 cmp #KEY_M
                 beq UM_Medkit
+                cmp #KEY_B
+                beq UM_Battery
                 if ITEM_CHEAT>0
                 cmp #KEY_Z
                 beq UM_PrevItem
@@ -361,6 +404,8 @@ UM_NoCounter:   ldy itemIndex
                 endif
 UM_ControlDone: rts
 UM_Medkit:      lda #ITEM_MEDKIT
+                skip2
+UM_Battery:     lda #ITEM_BATTERY
                 jsr FindItem
                 bcc UM_ControlDone
 UM_Reload:      jmp UseItem
@@ -511,12 +556,12 @@ UM_DrawSelectionArrows:
                 cpx #$00
                 beq UM_NoLeftArrow
                 lda #60
-UM_NoLeftArrow: sta panelScreen+23*40+8
+UM_NoLeftArrow: sta panelScreen+23*40+9
                 lda #$20
                 cpy #$00
                 beq UM_NoRightArrow
                 lda #62
-UM_NoRightArrow:sta panelScreen+23*40+31
+UM_NoRightArrow:sta panelScreen+23*40+30
                 jmp SetPanelRedrawItemAmmo      ;Redraw item & ammo next time panel is updated
 
         ; Pause menu
@@ -529,6 +574,8 @@ UM_RedrawPauseMenu:
                 lda #<txtPauseRetry
                 ldx #>txtPauseRetry
 UM_PauseTextOK: jsr PrintPanelTextIndefinite
+                lda #21
+                sta zpBitsLo
                 lda #<txtPauseSave
                 ldx #>txtPauseSave
                 jsr ContinuePanelText
@@ -572,18 +619,15 @@ MC_NormalDelay: stx menuMoveDelay
                 lsr
                 rts
 
-ConvertAndPrint3BCDDigits:
-                jsr ConvertToBCD16
-
         ; Print a 3-digit BCD value to panel
         ;
-        ; Parameters: temp7-temp8 value, X position
+        ; Parameters: temp6-temp7 value, X position
         ; Returns: X position incremented
         ; Modifies: A
 
-Print3BCDDigits:lda temp8
+Print3BCDDigits:lda temp7
 PBCD_3DigitsOK: jsr PrintBCDDigit
-                lda temp7
+                lda temp6
 
         ; Print a BCD value to panel
         ;
@@ -608,42 +652,25 @@ PrintPanelChar: sta panelScreen+23*40,x
                 inx
                 rts
 
-        ; Print a 3-digit BCD value to panel without leading zeroes
-        ;
-        ; Parameters: temp7-temp8 value, X position
-        ; Returns: X position incremented
-        ; Modifies: A
-
-Print3BCDDigitsNoZeroes:
-                lda temp8
-                bne PBCD_3DigitsOK
-
-        ; Print a 2-digit BCD value to panel without leading zeroes
-        ;
-        ; Parameters: temp7-temp8 value, X position
-        ; Returns: X position incremented
-        ; Modifies: A
-
-PrintBCDDigitsNoZeroes:
-                lda temp7
-                cmp #$10
-                bcs PrintBCDDigits
-                bcc PrintBCDDigit
-
         ; Convert a 8-bit value to BCD
         ;
         ; Parameters: A value
-        ; Returns: temp7-temp8 BCD value
-        ; Modifies: A,Y,temp5-temp8
+        ; Returns: temp6-temp8 BCD value
+        ; Modifies: A,Y,temp3-temp8
 
-ConvertToBCD8:  sta temp6
+ConvertToBCD8:  sta temp5
                 ldy #$08
 CTB_Common:     lda #$00
+                sta temp6
                 sta temp7
                 sta temp8
                 sed
-CTB_Loop:       asl temp5
-                rol temp6
+CTB_Loop:       asl temp3
+                rol temp4
+                rol temp5
+                lda temp6
+                adc temp6
+                sta temp6
                 lda temp7
                 adc temp7
                 sta temp7
@@ -655,23 +682,25 @@ CTB_Loop:       asl temp5
                 cld
                 rts
 
-        ; Convert a 16-bit value to BCD (max. 4 digits)
+        ; Convert a 16-bit value to BCD
         ;
         ; Parameters: A,Y value
-        ; Returns: temp7-temp8 BCD value
-        ; Modifies: A,Y,temp5-temp8
+        ; Returns: temp6-temp8 BCD value
+        ; Modifies: A,Y,temp3-temp8
 
-ConvertToBCD16: sta temp5
-                sty temp6
+ConvertToBCD16: sta temp4
+                sty temp5
                 ldy #$10
                 bne CTB_Common
 
-        ; Request flashing of the health bar
+        ; Convert a 24-bit value to BCD
         ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: Y
+        ; Parameters: A,X,Y value
+        ; Returns: temp6-temp8 BCD value
+        ; Modifies: A,Y,temp3-temp8
 
-FlashHealthBar: ldy #$02
-                sty UP_HealthColor+1
-                rts
+ConvertToBCD24: sta temp3
+                stx temp4
+                sty temp5
+                ldy #$18
+                bne CTB_Common

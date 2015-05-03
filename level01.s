@@ -21,7 +21,6 @@ UpdateLevel:    rts
 
                 org lvlLoadWaterDamage
                 dc.b 0                          ;Water damage
-                dc.b 0                          ;Water splash color override
 
                 org blockInfo
                 incbin bg/level01.bli

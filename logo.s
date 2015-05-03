@@ -25,11 +25,12 @@ txtInstructions:dc.b "USE JOYSTICK IN PORT 2 AND KEYS",0
                 dc.b ", .     SELECT ITEM",0
                 dc.b $80+11,"R       RELOAD",0
                 dc.b $80+11,"M       USE MEDKIT",0
+                dc.b $80+11,"B       USE BATTERY",0
                 dc.b "RUNSTOP PAUSE MENU",0
                 dc.b 0
 
 txtInstructions2:
-                dc.b "MOVEMENT CONTROLS (FIRE NOT PRESSED)",0
+                dc.b "MOVEMENT CONTROLS - FIRE NOT PRESSED",0
                 dc.b 0
                 dc.b "JUMP  JUMP/CLIMB UP/ACTIVATE  JUMP",0
                 dc.b 0

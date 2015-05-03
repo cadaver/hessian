@@ -37,21 +37,21 @@ AL_SIZEUP       = 6
 AL_SIZEDOWN     = 7
 AL_INITIALHP    = 8
 AL_DMGMODIFY    = 9
-AL_KILLXP       = 10
-AL_SPAWNAIMODE  = 11
-AL_DROPITEMINDEX = 12
-AL_OFFENSE      = 13
-AL_DEFENSE      = 14
-AL_MOVEFLAGS    = 15
-AL_MOVESPEED    = 16
-AL_GROUNDACCEL  = 17
-AL_INAIRACCEL   = 18
-AL_FALLACCEL    = 19                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 20                          ;Gravity acceleration in longjump
-AL_BRAKING      = 21
-AL_HEIGHT       = 22                           ;Height for headbump check, negative
-AL_JUMPSPEED    = 23                           ;Negative
-AL_CLIMBSPEED   = 24
+AL_SCORE        = 10
+AL_SPAWNAIMODE  = 12
+AL_DROPITEMINDEX = 13
+AL_OFFENSE      = 14
+AL_DEFENSE      = 15
+AL_MOVEFLAGS    = 16
+AL_MOVESPEED    = 17
+AL_GROUNDACCEL  = 18
+AL_INAIRACCEL   = 19
+AL_FALLACCEL    = 20                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 21                          ;Gravity acceleration in longjump
+AL_BRAKING      = 22
+AL_HEIGHT       = 23                           ;Height for headbump check, negative
+AL_JUMPSPEED    = 24                           ;Negative
+AL_CLIMBSPEED   = 25
 
 GRP_NONE        = $00                           ;Does not collide/take damage
 GRP_HEROES      = $01
@@ -102,16 +102,7 @@ SPAWNINFRONT_PROBABILITY = $c0
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor ZP temp vars
 
-DrawActors:     inc DA_ItemFlashCounter+1
-DA_ItemFlashCounter:                            ;Get color override for items + object marker
-                lda #$00
-                lsr
-                lsr
-                and #$03
-                tax
-                lda itemFlashTbl,x
-                sta FlashActor+1
-                lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
+DrawActors:     lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
                 sta IA_PrevScrollX+1
                 lda scrollY
                 sta IA_PrevScrollY+1
@@ -523,11 +514,33 @@ CN_Done:        rts
 UA_Paused:      ldx #$00                        ;Stop scrolling & level animation when paused
                 stx scrollSX                    ;and only interpolate
                 stx scrollSY
-                beq InterpolateActors
+                jmp InterpolateActors
 
 UpdateActors:   lda menuMode
                 cmp #MENU_PAUSE
                 bcs UA_Paused
+                inc UA_ItemFlashCounter+1
+UA_ItemFlashCounter:                            ;Get color override for items + object marker
+                lda #$00
+                lsr
+                lsr
+                and #$03
+                tax
+                lda itemFlashTbl,x
+                sta FlashActor+1
+                and #$07
+                tax
+                ldy actHp+ACTI_PLAYER           ;Flash the H & C letters if health or battery low
+                cpy #LOW_HEALTH
+                bcc UA_FlashHealth
+                lda #$01
+UA_FlashHealth: sta colors+24*40+10
+                txa
+                ldy battery+1
+                cpy #LOW_BATTERY
+                bcc UA_FlashBattery
+                lda #$01
+UA_FlashBattery:sta colors+24*40+22
                 ldx #MAX_ACT-1
                 stx Irq4_LevelUpdate+1          ;Enable level animation when unpaused
 UA_Loop:        ldy actT,x
@@ -1291,9 +1304,8 @@ DA_UseModify:   pha
                 jsr ModifyDamage
 DA_SkipModify:  cpx #ACTI_PLAYER
                 bne DA_NotPlayer
-DA_RuntimeHealthCheat:
+DA_ResetRecharge:
                 stx healthRecharge              ;If player hit, reset health recharge timer
-                jsr FlashHealthBar              ;Also flash the health bar
 DA_NotPlayer:   sta temp8
                 lda actHp,x                     ;First check that there is health
                 beq DA_Done                     ;(prevent destroy being called multiple times)
@@ -1326,8 +1338,16 @@ DestroyActor:   sty DA_DamageSrc+1
                 iny
                 lda (actLo),y
                 sta DA_Jump+2
-                bcs DA_NoScore                  ;TODO: give points if damage source is a player bullet
-DA_NoScore      ldy #AT_DESTROY                 ;Run the DESTROY trigger
+                bcs DA_NoScore
+                ldy #AL_SCORE
+                lda (actLo),y
+                pha
+                iny
+                lda (actLo),y
+                tay
+                pla
+                jsr AddScore
+DA_NoScore:     ldy #AT_DESTROY                 ;Run the DESTROY trigger
                 jsr ActorTrigger
 DA_DamageSrc:   ldy #$00
 DA_Jump:        jsr $0000
