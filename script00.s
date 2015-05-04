@@ -14,8 +14,6 @@ SAVE_GAME       = 1
 TITLE_MOVEDELAY = 8
 TITLE_PAGEDELAY = 561
 
-SAVEDESCSIZE    = 24
-
 CHEATSTRING_LENGTH = 4
 
 logoStart       = chars
@@ -40,9 +38,9 @@ START_Y         = $0400
                 dc.w TitleScreen
 
 TitleScreen:    jsr BlankScreen
-                lda #$00                        ;Ensure the "none" panel mode
-                sta menuMode                    ;(show healthbars)
-                jsr UM_RedrawNone
+                jsr UM_RedrawNone               ;Clear all title text
+                lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE ;Redraw all
+                sta panelUpdateFlags
                 jsr InitScroll                  ;Make sure no scrolling
 
         ; Load logo chars & clear screen
@@ -113,7 +111,7 @@ SaveGameExec:   jsr FadeOutText
                 lda saveSlotChoice
                 jsr GetSaveListPos
                 ldx #$00
-CopySaveDesc:   lda saveStateStart,x            ;Copy levelname to the savegamelist (TODO: score)
+CopySaveDesc:   lda saveStateStart,x            ;Copy levelname + time to the savegamelist
                 sta saveList,y
                 iny
                 inx
@@ -265,7 +263,7 @@ LoadTextOK:     jsr PrintTextCenter
                 sta temp2
                 jsr ScanSaves
                 jsr ResetPage
-LoadGameLoop:   lda #10
+LoadGameLoop:   lda #6
                 sta temp1
                 lda saveSlotChoice
                 ldx #MAX_SAVES+1
@@ -510,7 +508,7 @@ ScanSaves:      lda #F_SAVELIST                 ;Load the savegamelist which con
                 jsr MakeFileName_Direct         ;from all savegames
                 jsr OpenFile
                 lda #0
-                sta temp3
+                sta actIndex
                 ldx #1                          ;Always select "continue" in main menu after load/save
                 stx mainMenuChoice
                 ldx saveSlotChoice              ;If "cancel" selected last time, select first slot instead
@@ -523,9 +521,9 @@ ReadSaveList:   jsr GetByte
                 sta saveList,x
                 inx
                 bcc ReadSaveList
-ScanSaveLoop:   lda #12
+ScanSaveLoop:   lda #8
                 sta temp1
-                lda temp3
+                lda actIndex
                 jsr GetSaveListPos
                 sty temp8
                 lda saveList,y
@@ -534,8 +532,8 @@ ScanSaveLoop:   lda #12
                 ldx #>txtEmpty
                 jsr PrintText
 SaveDone:       inc temp2
-                inc temp3
-                lda temp3
+                inc actIndex
+                lda actIndex
                 cmp #MAX_SAVES
                 bcc ScanSaveLoop
                 lda #<txtCancel
@@ -548,6 +546,28 @@ GetSaveDescription:
                 lda #>saveList
                 adc #$00
                 sta zpSrcHi
+                ldy #16                         ;Time hours
+                lda (zpSrcLo),y
+                jsr ConvertToBCD8
+                ldx #0
+                jsr PrintTimeBCD1
+                ldy #17                         ;Time minutes
+                lda (zpSrcLo),y
+                jsr ConvertToBCD8
+                ldx #2
+                jsr PrintTimeBCD2
+                ldy #18                         ;Time seconds
+                lda (zpSrcLo),y
+                jsr ConvertToBCD8
+                ldx #5
+                jsr PrintTimeBCD2
+                jsr PrintTextContinue
+                lda #<txtTime
+                sta zpSrcLo
+                lda #>txtTime
+                sta zpSrcHi
+                lda #25
+                sta temp1
                 jsr PrintTextContinue
                 jmp SaveDone
 
@@ -737,13 +757,28 @@ GetRowAddress:  lda #40
 
         ; Get index of entry A in savegamelist
 
-GetSaveListPos: sta temp8
+GetSaveListPos: asl
+                asl
+                sta temp8
+                asl
                 asl
                 adc temp8
-                asl
-                asl
-                asl
                 tay
+                rts
+
+        ; Print BCD digits to the time string
+
+PrintTimeBCD2:  lda temp6
+                lsr
+                lsr
+                lsr
+                lsr
+                jsr PTBCD1_NoAnd
+PrintTimeBCD1:  lda temp6
+                and #$0f
+PTBCD1_NoAnd:   ora #$30
+                sta txtTime,x
+                inx
                 rts
 
 logoFade:       dc.b 0
@@ -774,6 +809,7 @@ txtLoadSlot:    dc.b "LOAD GAME FROM",0
 txtSaveSlot:    dc.b "SAVE GAME TO",0
 txtEmpty:       dc.b "EMPTY SLOT",0
 txtCancel:      dc.b "CANCEL",0
+txtTime:        dc.b "0:00:00",0
 
 mainMenuJumpTblLo:
                 dc.b <StartNewGame

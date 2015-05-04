@@ -143,9 +143,8 @@ UP_Firearm:     lda plrReload
                 bne UP_Reloading
                 lda invMag,y                    ;Print rounds in magazine
                 jsr ConvertToBCD8
-                lda temp6
                 ldx #35
-                jsr PrintBCDDigits
+                jsr PrintBCDDigitsLSB
                 lda #"/"
                 jsr PrintPanelChar
                 ldy itemIndex
@@ -197,8 +196,7 @@ UP_SkipAmmo:    lsr panelUpdateFlags
                 jsr PrintBCDDigits
                 lda temp7
                 jsr PrintBCDDigits
-                lda temp6
-                jsr PrintBCDDigits
+                jsr PrintBCDDigitsLSB
                 lda #"0"                        ;The final 0 is fixed, ie. score is internally stored
                 jsr PrintPanelChar              ;as divided by 10
 UP_SkipScore:   lda textTime
@@ -486,6 +484,7 @@ UM_LUNoFire:    rts
         ; Pause menu
 
 UM_PauseMenuExit:
+                jsr SetPanelRedrawItemAmmo      ;Erase the time display when exiting pause menu
                 ldx #MENU_NONE
                 beq SetMenuMode2
 UM_PauseMenuLeft:
@@ -566,13 +565,25 @@ UM_NoRightArrow:sta panelScreen+23*40+30
         ; Pause menu
 
 UM_RedrawPauseMenu:
-                lda #<txtPauseResume
-                ldx #>txtPauseResume
-                ldy actHp+ACTI_PLAYER
-                bne UM_PauseTextOK
                 lda #<txtPauseRetry
                 ldx #>txtPauseRetry
-UM_PauseTextOK: jsr PrintPanelTextIndefinite
+                ldy actHp+ACTI_PLAYER           ;Player alive?
+                beq UM_PauseRetryText
+                lda #$00
+                sta panelUpdateFlags
+                lda time                        ;Print game time over the weapon/ammo display if alive
+                jsr ConvertToBCD8
+                ldx #32
+                lda temp6
+                jsr PrintBCDDigit
+                lda time+1
+                jsr PrintTimeSub
+                lda time+2
+                jsr PrintTimeSub
+                lda #<txtPauseResume
+                ldx #>txtPauseResume
+UM_PauseRetryText:
+                jsr PrintPanelTextIndefinite
                 lda #21
                 sta zpBitsLo
                 lda #<txtPauseSave
@@ -591,6 +602,13 @@ UM_PauseMenuSpace:
                 bpl UM_PauseMenuArrowLoop
 UM_RedrawDialogue:
                 rts
+
+PrintTimeSub:   pha
+                lda #":"
+                jsr PrintPanelChar
+                pla
+                jsr ConvertToBCD8
+                jmp PrintBCDDigitsLSB
 
         ; Check for joystick left/right movement in menu, taking movement delay into account
         ;
@@ -625,7 +643,8 @@ MC_NormalDelay: stx menuMoveDelay
         ; Modifies: A
 
 Print3BCDDigits:lda temp7
-PBCD_3DigitsOK: jsr PrintBCDDigit
+                jsr PrintBCDDigit
+PrintBCDDigitsLSB:
                 lda temp6
 
         ; Print a BCD value to panel
@@ -640,8 +659,7 @@ PrintBCDDigits: pha
                 lsr
                 lsr
                 ora #$30
-                sta panelScreen+23*40,x
-                inx
+                jsr PrintPanelChar
                 pla
 PrintBCDDigit:  and #$0f
                 ora #$30

@@ -656,6 +656,10 @@ AAOG_Done:      rts
 
 UpdateLevelObjects:
                 ldx #$03
+                lda menuMode                    ;Increase time in ingame & dialogue, but not in pause
+                cmp #MENU_PAUSE
+                beq ULO_NoTime
+                php
                 sec
 ULO_IncreaseTime:
                 lda time,x                      ;time+3 = frames
@@ -666,9 +670,8 @@ ULO_IncreaseTime:
 ULO_TimeNotOver:sta time,x                      ;Note: game time is also increased while paused
                 dex                             ;to mark total session length including time spent
                 bpl ULO_IncreaseTime            ;reading dialogue
-                lda menuMode
-                cmp #MENU_PAUSE
-                bcs ULO_IsPaused
+                plp
+ULO_NoTime:     bcs ULO_IsPaused
                 ldy autoDeactObjNum
                 bmi ULO_NoAutoDeact
                 dec autoDeactObjCounter

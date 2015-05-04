@@ -16,8 +16,8 @@
         ; Player/world state
 
 playerStateStart:
-score:          ds.b 3,0
 time:           ds.b 4,0
+score:          ds.b 3,0
 battery:        ds.b 2,0
 invType:        ds.b MAX_INVENTORYITEMS,0
 invCount:       ds.b MAX_INVENTORYITEMS,0
@@ -57,8 +57,8 @@ playerStateEnd:
 
 saveStateStart:
 saveLvlName:    ds.b 16,0
-saveStateZP:    ds.b playerStateZPEnd - playerStateZPStart,0
 saveState:      ds.b playerStateEnd - playerStateStart,0
+saveStateZP:    ds.b playerStateZPEnd - playerStateZPStart,0
                 if OPTIMIZE_SAVE>0
 saveLvlActX:    ds.b MAX_GLOBALACT,0
 saveLvlActY:    ds.b MAX_GLOBALACT,0

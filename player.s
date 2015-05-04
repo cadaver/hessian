@@ -42,12 +42,12 @@ DIFFICULTY_EASY = 0
 DIFFICULTY_MEDIUM = 1
 DIFFICULTY_HARD = 2
 
-DROWNING_TIMER = 1
+DROWNING_TIMER  = 1
 DROWNING_TIMER_REPEAT = $f0
 
 MAX_BATTERY     = 56
-LOW_BATTERY = MAX_BATTERY/7*2
-LOW_HEALTH = HP_PLAYER/7*2
+LOW_BATTERY     = MAX_BATTERY/4
+LOW_HEALTH      = HP_PLAYER/4
 
 DRAIN_WALK      = 6                             ;When animation wraps
 DRAIN_SWIM      = 18                            ;When animation wraps
@@ -58,9 +58,9 @@ DRAIN_RESTOREHEALTH = 64
 DRAIN_MELEE     = 16
 DRAIN_HEAVYMELEE = 20
 DRAIN_THROW     = 24
-DRAIN_SHOOT     = 12
-DRAIN_SHOOTHEAVY = 16
-DRAIN_SHOOTAUTO = 8
+DRAIN_SHOOT     = 8
+DRAIN_SHOOTHEAVY = 12
+DRAIN_SHOOTAUTO = 6
 DRAIN_EMP       = 128
 
 
@@ -924,6 +924,7 @@ AddScore:       clc
                 sta score+1
                 bcc AS_Done
                 inc score+2
+SetPanelRedrawScore:
 AS_Done:        lda #REDRAW_SCORE
                 jmp SetPanelRedraw
 

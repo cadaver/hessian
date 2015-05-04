@@ -35,17 +35,17 @@ DROPTABLERANDOM = 8                             ;Pick random choice from 8 conse
 
         ; Enemy random item drops
 
-itemDropTable:  dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
+itemDropTable:  dc.b ITEM_MEDKIT
                 dc.b ITEM_MEDKIT
-                dc.b ITEM_MEDKIT
-                dc.b ITEM_MEDKIT
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_BATTERY
+                dc.b ITEM_BATTERY
                 dc.b ITEM_MEDKIT
 
         ; Player weapon damage bonus according to weapon skill
