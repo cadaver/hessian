@@ -53,7 +53,7 @@ RELOAD_FINISH_DELAY = 9                         ;Fixed delay before weapon can b
 
 AH_NoAttack:    lda actAttackD,x
                 beq AH_SetIdleWeaponFrame
-                bpl AH_DecrementDelay      ;Break incomplete melee attack
+                bpl AH_DecrementDelay           ;Break incomplete melee attack
                 lda #$01
                 sta actAttackD,x
 AH_DecrementDelay:
@@ -66,8 +66,8 @@ AH_SetIdleWeaponFrame:
                 ldy #WD_BACKFR
                 cmp #FR_ENTER
                 bcs AH_BackWeaponFrame
-                lda wpnBits                 ;Check for animation lock (for weapons with
-                and #WDB_LOCKANIMATION      ;backpack)
+                lda wpnBits                     ;Check for animation lock (for weapons with
+                and #WDB_LOCKANIMATION          ;backpack)
                 beq AH_NoLockAnimation
                 ldy #WD_LOCKANIMFRAME
                 lda (wpnLo),y
@@ -153,9 +153,6 @@ AH_NotExceeded: sta invMag,y
                 pha
                 ldy #WD_RELOADDELAY
                 lda (wpnLo),y
-AH_ReloadDelayBonus:
-                ldy #NO_MODIFY
-                jsr ModifyDamage
                 sta actAttackD+ACTI_PLAYER
                 pla
                 ldy #WD_RELOADSFX

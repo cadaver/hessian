@@ -347,24 +347,20 @@ IP_InitLevelData:
                 sta lvlDataActBits-1,x          ;Assume all leveldata-actors exist at start
                 dex
                 bne IP_InitLevelData
-                #if SKILL_CHEAT>0
-                lda #SKILL_CHEAT
-                ldx #4
-IP_SkillCheatLoop:
-                sta plrAgility,x
-                dex
-                bpl IP_SkillCheatLoop
-                endif
                 lda #ITEM_FISTS
                 sta invType                     ;1 = fists
                 jsr StopScript                  ;Stop any continuous script
                 lda #START_LEVEL
                 sta levelNum
-                lda #$00                        ;Set startposition
+                lda #$00
                 sta plrReload
                 sta battery
                 sta saveD
-                lda #<START_X
+                #if UPGRADE_CHEAT>0
+                lda #$ff
+                #endif
+                sta upgrade                     ;Reset upgrade status
+                lda #<START_X                   ;Set startposition
                 sta saveXL
                 lda #>START_X
                 sta saveXH
@@ -423,7 +419,7 @@ CC_ActivateCheat:
                 eor #$2f
                 sta DA_ResetRecharge
                 lda DA_ResetRecharge+1
-                eor #<healthRecharge
+                eor #<healTimer
                 sta DA_ResetRecharge+1
                 lda DrainBatteryNoCheck
                 eor #$ed

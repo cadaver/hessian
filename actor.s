@@ -1254,7 +1254,6 @@ DamageSelf:     ldy #NODAMAGESRC
                 pla
 ATD_Skip:       rts
 
-
         ; Modify damage based on whether target is organic/nonorganic, then apply
         ;
         ; Parameters: X bullet actor Y target actor
@@ -1271,6 +1270,10 @@ ApplyTargetDamage:
                 beq ATD_NonOrganic
 ATD_Organic:    lda temp7
                 and #$0f
+                cpy #ACTI_PLAYER                ;Difficulty-based mod on attacks on player
+                bne ATD_Common
+ATD_DifficultyMod:
+                adc #$00                        ;C=1 here
                 bpl ATD_Common
 ATD_NonOrganic: lda temp7
                 lsr
@@ -1305,7 +1308,7 @@ DA_UseModify:   pha
 DA_SkipModify:  cpx #ACTI_PLAYER
                 bne DA_NotPlayer
 DA_ResetRecharge:
-                stx healthRecharge              ;If player hit, reset health recharge timer
+                stx healTimer                   ;If player hit, reset healing timer
 DA_NotPlayer:   sta temp8
                 lda actHp,x                     ;First check that there is health
                 beq DA_Done                     ;(prevent destroy being called multiple times)

@@ -34,9 +34,9 @@ INITIAL_INAIRACC = 1
 INITIAL_GROUNDBRAKE = 6
 INITIAL_JUMPSPEED = 40
 INITIAL_CLIMBSPEED = 84
-INITIAL_HEALTHRECHARGETIMER = 3
+INITIAL_HEALTIMER = 3
 
-HEALTHRECHARGETIMER_RESET = $d0
+HEALTIMER_RESET = $c0
 
 DIFFICULTY_EASY = 0
 DIFFICULTY_MEDIUM = 1
@@ -54,7 +54,7 @@ DRAIN_SWIM      = 18                            ;When animation wraps
 DRAIN_CLIMB     = 3                             ;At each movement step
 DRAIN_JUMP      = 16
 DRAIN_ROLL      = 18
-DRAIN_RESTOREHEALTH = 64
+DRAIN_HEAL      = 64
 DRAIN_MELEE     = 16
 DRAIN_HEAVYMELEE = 20
 DRAIN_THROW     = 24
@@ -63,6 +63,13 @@ DRAIN_SHOOTHEAVY = 12
 DRAIN_SHOOTAUTO = 6
 DRAIN_EMP       = 128
 
+UPG_MOVEMENT    = 1
+UPG_STRENGTH    = 2
+UPG_FIREARMS    = 4
+UPG_ARMOR       = 8
+UPG_HEALING     = 16
+UPG_DRAIN       = 32
+UPG_RECHARGE    = 64
 
         ; Player update routine
         ;
@@ -225,13 +232,7 @@ MH_ResetDrowningTimer:
                 jsr DamageSelf
                 lda lvlWaterDamage
                 bne MH_NotInWater
-                txa
-                bne MH_NotPlayerDrowning
-MH_PlayerDrowningTimerRepeat:
                 lda #DROWNING_TIMER_REPEAT      ;Drowning is faster after initial damage
-                skip2
-MH_NotPlayerDrowning:
-                lda #DROWNING_TIMER_REPEAT
                 sta actWaterDamage,x
 MH_NotInWater:  lda actD,x
                 sta MH_OldDir+1
@@ -892,11 +893,13 @@ MH_GSHSDone:    rts
         ;
         ; Parameters: A amount of drain, X=0
         ; Returns: -
-        ; Modifies: A (Y,temp regs if player actor killed)
+        ; Modifies: A
 
 DrainBattery:   cpx #ACTI_PLAYER
                 bne DB_Done
 DrainBatteryNoCheck:
+                lsr
+                adc #$00                        ;Round upward if reduced
                 sta DB_Amount+1
                 lda battery
                 sec
@@ -1216,18 +1219,20 @@ LoadPlayerActorVars:
                 lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE
                 sta panelUpdateFlags
 
-        ; Apply skill effects
-        ; TODO: refactor to use on/off upgrades
+        ; Apply upgrade effects
         ;
         ; Parameters: -
         ; Returns: X=0
         ; Modifies: A,X,Y,temp6-temp8
 
-ApplySkills:
+ApplyUpgrades:  lda upgrade
+                sta temp6
 
-        ; Agility: acceleration, jump height, climbing speed
-
-                ldx plrAgility
+                lsr temp6                       ;Check movement
+                ldx #0
+                bcc AU_NoMovement
+                ldx #2
+AU_NoMovement:  stx temp7
                 txa
                 clc
                 adc #INITIAL_GROUNDACC
@@ -1237,7 +1242,7 @@ ApplySkills:
                 sta plrInAirAcc
                 txa
                 asl
-                adc plrAgility
+                adc temp7
                 asl
                 adc #INITIAL_CLIMBSPEED
                 sta plrClimbSpeed
@@ -1247,55 +1252,58 @@ ApplySkills:
                 adc #1-INITIAL_JUMPSPEED
                 sta plrJumpSpeed
 
-        ; Firearms: damage bonus and faster reloading
-
-                ldx plrFirearms
-                lda plrWeaponBonusTbl,x
-                sta AH_PlayerFirearmBonus+1
-                lda #NO_MODIFY
-                sbc plrFirearms                 ;C=1 here
-                sta AH_ReloadDelayBonus+1
-
-        ; Melee: damage bonus
-
-                ldx plrMelee
-                lda plrWeaponBonusTbl,x
-                sta AH_PlayerMeleeBonus+1
-
-        ; Vitality: damage reduction, faster health recharge, slower drowning
-
-                lda #INITIAL_HEALTHRECHARGETIMER
-                adc plrVitality                     ;C=1 here
-                sta ULO_HealthRechargeRate+1
-                lda difficulty
-                asl                                 ;Easy: base damage mod 6, medium 8, hard 10
-                adc #NO_MODIFY-1                    ;C=0 here
-                sbc plrVitality                     ;C=0 here
-                sta plrDmgModify
-                lda #DROWNING_TIMER_REPEAT/4
-                sbc plrVitality                     ;C=1 here
-                asl
-                asl                                 ;C becomes 0
-                sta MH_PlayerDrowningTimerRepeat+1
-
-        ; Carrying: more weapons in inventory and higher ammo limit
-
-                lda plrCarrying
+                lsr temp6                       ;Check strength
+                ldx #NO_MODIFY
+                ldy #0
+                bcc AU_NoStrength
+                ldx #12
+                ldy #1
+AU_NoStrength:  stx AH_PlayerMeleeBonus+1
+                tya
+                clc
                 adc #INITIAL_MAX_WEAPONS
                 sta AI_MaxWeaponsCount+1
                 ldx #itemDefaultMaxCount - itemMaxCount
-AS_AmmoLoop:    lda itemMaxCountAdd-1,x
-                ldy plrCarrying
-                stx temp6
-                ldx #<temp7
-                jsr MulU
-                ldx temp6
-                lda itemDefaultMaxCount-1,x
+AU_AmmoLoop:    lda itemDefaultMaxCount-1,x
+                cpy #$00
+                beq AU_NoAmmoIncrease
+                lsr
                 clc
-                adc temp7
+                adc itemDefaultMaxCount-1,x
+AU_NoAmmoIncrease:
                 sta itemMaxCount-1,x
                 dex
-                bne AS_AmmoLoop
+                bne AU_AmmoLoop
+                lsr temp6
+
+                lsr temp6                       ;Check firearms
+                ldx #NO_MODIFY
+                bcc AU_NoFirearms
+                ldx #12
+AU_NoFirearms:  stx AH_PlayerFirearmBonus+1
+
+                lsr temp6                       ;Check armor
+                ldx #NO_MODIFY
+                bcc AU_NoArmor
+                ldx #6
+AU_NoArmor:     stx plrDmgModify
+
+                lsr temp6                       ;Check healing speed
+                ldx #INITIAL_HEALTIMER-1        ;Healing code has C=1 while adding, so subtract 1 here
+                bcc AU_NoHealing
+                ldx #INITIAL_HEALTIMER*2-1
+AU_NoHealing:   stx ULO_HealingRate+1
+
+                lsr temp6                       ;Check battery drain reduce
+                ldx #$18                        ;CLC
+                bcc AU_NoDrainReduce
+                ldx #$4a                        ;LSR
+AU_NoDrainReduce:
+                stx DrainBatteryNoCheck
+
+                ldx difficulty
+                lda playerAttackModTbl,x
+                sta ATD_DifficultyMod+1         ;Finally add a difficulty-based modifier to attacks on player
 CS_NoFreeActor: rts
 
         ; Create a water splash

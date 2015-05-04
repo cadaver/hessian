@@ -679,22 +679,31 @@ ULO_NoTime:     bcs ULO_IsPaused
                 lda #$ff
                 sta autoDeactObjNum
                 jsr InactivateObject
-ULO_NoAutoDeact:lda actHp+ACTI_PLAYER           ;Restore health if not dead and not at
+ULO_NoAutoDeact:lda actHp+ACTI_PLAYER           ;Heal if not dead and not yet at full health
                 beq ULO_PlayerDead              ;full health
                 cmp #HP_PLAYER
-                bcs ULO_CheckPickup
-                lda battery+1                   ;No recharge if low battery
+                bcs ULO_NoHealing
+                lda battery+1                   ;No healing if low battery
                 cmp #LOW_BATTERY
-                bcc ULO_CheckPickup
-                lda healthRecharge
-ULO_HealthRechargeRate:
-                adc #INITIAL_HEALTHRECHARGETIMER
-                bcc ULO_NoRecharge
-                lda #DRAIN_RESTOREHEALTH
+                bcc ULO_NoHealing
+                lda healTimer
+ULO_HealingRate:adc #INITIAL_HEALTIMER-1        ;C=1 here
+                bcc ULO_NoHealing2
+                lda #DRAIN_HEAL
                 jsr DrainBatteryNoCheck
                 inc actHp+ACTI_PLAYER
-                lda #HEALTHRECHARGETIMER_RESET  ;Recharge faster after first unit
-ULO_NoRecharge: sta healthRecharge
+                lda #HEALTIMER_RESET            ;Heal faster after first unit
+ULO_NoHealing2: sta healTimer
+ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge (final upgrade)
+                asl
+                bpl ULO_NoRecharge
+                lda battery+1
+                cmp #MAX_BATTERY
+                bcs ULO_NoRecharge
+                inc battery
+                bne ULO_NoRecharge
+                inc battery+1
+ULO_NoRecharge:
 ULO_CheckPickup:ldx #ACTI_PLAYER
                 lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
                 cmp limitD                      ;or if battery runs out

@@ -19,17 +19,11 @@ playerStateStart:
 time:           ds.b 4,0
 score:          ds.b 3,0
 battery:        ds.b 2,0
+upgrade:        dc.b 0
+plrReload:      dc.b 0
 invType:        ds.b MAX_INVENTORYITEMS,0
 invCount:       ds.b MAX_INVENTORYITEMS,0
 invMag:         ds.b MAX_INVENTORYITEMS,0
-plrSkills:
-        ; TODO: refactor with binary upgrades
-plrAgility:     dc.b 0
-plrCarrying:    dc.b 0
-plrFirearms:    dc.b 0
-plrMelee:       dc.b 0
-plrVitality:    dc.b 0
-plrReload:      dc.b 0
 scriptF:        dc.b $ff
 scriptEP:       dc.b 0
 playerStateZeroEnd:

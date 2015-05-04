@@ -67,26 +67,6 @@ itemDefaultMaxCount:
                 dc.b 2                          ;Medikit 
                 dc.b 2                          ;Battery
 
-itemMaxCountAdd:dc.b 0                          ;Fists
-                dc.b 0                          ;Knife
-                dc.b 0                          ;Nightstick
-                dc.b 0                          ;Bat
-                dc.b 10                         ;Pistol
-                dc.b 8                          ;Shotgun
-                dc.b 30                         ;Auto rifle
-                dc.b 5                          ;Sniper rifle
-                dc.b 50                         ;Minigun
-                dc.b 30                         ;Flamethrower
-                dc.b 15                         ;Laser rifle
-                dc.b 10                         ;Plasma gun
-                dc.b 4                          ;EMP generator
-                dc.b 3                          ;Grenade launcher
-                dc.b 2                          ;Bazooka
-                dc.b 2                          ;Grenade
-                dc.b 1                          ;Homing drone
-                dc.b 1                          ;Medikit
-                dc.b 1                          ;Battery
-
 itemMagazineSize:
                 dc.b MAG_INFINITE               ;Fists
                 dc.b MAG_INFINITE               ;Knife

@@ -137,7 +137,7 @@ SCROLLROWS      = 23
                 var displayedItemName           ;Misc. game variables
                 var displayedHealth
                 var displayedBattery
-                var healthRecharge
+                var healTimer
 
                 var difficulty                  ;Game options
                 var musicMode

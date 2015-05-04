@@ -48,10 +48,10 @@ itemDropTable:  dc.b ITEM_MEDKIT
                 dc.b ITEM_BATTERY
                 dc.b ITEM_MEDKIT
 
-        ; Player weapon damage bonus according to weapon skill
-
-plrWeaponBonusTbl:
-                dc.b 8,10,12,14
+        ; Difficulty mod for attacks on player, minus 1
+        
+playerAttackModTbl:
+                dc.b $fd,$ff,$01
 
         ; Human Y-size reduce table based on animation
 
