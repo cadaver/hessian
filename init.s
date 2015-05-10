@@ -223,27 +223,21 @@ textCharsCopy:  incbin bg/scorescr.chr
 
 scorePanel:     dc.b 35,"       ",35,"                      ",35,"       ",35
                 dc.b 36
-                ds.b 7,40
-                dc.b 41,40,104,61,61,61,61,61,61,61
-                ds.b 4,40
-                dc.b 105,61,61,61,61,61,61,61,40,41
-                ds.b 7,40
-                dc.b 59
+                ds.b 7,61
+                dc.b 104
+                ds.b 22,61
+                dc.b 104
+                ds.b 7,61
+                dc.b 105
 
 scorePanelColors:
-                dc.b 11
+                dc.b 15
                 ds.b 7,1
-                dc.b 11
+                dc.b 15
                 ds.b 22,1
-                dc.b 11
+                dc.b 15
                 ds.b 7,1
                 dc.b 11
-                ds.b 10,11
-                dc.b 1
-                ds.b 7,9
-                ds.b 4,11
-                dc.b 1
-                ds.b 7,9
-                ds.b 10,11
+                ds.b 40,11
 
                 org scriptCodeEnd

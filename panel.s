@@ -16,35 +16,44 @@ MENU_PAUSE      = 2
 MENU_DIALOGUE   = 3
 
 HEALTHBAR_LENGTH = 7
+HEALTHBAR_COLOR = $0d
 
         ; Subroutine to animate & draw a health bar
         ;
-        ; Parameters: A value to display, X healthbar index (0 = health, 1 = battery), Y position
+        ; Parameters: A value to display, X healthbar index (0 = health, 1 = battery)
         ; Returns: -
         ; Modifies: A,X,Y,temp1-temp2
 
-DrawHealthBar:  cmp displayedHealth,x
+DrawHealthBar:  ldy displayedHealth,x
+                bpl DHB_NoRedraw
+                sta displayedHealth,x
+                bne DHB_Redraw
+DHB_NoRedraw:   cmp displayedHealth,x
                 beq DHB_Done
                 bcc DHB_Decrement
 DHB_Increment:  inc displayedHealth,x
                 skip2
 DHB_Decrement:  dec displayedHealth,x
-                lda healthBarPosTbl,x           ;Start position
+DHB_Redraw:     lda healthBarPosTbl,x           ;Start position
                 tay
                 clc
                 adc #HEALTHBAR_LENGTH           ;End position
                 sta temp2
+                lda healthBarLetter,x
+                sta panelScreen+23*40-1,y
                 lda displayedHealth,x
                 lsr
                 lsr
                 clc
                 adc healthBarPosTbl,x
                 sta temp1                       ;Whole chars end position
-                lda #109
 DHB_WholeCharsLoop:
                 cpy temp1
                 bcs DHB_WholeCharsDone
-                sta panelScreen+24*40,y
+                lda #109
+                sta panelScreen+23*40,y
+                lda #HEALTHBAR_COLOR
+                sta colors+23*40,y
                 iny
                 bne DHB_WholeCharsLoop
 DHB_WholeCharsDone:
@@ -52,13 +61,15 @@ DHB_WholeCharsDone:
                 and #$03
                 beq DHB_NoHalfChar
                 adc #104                        ;C=1
-                sta panelScreen+24*40,y
+                sta panelScreen+23*40,y
+                lda #HEALTHBAR_COLOR
+                sta colors+23*40,y
                 iny
-DHB_NoHalfChar: lda #61
+DHB_NoHalfChar: lda #32
 DHB_EmptyCharsLoop:
                 cpy temp2
                 bcs DHB_Done
-                sta panelScreen+24*40,y
+                sta panelScreen+23*40,y
                 iny
                 bne DHB_EmptyCharsLoop
 DHB_Done:       rts
@@ -77,7 +88,10 @@ FinishFrame:    jsr UpdateFrame
         ; Returns: -
         ; Modifies: A,X,Y,loader temp vars,temp vars
 
-UpdatePanel:    lda actHp+ACTI_PLAYER
+UpdatePanel:    lda menuMode                    ;Update health bars only when nothing is drawn
+                ora textTime
+                bne UP_SkipHealth
+                lda actHp+ACTI_PLAYER
                 lsr
                 ldx #$00
                 jsr DrawHealthBar
@@ -86,7 +100,7 @@ UpdatePanel:    lda actHp+ACTI_PLAYER
                 adc #$00                        ;Round upward
                 ldx #$01
                 jsr DrawHealthBar
-                if SHOW_BATTERY > 0
+UP_SkipHealth:  if SHOW_BATTERY > 0
                 ldx #4
                 lda battery+1
                 jsr PrintHexByte
@@ -239,7 +253,12 @@ UP_ContinueText:ldy #$00
                 lda (textLo),y
                 bne UP_BeginLine
 UP_NoLine:      sta textTime
-                beq UP_ClearEndOfLine
+                lda menuMode
+                bne UP_ClearEndOfLine
+                lda #$ff
+                sta displayedHealth
+                sta displayedBattery
+                bne UP_ClearEndOfLine           ;Redraw health bars when done with text
 UP_BeginLine:   lda textDelay
                 asl
                 sta textTime
@@ -550,6 +569,9 @@ UM_RedrawActive:ldy #INDEFINITE_TEXT_DURATION
 UM_RedrawCommon:
                 dec textLeftMargin
 UM_DrawSelectionArrows:
+                lda #1
+                sta colors+23*40+9
+                sta colors+23*40+30
                 lda #$20
                 cpx #$00
                 beq UM_NoLeftArrow

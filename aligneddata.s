@@ -348,5 +348,6 @@ routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
 shiftOffsetTbl: dc.b 6,6,6
                 dc.b 0,0,0
                 dc.b 6,6,6
-healthBarPosTbl:dc.b 11,23
+healthBarPosTbl:dc.b 10,24
+healthBarLetter:dc.b "H", "C"
 timeMaxTbl:     dc.b 99,60,60,25

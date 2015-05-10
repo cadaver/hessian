@@ -530,17 +530,22 @@ UA_ItemFlashCounter:                            ;Get color override for items + 
                 sta FlashActor+1
                 and #$07
                 tax
+                lda menuMode
+                ora textTime
+                bne UA_NoHealthBarFlash
+                txa
                 ldy actHp+ACTI_PLAYER           ;Flash the H & C letters if health or battery low
                 cpy #LOW_HEALTH
                 bcc UA_FlashHealth
                 lda #$01
-UA_FlashHealth: sta colors+24*40+10
+UA_FlashHealth: sta colors+23*40+9
                 txa
                 ldy battery+1
                 cpy #LOW_BATTERY
                 bcc UA_FlashBattery
                 lda #$01
-UA_FlashBattery:sta colors+24*40+22
+UA_FlashBattery:sta colors+23*40+23
+UA_NoHealthBarFlash:
                 ldx #MAX_ACT-1
                 stx Irq4_LevelUpdate+1          ;Enable level animation when unpaused
 UA_Loop:        ldy actT,x

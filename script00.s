@@ -38,7 +38,7 @@ START_Y         = $0400
                 dc.w TitleScreen
 
 TitleScreen:    jsr BlankScreen
-                jsr UM_RedrawNone               ;Clear all title text
+                jsr ClearPanelText
                 lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE ;Redraw all
                 sta panelUpdateFlags
                 jsr InitScroll                  ;Make sure no scrolling
