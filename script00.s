@@ -38,11 +38,8 @@ START_Y         = $0400
                 dc.w TitleScreen
 
 TitleScreen:    jsr BlankScreen
-                lda #$00
-                sta menuMode
                 lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE ;Redraw all
                 sta panelUpdateFlags
-                jsr UM_RedrawNone               ;Make sure health bars are redrawn
                 jsr InitScroll                  ;Make sure no scrolling
 
         ; Load logo chars & clear screen
@@ -52,18 +49,16 @@ TitleScreen:    jsr BlankScreen
                 lda #<logoStart
                 ldx #>logoStart
                 jsr LoadFileRetry
-                lda #$00                        ;Show panel chars in gamescreen & position
-                sta Irq1_Bg1+1                  ;the screen
+                lda #$00                        ;Fade out colors initially
+                sta Irq1_Bg1+1
                 sta Irq1_Bg2+1
                 sta Irq1_Bg3+1
-                sta scrollY
                 sta menuMode                    ;Reset in-game menu mode
+                jsr UM_RedrawNone               ;Make sure health bars are redrawn
                 lda #$03
                 sta screen                      ;Set split screen mode
                 lda #$0f
                 sta scrollX
-                lda #$04
-                sta scrollY
                 ldx #$00
 ClearScreenLoop:lda #$20
                 sta screen1,x
