@@ -51,28 +51,26 @@ DHB_WholeCharsLoop:
                 cpy temp1
                 bcs DHB_WholeCharsDone
                 lda #109
-                sta panelScreen+23*40,y
-                lda #HEALTHBAR_COLOR
-                sta colors+23*40,y
-                iny
+                jsr DHB_Sub
                 bne DHB_WholeCharsLoop
 DHB_WholeCharsDone:
                 lda displayedHealth,x
                 and #$03
-                beq DHB_NoHalfChar
+                beq DHB_EmptyCharsLoop
                 adc #104                        ;C=1
-                sta panelScreen+23*40,y
-                lda #HEALTHBAR_COLOR
-                sta colors+23*40,y
-                iny
-DHB_NoHalfChar: lda #32
+                jsr DHB_Sub
 DHB_EmptyCharsLoop:
                 cpy temp2
                 bcs DHB_Done
-                sta panelScreen+23*40,y
-                iny
+                lda #59
+                jsr DHB_Sub
                 bne DHB_EmptyCharsLoop
 DHB_Done:       rts
+DHB_Sub:        sta panelScreen+23*40,y
+                lda #HEALTHBAR_COLOR
+                sta colors+23*40,y
+                iny
+                rts
 
         ; Finish frame. Update frame and update score panel
         ;

@@ -53,14 +53,9 @@ DRAIN_WALK      = 6                             ;When animation wraps
 DRAIN_SWIM      = 18                            ;When animation wraps
 DRAIN_CLIMB     = 3                             ;At each movement step
 DRAIN_JUMP      = 16
-DRAIN_ROLL      = 18
-DRAIN_HEAL      = 64
-DRAIN_MELEE     = 16
-DRAIN_HEAVYMELEE = 20
-DRAIN_THROW     = 24
-DRAIN_SHOOT     = 8
-DRAIN_SHOOTHEAVY = 12
-DRAIN_SHOOTAUTO = 6
+DRAIN_ROLL      = 20
+DRAIN_MELEE     = 20
+DRAIN_HEAL      = 96
 DRAIN_EMP       = 128
 
 UPG_MOVEMENT    = 1
@@ -401,8 +396,9 @@ MH_NoInitClimbUp:
 MH_StartJump:   ldy #AL_JUMPSPEED
                 lda (actLo),y
                 sta actSY,x
+                ldy #UPG_MOVEMENT
                 lda #DRAIN_JUMP
-                jsr DrainBattery
+                jsr DrainBatteryDouble
                 jsr MH_ResetFall
                 jsr MH_ResetGrounded
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
@@ -546,8 +542,9 @@ MH_OldDir:      eor #$00
                 bne MH_NoNewRoll                ;Also, must not have turned
 MH_StartRoll:   lda #$00
                 sta actFd,x
+                ldy #UPG_MOVEMENT
                 lda #DRAIN_ROLL
-                jsr DrainBattery
+                jsr DrainBatteryDouble
                 lda #FR_ROLL
                 jmp MH_AnimDone
 MH_NoNewRoll:   lda temp3
@@ -617,8 +614,9 @@ MH_WalkAnimSpeedPos:
                 adc #$00
                 cmp #FR_WALK+8
                 bcc MH_AnimDone
-                lda #DRAIN_WALK                 ;Drain battery when the walk animation wraps
-                jsr DrainBattery
+                ldy #UPG_MOVEMENT
+                lda #DRAIN_WALK
+                jsr DrainBatteryDouble          ;Drain battery when the walk animation wraps
                 lda #FR_WALK
                 bne MH_AnimDone
 MH_StandAnim:   lda #$00
@@ -757,8 +755,9 @@ MH_ClimbAnimDown:
                 sta actF2,x
                 tya
                 jsr MoveActorY
+                ldy #UPG_MOVEMENT
                 lda #DRAIN_CLIMB
-                jsr DrainBattery
+                jsr DrainBatteryDouble
                 jmp NoInterpolation
 
 MH_Swimming:    ldy #AL_MOVESPEED
@@ -858,8 +857,9 @@ MH_NotSwimmingUp:
                 adc #$00
                 cmp #FR_SWIM+4
                 bcc MH_SwimAnimDone
+                ldy #UPG_MOVEMENT
                 lda #DRAIN_SWIM
-                jsr DrainBattery                ;Drain battery when the animation wraps
+                jsr DrainBatteryDouble          ;Drain battery when the animation wraps
                 lda #FR_SWIM
 MH_SwimAnimDone:jmp MH_AnimDone
 
@@ -896,7 +896,25 @@ MH_GSHSDone:    rts
         ; Modifies: A
 
 DrainBattery:   cpx #ACTI_PLAYER
+                beq DrainBatteryNoCheck
+DB_Done:        rts
+
+        ; Drain battery charge, double if specified upgrade bit is on
+        ;
+        ; Parameters: A amount of drain, Y=upgrade bitmask, X=0
+        ; Returns: -
+        ; Modifies: A
+
+DrainBatteryDouble:
+                cpx #ACTI_PLAYER
                 bne DB_Done
+                pha
+                tya
+                and upgrade
+                cmp #$01
+                pla
+                bcc DrainBatteryNoCheck
+                asl
 DrainBatteryNoCheck:
                 lsr
                 adc #$00                        ;Round upward if reduced
@@ -911,7 +929,7 @@ DB_Amount:      sbc #$00
                 lda #$00
                 sta battery
                 sta battery+1
-DB_Done:        rts
+                rts
 
         ; Add score
         ;

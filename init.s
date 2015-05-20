@@ -231,11 +231,11 @@ scorePanel:     dc.b 35,"       ",35,"                      ",35,"       ",35
                 dc.b 105
 
 scorePanelColors:
-                dc.b 15
+                dc.b 11
                 ds.b 7,1
-                dc.b 15
+                dc.b 11
                 ds.b 22,1
-                dc.b 15
+                dc.b 11
                 ds.b 7,1
                 dc.b 11
                 ds.b 40,11
