@@ -40,6 +40,7 @@ START_Y         = $0400
 TitleScreen:    jsr BlankScreen
                 lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE ;Redraw all
                 sta panelUpdateFlags
+                jsr ClearPanelText
                 jsr InitScroll                  ;Make sure no scrolling
 
         ; Load logo chars & clear screen
@@ -54,7 +55,6 @@ TitleScreen:    jsr BlankScreen
                 sta Irq1_Bg2+1
                 sta Irq1_Bg3+1
                 sta menuMode                    ;Reset in-game menu mode
-                jsr UM_RedrawNone               ;Make sure health bars are redrawn
                 lda #$03
                 sta screen                      ;Set split screen mode
                 lda #$0f

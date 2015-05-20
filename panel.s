@@ -24,18 +24,19 @@ HEALTHBAR_COLOR = $0d
         ; Returns: -
         ; Modifies: A,X,Y,temp1-temp2
 
-DrawHealthBar:  ldy displayedHealth,x
-                bpl DHB_NoRedraw
-                sta displayedHealth,x
-                bne DHB_Redraw
-DHB_NoRedraw:   cmp displayedHealth,x
+DrawHealthBar:  ldy healthBarPosTbl,x
+                pha
+                lda panelScreen+23*40,y              ;Check if need to redraw completely
+                cmp #33
+                pla
+                bcc DHB_Redraw
+                cmp displayedHealth,x
                 beq DHB_Done
                 bcc DHB_Decrement
 DHB_Increment:  inc displayedHealth,x
                 skip2
 DHB_Decrement:  dec displayedHealth,x
-DHB_Redraw:     lda healthBarPosTbl,x           ;Start position
-                tay
+DHB_Redraw:     tya                             ;Start position
                 clc
                 adc #HEALTHBAR_LENGTH           ;End position
                 sta temp2
@@ -86,8 +87,9 @@ FinishFrame:    jsr UpdateFrame
         ; Returns: -
         ; Modifies: A,X,Y,loader temp vars,temp vars
 
-UpdatePanel:    lda menuMode                    ;Update health bars only when nothing is drawn
+UpdatePanel:    lda menuMode                    ;Update health bars only when no text/menu
                 ora textTime
+                ora displayedItemName
                 bne UP_SkipHealth
                 lda actHp+ACTI_PLAYER
                 lsr
@@ -251,12 +253,7 @@ UP_ContinueText:ldy #$00
                 lda (textLo),y
                 bne UP_BeginLine
 UP_NoLine:      sta textTime
-                lda menuMode
-                bne UP_ClearEndOfLine
-                lda #$ff
-                sta displayedHealth
-                sta displayedBattery
-                bne UP_ClearEndOfLine           ;Redraw health bars when done with text
+                beq UP_ClearEndOfLine
 UP_BeginLine:   lda textDelay
                 asl
                 sta textTime
