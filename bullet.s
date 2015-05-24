@@ -30,7 +30,6 @@ MoveSmallSplash:ldy #3
         ; Returns: -
         ; Modifies: A,Y
 
-MoveWaterSplash:
 MoveExplosion:  ldy #5
 AnimateAndRemoveDelay1:
                 lda #1
@@ -172,8 +171,11 @@ MProj_LargeSplash:
                 lda #SFX_SPLASH
                 jsr PlaySfx
                 lda #ACT_WATERSPLASH
-MProj_SplashOK: jmp TransformBullet
-
+MProj_SplashOK: jsr TransformBullet
+                lda lvlWaterSplashColor         ;Color override
+                sta actFlash,x
+                rts
+                
         ; Rocket update routine
         ;
         ; Parameters: X actor index

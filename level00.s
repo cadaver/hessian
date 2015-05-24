@@ -65,8 +65,8 @@ UL_WaterCmp:    cpx #$00
                 org lvlLoadName
                 dc.b "CARGO SHIP",0
 
-                org lvlLoadWaterDamage
-                dc.b 0                          ;Water damage
+                org lvlLoadWaterSplashColor
+                dc.b 0                          ;Water splash color override
 
                 org blockInfo
                 incbin bg/level00.bli

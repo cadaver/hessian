@@ -289,7 +289,7 @@ UMK_PlaySound:  lda #SFX_POWERUP
 UI_ReduceAmmo:  lda #USEITEM_ATTACK_DELAY       ;In case the item is removed, give an
                 sta actAttackD+ACTI_PLAYER      ;attack delay to prevent accidental
                 jmp DecreaseAmmoOne             ;fire if a weapon becomes selected next
-UI_Reload:      lda plrReload
+UI_Reload:      lda reload
                 bne UI_DontReload
                 lda actF1+ACTI_PLAYER           ;No reload if dead or swimming
                 cmp #FR_DIE
@@ -300,5 +300,5 @@ UI_Reload:      lda plrReload
                 bcs UI_DontReload
                 cmp invCount,y
                 bcs UI_DontReload
-                dec plrReload
+                dec reload
 UI_DontReload:  rts

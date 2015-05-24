@@ -350,7 +350,7 @@ IP_InitLevelData:
                 lda #START_LEVEL
                 sta levelNum
                 lda #$00
-                sta plrReload
+                sta reload
                 sta battery
                 sta saveD
                 #if UPGRADE_CHEAT>0
@@ -371,6 +371,8 @@ IP_InitLevelData:
                 sta saveHP
                 lda #MAX_BATTERY
                 sta battery+1
+                lda #MAX_OXYGEN
+                sta oxygen
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately

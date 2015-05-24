@@ -254,7 +254,7 @@ lvlSpawnWpn:    ds.b MAX_SPAWNERS,0
 lvlSpawnPlot:   ds.b MAX_SPAWNERS,0
 lvlPropertiesStart:
 lvlName:        ds.b 16,0
-lvlWaterDamage: dc.b 0
+lvlWaterSplashColor: dc.b 0
 lvlPropertiesEnd:
 
         ; Target list for AI / collision
@@ -300,7 +300,6 @@ actMoveCtrl:    ds.b MAX_COMPLEXACT,0
 actPrevCtrl:    ds.b MAX_COMPLEXACT,0
 actFall:        ds.b MAX_COMPLEXACT,0
 actFallL:       ds.b MAX_COMPLEXACT,0
-actWaterDamage: ds.b MAX_COMPLEXACT,0
 actWpn:         ds.b MAX_COMPLEXACT,ITEM_NONE
 actWpnF:        ds.b MAX_COMPLEXACT,$ff
 actAttackD:     ds.b MAX_COMPLEXACT,0

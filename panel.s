@@ -100,6 +100,26 @@ UpdatePanel:    lda menuMode                    ;Update health bars only when no
                 adc #$00                        ;Round upward
                 ldx #$01
                 jsr DrawHealthBar
+                lda oxygen                   ;Show oxygen meter if less than maximum
+                cmp #MAX_OXYGEN
+                bcs UP_ClearOxygen
+                lsr
+                jsr ConvertToBCD8
+                ldx #18
+                lda #"O"
+                jsr PrintPanelChar
+                jsr PrintBCDDigitsLSB
+                lda #"%"
+                jsr PrintPanelChar
+                bne UP_SkipHealth
+UP_ClearOxygen: lda #32
+                cmp panelScreen+23*40+18
+                beq UP_SkipHealth
+                ldx #3
+UP_ClearOxygenLoop:
+                sta panelScreen+23*40+18,x
+                dex
+                bpl UP_ClearOxygenLoop
 UP_SkipHealth:  if SHOW_BATTERY > 0
                 ldx #4
                 lda battery+1
@@ -153,7 +173,7 @@ UP_SkipWeapon:  lsr panelUpdateFlags
                 sta temp2
                 beq UP_Consumable
                 bmi UP_MeleeWeapon
-UP_Firearm:     lda plrReload
+UP_Firearm:     lda reload
                 bne UP_Reloading
                 lda invMag,y                    ;Print rounds in magazine
                 jsr ConvertToBCD8

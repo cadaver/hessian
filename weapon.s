@@ -113,7 +113,7 @@ AH_CheckReload: cmp invCount,y
                 lda invCount,y
 AH_HasFullMagReserve:
                 sta temp1                       ;Reload limit
-                lda plrReload
+                lda reload
                 beq AH_NotReloading
                 bmi AH_BeginReload
                 cmp temp1
@@ -156,7 +156,7 @@ AH_NotExceeded: sta invMag,y
                 pla
                 ldy #WD_RELOADSFX
 AH_PlayReloadSound:
-                sta plrReload
+                sta reload
                 lda (wpnLo),y
                 jsr PlaySfx
                 jsr SetPanelRedrawAmmo

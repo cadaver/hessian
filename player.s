@@ -42,9 +42,7 @@ DIFFICULTY_EASY = 0
 DIFFICULTY_MEDIUM = 1
 DIFFICULTY_HARD = 2
 
-DROWNING_TIMER  = 1
-DROWNING_TIMER_REPEAT = $f0
-
+MAX_OXYGEN      = 200
 MAX_BATTERY     = 56
 LOW_BATTERY     = MAX_BATTERY/4
 LOW_HEALTH      = HP_PLAYER/4
@@ -209,27 +207,7 @@ MoveHuman:      lda actMB,x
                 bcs MH_NoFloating
                 adc #DEATH_WATER_YBRAKING       ;Extra buoyancy for corpses
 MH_NoFloating:  jsr BrakeActorY
-MH_NoYBraking:  lda lvlWaterDamage              ;Check if water in this level is damaging
-                bne MH_HasDamagingWater
-                lda #-3                         ;If water itself is not damaging, check drowning
-                jsr GetCharInfoOffset           ;(head under water)
-                and #CI_WATER
-                clc
-                beq MH_ResetDrowningTimer
-MH_NoDrowningTimerReset:
-                lda #DROWNING_TIMER
-MH_HasDamagingWater:
-                clc
-                adc actWaterDamage,x
-MH_ResetDrowningTimer:
-                sta actWaterDamage,x
-                bcc MH_NotInWater
-                lda #DMG_WATER
-                jsr DamageSelf
-                lda lvlWaterDamage
-                bne MH_NotInWater
-                lda #DROWNING_TIMER_REPEAT      ;Drowning is faster after initial damage
-                sta actWaterDamage,x
+MH_NoYBraking:
 MH_NotInWater:  lda actD,x
                 sta MH_OldDir+1
                 ldy #AL_SIZEUP                  ;Set size up based on currently displayed
@@ -644,11 +622,7 @@ MH_InitClimb:   lda #$80
                 sta actSY,x
                 jmp NoInterpolation
 
-MH_InitSwim:    lda lvlWaterDamage              ;If only water damage is drowning, reset water damage counter
-                bne MH_HasDamagingWater2
-                sta actWaterDamage,x
-MH_HasDamagingWater2:
-                lda actSY,x
+MH_InitSwim:    lda actSY,x
                 bmi MH_SwimNoYSpeedMod          ;If falling down, reduce speed when hit water
                 ldy #6
                 jsr ModifyDamage                ;Hack: modifydamage used for multiplying Y-speed
@@ -761,7 +735,13 @@ MH_ClimbAnimDown:
                 jsr DrainBatteryDouble
                 jmp NoInterpolation
 
-MH_Swimming:    ldy #AL_MOVESPEED
+MH_Swimming:    txa
+                bne MH_NPCSwim
+                lda #-3                         ;Check whether head under water for oxygen
+                jsr GetCharInfoOffset           ;calculations (done in UpdateLevelObjects)
+                and #CI_WATER
+                sta ULO_HeadUnderWater+1
+MH_NPCSwim:     ldy #AL_MOVESPEED
                 lda (actLo),y
                 lsr                             ;Swimming max speed = half of ground speed
                 sta temp4
@@ -1349,6 +1329,8 @@ CreateSplash:   lda #ACTI_FIRSTEFFECT
                 bcc CS_NoFreeActor
                 lda #ACT_WATERSPLASH
                 jsr SpawnActor
+                lda lvlWaterSplashColor         ;Color override
+                sta actFlash,y
                 lda actYL,y                     ;Align to char boundary
                 and #$c0
                 sta actYL,y

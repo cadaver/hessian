@@ -679,7 +679,8 @@ ULO_NoTime:     bcs ULO_IsPaused
                 lda #$ff
                 sta autoDeactObjNum
                 jsr InactivateObject
-ULO_NoAutoDeact:lda actHp+ACTI_PLAYER           ;Heal if not dead and not yet at full health
+ULO_NoAutoDeact:ldx #ACTI_PLAYER
+                lda actHp+ACTI_PLAYER           ;Heal if not dead and not yet at full health
                 beq ULO_PlayerDead              ;full health
                 cmp #HP_PLAYER
                 bcs ULO_NoHealing
@@ -694,7 +695,7 @@ ULO_HealingRate:adc #INITIAL_HEALTIMER-1        ;C=1 here
                 inc actHp+ACTI_PLAYER
                 lda #HEALTIMER_RESET            ;Heal faster after first unit
 ULO_NoHealing2: sta healTimer
-ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge (final upgrade)
+ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
                 asl
                 bpl ULO_NoRecharge
                 lda battery+1
@@ -703,9 +704,28 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge (fi
                 inc battery
                 bne ULO_NoRecharge
                 inc battery+1
-ULO_NoRecharge:
-ULO_CheckPickup:ldx #ACTI_PLAYER
-                lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
+ULO_NoRecharge: ldy actF1+ACTI_PLAYER           ;Check for player losing oxygen
+                cpy #FR_SWIM
+                bcc ULO_RestoreOxygen
+                lda actFd+ACTI_PLAYER
+                bne ULO_OxygenDone
+ULO_HeadUnderWater:
+                lda #$00
+                beq ULO_RestoreOxygen
+                lda oxygen
+                bne ULO_NotDrowning
+                cpy #FR_SWIM
+                bne ULO_OxygenDone
+                ldy #$ff
+                lda #DMG_DROWNING
+                jsr DamageActor
+                jmp ULO_OxygenDone
+ULO_NotDrowning:sbc #$01
+                skip2
+ULO_RestoreOxygen:
+                lda #MAX_OXYGEN
+                sta oxygen
+ULO_OxygenDone: lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
                 cmp limitD                      ;or if battery runs out
                 bcc ULO_NotOutside
                 beq ULO_Outside

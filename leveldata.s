@@ -19,8 +19,9 @@ playerStateStart:
 time:           ds.b 4,0
 score:          ds.b 3,0
 battery:        ds.b 2,0
+oxygen:         dc.b 0
 upgrade:        dc.b 0
-plrReload:      dc.b 0
+reload:         dc.b 0
 invType:        ds.b MAX_INVENTORYITEMS,0
 invCount:       ds.b MAX_INVENTORYITEMS,0
 invMag:         ds.b MAX_INVENTORYITEMS,0

@@ -189,7 +189,7 @@ DA_FillSpritesDone:
                 sta DA_LastSprIndex+1
                 rts
 
-DA_HitFlash:     inc actFlash,x
+DA_HitFlash:    inc actFlash,x
                 lda #$01
                 bne DA_NoFlicker
 
@@ -1670,7 +1670,6 @@ GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actAttackD,y
                 sta actFall,y
                 sta actFallL,y
-                sta actWaterDamage,y
                 sta actAIHelp,y
                 sta actNavNewYH,y
                 lda #NOTARGET
