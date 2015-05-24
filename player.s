@@ -735,13 +735,7 @@ MH_ClimbAnimDown:
                 jsr DrainBatteryDouble
                 jmp NoInterpolation
 
-MH_Swimming:    txa
-                bne MH_NPCSwim
-                lda #-3                         ;Check whether head under water for oxygen
-                jsr GetCharInfoOffset           ;calculations (done in UpdateLevelObjects)
-                and #CI_WATER
-                sta ULO_HeadUnderWater+1
-MH_NPCSwim:     ldy #AL_MOVESPEED
+MH_Swimming:    ldy #AL_MOVESPEED
                 lda (actLo),y
                 lsr                             ;Swimming max speed = half of ground speed
                 sta temp4
@@ -1063,7 +1057,7 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
         ; Returns: -
         ; Modifies: A,X,Y,temp regs
 
-SaveCheckpoint: if OPTIMIZE_SAVE>0
+SaveCheckpoint: if OPTIMIZE_SAVE > 0
                 jsr SaveLevelActorState
                 ldx #MAX_LVLACT-1
                 ldy #$00
@@ -1157,7 +1151,7 @@ RCP_ZPState:    lda saveStateZP-1,x
                 lda #<playerStateStart
                 ldx #>playerStateStart
                 jsr SaveState_CopyMemory
-                if OPTIMIZE_SAVE>0
+                if OPTIMIZE_SAVE > 0
 RCP_CopyActors: ldx #MAX_GLOBALACT-1
 RCP_CopyGlobalActorsLoop:
                 lda saveLvlActX,x

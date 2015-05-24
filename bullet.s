@@ -6,6 +6,8 @@ DRONE_IDLE_ACCEL = 4
 DRONE_ATTACK_ACCEL = 6
 DRONE_MAXSPEED = 4*8
 
+EMP_COLOROVERRIDE = $f1
+
         ; Smoketrail update routine
         ;
         ; Parameters: X actor index
@@ -329,8 +331,8 @@ MoveEMP:        lda actTime,x                   ;TODO: should possibly not manip
                 cmp #$01                        ;background colors directly
                 bcc MEMP_ColorDone
                 beq MEMP_Restore
-                lda #$01
-                sta Irq1_Bg1+1
+                lda #EMP_COLOROVERRIDE          ;Use a special color so that the air toxin effect
+                sta Irq1_Bg1+1                  ;knows to skip itself, if both active
                 sta Irq1_Bg2+1
                 sta Irq1_Bg3+1
                 sta actTime,x

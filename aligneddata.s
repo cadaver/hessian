@@ -255,6 +255,8 @@ lvlSpawnPlot:   ds.b MAX_SPAWNERS,0
 lvlPropertiesStart:
 lvlName:        ds.b 16,0
 lvlWaterSplashColor: dc.b 0
+lvlWaterToxinDelay: dc.b 0
+lvlAirToxinDelay: dc.b 0
 lvlPropertiesEnd:
 
         ; Target list for AI / collision

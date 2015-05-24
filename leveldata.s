@@ -22,6 +22,7 @@ battery:        ds.b 2,0
 oxygen:         dc.b 0
 upgrade:        dc.b 0
 reload:         dc.b 0
+toxinDelay:     dc.b 0
 invType:        ds.b MAX_INVENTORYITEMS,0
 invCount:       ds.b MAX_INVENTORYITEMS,0
 invMag:         ds.b MAX_INVENTORYITEMS,0
@@ -35,7 +36,7 @@ atScriptEP:     ds.b MAX_ACTORTRIGGERS,0
 atMask:         ds.b MAX_ACTORTRIGGERS,0
 lvlDataActBits: ds.b LVLDATAACTTOTALSIZE,0
 lvlObjBits:     ds.b LVLOBJTOTALSIZE,0
-                if OPTIMIZE_SAVE>0
+                if OPTIMIZE_SAVE > 0
 playerStateEnd:
                 endif
 lvlActX:        ds.b MAX_LVLACT,0
@@ -44,7 +45,7 @@ lvlActF:        ds.b MAX_LVLACT,0
 lvlActT:        ds.b MAX_LVLACT,0
 lvlActWpn:      ds.b MAX_LVLACT,0
 lvlActOrg:      ds.b MAX_LVLACT,0
-                if OPTIMIZE_SAVE=0
+                if OPTIMIZE_SAVE = 0
 playerStateEnd:
                 endif
 
@@ -54,7 +55,7 @@ saveStateStart:
 saveLvlName:    ds.b 16,0
 saveState:      ds.b playerStateEnd - playerStateStart,0
 saveStateZP:    ds.b playerStateZPEnd - playerStateZPStart,0
-                if OPTIMIZE_SAVE>0
+                if OPTIMIZE_SAVE > 0
 saveLvlActX:    ds.b MAX_GLOBALACT,0
 saveLvlActY:    ds.b MAX_GLOBALACT,0
 saveLvlActF:    ds.b MAX_GLOBALACT,0

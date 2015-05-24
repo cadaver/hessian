@@ -530,8 +530,8 @@ UA_ItemFlashCounter:                            ;Get color override for items + 
                 sta FlashActor+1
                 and #$07
                 tax
-                lda menuMode
-                ora textTime
+                lda panelScreen+23*40+9
+                cmp #"H"
                 bne UA_NoHealthBarFlash
                 txa
                 ldy actHp+ACTI_PLAYER           ;Flash the H & C letters if health or battery low
@@ -546,6 +546,22 @@ UA_FlashHealth: sta colors+23*40+9
                 lda #$01
 UA_FlashBattery:sta colors+23*40+23
 UA_NoHealthBarFlash:
+                lda upgrade                     ;Fist II flashing effect when air is toxic
+                bmi UA_NoToxinEffect
+                ldy #ZONEH_BG2
+                lda (zoneLo),y
+                bpl UA_NoToxinEffect
+                lda UA_ItemFlashCounter+1
+                lsr
+                bcc UA_ToxinEffectFrame
+                iny
+UA_ToxinEffectFrame:
+                lda Irq1_Bg3+1
+                cmp #EMP_COLOROVERRIDE          ;EMP color override? In that case skip this
+                beq UA_NoToxinEffect
+                lda (zoneLo),y
+                sta Irq1_Bg3+1
+UA_NoToxinEffect:
                 ldx #MAX_ACT-1
                 stx Irq4_LevelUpdate+1          ;Enable level animation when unpaused
 UA_Loop:        ldy actT,x

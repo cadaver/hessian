@@ -67,6 +67,8 @@ UL_WaterCmp:    cpx #$00
 
                 org lvlLoadWaterSplashColor
                 dc.b 0                          ;Water splash color override
+                dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
+                dc.b 0                          ;Air toxicity delay counter
 
                 org blockInfo
                 incbin bg/level00.bli

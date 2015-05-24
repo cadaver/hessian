@@ -644,7 +644,8 @@ SetActorAtObject:
                 and #$7f
                 sta actYH,x
 ULO_IsPaused:
-ULO_PlayerDead
+ULO_PlayerDead:
+ULO_ToxinDelay:
 AAOG_Done:      rts
 
         ; Update level objects. Handle operation, auto-deactivation and actually entering doors.
@@ -653,6 +654,16 @@ AAOG_Done:      rts
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
+
+ULO_DoToxinDamage:
+                dec toxinDelay
+                bpl ULO_ToxinDelay
+                dey
+                sty toxinDelay
+ULO_DoDrowningDamage:
+                ldy #$ff
+                lda #DMG_DROWNING
+                jmp DamageActor
 
 UpdateLevelObjects:
                 ldx #$03
@@ -704,28 +715,56 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
                 inc battery
                 bne ULO_NoRecharge
                 inc battery+1
-ULO_NoRecharge: ldy actF1+ACTI_PLAYER           ;Check for player losing oxygen
-                cpy #FR_SWIM
+ULO_NoRecharge: lda actF1+ACTI_PLAYER           ;Check for player losing oxygen
+                cmp #FR_SWIM                    ;(must be swimming & head under water)
                 bcc ULO_RestoreOxygen
+                lda #-3
+                jsr GetCharInfoOffset
+                and #CI_WATER
+                beq ULO_RestoreOxygen
                 lda actFd+ACTI_PLAYER
                 bne ULO_OxygenDone
-ULO_HeadUnderWater:
-                lda #$00
-                beq ULO_RestoreOxygen
                 lda oxygen
                 bne ULO_NotDrowning
-                cpy #FR_SWIM
-                bne ULO_OxygenDone
-                ldy #$ff
-                lda #DMG_DROWNING
-                jsr DamageActor
+                lda actF1+ACTI_PLAYER           ;Do damage slower than oxygen drain
+                lsr
+                bcc ULO_OxygenDone
+                jsr ULO_DoDrowningDamage
                 jmp ULO_OxygenDone
-ULO_NotDrowning:sbc #$01
+ULO_NotDrowning:lda #$ff
                 skip2
 ULO_RestoreOxygen:
+                lda #$01
+                clc
+                adc oxygen
+                cmp #MAX_OXYGEN
+                bcc ULO_OxygenNotMax
                 lda #MAX_OXYGEN
+ULO_OxygenNotMax:
                 sta oxygen
-ULO_OxygenDone: lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
+ULO_OxygenDone: ldy lvlWaterToxinDelay          ;Toxic water?
+                beq ULO_NoWaterDamage
+                bmi ULO_WaterDamageNotFiltered  ;Filter upgrade cancels damage?
+                lda upgrade
+                bmi ULO_NoWaterDamage           ;Note: filter upgrade must stay at bit 7
+ULO_WaterDamageNotFiltered:
+                lda actMB+ACTI_PLAYER
+                and #MB_INWATER
+                beq ULO_NoWaterDamage
+                tya
+                and #$7f
+                tay
+                jsr ULO_DoToxinDamage
+ULO_NoWaterDamage:
+                ldy #ZONEH_BG2
+                lda (zoneLo),y
+                bpl ULO_NoAirDamage             ;Toxic air (defined per zone)?
+                lda upgrade
+                bmi ULO_NoAirDamage             ;Always canceled by filter upgrade
+                ldy lvlAirToxinDelay
+                jsr ULO_DoToxinDamage
+ULO_NoAirDamage:
+                lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
                 cmp limitD                      ;or if battery runs out
                 bcc ULO_NotOutside
                 beq ULO_Outside
