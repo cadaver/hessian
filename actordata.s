@@ -122,10 +122,12 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adEnemy
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
+adPlayerBottomSprFile:
                 dc.b C_PLAYER_BOTTOM            ;Lower part spritefile number
                 dc.b 0                          ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
+adPlayerTopSprFile:
                 dc.b C_PLAYER_TOP               ;Upper part spritefile number
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable

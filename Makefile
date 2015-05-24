@@ -31,7 +31,7 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak \
 	script01.pak level00.pak level01.pak level02.pak common.pak item.pak weapon.pak playert.pak \
-	playerb.pak
+	playerb.pak playerta.pak playerba.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -283,3 +283,9 @@ playert.pak: spr/playert.spr
 
 playerb.pak: spr/playerb.spr
 	pchunk2 spr/playerb.spr playerb.pak
+
+playerta.pak: spr/playerta.spr
+	pchunk2 spr/playerta.spr playerta.pak
+
+playerba.pak: spr/playerba.spr
+	pchunk2 spr/playerba.spr playerba.pak

@@ -65,6 +65,7 @@ UPG_ARMOR       = 8
 UPG_HEALING     = 16
 UPG_DRAIN       = 32
 UPG_RECHARGE    = 64
+UPG_TOXINFILTER = 128
 
         ; Player update routine
         ;
@@ -1245,6 +1246,18 @@ LoadPlayerActorVars:
 
 ApplyUpgrades:  lda upgrade
                 sta temp6
+                ldx #C_PLAYER_BOTTOM
+                ldy #C_PLAYER_TOP
+                and #UPG_MOVEMENT               ;Movement upgrade turns lower part armored
+                beq AU_NoBottomArmor
+                inx
+AU_NoBottomArmor:
+                lda temp6
+                and #UPG_ARMOR|UPG_STRENGTH     ;Either strength or armor upgrade turns upper part armored
+                beq AU_NoTopArmor
+                iny
+AU_NoTopArmor:  stx adPlayerBottomSprFile
+                sty adPlayerTopSprFile
 
                 lsr temp6                       ;Check movement
                 ldx #0
