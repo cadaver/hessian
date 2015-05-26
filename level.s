@@ -678,9 +678,9 @@ ULO_IncreaseTime:
                 cmp timeMaxTbl,x
                 bcc ULO_TimeNotOver
                 lda #$00
-ULO_TimeNotOver:sta time,x                      ;Note: game time is also increased while paused
-                dex                             ;to mark total session length including time spent
-                bpl ULO_IncreaseTime            ;reading dialogue
+ULO_TimeNotOver:sta time,x
+                dex
+                bpl ULO_IncreaseTime
                 plp
 ULO_NoTime:     bcs ULO_IsPaused
                 ldy autoDeactObjNum
@@ -690,6 +690,7 @@ ULO_NoTime:     bcs ULO_IsPaused
                 lda #$ff
                 sta autoDeactObjNum
                 jsr InactivateObject
+
 ULO_NoAutoDeact:ldx #ACTI_PLAYER
                 lda actHp+ACTI_PLAYER           ;Heal if not dead and not yet at full health
                 beq ULO_PlayerDead              ;full health
@@ -715,6 +716,7 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
                 inc battery
                 bne ULO_NoRecharge
                 inc battery+1
+
 ULO_NoRecharge: lda actF1+ACTI_PLAYER           ;Check for player losing oxygen
                 cmp #FR_SWIM                    ;(must be swimming & head under water)
                 bcc ULO_RestoreOxygen
@@ -725,23 +727,21 @@ ULO_NoRecharge: lda actF1+ACTI_PLAYER           ;Check for player losing oxygen
                 lda actFd+ACTI_PLAYER
                 bne ULO_OxygenDone
                 lda oxygen
-                bne ULO_NotDrowning
+                bne ULO_DecreaseOxygen
                 lda actF1+ACTI_PLAYER           ;Do damage slower than oxygen drain
                 lsr
                 bcc ULO_OxygenDone
                 jsr ULO_DoDrowningDamage
                 jmp ULO_OxygenDone
-ULO_NotDrowning:lda #$ff
-                skip2
 ULO_RestoreOxygen:
-                lda #$01
-                clc
-                adc oxygen
+                lda oxygen
                 cmp #MAX_OXYGEN
-                bcc ULO_OxygenNotMax
-                lda #MAX_OXYGEN
-ULO_OxygenNotMax:
-                sta oxygen
+                bcs ULO_OxygenDone
+                inc oxygen
+                bcc ULO_OxygenDone
+ULO_DecreaseOxygen:
+                dec oxygen
+
 ULO_OxygenDone: ldy lvlWaterToxinDelay          ;Toxic water?
                 beq ULO_NoWaterDamage
                 bmi ULO_WaterDamageNotFiltered  ;Filter upgrade cancels damage?
@@ -763,8 +763,8 @@ ULO_NoWaterDamage:
                 bmi ULO_NoAirDamage             ;Always canceled by filter upgrade
                 ldy lvlAirToxinDelay
                 jsr ULO_DoToxinDamage
-ULO_NoAirDamage:
-                lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
+
+ULO_NoAirDamage:lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
                 cmp limitD                      ;or if battery runs out
                 bcc ULO_NotOutside
                 beq ULO_Outside
@@ -772,6 +772,7 @@ ULO_NotOutside: lda battery
                 ora battery+1
                 bne ULO_CheckPickupIndex
 ULO_Outside:    jmp DestroyActor
+
 ULO_CheckPickupIndex:                           ;Check if player is colliding with an item
                 ldy #ACTI_FIRSTITEM             ;If was at an item last frame, continue search from that
 ULO_CheckPickupLoop:
