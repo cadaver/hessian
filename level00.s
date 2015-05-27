@@ -4,7 +4,19 @@
 
                 org lvlCodeStart
 
-UpdateLevel:    rts
+UpdateLevel:    ldx #3
+UL_Light:       lda chars+74*8+3,x
+                eor #%00000101
+                sta chars+74*8+3,x
+                lda chars+75*8+3,x
+                eor #%01000001
+                sta chars+75*8+3,x
+                lda chars+76*8+3,x
+                eor #%01010000
+                sta chars+76*8+3,x
+                dex
+                bpl UL_Light
+                rts
 
                 org charInfo
                 incbin bg/level00.chi

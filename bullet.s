@@ -335,6 +335,7 @@ MoveEMP:        lda actTime,x                   ;TODO: should possibly not manip
                 sta Irq1_Bg1+1                  ;knows to skip itself, if both active
                 sta Irq1_Bg2+1
                 sta Irq1_Bg3+1
+                lda #$01
                 sta actTime,x
                 bne MEMP_ColorDone
 MEMP_Restore:   jsr SetZoneColors
