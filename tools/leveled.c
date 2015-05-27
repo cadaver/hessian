@@ -1616,6 +1616,13 @@ void drawmap(void)
 
           sprintf(textbuffer, "TYPE:%s (%02X%02X)", actiontext[(lvlobjb[o] & 0x1c) >> 2], lvlobjd2[o], lvlobjd1[o]);
 
+          if (dataeditmode) dataeditflash++;
+
+          if ((dataeditmode) && (dataeditflash & 16))
+            printtext_color(textbuffer, 128,185,SPR_FONTS,COL_HIGHLIGHT);
+          else
+            printtext_color(textbuffer, 128,185,SPR_FONTS,COL_WHITE);
+
           if (lvlobjr[o])
           {
             sprintf(textbuffer, "%-16s", itemname[lvlobjr[o]]);
@@ -1624,13 +1631,7 @@ void drawmap(void)
             sprintf(textbuffer, "REQ:%02X (ITEM)", lvlobjr[o] & 127);
           }
           else sprintf(textbuffer, "REQ:NONE");
-
-          if (dataeditmode) dataeditflash++;
-
-          if ((dataeditmode) && (dataeditflash & 16))
-            printtext_color(textbuffer, 128,185,SPR_FONTS,COL_HIGHLIGHT);
-          else
-            printtext_color(textbuffer, 128,185,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
         }
       }
       if ((!objfound) && (!actfound))
