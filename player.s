@@ -231,7 +231,6 @@ MH_NotInWater:  lda actD,x
                 beq MH_NoFallCheck
                 and #MB_LANDED/2                ;Falling damage applied right after landing
                 beq MH_NoFallDamage
-                jsr PlayFootstep
                 lda temp3                       ;Possibility to reduce damage by rolling
                 and #AMF_ROLL
                 beq MH_NoRollSave
@@ -255,13 +254,15 @@ MH_RollSaveRight:
 MH_NoRollSave:  sec
                 tya
                 sbc #DAMAGING_FALL_DISTANCE
-                bcc MH_NoFallDamage
-                beq MH_NoFallDamage
+                bcc MH_NoFallDamage2
+                beq MH_NoFallDamage2
                 asl
                 sta temp8
                 asl
                 adc temp8
                 jsr DamageSelf
+MH_NoFallDamage2:
+                jsr PlayFootstep
 MH_NoFallDamage:dec actFall,x
 MH_NoFallCheck: lda actF1,x                     ;Check for special movement states
                 cmp #FR_CLIMB
