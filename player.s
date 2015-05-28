@@ -231,6 +231,7 @@ MH_NotInWater:  lda actD,x
                 beq MH_NoFallCheck
                 and #MB_LANDED/2                ;Falling damage applied right after landing
                 beq MH_NoFallDamage
+                jsr PlayFootstep
                 lda temp3                       ;Possibility to reduce damage by rolling
                 and #AMF_ROLL
                 beq MH_NoRollSave
@@ -524,6 +525,8 @@ MH_StartRoll:   lda #$00
                 ldy #UPG_MOVEMENT
                 lda #DRAIN_ROLL
                 jsr DrainBatteryDouble
+                lda #SFX_ROLL
+                jsr PlayMovementSound
                 lda #FR_ROLL
                 jmp MH_AnimDone
 MH_NoNewRoll:   lda temp3
@@ -546,10 +549,12 @@ MH_NoInitClimbDown:
                 lda #$00
                 sta actFd,x
                 lda #FR_DUCK
-                bne MH_AnimDone
+                jmp MH_AnimDone
 MH_DuckAnim:    lda #$01
                 jsr AnimationDelay
-                bcc MH_AnimDone2
+                bcs MH_DuckAnimFrame
+                rts
+MH_DuckAnimFrame:
                 lda actF1,x
                 adc #$00
                 cmp #FR_DUCK+2
@@ -589,8 +594,16 @@ MH_WalkAnimSpeedPos:
                 adc #$40
                 adc actFd,x
                 sta actFd,x
+                bcc MH_AnimDone2
                 lda actF1,x
-                adc #$00
+                pha
+                and #$03
+                cmp #$01
+                bne MH_NoFootstep
+                jsr PlayFootstep
+MH_NoFootstep:  pla
+                clc
+                adc #$01
                 cmp #FR_WALK+8
                 bcc MH_AnimDone
                 ldy #UPG_MOVEMENT
@@ -1329,4 +1342,18 @@ CreateSplash:   lda #ACTI_FIRSTEFFECT
                 and #$c0
                 sta actYL,y
                 lda #SFX_SPLASH
-                jmp PlaySfx
+PMS_DoPlay:     jmp PlaySfx
+
+        ; Play footstep sound during player movement. No-op if music is on
+        ;
+        ; Parameters: X=0 (no-op otherwise)
+        ; Returns: -
+        ; Modifies: A,Y
+
+PlayFootstep:   lda #SFX_FOOTSTEP
+PlayMovementSound:
+                cpx #ACTI_PLAYER
+                bne PMS_NoSound
+                ldy musicMode
+                beq PMS_DoPlay
+PMS_NoSound:    rts

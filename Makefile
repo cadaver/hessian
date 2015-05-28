@@ -130,6 +130,12 @@ sfx/splash.sfx: sfx/splash.ins
 sfx/object.sfx: sfx/object.ins
 	ins2nt2 sfx/object.ins sfx/object.sfx
 
+sfx/footstep.sfx: sfx/footstep.ins
+	ins2nt2 sfx/footstep.ins sfx/footstep.sfx
+
+sfx/roll.sfx: sfx/roll.ins
+	ins2nt2 sfx/roll.ins sfx/roll.sfx
+
 levelactors.s: bg/level00.lva bg/level00.lvo
 	countobj
 
@@ -139,7 +145,7 @@ main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutsc
 	sfx/autorifle.sfx sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
 	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/heavymelee.sfx \
-	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/drone.sfx sfx/splash.sfx sfx/object.sfx \
+	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/drone.sfx sfx/splash.sfx sfx/object.sfx sfx/footstep.sfx sfx/roll.sfx \
 	pics/covert.iff  pics/loadpic.iff loadermusic.bin
 	pic2chr pics/covert.iff covert.chr -b11 -m12 -n13 -c -s -x30 -y4
 	pic2chr pics/covert.iff covertscr.dat -b11 -m12 -n13 -x30 -y4 -t -c

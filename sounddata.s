@@ -1,32 +1,34 @@
-SFX_THROW           = $00
-SFX_PUNCH           = $01
-SFX_MELEE           = $02
-SFX_HEAVYMELEE      = $03
-SFX_PISTOL          = $04
-SFX_SHOTGUN         = $05
-SFX_AUTORIFLE       = $06
-SFX_SNIPERRIFLE     = $07
-SFX_MINIGUN         = $08
-SFX_FLAMETHROWER    = $09
-SFX_LASER           = $0a
-SFX_PLASMA          = $0b
-SFX_EMP             = $0c
-SFX_GRENADELAUNCHER = $0d
-SFX_BAZOOKA         = $0e
-SFX_DRONE           = $0f
-SFX_RELOAD          = $10
-SFX_COCKWEAPON      = $11
-SFX_COCKSHOTGUN     = $12
-SFX_RELOADFLAMER    = $13
-SFX_RELOADBAZOOKA   = $14
-SFX_POWERUP         = $15
-SFX_SELECT          = $16
-SFX_PICKUP          = $17
-SFX_OBJECT          = $18
-SFX_SPLASH          = $19
-SFX_DAMAGE          = $1a
-SFX_DEATH           = $1b
-SFX_EXPLOSION       = $1c
+SFX_FOOTSTEP        = $00
+SFX_ROLL            = $01
+SFX_THROW           = $02
+SFX_PUNCH           = $03
+SFX_MELEE           = $04
+SFX_HEAVYMELEE      = $05
+SFX_PISTOL          = $06
+SFX_SHOTGUN         = $07
+SFX_AUTORIFLE       = $08
+SFX_SNIPERRIFLE     = $09
+SFX_MINIGUN         = $0a
+SFX_FLAMETHROWER    = $0b
+SFX_LASER           = $0c
+SFX_PLASMA          = $0d
+SFX_EMP             = $0e
+SFX_GRENADELAUNCHER = $0f
+SFX_BAZOOKA         = $10
+SFX_DRONE           = $11
+SFX_RELOAD          = $12
+SFX_COCKWEAPON      = $13
+SFX_COCKSHOTGUN     = $14
+SFX_RELOADFLAMER    = $15
+SFX_RELOADBAZOOKA   = $16
+SFX_POWERUP         = $17
+SFX_SELECT          = $18
+SFX_PICKUP          = $19
+SFX_OBJECT          = $1a
+SFX_SPLASH          = $1b
+SFX_DAMAGE          = $1c
+SFX_DEATH           = $1d
+SFX_EXPLOSION       = $1e
 
         ; Music relocation tables
 
@@ -98,7 +100,9 @@ ntFixupTblAdd:  dc.b NT_ADDZERO+3
 
         ; Sound effect data
 
-sfxTblLo:       dc.b <sfxThrow
+sfxTblLo:       dc.b <sfxFootstep
+                dc.b <sfxRoll
+                dc.b <sfxThrow
                 dc.b <sfxPunch
                 dc.b <sfxMelee
                 dc.b <sfxHeavyMelee
@@ -128,7 +132,9 @@ sfxTblLo:       dc.b <sfxThrow
                 dc.b <sfxDeath
                 dc.b <sfxExplosion
 
-sfxTblHi:       dc.b >sfxThrow
+sfxTblHi:       dc.b >sfxFootstep
+                dc.b >sfxRoll
+                dc.b >sfxThrow
                 dc.b >sfxPunch
                 dc.b >sfxMelee
                 dc.b >sfxHeavyMelee
@@ -158,6 +164,8 @@ sfxTblHi:       dc.b >sfxThrow
                 dc.b >sfxDeath
                 dc.b >sfxExplosion
 
+sfxFootstep:    include sfx/footstep.sfx
+sfxRoll:        include sfx/roll.sfx
 sfxSelect:      include sfx/select.sfx
 sfxPickup:      include sfx/pickup.sfx
 sfxObject:      include sfx/object.sfx
