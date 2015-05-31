@@ -535,13 +535,13 @@ UA_ItemFlashCounter:                            ;Get color override for items + 
                 bne UA_NoHealthBarFlash
                 txa
                 ldy actHp+ACTI_PLAYER           ;Flash the H & C letters if health or battery low
-                cpy #LOW_HEALTH
+                cpy #LOW_HEALTH+1
                 bcc UA_FlashHealth
                 lda #$01
 UA_FlashHealth: sta colors+23*40+9
                 txa
                 ldy battery+1
-                cpy #LOW_BATTERY
+                cpy #LOW_BATTERY+1
                 bcc UA_FlashBattery
                 lda #$01
 UA_FlashBattery:sta colors+23*40+23

@@ -697,7 +697,7 @@ ULO_NoAutoDeact:ldx #ACTI_PLAYER
                 cmp #HP_PLAYER
                 bcs ULO_NoHealing
                 lda battery+1                   ;No healing if low battery
-                cmp #LOW_BATTERY
+                cmp #LOW_BATTERY+1
                 bcc ULO_NoHealing
                 lda healTimer
 ULO_HealingRate:adc #INITIAL_HEALTIMER-1        ;C=1 here
