@@ -556,9 +556,6 @@ UA_NoHealthBarFlash:
                 bcc UA_ToxinEffectFrame
                 iny
 UA_ToxinEffectFrame:
-                lda Irq1_Bg3+1
-                cmp #EMP_COLOROVERRIDE          ;EMP color override? In that case skip this
-                beq UA_NoToxinEffect
                 lda (zoneLo),y
                 sta Irq1_Bg3+1
 UA_NoToxinEffect:
