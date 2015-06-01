@@ -22,8 +22,8 @@ logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
 START_LEVEL     = $00
-START_X         = $0500
-START_Y         = $0700
+START_X         = $3080
+START_Y         = $2000
 
                 org scriptCodeStart
 

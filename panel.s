@@ -221,6 +221,7 @@ UP_MeleeWeaponLoop:
                 bpl UP_MeleeWeaponLoop
 UP_SkipAmmo:    lsr panelUpdateFlags
                 bcc UP_SkipScore
+                if SHOW_FREE_MEMORY == 0 && SHOW_BATTERY == 0
                 lda score
                 ldx score+1
                 ldy score+2
@@ -233,6 +234,7 @@ UP_SkipAmmo:    lsr panelUpdateFlags
                 jsr PrintBCDDigitsLSB
                 lda #"0"                        ;The final 0 is fixed, ie. score is internally stored
                 jsr PrintPanelChar              ;as divided by 10
+                endif
 UP_SkipScore:   lda textTime
                 beq UP_TextDone
                 cmp #INDEFINITE_TEXT_DURATION*2
