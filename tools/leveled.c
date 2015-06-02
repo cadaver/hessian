@@ -2759,7 +2759,6 @@ void transferchar(int c, int d)
   chinfo[c] = 0;
   chcol[d] = chcol[c];
   chcol[c] = 9;
-
 }
 
 void transferblock(int c, int d)
@@ -3133,6 +3132,7 @@ void optimizechars(void)
       {
         transferchar(d,c);
         charused[d] = 0;
+        charused[c] = 1;
         break;
       }
     }
