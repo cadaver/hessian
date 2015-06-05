@@ -3188,7 +3188,8 @@ void updateblockinfo(void)
         bi |= 4; // Ladder
       for (d = 0; d < 16; d++)
       {
-        if (chinfo[blockdata[c*16+d]] & 1)
+        // Shelf bit can be used to mark objects nonnavigable
+        if ((chinfo[blockdata[c*16+d]] & 17) == 1)
           gc++;
       }
       if (gc >= 4)
