@@ -200,45 +200,15 @@ slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
 sortSprC:       ds.b MAX_SPR*2,0
 sprIrqLine:     ds.b MAX_SPR*2,0
 
-        ; Playroutine variables
+        ; Misc. tables/variables
 
-ntChnPattPos:   dc.b 0
-ntChnCounter:   dc.b 0
-ntChnNewNote:   dc.b 0
-ntChnWavePos:   dc.b 0
-ntChnPulsePos:  dc.b 0
-ntChnWave:      dc.b 0
-ntChnPulse:     dc.b 0
-
-                dc.b 0,0,0,0,0,0,0
-                dc.b 0,0,0,0,0,0,0
-
-ntChnGate:      dc.b $fe
-ntChnTrans:     dc.b $ff
-ntChnCmd:       dc.b $01
-ntChnSongPos:   dc.b 0
-ntChnPattNum:   dc.b 0
-ntChnDuration:  dc.b 0
-ntChnNote:      dc.b 0
-
-                dc.b $fe,$ff,$01,0,0,0,0
-                dc.b $fe,$ff,$01,0,0,0,0
-
-ntChnFreqLo:    dc.b 0
-ntChnFreqHi:    dc.b 0
-ntChnWaveTime:  dc.b 0
-ntChnPulseTime: dc.b 0
-ntChnSfx:       dc.b 0
-ntChnSfxLo:     dc.b 0
-ntChnSfxHi:
-ntChnWaveOld:   dc.b 0
-
-                dc.b 0,0,0,0,0,0,0
-                dc.b 0,0,0,0,0,0,0
-
-        ; Last used save slot
-        
+d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 saveSlotChoice: dc.b 0
+routeXH:        ds.b 4,0
+routeYH:        ds.b 4,0
+routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
+healthBarLetter:dc.b "H", "C"
 
         ; Level properties, objects and spawner data (not saved)
 
@@ -315,13 +285,6 @@ actNavNewXH:    ds.b MAX_COMPLEXACT,0
 actNavNewYH:    ds.b MAX_COMPLEXACT,0
 actNavNewExclude:ds.b MAX_COMPLEXACT,0
 
-        ; Chunk-file memory allocation variables
-
-fileLo:         ds.b MAX_CHUNKFILES,0
-fileHi:         ds.b MAX_CHUNKFILES,0
-fileNumObjects: ds.b MAX_CHUNKFILES,0
-fileAge:        ds.b MAX_CHUNKFILES,0
-
         ; Frequency table
 
 ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
@@ -339,16 +302,51 @@ ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
                 dc.w $8b42,$9389,$9c4f,$a59b,$af74,$b9e2
                 dc.w $c4f0,$d0a6,$dd0e,$ea33,$f820,$ffff
 
-        ; Misc. tables/variables
+        ; Playroutine variables
 
-d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
-routeXH:        ds.b 4,0
-routeYH:        ds.b 4,0
-routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
+ntChnPattPos:   dc.b 0
+ntChnCounter:   dc.b 0
+ntChnNewNote:   dc.b 0
+ntChnWavePos:   dc.b 0
+ntChnPulsePos:  dc.b 0
+ntChnWave:      dc.b 0
+ntChnPulse:     dc.b 0
+
+                dc.b 0,0,0,0,0,0,0
+                dc.b 0,0,0,0,0,0,0
+
 shiftOffsetTbl: dc.b 6,6,6
                 dc.b 0,0,0
                 dc.b 6,6,6
 healthBarPosTbl:dc.b 10,24
-healthBarLetter:dc.b "H", "C"
 timeMaxTbl:     dc.b 99,60,60,25
+
+ntChnGate:      dc.b $fe
+ntChnTrans:     dc.b $ff
+ntChnCmd:       dc.b $01
+ntChnSongPos:   dc.b 0
+ntChnPattNum:   dc.b 0
+ntChnDuration:  dc.b 0
+ntChnNote:      dc.b 0
+
+                dc.b $fe,$ff,$01,0,0,0,0
+                dc.b $fe,$ff,$01,0,0,0,0
+
+ntChnFreqLo:    dc.b 0
+ntChnFreqHi:    dc.b 0
+ntChnWaveTime:  dc.b 0
+ntChnPulseTime: dc.b 0
+ntChnSfx:       dc.b 0
+ntChnSfxLo:     dc.b 0
+ntChnSfxHi:
+ntChnWaveOld:   dc.b 0
+
+                dc.b 0,0,0,0,0,0,0
+                dc.b 0,0,0,0,0,0,0
+
+        ; Chunk-file memory allocation variables
+
+fileLo:         ds.b MAX_CHUNKFILES,0
+fileHi:         ds.b MAX_CHUNKFILES,0
+fileNumObjects: ds.b MAX_CHUNKFILES,0
+fileAge:        ds.b MAX_CHUNKFILES,0
