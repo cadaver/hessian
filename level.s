@@ -381,6 +381,7 @@ OperateObject:  lda actF1+ACTI_PLAYER           ;Already in enter/operate stance
                 clc
                 bne OO_Done
                 lda lvlObjB,y                   ;Must either be manually activated object,
+                and #$ff-OBJ_SIZE
                 cmp #OBJTYPE_DOOR+OBJ_ACTIVE    ;or a door opened from elsewhere
                 beq OO_EnterNoOperate
                 and #OBJ_MODEBITS
@@ -890,13 +891,13 @@ ULO_CONotOver:  txa                             ;no need to rescan until moved
 ULO_COFound:    stx lvlObjNum
                 lda lvlObjB,x
                 tay
-                and #OBJ_TYPEBITS
-                cmp #OBJTYPE_DOOR
+                and #OBJ_TYPEBITS+OBJ_ACTIVE
+                cmp #OBJTYPE_DOOR+OBJ_ACTIVE
                 beq ULO_COShowMarker
                 tya
                 and #OBJ_MODEBITS
                 cmp #OBJMODE_MANUAL             ;If object is manually activated
-                bcc ULO_CODone                  ;or a door with any mode, show marker
+                bcc ULO_CODone                  ;or an open door, show marker
 ULO_COShowMarker:
                 ldy #ACTI_FIRSTPLRBULLET
                 lda actT,y                      ;If marker already shown, remove it
