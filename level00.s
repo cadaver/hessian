@@ -24,7 +24,7 @@ UL_Light:       lda chars+75*8+1,x
                 incbin bg/level00.lva
 
                 org lvlLoadName
-                dc.b "STORAGE",0
+                dc.b "WAREHOUSES",0
 
                 org lvlLoadWaterSplashColor
                 dc.b 0                          ;Water splash color override

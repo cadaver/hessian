@@ -843,28 +843,26 @@ ULO_CNTNext:    dex
                 ldx #ACTI_LASTNPC
 ULO_CNTNotOver: stx ULO_CheckNearTrigger+1
 
-ULO_CheckObject:ldx actXH+ACTI_PLAYER           ;Rescan objects whenever player
-                ldy actYH+ACTI_PLAYER           ;block position changes
+ULO_CheckObject:ldy actYH+ACTI_PLAYER           ;Rescan objects whenever player block position changes
+                ldx actYL+ACTI_PLAYER           ;If player stands on the upper half of a block
+                cpx #$81                        ;check 1 block above
+                bcs ULO_CONotAtTop
+                dey
+ULO_CONotAtTop: ldx actXH+ACTI_PLAYER
                 lda lvlObjNum
 ULO_COLastCheckX:
-                cpx #$00
+                cpx ULO_COCmpX+1
                 bne ULO_CORescan
 ULO_COLastCheckY:
-                cpy #$00
+                cpy ULO_COSubY+1
                 beq ULO_CONoRescan
 ULO_CORescan:   lda #$80                        ;Start from beginning
-ULO_CONoRescan: stx ULO_COLastCheckX+1
-                sty ULO_COLastCheckY+1
+ULO_CONoRescan: stx ULO_COCmpX+1
+                sty ULO_COSubY+1
                 cmp #$ff
                 beq ULO_CODone
                 cmp #$80
                 bcc ULO_CODone
-                stx ULO_COCmpX+1
-                ldx actYL+ACTI_PLAYER           ;If player stands on top of a block
-                cpx #$40                        ;check 1 block above
-                bcs ULO_CONotAtTop
-                dey
-ULO_CONotAtTop: sty ULO_COSubY+1
                 and #$7f
                 tax
                 clc
@@ -1051,8 +1049,9 @@ CP_OverDown:    lda temp2
                 ldy #$01
 CP_NotOverDown: sta mapY
                 sty blockY
+                lda #$ff
+                sta ULO_COSubY+1                ;Reset object search
                 jsr RedrawScreen
-                sty ULO_COLastCheckY+1          ;Reset object search (Y=$ff)
                 jsr AddAllActorsNextFrame
                 jsr AddActors
                 jsr GetControls

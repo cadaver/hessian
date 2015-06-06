@@ -9,6 +9,7 @@ playerta.pak 06
 playerb.pak 07
 playerba.pak 08
 level00.pak 10
+level01.pak 11
 music00.pak 20
 music01.pak 21
 music02.pak 22
@@ -23,7 +24,6 @@ music10.pak 2A
 music11.pak 2B
 music12.pak 2C
 script00.pak 30
-script01.pak 31
 options.bin 70
 savelist.bin 71
 emptysave.bin 72
