@@ -26,8 +26,8 @@ DMGMOD_NONORGANIC75 = $68                       ;Nonorganic receives 75% of dama
 DMGMOD_NONORGANIC12 = $18                       ;Nonorganic receives 12% of damage
 
 SPDTBL_NORMAL   = 0
-SPDTBL_GRENADE  = 10
-SPDTBL_LAUNCHER = 20
+SPDTBL_GRENADE  = 9
+SPDTBL_LAUNCHER = 18
 
         ; Weapon/attack tables
 
@@ -50,17 +50,17 @@ attackTbl:      dc.b AIM_NONE                   ;None
 
 bulletXSpdTbl:  dc.b 0,6,8,6,0                  ;Normal bullets
                 dc.b 0,-6,-8,-6,0
-                dc.b 0,7,8,7,0                  ;Thrown grenade
-                dc.b 0,-7,-8,-7,0
+                dc.b 7,8,7,0                    ;Thrown grenade
+                dc.b 0,-7,-8,-7
                 dc.b 0,7,8,7,0                  ;Launcher grenade
-                dc.b 0,-7,-8,-7,0
+                dc.b 0,-7,-8,-7
 
 bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
                 dc.b -8,-6,0,6,8
-                dc.b -8,-7,-4,-1,0              ;Thrown grenade
-                dc.b -8,-7,-4,-1,0
-                dc.b -8,-7,-3,2,0
-                dc.b -8,-7,-3,2,0
+                dc.b -7,-4,-1,0                 ;Thrown grenade
+                dc.b 0,-7,-4,-1
+                dc.b -8,-7,-3,2,0               ;Launcher grenade
+                dc.b -8,-7,-3,2
 
         ; Weapon data
 
