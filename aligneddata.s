@@ -179,13 +179,6 @@ flipTbl:        dc.b %00000000,%01000000,%10000000,%11000000,%00010000,%01010000
                 dc.b %00001011,%01001011,%10001011,%11001011,%00011011,%01011011,%10011011,%11011011,%00101011,%01101011,%10101011,%11101011,%00111011,%01111011,%10111011,%11111011
                 dc.b %00001111,%01001111,%10001111,%11001111,%00011111,%01011111,%10011111,%11011111,%00101111,%01101111,%10101111,%11101111,%00111111,%01111111,%10111111,%11111111
 
-        ; Sprite variables
-
-sortSprY:       ds.b MAX_SPR*2,0
-sortSprX:       ds.b MAX_SPR*2,0
-sortSprD010:    ds.b MAX_SPR*2,0
-sortSprF:       ds.b MAX_SPR*2,0
-
         ; Char slope table
 
 slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
@@ -197,6 +190,12 @@ slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
                 dc.b $00,$00,$08,$08,$10,$10,$18,$18    ;Slope 6
                 dc.b $20,$20,$28,$28,$30,$30,$38,$38    ;Slope 7
 
+        ; Sprite variables
+
+sortSprY:       ds.b MAX_SPR*2,0
+sortSprX:       ds.b MAX_SPR*2,0
+sortSprD010:    ds.b MAX_SPR*2,0
+sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
 sprIrqLine:     ds.b MAX_SPR*2,0
 
@@ -204,11 +203,11 @@ sprIrqLine:     ds.b MAX_SPR*2,0
 
 d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
+healthBarLetter:dc.b "H", "C"
 saveSlotChoice: dc.b 0
 routeXH:        ds.b 4,0
 routeYH:        ds.b 4,0
 routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
-healthBarLetter:dc.b "H", "C"
 
         ; Level properties, objects and spawner data (not saved)
 
