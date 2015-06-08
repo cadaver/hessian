@@ -663,7 +663,7 @@ moduleTblHi:    dc.b >module0
 
 subTuneModuleTbl:
                 dc.b 13
-                dc.b 0
+                dc.b 1
                 dc.b 4
                 dc.b 5
                 dc.b 6
@@ -673,22 +673,22 @@ subTuneModuleTbl:
                 dc.b 10
                 dc.b 11
                 dc.b 12
-                dc.b 3
-                dc.b 1
+                dc.b 0
                 dc.b 2
+                dc.b 3
 
 subTuneTuneTbl: dc.b 0
+                dc.b 0
+                dc.b 0
+                dc.b 0
+                dc.b 0
+                dc.b 0
+                dc.b 0
+                dc.b 0
+                dc.b 0
+                dc.b 0
+                dc.b 0
                 dc.b 1
-                dc.b 0
-                dc.b 0
-                dc.b 0
-                dc.b 0
-                dc.b 0
-                dc.b 0
-                dc.b 0
-                dc.b 0
-                dc.b 0
-                dc.b 0
                 dc.b 0
                 dc.b 0
 

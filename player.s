@@ -380,6 +380,8 @@ MH_StartJump:   ldy #AL_JUMPSPEED
                 ldy #UPG_MOVEMENT
                 lda #DRAIN_JUMP
                 jsr DrainBatteryDouble
+                lda #SFX_JUMP
+                jsr PlayMovementSound
                 jsr MH_ResetFall
                 jsr MH_ResetGrounded
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
@@ -1355,6 +1357,6 @@ PlayFootstep:   lda #SFX_FOOTSTEP
 PlayMovementSound:
                 cpx #ACTI_PLAYER
                 bne PMS_NoSound
-                ldy musicMode
+                ldy PS_CurrentSong+1
                 beq PMS_DoPlay
 PMS_NoSound:    rts

@@ -136,6 +136,9 @@ sfx/footstep.sfx: sfx/footstep.ins
 sfx/roll.sfx: sfx/roll.ins
 	ins2nt2 sfx/roll.ins sfx/roll.sfx
 
+sfx/jump.sfx: sfx/jump.ins
+	ins2nt2 sfx/jump.ins sfx/jump.sfx
+
 levelactors.s: bg/level00.lva bg/level00.lvo
 	countobj
 
@@ -145,7 +148,7 @@ main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutsc
 	sfx/autorifle.sfx sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
 	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/heavymelee.sfx \
-	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/drone.sfx sfx/splash.sfx sfx/object.sfx sfx/footstep.sfx sfx/roll.sfx \
+	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/drone.sfx sfx/splash.sfx sfx/object.sfx sfx/footstep.sfx sfx/roll.sfx sfx/jump.sfx \
 	pics/covert.iff  pics/loadpic.iff loadermusic.bin
 	pic2chr pics/covert.iff covert.chr -b11 -m12 -n13 -c -s -x30 -y4
 	pic2chr pics/covert.iff covertscr.dat -b11 -m12 -n13 -x30 -y4 -t -c
@@ -189,19 +192,19 @@ loadermusic2.bin: music/hessianmusic.d64
 	d642prg music/hessianmusic.d64 loader2.bin loadermusic2.bin -h
 
 music00.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 title.bin music00.bin -h
+	d642prg music/hessianmusic.d64 gameover.bin music00.bin -h
 	pack2 music00.bin music00.pak
 
 music01.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 destruction.bin music01.bin -h
+	d642prg music/hessianmusic.d64 title.bin music01.bin -h
 	pack2 music01.bin music01.pak
 
 music02.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 victory.bin music02.bin -h
+	d642prg music/hessianmusic.d64 destruction.bin music02.bin -h
 	pack2 music02.bin music02.pak
 
 music03.pak: music/hessianmusic.d64
-	d642prg music/hessianmusic.d64 gameover.bin music03.bin -h
+	d642prg music/hessianmusic.d64 victory.bin music03.bin -h
 	pack2 music03.bin music03.pak
 
 music04.pak: music/hessianmusic.d64

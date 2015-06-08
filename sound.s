@@ -16,10 +16,10 @@ NT_HRPARAM          = $00
 NT_FIRSTWAVE        = $09
 
 MUSIC_SILENCE       = $00
-MUSIC_TITLE         = $01
-MUSIC_ENDING1       = $04
-MUSIC_ENDING2       = $08
-MUSIC_GAMEOVER      = $0c
+MUSIC_GAMEOVER      = $01
+MUSIC_TITLE         = $04
+MUSIC_ENDING1       = $08
+MUSIC_ENDING2       = $0c
 MUSIC_MYSTERY       = $10
 MUSIC_OUTSIDE       = $14
 MUSIC_OFFICES       = $18
@@ -30,7 +30,7 @@ MUSIC_HIDEOUT       = $28
 MUSIC_NETHER        = $2c
 MUSIC_ASSAULT       = $30
 
-FIRST_INGAME_SONG   = MUSIC_GAMEOVER
+FIRST_INGAME_SONG   = MUSIC_MYSTERY
 
         ; Play a song. Load if necessary. Do not reinit if already playing
         ;
@@ -45,7 +45,7 @@ PlaySong:       sta RestartSong+1
                 ldx musicMode                   ;If music off, always select silence tune
                 bne PS_MusicOn
                 txa
-PS_MusicOn:     sta PSfx_MusicCheck+1
+PS_MusicOn:
 PS_CurrentSong: cmp #$ff
                 beq PS_Done
                 sta PS_CurrentSong+1
@@ -112,7 +112,7 @@ IMD_Store:      sta PlayRoutine,y
                 rts
 
         ; Play a sound effect, with priority (higher memory address has precedence)
-        
+
         ; Parameters: A sound effect number
         ; Returns: -
         ; Modifies: A,loader temp vars
@@ -126,7 +126,7 @@ PlaySfx:        stx zpSrcLo
                 sta zpBitsLo
                 ldx sfxTblHi,y
 PSfx_NextChn:   lda #0                          ;If not playing music, cycle all channels
-PSfx_MusicCheck:ldy #$00                        ;else use first channel only
+PSfx_MusicCheck:ldy PS_CurrentSong+1            ;else use first channel only
                 bne PSfx_HasMusic
                 clc
                 adc #7
