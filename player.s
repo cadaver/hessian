@@ -744,9 +744,14 @@ MH_ClimbAnimDown:
                 adc #FR_CLIMB-1
                 sta actF1,x
                 sta actF2,x
+                pha
                 tya
                 jsr MoveActorY
-                ldy #UPG_MOVEMENT
+                pla
+                lsr
+                bcc MH_NoClimbSound
+                jsr PlayFootstep
+MH_NoClimbSound:ldy #UPG_MOVEMENT
                 lda #DRAIN_CLIMB
                 jsr DrainBatteryDouble
                 jmp NoInterpolation
