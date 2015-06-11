@@ -30,7 +30,7 @@ clean:
 hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak \
-	level00.pak level01.pak common.pak item.pak weapon.pak playert.pak \
+	level00.pak level01.pak level02.pak common.pak item.pak weapon.pak playert.pak \
 	playerb.pak playerta.pak playerba.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
@@ -264,6 +264,15 @@ level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.bli bg/
 	pchunk2 bg/level01.map level01_3.pak
 	pchunk2 bg/level01.blk level01_4.pak
 	filejoin level01_1.pak+level01_2.pak+level01_3.pak+level01_4.pak level01.pak
+
+level02.pak: level02.s memory.s bg/level02.map bg/level02.blk bg/level02.bli bg/level02.chi bg/level02.chc bg/level02.chr bg/level02.lva bg/level02.lvr bg/level02.lvo
+	filejoin bg/level02.lvo+bg/level02.lvr level02_1.bin
+	pack2 level02_1.bin level02_1.pak
+	dasm level02.s -olevel02_2.bin -f3
+	pack2 level02_2.bin level02_2.pak
+	pchunk2 bg/level02.map level02_3.pak
+	pchunk2 bg/level02.blk level02_4.pak
+	filejoin level02_1.pak+level02_2.pak+level02_3.pak+level02_4.pak level02.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak
