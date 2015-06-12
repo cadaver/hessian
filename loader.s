@@ -66,8 +66,8 @@ GB_FastCmp:     cpx #$00                        ;Reach end of buffer?
                 pha
                 jsr FL_FillBuffer               ;Fill buffer for next byte
                 pla
-GB_Done:        ldx loadTempReg
                 clc
+GB_Done:        ldx loadTempReg
 FO_Done:        rts
 GB_Closed:      lda loadBuffer+2
                 sec
@@ -88,7 +88,7 @@ FL_FillBufferWait:
                 bmi FL_FillBufferWait           ;setting DATA low
 FL_FillBufferLoop:
 FL_SpriteWait:  lda $d012                       ;Check for sprite Y-coordinate range
-FL_MaxSprY:     cmp #$00                        ;(these max & min values are filled in the
+FL_MaxSprY:     cmp #$00                        ;(max & min values are filled in the
                 bcs FL_NoSprites                ;raster interrupt)
 FL_MinSprY:     cmp #$00
                 bcs FL_SpriteWait
