@@ -11,14 +11,20 @@ UpdateLevel:    inc bgAnimDelay
                 bne ULDone
                 ldx bgAnimIndex
                 lda randomAreaStart,x
-                pha
                 jsr BgAnimSub
                 sta chars+225*8+2
-                pla
+                lda randomAreaStart,x
                 lsr
                 lsr
                 jsr BgAnimSub
                 sta chars+226*8+2
+                lda randomAreaStart,x
+                lsr
+                lsr
+                lsr
+                lsr
+                jsr BgAnimSub
+                sta chars+227*8+2
                 inx
                 stx bgAnimIndex
 ULDone:         rts
