@@ -1,10 +1,40 @@
                 processor 6502
 
                 include memory.s
+                include mainsym.s
 
                 org lvlCodeStart
 
-UpdateLevel:    rts
+UpdateLevel:    inc bgAnimDelay
+                lda bgAnimDelay
+                and #$03
+                bne ULDone
+                ldx bgAnimIndex
+                lda randomAreaStart,x
+                pha
+                jsr BgAnimSub
+                sta chars+225*8+2
+                pla
+                lsr
+                lsr
+                jsr BgAnimSub
+                sta chars+226*8+2
+                inx
+                stx bgAnimIndex
+ULDone:         rts
+
+BgAnimSub:      and #$03
+                tay
+                lda lightTbl,y
+                rts
+
+lightTbl:       dc.b %00010001
+                dc.b %00010011
+                dc.b %00110001
+                dc.b %00110011
+
+bgAnimDelay:    dc.b 0
+bgAnimIndex:    dc.b 0
 
                 org charInfo
                 incbin bg/level02.chi
