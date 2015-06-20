@@ -15,9 +15,8 @@ ITEM_EMPGENERATOR = 13
 ITEM_GRENADELAUNCHER = 14
 ITEM_BAZOOKA    = 15
 ITEM_GRENADE    = 16
-ITEM_HOMINGDRONE = 17
-ITEM_MEDKIT     = 18
-ITEM_BATTERY    = 19
+ITEM_MEDKIT     = 17
+ITEM_BATTERY    = 18
 
 ITEM_FIRST_FIREARM = ITEM_PISTOL
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
@@ -42,7 +41,6 @@ itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Grenade launcher
                 dc.b 0                          ;Bazooka
                 dc.b 0                          ;Grenade
-                dc.b 0                          ;Homing drone
                 dc.b 0                          ;Medikit
                 dc.b 0                          ;Battery
 
@@ -63,8 +61,7 @@ itemDefaultMaxCount:
                 dc.b 6                          ;Grenade launcher
                 dc.b 4                          ;Bazooka
                 dc.b 5                          ;Grenade
-                dc.b 3                          ;Homing drone
-                dc.b 2                          ;Medikit 
+                dc.b 2                          ;Medikit
                 dc.b 2                          ;Battery
 
 itemMagazineSize:
@@ -84,7 +81,6 @@ itemMagazineSize:
                 dc.b 3                          ;Grenade launcher
                 dc.b 1                          ;Bazooka
                 dc.b 0                          ;Grenade
-                dc.b 0                          ;Homing drone
                 dc.b 0                          ;Medikit
                 dc.b 0                          ;Battery
 
@@ -105,7 +101,6 @@ itemDefaultPickup:
                 dc.b 2                          ;Grenade launcher
                 dc.b 2                          ;Bazooka
                 dc.b 2                          ;Grenade
-                dc.b 1                          ;Homing drone
                 dc.b 1                          ;Medikit
                 dc.b 1                          ;Battery
 
@@ -125,7 +120,6 @@ itemNPCMinDist: dc.b 0                          ;Fists
                 dc.b 2                          ;Grenade launcher
                 dc.b 3                          ;Bazooka
                 dc.b 2                          ;Grenade
-                dc.b 2                          ;Homing drone
 
 itemNPCMaxDist: dc.b 1                          ;Fists
                 dc.b 1                          ;Knife
@@ -143,7 +137,6 @@ itemNPCMaxDist: dc.b 1                          ;Fists
                 dc.b 5                          ;Grenade launcher
                 dc.b 7                          ;Bazooka
                 dc.b 6                          ;Grenade
-                dc.b 7                          ;Homing drone
 
 itemNPCAttackLength:                            ;Note: stored as negative
                 dc.b -6/2                       ;Fists
@@ -162,7 +155,6 @@ itemNPCAttackLength:                            ;Note: stored as negative
                 dc.b -6/2                       ;Grenade launcher
                 dc.b -6/2                       ;Bazooka
                 dc.b -6/2                       ;Grenade
-                dc.b -6/2                       ;Homing drone
 
 itemNPCAttackThreshold:
                 dc.b $08                        ;Fists
@@ -181,5 +173,4 @@ itemNPCAttackThreshold:
                 dc.b $40                        ;Grenade launcher
                 dc.b $50                        ;Bazooka
                 dc.b $40                        ;Grenade
-                dc.b $50                        ;Homing drone
 

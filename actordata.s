@@ -13,15 +13,14 @@ ACT_PLASMA      = 11
 ACT_LAUNCHERGRENADE = 12
 ACT_GRENADE     = 13
 ACT_ROCKET      = 14
-ACT_DRONE       = 15
-ACT_EXPLOSION   = 16
-ACT_SMOKETRAIL  = 17
-ACT_WATERSPLASH = 18
-ACT_SMALLSPLASH = 19
-ACT_OBJECTMARKER = 20
-ACT_SPEECHBUBBLE = 21
-ACT_TESTNPC     = 22
-ACT_TESTENEMY   = 23
+ACT_EXPLOSION   = 15
+ACT_SMOKETRAIL  = 16
+ACT_WATERSPLASH = 17
+ACT_SMALLSPLASH = 18
+ACT_OBJECTMARKER = 19
+ACT_SPEECHBUBBLE = 20
+ACT_TESTNPC     = 21
+ACT_TESTENEMY   = 22
 
 HP_PLAYER       = 56
 HP_ENEMY        = 12
@@ -87,7 +86,6 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adLauncherGrenade
                 dc.b <adGrenade
                 dc.b <adRocket
-                dc.b <adDrone
                 dc.b <adExplosion
                 dc.b <adSmokeTrail
                 dc.b <adWaterSplash
@@ -111,7 +109,6 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adLauncherGrenade
                 dc.b >adGrenade
                 dc.b >adRocket
-                dc.b >adDrone
                 dc.b >adExplosion
                 dc.b >adSmokeTrail
                 dc.b >adWaterSplash
@@ -158,7 +155,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b 0                          ;Left frame add
                 dc.b 19                         ;Number of frames
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 11,12,13,14,15,16,17,18
+                dc.b 11,12,13,14,15,16,17
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -231,12 +228,6 @@ adRocket:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b 30,31,32,33,34             ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 30,$80+31,$80+32,$80+33,34
 
-adDrone:        dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 4                          ;Number of frames
-                dc.b 45,46,47,46                ;Frametable (first all frames of sprite1, then sprite2)
-
 adExplosion:    dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
@@ -253,25 +244,25 @@ adWaterSplash:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 5                          ;Number of frames
-                dc.b 48,49,50,51,52             ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 45,46,47,48,49             ;Frametable (first all frames of sprite1, then sprite2)
 
 adSmallSplash:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
-                dc.b 53,54,55                   ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 50,51,52                   ;Frametable (first all frames of sprite1, then sprite2)
 
 adObjectMarker: dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 1                          ;Number of frames
-                dc.b 56
+                dc.b 53
 
 adSpeechBubble: dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 1                          ;Number of frames
-                dc.b 57
+                dc.b 54
 
         ; Actor logic data
 
@@ -289,7 +280,6 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alLauncherGrenade
                 dc.b <alGrenade
                 dc.b <alRocket
-                dc.b <alDrone
                 dc.b <alExplosion
                 dc.b <alSmokeTrail
                 dc.b <alWaterSplash
@@ -313,7 +303,6 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alLauncherGrenade
                 dc.b >alGrenade
                 dc.b >alRocket
-                dc.b >alDrone
                 dc.b >alExplosion
                 dc.b >alSmokeTrail
                 dc.b >alWaterSplash
@@ -444,13 +433,6 @@ alSmokeTrail:   dc.w MoveSmokeTrail             ;Update routine
 alSmallSplash:  dc.w MoveSmallSplash            ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-
-alDrone:        dc.w MoveDrone                  ;Update routine
-                dc.w ExplodeActor               ;Destroy routine
-                dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 4                          ;Horizontal size
-                dc.b 4                          ;Size up
-                dc.b 4                          ;Size down
 
 alObjectMarker: dc.w MoveObjectMarker           ;Update routine
                 dc.w RemoveActor                ;Destroy routine

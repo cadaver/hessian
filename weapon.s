@@ -18,15 +18,12 @@ WD_SPEEDTABLEOFFSET = 9
 WD_SFX          = 10
 WD_BACKFR       = 11
 WD_IDLEFR       = 12
-WD_IDLEFRLEFT   = 13
-WD_ATTACKFR     = 14
-WD_ATTACKFRLEFT = 15
-WD_PREPAREFR    = 16                            ;Melee weapons only
-WD_PREPAREFRLEFT = 17
-WD_RELOADDELAY  = 16                            ;Firearms only
-WD_RELOADSFX    = 17
-WD_RELOADDONESFX = 18
-WD_LOCKANIMFRAME = 19
+WD_ATTACKFR     = 13
+WD_PREPAREFR    = 14                            ;Melee weapons only
+WD_RELOADDELAY  = 14                            ;Firearms only
+WD_RELOADSFX    = 15
+WD_RELOADDONESFX = 16
+WD_LOCKANIMFRAME = 17
 
 WDB_NONE        = 0
 WDB_NOWEAPONSPRITE = 1
@@ -64,7 +61,7 @@ AH_SetIdleWeaponFrame:
                 bcs AH_NoWeaponFrame
                 ldy #WD_BACKFR
                 cmp #FR_ENTER
-                bcs AH_BackWeaponFrame
+                bcs AH_SetWeaponFrame
                 lda wpnBits                     ;Check for animation lock (for weapons with
                 and #WDB_LOCKANIMATION          ;backpack)
                 beq AH_NoLockAnimation
@@ -73,16 +70,18 @@ AH_SetIdleWeaponFrame:
                 sta actF2,x
 AH_NoLockAnimation:
                 ldy #WD_IDLEFR
-AH_SetPrepareWeaponFrame:
-                lda actD,x
-                bpl AH_NoAttackRight
-                iny
-AH_NoAttackRight:
-AH_BackWeaponFrame:
+AH_SetWeaponFrame:
                 lda wpnBits
                 lsr
                 bcs AH_NoWeaponFrame
+                lda actD,x                      ;Check whether to show left or right frame
+                asl
                 lda (wpnLo),y
+                bcc AH_WeaponFrameRight
+                cpy #WD_BACKFR                  ;Back frame does not depend on direction
+                beq AH_WeaponFrameRight
+                eor #$80
+AH_WeaponFrameRight:
                 skip2
 AH_NoWeaponFrame:
                 lda #NOWEAPONFRAME
@@ -202,15 +201,13 @@ AH_StoreAttackFrame:
                 lda temp2
                 adc #5
                 sta AH_FireDir+1
-                iny
-AH_AimRight:    lda wpnBits
-                lsr
-                lda #NOWEAPONFRAME
+AH_AimRight:    jsr AH_SetWeaponFrame
+                lda actWpnF,x
+                cmp #NOWEAPONFRAME
                 bcs AH_NoWeaponFrame2
-                lda (wpnLo),y
                 adc temp2
-AH_NoWeaponFrame2:
                 sta actWpnF,x
+AH_NoWeaponFrame2:
                 lda actAttackD,x
                 beq AH_CanFire
                 dec actAttackD,x                ;Decrement delay / progress the melee animation
@@ -235,7 +232,7 @@ AH_MeleePrepare:lda #FR_PREPARE                 ;Show prepare frame for hands & 
                 adc #$00
                 sta actF2,x
                 ldy #WD_PREPAREFR
-                jmp AH_SetPrepareWeaponFrame
+                jmp AH_SetWeaponFrame
 AH_MeleeAnimation:
                 lda actAttackD,x                ;Check for finishing animation
                 cmp #$83
@@ -300,8 +297,6 @@ AH_FireDir:     lda #$00
                 lda actFlags,y
                 and #AF_GROUPBITS               ;Copy group from attacker
                 sta actFlags,x
-                lda #NOTARGET
-                sta actAITarget,x               ;Reset target for homing bullets
                 ldy #WD_DAMAGE                  ;Set duration and damage
                 lda (wpnLo),y
                 sta actHp,x

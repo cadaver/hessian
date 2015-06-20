@@ -121,9 +121,6 @@ sfx/laser.sfx: sfx/laser.ins
 sfx/plasma.sfx: sfx/plasma.ins
 	ins2nt2 sfx/plasma.ins sfx/plasma.sfx
 
-sfx/drone.sfx: sfx/drone.ins
-	ins2nt2 sfx/drone.ins sfx/drone.sfx
-
 sfx/splash.sfx: sfx/splash.ins
 	ins2nt2 sfx/splash.ins sfx/splash.sfx
 
@@ -139,7 +136,7 @@ sfx/roll.sfx: sfx/roll.ins
 sfx/jump.sfx: sfx/jump.ins
 	ins2nt2 sfx/jump.ins sfx/jump.sfx
 
-levelactors.s: bg/level00.lva bg/level00.lvo
+levelactors.s: bg/level00.lva bg/level00.lvo bg/level01.lva bg/level01.lvo bg/level02.lva bg/level02.lvo
 	countobj
 
 main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutscene.s file.s init.s input.s item.s itemdata.s level.s \
@@ -148,7 +145,7 @@ main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutsc
 	sfx/autorifle.sfx sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
 	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/heavymelee.sfx \
-	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/drone.sfx sfx/splash.sfx sfx/object.sfx sfx/footstep.sfx sfx/roll.sfx sfx/jump.sfx \
+	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/splash.sfx sfx/object.sfx sfx/footstep.sfx sfx/roll.sfx sfx/jump.sfx \
 	pics/covert.iff  pics/loadpic.iff loadermusic.bin
 	pic2chr pics/covert.iff covert.chr -b11 -m12 -n13 -c -s -x30 -y4
 	pic2chr pics/covert.iff covertscr.dat -b11 -m12 -n13 -x30 -y4 -t -c
