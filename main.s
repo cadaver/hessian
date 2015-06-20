@@ -82,14 +82,8 @@ MainLoop:       jsr ScrollLogic
 
 randomAreaEnd:
 
-        ; Disposable init part, overwritten by loadable script code
+        ; Non-aligned data
 
-                include init.s
-
-        ; Aligned & non-aligned data
-
-                include aligneddata.s
-                include leveldata.s
                 include sounddata.s
                 include paneldata.s
                 include aidata.s
@@ -97,6 +91,15 @@ randomAreaEnd:
                 include weapondata.s
                 include actordata.s
                 include text.s
+
+        ; Disposable init part, overwritten by loadable script code
+
+                include init.s
+
+        ; Aligned data and game state
+
+                include aligneddata.s
+                include leveldata.s
 
         ; Dynamic allocation area begin
 
