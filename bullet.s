@@ -242,13 +242,18 @@ MLG_DoNothing:  rts
         ; Returns: -
         ; Modifies: A,Y
 
-MoveMine:       lda #$02
-                jsr AnimationDelay
-                bcc MM_NoAnimation
-                lda actF1,x
-                eor #$01
+MoveMine:       lda actTime,x
+                tay
+                lsr
+                lsr
+                and #$01
                 sta actF1,x
-MM_NoAnimation: sec
+                tya
+                and #$07
+                bne MM_NoSound
+                lda #SFX_PICKUP
+                jsr PlaySfx
+MM_NoSound:     sec
                 jsr CheckBulletCollisions       ;Explode on enemy contact
                 bcs ExplodeGrenade
                 jmp MoveGrenade                 ;Otherwise behave like a grenade

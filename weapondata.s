@@ -384,6 +384,6 @@ wdMine:         dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b 75                         ;Bullet time duration
                 dc.b 2                          ;Bullet speed in pixels
                 dc.b SPDTBL_GRENADE             ;Bullet speed table offset
-                dc.b SFX_THROW                  ;Sound effect
+                dc.b SFX_MELEE                  ;Sound effect
 
 fromHipFrameTbl:dc.b FR_WALK+4,FR_WALK+2,FR_WALK
