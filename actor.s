@@ -56,8 +56,7 @@ AL_CLIMBSPEED   = 25
 GRP_NONE        = $00                           ;Does not collide/take damage
 GRP_HEROES      = $01
 GRP_ENEMIES     = $02
-GRP_ROBOTS      = $03
-GRP_BEASTS      = $04
+GRP_BEASTS      = $03
 
 AF_GROUPBITS    = $07
 AF_INITONLYSIZE = $08
