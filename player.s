@@ -382,7 +382,6 @@ MH_StartJump:   ldy #AL_JUMPSPEED
                 jsr DrainBatteryDouble
                 lda #SFX_JUMP
                 jsr PlayMovementSound
-                jsr MH_ResetFall
                 jsr MH_ResetGrounded
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 lda (actLo),y
@@ -633,7 +632,7 @@ MH_InitClimb:   lda #$80
                 adc #$00
                 sta actF1,x
                 sta actF2,x
-                jsr MH_ResetFall
+                lda #$00
                 sta actSX,x
                 sta actSY,x
                 jmp NoInterpolation
@@ -832,10 +831,9 @@ MH_ExitWaterCommon:
                 lda actYL,x
                 and #$c0
                 sta actYL,x
-                jsr MH_ResetFall
-                sta actSY,x
                 lda #MB_GROUNDED
-                sta actMB,x                     ;Forcibly clear water bit
+                jsr MH_SetMoveBits              ;A=0 when returning, resets falling
+                sta actSY,x
                 jsr NoInterpolation
                 lda #FR_DUCK+1
                 jmp MH_AnimDone
@@ -859,19 +857,16 @@ MH_NotSwimmingUp:
                 lda #FR_SWIM
 MH_SwimAnimDone:jmp MH_AnimDone
 
-MH_ResetFall:   lda #$00
-                sta actFall,x
-                sta actFallL,x
-                rts
-
 MH_SetGrounded: lda actMB,x
                 ora #MB_GROUNDED
                 bne MH_SetMoveBits
-
 MH_ResetGrounded:
                 lda actMB,x
                 and #$ff-MB_GROUNDED
 MH_SetMoveBits: sta actMB,x
+MH_ResetFall:   lda #$00
+                sta actFall,x
+                sta actFallL,x
                 rts
 
 MH_GetSignedHalfSpeed:
