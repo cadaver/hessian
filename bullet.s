@@ -175,7 +175,7 @@ MProj_SplashOK: jsr TransformBullet
                 lda lvlWaterSplashColor         ;Color override
                 sta actFlash,x
                 rts
-                
+
         ; Rocket update routine
         ;
         ; Parameters: X actor index
@@ -234,7 +234,24 @@ MLG_NoAnimation:
                 tya
                 and #MB_HITWALL|MB_HITCEILING|MB_LANDED
                 bne ExplodeGrenade              ;Explode on any wall/ground contact
-                rts
+MLG_DoNothing:  rts
+
+        ; Mine update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveMine:       lda #$02
+                jsr AnimationDelay
+                bcc MM_NoAnimation
+                lda actF1,x
+                eor #$01
+                sta actF1,x
+MM_NoAnimation: sec
+                jsr CheckBulletCollisions       ;Explode on enemy contact
+                bcs ExplodeGrenade
+                jmp MoveGrenade                 ;Otherwise behave like a grenade
 
         ; Explode grenade and do radius damage
         ;

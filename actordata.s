@@ -13,14 +13,15 @@ ACT_PLASMA      = 11
 ACT_LAUNCHERGRENADE = 12
 ACT_GRENADE     = 13
 ACT_ROCKET      = 14
-ACT_EXPLOSION   = 15
-ACT_SMOKETRAIL  = 16
-ACT_WATERSPLASH = 17
-ACT_SMALLSPLASH = 18
-ACT_OBJECTMARKER = 19
-ACT_SPEECHBUBBLE = 20
-ACT_TESTNPC     = 21
-ACT_TESTENEMY   = 22
+ACT_MINE        = 15
+ACT_EXPLOSION   = 16
+ACT_SMOKETRAIL  = 17
+ACT_WATERSPLASH = 18
+ACT_SMALLSPLASH = 19
+ACT_OBJECTMARKER = 20
+ACT_SPEECHBUBBLE = 21
+ACT_TESTNPC     = 22
+ACT_TESTENEMY   = 23
 
 HP_PLAYER       = 56
 HP_ENEMY        = 12
@@ -48,7 +49,7 @@ itemDropTable:  dc.b ITEM_MEDKIT
                 dc.b ITEM_MEDKIT
 
         ; Difficulty mod for attacks on player, minus 1
-        
+
 playerAttackModTbl:
                 dc.b $fd,$ff,$01
 
@@ -86,6 +87,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adLauncherGrenade
                 dc.b <adGrenade
                 dc.b <adRocket
+                dc.b <adMine
                 dc.b <adExplosion
                 dc.b <adSmokeTrail
                 dc.b <adWaterSplash
@@ -109,6 +111,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adLauncherGrenade
                 dc.b >adGrenade
                 dc.b >adRocket
+                dc.b >adMine
                 dc.b >adExplosion
                 dc.b >adSmokeTrail
                 dc.b >adWaterSplash
@@ -155,7 +158,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b 0                          ;Left frame add
                 dc.b 19                         ;Number of frames
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 11,12,13,14,15,16,17
+                dc.b 11,12,13,14,15,16,17,18
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -228,6 +231,12 @@ adRocket:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b 30,31,32,33,34             ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 30,$80+31,$80+32,$80+33,34
 
+adMine:         dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 2                          ;Number of frames
+                dc.b 55,56                      ;Frametable (first all frames of sprite1, then sprite2)
+
 adExplosion:    dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
@@ -280,6 +289,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alLauncherGrenade
                 dc.b <alGrenade
                 dc.b <alRocket
+                dc.b <alMine
                 dc.b <alExplosion
                 dc.b <alSmokeTrail
                 dc.b <alWaterSplash
@@ -303,6 +313,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alLauncherGrenade
                 dc.b >alGrenade
                 dc.b >alRocket
+                dc.b >alMine
                 dc.b >alExplosion
                 dc.b >alSmokeTrail
                 dc.b >alWaterSplash
@@ -420,6 +431,13 @@ alRocket:       dc.w MoveRocket                 ;Update routine
                 dc.b 4                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
+
+alMine:         dc.w MoveMine                   ;Update routine
+                dc.w ExplodeGrenade             ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 4                          ;Horizontal size
+                dc.b 3                          ;Size up
+                dc.b 0                          ;Size down
 
 alWaterSplash:
 alExplosion:    dc.w MoveExplosion              ;Update routine

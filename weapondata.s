@@ -15,6 +15,7 @@ DMG_PLASMA      = 18
 DMG_SNIPERRIFLE = 20
 DMG_LAUNCHERGRENADE = 32
 DMG_GRENADE     = 40
+DMG_MINE        = 56
 DMG_BAZOOKA     = 56
 DMG_EMP         = 4                             ;4 damage for 8 frames = 32 total
 
@@ -79,6 +80,7 @@ wpnTblLo:       dc.b <wdFists
                 dc.b <wdGrenadeLauncher
                 dc.b <wdBazooka
                 dc.b <wdGrenade
+                dc.b <wdMine
 
 wpnTblHi:       dc.b >wdFists
                 dc.b >wdKnife
@@ -96,6 +98,7 @@ wpnTblHi:       dc.b >wdFists
                 dc.b >wdGrenadeLauncher
                 dc.b >wdBazooka
                 dc.b >wdGrenade
+                dc.b >wdMine
 
 wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction
@@ -368,6 +371,18 @@ wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 30                         ;Bullet time duration
                 dc.b 6                          ;Bullet speed in pixels
+                dc.b SPDTBL_GRENADE             ;Bullet speed table offset
+                dc.b SFX_THROW                  ;Sound effect
+
+wdMine:         dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
+                dc.b AIM_DIAGONALUP             ;First aim direction
+                dc.b AIM_DOWN+1                 ;First invalid aim direction
+                dc.b 30                         ;Attack delay
+                dc.b ACT_MINE                   ;Bullet actor type
+                dc.b DMG_MINE                   ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b 75                         ;Bullet time duration
+                dc.b 2                          ;Bullet speed in pixels
                 dc.b SPDTBL_GRENADE             ;Bullet speed table offset
                 dc.b SFX_THROW                  ;Sound effect
 
