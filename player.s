@@ -25,9 +25,6 @@ WATER_YBRAKING = 3
 HUMAN_MAX_YSPEED = 6*8
 
 DAMAGING_FALL_DISTANCE = 4
-MIN_ROLLSAVE_SPEED = 24
-
-MAX_SKILL       = 3
 
 INITIAL_GROUNDACC = 5
 INITIAL_INAIRACC = 1
@@ -234,23 +231,18 @@ MH_NotInWater:  lda actD,x
                 lda temp3                       ;Possibility to reduce damage by rolling
                 and #AMF_ROLL
                 beq MH_NoRollSave
-                lda actSX,x
-                adc #MIN_ROLLSAVE_SPEED-1       ;C=1 here
-                cmp #MIN_ROLLSAVE_SPEED*2       ;Must have sufficient X-speed for roll
+                lda actSX,x                     ;Must be facing move direction and have some X-speed
+                beq MH_NoRollSave
+                eor actD,x
+                bmi MH_NoRollSave
+                lda actMoveCtrl,x
+                and #JOY_DOWN|JOY_LEFT|JOY_RIGHT
+                cmp #JOY_DOWN+1
                 bcc MH_NoRollSave
-                lda actD,x
-                asl
-                lda #JOY_DOWN|JOY_RIGHT
-                bcc MH_RollSaveRight
-                lda #JOY_DOWN|JOY_LEFT
-MH_RollSaveRight:
-                cmp actMoveCtrl,x
-                bne MH_NoRollSave
-                lda #$01                        ;Reset prevctrl to allow to start roll
-                sta actPrevCtrl,x
-                sta actFall,x
-                clc
-                skip1
+                lda #$01
+                sta actPrevCtrl,x               ;Reset prevctrl to allow roll regardless of timing
+                sta actFall,x                   ;Also reset remaining forced ducking from fall
+                dey
 MH_NoRollSave:  sec
                 tya
                 sbc #DAMAGING_FALL_DISTANCE
