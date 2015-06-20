@@ -52,7 +52,7 @@ MF_YMoveOK:     lda temp8
 
         ; Move actor with gravity and ground/wall collisions. Does not modify horizontal velocity
         ;
-        ; Parameters: X actor index, A gravity acceleration (should be positive), Y speed limit,
+        ; Parameters: X actor index, A gravity acceleration (should be positive), Y Y-speed limit,
         ;             temp4 vertical char offset (negative) for ceiling check
         ; Returns: actMB updated, also returned in A
         ; Modifies: A,Y,temp5-temp8
@@ -69,19 +69,21 @@ MoveWithGravity:sta temp6
 MWG_NoYMove:    lda actSX,x                     ;Have X-speed?
                 beq MWG_NoXMove
                 jsr MoveActorX
-MWG_NoXMove:    lda temp5                       ;If grounded, check wall 1 char higher
-                lsr
+MWG_NoXMove:    lda temp5                       ;If grounded, only check wall 1 char higher
+                lsr                             ;If in air, check both at feet & 1 char higher
                 bcs MWG_GroundedWallCheck
 MWG_InAirWallCheck:
                 jsr GetCharInfo
-                jmp MWG_WallCheckDone
+                tay
+                and #CI_OBSTACLE
+                bne MWG_HasWallHit
 MWG_GroundedWallCheck:
                 jsr GetCharInfo1Above
 MWG_WallCheckDone:
                 tay
                 and #CI_OBSTACLE
                 beq MWG_NoWallHit
-                lda actSX,x                     ;If hit wall, back out & set flag
+MWG_HasWallHit: lda actSX,x                     ;If hit wall, back out & set flag
                 beq MWG_WallHitDone
                 bmi MWG_WallHitLeft
 MWG_WallHitRight:
