@@ -439,11 +439,17 @@ UA_SpawnerTopCheck:
 UA_SpawnerBottomCheck:
                 cmp #$00
                 bcs UA_SpawnerNext
+                lda lvlObjD,x
+                and #$0f
+                sta temp8
                 jsr Random
-                and lvlObjDL,x
-UA_SpawnCounter:adc #$00                        ;Spawn counter is not part of savestate, meaning spawning
-                sta UA_SpawnCounter+1           ;will not be deterministic. But it relies on random numbers
-                bcc UA_SpawnerNext              ;in any case
+                and lvlObjD,x
+                lsr
+                lsr
+                lsr
+                lsr
+                clc
+                adc temp8
                 jsr AttemptSpawn
                 ldx temp1
 UA_SpawnerNext: inx
@@ -1376,27 +1382,12 @@ AS_Done2:       rts
 
         ; Attempt to spawn an actor to screen from a spawner object
         ;
-        ; Parameters: A random parameter, X spawner object index
+        ; Parameters: A spawnlist index, X spawner object index
         ; Returns: temp1 stored value of X
         ; Modifies: A,X,Y,temp vars
 
 AttemptSpawn:   stx temp1
                 sta temp2
-                lda lvlObjDH,x
-                lsr
-                lsr
-                lsr
-                lsr
-                sta temp3
-                lda lvlObjY,x
-                and #$7f
-                sta temp4
-                lda lvlObjDH,x
-                and #$0f
-                and temp2
-                clc
-                adc temp3
-                sta temp2                       ;Spawntable-index
                 tax
                 lda lvlSpawnPlot,x              ;Requires a plotbit to spawn?
                 bmi AS_NoPlotBit
@@ -1412,6 +1403,7 @@ AS_NoPlotBit:   lda #ACTI_LASTNPC-MAX_SPAWNEDACT+1 ;Do not use all NPC slots for
                 sta actYL,y
                 ldx temp2
                 lda lvlSpawnT,x
+                beq AS_Done2
                 sta actT,y
                 lda lvlSpawnWpn,x
                 pha

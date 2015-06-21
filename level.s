@@ -32,6 +32,8 @@ OBJTYPE_SPAWN   = $1c
 DOORENTRYDELAY  = 6
 AUTODEACTDELAY  = 12
 
+DATACONTAINER_X = $ff
+
 UpdateLevel     = lvlCodeStart
 
 LoadLevelError: jsr LFR_ErrorPrompt
@@ -129,7 +131,9 @@ LL_SkipLevelDataActors:
                 sta temp1                       ;Persistent object index
                 tax
 LL_SetLevelObjectsActive:
-                lda lvlObjX,x
+                lda lvlObjX,x                   ;Skip objects which are used as param storage for other objects
+                cmp #DATACONTAINER_X
+                beq LL_NextLevelObject
                 ora lvlObjY,x
                 beq LL_NextLevelObject
                 lda lvlObjB,x
@@ -149,7 +153,7 @@ LL_SetLevelObjectsActive:
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_REVEAL             ;If this is a weapon closet, make sure items at it are revealed
                 bne LL_NoReveal
-                jsr AO_Reveal
+                jsr AO_Reveal2
 LL_NoReveal:    jsr AnimateObjectActivation     ;Animate if necessary
 LL_NoAnimation: tya
                 tax
@@ -288,6 +292,8 @@ SLOS_ClearLoop: sta (actLo),y
                 sta temp1                       ;Persistent object index
                 tax
 SLOS_Loop:      lda lvlObjX,x                   ;Check if levelobject needs persistency
+                cmp #DATACONTAINER_X
+                beq SLOS_NextObject
                 ora lvlObjY,x
                 beq SLOS_NextObject
                 lda lvlObjB,x
@@ -367,7 +373,7 @@ FindZoneNum:    sta zoneNum
                 sta limitD
 OO_Done:        rts
 
-        ; Operate a level object.
+        ; Operate a level object
         ;
         ; Parameters: Y object number (should also be in lvlObjNum)
         ; Returns: C=1 if object was operated successfully (should not jump), C=0 if not
@@ -396,7 +402,9 @@ OO_Inactive:    lda lvlObjY,y                   ;If object uses animation, play 
                 bpl OO_NoSound
                 lda #SFX_OBJECT
                 jsr PlaySfx
-OO_NoSound:     lda lvlObjR,y                  ;Check requirement item
+OO_NoSound:     ldx lvlObjD,y                   ;Check requirement item from object parameters if has them
+                bpl OO_RequirementOK
+                lda lvlObjY-$80,x
                 beq OO_RequirementOK
                 sta temp3
                 jsr FindItem
@@ -426,6 +434,21 @@ OO_ContinueOperate:
 OO_Success:     sec
 IO_Done:        rts
 
+        ; Get the 16-bit parameter of a level object
+        ;
+        ; Parameters: Y object number
+        ; Returns: Y param lowbyte, X param highbyte
+        ; Modifies: A,X,Y
+
+GetObjectParam: ldx levelNum                    ;Default highbyte param is current levelnumber (for doors)
+                lda lvlObjD,y
+                bpl GOP_NoStorage
+                tay
+                ldx lvlObjB-$80,y
+                lda lvlObjD-$80,y
+GOP_NoStorage:  tay
+                rts
+
         ; Toggle a level object
         ;
         ; Parameters: Y object number
@@ -440,7 +463,7 @@ ToggleObject:   lda lvlObjB,y
         ; Parameters: Y object number
         ; Returns: -
         ; Modifies: A,X,temp vars
-        
+
 InactivateObject:
                 lda lvlObjB,y                 ;Make sure that is active
                 bpl IO_Done
@@ -453,12 +476,11 @@ InactivateObject:
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_CHAIN
                 bne IO_Done
-                lda lvlObjDL,y
-                tay
-                bcs InactivateObject
+                jsr GetObjectParam
+                jmp InactivateObject
 
         ; Animate a level object by block deltavalue
-        ; 
+        ;
         ; Parameters: A deltavalue, Y object number
         ; Returns: -
         ; Modifies: A,X,temp vars
@@ -489,12 +511,12 @@ AOD_Done:       rts
         ; Activate a level object
         ;
         ; Parameters: Y object number
-        ; Returns: -
+        ; Returns: temp2: object number
         ; Modifies: A,X,Y,temp vars
 
-ActivateObject: lda lvlObjB,y                   ;Make sure that is inactive
+ActivateObject: sty temp2
+                lda lvlObjB,y                   ;Make sure that is inactive
                 bmi AO_Done
-
                 lda lvlObjB,y
                 ora #OBJ_ACTIVE
                 sta lvlObjB,y
@@ -505,7 +527,6 @@ ActivateObject: lda lvlObjB,y                   ;Make sure that is inactive
                 bmi AO_NoPreviousAutoDeact      ;deactivate it immediately
                 cpy autoDeactObjNum
                 beq AO_NoPreviousAutoDeact      ;If same object deactivating, no need to do that
-                sty temp2
                 tay
                 jsr InactivateObject
                 ldy temp2
@@ -514,38 +535,32 @@ AO_NoPreviousAutoDeact:
                 lda #AUTODEACTDELAY
                 sta autoDeactObjCounter
 AO_NoAutoDeact: jsr AnimateObjectActivation     ;Animate object if necessary
+                jsr GetObjectParam              ;Parameter in Y (lo), X (hi)
                 pla
                 and #OBJ_TYPEBITS               ;Check for type-specific action
                 cmp #OBJTYPE_CHAIN
-                beq AO_Chain
+                beq ActivateObject
                 cmp #OBJTYPE_SCRIPT
                 beq AO_Script
                 cmp #OBJTYPE_SWITCH
-                beq AO_Switch
+                beq AO_Toggle
                 cmp #OBJTYPE_REVEAL
                 beq AO_Reveal
 AO_NoOperation: rts
 
-        ; Chained activation
-
-AO_Chain:       lda lvlObjDL,y
-                tay
-                bcs ActivateObject              ;C=1 here
-
         ; Script execution
 
-AO_Script:      ldx lvlObjDH,y
-                lda lvlObjDL,y
+AO_Script:      tya
                 jmp ExecScript
 
-         ; Switch, activate another object in the same level
-
-AO_Switch:      lda lvlObjDL,y                  ;Get destination object and toggle it
-                jmp ToggleObject
+        ; Toggle object
+        
+AO_Toggle:      jmp ToggleObject
 
         ; Reveal actors (weapon closet)
 
-AO_Reveal:      lda lvlObjX,y
+AO_Reveal:      ldy temp2
+AO_Reveal2:     lda lvlObjX,y
                 sta AO_RevealXCmp+1
                 lda lvlObjY,y
                 ora #$80
@@ -636,7 +651,7 @@ AAOG_Loop:      jsr GetCharInfo
         ;
         ; Parameters: X:actor number, Y levelobject number
         ; Returns: -
-        ; Modifies: A,Y
+        ; Modifies: A
 
 SetActorAtObject:
                 lda lvlObjX,y
@@ -953,31 +968,21 @@ ULO_ClearActorLoop:                             ;back to leveldata
 ULO_ClearActorNext:
                 dex
                 bne ULO_ClearActorLoop
-                ldx lvlObjNum
-                lda lvlObjDL,x                  ;Get destination door number
-                pha
-                lda lvlObjDH,x                  ;Get levelnumber
-                bpl ULO_EnterDoorNoScript       ;If negative, exec a script instead
-                and #$7f
-                tax
-                pla
-                jsr ExecScript                  ;On return from the door script, A=object number and Y=level
-                pha
-                tya
-ULO_EnterDoorNoScript:
+                ldy lvlObjNum
+                jsr GetObjectParam
+                sty ULO_DoorNum+1
+                txa                             ;A=destination level
                 jsr ChangeLevel
                 jsr BlankScreen                 ;Blank screen in case level was not changed
-                pla
-                tay
-                jsr ActivateObject              ;Activate the door that was entered
+ULO_DoorNum:    ldy #$00
                 ldx #ACTI_PLAYER                ;Reset animation, falling distance and speed
+                stx actSX+ACTI_PLAYER           ;Stop X-movement
                 jsr MH_StandAnim
                 jsr MH_SetGrounded
                 jsr MH_ResetFall
-                txa
-                sta actSX+ACTI_PLAYER           ;Stop X-movement
                 jsr SetActorAtObject
-                jsr FindPlayerZone              ;After entering any door, face player toward zone center
+                jsr ActivateObject              ;Activate the door that was entered
+                jsr FindPlayerZone              ;After entering door, face player toward zone center
                 jsr GetZoneCenterX
                 lda actXH+ACTI_PLAYER
                 cmp temp8

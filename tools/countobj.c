@@ -20,9 +20,7 @@ unsigned char lvlactw[MAX_LVLACT];
 unsigned char lvlobjx[MAX_LVLOBJ];
 unsigned char lvlobjy[MAX_LVLOBJ];
 unsigned char lvlobjb[MAX_LVLOBJ];
-unsigned char lvlobjd1[MAX_LVLOBJ];
-unsigned char lvlobjd2[MAX_LVLOBJ];
-unsigned char lvlobjr[MAX_LVLOBJ];
+unsigned char lvlobjd[MAX_LVLOBJ];
 int bitareasize = 0;
 int lvlobjbitareasize = 0;
 
@@ -73,21 +71,19 @@ int main(int argc, char** argv)
         fseek(in, 0, SEEK_END);
         length = ftell(in);
         fseek(in, 0, SEEK_SET);
-        numobj = length / 6;
+        numobj = length / 4;
         memset(lvlobjx, 0, sizeof lvlobjx);
         memset(lvlobjy, 0, sizeof lvlobjy);
         fread(&lvlobjx[0], numobj, 1, in);
         fread(&lvlobjy[0], numobj, 1, in);
         fread(&lvlobjb[0], numobj, 1, in);
-        fread(&lvlobjd1[0], numobj, 1, in);
-        fread(&lvlobjd2[0], numobj, 1, in);
-        fread(&lvlobjr[0], numobj, 1, in);
+        fread(&lvlobjd[0], numobj, 1, in);
         fclose(in);
         numpersistentobj = 0;
         actualnumobj = 0;
         for (d = 0; d < MAX_LVLOBJ; d++)
         {
-            if (lvlobjx[d] || lvlobjy[d])
+            if ((lvlobjx[d] || lvlobjy[d]) && (lvlobjx[d] != 0xff))
             {
                 actualnumobj++;
                 // If object is not a sidedoor or spawner, and it does NOT have auto-deactivation,
