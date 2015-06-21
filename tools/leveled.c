@@ -64,6 +64,9 @@ unsigned char zonebg1[NUMZONES];
 unsigned char zonebg2[NUMZONES];
 unsigned char zonebg3[NUMZONES];
 unsigned char zonemusic[NUMZONES];
+unsigned char zonespawnparam[NUMZONES];
+unsigned char zonespawnspeed[NUMZONES];
+unsigned char zonespawncount[NUMZONES];
 
 unsigned char blockinfo[BLOCKS/2];
 
@@ -94,7 +97,7 @@ char *actiontext[] = {
   "SCRIPT",
   "CHAIN",
   "SIDEDOOR",
-  "SPAWN"};
+  "NONE"};
 
 char *spawnmodename[] = {
   "GROUND",
@@ -342,13 +345,15 @@ void level_mainloop(void)
 
   for (;;)
   {
-    int s;
+    int s, shiftdown, ctrldown;
 
     s = win_getspeed(70);
     flash += s;
     flash &= 31;
     k = kbd_getkey();
     ascii = kbd_getascii();
+    shiftdown = win_keystate[KEY_LEFTSHIFT] | win_keystate[KEY_RIGHTSHIFT];
+    ctrldown = win_keystate[KEY_CTRL];
     mouseupdate();
     if (ascii == 27)
     {
@@ -385,7 +390,6 @@ void level_mainloop(void)
       break;
     }
 
-    if (k == KEY_R) randomeditmode ^= 1;
     if (k == KEY_P)
     {
       if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
@@ -396,33 +400,6 @@ void level_mainloop(void)
       }
     }
 
-    if (randomeditmode)
-    {
-      int wpn;
-      if (k == KEY_DOWN) randomactnum++;
-      if (k == KEY_UP) randomactnum--;
-      randomactnum &= NUMRANDOMACT-1;
-      if (k == KEY_Z) randomactt[randomactnum]--;
-      if (k == KEY_X) randomactt[randomactnum]++;
-      if (k == KEY_1) randomactt[randomactnum]--;
-      if (k == KEY_2) randomactt[randomactnum]++;
-      if (k == KEY_3) randomactt[randomactnum] -= 16;
-      if (k == KEY_4) randomactt[randomactnum] += 16;
-      randomactt[randomactnum] &= 0x7f;
-
-      wpn = randomactw[randomactnum] & 0x3f;
-      if (k == KEY_Q) wpn--;
-      if (k == KEY_W) wpn++;
-      randomactw[randomactnum] &= 0xc0;
-      randomactw[randomactnum] |= wpn & 0x3f;
-
-      if (k == KEY_A) randomactp[randomactnum]--;
-      if (k == KEY_S) randomactp[randomactnum]++;
-
-      if (k == KEY_M)
-        randomactw[randomactnum] += 0x40;
-    }
-    else
     {
 
       if (k == KEY_LEFT) mapx--;
@@ -476,12 +453,14 @@ void level_mainloop(void)
 
         if ((!actfound) && (!objfound))
         {
-          if (k == KEY_Z) actnum--;
-          if (k == KEY_X) actnum++;
-          if (k == KEY_1) actnum--;
-          if (k == KEY_2) actnum++;
-          if (k == KEY_3) actnum -= 16;
-          if (k == KEY_4) actnum += 16;
+          if (k == KEY_Z && !shiftdown) actnum--;
+          if (k == KEY_X && !shiftdown) actnum++;
+          if (k == KEY_1 && !shiftdown) actnum--;
+          if (k == KEY_2 && !shiftdown) actnum++;
+          if (k == KEY_Z && shiftdown) actnum -= 16;
+          if (k == KEY_X && shiftdown) actnum += 16;
+          if (k == KEY_1 && shiftdown) actnum -= 16;
+          if (k == KEY_2 && shiftdown) actnum += 16;
           if (k == KEY_I) actnum ^= 128;
         }
 
@@ -696,29 +675,19 @@ void level_mainloop(void)
                   else
                     lvlobjy[paramindex]++;
                 }
-                if (k == KEY_Z)
+                if (k == KEY_Z || k == KEY_1)
                 {
-                  lvlobjy[paramindex]--;
+                  if (!shiftdown)
+                    lvlobjy[paramindex]--;
+                  else
+                    lvlobjy[paramindex] -= 16;
                 }
-                if (k == KEY_X)
+                if (k == KEY_X || k == KEY_2)
                 {
-                  lvlobjy[paramindex]++;
-                }
-                if (k == KEY_1)
-                {
-                  lvlobjy[paramindex]--;
-                }
-                if (k == KEY_2)
-                {
-                  lvlobjy[paramindex]++;
-                }
-                if (k == KEY_3)
-                {
-                  lvlobjy[paramindex] -= 16;
-                }
-                if (k == KEY_4)
-                {
-                  lvlobjy[paramindex] += 16;
+                  if (!shiftdown)
+                    lvlobjy[paramindex]++;
+                  else
+                    lvlobjy[paramindex] += 16;
                 }
               }
             }
@@ -909,60 +878,133 @@ void zone_mainloop(void)
         editmode = EM_MAP;
       break;
     }
-    if (k == KEY_LEFT) mapx--;
-    if (k == KEY_RIGHT) mapx++;
-    if (k == KEY_UP) mapy--;
-    if (k == KEY_DOWN) mapy++;
-    if (mapx < 0) mapx = 0;
-    if (mapy < 0) mapy = 0;
-    if (mapx > (mapsx-10)) mapx = mapsx-10;
-    if (mapy > (mapsy-5)) mapy = mapsy-5;
-    if ((k == KEY_1) || (k == KEY_Z))
+
+    if (k == KEY_S) randomeditmode ^= 1;
+    if (randomeditmode)
     {
-      zonenum--;
-      if (zonenum < 0) zonenum = NUMZONES-1;
+      int wpn;
+      if (k == KEY_DOWN) randomactnum++;
+      if (k == KEY_UP) randomactnum--;
+      randomactnum &= NUMRANDOMACT-1;
+      if (k == KEY_Z && !shiftdown) randomactt[randomactnum]--;
+      if (k == KEY_X && !shiftdown) randomactt[randomactnum]++;
+      if (k == KEY_1 && !shiftdown) randomactt[randomactnum]--;
+      if (k == KEY_2 && !shiftdown) randomactt[randomactnum]++;
+      if (k == KEY_Z && shiftdown) randomactt[randomactnum] -= 16;
+      if (k == KEY_X && shiftdown) randomactt[randomactnum] += 16;
+      if (k == KEY_1 && shiftdown) randomactt[randomactnum] -= 16;
+      if (k == KEY_2 && shiftdown) randomactt[randomactnum] += 16;
+      randomactt[randomactnum] &= 0x7f;
+
+      wpn = randomactw[randomactnum] & 0x3f;
+      if (k == KEY_Q || k == KEY_3) wpn--;
+      if (k == KEY_W || k == KEY_4) wpn++;
+      randomactw[randomactnum] &= 0xc0;
+      randomactw[randomactnum] |= wpn & 0x3f;
+
+      if (k == KEY_O || k == KEY_5) randomactp[randomactnum]--;
+      if (k == KEY_P || k == KEY_6) randomactp[randomactnum]++;
+
+      if (k == KEY_M)
+        randomactw[randomactnum] += 0x40;
     }
-    if ((k == KEY_2) || (k == KEY_X))
+    else
     {
-      zonenum++;
-      if (zonenum >= NUMZONES) zonenum = 0;
-    }
-    if (k == KEY_S)
-    {
-      zonebg1[zonenum] ^= 128;
-    }
-    if (k == KEY_T)
-    {
-      zonebg2[zonenum] ^= 128;
-    }
-    if (k == KEY_N)
-    {
-      zonemusic[zonenum]--;
-    }
-    if (k == KEY_M)
-    {
-      zonemusic[zonenum]++;
-    }
-    if (k == KEY_V)
-    {
-      zonemusic[zonenum] -= 4;
-    }
-    if (k == KEY_B)
-    {
-      zonemusic[zonenum] += 4;
-    }
-    if (k == KEY_DEL)
-    {
-      zonex[zonenum] = 0;
-      zoney[zonenum] = 0;
-    }
-    if (k == KEY_R && shiftdown)
-    {
-      if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
+      if (k == KEY_LEFT) mapx--;
+      if (k == KEY_RIGHT) mapx++;
+      if (k == KEY_UP) mapy--;
+      if (k == KEY_DOWN) mapy++;
+      if (mapx < 0) mapx = 0;
+      if (mapy < 0) mapy = 0;
+      if (mapx > (mapsx-10)) mapx = mapsx-10;
+      if (mapy > (mapsy-5)) mapy = mapsy-5;
+      if (k == KEY_1 || k == KEY_Z)
       {
-        int x = mapx+mousex/32;
-        int y = mapy+mousey/32;
-        relocatezone(x,y);
+        zonenum--;
+        if (zonenum < 0) zonenum = NUMZONES-1;
+      }
+      if (k == KEY_2 || k == KEY_X)
+      {
+        zonenum++;
+        if (zonenum >= NUMZONES) zonenum = 0;
+      }
+      if (k == KEY_3)
+      {
+        if (!shiftdown)
+          zonespawnparam[zonenum]--;
+        else
+          zonespawnparam[zonenum] -= 16;
+      }
+      if (k == KEY_4)
+      {
+        if (!shiftdown)
+          zonespawnparam[zonenum]++;
+        else
+          zonespawnparam[zonenum] += 16;
+      }
+      if (k == KEY_5)
+      {
+        if (!shiftdown)
+          zonespawnspeed[zonenum]--;
+        else
+          zonespawnspeed[zonenum] -= 16;
+      }
+      if (k == KEY_6)
+      {
+        if (!shiftdown)
+          zonespawnspeed[zonenum]++;
+        else
+          zonespawnspeed[zonenum] += 16;
+      }
+      if (k == KEY_7)
+      {
+        if (!shiftdown)
+          zonespawnspeed[zonenum]--;
+        else
+          zonespawnspeed[zonenum] -= 16;
+      }
+      if (k == KEY_8)
+      {
+        if (!shiftdown)
+          zonespawncount[zonenum]++;
+        else
+          zonespawncount[zonenum] += 16;
+      }
+      if (k == KEY_C)
+      {
+        zonebg1[zonenum] ^= 128;
+      }
+      if (k == KEY_T)
+      {
+        zonebg2[zonenum] ^= 128;
+      }
+      if (k == KEY_N)
+      {
+        if (!shiftdown)
+          zonemusic[zonenum]--;
+        else
+          zonemusic[zonenum] -= 4;
+      }
+      if (k == KEY_M)
+      {
+        if (!shiftdown)
+          zonemusic[zonenum]++;
+        else
+          zonemusic[zonenum] += 4;
+      }
+      if (k == KEY_DEL)
+      {
+        zonex[zonenum] = 0;
+        zoney[zonenum] = 0;
+      }
+      if (k == KEY_R && shiftdown)
+      {
+        if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
+        {
+          int x = mapx+mousex/32;
+          int y = mapy+mousey/32;
+          relocatezone(x,y);
+        }
       }
     }
 
@@ -1525,27 +1567,42 @@ void drawmap(void)
     x = zonex[zonenum] - mapx;
     y = zoney[zonenum] - mapy;
 
-    if ((zonex[zonenum]) || (zoney[zonenum]))
+    if (randomeditmode)
     {
-      if ((l >= 0) && (u >= 0) && (l < 10) && (u < 5))
+      int c;
+      for (c = 0; c < NUMRANDOMACT; c++)
       {
-        gfx_line(l*32,u*32,l*32+31,u*32,1);
-        gfx_line(l*32,u*32+1,l*32+31,u*32+1,1);
-        gfx_line(l*32,u*32,l*32,u*32+31,1);
-        gfx_line(l*32+1,u*32,l*32+1,u*32+31,1);
+        sprintf(textbuffer, "%01X: T%02X (%s) W%02X (%s) P%02X %s", c, randomactt[c], actorname[randomactt[c]], randomactw[c] & 0x3f, itemname[randomactw[c] & 0x3f], randomactp[c], spawnmodename[randomactw[c] >> 6]);
+        if (c != randomactnum) printtext_color(textbuffer, 0,10*c,SPR_FONTS,COL_WHITE);
+        else printtext_color(textbuffer,0,10*c,SPR_FONTS,COL_HIGHLIGHT);
       }
-      if ((r >= 0) && (d >= 0) && (r < 10) && (d < 5))
+    }
+    else
+    {
+      if ((zonex[zonenum]) || (zoney[zonenum]))
       {
-        gfx_line(r*32+30,d*32,r*32+30,d*32+31,1);
-        gfx_line(r*32+31,d*32,r*32+31,d*32+31,1);
-        gfx_line(r*32,d*32+30,r*32+31,d*32+30,1);
-        gfx_line(r*32,d*32+31,r*32+31,d*32+31,1);
+        if ((l >= 0) && (u >= 0) && (l < 10) && (u < 5))
+        {
+          gfx_line(l*32,u*32,l*32+31,u*32,1);
+          gfx_line(l*32,u*32+1,l*32+31,u*32+1,1);
+          gfx_line(l*32,u*32,l*32,u*32+31,1);
+          gfx_line(l*32+1,u*32,l*32+1,u*32+31,1);
+        }
+        if ((r >= 0) && (d >= 0) && (r < 10) && (d < 5))
+        {
+          gfx_line(r*32+30,d*32,r*32+30,d*32+31,1);
+          gfx_line(r*32+31,d*32,r*32+31,d*32+31,1);
+          gfx_line(r*32,d*32+30,r*32+31,d*32+30,1);
+          gfx_line(r*32,d*32+31,r*32+31,d*32+31,1);
+        }
+        if ((x >= 0) && (y >= 0) && (x < 10) && (y < 5))
+        {
+          gfx_line(x*32+8,y*32+8,x*32+24,y*32+24,1);
+          gfx_line(x*32+24,y*32+8,x*32+8,y*32+24,1);
+        }
       }
-      if ((x >= 0) && (y >= 0) && (x < 10) && (y < 5))
-      {
-        gfx_line(x*32+8,y*32+8,x*32+24,y*32+24,1);
-        gfx_line(x*32+24,y*32+8,x*32+8,y*32+24,1);
-      }
+      sprintf(textbuffer, "SP.PARAM %02X SP.SPEED %02X SP.COUNT %02X", zonespawnparam[zonenum], zonespawnspeed[zonenum], zonespawncount[zonenum]);
+      printtext_color(textbuffer, 0,155,SPR_FONTS,COL_WHITE);
     }
     sprintf(textbuffer, "XPOS %02X", mapx+mousex/32);
     printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
@@ -1553,12 +1610,14 @@ void drawmap(void)
     printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "COLORS %01X %01X %01X", zonebg1[zonenum] & 15, zonebg2[zonenum] & 15, zonebg3[zonenum] & 15);
     if (zonebg1[zonenum] & 128)
-      strcat(textbuffer, " (NOSAVE)");
+      strcat(textbuffer, " (NOCHECKP)");
     if (zonebg2[zonenum] & 128)
       strcat(textbuffer, " (TOXIC AIR)");
     printtext_color(textbuffer, 80,175,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "MUSIC %02X-%01X", zonemusic[zonenum] / 4, zonemusic[zonenum] % 4);
     printtext_color(textbuffer, 80,185,SPR_FONTS,COL_WHITE);
+
+
 
     if ((zonex[zonenum]) || (zoney[zonenum]))
     {
@@ -1577,23 +1636,6 @@ void drawmap(void)
     
     drawpath();
 
-    if (randomeditmode)
-    {
-      int sp = 0;
-      for (c = 0; c < NUMRANDOMACT; c++)
-      {
-        sprintf(textbuffer, "%01X: T%02X (%s) W%02X (%s) P%02X %s", c, randomactt[c], actorname[randomactt[c]], randomactw[c] & 0x3f, itemname[randomactw[c] & 0x3f], randomactp[c], spawnmodename[randomactw[c] >> 6]);
-        if (c != randomactnum) printtext_color(textbuffer, 0,10*c,SPR_FONTS,COL_WHITE);
-        else printtext_color(textbuffer,0,10*c,SPR_FONTS,COL_HIGHLIGHT);
-      }
-      for (c = 0; c < NUMLVLOBJ; c++)
-      {
-        if ((lvlobjb[c] & 0x1c) == 0x1c) sp++;
-      }
-      sprintf(textbuffer, "SPAWNERS IN LEVEL: %d", sp);
-      printtext_color(textbuffer,0,175,SPR_FONTS,COL_WHITE);
-    }
-    else
     {
       if (actfound)
       {
@@ -2647,6 +2689,9 @@ int initchars(void)
     zonebg1[c] = 0;
     zonebg2[c] = 11;
     zonebg3[c] = 12;
+    zonespawnparam[c] = 0;
+    zonespawnspeed[c] = 0;
+    zonespawncount[c] = 0;
     zonemusic[c] = 0;
   }
   for (c = 0; c < NUMLVLOBJ; c++)
@@ -3914,6 +3959,9 @@ void loadalldata(void)
         zonebg1[c] = 0;
         zonebg2[c] = 11;
         zonebg3[c] = 12;
+        zonespawnparam[c] = 0;
+        zonespawnspeed[c] = 0;
+        zonespawncount[c] = 0;
         zonemusic[c] = 0;
       }
 
@@ -3963,7 +4011,9 @@ void loadalldata(void)
           zonebg2[c] = read8(handle);
           zonebg3[c] = read8(handle);
           zonemusic[c] = read8(handle);
-
+          zonespawnparam[c] = read8(handle);
+          zonespawnspeed[c] = read8(handle);
+          zonespawncount[c] = read8(handle);
           zonex[c] = ((int)zonel[c] + (int)zoner[c]) / 2;
           zoney[c] = ((int)zoneu[c] + (int)zoned[c]) / 2;
 
@@ -4172,7 +4222,7 @@ void savealldata(void)
           if ((zonex[c]) || (zoney[c]))
           {
             zoneoffsets[d] = datasize;
-            datasize += 8 + (zoned[c]-zoneu[c])*(zoner[c]-zonel[c]);
+            datasize += 11 + (zoned[c]-zoneu[c])*(zoner[c]-zonel[c]);
             d++;
           }
         }
@@ -4195,6 +4245,9 @@ void savealldata(void)
             write8(handle, zonebg2[c]);
             write8(handle, zonebg3[c]);
             write8(handle, zonemusic[c]);
+            write8(handle, zonespawnparam[c]);
+            write8(handle, zonespawnspeed[c]);
+            write8(handle, zonespawncount[c]);
 
             for (y = zoneu[c]; y < zoned[c]; y++)
             {

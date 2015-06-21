@@ -88,7 +88,6 @@ DEFAULT_PICKUP  = $ff
 
 LVLOBJSEARCH    = 32
 LVLACTSEARCH    = 32
-SPAWNERSEARCH   = 16
 
 NODAMAGESRC     = $80
 
@@ -346,7 +345,6 @@ GAB_LeftOK1:    cmp limitL
                 lda limitL
 GAB_LeftOK2:    sta UA_RALeftCheck+1            ;Left border
                 sta AA_LeftCheck+1
-                sta UA_SpawnerLeftCheck+1
                 lda mapX
                 clc
                 adc #ADDACTOR_RIGHT_LIMIT
@@ -357,7 +355,6 @@ GAB_RightOK1:   cmp limitR
                 lda limitR
 GAB_RightOK2:   sta UA_RARightCheck+1           ;Right border
                 sta AA_RightCheck+1
-                sta UA_SpawnerRightCheck+1
                 lda mapY
                 ;sec
                 ;sbc #ADDACTOR_TOP_LIMIT
@@ -368,7 +365,6 @@ GAB_TopOK1:     cmp limitU
                 lda limitU
 GAB_TopOK2:     sta UA_RATopCheck+1             ;Top border
                 sta AA_TopCheck+1
-                sta UA_SpawnerTopCheck+1
                 lda mapY
                 clc
                 adc #ADDACTOR_BOTTOM_LIMIT
@@ -379,7 +375,6 @@ GAB_BottomOK1:  cmp limitD
                 lda limitD
 GAB_BottomOK2:  sta UA_RABottomCheck+1          ;Bottom border
                 sta AA_BottomCheck+1
-                sta UA_SpawnerBottomCheck+1
 
         ; Add actors from leveldata to screen
 
@@ -415,51 +410,33 @@ AA_IndexNotOver:stx AA_Start+1
                 adc #LVLACTSEARCH
                 sta AA_EndCmp+1
 
-        ; Process spawners
-        ; NOTE: spawners should be spaced 12 blocks apart horizontally for a continuous
-        ; spawn zone
+        ; Process spawning
 
-UA_SpawnerIndex:ldx #$00
-UA_SpawnerLoop: lda lvlObjB,x
-                and #OBJ_TYPEBITS
-                cmp #OBJTYPE_SPAWN
-                bne UA_SpawnerNext
-                lda lvlObjX,x
-UA_SpawnerLeftCheck:
-                cmp #$00
-                bcc UA_SpawnerNext
-UA_SpawnerRightCheck:
-                cmp #$00
-                bcs UA_SpawnerNext
-                lda lvlObjY,x
-                and #$7f
-UA_SpawnerTopCheck:
-                cmp #$00
-                bcc UA_SpawnerNext
-UA_SpawnerBottomCheck:
-                cmp #$00
-                bcs UA_SpawnerNext
-                lda lvlObjD,x
-                and #$0f
+UA_DoSpawn:     ldy #ZONEH_SPAWNCOUNT
+                lda (zoneLo),y
+                bmi UA_NoSpawnLimit           ;Negative spawncount = unlimited
+UA_SpawnCount:  cmp #$00
+                beq UA_SpawnDone
+UA_NoSpawnLimit:dey
+UA_SpawnDelay:  lda #$00                      ;Spawn delay counting
+                clc
+                adc (zoneLo),y
+                sta UA_SpawnDelay+1
+                bcc UA_SpawnDone
+                dey
+                lda (zoneLo),y
+                lsr                           ;Param high nybble = add
+                lsr
+                lsr
+                lsr
                 sta temp8
                 jsr Random
-                and lvlObjD,x
-                lsr
-                lsr
-                lsr
-                lsr
+                and #$0f
+                and (zoneLo),y                ;Param low nybble = and
                 clc
                 adc temp8
                 jsr AttemptSpawn
-                ldx temp1
-UA_SpawnerNext: inx
-UA_SpawnerEndCmp:cpx #SPAWNERSEARCH
-                bne UA_SpawnerLoop
-                txa
-                and #MAX_LVLOBJ-1
-                sta UA_SpawnerIndex+1
-                adc #SPAWNERSEARCH/2-1           ;C=1, add one more
-                sta UA_SpawnerEndCmp+1
+UA_SpawnDone:
 
         ; Build target list for AI & bullet collision
 
@@ -1382,12 +1359,11 @@ AS_Done2:       rts
 
         ; Attempt to spawn an actor to screen from a spawner object
         ;
-        ; Parameters: A spawnlist index, X spawner object index
-        ; Returns: temp1 stored value of X
+        ; Parameters: A spawnlist index
+        ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-AttemptSpawn:   stx temp1
-                sta temp2
+AttemptSpawn:   sta temp2
                 tax
                 lda lvlSpawnPlot,x              ;Requires a plotbit to spawn?
                 bmi AS_NoPlotBit
@@ -1403,7 +1379,6 @@ AS_NoPlotBit:   lda #ACTI_LASTNPC-MAX_SPAWNEDACT+1 ;Do not use all NPC slots for
                 sta actYL,y
                 ldx temp2
                 lda lvlSpawnT,x
-                beq AS_Done2
                 sta actT,y
                 lda lvlSpawnWpn,x
                 pha
@@ -1424,13 +1399,13 @@ AS_SideCommon:  sta actYH,y
 AS_SideNoReverse:
                 asl
                 bcc AS_GroundRight
-AS_GroundLeft:  lda UA_SpawnerLeftCheck+1
+AS_GroundLeft:  lda AA_LeftCheck+1
                 cmp limitL                      ;Never spawn at zone edge, would be visible
                 beq AS_GroundRight              ;(zones that are only one screen wide should not
                 sta actXH,y                     ;contain spawners, as otherwise this code will
                 lda #$00                        ;loop indefinitely)
                 beq AS_GroundStoreDir
-AS_GroundRight: ldx UA_SpawnerRightCheck+1
+AS_GroundRight: ldx AA_RightCheck+1
                 cpx limitR
                 beq AS_GroundLeft
                 dex
@@ -1448,6 +1423,7 @@ AS_CheckBackground:
                 beq AS_SpawnOK
 AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
 AS_SpawnOK:     jsr InitActor
+                inc UA_SpawnCount+1
                 ldy #AL_SPAWNAIMODE
                 lda (actLo),y                   ;Set default AI mode for actor type
                 tay
@@ -1481,7 +1457,7 @@ AS_InAirSide:   jsr Random
                 pla
                 and #$03
                 adc #$01
-                adc UA_SpawnerTopCheck+1
+                adc AA_TopCheck+1
                 jmp AS_SideCommon
 AS_InAirTop:    jsr Random
                 pha
@@ -1496,9 +1472,9 @@ AS_InAirTop:    jsr Random
                 bcc AS_InAirCoordOK
                 sbc #$07
 AS_InAirCoordOK:sec
-                adc UA_SpawnerLeftCheck+1
+                adc AA_LeftCheck+1
                 sta actXH,y
-                lda UA_SpawnerTopCheck+1
+                lda AA_TopCheck+1
                 sta actYH,y
                 bpl AS_CheckBackground
 

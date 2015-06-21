@@ -6,7 +6,10 @@ ZONEH_BG1       = 4
 ZONEH_BG2       = 5
 ZONEH_BG3       = 6
 ZONEH_MUSIC     = 7
-ZONEH_DATA      = 8
+ZONEH_SPAWNPARAM = 8
+ZONEH_SPAWNSPEED = 9
+ZONEH_SPAWNCOUNT = 10
+ZONEH_DATA      = 11
 
 OBJ_ANIMATE     = $80                           ;In levelobject Y-coordinate
 OBJ_MODEBITS    = $03
@@ -27,7 +30,6 @@ OBJTYPE_REVEAL  = $0c
 OBJTYPE_SCRIPT  = $10
 OBJTYPE_CHAIN   = $14
 OBJTYPE_SIDEDOOR = $18
-OBJTYPE_SPAWN   = $1c
 
 DOORENTRYDELAY  = 6
 AUTODEACTDELAY  = 12
@@ -1054,8 +1056,11 @@ CP_OverDown:    lda temp2
                 ldy #$01
 CP_NotOverDown: sta mapY
                 sty blockY
-                lda #$ff
-                sta ULO_COSubY+1                ;Reset object search
+                ldx #$00
+                stx UA_SpawnCount+1             ;Reset enemy spawning variables
+                stx UA_SpawnDelay+1
+                dex
+                stx ULO_COSubY+1                ;Reset object search
                 jsr RedrawScreen
                 jsr AddAllActorsNextFrame
                 jsr AddActors
