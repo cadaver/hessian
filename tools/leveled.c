@@ -959,9 +959,9 @@ void zone_mainloop(void)
       if (k == KEY_7)
       {
         if (!shiftdown)
-          zonespawnspeed[zonenum]--;
+          zonespawncount[zonenum]--;
         else
-          zonespawnspeed[zonenum] -= 16;
+          zonespawncount[zonenum] -= 16;
       }
       if (k == KEY_8)
       {

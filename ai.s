@@ -13,6 +13,7 @@ AIMODE_IDLE         = 0
 AIMODE_TURNTO       = 1
 AIMODE_FOLLOW       = 2
 AIMODE_SNIPER       = 3
+AIMODE_NOTPERSISTENT = $80
 
 NOTARGET            = $ff
 
