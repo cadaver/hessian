@@ -190,24 +190,137 @@ slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
                 dc.b $00,$00,$08,$08,$10,$10,$18,$18    ;Slope 6
                 dc.b $20,$20,$28,$28,$30,$30,$38,$38    ;Slope 7
 
-        ; Sprite variables
-
-sortSprY:       ds.b MAX_SPR*2,0
-sortSprX:       ds.b MAX_SPR*2,0
-sortSprD010:    ds.b MAX_SPR*2,0
-sortSprF:       ds.b MAX_SPR*2,0
-sortSprC:       ds.b MAX_SPR*2,0
-sprIrqLine:     ds.b MAX_SPR*2,0
-
-        ; Misc. tables/variables
+        ; Misc. tables
 
 d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 healthBarLetter:dc.b "H", "C"
-saveSlotChoice: dc.b 0
-routeXH:        ds.b 4,0
-routeYH:        ds.b 4,0
-routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
+
+        ; Frequency table
+
+ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
+                dc.w $0314,$0343,$0374,$03a9,$03e1,$041c
+                dc.w $045a,$049c,$04e2,$052d,$057c,$05cf
+                dc.w $0628,$0685,$06e8,$0752,$07c1,$0837
+                dc.w $08b4,$0939,$09c5,$0a5a,$0af7,$0b9e
+                dc.w $0c4f,$0d0a,$0dd1,$0ea3,$0f82,$106e
+                dc.w $1168,$1271,$138a,$14b3,$15ee,$173c
+                dc.w $189e,$1a15,$1ba2,$1d46,$1f04,$20dc
+                dc.w $22d0,$24e2,$2714,$2967,$2bdd,$2e79
+                dc.w $313c,$3429,$3744,$3a8d,$3e08,$41b8
+                dc.w $45a1,$49c5,$4e28,$52cd,$57ba,$5cf1
+                dc.w $6278,$6853,$6e87,$751a,$7c10,$8371
+                dc.w $8b42,$9389,$9c4f,$a59b,$af74,$b9e2
+                dc.w $c4f0,$d0a6,$dd0e,$ea33,$f820,$ffff
+
+        ; Music relocation tables
+
+ntFixupTblLo:   dc.b <Play_SongTblP2
+                dc.b <Play_SongTblP1
+                dc.b <Play_SongTblP0
+                dc.b <Play_PattTblHiM1
+                dc.b <Play_PattTblLoM1
+                dc.b <Play_CmdFiltM1
+                dc.b <Play_CmdPulseM1
+                dc.b <Play_CmdWaveM1
+                dc.b <Play_CmdSRM1
+                dc.b <Play_CmdADM1
+                dc.b <Play_FiltSpdM1b
+                dc.b <Play_FiltSpdM1a
+                dc.b <Play_FiltTimeM1
+                dc.b <Play_PulseSpdM1b
+                dc.b <Play_PulseSpdM1a
+                dc.b <Play_PulseTimeM1
+                dc.b <Play_NoteP0
+                dc.b <Play_NoteM1b
+                dc.b <Play_NoteM1a
+                dc.b <Play_WaveP0
+                dc.b <Play_WaveM1
+
+ntFixupTblHi:   dc.b >Play_SongTblP2
+                dc.b >Play_SongTblP1
+                dc.b >Play_SongTblP0
+                dc.b >Play_PattTblHiM1
+                dc.b >Play_PattTblLoM1
+                dc.b >Play_CmdFiltM1
+                dc.b >Play_CmdPulseM1
+                dc.b >Play_CmdWaveM1
+                dc.b >Play_CmdSRM1
+                dc.b >Play_CmdADM1
+                dc.b >Play_FiltSpdM1b
+                dc.b >Play_FiltSpdM1a
+                dc.b >Play_FiltTimeM1
+                dc.b >Play_PulseSpdM1b
+                dc.b >Play_PulseSpdM1a
+                dc.b >Play_PulseTimeM1
+                dc.b >Play_NoteP0
+                dc.b >Play_NoteM1b
+                dc.b >Play_NoteM1a
+                dc.b >Play_WaveP0
+                dc.b >Play_WaveM1
+
+ntFixupTblAdd:  dc.b NT_ADDZERO+3
+                dc.b NT_ADDZERO+2
+                dc.b NT_ADDPATT+1
+                dc.b NT_ADDPATT
+                dc.b NT_ADDLEGATOCMD
+                dc.b NT_ADDLEGATOCMD
+                dc.b NT_ADDLEGATOCMD
+                dc.b NT_ADDCMD
+                dc.b NT_ADDCMD
+                dc.b NT_ADDFILT
+                dc.b NT_ADDZERO
+                dc.b NT_ADDFILT
+                dc.b NT_ADDPULSE
+                dc.b NT_ADDZERO
+                dc.b NT_ADDPULSE
+                dc.b NT_ADDWAVE
+                dc.b NT_ADDZERO+1
+                dc.b NT_ADDZERO
+                dc.b NT_ADDWAVE
+                dc.b NT_ADDZERO+1
+                dc.b NT_ADDZERO
+
+        ; Playroutine variables
+
+ntChnPattPos:   dc.b 0
+ntChnCounter:   dc.b 0
+ntChnNewNote:   dc.b 0
+ntChnWavePos:   dc.b 0
+ntChnPulsePos:  dc.b 0
+ntChnWave:      dc.b 0
+ntChnPulse:     dc.b 0
+
+                dc.b 0,0,0,0,0,0,0
+                dc.b 0,0,0,0,0,0,0
+
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
+healthBarPosTbl:dc.b 10,24
+timeMaxTbl:     dc.b 99,60,60,25
+
+ntChnGate:      dc.b $fe
+ntChnTrans:     dc.b $ff
+ntChnCmd:       dc.b $01
+ntChnSongPos:   dc.b 0
+ntChnPattNum:   dc.b 0
+ntChnDuration:  dc.b 0
+ntChnNote:      dc.b 0
+
+                dc.b $fe,$ff,$01,0,0,0,0
+                dc.b $fe,$ff,$01,0,0,0,0
+
+ntChnFreqLo:    dc.b 0
+ntChnFreqHi:    dc.b 0
+ntChnWaveTime:  dc.b 0
+ntChnPulseTime: dc.b 0
+ntChnSfx:       dc.b 0
+ntChnSfxLo:     dc.b 0
+ntChnSfxHi:
+ntChnWaveOld:   dc.b 0
+
+                dc.b 0,0,0,0,0,0,0
+                dc.b 0,0,0,0,0,0,0
 
         ; Level properties, objects and spawner data (not saved)
 
@@ -226,14 +339,21 @@ lvlWaterToxinDelay: dc.b 0
 lvlAirToxinDelay: dc.b 0
 lvlPropertiesEnd:
 
-        ; Target list for AI / collision
-        ; Must not page-cross, as selfmodifying code is used to read it
+        ; Navigation and misc. variablse
 
-targetList:     ds.b MAX_COMPLEXACT+1,0
-targetListEnd:
-                if (targetList & $ff00) != ((targetListEnd-1) & $ff00)
-                    err
-                endif
+routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
+routeXH:        ds.b 4,0
+routeYH:        ds.b 4,0
+saveSlotChoice: dc.b 0
+
+        ; Sprite variables
+
+sortSprY:       ds.b MAX_SPR*2,0
+sortSprX:       ds.b MAX_SPR*2,0
+sortSprD010:    ds.b MAX_SPR*2,0
+sortSprF:       ds.b MAX_SPR*2,0
+sortSprC:       ds.b MAX_SPR*2,0
+sprIrqLine:     ds.b MAX_SPR*2,0
 
         ; Actor variables
 
@@ -282,64 +402,18 @@ actNavNewXH:    ds.b MAX_COMPLEXACT,0
 actNavNewYH:    ds.b MAX_COMPLEXACT,0
 actNavNewExclude:ds.b MAX_COMPLEXACT,0
 
-        ; Frequency table
+        ; Target list for AI / collision
+        ; Must not page-cross, as selfmodifying code is used to read it
 
-ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
-                dc.w $0314,$0343,$0374,$03a9,$03e1,$041c
-                dc.w $045a,$049c,$04e2,$052d,$057c,$05cf
-                dc.w $0628,$0685,$06e8,$0752,$07c1,$0837
-                dc.w $08b4,$0939,$09c5,$0a5a,$0af7,$0b9e
-                dc.w $0c4f,$0d0a,$0dd1,$0ea3,$0f82,$106e
-                dc.w $1168,$1271,$138a,$14b3,$15ee,$173c
-                dc.w $189e,$1a15,$1ba2,$1d46,$1f04,$20dc
-                dc.w $22d0,$24e2,$2714,$2967,$2bdd,$2e79
-                dc.w $313c,$3429,$3744,$3a8d,$3e08,$41b8
-                dc.w $45a1,$49c5,$4e28,$52cd,$57ba,$5cf1
-                dc.w $6278,$6853,$6e87,$751a,$7c10,$8371
-                dc.w $8b42,$9389,$9c4f,$a59b,$af74,$b9e2
-                dc.w $c4f0,$d0a6,$dd0e,$ea33,$f820,$ffff
+targetList:     ds.b MAX_COMPLEXACT+1,0
+targetListEnd:
+                if (targetList & $ff00) != ((targetListEnd-1) & $ff00)
+                    err
+                endif
 
-        ; Playroutine variables
+        ; More misc. tables
 
-ntChnPattPos:   dc.b 0
-ntChnCounter:   dc.b 0
-ntChnNewNote:   dc.b 0
-ntChnWavePos:   dc.b 0
-ntChnPulsePos:  dc.b 0
-ntChnWave:      dc.b 0
-ntChnPulse:     dc.b 0
-
-                dc.b 0,0,0,0,0,0,0
-                dc.b 0,0,0,0,0,0,0
-
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
-healthBarPosTbl:dc.b 10,24
-timeMaxTbl:     dc.b 99,60,60,25
-
-ntChnGate:      dc.b $fe
-ntChnTrans:     dc.b $ff
-ntChnCmd:       dc.b $01
-ntChnSongPos:   dc.b 0
-ntChnPattNum:   dc.b 0
-ntChnDuration:  dc.b 0
-ntChnNote:      dc.b 0
-
-                dc.b $fe,$ff,$01,0,0,0,0
-                dc.b $fe,$ff,$01,0,0,0,0
-
-ntChnFreqLo:    dc.b 0
-ntChnFreqHi:    dc.b 0
-ntChnWaveTime:  dc.b 0
-ntChnPulseTime: dc.b 0
-ntChnSfx:       dc.b 0
-ntChnSfxLo:     dc.b 0
-ntChnSfxHi:
-ntChnWaveOld:   dc.b 0
-
-                dc.b 0,0,0,0,0,0,0
-                dc.b 0,0,0,0,0,0,0
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
         ; Chunk-file memory allocation variables
 
