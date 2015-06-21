@@ -69,10 +69,10 @@ FadeInLoop:     inx
 
                 lda fastLoadMode
                 beq NoPause
-                ldx #70
+                ldx #85
                 lda ntscFlag
                 beq PauseLoop
-                ldx #84                         ;If using fastloading, pause for roughly 1.5 seconds
+                ldx #100                        ;If using fastloading, pause for roughly 1.5 seconds
 PauseLoop:      jsr WaitBottom                  ;to show the logo a little longer
                 dex
                 bne PauseLoop

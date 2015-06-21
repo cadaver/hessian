@@ -28,12 +28,12 @@ invCount:       ds.b MAX_INVENTORYITEMS,0
 invMag:         ds.b MAX_INVENTORYITEMS,0
 scriptF:        dc.b $ff
 scriptEP:       dc.b 0
-playerStateZeroEnd:
 plotBits:       ds.b MAX_PLOTBITS/8,0
 atType:         ds.b MAX_ACTORTRIGGERS+1,0
 atScriptF:      ds.b MAX_ACTORTRIGGERS,0
 atScriptEP:     ds.b MAX_ACTORTRIGGERS,0
 atMask:         ds.b MAX_ACTORTRIGGERS,0
+playerStateZeroEnd:
 lvlDataActBits: ds.b LVLDATAACTTOTALSIZE,0
 lvlObjBits:     ds.b LVLOBJTOTALSIZE,0
                 if OPTIMIZE_SAVE > 0
@@ -47,6 +47,10 @@ lvlActWpn:      ds.b MAX_LVLACT,0
 lvlActOrg:      ds.b MAX_LVLACT,0
                 if OPTIMIZE_SAVE = 0
 playerStateEnd:
+                endif
+
+                if playerStateZeroEnd-playerStateStart > 255
+                    err
                 endif
 
         ; In-memory checkpoint save

@@ -57,6 +57,7 @@ TitleScreen:    jsr BlankScreen
                 lda #$0f
                 sta scrollX
                 ldx #$00
+                stx scrollY
 ClearScreenLoop:lda #$20
                 sta screen1,x
                 sta screen1+$100,x
@@ -308,24 +309,15 @@ LoadGameCancel: jmp MainMenu
 StartNewGame:   jsr FadeOutAll
                 jsr SaveModifiedOptions
 InitPlayer:     lda #$00                        ;Init player state (level number, inventory selected item,
-                ldx #playerStateZPEnd-playerStateZPStart-1 ;inventory items)
+                ldx #playerStateZPEnd-playerStateZPStart-1 ;inventory items, plotbits, triggers)
 IP_InitZPState: sta playerStateZPStart,x
                 dex
                 bpl IP_InitZPState
-                ldx #playerStateZeroEnd-playerStateStart-1
-IP_InitState:   sta playerStateStart,x
+                ldx #playerStateZeroEnd-playerStateStart
+IP_InitState:   sta playerStateStart-1,x
                 dex
-                bpl IP_InitState
-                ldx #MAX_PLOTBITS/8-1           ;Clear plotbits
-IP_InitPlotBits:sta plotBits,x
-                dex
-                bpl IP_InitPlotBits
-                ldx #MAX_ACTORTRIGGERS-1        ;Clear actor triggers
-IP_InitActorTriggers:
-                sta atType,x
-                dex
-                bpl IP_InitActorTriggers
-                ldx #MAX_LVLACT-1
+                bne IP_InitState
+                ldx #MAX_LVLACT-1               ;No stored levelactors
 IP_InitLevelActors:
                 sta lvlActT,x
                 dex
