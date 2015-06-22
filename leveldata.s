@@ -60,12 +60,12 @@ saveLvlName:    ds.b 16,0
 saveState:      ds.b playerStateEnd - playerStateStart,0
 saveStateZP:    ds.b playerStateZPEnd - playerStateZPStart,0
                 if OPTIMIZE_SAVE > 0
-saveLvlActX:    ds.b MAX_GLOBALACT,0
-saveLvlActY:    ds.b MAX_GLOBALACT,0
-saveLvlActF:    ds.b MAX_GLOBALACT,0
-saveLvlActT:    ds.b MAX_GLOBALACT,0
-saveLvlActWpn:  ds.b MAX_GLOBALACT,0
-saveLvlActOrg:  ds.b MAX_GLOBALACT,0
+saveLvlActX:    ds.b MAX_SAVEACT,0
+saveLvlActY:    ds.b MAX_SAVEACT,0
+saveLvlActF:    ds.b MAX_SAVEACT,0
+saveLvlActT:    ds.b MAX_SAVEACT,0
+saveLvlActWpn:  ds.b MAX_SAVEACT,0
+saveLvlActOrg:  ds.b MAX_SAVEACT,0
                 endif
 saveXL:         dc.b 0
 saveXH:         dc.b 0

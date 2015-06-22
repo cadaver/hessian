@@ -10,6 +10,7 @@ SHOW_NAVIGATION_TIME = 0
 SHOW_NAVIGATION_TARGET = 0
 OPTIMIZE_SPRITEIRQS = 1
 
+DROP_ITEM_TEST  = 1                             ;Drop a copy of current item to test actor save
 ITEM_CHEAT      = 1
 AMMO_CHEAT      = 0
 UPGRADE_CHEAT   = 0

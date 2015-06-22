@@ -1069,33 +1069,44 @@ SaveCheckpoint: if OPTIMIZE_SAVE > 0
                 jsr SaveLevelActorState
                 ldx #MAX_LVLACT-1
                 ldy #$00
-SCP_SaveGlobalActorsLoop:
-                lda lvlActT,x
+SCP_SaveGlobalLoop:
+                lda lvlActT,x                   ;First save the important global actors
                 beq SCP_SaveGlobalNext
-                sta saveLvlActT,y
                 lda lvlActOrg,x
-                sta saveLvlActOrg,y
-                bmi SCP_SaveGlobalNext
-                asl                             ;Global bit to N flag
+                bmi SCP_SaveGlobalNext          ;(skip leveldata actors and temp now)
+                asl
                 bpl SCP_SaveGlobalNext
-                lda lvlActX,x
-                sta saveLvlActX,y
-                lda lvlActY,x
-                sta saveLvlActY,y
-                lda lvlActF,x
-                sta saveLvlActF,y
-                lda lvlActWpn,x
-                sta saveLvlActWpn,y
-                iny
+                jsr SaveActorSub
 SCP_SaveGlobalNext:
                 dex
-                bpl SCP_SaveGlobalActorsLoop
+                bpl SCP_SaveGlobalLoop
+                ldx nextTempLvlActIndex
+SCP_SaveItemsLoop:
+                cpy #MAX_SAVEACT                ;Then save as many temp items (weapons etc.)
+                bcs SCP_SaveItemsDone           ;as possible, from the latest created
+                lda lvlActT,x
+                bpl SCP_SaveItemsNext
+                lda lvlActOrg,x
+                cmp #ORG_GLOBAL
+                bcs SCP_SaveItemsNext
+                jsr SaveActorSub
+SCP_SaveItemsNext:
+                inx
+                cpx #MAX_LVLACT
+                bcc SCP_SaveItemsNotOver
+                ldx #$00
+SCP_SaveItemsNotOver:
+                cpx nextTempLvlActIndex         ;Exit when wrapped
+                bne SCP_SaveItemsLoop
+SCP_SaveItemsDone:
                 lda #$00
-SCP_SaveGlobalClearLoop:                        ;Clear unused global actors
+SCP_SaveClearLoop:                              ;Finally clear unused slots
+                cpy #MAX_SAVEACT
+                bcs SCP_SaveClearDone
                 sta saveLvlActT,y
                 iny
-                cpy #MAX_GLOBALACT
-                bcc SCP_SaveGlobalClearLoop
+                bpl SCP_SaveClearLoop
+SCP_SaveClearDone:
                 endif
                 jsr SaveLevelObjectState
                 ldx #15
@@ -1140,6 +1151,23 @@ SCP_HealthOK:   lda saveBattery+1
                 sta saveBattery
 SCP_BatteryOK:  rts
 
+                if OPTIMIZE_SAVE > 0
+SaveActorSub:   lda lvlActX,x
+                sta saveLvlActX,y
+                lda lvlActY,x
+                sta saveLvlActY,y
+                lda lvlActF,x
+                sta saveLvlActF,y
+                lda lvlActT,x
+                sta saveLvlActT,y
+                lda lvlActWpn,x
+                sta saveLvlActWpn,y
+                lda lvlActOrg,x
+                sta saveLvlActOrg,y
+                iny
+                rts
+                endif
+
         ; Restore an in-memory checkpoint
         ;
         ; Parameters: -
@@ -1160,8 +1188,8 @@ RCP_ZPState:    lda saveStateZP-1,x
                 ldx #>playerStateStart
                 jsr SaveState_CopyMemory
                 if OPTIMIZE_SAVE > 0
-RCP_CopyActors: ldx #MAX_GLOBALACT-1
-RCP_CopyGlobalActorsLoop:
+                ldx #MAX_SAVEACT-1
+RCP_CopySaveActorsLoop:
                 lda saveLvlActX,x
                 sta lvlActX,x
                 lda saveLvlActY,x
@@ -1175,11 +1203,11 @@ RCP_CopyGlobalActorsLoop:
                 lda saveLvlActOrg,x
                 sta lvlActOrg,x
                 dex
-                bpl RCP_CopyGlobalActorsLoop
-RCP_ClearActors:ldx #MAX_LVLDATAACT-1
+                bpl RCP_CopyActorsLoop
+RCP_ClearActors:ldx #MAX_LVLACT-MAX_SAVEACT-1
                 lda #$00
 RCP_ClearActorsLoop:
-                sta lvlActT+MAX_GLOBALACT,x
+                sta lvlActT+MAX_SAVEACT,x
                 dex
                 bpl RCP_ClearActorsLoop
                 sec                             ;Need to load leveldata actors again

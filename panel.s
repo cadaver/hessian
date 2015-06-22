@@ -429,11 +429,15 @@ UM_NoCounter:   ldy itemIndex
                 beq UM_Medkit
                 cmp #KEY_B
                 beq UM_Battery
-                if ITEM_CHEAT>0
+                if ITEM_CHEAT > 0
                 cmp #KEY_Z
                 beq UM_PrevItem
                 cmp #KEY_X
                 beq UM_NextItem
+                endif
+                if DROP_ITEM_TEST > 0
+                cmp #KEY_D
+                beq UM_DropItem
                 endif
 UM_ControlDone: rts
 UM_Medkit:      lda #ITEM_MEDKIT
@@ -483,7 +487,8 @@ UM_MoveLeft:    tya                             ;can also be selected in NONE mo
                 beq UM_MoveDone
                 dec itemIndex
                 bpl RedrawInventory
-                if ITEM_CHEAT>0
+
+                if ITEM_CHEAT > 0
 UM_PrevItem:    lda #$ff
                 skip2
 UM_NextItem:    lda #$01
@@ -498,6 +503,14 @@ UM_NextItem:    lda #$01
                 lda #$01
                 sta itemIndex
                 jmp SetPanelRedrawItemAmmo
+                endif
+
+                if DROP_ITEM_TEST > 0
+UM_DropItem:    ldy itemIndex
+                lda invType,y
+                sta temp5
+                ldx #ACTI_PLAYER
+                jmp DI_HasCapacity
                 endif
 
 RedrawInventory:ldx #MENU_INVENTORY
