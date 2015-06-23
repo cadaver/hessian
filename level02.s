@@ -8,7 +8,7 @@
 UpdateLevel:    inc bgAnimDelay
                 lda bgAnimDelay
                 and #$03
-                bne ULDone
+                bne ULSkipFlash
                 ldx bgAnimIndex
                 lda randomAreaStart,x
                 jsr BgAnimSub
@@ -27,7 +27,13 @@ UpdateLevel:    inc bgAnimDelay
                 sta chars+227*8+2
                 inx
                 stx bgAnimIndex
-ULDone:         rts
+ULSkipFlash:    lda bgAnimDelay
+                and #$1f
+                bne ULSkipCursor
+                lda chars+247*8+3
+                eor #%00010000
+                sta chars+247*8+3
+ULSkipCursor:   rts
 
 BgAnimSub:      and #$03
                 tay

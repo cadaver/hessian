@@ -25,10 +25,13 @@ titleTexts      = chars+608+168*2
 ;START_X         = $3080
 ;START_Y         = $2000
 
-START_LEVEL     = $01                           ;Start from courtyard
-START_X         = $2680
-START_Y         = $0600
+;START_LEVEL     = $01                           ;Start from courtyard
+;START_X         = $2680
+;START_Y         = $0600
 
+START_LEVEL      = $02                           ;Start from entrance
+START_X          = $3380
+START_Y          = $0c00
 
                 org scriptCodeStart
 
