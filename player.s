@@ -1203,7 +1203,7 @@ RCP_CopySaveActorsLoop:
                 lda saveLvlActOrg,x
                 sta lvlActOrg,x
                 dex
-                bpl RCP_CopyActorsLoop
+                bpl RCP_CopySaveActorsLoop
 RCP_ClearActors:ldx #MAX_LVLACT-MAX_SAVEACT-1
                 lda #$00
 RCP_ClearActorsLoop:
