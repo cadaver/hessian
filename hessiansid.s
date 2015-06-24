@@ -1,7 +1,7 @@
                 processor 6502
                 org $0000
 
-SUBTUNES        = 16
+SUBTUNES        = 17
 
                 dc.b "PSID"
                 dc.b 0,2
@@ -675,6 +675,7 @@ subTuneModuleTbl:
                 dc.b 12
                 dc.b 8
                 dc.b 11
+                dc.b 12
                 dc.b 0
                 dc.b 2
                 dc.b 3
@@ -690,6 +691,7 @@ subTuneTuneTbl: dc.b 0
                 dc.b 0
                 dc.b 0
                 dc.b 0
+                dc.b 1
                 dc.b 1
                 dc.b 1
                 dc.b 1
