@@ -687,7 +687,7 @@ subTuneModuleTbl:
 subTuneTuneTbl: dc.b 0
                 dc.b 0
                 dc.b 0
-                dc.b 1
+                dc.b 0
                 dc.b 0
                 dc.b 0
                 dc.b 0
