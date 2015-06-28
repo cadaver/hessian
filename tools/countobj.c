@@ -7,6 +7,7 @@
 #define MAX_LEVELS 64
 #define MAX_LVLACT 80
 #define MAX_LVLOBJ 128
+#define MAX_ZONES 128
 
 int numlvlact[MAX_LEVELS];
 int numbytes[MAX_LEVELS];
@@ -29,6 +30,9 @@ int main(int argc, char** argv)
     int c,d;
     int actuallevels = 0;
     int offset = 0;
+    int screens = 0;
+    int blocks = 0;
+
     for (c = 0; c < MAX_LEVELS; c++)
     {
         int length;
@@ -99,10 +103,45 @@ int main(int argc, char** argv)
         numlvlobj[c] = numpersistentobj;
         numlvlobjbytes[c] = (numlvlobj[c] + 7) / 8;
         lvlobjbitareasize += numbytes[c];
+
+        sprintf(namebuf, "bg/level%02d.map", c);
+        in = fopen(namebuf, "rb");
+        if (!in)
+            break;
+        {
+            int datasize = freadle16(in);
+            int activezones = fread8(in);
+            int zoneoffsets[MAX_ZONES];
+            int y,x;
+    
+            for (d = 0; d < activezones; d++)
+            {
+                zoneoffsets[d] = freadle16(in) + 3;
+            }
+    
+            for (d = 0; d < activezones; d++)
+            {
+              int zonel, zoner, zoneu, zoned, x, y;
+              fseek(in, zoneoffsets[d], SEEK_SET);
+
+              zonel = fread8(in);
+              zoner = fread8(in);
+              zoneu = fread8(in);
+              zoned = fread8(in);
+              
+              blocks += (zoner-zonel)*(zoned-zoneu);
+            }
+            close(in);
+        }
+
         actuallevels++;
     }
+    
+    screens = blocks*16 / (22*40);
     printf("Total actor bitarea size is %d\n", bitareasize);
     printf("Total levelobject bitarea size is %d\n", lvlobjbitareasize);
+    printf("Total gameworld size %d blocks %d screens\n", blocks, screens);
+
     FILE* out = fopen("levelactors.s", "wt");
     fprintf(out, "LVLDATAACTTOTALSIZE = %d\n\n", bitareasize);
     fprintf(out, "LVLOBJTOTALSIZE = %d\n\n", lvlobjbitareasize);

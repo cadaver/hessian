@@ -49,8 +49,8 @@ lpack.exe: lpack.c
 ldepack.exe: ldepack.c
 	gcc ldepack.c -oldepack.exe
 
-countobj.exe: countobj.c
-	gcc countobj.c -ocountobj.exe
+countobj.exe: countobj.c fileio.c
+	gcc countobj.c fileio.c -ocountobj.exe
 
 makedisk.exe: makedisk.c
 	gcc makedisk.c -omakedisk.exe
