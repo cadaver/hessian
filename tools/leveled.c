@@ -1208,7 +1208,7 @@ void map_mainloop(void)
           {
             for (x = markx1; x <= markx2; x++)
             {
-              mapcopybuffer[i] = mapdata[y*255+x];
+              mapcopybuffer[i] = mapdata[y*mapsx+x];
               i++;
               if (i >= MAPCOPYSIZE)
               {
@@ -1246,7 +1246,7 @@ void map_mainloop(void)
             {
               int rx = x + mapx + mousex/32;
               int ry = y + mapy + mousey/32;
-              if ((rx < 255) & (ry < 255)) mapdata[ry*255+rx] = mapcopybuffer[i];
+              if ((rx < mapsx) & (ry < mapsy)) mapdata[ry*mapsx+rx] = mapcopybuffer[i];
               i++;
             }
           }
@@ -1297,7 +1297,7 @@ void map_mainloop(void)
       {
         if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
         {
-          blocknum=mapdata[mapx+mousex/32+(mapy+mousey/32)*255];
+          blocknum=mapdata[mapx+mousex/32+(mapy+mousey/32)*mapsx];
         }
       }
       if (ascii == 13)
@@ -1309,7 +1309,7 @@ void map_mainloop(void)
       {
         if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 160))
         {
-          mapdata[mapx+mousex/32+(mapy+mousey/32)*255]=blocknum;
+          mapdata[mapx+mousex/32+(mapy+mousey/32)*mapsx]=blocknum;
         }
         findusedblocksandchars();
       }
@@ -1487,7 +1487,7 @@ void drawmap(void)
   {
     for (x = 0; x < 10; x++)
     {
-      drawblock(x*32,y*32,mapdata[mapx+x+(mapy+y)*255]);
+      drawblock(x*32,y*32,mapdata[mapx+x+(mapy+y)*mapsx]);
     }
   }
   if (editmode == EM_MAP)
@@ -2667,9 +2667,9 @@ int initchars(void)
 {
   int c;
   int handle;
-  mapdata = malloc(255*255);
+  mapdata = malloc(mapsx*mapsy);
   if (!mapdata) return 0;
-  memset(mapdata,0,255*255);
+  memset(mapdata,0,mapsx*mapsy);
   chardata = malloc(2048);
   if (!chardata) return 0;
   memset(chardata,0,2048);
@@ -4021,7 +4021,7 @@ void loadalldata(void)
           {
             for (x = zonel[c]; x < zoner[c]; x++)
             {
-              mapdata[y*255+x] = read8(handle);
+              mapdata[y*mapsx+x] = read8(handle);
             }
           }
         }
@@ -4253,7 +4253,7 @@ void savealldata(void)
             {
               for (x = zonel[c]; x < zoner[c]; x++)
               {
-                write8(handle, mapdata[y*255+x]);
+                write8(handle, mapdata[y*mapsx+x]);
               }
             }
           }
@@ -4830,7 +4830,7 @@ void updatezone(int z)
 
   for (c = zoneu[z]; c >= 0; c--)
   {
-    if (mapdata[zonex[z] + c*255])
+    if (mapdata[zonex[z] + c*mapsx])
     {
       zoneu[z] = c;
     }
@@ -4838,7 +4838,7 @@ void updatezone(int z)
   }
   for (c = zoned[z]-1; c < mapsy; c++)
   {
-    if (mapdata[zonex[z] + c*255])
+    if (mapdata[zonex[z] + c*mapsx])
     {
       zoned[z] = c+1;
     }
@@ -4847,7 +4847,7 @@ void updatezone(int z)
 
   for (c = zonel[z]; c >= 0; c--)
   {
-    if (mapdata[zoney[z]*255 + c])
+    if (mapdata[zoney[z]*mapsx + c])
     {
       zonel[z] = c;
     }
@@ -4855,7 +4855,7 @@ void updatezone(int z)
   }
   for (c = zoner[z]-1; c < mapsx; c++)
   {
-    if (mapdata[zoney[z]*255 + c])
+    if (mapdata[zoney[z]*mapsx + c])
     {
       zoner[z] = c+1;
     }
