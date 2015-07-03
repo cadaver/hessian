@@ -1897,16 +1897,6 @@ void char_mainloop(void)
       chinfo[charnum] += 32;
     }
 
-    /*
-    if (k == KEY_A) // Global multicolor toggle
-    {
-      int c;
-      for (c = 0; c < 256; c++)
-        chcol[c] ^= 8;
-      findusedblocksandchars();
-    }
-    */
-
     if (k == KEY_M)
     {
       chcol[charnum] ^= 8;
@@ -1934,10 +1924,29 @@ void char_mainloop(void)
 
     if (k == KEY_R)
     {
-      int y;
-      for (y = 0; y < 8; y++)
+      if (!shiftdown)
       {
-        chardata[charnum*8+y] ^= 0xff;
+        int y;
+        for (y = 0; y < 8; y++)
+        {
+          chardata[charnum*8+y] ^= 0xff;
+        }
+      }
+      else
+      {
+        int y,x;
+        char andtable[4] = {0xfc, 0xf3, 0xcf, 0x3f};
+        for (y = 0; y < 8; y++)
+        {
+          for (x = 0; x < 4; x++)
+          {
+            char bit = (chardata[charnum*8+y] >> (x*2)) & 3;
+            if (bit == 0) bit = 1;
+            else if (bit == 1) bit = 0;
+            chardata[charnum*8+y] &= andtable[x];
+            chardata[charnum*8+y] |= (bit << (x*2));
+          }
+        }
       }
     }
 
