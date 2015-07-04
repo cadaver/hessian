@@ -1488,8 +1488,20 @@ void drawmap(void)
     for (x = 0; x < 10; x++)
     {
       drawblock(x*32,y*32,mapdata[mapx+x+(mapy+y)*mapsx]);
+      // Draw warning indicator for map areas that will be erased when optimizing or saving
+      // due to not belonging to any zone
+      if (mapdata[mapx+x+(mapy+y)*mapsx] > 0 && findzone(mapx+x,mapy+y) > NUMZONES)
+      {
+        int bx,by;
+        for (by = 0; by < 32; by += 2)
+        for (bx = 0; bx < 32; bx += 2)
+        {
+          gfx_plot(x*32+bx, y*32+by, chcol[0]&7);
+        }
+      }
     }
   }
+
   if (editmode == EM_MAP)
   {
     int l,r,u,d;
@@ -3035,8 +3047,8 @@ void relocatezone(int x, int y)
   zoner[zonenum] = x+sx;
   zoneu[zonenum] = y;
   zoned[zonenum] = y+sy;
-  zonex[zonenum] = (x+sx)/2;
-  zoney[zonenum] = (y+sy)/2;
+  zonex[zonenum] = (zonel[zonenum]+zoner[zonenum])/2;
+  zoney[zonenum] = (zoneu[zonenum]+zoned[zonenum])/2;
 
   free(tempmapdata);
 }
@@ -4037,7 +4049,7 @@ void loadalldata(void)
         close(handle);
       }
       findusedblocksandchars();
-      
+
 
       return;
     }
