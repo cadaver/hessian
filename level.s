@@ -993,7 +993,11 @@ ULO_DoorNum:    ldy #$00
 ULO_NoDirection:jsr InitMap
                 ldx #ACTI_PLAYER
                 jsr AlignActorOnGround
-                jsr SaveCheckpoint              ;Save checkpoint now. TODO: check for save-disabled zone
+                ldy #ZONEH_BG1
+                lda (zoneLo),y                  ;Check for save-disabled zone
+                bmi ULO_NoSave
+                jsr SaveCheckpoint              ;Save checkpoint now
+ULO_NoSave:
 
         ; Centers player on screen, redraws screen, adds all actors from leveldata, and jumps to mainloop
         ;
@@ -1003,6 +1007,7 @@ ULO_NoDirection:jsr InitMap
 
 CenterPlayer:   jsr FindPlayerZone
                 jsr InitMap
+CP_HasPlayerZone:
                 jsr SetZoneColors
                 iny
                 lda (zoneLo),y
