@@ -401,7 +401,6 @@ void level_mainloop(void)
     }
 
     {
-
       if (k == KEY_LEFT) mapx--;
       if (k == KEY_RIGHT) mapx++;
       if (k == KEY_UP) mapy--;
@@ -1422,7 +1421,37 @@ void map_mainloop(void)
 
     gfx_fillscreen(254);
     if (!blockselectmode)
+    {
+      int c;
       drawmap();
+      // Charinfo debug
+      for (c = 0; c < 8; c++)
+      {
+        if (win_keystate[KEY_1 + c])
+        {
+          int x,y;
+          for (y = 0; y < 5; y++)
+          {
+            for (x = 0; x < 10; x++)
+            {
+              int b = mapdata[mapx+x+(mapy+y)*mapsx];
+              int bx,by;
+              for (by = 0; by < 4; by++)
+              {
+                for (bx = 0; bx < 4; bx++)
+                {
+                  if (chinfo[blockdata[b*16+by*4+bx]] & (1 << c))
+                  {
+                    gfx_line(x*32+bx*8, y*32+by*8, x*32+bx*8+7, y*32+by*8+7, 1);
+                    gfx_line(x*32+bx*8+7, y*32+by*8, x*32+bx*8, y*32+by*8+7, 1);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     else
       drawblocks();
     gfx_drawsprite(mousex, mousey, 0x00000021);
