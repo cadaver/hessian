@@ -30,9 +30,9 @@ UpdateLevel:    inc bgAnimDelay
 ULSkipFlash:    lda bgAnimDelay
                 and #$1f
                 bne ULSkipCursor
-                lda chars+247*8+3
-                eor #%00010000
-                sta chars+247*8+3
+                lda chars+235*8+3
+                eor #%00100000
+                sta chars+235*8+3
 ULSkipCursor:   rts
 
 BgAnimSub:      and #$03
