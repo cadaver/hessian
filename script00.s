@@ -29,13 +29,17 @@ titleTexts      = chars+608+168*2
 ;START_X         = $2680
 ;START_Y         = $0600
 
-START_LEVEL      = $02                          ;Start from entrance
-START_X          = $3380
-START_Y          = $0c00
+;START_LEVEL     = $02                          ;Start from entrance
+;START_X         = $3380
+;START_Y         = $0c00
 
-;START_LEVEL      = $04                          ;Start from security center
-;START_X          = $0180
-;START_Y          = $0500
+;START_LEVEL     = $04                          ;Start from security center
+;START_X         = $0180
+;START_Y         = $0500
+
+START_LEVEL     = $05                          ;Start from service tunnels
+START_X         = $0180
+START_Y         = $0600
 
                 org scriptCodeStart
 

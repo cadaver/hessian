@@ -1522,11 +1522,8 @@ void drawmap(void)
       if (mapdata[mapx+x+(mapy+y)*mapsx] > 0 && findzone(mapx+x,mapy+y) > NUMZONES)
       {
         int bx,by;
-        for (by = 0; by < 32; by += 2)
-        for (bx = 0; bx < 32; bx += 2)
-        {
-          gfx_plot(x*32+bx, y*32+by, chcol[0]&7);
-        }
+        gfx_line(x*32, y*32, x*32+31, y*32+31, chcol[0]&7);
+        gfx_line(x*32+31, y*32, x*32, y*32+31, chcol[0]&7);
       }
     }
   }

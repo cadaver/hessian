@@ -30,7 +30,7 @@ clean:
 hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak \
-	level00.pak level01.pak level02.pak level03.pak level04.pak common.pak item.pak weapon.pak \
+	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak common.pak item.pak weapon.pak \
 	playert.pak playerb.pak playerta.pak playerba.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
@@ -137,7 +137,7 @@ sfx/jump.sfx: sfx/jump.ins
 	ins2nt2 sfx/jump.ins sfx/jump.sfx
 
 levelactors.s: bg/level00.lva bg/level00.lvo bg/level01.lva bg/level01.lvo bg/level02.lva bg/level02.lvo bg/level03.lva bg/level03.lvo \
-	bg/level04.lva bg/level04.lvo
+	bg/level04.lva bg/level04.lvo bg/level05.lva bg/level05.lvo
 	countobj
 
 main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutscene.s file.s init.s input.s item.s itemdata.s level.s \
@@ -289,6 +289,15 @@ level04.pak: level04.s memory.s bg/level04.map bg/level04.blk bg/level04.bli bg/
 	pchunk2 bg/level04.map level04_3.pak
 	pchunk2 bg/level04.blk level04_4.pak
 	filejoin level04_1.pak+level04_2.pak+level04_3.pak+level04_4.pak level04.pak
+
+level05.pak: level05.s memory.s bg/level05.map bg/level05.blk bg/level05.bli bg/level05.chi bg/level05.chc bg/level05.chr bg/level05.lva bg/level05.lvr bg/level05.lvo
+	filejoin bg/level05.lvo+bg/level05.lvr level05_1.bin
+	pack2 level05_1.bin level05_1.pak
+	dasm level05.s -olevel05_2.bin -f3
+	pack2 level05_2.bin level05_2.pak
+	pchunk2 bg/level05.map level05_3.pak
+	pchunk2 bg/level05.blk level05_4.pak
+	filejoin level05_1.pak+level05_2.pak+level05_3.pak+level05_4.pak level05.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak
