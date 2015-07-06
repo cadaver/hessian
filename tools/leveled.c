@@ -1156,10 +1156,7 @@ void map_mainloop(void)
           {
             int x = c % mapsx;
             int y = c / mapsx;
-            mapx = x - 5;
-            if (mapx < 0) mapx = 0;
-            mapy = y - 2;
-            if (mapy < 0) mapy = 0;
+            gotopos(x, y);
           }
         }
       }

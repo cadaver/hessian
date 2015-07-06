@@ -783,13 +783,14 @@ ULO_NoWaterDamage:
                 jsr ULO_DoToxinDamage
 
 ULO_NoAirDamage:lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
-                cmp limitD                      ;or if battery runs out
+                sbc #$02
                 bcc ULO_NotOutside
-                beq ULO_Outside
+                cmp limitD                      ;or if battery runs out
+                bcs ULO_Outside
 ULO_NotOutside: lda battery
                 ora battery+1
                 bne ULO_CheckPickupIndex
-ULO_Outside:    jmp DestroyActor
+ULO_Outside:    jsr DestroyActor
 
 ULO_CheckPickupIndex:                           ;Check if player is colliding with an item
                 ldy #ACTI_FIRSTITEM             ;If was at an item last frame, continue search from that
@@ -1070,5 +1071,6 @@ CP_NotOverDown: sta mapY
                 jsr AddAllActorsNextFrame
                 jsr AddActors
                 jsr GetControls
+                inc CreateSplash+1              ;Do not create splashes now
                 jsr UpdateActors                ;Update actors once first
-                                                ;Fall through to main loop
+                dec CreateSplash+1              ;Fall through to main loop

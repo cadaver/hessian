@@ -112,8 +112,8 @@ sfxMelee:       include sfx/melee.sfx
 sfxHeavyMelee:  include sfx/heavymelee.sfx
 sfxThrow:       include sfx/throw.sfx
 sfxReloadBazooka:include sfx/reloadbazooka.sfx
-sfxSplash:      include sfx/splash.sfx
 sfxDamage:      include sfx/damage.sfx
+sfxSplash:      include sfx/splash.sfx
 sfxFlamer:      include sfx/flamer.sfx
 sfxPistol:      include sfx/pistol.sfx
 sfxAutoRifle:   include sfx/autorifle.sfx

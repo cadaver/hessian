@@ -69,17 +69,14 @@ MoveWithGravity:sta temp6
 MWG_NoYMove:    lda actSX,x                     ;Have X-speed?
                 beq MWG_NoXMove
                 jsr MoveActorX
-MWG_NoXMove:    lda temp5                       ;If grounded, only check wall 1 char higher
-                lsr                             ;If in air, check both at feet & 1 char higher
-                bcs MWG_GroundedWallCheck
-MWG_InAirWallCheck:
-                jsr GetCharInfo
-                tay
+MWG_NoXMove:    jsr GetCharInfo1Above           ;If grounded, only check wall 1 char higher
+                tay                             ;If in air, check both at feet & 1 char higher
                 and #CI_OBSTACLE
                 bne MWG_HasWallHit
-MWG_GroundedWallCheck:
-                jsr GetCharInfo1Above
-MWG_WallCheckDone:
+                lda temp5
+                lsr
+                bcs MWG_NoWallHit2
+                jsr GetCharInfo
                 tay
                 and #CI_OBSTACLE
                 beq MWG_NoWallHit
@@ -101,7 +98,7 @@ MWG_WallHitDone:lda temp5
                 sta temp5
 MWG_NoWallHit:  lda temp5                       ;Check enter/leave water
                 lsr
-                and #MB_INWATER/2
+MWG_NoWallHit2: and #MB_INWATER/2
                 bne MWG_CheckLeaveWater
 MWG_CheckEnterWater:
                 tya

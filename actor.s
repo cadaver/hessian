@@ -1027,9 +1027,9 @@ GCI_Common3:    lsr
                 lsr
                 sta zpBitsLo
                 tya
-                bmi GCI_Outside
+                bmi GCI_OutsideUD
                 lda mapTblHi,y
-                beq GCI_Outside
+                beq GCI_OutsideUD
                 sta zpDestHi
                 lda mapTblLo,y
                 sta zpDestLo
@@ -1049,12 +1049,10 @@ GCI_Common3:    lsr
                 tay
                 lda charInfo,y                  ;Get charinfo
                 rts
-GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle if outside map
-                rts                             ;vertically
-GCI_OutsideLR:  cpx #ACTI_LASTNPC+1             ;If outside map horizontally,
-                bcc GCI_Outside                 ;return emptiness for bullets, but
-                lda #$00                        ;obstacle for NPCs so that sidedoors
-                rts                             ;work properly
+GCI_OutsideUD:  lda #$00                        ;Return emptiness above/below
+                rts
+GCI_OutsideLR:  lda #CI_OBSTACLE                ;and obstacle left/right so that
+                rts                             ;sidedoors work properly
 
         ; Get char collision info from the actor's position with Y offset
         ;
