@@ -1353,9 +1353,7 @@ CS_NoFreeActor: rts
         ; Returns: -
         ; Modifies: A,Y
 
-CreateSplash:   lda #$00                        ;Splash disable during CenterPlayer
-                bne CS_NoFreeActor
-                lda #ACTI_FIRSTEFFECT
+CreateSplash:   lda #ACTI_FIRSTEFFECT
                 ldy #ACTI_LASTEFFECT
                 jsr GetFreeActor
                 bcc CS_NoFreeActor

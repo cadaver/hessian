@@ -1068,10 +1068,16 @@ CP_NotOverDown: sta mapY
                 stx UA_SpawnDelay+1
                 dex
                 stx ULO_COSubY+1                ;Reset object search
+                ldx #ACTI_PLAYER
+                jsr GetCharInfo1Above
+                and #CI_WATER                   ;Check if player standing in water
+                beq CP_NotInWater               ;and set water bit now to prevent
+                lda #MB_INWATER                 ;creating a splash on door entry /
+CP_NotInWater:  ora #MB_GROUNDED                ;checkpoint restore
+                sta actMB+ACTI_PLAYER
                 jsr RedrawScreen
                 jsr AddAllActorsNextFrame
                 jsr AddActors
                 jsr GetControls
-                inc CreateSplash+1              ;Do not create splashes now
                 jsr UpdateActors                ;Update actors once first
-                dec CreateSplash+1              ;Fall through to main loop
+                                                ;Fall through to main loop
