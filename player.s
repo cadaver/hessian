@@ -954,7 +954,13 @@ HD_GotDir:      asl                             ;Direction to carry
                 ldy #DEATH_MAX_XSPEED
                 jsr AccActorXNegOrPos
 HD_NoDamageSource:
-                lda #SFX_DEATH
+                lda actMB,x                     ;If in water, do not modify Y-speed
+                and #MB_INWATER
+                bne HD_NoYSpeed
+                lda #DEATH_YSPEED
+                sta actSY,x
+                jsr MH_ResetGrounded
+HD_NoYSpeed:    lda #SFX_DEATH
                 jsr PlaySfx
                 lda #FR_DIE
                 sta actF1,x
@@ -963,13 +969,7 @@ HD_NoDamageSource:
                 sta actTime,x
                 lda #POS_NOTPERSISTENT          ;Bodies are supposed to eventually vanish, so mark as
                 sta actLvlDataPos,x             ;nonpersistent if goes off the screen
-                lda actMB,x                     ;If in water, do not modify Y-speed
-                and #MB_INWATER
-                bne HD_NoYSpeed
-                lda #DEATH_YSPEED
-                sta actSY,x
-                jsr MH_ResetGrounded
-HD_NoYSpeed:    lda #$00
+                lda #$00
                 sta actFd,x
                 sta actHp,x
                 sta actAIMode,x                ;Reset any ongoing AI
