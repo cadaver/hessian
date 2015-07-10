@@ -38,8 +38,8 @@ titleTexts      = chars+608+168*2
 ;START_Y         = $0500
 
 START_LEVEL     = $05                          ;Start from service tunnels
-START_X         = $0180
-START_Y         = $0600
+START_X         = $a480
+START_Y         = $0500
 
                 org scriptCodeStart
 
