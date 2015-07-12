@@ -12,19 +12,19 @@ UpdateLevel:    inc bgAnimDelay
                 ldx bgAnimIndex
                 lda randomAreaStart,x
                 jsr BgAnimSub
-                sta chars+102*8+2
+                sta chars+96*8+5
                 lda randomAreaStart,x
                 lsr
                 lsr
                 jsr BgAnimSub
-                sta chars+102*8+7
+                sta chars+99*8+1
                 lda randomAreaStart,x
                 lsr
                 lsr
                 lsr
                 lsr
                 jsr BgAnimSub
-                sta chars+105*8+4
+                sta chars+99*8+5
                 inx
                 stx bgAnimIndex
 ULSkipFlash:    rts

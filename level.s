@@ -157,7 +157,7 @@ LL_SetLevelObjectsActive:
                 bne LL_NoReveal
                 jsr AO_Reveal2
 LL_NoReveal:    jsr AnimateObjectActivation     ;Animate if necessary
-LL_NoAnimation: tya
+                tya
                 tax
 LL_NextLevelObject:
                 inx
@@ -789,7 +789,7 @@ ULO_NoAirDamage:lda actYH+ACTI_PLAYER           ;Kill player actor if fallen out
 ULO_NotOutside: lda battery
                 ora battery+1
                 bne ULO_CheckPickupIndex
-ULO_Outside:    jsr HD_NoYSpeed                 
+ULO_Outside:    jsr HD_NoYSpeed
                 lda #$00
                 sta actSX+ACTI_PLAYER
                 rts
