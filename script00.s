@@ -37,13 +37,17 @@ titleTexts      = chars+608+168*2
 ;START_X         = $0180
 ;START_Y         = $0500
 
-;START_LEVEL     = $05                          ;Start from service tunnels
+;START_LEVEL     = $05                           ;Start from service tunnels
 ;START_X         = $a480
 ;START_Y         = $0500
 
-START_LEVEL     = $06                           ;Start from hideout in underground car park
-START_X         = $0c80
-START_Y         = $0d00
+START_LEVEL     = $05                           ;Start from the blue room of service tunnels
+START_X         = $4080
+START_Y         = $1a00
+
+;START_LEVEL     = $06                          ;Start from hideout in underground car park
+;START_X         = $0c80
+;START_Y         = $0d00
 
                 org scriptCodeStart
 
