@@ -1062,6 +1062,9 @@ UpdateBlock:    sta temp5
                 sta temp6
 UB_Common:      stx temp7
                 sty temp8
+                lda Irq1_ScrollY+1              ;If screen blanked, do not write to it but use
+                cmp #$50                        ;the outside codepath
+                bcs UB_OutsideZone
                 cpx limitL
                 bcc UB_OutsideZone
                 cpx limitR

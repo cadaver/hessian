@@ -128,24 +128,12 @@ LL_NextLevelDataActor:
                 dex
                 bpl LL_CopyLevelDataActors
 LL_SkipLevelDataActors:
-                lda #$00                        ;Assume zone 0 after loading a level
-                jsr FindZoneNum
                 jsr GetLevelObjectBits          ;Set persistent levelobjects' active state now
                 ldx #$00                        ;Levelobject index
                 stx temp1                       ;Persistent levelobject index
 LL_SetLevelObjectsActive:
-                lda lvlObjX,x                   ;Skip objects which are used as param storage for other objects
-                cmp #DATACONTAINER_X
+                jsr IsLevelObjectPersistent
                 beq LL_NextLevelObject
-                ora lvlObjY,x
-                beq LL_NextLevelObject
-                lda lvlObjB,x
-                and #OBJ_TYPEBITS+OBJ_AUTODEACT
-                cmp #OBJTYPE_SIDEDOOR
-                bcs LL_NextLevelObject
-                lda temp1
-                inc temp1
-                jsr DecodeBit
                 and (actLo),y                   ;Active?
                 beq LL_NextLevelObject
                 txa
@@ -249,6 +237,28 @@ GetLevelObjectBits:
                 lda #>lvlObjBits
                 bne GLB_Common
 
+        ; Check if a levelobject should be persisted. If yes, calculate its bitvalue
+        ;
+        ; Parameters: X levelobject index, temp1 persistent levelobject index
+        ; Returns: A>0 is persistent, bit in A and temp1 incremented, A=0 not persistent
+        ; Modifies: A
+
+IsLevelObjectPersistent:
+                lda lvlObjX,x                   ;Skip objects which are used as param storage for other objects
+                cmp #DATACONTAINER_X
+                beq ILOP_Not
+                ora lvlObjY,x
+                beq ILOP_Not2
+                lda lvlObjB,x
+                and #OBJ_TYPEBITS+OBJ_AUTODEACT
+                cmp #OBJTYPE_SIDEDOOR
+                bcs ILOP_Not
+                lda temp1
+                inc temp1
+                jmp DecodeBit
+ILOP_Not:       lda #$00
+ILOP_Not2:      rts
+
         ; Save existence of leveldata actors as bits
         ; Needs to be done on level change and on game save when optimizing the save size
         ;
@@ -294,20 +304,11 @@ SLOS_ClearLoop: sta (actLo),y
                 bpl SLOS_ClearLoop
                 sta temp1                       ;Persistent object index
                 tax
-SLOS_Loop:      lda lvlObjX,x                   ;Check if levelobject needs persistency
-                cmp #DATACONTAINER_X
+SLOS_Loop:      jsr IsLevelObjectPersistent
                 beq SLOS_NextObject
-                ora lvlObjY,x
-                beq SLOS_NextObject
-                lda lvlObjB,x
-                and #OBJ_TYPEBITS+OBJ_AUTODEACT
-                cmp #OBJTYPE_SIDEDOOR           ;Sidedoors, spawners and all auto-deactivating
-                bcs SLOS_NextObject             ;objects don't
-                lda temp1
-                inc temp1
-                ldy lvlObjB,x
-                bpl SLOS_NextObject             ;Inactive
-                jsr DecodeBit
+                lda lvlObjB,x                   ;Check if active
+                bpl SLOS_NextObject
+                lda DB_Value+1
                 ora (actLo),y
                 sta (actLo),y
 SLOS_NextObject:inx
@@ -520,7 +521,6 @@ AOD_Done:       rts
 ActivateObject: sty temp2
                 lda lvlObjB,y                   ;Make sure that is inactive
                 bmi AO_Done
-                lda lvlObjB,y
                 ora #OBJ_ACTIVE
                 sta lvlObjB,y
                 pha
@@ -916,6 +916,9 @@ ULO_COFound:    stx lvlObjNum
                 and #OBJ_MODEBITS
                 cmp #OBJMODE_MANUAL             ;If object is manually activated
                 bcc ULO_CODone                  ;or an open door, show marker
+                bne ULO_COShowMarker
+                tya
+                bmi ULO_CODone                  ;If active and not manually deactivable, do not show marker
 ULO_COShowMarker:
                 ldy #ACTI_FIRSTPLRBULLET
                 lda actT,y                      ;If marker already shown, remove it
