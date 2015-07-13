@@ -131,6 +131,8 @@ LL_SkipLevelDataActors:
                 jsr GetLevelObjectBits          ;Set persistent levelobjects' active state now
                 lda #$00
                 sta temp1                       ;Persistent object index
+                sta limitR                      ;Make sure we don't attempt to animate blocks on screen now
+                sta limitD
                 tax
 LL_SetLevelObjectsActive:
                 lda lvlObjX,x                   ;Skip objects which are used as param storage for other objects
