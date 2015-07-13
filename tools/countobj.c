@@ -102,7 +102,7 @@ int main(int argc, char** argv)
         if (!numpersistentobj) numpersistentobj++;
         numlvlobj[c] = numpersistentobj;
         numlvlobjbytes[c] = (numlvlobj[c] + 7) / 8;
-        lvlobjbitareasize += numbytes[c];
+        lvlobjbitareasize += numlvlobjbytes[c];
 
         sprintf(namebuf, "bg/level%02d.map", c);
         in = fopen(namebuf, "rb");

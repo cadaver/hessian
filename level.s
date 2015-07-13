@@ -128,12 +128,11 @@ LL_NextLevelDataActor:
                 dex
                 bpl LL_CopyLevelDataActors
 LL_SkipLevelDataActors:
+                lda #$00                        ;Assume zone 0 after loading a level
+                jsr FindZoneNum
                 jsr GetLevelObjectBits          ;Set persistent levelobjects' active state now
-                lda #$00
-                sta temp1                       ;Persistent object index
-                sta limitR                      ;Make sure we don't attempt to animate blocks on screen now
-                sta limitD
-                tax
+                ldx #$00                        ;Levelobject index
+                stx temp1                       ;Persistent levelobject index
 LL_SetLevelObjectsActive:
                 lda lvlObjX,x                   ;Skip objects which are used as param storage for other objects
                 cmp #DATACONTAINER_X

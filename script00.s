@@ -535,6 +535,8 @@ SaveDone:       inc temp2
                 lda actIndex
                 cmp #MAX_SAVES
                 bcc ScanSaveLoop
+                lda #8
+                sta temp1
                 lda #<txtCancel
                 ldx #>txtCancel
                 jmp PrintText
