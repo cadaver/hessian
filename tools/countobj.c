@@ -90,10 +90,10 @@ int main(int argc, char** argv)
             if ((lvlobjx[d] || lvlobjy[d]) && (lvlobjx[d] != 0xff))
             {
                 actualnumobj++;
-                // If object is not a sidedoor or spawner, and it does NOT have auto-deactivation,
+                // If object is animated without auto-deactivation,
                 // it needs to be persisted. Note: game must obey exact same criteria
                 // for decoding the object indices
-                if ((lvlobjb[d] & 0x18) < 0x18 && (lvlobjb[d] & 0x20) == 0x00)
+                if ((lvlobjb[d] & 0x20) == 0x00 && (lvlobjy[d] & 0x80))
                     numpersistentobj++;
             }
         }

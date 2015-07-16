@@ -247,12 +247,11 @@ IsLevelObjectPersistent:
                 lda lvlObjX,x                   ;Skip objects which are used as param storage for other objects
                 cmp #DATACONTAINER_X
                 beq ILOP_Not
-                ora lvlObjY,x
-                beq ILOP_Not2
+                lda lvlObjY,x
+                bpl ILOP_Not
                 lda lvlObjB,x
-                and #OBJ_TYPEBITS+OBJ_AUTODEACT
-                cmp #OBJTYPE_SIDEDOOR
-                bcs ILOP_Not
+                and #OBJ_AUTODEACT
+                bne ILOP_Not
                 lda temp1
                 inc temp1
                 jmp DecodeBit
