@@ -401,9 +401,13 @@ OperateObject:  lda actF1+ACTI_PLAYER           ;Already in enter/operate stance
 OO_Active:      and #OBJ_MODEBITS               ;Object was active, inactivate if possible
                 cmp #OBJMODE_MANUALAD
                 bcc OO_EnterNoOperate
-OO_Inactive:    lda lvlObjY,y                   ;If object uses animation, play sound when operating
-                bpl OO_NoSound
-                lda #SFX_OBJECT
+OO_Inactive:    lda lvlObjY,y                   ;If animating, play sound always
+                bmi OO_PlaySound
+                lda lvlObjB,y                   ;Otherwise check that isn't a door that is always open
+                and #OBJ_TYPEBITS               ;(keycard slots and other non-animating objects should
+                cmp #OBJTYPE_DOOR               ;play a sound)
+                beq OO_NoSound
+OO_PlaySound:   lda #SFX_OBJECT
                 jsr PlaySfx
 OO_NoSound:     ldx lvlObjD,y                   ;Check requirement item from object parameters if has them
                 bpl OO_RequirementOK

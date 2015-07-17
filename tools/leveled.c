@@ -1942,17 +1942,52 @@ void char_mainloop(void)
     }
     if (k == KEY_V)
     {
-      int y,x;
+      int c,y,x;
       char andtable[4] = {0xfc, 0xf3, 0xcf, 0x3f};
-      for (y = 0; y < 8; y++)
+      if (!shiftdown)
       {
-        for (x = 0; x < 4; x++)
+        for (y = 0; y < 8; y++)
         {
-          char bit = (chardata[charnum*8+y] >> (x*2)) & 3;
-          if (bit == 2) bit = 1;
-          else if (bit == 1) bit = 2;
-          chardata[charnum*8+y] &= andtable[x];
-          chardata[charnum*8+y] |= (bit << (x*2));
+          for (x = 0; x < 4; x++)
+          {
+            char bit = (chardata[charnum*8+y] >> (x*2)) & 3;
+            if (bit == 2) bit = 1;
+            else if (bit == 1) bit = 2;
+            chardata[charnum*8+y] &= andtable[x];
+            chardata[charnum*8+y] |= (bit << (x*2));
+          }
+        }
+      }
+      else
+      {
+        for (c = 0; c < 256; c++)
+        {
+          if (chcol[c] >= 8)
+          {
+            for (y = 0; y < 8; y++)
+            {
+              for (x = 0; x < 4; x++)
+              {
+                char bit = (chardata[c*8+y] >> (x*2)) & 3;
+                if (bit == 2) bit = 1;
+                else if (bit == 1) bit = 2;
+                chardata[c*8+y] &= andtable[x];
+                chardata[c*8+y] |= (bit << (x*2));
+              }
+            }
+          }
+        }
+        for (c = 0; c < NUMZONES; c++)
+        {
+          if (zonex[c] && zoney[c])
+          {
+            int col1 = zonebg2[c] & 0xf;
+            int col2 = zonebg3[c] & 0xf;
+            zonebg2[c] &= 0xf0;
+            zonebg2[c] |= col2;
+            zonebg3[c] &= 0xf0;
+            zonebg3[c] |= col1;
+          }
         }
       }
     }
