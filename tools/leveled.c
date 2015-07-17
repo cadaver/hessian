@@ -841,7 +841,7 @@ void level_mainloop(void)
     if (k == KEY_F9) loadalldata();
     if (k == KEY_F10) savealldata();
     if (k == KEY_F11) exportmap();
-    if (k == KEY_F12) exportcharpad(),
+    if (k == KEY_F12) exportcharpad();
 
     gfx_fillscreen(254);
     drawmap();
