@@ -212,6 +212,7 @@ void savecharsinfo(void);
 void loadalldata(void);
 void savealldata(void);
 void exportmap(void);
+void exportcharpad(void);
 void scrollcharleft(void);
 void scrollcharright(void);
 void scrollcharup(void);
@@ -840,6 +841,7 @@ void level_mainloop(void)
     if (k == KEY_F9) loadalldata();
     if (k == KEY_F10) savealldata();
     if (k == KEY_F11) exportmap();
+    if (k == KEY_F12) exportcharpad(),
 
     gfx_fillscreen(254);
     drawmap();
@@ -1068,6 +1070,7 @@ void zone_mainloop(void)
     if (k == KEY_F9) loadalldata();
     if (k == KEY_F10) savealldata();
     if (k == KEY_F11) exportmap();
+    if (k == KEY_F12) exportcharpad();
 
     gfx_fillscreen(254);
     drawmap();
@@ -1415,6 +1418,7 @@ void map_mainloop(void)
     if (k == KEY_F9) loadalldata();
     if (k == KEY_F10) savealldata();
     if (k == KEY_F11) exportmap();
+    if (k == KEY_F12) exportcharpad();
 
     gfx_fillscreen(254);
     if (!blockselectmode)
@@ -2143,6 +2147,7 @@ void char_mainloop(void)
     if (k == KEY_F9) loadalldata();
     if (k == KEY_F10) savealldata();
     if (k == KEY_F11) exportmap();
+    if (k == KEY_F12) exportcharpad();
     if (k == KEY_LEFT) scrollcharleft();
     if (k == KEY_RIGHT) scrollcharright();
     if (k == KEY_UP) scrollcharup();
@@ -4127,7 +4132,7 @@ void exportmap(void)
     win_getspeed(70);
     gfx_fillscreen(254);
 
-    printtext_center_color("EXPORT ZONE MAPS TO:",90,SPR_FONTS,COL_WHITE);
+    printtext_center_color("EXPORT ZONE IMAGES TO:",90,SPR_FONTS,COL_WHITE);
     printtext_center_color(ib1,100,SPR_FONTS,COL_HIGHLIGHT);
     gfx_updatepage();
 
@@ -4185,6 +4190,92 @@ void exportmap(void)
     }
   }
 }
+
+void exportcharpad(void)
+{
+  char ib1[80];
+  strcpy(ib1, levelname);
+
+  updateallzones();
+  findusedblocksandchars();
+
+  for (;;)
+  {
+    int r;
+    win_getspeed(70);
+    gfx_fillscreen(254);
+
+    printtext_center_color("EXPORT CHARPAD FILE TO:",90,SPR_FONTS,COL_WHITE);
+    printtext_center_color(ib1,100,SPR_FONTS,COL_HIGHLIGHT);
+    gfx_updatepage();
+
+    r = inputtext(ib1, 80);
+    if (r == -1) return;
+    if (r == 1)
+    {
+      char filename[256];
+      int sx = 255, sy = 255, ex = 0, ey = 0, x, y, c;
+      int handle;
+
+      for (c = 0; c < NUMZONES; c++)
+      {
+        if (zonex[c] || zoney[c])
+        {
+          if (zonel[c] < sx) sx = zonel[c];
+          if (zoneu[c] < sy) sy = zoneu[c];
+          if (zoner[c] > ex) ex = zoner[c];
+          if (zoned[c] > ey) ey = zoned[c];
+        }
+      }
+
+      sprintf(filename, "%s.ctm", ib1);
+      handle = open(filename, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
+      if (handle != -1)
+      {
+        write8(handle, 'C');
+        write8(handle, 'T');
+        write8(handle, 'M');
+        write8(handle, 5);
+        write8(handle, zonebg1[0] & 0xf);
+        write8(handle, zonebg2[0] & 0xf);
+        write8(handle, zonebg3[0] & 0xf);
+        write8(handle, 0);
+        write8(handle, 2);
+        write8(handle, 5);
+        write8(handle, 255);
+        write8(handle, 0);
+        write8(handle, maxusedblocks-1);
+        write8(handle, 0);
+        write8(handle, 4);
+        write8(handle, 4);
+        write8(handle, ex-sx);
+        write8(handle, 0);
+        write8(handle, ey-sy);
+        write8(handle, 0);
+
+        write(handle, &chardata[0], 2048);
+        for (c = 0; c < 256; c++)
+          write8(handle, chcol[c] & 0xf);
+        for (c = 0; c < maxusedblocks*16; c++)
+        {
+          write8(handle, blockdata[c]);
+          write8(handle, 0);
+        }
+        for (y = sy; y < ey; ++y)
+        {
+          for (x = sx; x < ex; ++x)
+          {
+            write8(handle, mapdata[y*mapsx+x]);
+            write8(handle, 0);
+          }
+        }
+        close(handle);
+      }
+      return;
+    }
+  }
+}
+
 
 void savealldata(void)
 {
