@@ -900,6 +900,7 @@ DrainBatteryDouble:
                 asl
 DrainBatteryNoCheck:
                 lsr
+DrainBatteryRound:
                 adc #$00                        ;Round upward if reduced
                 sta DB_Amount+1
                 lda battery

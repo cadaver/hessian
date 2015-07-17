@@ -432,9 +432,9 @@ CC_ActivateCheat:
                 lda DA_ResetRecharge+1
                 eor #<healTimer
                 sta DA_ResetRecharge+1
-                lda DrainBatteryNoCheck
-                eor #$ed
-                sta DrainBatteryNoCheck
+                lda DrainBatteryRound
+                eor #$40
+                sta DrainBatteryRound
                 dec Irq1_Bg2+1
                 jsr WaitBottom
                 inc Irq1_Bg2+1
