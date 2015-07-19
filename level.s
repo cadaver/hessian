@@ -1042,13 +1042,15 @@ ULO_EnterSideDoorLeft:
                 sbc #$00                        ;C=0
 ULO_EnterSideDoorCommon:
                 tax
-                lda lvlObjY,y
+                lda lvlObjDL,y
+                bne ULO_SideDoorExplicitDest    ;Can also specify destination explicitly
+                lda lvlObjY,y                   ;(TODO: doesn't work for object ID 0)
                 and #$7f
                 tay
 ULO_Retry:      stx temp1
                 sty temp2
                 jsr FindZoneXY
-                bcc ULO_SameLevel           ;If zone not found, must change level
+                bcc ULO_SameLevel               ;If zone not found, must change level
                 jsr FindNewLevel
                 jmp ULO_Retry
 ULO_SameLevel:  ldy #$00
@@ -1070,6 +1072,7 @@ ULO_DestDoorNext:
                                                 ;(if level was changed, this will likely be fatal)
 
 ULO_EnterDoor:  lda lvlObjDL,y
+ULO_SideDoorExplicitDest:
                 tay
 ULO_EnterDoorCommon:
                 ldx #MAX_ACT-1                  ;When entering a door, remove all actors except player
