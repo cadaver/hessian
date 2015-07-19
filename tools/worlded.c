@@ -198,6 +198,7 @@ void endblockeditmode(void);
 void initblockeditmode(int frommap);
 void findusedblocksandchars(void);
 void findanimatingblocks(void);
+int checkzonelegal(int num, int newx, int newy, int newsx, int newsy);
 void confirmquit(void);
 void loadchars(void);
 void savechars(void);
@@ -917,19 +918,46 @@ void zone_mainloop(void)
       {
         if (!zonesx[zonenum] && !zonesy[zonenum])
         {
-          zonex[zonenum] = x / 10 * 10;
-          zoney[zonenum] = y / 6 * 6;
-          zonesx[zonenum] = 10;
-          zonesy[zonenum] = 6;
+          int nx = x/10*10;
+          int ny = y;
+          int nsx = 10;
+          int nsy = 3;
+          if (checkzonelegal(zonenum, nx, ny, nsx, nsy))
+          {
+            zonex[zonenum] = nx;
+            zoney[zonenum] = ny;
+            zonesx[zonenum] = nsx;
+            zonesy[zonenum] = nsy;
+          }
         }
         else
         {
-          int zoneex = x / 10 * 10 + 10;
-          int zoneey = y / 6 * 6 + 6;
-          if (zoneex > zonex[zonenum] && zoneey > zoney[zonenum])
+          int px = x / 10 * 10;
+          int py = y;
+          int nx = zonex[zonenum];
+          int ny = zoney[zonenum];
+          int nsx = zonesx[zonenum];
+          int nsy = zonesy[zonenum];
+          if (px < nx)
           {
-            zonesx[zonenum] = zoneex - zonex[zonenum];
-            zonesy[zonenum] = zoneey - zoney[zonenum];
+            nx = px;
+            nsx = zonex[zonenum]+zonesx[zonenum]-nx;
+          }
+          else if (px+10-zonex[zonenum] > zonesx[zonenum])
+            nsx = px+10-zonex[zonenum];
+          if (py < ny)
+          {
+            ny = py;
+            nsy = zoney[zonenum]+zonesy[zonenum]-ny;
+          }
+          else if (py+1-zoney[zonenum] > zonesy[zonenum])
+            nsy = py+1-zoney[zonenum];
+          if (checkzonelegal(zonenum, nx, ny, nsx, nsy))
+          {
+            zonex[zonenum] = nx;
+            zoney[zonenum] = ny;
+            zonesx[zonenum] = nsx;
+            zonesy[zonenum] = nsy;
           }
         }
       }
@@ -2782,6 +2810,29 @@ void findanimatingblocks(void)
   }
 }
 
+int checkzonelegal(int num, int newx, int newy, int newsx, int newsy)
+{
+  // Check for no overlap
+  int c;
+  for (c = 0; c < NUMZONES; c++)
+  {
+    if (c != num && zonesx[c] && zonesy[c])
+    {
+      int xoverlap = 0, yoverlap = 0;
+      if (newx < zonex[c] && newx+newsx > zonex[c])
+        xoverlap = 1;
+      if (newx >= zonex[c] && newx < zonex[c]+zonesx[c])
+        xoverlap = 1;
+      if (newy < zoney[c] && newy+newsy > zoney[c])
+        yoverlap = 1;
+      if (newy >= zoney[c] && newy < zoney[c]+zonesy[c])
+        yoverlap = 1;
+      if (xoverlap && yoverlap) return 0;
+    }
+  }
+  return 1;
+}
+
 void findusedblocksandchars(void)
 {
   int s,c;
@@ -3007,7 +3058,8 @@ void relocatezone(int x, int y)
   sx = zonesx[zonenum];
   sy = zonesy[zonenum];
   if (x + sx > mapsx) return;
-  if (y + sy > 128) return;
+  if (y + sy > mapsy) return;
+  if (!checkzonelegal(zonenum, x, y, sx, sy)) return;
   unsigned char* tempmapdata = malloc(sx*sy);
   oldx = zonex[zonenum];
   oldy = zoney[zonenum];
