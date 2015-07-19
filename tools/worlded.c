@@ -47,7 +47,8 @@
 unsigned short lvlobjx[NUMLVLOBJ];
 unsigned short lvlobjy[NUMLVLOBJ];
 unsigned char lvlobjb[NUMLVLOBJ];
-unsigned char lvlobjd[NUMLVLOBJ];
+unsigned char lvlobjdl[NUMLVLOBJ];
+unsigned char lvlobjdh[NUMLVLOBJ];
 
 unsigned short lvlactx[NUMLVLACT];
 unsigned short lvlacty[NUMLVLACT];
@@ -57,6 +58,8 @@ unsigned char lvlactw[NUMLVLACT];
 
 unsigned short levelx[NUMLEVELS];
 unsigned short levely[NUMLEVELS];
+unsigned short levelsx[NUMLEVELS];
+unsigned short levelsy[NUMLEVELS];
 
 unsigned char zonecharset[NUMZONES];
 unsigned char zonelevel[NUMZONES];
@@ -98,14 +101,15 @@ char *modetext[] = {
   "MAN.AD"};
 
 char *actiontext[] = {
-  "NONE",
+  "SIDEDOOR",
   "DOOR",
+  "BACKDROP",
   "SWITCH",
   "REVEAL",
   "SCRIPT",
   "CHAIN",
-  "NONE",
-  "NONE"};
+  "UNUSED"
+};
 
 unsigned char slopetbl[] = {
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,   // Slope 0
@@ -199,6 +203,7 @@ void initblockeditmode(int frommap);
 void findusedblocksandchars(void);
 void findanimatingblocks(void);
 int checkzonelegal(int num, int newx, int newy, int newsx, int newsy);
+void calculatelevelorigins(void);
 void confirmquit(void);
 void loadchars(void);
 void savechars(void);
@@ -353,6 +358,7 @@ void level_mainloop(void)
 {
   pathmode = 0;
   zoomoutmode = 0;
+  calculatelevelorigins();
 
   for (;;)
   {
@@ -416,6 +422,13 @@ void level_mainloop(void)
 
         actfound = 0;
         objfound = 0;
+
+        // Always move to the zone under cursor to get accurate per-level stats
+        if (findzone(x,y) < NUMZONES)
+        {
+          zonenum = findzone(x,y);
+          charsetnum = zonecharset[zonenum];
+        }
 
         if (!dataeditmode)
         {
@@ -565,7 +578,8 @@ void level_mainloop(void)
                 lvlobjx[objindex] = 0;
                 lvlobjy[objindex] = 0;
                 lvlobjb[objindex] = 0;
-                lvlobjd[objindex] = 0;
+                lvlobjdl[objindex] = 0;
+                lvlobjdh[objindex] = 0;
               }
               if (k == KEY_S) // Size
               {
@@ -588,7 +602,7 @@ void level_mainloop(void)
               {
                 int a = (lvlobjb[objindex] >> 2) & 7;
                 a++;
-                a &= 7;
+                if (a >= 7) a = 0;
                 lvlobjb[objindex] &= 0xe3;
                 lvlobjb[objindex] |= (a << 2);
               }
@@ -596,7 +610,7 @@ void level_mainloop(void)
               {
                 int a = (lvlobjb[objindex] >> 2) & 7;
                 a--;
-                a &= 7;
+                if (a < 0) a = 6;
                 lvlobjb[objindex] &= 0xe3;
                 lvlobjb[objindex] |= (a << 2);
               }
@@ -639,20 +653,30 @@ void level_mainloop(void)
                 switch(dataeditcursor)
                 {
                   case 0:
-                  lvlobjd[objindex] &= 0x0f;
-                  lvlobjd[objindex] |= hex << 4;
+                  lvlobjdh[objindex] &= 0x0f;
+                  lvlobjdh[objindex] |= hex << 4;
                   break;
 
                   case 1:
-                  lvlobjd[objindex] &= 0xf0;
-                  lvlobjd[objindex] |= hex;
+                  lvlobjdh[objindex] &= 0xf0;
+                  lvlobjdh[objindex] |= hex;
+                  break;
+
+                  case 2:
+                  lvlobjdl[objindex] &= 0x0f;
+                  lvlobjdl[objindex] |= hex << 4;
+                  break;
+
+                  case 3:
+                  lvlobjdl[objindex] &= 0xf0;
+                  lvlobjdl[objindex] |= hex;
                   break;
                 }
 
                 if ((k != KEY_DEL) && (k != KEY_BACKSPACE))
                 {
                   dataeditcursor++;
-                  if (dataeditcursor > 2) dataeditcursor = 2;
+                  if (dataeditcursor > 4) dataeditcursor = 4;
                 }
               }
             }
@@ -660,7 +684,7 @@ void level_mainloop(void)
             if (k == KEY_RIGHT)
             {
               dataeditcursor++;
-              if (dataeditcursor > 2) dataeditcursor = 2;
+              if (dataeditcursor > 4) dataeditcursor = 4;
             }
 
             if (k == KEY_LEFT)
@@ -755,7 +779,7 @@ void zone_mainloop(void)
 
     {
       moveonmap(k, shiftdown);
-      
+
       if (k == KEY_1 || k == KEY_Z)
       {
         zonenum--;
@@ -854,6 +878,21 @@ void zone_mainloop(void)
         zonelevel[zonenum]--;
         zonelevel[zonenum] &= NUMLEVELS-1;
       }
+      if (k == KEY_U)
+      {
+        int c;
+        for (c = 0; c < NUMZONES; ++c)
+        {
+          if (!zonesx[c] && !zonesy[c])
+          {
+            zonenum = c;
+            charsetnum = zonecharset[zonenum];
+            break;
+          }
+        }
+      }
+      if (k == KEY_V)
+        zoomoutmode ^= 1;
       if (k == KEY_DEL)
       {
         zonex[zonenum] = 0;
@@ -887,7 +926,6 @@ void zone_mainloop(void)
     {
       editmode = EM_MAP;
       blockselectmode = 0;
-      zoomoutmode = 0;
       break;
     }
     if (k == KEY_F7)
@@ -1005,7 +1043,6 @@ void map_mainloop(void)
     {
       editmode = EM_MAP;
       blockselectmode = 0;
-      zoomoutmode = 0;
       break;
     }
     if (k == KEY_F7)
@@ -1429,12 +1466,12 @@ void drawblocks(void)
   }
 
   drawblock(320-32,200-32,blocknum,charsetnum);
-  sprintf(textbuffer, "ZONE %X CHSET %X", zonenum, zonecharset[zonenum]);
-  printtext_color(textbuffer, 200,165,SPR_FONTS,COL_WHITE);
+  sprintf(textbuffer, "CHSET %d", zonecharset[zonenum]);
+  printtext_color(textbuffer, 216,165,SPR_FONTS,COL_WHITE);
   sprintf(textbuffer, "BLOCK %d", blocknum);
-  printtext_color(textbuffer, 200,175,SPR_FONTS,COL_WHITE);
-  sprintf(textbuffer, "(%d)", blockusecount[charsetnum][blocknum]);
-  printtext_color(textbuffer, 200,185,SPR_FONTS,COL_WHITE);
+  printtext_color(textbuffer, 216,175,SPR_FONTS,COL_WHITE);
+  sprintf(textbuffer, "(USE %d)", blockusecount[charsetnum][blocknum]);
+  printtext_color(textbuffer, 216,185,SPR_FONTS,COL_WHITE);
 }
 
 void drawmap(void)
@@ -1469,14 +1506,14 @@ void drawmap(void)
         if (mapdata[mapx+x+(mapy+y)*mapsx] > 0 && newzonenum >= NUMZONES)
         {
           int bx,by;
-          gfx_line(x*divisor, y*divisor, x*divisor+divminusone, y*divisor+divminusone, 1);
-          gfx_line(x*divisor+divminusone, y*divisor, x*divisor, y*divisor+divminusone, 1);
+          gfx_line(x*divisor, y*divisor, x*divisor+divminusone, y*divisor+divminusone, 2);
+          gfx_line(x*divisor+divminusone, y*divisor, x*divisor, y*divisor+divminusone, 2);
         }
         // Draw screen edge indicators
         if (((x+mapx) % 10) == 0)
-          gfx_line(x*divisor, y*divisor, x*divisor, y*divisor+divminusone, 1);
+          gfx_line(x*divisor, y*divisor, x*divisor, y*divisor+divminusone, 3);
         if (((y+mapy) % 6) == 0)
-          gfx_line(x*divisor, y*divisor, x*divisor+divminusone, y*divisor, 1);
+          gfx_line(x*divisor, y*divisor, x*divisor+divminusone, y*divisor, 3);
       }
     }
   }
@@ -1491,34 +1528,10 @@ void drawmap(void)
     r = l + zonesx[zonenum]-1;
     u = zoney[zonenum] - mapy;
     d = u + zonesy[zonenum]-1;
-    if ((l >= 0) && (u >= 0) && (l < limitx) && (u < limity))
-    {
-      gfx_line(l*divisor,u*divisor,l*divisor+divminusone,u*divisor,1);
-      gfx_line(l*divisor,u*divisor+1,l*divisor+divminusone,u*divisor+1,1);
-      gfx_line(l*divisor,u*divisor,l*divisor,u*divisor+divminusone,1);
-      gfx_line(l*divisor+1,u*divisor,l*divisor+1,u*divisor+divminusone,1);
-    }
-    if ((l >= 0) && (d >= 0) && (l < limitx) && (d < limity))
-    {
-      gfx_line(l*divisor,d*divisor+divminusone,l*divisor+divminusone,d*divisor+divminusone,1);
-      gfx_line(l*divisor,d*divisor+divminustwo,l*divisor+divminusone,d*divisor+divminustwo,1);
-      gfx_line(l*divisor,d*divisor,l*divisor,d*divisor+divminusone,1);
-      gfx_line(l*divisor+1,d*divisor,l*divisor+1,d*divisor+divminusone,1);
-    }
-    if ((r >= 0) && (u >= 0) && (r < limitx) && (u < limity))
-    {
-      gfx_line(r*divisor+divminusone,u*divisor,r*divisor+divminusone,u*divisor+divminusone,1);
-      gfx_line(r*divisor+divminustwo,u*divisor,r*divisor+divminustwo,u*divisor+divminusone,1);
-      gfx_line(r*divisor,u*divisor,r*divisor+divminusone,u*divisor,1);
-      gfx_line(r*divisor,u*divisor+1,r*divisor+divminusone,u*divisor+1,1);
-    }
-    if ((r >= 0) && (d >= 0) && (r < limitx) && (d < limity))
-    {
-      gfx_line(r*divisor+divminusone,d*divisor,r*divisor+divminusone,d*divisor+divminusone,1);
-      gfx_line(r*divisor,d*divisor+divminusone,r*divisor+divminusone,d*divisor+divminusone,1);
-      gfx_line(r*divisor+divminustwo,d*divisor,r*divisor+divminustwo,d*divisor+divminusone,1);
-      gfx_line(r*divisor,d*divisor+divminustwo,r*divisor+divminusone,d*divisor+divminustwo,1);
-    }
+    gfx_line(l*divisor,u*divisor,r*divisor+divminusone,u*divisor,7);
+    gfx_line(l*divisor,u*divisor,l*divisor,d*divisor+divminusone,7);
+    gfx_line(l*divisor,d*divisor+divminusone,r*divisor+divminusone,d*divisor+divminusone,7);
+    gfx_line(r*divisor+divminusone,u*divisor,r*divisor+divminusone,d*divisor+divminusone,7);
   }
 
   if (editmode == EM_MAP)
@@ -1578,24 +1591,21 @@ void drawmap(void)
     }
 
     if (zonesx[zonenum] && zonesy[zonenum])
-    {
-      sprintf(textbuffer, "ZONE %X CHSET %X (%03X,%03X)-(%03X,%03X)", zonenum, zonecharset[zonenum], zonex[zonenum],zoney[zonenum],zonex[zonenum]+zonesx[zonenum]-1,zoney[zonenum]+zonesy[zonenum]-1);
-    }
+      sprintf(textbuffer, "ZONE %d (%d,%d)-(%d,%d)", zonenum, zonex[zonenum],zoney[zonenum],zonex[zonenum]+zonesx[zonenum]-1,zoney[zonenum]+zonesy[zonenum]-1);
     else
-    {
-      sprintf(textbuffer, "ZONE %X CHSET %X (UNUSED)", zonenum, zonecharset[zonenum]);
-    }
+      sprintf(textbuffer, "ZONE %d (UNUSED)", zonenum);
     printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
-
-    sprintf(textbuffer, "XPOS %03X (%d)", mapx+mousex/divisor, mapx+mousex/divisor);
+    sprintf(textbuffer, "XPOS %d", mapx+mousex/divisor);
     printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
-    sprintf(textbuffer, "YPOS %03X (%d)", mapy+mousey/divisor, mapy+mousey/divisor);
+    sprintf(textbuffer, "YPOS %d", mapy+mousey/divisor);
     printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
     drawblock(320-32,200-32,blocknum,zonecharset[zonenum]);
+    sprintf(textbuffer, "CHSET %d", zonecharset[zonenum]);
+    printtext_color(textbuffer, 216,165,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "BLOCK %d", blocknum);
-    printtext_color(textbuffer, 200,175,SPR_FONTS,COL_WHITE);
-    sprintf(textbuffer, "(%d)", blockusecount[charsetnum][blocknum]);
-    printtext_color(textbuffer, 200,185,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 216,175,SPR_FONTS,COL_WHITE);
+    sprintf(textbuffer, "(USE %d)", blockusecount[charsetnum][blocknum]);
+    printtext_color(textbuffer, 216,185,SPR_FONTS,COL_WHITE);
   }
   if (editmode == EM_ZONE)
   {
@@ -1606,28 +1616,47 @@ void drawmap(void)
         levelmapdatasize += zonesx[x] * zonesy[x];
     }
 
+    // Print level numbers for zones in zoomout mode
+    if (zoomoutmode)
+    {
+      int c;
+      for (c = 0; c < NUMZONES; ++c)
+      {
+        if (zonesx[c] && zonesy[c])
+        {
+          sprintf(textbuffer, "%d", zonelevel[c]);
+          printtext_color(textbuffer, (zonex[c]-mapx)*divisor, (zoney[c]-mapy)*divisor, SPR_FONTS, COL_WHITE);
+        }
+      }
+    }
+
     sprintf(textbuffer, "SP.PARAM %02X SP.SPEED %02X SP.COUNT %02X", zonespawnparam[zonenum], zonespawnspeed[zonenum], zonespawncount[zonenum]);
     printtext_color(textbuffer, 0,155,SPR_FONTS,COL_WHITE);
     if (zonesx[zonenum] && zonesy[zonenum])
-    {
-      sprintf(textbuffer, "ZONE %X CHSET %X (%03X,%03X)-(%03X,%03X)", zonenum, zonecharset[zonenum], zonex[zonenum],zoney[zonenum],zonex[zonenum]+zonesx[zonenum]-1,zoney[zonenum]+zonesy[zonenum]-1);
-    }
+      sprintf(textbuffer, "ZONE %d (%d,%d)-(%d,%d)", zonenum, zonex[zonenum],zoney[zonenum],zonex[zonenum]+zonesx[zonenum]-1,zoney[zonenum]+zonesy[zonenum]-1);
     else
-    {
-      sprintf(textbuffer, "ZONE %X CHSET %X (UNUSED)", zonenum, zonecharset[zonenum]);
-    }
+      sprintf(textbuffer, "ZONE %d (UNUSED)", zonenum);
     printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
-    sprintf(textbuffer, "XPOS %03X", mapx+mousex/divisor);
+    sprintf(textbuffer, "CHSET %d", zonecharset[zonenum]);
+    printtext_color(textbuffer, 216,165,SPR_FONTS,COL_WHITE);
+    sprintf(textbuffer, "LEVEL %d", zonelevel[zonenum]);
+    printtext_color(textbuffer, 216,175,SPR_FONTS,COL_WHITE);
+    sprintf(textbuffer, "(DS %d)", levelmapdatasize);
+    printtext_color(textbuffer, 216,185,SPR_FONTS,COL_WHITE);
+    sprintf(textbuffer, "XPOS %d", mapx+mousex/divisor);
     printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
-    sprintf(textbuffer, "YPOS %03X", mapy+mousey/divisor);
+    sprintf(textbuffer, "YPOS %d", mapy+mousey/divisor);
     printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
-    sprintf(textbuffer, "COLORS %01X %01X %01X", zonebg1[zonenum] & 15, zonebg2[zonenum] & 15, zonebg3[zonenum] & 15);
-    if (zonebg1[zonenum] & 128)
-      strcat(textbuffer, " (NOCHECKP)");
-    if (zonebg2[zonenum] & 128)
-      strcat(textbuffer, " (TOXIC AIR)");
+    sprintf(textbuffer, "COLORS %01X %01X %01X ", zonebg1[zonenum] & 15, zonebg2[zonenum] & 15, zonebg3[zonenum] & 15);
     printtext_color(textbuffer, 80,175,SPR_FONTS,COL_WHITE);
-    sprintf(textbuffer, "MUSIC %02X-%01X LEVEL %02X (DS %D)", zonemusic[zonenum] / 4, zonemusic[zonenum] % 4, zonelevel[zonenum], levelmapdatasize);
+    sprintf(textbuffer, "");
+    if (zonebg1[zonenum] & 128)
+      strcat(textbuffer, "(NOCHECKP.)");
+    if (zonebg2[zonenum] & 128)
+      strcat(textbuffer, "(TOXIC AIR)");
+    printtext_color(textbuffer, 0,145,SPR_FONTS,COL_WHITE);
+
+    sprintf(textbuffer, "MUSIC %02X-%01X", zonemusic[zonenum] / 4, zonemusic[zonenum] % 4);
     printtext_color(textbuffer, 80,185,SPR_FONTS,COL_WHITE);
   }
 
@@ -1644,7 +1673,7 @@ void drawmap(void)
 
         if (lvlactt[a] < 128)
         {
-          sprintf(textbuffer, "ACTOR %02X (%s) (%03X,%03X) ", lvlactt[a], actorname[lvlactt[a]], lvlactx[a], lvlacty[a] & 0x7f);
+          sprintf(textbuffer, "ACTOR %02X (%s) (%02X,%02X) ", lvlactt[a], actorname[lvlactt[a]], lvlactx[a]-levelx[zonelevel[zonenum]], lvlacty[a] & 0x7f);
           if (lvlacty[a] & 128) strcat(textbuffer, "(HIDDEN)");
           printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
           if (lvlactw[a] & 128) sprintf(textbuffer, "LEFT");
@@ -1657,7 +1686,7 @@ void drawmap(void)
         }
         else
         {
-          sprintf(textbuffer, "ITEM %02X (%s) (%03X,%03X) ", lvlactt[a] & 0x7f, itemname[lvlactt[a]-128], lvlactx[a], lvlacty[a] & 0x7f);
+          sprintf(textbuffer, "ITEM %02X (%s) (%02X,%02X) ", lvlactt[a] & 0x7f, itemname[lvlactt[a]-128], lvlactx[a]-levelx[zonelevel[zonenum]], lvlacty[a] & 0x7f);
           if (lvlacty[a] & 128) strcat(textbuffer, "(HIDDEN)");
           printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
           if (lvlactw[a] != 255)
@@ -1676,55 +1705,109 @@ void drawmap(void)
         if (objfound)
         {
           int o = objindex;
-          sprintf(textbuffer, "OBJ %03X (%03X,%03X)", o, lvlobjx[o], lvlobjy[o] & 0x7f);
-          printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
+          int lid = -1;
+          int z;
+          int lev = -1;
+          // Find out index within level for the currently selected object
+          z = findzone(lvlobjx[o], lvlobjy[o]&0x7f);
+          if (z < NUMZONES)
+          {
+            lev = zonelevel[z];
+            lid = 0;
+            for (c = 0; c < objindex; c++)
+            {
+              if (lvlobjx[c] || lvlobjy[c])
+              {
+                z = findzonefast(lvlobjx[c], lvlobjy[c]&0x7f, z);
+                if (z < NUMZONES && zonelevel[z] == lev)
+                  lid++;
+              }
+            }
+          }
 
-          sprintf(textbuffer, "HSIZE:%d ", (lvlobjb[o] & 64) ? 2 : 1);
-
+          if (lid >= 0)
+            sprintf(textbuffer, "OBJ (%02X,%02X) ID:%02X", lvlobjx[o]-levelx[zonelevel[zonenum]], lvlobjy[o] & 0x7f, lid);
+          else
+          {
+            // Object outside zone: levelid cannot be determined
+            sprintf(textbuffer, "OBJ (%02X,%02X) ID:??", lvlobjx[o]-levelx[zonelevel[zonenum]], lvlobjy[o] & 0x7f);
+          }
+          printtext_color(textbuffer, 0, 165, SPR_FONTS, COL_WHITE);
+          
+          sprintf(textbuffer, "HSIZE:%d", (lvlobjb[o] & 64) ? 2 : 1);
           if (lvlobjy[o] & 128)
-            strcat(textbuffer, "(ANIM)");
+            strcat(textbuffer, " (ANIM)");
           printtext_color(textbuffer, 160,165,SPR_FONTS,COL_WHITE);
 
           sprintf(textbuffer, "MODE:%s", modetext[(lvlobjb[o] & 0x3)]);
           if (lvlobjb[o] & 32) strcat(textbuffer, "+AUTO-DEACT");
           printtext_color(textbuffer, 160,175,SPR_FONTS,COL_WHITE);
 
-          sprintf(textbuffer, "TYPE:%s (%02X)", actiontext[(lvlobjb[o] & 0x1c) >> 2], lvlobjd[o]);
-
+          sprintf(textbuffer, "TYPE:%s (%02X%02X)", actiontext[(lvlobjb[o] & 0x1c) >> 2], lvlobjdh[o],lvlobjdl[o]);
           if (dataeditmode) dataeditflash++;
 
           if ((dataeditmode) && (dataeditflash & 16))
             printtext_color(textbuffer, 160,185,SPR_FONTS,COL_HIGHLIGHT);
           else
             printtext_color(textbuffer, 160,185,SPR_FONTS,COL_WHITE);
+
+          // Requirement in high databit for everything but scripts
+          if ((lvlobjdh[o]&0x7f) && (lvlobjb[o] & 0x1c) != 0x10)
+          {
+            sprintf(textbuffer, "REQ:%02X", lvlobjdh[o]&0x7f);
+            printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
+            sprintf(textbuffer, "%-16s", itemname[lvlobjdh[o]&0x7f]);
+            printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
+          }
         }
       }
       if ((!objfound) && (!actfound))
       {
         int o = 0;
         int a = 0;
+        int z = 0;
+        int lo = 0;
+        int la = 0;
+
         if (actnum < 128)
         {
-          sprintf(textbuffer, "ACTOR %02X (%s)", actnum, actorname[actnum]);
+          sprintf(textbuffer, "ACTOR %X (%s)", actnum, actorname[actnum]);
         }
         else
         {
-          sprintf(textbuffer, "ITEM %02X (%s)", actnum-128, itemname[actnum-128]);
+          sprintf(textbuffer, "ITEM %X (%s)", actnum-128, itemname[actnum-128]);
         }
         printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
 
         for (c = 0; c < NUMLVLOBJ; c++)
         {
-          if ((lvlobjx[c]) || (lvlobjy[c])) o++;
+          if ((lvlobjx[c]) || (lvlobjy[c]))
+          {
+            o++;
+            z = findzonefast(lvlobjx[c], lvlobjy[c]&0x7f, z);
+            if (z < NUMZONES && zonelevel[z] == zonelevel[zonenum])
+              lo++;
+          }
         }
         for (c = 0; c < NUMLVLACT; c++)
         {
-          if (lvlactt[c]) a++;
+          if (lvlactt[c])
+          {
+            a++;
+            z = findzonefast(lvlactx[c], lvlacty[c]&0x7f, z);
+            if (z < NUMZONES && zonelevel[z] == zonelevel[zonenum])
+              la++;
+          }
         }
-        sprintf(textbuffer, "OBJECTS %d", o);
+
+        sprintf(textbuffer, "XPOS %d (%02X)", mapx+mousex/divisor, mapx+mousex/divisor-levelx[zonelevel[zonenum]]);
         printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
-        sprintf(textbuffer, "ACTORS %d", a);
+        sprintf(textbuffer, "YPOS %d (%02X)", mapy+mousey/divisor, mapy+mousey/divisor);
         printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
+        sprintf(textbuffer, "LEVEL %d (ZONE %d)", zonelevel[zonenum], zonenum);
+        printtext_color(textbuffer, 120,175,SPR_FONTS,COL_WHITE);
+        sprintf(textbuffer, "OBJECTS %d/%d ACTORS %d/%d", lo, o, la, a);
+        printtext_color(textbuffer, 120,185,SPR_FONTS,COL_WHITE);
       }
       for (c = 0; c < NUMLVLOBJ; c++)
       {
@@ -1732,7 +1815,7 @@ void drawmap(void)
         {
           x = lvlobjx[c] - mapx;
           y = (lvlobjy[c] & 0x7f) - mapy;
-          if ((x >= 0) && (x < 10) && (y >= 0) && (y < 5))
+          if ((x >= 0) && (x < 10) && (y >= 0) && (y < 6))
           {
             // 2 blocks high
             if (lvlobjb[c] & 64)
@@ -1759,7 +1842,7 @@ void drawmap(void)
           x = lvlactx[c] - mapx;
           y = (lvlacty[c] & 0x7f) - mapy;
 
-          if ((x >= 0) && (x < 10) && (y >= 0) && (y < 5))
+          if ((x >= 0) && (x < 10) && (y >= 0) && (y < 6))
           {
             int xc = x * 32 + ((lvlactf[c] >> 4) & 3) * 8;
             int yc = y * 32 + ((lvlactf[c] >> 6) & 3) * 8;
@@ -2418,7 +2501,7 @@ void drawgrid(void)
     printtext_color(textbuffer, 0,50,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "BLOCK %d (USE %d)", blocknum, blockusecount[charsetnum][blocknum]);
     printtext_color(textbuffer, 0,65,SPR_FONTS,COL_WHITE);
-    sprintf(textbuffer, "ZONE %X CHSET %X", zonenum, charsetnum);
+    sprintf(textbuffer, "ZONE %d CHSET %d", zonenum, charsetnum);
     printtext_color(textbuffer, 0,80,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "BLOCKS %d", maxusedblocks[charsetnum]);
     printtext_color(textbuffer, 0,110,SPR_FONTS,COL_WHITE);
@@ -2713,7 +2796,8 @@ int initchars(void)
     lvlobjx[c] = 0;
     lvlobjy[c] = 0;
     lvlobjb[c] = 0;
-    lvlobjd[c] = 0;
+    lvlobjdl[c] = 0;
+    lvlobjdh[c] = 0;
   }
   for (c = 0; c < NUMLVLACT; c++)
   {
@@ -2831,6 +2915,42 @@ int checkzonelegal(int num, int newx, int newy, int newsx, int newsy)
     }
   }
   return 1;
+}
+
+void calculatelevelorigins(void)
+{
+  int c;
+
+  for (c = 0; c < NUMLEVELS; ++c)
+  {
+    levelx[c] = 0xffff;
+    levely[c] = 0xffff;
+    levelsx[c] = 0;
+    levelsy[c] = 0;
+  }
+  for (c = 0; c < NUMZONES; ++c)
+  {
+    if (zonesx[c] && zonesy[c])
+    {
+      int l = zonelevel[c];
+      if (zonex[c] < levelx[l])
+        levelx[l] = zonex[c];
+      if (zoney[c] < levely[l])
+        levely[l] = zoney[c];
+      if (zonex[c]+zonesx[c] > levelx[l]+levelsx[l])
+        levelsx[l] = zonex[c]+zonesx[c]-levelx[l];
+      if (zoney[c]+zonesy[c] > levely[l]+levelsy[l])
+        levelsy[l] = zoney[c]+zonesy[c]-levely[l];
+    }
+  }
+  for (c = 0; c < NUMLEVELS; ++c)
+  {
+    if (!levelsx[c] && !levelsy[c])
+    {
+      levelx[c] = 0;
+      levely[c] = 0;
+    }
+  }
 }
 
 void findusedblocksandchars(void)
@@ -3926,6 +4046,7 @@ void loadalldata(void)
         }
         memset(blockdata[s],0,4096);
         memset(chcol[s],9,256);
+
         sprintf(ib2, "%s%02d.blk", ib1, s);
         handle = open(ib2, O_RDONLY | O_BINARY);
         if (handle != -1)
@@ -3958,10 +4079,11 @@ void loadalldata(void)
         lvlobjx[c] = 0;
         lvlobjy[c] = 0;
         lvlobjb[c] = 0;
-        lvlobjd[c] = 0;
+        lvlobjdl[c] = 0;
+        lvlobjdh[c] = 0;
       }
       strcpy(ib2, ib1);
-      strcat(ib2, ".obj");
+      strcat(ib2, ".lvo");
       handle = open(ib2, O_RDONLY | O_BINARY);
       if (handle != -1)
       {
@@ -3970,10 +4092,11 @@ void loadalldata(void)
         read(handle, &lvlobjx[0], NUMLVLOBJ*2);
         read(handle, &lvlobjy[0], NUMLVLOBJ*2);
         read(handle, &lvlobjb[0], NUMLVLOBJ);
-        read(handle, &lvlobjd[0], NUMLVLOBJ);
+        read(handle, &lvlobjdl[0], NUMLVLOBJ);
+        read(handle, &lvlobjdh[0], NUMLVLOBJ);
         close(handle);
       }
-      
+
       for (c = 0; c < NUMLVLACT; c++)
       {
         lvlactx[c] = 0;
@@ -3983,7 +4106,7 @@ void loadalldata(void)
         lvlactw[c] = 0;
       }
       strcpy(ib2, ib1);
-      strcat(ib2, ".act");
+      strcat(ib2, ".lva");
       handle = open(ib2, O_RDONLY | O_BINARY);
       if (handle != -1)
       {
@@ -4009,12 +4132,16 @@ void loadalldata(void)
       {
         int sx = readle16(handle);
         int sy = readle16(handle);
-        int x,y;
-        for (y = 0; y < sy; y++)
+        // Abort if we're reading a per-level map mistakenly
+        if (sx <= mapsx && sy <= mapsy)
         {
-          for (x = 0; x < sx; x++)
+          int x,y;
+          for (y = 0; y < sy; y++)
           {
-            mapdata[y*mapsx+x] = read8(handle);
+            for (x = 0; x < sx; x++)
+            {
+              mapdata[y*mapsx+x] = read8(handle);
+            }
           }
         }
         close(handle);
@@ -4038,7 +4165,7 @@ void loadalldata(void)
       }
 
       strcpy(ib2, ib1);
-      strcat(ib2, ".zon");
+      strcat(ib2, ".lvz");
       handle = open(ib2, O_RDONLY | O_BINARY);
       if (handle != -1)
       {
@@ -4056,8 +4183,6 @@ void loadalldata(void)
         read(handle, &zonespawncount[0], NUMZONES);
         close(handle);
       }
-
-      // Todo: save per-level maps, zones, objects & actors
 
       findusedblocksandchars();
       return;
@@ -4153,6 +4278,26 @@ void savealldata(void)
 
   endblockeditmode();
   findusedblocksandchars();
+  calculatelevelorigins();
+
+  unsigned char actorsperlevel[NUMLEVELS];
+  unsigned char objectsperlevel[NUMLEVELS];
+  unsigned char persistentobjectsperlevel[NUMLEVELS];
+  unsigned char actbitareasize[NUMLEVELS];
+  unsigned char objbitareasize[NUMLEVELS];
+  unsigned char actbitareaindex[NUMLEVELS];
+  unsigned char objbitareaindex[NUMLEVELS];
+  int totalmapdatasize = 0;
+  int totalactbitareasize = 0;
+  int totalobjbitareasize = 0;
+  int numlevels = 0;
+  memset(actorsperlevel, 0, sizeof actorsperlevel);
+  memset(objectsperlevel, 0, sizeof objectsperlevel);
+  memset(persistentobjectsperlevel, 0, sizeof persistentobjectsperlevel);
+  memset(actbitareaindex, 0, sizeof actbitareaindex);
+  memset(actbitareasize, 0, sizeof actbitareasize);
+  memset(objbitareaindex, 0, sizeof objbitareaindex);
+  memset(objbitareasize, 0, sizeof objbitareasize);
 
   for (;;)
   {
@@ -4230,19 +4375,20 @@ void savealldata(void)
       charsetnum = oldcharset;
 
       strcpy(ib2, ib1);
-      strcat(ib2, ".obj");
+      strcat(ib2, ".lvo");
       handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
       if (handle != -1)
       {
         write(handle, &lvlobjx[0], NUMLVLOBJ*2);
         write(handle, &lvlobjy[0], NUMLVLOBJ*2);
         write(handle, &lvlobjb[0], NUMLVLOBJ);
-        write(handle, &lvlobjd[0], NUMLVLOBJ);
+        write(handle, &lvlobjdl[0], NUMLVLOBJ);
+        write(handle, &lvlobjdh[0], NUMLVLOBJ);
         close(handle);
       }
 
       strcpy(ib2, ib1);
-      strcat(ib2, ".act");
+      strcat(ib2, ".lva");
       handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
       if (handle != -1)
       {
@@ -4273,7 +4419,7 @@ void savealldata(void)
       }
 
       strcpy(ib2, ib1);
-      strcat(ib2, ".zon");
+      strcat(ib2, ".lvz");
       handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
       if (handle != -1)
       {
@@ -4291,7 +4437,241 @@ void savealldata(void)
         write(handle, &zonespawncount[0], NUMZONES);
         close(handle);
       }
+      
+      // Save level maps which contain data
+      for (s = 0; s < NUMLEVELS; ++s)
+      {
+        if (!levelsx[s] || !levelsy[s])
+          continue;
+        if (numlevels < s+1)
+          numlevels = s+1;
 
+        strcpy(ib2, ib1);
+        sprintf(ib2, "%s%02d.lva", ib1, s);
+        handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
+        if (handle != -1)
+        {
+          unsigned char savelvlactx[NUMLVLACT_PER_LEVEL];
+          unsigned char savelvlacty[NUMLVLACT_PER_LEVEL];
+          unsigned char savelvlactf[NUMLVLACT_PER_LEVEL];
+          unsigned char savelvlactt[NUMLVLACT_PER_LEVEL];
+          unsigned char savelvlactw[NUMLVLACT_PER_LEVEL];
+          int d = 0;
+
+          memset(savelvlactx, 0, sizeof savelvlactx);
+          memset(savelvlacty, 0, sizeof savelvlacty);
+          memset(savelvlactf, 0, sizeof savelvlactf);
+          memset(savelvlactt, 0, sizeof savelvlactt);
+          memset(savelvlactw, 0, sizeof savelvlactw);
+
+          for (c = 0; c < NUMLVLACT; c++)
+          {
+            if (lvlactt[c])
+            {
+              int z = findzone(lvlactx[c], lvlacty[c]&0x7f);
+              if (z < NUMZONES && zonelevel[z] == s)
+              {
+                savelvlactx[d] = lvlactx[c]-levelx[s];
+                savelvlacty[d] = lvlacty[c];
+                savelvlactf[d] = lvlactf[c];
+                savelvlactt[d] = lvlactt[c];
+                savelvlactw[d] = lvlactw[c];
+                actorsperlevel[s]++;
+                d++;
+                if (d >= NUMLVLACT_PER_LEVEL)
+                  break;
+              }
+            }
+          }
+          write(handle, &savelvlactx, sizeof savelvlactx);
+          write(handle, &savelvlacty, sizeof savelvlacty);
+          write(handle, &savelvlactf, sizeof savelvlactf);
+          write(handle, &savelvlactt, sizeof savelvlactt);
+          write(handle, &savelvlactw, sizeof savelvlactw);
+          close(handle);
+        }
+
+        strcpy(ib2, ib1);
+        sprintf(ib2, "%s%02d.lvo", ib1, s);
+        handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
+        if (handle != -1)
+        {
+          unsigned char savelvlobjx[NUMLVLOBJ_PER_LEVEL];
+          unsigned char savelvlobjy[NUMLVLOBJ_PER_LEVEL];
+          unsigned char savelvlobjb[NUMLVLOBJ_PER_LEVEL];
+          unsigned char savelvlobjdl[NUMLVLOBJ_PER_LEVEL];
+          unsigned char savelvlobjdh[NUMLVLOBJ_PER_LEVEL];
+          int d = 0;
+          
+          memset(savelvlobjx, 0, sizeof savelvlobjx);
+          memset(savelvlobjy, 0, sizeof savelvlobjy);
+          memset(savelvlobjb, 0, sizeof savelvlobjb);
+          memset(savelvlobjdl, 0, sizeof savelvlobjdl);
+          memset(savelvlobjdh, 0, sizeof savelvlobjdh);
+
+          for (c = 0; c < NUMLVLOBJ; c++)
+          {
+            if (lvlobjx[c] && (lvlobjy[c]&0x7f))
+            {
+              int z = findzone(lvlobjx[c], lvlobjy[c]&0x7f);
+              if (z < NUMZONES && zonelevel[z] == s)
+              {
+                savelvlobjx[d] = lvlobjx[c]-levelx[s];
+                savelvlobjy[d] = lvlobjy[c];
+                savelvlobjb[d] = lvlobjb[c];
+                savelvlobjdl[d] = lvlobjdl[c];
+                savelvlobjdh[d] = lvlobjdh[c];
+                objectsperlevel[s]++;
+                // If object is not autodeactivating, and either animates or is not a door, it's persistent
+                if (((lvlobjb[c] & 0x20) == 0) && ((lvlobjy[c] & 0x80) || (lvlobjb[c] & 0x1c > 0x4)))
+                  persistentobjectsperlevel[s]++;
+                d++;
+                if (d >= NUMLVLOBJ_PER_LEVEL)
+                  break;
+              }
+            }
+          }
+          write(handle, &savelvlobjx, sizeof savelvlobjx);
+          write(handle, &savelvlobjy, sizeof savelvlobjy);
+          write(handle, &savelvlobjb, sizeof savelvlobjb);
+          write(handle, &savelvlobjdl, sizeof savelvlobjdl);
+          write(handle, &savelvlobjdh, sizeof savelvlobjdh);
+          close(handle);
+        }
+        strcpy(ib2, ib1);
+        sprintf(ib2, "%s%02d.map", ib1, s);
+        handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
+        if (handle != -1)
+        {
+          int activezones = 0;
+          int datasize = 0;
+          int zoneoffsets[NUMZONES];
+          int d = 0;
+
+          for (c = 0; c < NUMZONES; c++)
+          {
+            if (zonesx[c] && zonesy[c] && zonelevel[c] == s)
+              activezones++;
+          }
+          datasize = activezones*2;
+
+          for (c = 0; c < NUMZONES; c++)
+          {
+            if (zonesx[c] && zonesy[c] && zonelevel[c] == s)
+            {
+              zoneoffsets[d] = datasize;
+              datasize += 12 + zonesx[c]*zonesy[c];
+              totalmapdatasize += zonesx[c]*zonesy[c];
+              d++;
+            }
+          }
+
+          writele16(handle, datasize);
+          write8(handle, activezones);
+          for (c = 0; c < activezones; c++)
+            writele16(handle, zoneoffsets[c]);
+
+          int x,y;
+          for (c = 0; c < NUMZONES; c++)
+          {
+            if (zonesx[c] && zonesy[c] && zonelevel[c] == s)
+            {
+              write8(handle, zonex[c]-levelx[zonelevel[c]]);
+              write8(handle, zonex[c]-levelx[zonelevel[c]]+zonesx[c]);
+              write8(handle, zoney[c]);
+              write8(handle, zoney[c]+zonesy[c]);
+              write8(handle, zonecharset[c]);
+              write8(handle, zonebg1[c]);
+              write8(handle, zonebg2[c]);
+              write8(handle, zonebg3[c]);
+              write8(handle, zonemusic[c]);
+              write8(handle, zonespawnparam[c]);
+              write8(handle, zonespawnspeed[c]);
+              write8(handle, zonespawncount[c]);
+
+              for (y = zoney[c]; y < zoney[c]+zonesy[c]; y++)
+              {
+                for (x = zonex[c]; x < zonex[c]+zonesx[c]; x++)
+                {
+                  write8(handle, mapdata[y*mapsx+x]);
+                }
+              }
+            }
+          }
+        }
+        close(handle);
+      }
+      
+      c = 0;
+      for (s = 0; s < numlevels; ++s)
+      {
+        actbitareasize[s] = (actorsperlevel[s]+7)/8;
+        if (actbitareasize[s] == 0) actbitareasize[s] = 1; // Always at least 1 byte
+        actbitareaindex[s] = c;
+        c += actbitareasize[s];
+      }
+      totalactbitareasize = c;
+
+      c = 0;
+      for (s = 0; s < numlevels; ++s)
+      {
+        objbitareasize[s] = (persistentobjectsperlevel[s]+7)/8;
+        if (objbitareasize[s] == 0) objbitareasize[s] = 1; // Always at least 1 byte
+        objbitareaindex[s] = c;
+        c += objbitareasize[s];
+      }
+      totalobjbitareasize = c;
+
+      strcpy(ib2, ib1);
+      sprintf(ib2, "%s.s", ib1);
+      FILE* out = fopen(ib2, "wt");
+      if (out)
+      {
+        fprintf(out, "LVLDATAACTTOTALSIZE = %d\n\n", totalactbitareasize);
+        fprintf(out, "LVLOBJTOTALSIZE = %d\n\n", totalobjbitareasize);
+
+        fprintf(out, "lvlDataActBitsStart:\n");
+        for (c = 0; c < numlevels; c++)
+        {
+            fprintf(out, "                dc.b %d\n", actbitareaindex[c]);
+        }
+        fprintf(out, "lvlDataActBitsLen:\n");
+        for  (c = 0; c < numlevels; c++)
+        {
+            fprintf(out, "                dc.b %d\n", actbitareasize[c]);
+        }
+        fprintf(out, "lvlObjBitsStart:\n");
+        for (c = 0; c < numlevels; c++)
+        {
+            fprintf(out, "                dc.b %d\n", objbitareaindex[c]);
+        }
+        fprintf(out, "lvlObjBitsLen:\n");
+        for (c = 0; c < numlevels; c++)
+        {
+            fprintf(out, "                dc.b %d\n", objbitareasize[c]);
+        }
+        fprintf(out, "lvlLimitL:\n");
+        for (c = 0; c < numlevels; c++)
+        {
+            fprintf(out, "                dc.b %d\n", levelx[c]/10); // In screens
+        }
+        fprintf(out, "lvlLimitR:\n");
+        for (c = 0; c < numlevels; c++)
+        {
+            fprintf(out, "                dc.b %d\n", (levelx[c]+levelsx[c])/10); // In screens
+        }
+        fprintf(out, "lvlLimitU:\n");
+        for (c = 0; c < numlevels; c++)
+        {
+            fprintf(out, "                dc.b %d\n", levely[c]);
+        }
+        fprintf(out, "lvlLimitD:\n");
+        for (c = 0; c < numlevels; c++)
+        {
+            fprintf(out, "                dc.b %d\n", levely[c]+levelsy[c]);
+        }
+        fclose(out);
+      }
       return;
     }
   }
