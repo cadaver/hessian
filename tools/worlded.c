@@ -761,6 +761,8 @@ void level_mainloop(void)
 
 void zone_mainloop(void)
 {
+  calculatelevelorigins();
+  
   for (;;)
   {
     int s, shiftdown, ctrldown;
@@ -902,6 +904,7 @@ void zone_mainloop(void)
         zoney[zonenum] = 0;
         zonesx[zonenum] = 0;
         zonesy[zonenum] = 0;
+        calculatelevelorigins();
       }
       if (k == KEY_R && shiftdown)
       {
@@ -969,6 +972,7 @@ void zone_mainloop(void)
             zoney[zonenum] = ny;
             zonesx[zonenum] = nsx;
             zonesy[zonenum] = nsy;
+            calculatelevelorigins();
           }
         }
         else
@@ -999,6 +1003,7 @@ void zone_mainloop(void)
             zoney[zonenum] = ny;
             zonesx[zonenum] = nsx;
             zonesy[zonenum] = nsy;
+            calculatelevelorigins();
           }
         }
       }
@@ -1534,6 +1539,28 @@ void drawmap(void)
 
   zonenum = oldzone;
 
+  // Draw level edge indicators
+  if (editmode == EM_ZONE)
+  {
+    int c;
+    for (c = 0; c < NUMLEVELS; c++)
+    {
+      if (levelsx[c] && levelsy[c])
+      {
+        int l,r,u,d;
+        l = levelx[c] - mapx;
+        r = l + levelsx[c]-1;
+        u = levely[c] - mapy;
+        d = u + levelsy[c]-1;
+        gfx_line(l*divisor,u*divisor,r*divisor+divisor,u*divisor,10);
+        gfx_line(l*divisor,u*divisor,l*divisor,d*divisor+divisor,10);
+        gfx_line(l*divisor,d*divisor+divisor,r*divisor+divisor,d*divisor+divisor,10);
+        gfx_line(r*divisor+divisor,u*divisor,r*divisor+divisor,d*divisor+divisor,10);
+      }
+    }
+  }
+
+  // Draw current zone edge indicators
   if (zonesx[zonenum] && zonesy[zonenum])
   {
     int l,r,u,d;
@@ -1542,10 +1569,10 @@ void drawmap(void)
     r = l + zonesx[zonenum]-1;
     u = zoney[zonenum] - mapy;
     d = u + zonesy[zonenum]-1;
-    gfx_line(l*divisor,u*divisor,r*divisor+divminusone,u*divisor,7);
-    gfx_line(l*divisor,u*divisor,l*divisor,d*divisor+divminusone,7);
-    gfx_line(l*divisor,d*divisor+divminusone,r*divisor+divminusone,d*divisor+divminusone,7);
-    gfx_line(r*divisor+divminusone,u*divisor,r*divisor+divminusone,d*divisor+divminusone,7);
+    gfx_line(l*divisor,u*divisor,r*divisor+divisor,u*divisor,7);
+    gfx_line(l*divisor,u*divisor,l*divisor,d*divisor+divisor,7);
+    gfx_line(l*divisor,d*divisor+divisor,r*divisor+divisor,d*divisor+divisor,7);
+    gfx_line(r*divisor+divisor,u*divisor,r*divisor+divisor,d*divisor+divisor,7);
   }
 
   // Clean up lines that spill to the status area
@@ -3268,6 +3295,7 @@ void relocatezone(int x, int y)
   zoney[zonenum] = y;
 
   free(tempmapdata);
+  calculatelevelorigins();
 }
 
 void reorganizedata()
