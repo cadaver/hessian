@@ -15,9 +15,9 @@
 #define MAXPATH 4096
 
 #define COLOR_DELAY 10
-#define NUMZONES 1024
-#define NUMLVLOBJ 4096
-#define NUMLVLACT 4096
+#define NUMZONES 2048
+#define NUMLVLOBJ 8192
+#define NUMLVLACT 8192
 #define NUMLEVELS 64
 #define NUMCHARSETS 64
 #define NUMLVLOBJ_PER_LEVEL 128
@@ -1804,9 +1804,9 @@ void drawmap(void)
         printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
         sprintf(textbuffer, "YPOS %d (%02X)", mapy+mousey/divisor, mapy+mousey/divisor);
         printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
-        sprintf(textbuffer, "LEVEL %d (ZONE %d)", zonelevel[zonenum], zonenum);
+        sprintf(textbuffer, "ZONE %d (LEVEL %d)", zonenum, zonelevel[zonenum]);
         printtext_color(textbuffer, 120,175,SPR_FONTS,COL_WHITE);
-        sprintf(textbuffer, "OBJECTS %d/%d ACTORS %d/%d", lo, o, la, a);
+        sprintf(textbuffer, "OBJ %d/%d ACT %d/%d", lo, o, la, a);
         printtext_color(textbuffer, 120,185,SPR_FONTS,COL_WHITE);
       }
       for (c = 0; c < NUMLVLOBJ; c++)
@@ -4035,6 +4035,10 @@ void loadalldata(void)
       int s;
       char ib2[80];
 
+      if (!strlen(ib1))
+        return;
+      strcpy(levelname, ib1);
+
       for (s = 0; s < NUMCHARSETS; s++)
       {
         sprintf(ib2, "%s%02d.chi", ib1, s);
@@ -4320,7 +4324,10 @@ void savealldata(void)
       int oldcharset = charsetnum;
       char ib2[80];
 
+      if (!strlen(ib1))
+        return;
       strcpy(levelname, ib1);
+
       for (s = 0; s < NUMCHARSETS; s++)
       {
         int v = 0;
@@ -4627,6 +4634,8 @@ void savealldata(void)
       FILE* out = fopen(ib2, "wt");
       if (out)
       {
+        fprintf(out, "WORLDSIZEBLOCKS = %d\n\n", totalmapdatasize);
+        fprintf(out, "WORLDSIZESCREENS = %d\n\n", (totalmapdatasize+30)/60);
         fprintf(out, "LVLDATAACTTOTALSIZE = %d\n\n", totalactbitareasize);
         fprintf(out, "LVLOBJTOTALSIZE = %d\n\n", totalobjbitareasize);
 
