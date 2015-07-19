@@ -1800,10 +1800,20 @@ void drawmap(void)
           }
         }
 
-        sprintf(textbuffer, "XPOS %d (%02X)", mapx+mousex/divisor, mapx+mousex/divisor-levelx[zonelevel[zonenum]]);
-        printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
-        sprintf(textbuffer, "YPOS %d (%02X)", mapy+mousey/divisor, mapy+mousey/divisor);
-        printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
+        if (findzone(mapx+mousex/divisor, mapy+mousey/divisor) < NUMZONES)
+        {
+          sprintf(textbuffer, "XPOS %d (%02X)", mapx+mousex/divisor, mapx+mousex/divisor-levelx[zonelevel[zonenum]]);
+          printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
+          sprintf(textbuffer, "YPOS %d (%02X)", mapy+mousey/divisor, mapy+mousey/divisor);
+          printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
+        }
+        else
+        {
+          sprintf(textbuffer, "XPOS %d", mapx+mousex/divisor);
+          printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
+          sprintf(textbuffer, "YPOS %d", mapy+mousey/divisor);
+          printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
+        }
         sprintf(textbuffer, "ZONE %d (LEVEL %d)", zonenum, zonelevel[zonenum]);
         printtext_color(textbuffer, 120,175,SPR_FONTS,COL_WHITE);
         sprintf(textbuffer, "OBJ %d/%d ACT %d/%d", lo, o, la, a);
@@ -5388,9 +5398,8 @@ void drawblock(int x, int y, int num, int charset)
 void drawsmallblock(int x, int y, int num, int charset)
 {
   Uint8 *destptr = &gfx_vscreen[y*320 + x];
-  char colorcounts[64][16];
   int bx,by;
-  memset(colorcounts, 0, 64*16);
+  unsigned char smallblock[8][8];
 
   for (by = 0; by < 4; ++by)
   {
@@ -5398,33 +5407,14 @@ void drawsmallblock(int x, int y, int num, int charset)
     {
       int cy, cx;
       drawchar(x, y, blockdata[charset][num*16+by*4+bx], charset);
-      for (cy = 0; cy < 8; ++cy)
-      {
-        for (cx = 0; cx < 8; ++cx)
-        {
-          colorcounts[by*16+bx*2+(cy/4)*8+(cx/4)][(*(destptr+cy*320+cx))&0xf]++;
-        }
-      }
+      smallblock[by*2][bx*2] = destptr[0];
+      smallblock[by*2][bx*2+1] = destptr[4];
+      smallblock[by*2+1][bx*2] = destptr[320];
+      smallblock[by*2+1][bx*2+1] = destptr[324];
     }
   }
   for (by = 0; by < 8; ++by)
-  {
-    for (bx = 0; bx < 8; ++bx)
-    {
-      int c;
-      int bestcolor = 0;
-      int bestcount = colorcounts[by*8+bx][0];
-      for (c = 1; c < 16; ++c)
-      {
-        if (colorcounts[by*8+bx][c] > bestcount)
-        {
-          bestcolor = c;
-          bestcount = colorcounts[by*8+bx][c];
-        }
-      }
-      *(destptr+by*320+bx) = bestcolor;
-    }
-  }
+    memcpy(&destptr[320*by], &smallblock[by][0], 8);
 }
 
 int findzone(int x, int y)
