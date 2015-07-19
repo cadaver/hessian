@@ -1,4 +1,4 @@
-all: d642prg.exe filejoin.exe gfxconv.exe gt2nt2.exe invert.exe lpack.exe ldepack.exe countobj.exe makedisk.exe pack2.exe pchunk2.exe pic2chr.exe prg2d64.exe mchunk.exe leveled.exe spred.exe symbols.exe ins2nt2.exe
+all: d642prg.exe filejoin.exe gfxconv.exe gt2nt2.exe invert.exe lpack.exe ldepack.exe countobj.exe makedisk.exe pack2.exe pchunk2.exe pic2chr.exe prg2d64.exe mchunk.exe leveled.exe worlded.exe spred.exe symbols.exe ins2nt2.exe
 
 clean:
 	del *.exe
@@ -69,6 +69,9 @@ mchunk.exe: mchunk.c
 
 leveled.exe: leveled.c editdata.c stb_image_write.c
 	gcc leveled.c editdata.c stb_image_write.c libbme.a -oleveled.exe -lmingw32 -lSDLmain -lSDL
+
+worlded.exe: worlded.c editdata.c stb_image_write.c
+	gcc worlded.c editdata.c stb_image_write.c libbme.a -oworlded.exe -lmingw32 -lSDLmain -lSDL
 
 spred.exe: spred.c fileio.c editdata.c
 	gcc spred.c editdata.c fileio.c libbme.a -ospred.exe -lmingw32 -lSDLmain -lSDL
