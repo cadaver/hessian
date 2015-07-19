@@ -190,11 +190,6 @@ slopeTbl:       dc.b $00,$00,$00,$00,$00,$00,$00,$00    ;Slope 0
                 dc.b $00,$00,$08,$08,$10,$10,$18,$18    ;Slope 6
                 dc.b $20,$20,$28,$28,$30,$30,$38,$38    ;Slope 7
 
-        ; Misc. tables
-
-d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
-healthBarLetter:dc.b "H", "C"
-
         ; Frequency table
 
 ntFreqTbl:      dc.w $022d,$024e,$0271,$0296,$02be,$02e8
@@ -293,12 +288,6 @@ ntChnPulse:     dc.b 0
                 dc.b 0,0,0,0,0,0,0
                 dc.b 0,0,0,0,0,0,0
 
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
-healthBarPosTbl:dc.b 10,24
-timeMaxTbl:     dc.b 99,60,60,25
-
 ntChnGate:      dc.b $fe
 ntChnTrans:     dc.b $ff
 ntChnCmd:       dc.b $01
@@ -322,27 +311,11 @@ ntChnWaveOld:   dc.b 0
                 dc.b 0,0,0,0,0,0,0
                 dc.b 0,0,0,0,0,0,0
 
-        ; Level properties, objects and spawner data (not saved)
+        ; Misc. tables/variables to pad memory use
 
-saveList:
-lvlObjX:        ds.b MAX_LVLOBJ,0
-lvlObjY:        ds.b MAX_LVLOBJ,0
-lvlObjB:        ds.b MAX_LVLOBJ,0
-lvlObjDL:       ds.b MAX_LVLOBJ,0
-lvlObjDH:       ds.b MAX_LVLOBJ,0
-lvlPropertiesStart:
-lvlName:        ds.b 16,0
-lvlWaterSplashColor: dc.b 0
-lvlWaterToxinDelay: dc.b 0
-lvlAirToxinDelay: dc.b 0
-lvlPropertiesEnd:
-
-        ; Navigation and misc. variablse
-
-routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
+healthBarLetter:dc.b "H", "C"
 routeXH:        ds.b 4,0
 routeYH:        ds.b 4,0
-saveSlotChoice: dc.b 0
 
         ; Sprite variables
 
@@ -400,6 +373,32 @@ actNavNewXH:    ds.b MAX_COMPLEXACT,0
 actNavNewYH:    ds.b MAX_COMPLEXACT,0
 actNavNewExclude:ds.b MAX_COMPLEXACT,0
 
+        ; Misc. tables/variables to pad memory use
+
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
+healthBarPosTbl:dc.b 10,24
+timeMaxTbl:     dc.b 99,60,60,25
+saveSlotChoice: dc.b 0
+
+        ; Level properties & objects (not saved)
+
+saveList:
+lvlObjX:        ds.b MAX_LVLOBJ,0
+lvlObjY:        ds.b MAX_LVLOBJ,0
+lvlObjB:        ds.b MAX_LVLOBJ,0
+lvlObjDL:       ds.b MAX_LVLOBJ,0
+lvlObjDH:       ds.b MAX_LVLOBJ,0
+
+lvlName:        ds.b 16,0
+lvlWaterSplashColor:
+                dc.b 0
+lvlWaterToxinDelay:
+                dc.b 0
+lvlAirToxinDelay:
+                dc.b 0
+
         ; Target list for AI / collision
         ; Must not page-cross, as selfmodifying code is used to read it
 
@@ -409,8 +408,10 @@ targetListEnd:
                     err
                 endif
 
-        ; More misc. tables
+        ; Rest of misc. tables / variables
 
+routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
+d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
         ; Chunk-file memory allocation variables
