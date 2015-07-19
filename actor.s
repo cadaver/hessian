@@ -1361,9 +1361,10 @@ AS_Done2:       rts
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-AttemptSpawn:   sta temp2
+AttemptSpawn:   rts                             ;Disabled for now until refactored to use global tables
+                sta temp2
                 tax
-                lda lvlSpawnPlot,x              ;Requires a plotbit to spawn?
+                ;lda lvlSpawnPlot,x              ;Requires a plotbit to spawn?
                 bmi AS_NoPlotBit
                 jsr GetPlotBit
                 beq AS_Done2
@@ -1376,9 +1377,9 @@ AS_NoPlotBit:   lda #ACTI_LASTNPC-MAX_SPAWNEDACT+1 ;Do not use all NPC slots for
                 lda #$00
                 sta actYL,y
                 ldx temp2
-                lda lvlSpawnT,x
+                ;lda lvlSpawnT,x
                 sta actT,y
-                lda lvlSpawnWpn,x
+                ;lda lvlSpawnWpn,x
                 pha
                 and #$3f
                 sta actWpn,y

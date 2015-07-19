@@ -13,6 +13,7 @@ C_FIRSTPURGEABLE = C_PLAYER_TOP
 F_LOGO          = $01
 F_SPRITE        = $02
 F_LEVEL         = $10
+F_CHARSET       = $18
 F_MUSIC         = $20
 F_SCRIPT        = $30
 F_OPTIONS       = $70

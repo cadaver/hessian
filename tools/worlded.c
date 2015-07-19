@@ -278,7 +278,7 @@ int main (int argc, char *argv[])
   for (c = 0; c < 256; c++) actorname[c] = " ";
   for (c = 0; c < 256; c++) itemname[c] = " ";
   for (c = 0; c < 16; c++) modename[c] = " ";
-  levelname[0] = 0;
+  strcpy(levelname, "world");
   names = fopen("names.txt", "rt");
   if (!names) goto NONAMES;
 
@@ -4539,8 +4539,8 @@ void savealldata(void)
                 savelvlobjdl[d] = lvlobjdl[c];
                 savelvlobjdh[d] = lvlobjdh[c];
                 objectsperlevel[s]++;
-                // If object is not autodeactivating, and either animates or is not a door, it's persistent
-                if (((lvlobjb[c] & 0x20) == 0) && ((lvlobjy[c] & 0x80) || (lvlobjb[c] & 0x1c > 0x4)))
+                // If object is not autodeactivating, and either animates or is a switch/script, it's persistent
+                if (((lvlobjb[c] & 0x20) == 0) && ((lvlobjy[c] & 0x80) || (lvlobjb[c] & 0x1c > 0x8)))
                   persistentobjectsperlevel[s]++;
                 d++;
                 if (d >= NUMLVLOBJ_PER_LEVEL)
@@ -4644,6 +4644,7 @@ void savealldata(void)
       FILE* out = fopen(ib2, "wt");
       if (out)
       {
+        fprintf(out, "NUMLEVELS = %d\n\n", numlevels);
         fprintf(out, "WORLDSIZEBLOCKS = %d\n\n", totalmapdatasize);
         fprintf(out, "WORLDSIZESCREENS = %d\n\n", (totalmapdatasize+30)/60);
         fprintf(out, "LVLDATAACTTOTALSIZE = %d\n\n", totalactbitareasize);

@@ -1,6 +1,6 @@
-        ; This file is programmatically generated from leveldata (countobj utility)
+        ; This file is programmatically generated from by worlded utility
 
-                include levelactors.s
+                include bg/world.s
 
         ; Check for size exceeded. The game start script does not handle
         ; more than 255 bytes for the bitareas

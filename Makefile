@@ -30,8 +30,8 @@ clean:
 hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak \
-	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak \
-	level08.pak common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak
+	charset00.pak charset01.pak level00.pak level01.pak level02.pak \
+	common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -136,14 +136,9 @@ sfx/roll.sfx: sfx/roll.ins
 sfx/jump.sfx: sfx/jump.ins
 	ins2nt2 sfx/jump.ins sfx/jump.sfx
 
-levelactors.s: bg/level00.lva bg/level00.lvo bg/level01.lva bg/level01.lvo bg/level02.lva bg/level02.lvo bg/level03.lva bg/level03.lvo \
-	bg/level04.lva bg/level04.lvo bg/level05.lva bg/level05.lvo bg/level06.lva bg/level06.lvo bg/level07.lva bg/level07.lvo \
-	bg/level08.lva bg/level08.lvo
-	countobj
-
 main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutscene.s file.s init.s input.s item.s itemdata.s level.s \
 	leveldata.s levelactors.s macros.s main.s math.s memory.s panel.s paneldata.s physics.s player.s plot.s raster.s screen.s script.s \
-	sound.s sounddata.s sprite.s text.s weapon.s weapondata.s loader.prg bg/scorescr.chr sfx/pistol.sfx sfx/shotgun.sfx \
+	sound.s sounddata.s sprite.s text.s weapon.s weapondata.s loader.prg bg/scorescr.chr bg/world.s sfx/pistol.sfx sfx/shotgun.sfx \
 	sfx/autorifle.sfx sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
 	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/heavymelee.sfx \
@@ -246,86 +241,38 @@ hessian.sid: hessiansid.s music00.bin music01.bin music02.bin music03.bin music0
 	music08.bin music09.bin music10.bin music11.bin music12.bin loadermusic2.bin
 	dasm hessiansid.s -ohessian.sid -f3
 
-level00.pak: level00.s memory.s bg/level00.map bg/level00.blk bg/level00.bli bg/level00.chi bg/level00.chc bg/level00.chr bg/level00.lva bg/level00.lvr bg/level00.lvo
-	filejoin bg/level00.lvo+bg/level00.lvr level00_1.bin
+charset00.pak: charset00.s memory.s bg/world00.blk bg/world00.bli bg/world00.chi bg/world00.chc bg/world00.chr
+	dasm charset00.s -ocharset00_1.bin -f3
+	pack2 charset00_1.bin charset00_1.pak
+	pchunk2 bg/world00.blk charset00_2.pak
+	filejoin charset00_1.pak+charset00_2.pak charset00.pak
+
+charset01.pak: charset01.s memory.s bg/world01.blk bg/world01.bli bg/world01.chi bg/world01.chc bg/world01.chr
+	dasm charset01.s -ocharset01_1.bin -f3
+	pack2 charset01_1.bin charset01_1.pak
+	pchunk2 bg/world01.blk charset01_2.pak
+	filejoin charset01_1.pak+charset01_2.pak charset01.pak
+
+level00.pak: level00.s memory.s bg/world00.map bg/world00.lvo bg/world00.lva
+	dasm level00.s -olevel00_1.bin -f3
 	pack2 level00_1.bin level00_1.pak
-	dasm level00.s -olevel00_2.bin -f3
-	pack2 level00_2.bin level00_2.pak
-	pchunk2 bg/level00.map level00_3.pak
-	pchunk2 bg/level00.blk level00_4.pak
-	filejoin level00_1.pak+level00_2.pak+level00_3.pak+level00_4.pak level00.pak
+	pack2 bg/world00.lva level00_2.pak
+	pchunk2 bg/world00.map level00_3.pak
+	filejoin level00_1.pak+level00_2.pak+level00_3.pak level00.pak
 
-level01.pak: level01.s memory.s bg/level01.map bg/level01.blk bg/level01.bli bg/level01.chi bg/level01.chc bg/level01.chr bg/level01.lva bg/level01.lvr bg/level01.lvo
-	filejoin bg/level01.lvo+bg/level01.lvr level01_1.bin
+level01.pak: level01.s memory.s bg/world01.map bg/world01.lvo bg/world01.lva
+	dasm level01.s -olevel01_1.bin -f3
 	pack2 level01_1.bin level01_1.pak
-	dasm level01.s -olevel01_2.bin -f3
-	pack2 level01_2.bin level01_2.pak
-	pchunk2 bg/level01.map level01_3.pak
-	pchunk2 bg/level01.blk level01_4.pak
-	filejoin level01_1.pak+level01_2.pak+level01_3.pak+level01_4.pak level01.pak
+	pack2 bg/world01.lva level01_2.pak
+	pchunk2 bg/world01.map level01_3.pak
+	filejoin level01_1.pak+level01_2.pak+level01_3.pak level01.pak
 
-level02.pak: level02.s memory.s bg/level02.map bg/level02.blk bg/level02.bli bg/level02.chi bg/level02.chc bg/level02.chr bg/level02.lva bg/level02.lvr bg/level02.lvo
-	filejoin bg/level02.lvo+bg/level02.lvr level02_1.bin
+level02.pak: level02.s memory.s bg/world02.map bg/world02.lvo bg/world02.lva
+	dasm level02.s -olevel02_1.bin -f3
 	pack2 level02_1.bin level02_1.pak
-	dasm level02.s -olevel02_2.bin -f3
-	pack2 level02_2.bin level02_2.pak
-	pchunk2 bg/level02.map level02_3.pak
-	pchunk2 bg/level02.blk level02_4.pak
-	filejoin level02_1.pak+level02_2.pak+level02_3.pak+level02_4.pak level02.pak
-
-level03.pak: level03.s memory.s bg/level03.map bg/level03.blk bg/level03.bli bg/level03.chi bg/level03.chc bg/level03.chr bg/level03.lva bg/level03.lvr bg/level03.lvo
-	filejoin bg/level03.lvo+bg/level03.lvr level03_1.bin
-	pack2 level03_1.bin level03_1.pak
-	dasm level03.s -olevel03_2.bin -f3
-	pack2 level03_2.bin level03_2.pak
-	pchunk2 bg/level03.map level03_3.pak
-	pchunk2 bg/level03.blk level03_4.pak
-	filejoin level03_1.pak+level03_2.pak+level03_3.pak+level03_4.pak level03.pak
-
-level04.pak: level04.s memory.s bg/level04.map bg/level04.blk bg/level04.bli bg/level04.chi bg/level04.chc bg/level04.chr bg/level04.lva bg/level04.lvr bg/level04.lvo
-	filejoin bg/level04.lvo+bg/level04.lvr level04_1.bin
-	pack2 level04_1.bin level04_1.pak
-	dasm level04.s -olevel04_2.bin -f3
-	pack2 level04_2.bin level04_2.pak
-	pchunk2 bg/level04.map level04_3.pak
-	pchunk2 bg/level04.blk level04_4.pak
-	filejoin level04_1.pak+level04_2.pak+level04_3.pak+level04_4.pak level04.pak
-
-level05.pak: level05.s memory.s bg/level05.map bg/level05.blk bg/level05.bli bg/level05.chi bg/level05.chc bg/level05.chr bg/level05.lva bg/level05.lvr bg/level05.lvo
-	filejoin bg/level05.lvo+bg/level05.lvr level05_1.bin
-	pack2 level05_1.bin level05_1.pak
-	dasm level05.s -olevel05_2.bin -f3
-	pack2 level05_2.bin level05_2.pak
-	pchunk2 bg/level05.map level05_3.pak
-	pchunk2 bg/level05.blk level05_4.pak
-	filejoin level05_1.pak+level05_2.pak+level05_3.pak+level05_4.pak level05.pak
-
-level06.pak: level06.s memory.s bg/level06.map bg/level06.blk bg/level06.bli bg/level06.chi bg/level06.chc bg/level06.chr bg/level06.lva bg/level06.lvr bg/level06.lvo
-	filejoin bg/level06.lvo+bg/level06.lvr level06_1.bin
-	pack2 level06_1.bin level06_1.pak
-	dasm level06.s -olevel06_2.bin -f3
-	pack2 level06_2.bin level06_2.pak
-	pchunk2 bg/level06.map level06_3.pak
-	pchunk2 bg/level06.blk level06_4.pak
-	filejoin level06_1.pak+level06_2.pak+level06_3.pak+level06_4.pak level06.pak
-
-level07.pak: level07.s memory.s bg/level07.map bg/level07.blk bg/level07.bli bg/level07.chi bg/level07.chc bg/level07.chr bg/level07.lva bg/level07.lvr bg/level07.lvo
-	filejoin bg/level07.lvo+bg/level07.lvr level07_1.bin
-	pack2 level07_1.bin level07_1.pak
-	dasm level07.s -olevel07_2.bin -f3
-	pack2 level07_2.bin level07_2.pak
-	pchunk2 bg/level07.map level07_3.pak
-	pchunk2 bg/level07.blk level07_4.pak
-	filejoin level07_1.pak+level07_2.pak+level07_3.pak+level07_4.pak level07.pak
-
-level08.pak: level08.s memory.s bg/level08.map bg/level08.blk bg/level08.bli bg/level08.chi bg/level08.chc bg/level08.chr bg/level08.lva bg/level08.lvr bg/level08.lvo
-	filejoin bg/level08.lvo+bg/level08.lvr level08_1.bin
-	pack2 level08_1.bin level08_1.pak
-	dasm level08.s -olevel08_2.bin -f3
-	pack2 level08_2.bin level08_2.pak
-	pchunk2 bg/level08.map level08_3.pak
-	pchunk2 bg/level08.blk level08_4.pak
-	filejoin level08_1.pak+level08_2.pak+level08_3.pak+level08_4.pak level08.pak
+	pack2 bg/world02.lva level02_2.pak
+	pchunk2 bg/world02.map level02_3.pak
+	filejoin level02_1.pak+level02_2.pak+level02_3.pak level02.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak

@@ -13,12 +13,8 @@ write 06 @8:
 write 10 @8:
 write 11 @8:
 write 12 @8:
-write 13 @8:
-write 14 @8:
-write 15 @8:
-write 16 @8:
-write 17 @8:
 write 18 @8:
+write 19 @8:
 write 20 @8:
 write 21 @8:
 write 22 @8:

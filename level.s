@@ -2,14 +2,15 @@ ZONEH_LEFT      = 0
 ZONEH_RIGHT     = 1
 ZONEH_UP        = 2
 ZONEH_DOWN      = 3
-ZONEH_BG1       = 4
-ZONEH_BG2       = 5
-ZONEH_BG3       = 6
-ZONEH_MUSIC     = 7
-ZONEH_SPAWNPARAM = 8
-ZONEH_SPAWNSPEED = 9
-ZONEH_SPAWNCOUNT = 10
-ZONEH_DATA      = 11
+ZONEH_CHARSET   = 4
+ZONEH_BG1       = 5
+ZONEH_BG2       = 6
+ZONEH_BG3       = 7
+ZONEH_MUSIC     = 8
+ZONEH_SPAWNPARAM = 9
+ZONEH_SPAWNSPEED = 10
+ZONEH_SPAWNCOUNT = 11
+ZONEH_DATA      = 12
 
 OBJ_ANIMATE     = $80                           ;In levelobject Y-coordinate
 OBJ_MODEBITS    = $03
@@ -23,18 +24,16 @@ OBJMODE_TRIG    = $01
 OBJMODE_MANUAL  = $02
 OBJMODE_MANUALAD = $03
 
-OBJTYPE_NONE    = $00
+OBJTYPE_SIDEDOOR = $00
 OBJTYPE_DOOR    = $04
-OBJTYPE_SWITCH  = $08
-OBJTYPE_REVEAL  = $0c
-OBJTYPE_SCRIPT  = $10
-OBJTYPE_CHAIN   = $14
-OBJTYPE_SIDEDOOR = $18
+OBJTYPE_BACKDROP = $08
+OBJTYPE_SWITCH  = $0c
+OBJTYPE_REVEAL  = $10
+OBJTYPE_SCRIPT  = $14
+OBJTYPE_CHAIN   = $18
 
 DOORENTRYDELAY  = 6
 AUTODEACTDELAY  = 12
-
-DATACONTAINER_X = $ff
 
 UpdateLevel     = lvlCodeStart
 
@@ -68,27 +67,19 @@ LoadLevel:      ror LL_ActorMode+1              ;Set high bit if C=1
                 ldx #F_LEVEL
                 jsr MakeFileName
                 jsr BlankScreen                 ;Blank screen, stop level animation
-LoadLevelRetry: lda #<lvlObjX                   ;Load level objects & spawners
+LoadLevelRetry: lda #<lvlObjX                   ;Load level objects and level properties
                 ldx #>lvlObjX
                 jsr LoadFile
                 bcs LoadLevelError
-                lda #<lvlCodeStart              ;Load level graphics, animation code &
-                ldx #>lvlCodeStart              ;level actors
+                lda #<lvlDataActX               ;Load level actors under screen2
+                ldx #>lvlDataActX
                 jsr LoadFile
                 bcs LoadLevelError
                 ldy #C_MAP
                 jsr LoadAllocFile               ;Load MAP chunk
                 bcs LoadLevelError
-                ldy #C_BLOCKS
-                jsr LoadAllocFile               ;Load BLOCKS chunk
-                bcs LoadLevelError
-                ldx #lvlPropertiesEnd-lvlPropertiesStart-1
-LL_CopyLevelProperties:
-                lda lvlLoadName,x               ;Copy level name & water properties
-                sta lvlPropertiesStart,x
-                dex
-                bpl LL_CopyLevelProperties
-                stx autoDeactObjNum             ;Reset object auto-deactivation (X=$ff)
+                lda #$ff
+                sta autoDeactObjNum             ;Reset object auto-deactivation
 LL_ActorMode:   lda #$00                        ;Check if should copy leveldata actors
                 bpl LL_SkipLevelDataActors
                 ldx #MAX_LVLACT-1
@@ -144,7 +135,7 @@ LL_SetLevelObjectsActive:
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_REVEAL             ;If this is a weapon closet, make sure items at it are revealed
                 bne LL_NoReveal
-                jsr AO_Reveal2
+                jsr AO_Reveal
 LL_NoReveal:    jsr AnimateObjectActivation     ;Animate if necessary
                 tya
                 tax
@@ -244,19 +235,21 @@ GetLevelObjectBits:
         ; Modifies: A
 
 IsLevelObjectPersistent:
-                lda lvlObjX,x                   ;Skip objects which are used as param storage for other objects
-                cmp #DATACONTAINER_X
-                beq ILOP_Not
-                lda lvlObjY,x
-                bpl ILOP_Not
-                lda lvlObjB,x
+                lda lvlObjB,x                   ;Autodeactivating: not persistent
+                tay
                 and #OBJ_AUTODEACT
-                bne ILOP_Not
-                lda temp1
+                bne ILOP_No
+                lda lvlObjY,x                   ;Animating: is persistent
+                bmi ILOP_Yes
+                tya
+                and #OBJ_TYPEBITS
+                cmp #OBJTYPE_SWITCH
+                bcc ILOP_No
+ILOP_Yes:       lda temp1
                 inc temp1
                 jmp DecodeBit
-ILOP_Not:       lda #$00
-ILOP_Not2:      rts
+ILOP_No:        lda #$00
+                rts
 
         ; Save existence of leveldata actors as bits
         ; Needs to be done on level change and on game save when optimizing the save size
@@ -314,7 +307,7 @@ SLOS_NextObject:inx
                 bpl SLOS_Loop
                 rts
 
-        ; Find the zone at player's position
+        ; Find the zone at player's position. Also load the proper charset if not loaded
         ;
         ; Parameters: -
         ; Returns: -
@@ -322,6 +315,34 @@ SLOS_NextObject:inx
 
 FindPlayerZone: ldx actXH+ACTI_PLAYER
                 ldy actYH+ACTI_PLAYER
+                jsr FindZoneXY
+EnsureCharSet:  ldy #ZONEH_CHARSET              ;Switch charset if required
+                lda (zoneLo),y
+ECS_LoadedCharSet:
+                cmp #$ff
+                beq ECS_HasCharSet
+                sta ECS_LoadedCharSet+1
+                ldx #F_CHARSET
+                jsr MakeFileName
+                jsr BlankScreen                 ;Blank screen to make sure no animation
+ECS_RetryCharSet:
+                lda #<lvlCodeStart              ;Load char animation code, charset and colors/infos
+                ldx #>lvlCodeStart
+                jsr LoadFile
+                bcs ECS_LoadCharSetError
+                ldy #C_BLOCKS
+                jsr LoadAllocFile               ;Load BLOCKS chunk
+                bcs ECS_LoadCharSetError
+                ldx #MAX_BLK/2-1
+ECS_CopyBlockInfo:
+                lda screen2,x                   ;Copy blockinfo into place from beginning of screen2
+                sta blockInfo,x
+                dex
+                bpl ECS_CopyBlockInfo
+ECS_HasCharSet: rts
+ECS_LoadCharSetError:
+                jsr LFR_ErrorPrompt
+                jmp ECS_RetryCharSet
 
         ; Find the zone indicated by coordinates or number.
         ;
@@ -409,9 +430,7 @@ OO_Inactive:    lda lvlObjY,y                   ;If animating, play sound always
                 beq OO_NoSound
 OO_PlaySound:   lda #SFX_OBJECT
                 jsr PlaySfx
-OO_NoSound:     ldx lvlObjD,y                   ;Check requirement item from object parameters if has them
-                bpl OO_RequirementOK
-                lda lvlObjY-$80,x
+OO_NoSound:     lda lvlObjDH,y                  ;Check requirement item from object parameters if has them
                 beq OO_RequirementOK
                 sta temp3
                 jsr FindItem
@@ -441,21 +460,6 @@ OO_ContinueOperate:
 OO_Success:     sec
 IO_Done:        rts
 
-        ; Get the 16-bit parameter of a level object
-        ;
-        ; Parameters: Y object number
-        ; Returns: Y param lowbyte, X param highbyte
-        ; Modifies: A,X,Y
-
-GetObjectParam: ldx levelNum                    ;Default highbyte param is current levelnumber (for doors)
-                lda lvlObjD,y
-                bpl GOP_NoStorage
-                tay
-                ldx lvlObjB-$80,y
-                lda lvlObjD-$80,y
-GOP_NoStorage:  tay
-                rts
-
         ; Toggle a level object
         ;
         ; Parameters: Y object number
@@ -483,7 +487,8 @@ InactivateObject:
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_CHAIN
                 bne IO_Done
-                jsr GetObjectParam
+                lda lvlObjDL,y
+                tay
                 jmp InactivateObject
 
         ; Animate a level object by block deltavalue
@@ -541,7 +546,6 @@ AO_NoPreviousAutoDeact:
                 lda #AUTODEACTDELAY
                 sta autoDeactObjCounter
 AO_NoAutoDeact: jsr AnimateObjectActivation     ;Animate object if necessary
-                jsr GetObjectParam              ;Parameter in Y (lo), X (hi)
                 pla
                 and #OBJ_TYPEBITS               ;Check for type-specific action
                 cmp #OBJTYPE_CHAIN
@@ -556,17 +560,19 @@ AO_NoOperation: rts
 
         ; Script execution
 
-AO_Script:      tya
+AO_Script:      ldx lvlObjDH,y
+                lda lvlObjDL,y
                 jmp ExecScript
 
         ; Toggle object
-        
-AO_Toggle:      jmp ToggleObject
+
+AO_Toggle:      lda lvlObjDL,y
+                tay
+                jmp ToggleObject
 
         ; Reveal actors (weapon closet)
 
-AO_Reveal:      ldy temp2
-AO_Reveal2:     lda lvlObjX,y
+AO_Reveal:      lda lvlObjX,y
                 sta AO_RevealXCmp+1
                 lda lvlObjY,y
                 ora #$80
@@ -621,6 +627,63 @@ GetZoneCenterX: lda limitL
                 adc limitR
                 ror
                 sta temp8
+                rts
+
+        ; Find new level to load after entering a sidedoor
+        ;
+        ; Parameters: temp1 target X coord, temp2 target Y coord
+        ; Returns: new level loaded, X & Y new target coords
+        ; Modifies: A,X,Y,temp regs,loader temp regs
+
+FindNewLevel:   lda temp1                   ;Convert X coord to screens
+                cmp #$ff                    ;Handle -1 (moving left out of level) as a special case
+                bne FNL_NotNegative
+                lda #$ff
+                sta temp3
+                lda #9
+                bne FNL_NegativeDone
+FNL_NotNegative:ldy #10
+                ldx #<temp3
+                jsr DivU
+FNL_NegativeDone:
+                pha                         ;Store remainder
+                lda temp3
+                ldx levelNum
+                clc
+                adc lvlLimitL,x             ;Add level X origin in screens
+                sta temp5
+                ldx #NUMLEVELS-1
+FNL_Loop:       lda temp5
+                cmp lvlLimitL,x
+                bcc FNL_Next
+                cmp lvlLimitR,x
+                bcs FNL_Next
+                lda temp2                   ;Y coordinates are always just blocks
+                cmp lvlLimitU,x
+                bcc FNL_Next
+                cmp lvlLimitD,x
+                bcc FNL_Found
+FNL_Next:       dex
+                bpl FNL_Loop                ;Will produce rubbish result if not found
+FNL_Found:      stx FNL_NewLevelNum+1
+                lda temp5
+                sec
+                sbc lvlLimitL,x             ;Subtract screen origin of new level
+                ldy #10
+                ldx #<temp3                 ;Convert back to blocks
+                jsr MulU
+                pla                         ;Add back block remainder
+                clc
+                adc temp3
+                pha                         ;New X coord
+                lda temp2
+                pha                         ;Old Y coord (temp2 will likely be trashed by ChangeLevel)
+FNL_NewLevelNum:lda #$00
+                jsr ChangeLevel
+                pla
+                tay
+                pla
+                tax
                 rts
 
         ; Object marker update routine
@@ -959,7 +1022,6 @@ ULO_NoDoor:     lda lvlObjB,y                   ;Check for triggered activation
                 jmp ActivateObject
 ULO_NoTrigger:  txa
                 and #OBJ_TYPEBITS               ;Check for entering a side door
-                cmp #OBJTYPE_SIDEDOOR
                 bne ULO_Done
                 jsr GetZoneCenterX
                 lda actXH+ACTI_PLAYER
@@ -968,10 +1030,49 @@ ULO_NoTrigger:  txa
                 txa
                 bcc ULO_LeftSide
                 inx
-ULO_LeftSide:   beq ULO_EnterDoor
+ULO_LeftSide:   beq ULO_EnterSideDoor
 ULO_Done:       rts
 
-ULO_EnterDoor:  ldx #MAX_ACT-1                  ;When entering a door, remove all actors except player
+ULO_EnterSideDoor:
+                bcc ULO_EnterSideDoorLeft       ;Find the destination zone either left or right
+                lda limitR
+                bcs ULO_EnterSideDoorCommon
+ULO_EnterSideDoorLeft:
+                lda limitL
+                sbc #$00                        ;C=0
+ULO_EnterSideDoorCommon:
+                tax
+                lda lvlObjY,y
+                and #$7f
+                tay
+ULO_Retry:      stx temp1
+                sty temp2
+                jsr FindZoneXY
+                bcc ULO_SameLevel           ;If zone not found, must change level
+                jsr FindNewLevel
+                jmp ULO_Retry
+ULO_SameLevel:  ldy #$00
+ULO_DestDoorLoop:
+                lda lvlObjB,y
+                and #OBJ_TYPEBITS
+                bne ULO_DestDoorNext
+                lda lvlObjY,y                   ;Verify that object is inside zone
+                and #$7f                        ;and close enough
+                cmp temp2
+                bne ULO_DestDoorNext            ;Must match target coords
+                lda lvlObjX,y                   ;(TODO: allow small difference, but within same zone)
+                cmp temp1
+                beq ULO_EnterDoorCommon
+ULO_DestDoorNext:
+                iny
+                bne ULO_DestDoorLoop
+                rts                             ;If fail to find door, do nothing
+                                                ;(if level was changed, this will likely be fatal)
+
+ULO_EnterDoor:  lda lvlObjDL,y
+                tay
+ULO_EnterDoorCommon:
+                ldx #MAX_ACT-1                  ;When entering a door, remove all actors except player
 ULO_ClearActorLoop:                             ;back to leveldata
                 lda actT,x
                 beq ULO_ClearActorNext
@@ -979,13 +1080,6 @@ ULO_ClearActorLoop:                             ;back to leveldata
 ULO_ClearActorNext:
                 dex
                 bne ULO_ClearActorLoop
-                ldy lvlObjNum
-                jsr GetObjectParam
-                sty ULO_DoorNum+1
-                txa                             ;A=destination level
-                jsr ChangeLevel
-                jsr BlankScreen                 ;Blank screen in case level was not changed
-ULO_DoorNum:    ldy #$00
                 ldx #ACTI_PLAYER                ;Reset animation, falling distance and speed
                 stx actSX+ACTI_PLAYER           ;Stop X-movement
                 jsr MH_StandAnim
@@ -1016,9 +1110,7 @@ ULO_NoSave:
 
 CenterPlayer:   jsr FindPlayerZone
                 jsr InitMap
-CP_HasPlayerZone:
-                jsr SetZoneColors
-                iny
+                ldy #ZONEH_MUSIC
                 lda (zoneLo),y
                 jsr PlaySong                    ;Play zone's music
                 lda limitR
@@ -1083,6 +1175,7 @@ CP_NotOverDown: sta mapY
 CP_NotInWater:  ora #MB_GROUNDED                ;checkpoint restore
                 sta actMB+ACTI_PLAYER
                 jsr RedrawScreen
+                jsr SetZoneColors
                 jsr AddAllActorsNextFrame
                 jsr AddActors
                 jsr GetControls

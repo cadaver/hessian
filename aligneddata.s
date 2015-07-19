@@ -328,10 +328,8 @@ saveList:
 lvlObjX:        ds.b MAX_LVLOBJ,0
 lvlObjY:        ds.b MAX_LVLOBJ,0
 lvlObjB:        ds.b MAX_LVLOBJ,0
-lvlObjD:        ds.b MAX_LVLOBJ,0
-lvlSpawnT:      ds.b MAX_SPAWNERS,0
-lvlSpawnWpn:    ds.b MAX_SPAWNERS,0
-lvlSpawnPlot:   ds.b MAX_SPAWNERS,0
+lvlObjDL:       ds.b MAX_LVLOBJ,0
+lvlObjDH:       ds.b MAX_LVLOBJ,0
 lvlPropertiesStart:
 lvlName:        ds.b 16,0
 lvlWaterSplashColor: dc.b 0

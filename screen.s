@@ -973,7 +973,8 @@ SWDU_Ready:     rts
         ; Returns: -
         ; Modifies: A,X,Y,temp1-temp7
 
-RedrawScreen:   ldy #$00
+RedrawScreen:   jsr BlankScreen
+                ldy #$00
                 sty scrollWorkFlag              ;Scrollwork not needed after redraw
                 sty screen
                 ldx blockX

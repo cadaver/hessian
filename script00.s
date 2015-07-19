@@ -21,37 +21,9 @@ logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
-;START_LEVEL     = $00                           ;Start from warehouses
-;START_X         = $3080
-;START_Y         = $2000
-
-;START_LEVEL     = $01                           ;Start from courtyard
-;START_X         = $2680
-;START_Y         = $0600
-
-;START_LEVEL     = $02                          ;Start from entrance
-;START_X         = $3380
-;START_Y         = $0c00
-
-;START_LEVEL     = $04                          ;Start from security center
-;START_X         = $0180
-;START_Y         = $0500
-
-;START_LEVEL     = $05                           ;Start from service tunnels
-;START_X         = $a480
-;START_Y         = $0500
-
-;START_LEVEL     = $05                           ;Start from the blue room of service tunnels
-;START_X         = $4080
-;START_Y         = $1a00
-
-;START_LEVEL     = $06                          ;Start from hideout in underground car park
-;START_X         = $0c80
-;START_Y         = $0d00
-
-START_LEVEL     = $08                          ;Start from upper labs
-START_X         = $0280
-START_Y         = $0600
+START_LEVEL     = $00
+START_X         = $0580
+START_Y         = $0b00
 
                 org scriptCodeStart
 
@@ -70,6 +42,8 @@ TitleScreen:    jsr BlankScreen
                 lda #<logoStart
                 ldx #>logoStart
                 jsr LoadFileRetry
+                lda #$ff                        ;Mark game charset destroyed
+                sta ECS_LoadedCharSet+1
                 lda #$00                        ;Fade out colors initially
                 sta Irq1_Bg1+1
                 sta Irq1_Bg2+1
