@@ -203,6 +203,7 @@ void initblockeditmode(int frommap);
 void findusedblocksandchars(void);
 void findanimatingblocks(void);
 int checkzonelegal(int num, int newx, int newy, int newsx, int newsy);
+void switchzoomout(int newvalue);
 void calculatelevelorigins(void);
 void confirmquit(void);
 void loadchars(void);
@@ -346,18 +347,20 @@ void moveonmap(int k, int shiftdown)
 
 void gotopos(int x, int y)
 {
-  mapx = x - 5;
-  mapy = y - 3;
+  int divisor = zoomoutmode ? 8 : 32;
+  mapx = x - 160/divisor;
+  mapy = y - 96/divisor;
+
   if (mapx < 0) mapx = 0;
-  if (mapx >= mapsx - 10) mapx = mapsx - 10;
+  if (mapx >= mapsx - 320/divisor) mapx = mapsx - 320/divisor;
   if (mapy < 0) mapy = 0;
-  if (mapy >= mapsy - 6) mapy = mapsy - 6;
+  if (mapy >= mapsy - 192/divisor) mapy = mapsy - 192/divisor;
 }
 
 void level_mainloop(void)
 {
   pathmode = 0;
-  zoomoutmode = 0;
+  switchzoomout(0);
   calculatelevelorigins();
 
   for (;;)
@@ -892,7 +895,7 @@ void zone_mainloop(void)
         }
       }
       if (k == KEY_V)
-        zoomoutmode ^= 1;
+        switchzoomout(zoomoutmode ^ 1);
       if (k == KEY_DEL)
       {
         zonex[zonenum] = 0;
@@ -1061,7 +1064,7 @@ void map_mainloop(void)
       blockselectmode ^= 1;
     }
     if (k == KEY_V)
-      zoomoutmode ^= 1;
+      switchzoomout(zoomoutmode ^ 1);
     if ((k == KEY_Z) && (blocknum > 0))
       blocknum--;
     if ((k == KEY_X) && (blocknum < BLOCKS-1))
@@ -1105,6 +1108,7 @@ void map_mainloop(void)
       if (k == KEY_F)
       {
         int c;
+        int dist = 0x7fffffff, nx = -1, ny = -1;
         for (c = 0; c < mapsx*mapsy; c++)
         {
           if (mapdata[c] == blocknum)
@@ -1112,11 +1116,21 @@ void map_mainloop(void)
             int x = c % mapsx;
             int y = c / mapsx;
             int newzonenum = findzone(x,y);
-            // Make sure is in same charset
+            // Make sure is in same charset. Try to find nearest match
             if (newzonenum < NUMZONES && zonecharset[newzonenum] == charsetnum)
-              gotopos(x, y);
+            {
+              int newdist = abs(x-(mapx+160/divisor))+abs(y-(mapy+96/divisor));
+              if (newdist < dist)
+              {
+                nx = x;
+                ny = y;
+                dist = newdist;
+              }
+            }
           }
         }
+        if (nx >= 0 && ny >= 0)
+          gotopos(nx,ny);
       }
       if (k == KEY_P)
       {
@@ -1465,13 +1479,13 @@ void drawblocks(void)
     gfx_line(bx+31, by, bx+31, by+31, 1);
   }
 
-  drawblock(320-32,200-32,blocknum,charsetnum);
+  drawblock(320-32,224-32,blocknum,charsetnum);
   sprintf(textbuffer, "CHSET %d", zonecharset[zonenum]);
-  printtext_color(textbuffer, 216,165,SPR_FONTS,COL_WHITE);
+  printtext_color(textbuffer, 216,195,SPR_FONTS,COL_WHITE);
   sprintf(textbuffer, "BLOCK %d", blocknum);
-  printtext_color(textbuffer, 216,175,SPR_FONTS,COL_WHITE);
+  printtext_color(textbuffer, 216,205,SPR_FONTS,COL_WHITE);
   sprintf(textbuffer, "(USE %d)", blockusecount[charsetnum][blocknum]);
-  printtext_color(textbuffer, 216,185,SPR_FONTS,COL_WHITE);
+  printtext_color(textbuffer, 216,215,SPR_FONTS,COL_WHITE);
 }
 
 void drawmap(void)
@@ -1534,6 +1548,10 @@ void drawmap(void)
     gfx_line(r*divisor+divminusone,u*divisor,r*divisor+divminusone,d*divisor+divminusone,7);
   }
 
+  // Clean up lines that spill to the status area
+  for (y = 192; y < 224; ++y)
+    gfx_line(0, y, 319, y, 254);
+
   if (editmode == EM_MAP)
   {
     int l,r,u,d;
@@ -1594,18 +1612,18 @@ void drawmap(void)
       sprintf(textbuffer, "ZONE %d (%d,%d)-(%d,%d)", zonenum, zonex[zonenum],zoney[zonenum],zonex[zonenum]+zonesx[zonenum]-1,zoney[zonenum]+zonesy[zonenum]-1);
     else
       sprintf(textbuffer, "ZONE %d (UNUSED)", zonenum);
-    printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 0,195,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "XPOS %d", mapx+mousex/divisor);
-    printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 0,205,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "YPOS %d", mapy+mousey/divisor);
-    printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
-    drawblock(320-32,200-32,blocknum,zonecharset[zonenum]);
+    printtext_color(textbuffer, 0,215,SPR_FONTS,COL_WHITE);
+    drawblock(320-32,224-32,blocknum,zonecharset[zonenum]);
     sprintf(textbuffer, "CHSET %d", zonecharset[zonenum]);
-    printtext_color(textbuffer, 216,165,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 216,195,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "BLOCK %d", blocknum);
-    printtext_color(textbuffer, 216,175,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 216,205,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "(USE %d)", blockusecount[charsetnum][blocknum]);
-    printtext_color(textbuffer, 216,185,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 216,215,SPR_FONTS,COL_WHITE);
   }
   if (editmode == EM_ZONE)
   {
@@ -1631,33 +1649,33 @@ void drawmap(void)
     }
 
     sprintf(textbuffer, "SP.PARAM %02X SP.SPEED %02X SP.COUNT %02X", zonespawnparam[zonenum], zonespawnspeed[zonenum], zonespawncount[zonenum]);
-    printtext_color(textbuffer, 0,155,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
     if (zonesx[zonenum] && zonesy[zonenum])
       sprintf(textbuffer, "ZONE %d (%d,%d)-(%d,%d)", zonenum, zonex[zonenum],zoney[zonenum],zonex[zonenum]+zonesx[zonenum]-1,zoney[zonenum]+zonesy[zonenum]-1);
     else
       sprintf(textbuffer, "ZONE %d (UNUSED)", zonenum);
-    printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 0,195,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "CHSET %d", zonecharset[zonenum]);
-    printtext_color(textbuffer, 216,165,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 216,195,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "LEVEL %d", zonelevel[zonenum]);
-    printtext_color(textbuffer, 216,175,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 216,205,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "(DS %d)", levelmapdatasize);
-    printtext_color(textbuffer, 216,185,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 216,215,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "XPOS %d", mapx+mousex/divisor);
-    printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 0,205,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "YPOS %d", mapy+mousey/divisor);
-    printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 0,215,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "COLORS %01X %01X %01X ", zonebg1[zonenum] & 15, zonebg2[zonenum] & 15, zonebg3[zonenum] & 15);
-    printtext_color(textbuffer, 80,175,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 80,205,SPR_FONTS,COL_WHITE);
     sprintf(textbuffer, "");
     if (zonebg1[zonenum] & 128)
       strcat(textbuffer, "(NOCHECKP.)");
     if (zonebg2[zonenum] & 128)
       strcat(textbuffer, "(TOXIC AIR)");
-    printtext_color(textbuffer, 0,145,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
 
     sprintf(textbuffer, "MUSIC %02X-%01X", zonemusic[zonenum] / 4, zonemusic[zonenum] % 4);
-    printtext_color(textbuffer, 80,185,SPR_FONTS,COL_WHITE);
+    printtext_color(textbuffer, 80,215,SPR_FONTS,COL_WHITE);
   }
 
   if (editmode == EM_LEVEL)
@@ -1675,20 +1693,20 @@ void drawmap(void)
         {
           sprintf(textbuffer, "ACTOR %02X (%s) (%02X,%02X) ", lvlactt[a], actorname[lvlactt[a]], lvlactx[a]-levelx[zonelevel[zonenum]], lvlacty[a] & 0x7f);
           if (lvlacty[a] & 128) strcat(textbuffer, "(HIDDEN)");
-          printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 0,195,SPR_FONTS,COL_WHITE);
           if (lvlactw[a] & 128) sprintf(textbuffer, "LEFT");
           else sprintf(textbuffer, "RIGHT");
-          printtext_color(textbuffer, 256,165,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 256,195,SPR_FONTS,COL_WHITE);
           sprintf(textbuffer, "MODE:%1X (%s)", lvlactf[a] & 0xf, modename[lvlactf[a] & 0xf]);
-          printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 0,205,SPR_FONTS,COL_WHITE);
           sprintf(textbuffer, "WPN:%02X (%s)", lvlactw[a] & 0x7f, itemname[lvlactw[a] & 0x7f]);
-          printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 0,215,SPR_FONTS,COL_WHITE);
         }
         else
         {
           sprintf(textbuffer, "ITEM %02X (%s) (%02X,%02X) ", lvlactt[a] & 0x7f, itemname[lvlactt[a]-128], lvlactx[a]-levelx[zonelevel[zonenum]], lvlacty[a] & 0x7f);
           if (lvlacty[a] & 128) strcat(textbuffer, "(HIDDEN)");
-          printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 0,195,SPR_FONTS,COL_WHITE);
           if (lvlactw[a] != 255)
           {
             sprintf(textbuffer, "COUNT:%d", lvlactw[a]);
@@ -1697,7 +1715,7 @@ void drawmap(void)
           {
             sprintf(textbuffer, "COUNT:DEFAULT");
           }
-          printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 0,205,SPR_FONTS,COL_WHITE);
         }
       }
       else
@@ -1732,32 +1750,32 @@ void drawmap(void)
             // Object outside zone: levelid cannot be determined
             sprintf(textbuffer, "OBJ (%02X,%02X) ID:??", lvlobjx[o]-levelx[zonelevel[zonenum]], lvlobjy[o] & 0x7f);
           }
-          printtext_color(textbuffer, 0, 165, SPR_FONTS, COL_WHITE);
-          
+          printtext_color(textbuffer, 0, 195, SPR_FONTS, COL_WHITE);
+
           sprintf(textbuffer, "HSIZE:%d", (lvlobjb[o] & 64) ? 2 : 1);
           if (lvlobjy[o] & 128)
             strcat(textbuffer, " (ANIM)");
-          printtext_color(textbuffer, 160,165,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 160,195,SPR_FONTS,COL_WHITE);
 
           sprintf(textbuffer, "MODE:%s", modetext[(lvlobjb[o] & 0x3)]);
           if (lvlobjb[o] & 32) strcat(textbuffer, "+AUTO-DEACT");
-          printtext_color(textbuffer, 160,175,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 160,205,SPR_FONTS,COL_WHITE);
 
           sprintf(textbuffer, "TYPE:%s (%02X%02X)", actiontext[(lvlobjb[o] & 0x1c) >> 2], lvlobjdh[o],lvlobjdl[o]);
           if (dataeditmode) dataeditflash++;
 
           if ((dataeditmode) && (dataeditflash & 16))
-            printtext_color(textbuffer, 160,185,SPR_FONTS,COL_HIGHLIGHT);
+            printtext_color(textbuffer, 160,215,SPR_FONTS,COL_HIGHLIGHT);
           else
-            printtext_color(textbuffer, 160,185,SPR_FONTS,COL_WHITE);
+            printtext_color(textbuffer, 160,215,SPR_FONTS,COL_WHITE);
 
           // Requirement in high databit for everything but scripts
           if ((lvlobjdh[o]&0x7f) && (lvlobjb[o] & 0x1c) != 0x10)
           {
             sprintf(textbuffer, "REQ:%02X", lvlobjdh[o]&0x7f);
-            printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
+            printtext_color(textbuffer, 0,205,SPR_FONTS,COL_WHITE);
             sprintf(textbuffer, "%-16s", itemname[lvlobjdh[o]&0x7f]);
-            printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
+            printtext_color(textbuffer, 0,215,SPR_FONTS,COL_WHITE);
           }
         }
       }
@@ -1777,7 +1795,7 @@ void drawmap(void)
         {
           sprintf(textbuffer, "ITEM %X (%s)", actnum-128, itemname[actnum-128]);
         }
-        printtext_color(textbuffer, 0,165,SPR_FONTS,COL_WHITE);
+        printtext_color(textbuffer, 0,195,SPR_FONTS,COL_WHITE);
 
         for (c = 0; c < NUMLVLOBJ; c++)
         {
@@ -1803,21 +1821,21 @@ void drawmap(void)
         if (findzone(mapx+mousex/divisor, mapy+mousey/divisor) < NUMZONES)
         {
           sprintf(textbuffer, "XPOS %d (%02X)", mapx+mousex/divisor, mapx+mousex/divisor-levelx[zonelevel[zonenum]]);
-          printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 0,205,SPR_FONTS,COL_WHITE);
           sprintf(textbuffer, "YPOS %d (%02X)", mapy+mousey/divisor, mapy+mousey/divisor);
-          printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 0,215,SPR_FONTS,COL_WHITE);
         }
         else
         {
           sprintf(textbuffer, "XPOS %d", mapx+mousex/divisor);
-          printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 0,205,SPR_FONTS,COL_WHITE);
           sprintf(textbuffer, "YPOS %d", mapy+mousey/divisor);
-          printtext_color(textbuffer, 0,185,SPR_FONTS,COL_WHITE);
+          printtext_color(textbuffer, 0,215,SPR_FONTS,COL_WHITE);
         }
         sprintf(textbuffer, "ZONE %d (LEVEL %d)", zonenum, zonelevel[zonenum]);
-        printtext_color(textbuffer, 120,175,SPR_FONTS,COL_WHITE);
+        printtext_color(textbuffer, 120,205,SPR_FONTS,COL_WHITE);
         sprintf(textbuffer, "OBJ %d/%d ACT %d/%d", lo, o, la, a);
-        printtext_color(textbuffer, 120,185,SPR_FONTS,COL_WHITE);
+        printtext_color(textbuffer, 120,215,SPR_FONTS,COL_WHITE);
       }
       for (c = 0; c < NUMLVLOBJ; c++)
       {
@@ -2927,6 +2945,17 @@ int checkzonelegal(int num, int newx, int newy, int newsx, int newsy)
   return 1;
 }
 
+void switchzoomout(int newvalue)
+{
+  if (zoomoutmode == newvalue)
+    return;
+  int olddivisor = zoomoutmode ? 8 : 32;
+  int oldcenterx = mapx + 160/olddivisor;
+  int oldcentery = mapy + 96/olddivisor;
+  zoomoutmode = newvalue;
+  gotopos(oldcenterx, oldcentery);
+}
+
 void calculatelevelorigins(void)
 {
   int c;
@@ -3967,7 +3996,7 @@ void initstuff(void)
     exit(1);
   }
 
-  if (!gfx_init(320,200,70,GFX_DOUBLESIZE))
+  if (!gfx_init(320,224,70,GFX_DOUBLESIZE))
   {
     win_messagebox("Graphics init error!");
     exit(1);

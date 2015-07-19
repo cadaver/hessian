@@ -1151,19 +1151,20 @@ CP_NotOverRight:sta mapX
                 lda actYH+ACTI_PLAYER
                 sbc #3
                 bcc CP_OverUp
-                cmp limitU
-                bcs CP_NotOverUp
-CP_OverUp:      lda limitU
-                ldy #0
-                beq CP_NotOverDown
-CP_NotOverUp:   cmp temp2
+                cmp temp2
                 bcc CP_NotOverDown
                 bne CP_OverDown
                 cpy #$01
                 bcc CP_NotOverDown
 CP_OverDown:    lda temp2
                 ldy #$01
-CP_NotOverDown: sta mapY
+                bne CP_NotOverUp
+CP_NotOverDown: cmp limitU
+                bcs CP_NotOverUp
+CP_OverUp:      lda limitU
+                ldy #$00
+                beq CP_NotOverDown
+CP_NotOverUp:   sta mapY
                 sty blockY
                 ldx #$00
                 stx UA_SpawnCount+1             ;Reset enemy spawning variables

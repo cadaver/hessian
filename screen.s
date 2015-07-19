@@ -843,13 +843,9 @@ SW_DrawLeft:    lda blockX
                 lda mapX
                 ldy #$00
 SWDL_Common:    sty SWDL_Sta+1
-                ldx mapY
-                clc
-                adc mapTblLo,x
-                sta temp3
-                lda mapTblHi,x
-                adc #$00
-                sta temp4
+                sta SWDL_MapX+1
+                lda mapY
+                sta SWDL_MapY+1
                 lda screen
                 eor #$01
                 tax
@@ -859,17 +855,21 @@ SWDL_Common:    sty SWDL_Sta+1
                 sta SWDL_Sta2+1
                 lda #>colors
                 sta SWDL_Sta2+2
-                lda #SCROLLROWS-1
-                sta temp5
                 lda blockY
                 asl
                 asl
                 ora temp1
                 ldx #$00
 SWDL_GetBlock:  sta temp2
-                ldy #$00
+SWDL_MapY:      ldy #$00
+                lda mapTblHi,y
+                beq SWDL_Outside
+                sta temp4
+                lda mapTblLo,y
+                sta temp3
+SWDL_MapX:      ldy #$00
                 lda (temp3),y
-                tay
+SWDL_Outside:   tay
                 lda blkTblLo,y
                 sta SWDL_Lda+1
                 lda blkTblHi,y
@@ -881,24 +881,20 @@ SWDL_Sta:       sta $1000,x
                 sta SWDL_Lda2+1
 SWDL_Lda2:      lda charColors
 SWDL_Sta2:      sta $1000,x
-                dec temp5
-                bmi SWDL_Ready
+SWDL_EndCmp:    cpx #<((SCROLLROWS-1)*40)
+                beq SWDL_Ready
                 txa
+                clc
                 adc #40
                 tax
                 bcc SWDL_Not2
-                clc
                 inc SWDL_Sta+2
                 inc SWDL_Sta2+2
 SWDL_Not2:      lda blockDownTbl,y
                 tay
                 bpl SWDL_Lda
-SWDL_Block:     lda temp3
-                adc mapSizeX
-                sta temp3
-                bcc SWDL_Not3
-                inc temp4
-SWDL_Not3:      lda temp1
+SWDL_Block:     inc SWDL_MapY+1
+                lda temp1
                 bpl SWDL_GetBlock
 SWDL_Ready:     rts
 
@@ -939,10 +935,13 @@ SWDU_Common:    asl
                 sta temp3
                 lda mapTblHi,x
                 sta temp4
+                sta SWDU_GetBlock+1
                 ldx #$00
                 ldy mapX
-SWDU_GetBlock:  lda (temp3),y
-                iny
+SWDU_GetBlock:  lda #$00
+                beq SWDU_Outside
+                lda (temp3),y
+SWDU_Outside:   iny
                 sty temp5
                 tay
                 lda blkTblLo,y
