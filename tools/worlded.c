@@ -3117,6 +3117,8 @@ void transferchar(int c, int d)
 
 void transferblock(int c, int d)
 {
+  // Note: needs up-to-date blockusecount
+
   int e;
   if (c == d) return;
   for (e = 0; e < 16; e++)
@@ -3125,16 +3127,23 @@ void transferblock(int c, int d)
     blockdata[charsetnum][c*16+e] = 0;
   }
   int currentzone = 0;
-  for (e = 0; e < mapsx * mapsy; e++)
+  if (blockusecount[charsetnum][c])
   {
-    if (mapdata[e] == c)
+    for (e = 0; e < mapsx * mapsy; e++)
     {
-      int x = e % mapsx;
-      int y = e / mapsx;
-      currentzone = findzonefast(x, y, currentzone);
-      if (currentzone < NUMZONES && zonecharset[currentzone] == charsetnum)
-        mapdata[e] = d;
+      if (mapdata[e] == c)
+      {
+        int x = e % mapsx;
+        int y = e / mapsx;
+        currentzone = findzonefast(x, y, currentzone);
+        if (currentzone < NUMZONES && zonecharset[currentzone] == charsetnum)
+        {
+          mapdata[e] = d;
+          blockusecount[charsetnum][e]++;
+        }
+      }
     }
+    blockusecount[charsetnum][c] = 0;
   }
 }
 
