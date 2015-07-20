@@ -273,6 +273,7 @@ ILOP_No:        lda #$00
         ; Modifies: A,X,Y,actLo-actHi
 
 SaveLevelActorState:
+                jsr RemoveLevelActors           ;Make sure are removed from screen first
                 jsr GetLevelDataActorBits
                 ldy lvlDataActBitsLen,x         ;Assume leveldata actors are all gone
                 dey
@@ -321,6 +322,63 @@ SLOS_NextObject:inx
                 bpl SLOS_Loop
 ECS_HasCharSet: rts
 
+        ; Find new level to load after entering a sidedoor
+        ;
+        ; Parameters: temp1 target X coord, temp2 target Y coord
+        ; Returns: new level loaded, X & Y new target coords
+        ; Modifies: A,X,Y,temp regs,loader temp regs
+
+FindNewLevel:   lda temp1                   ;Convert X coord to screens
+                cmp #$ff                    ;Handle -1 (moving left out of level) as a special case
+                bne FNL_NotNegative
+                lda #$ff
+                sta temp3
+                lda #9
+                bne FNL_NegativeDone
+FNL_NotNegative:ldy #10
+                ldx #<temp3
+                jsr DivU
+FNL_NegativeDone:
+                pha                         ;Store remainder
+                lda temp3
+                ldx levelNum
+                clc
+                adc lvlLimitL,x             ;Add level X origin in screens
+                sta temp5
+                ldx #NUMLEVELS-1
+FNL_Loop:       lda temp5
+                cmp lvlLimitL,x
+                bcc FNL_Next
+                cmp lvlLimitR,x
+                bcs FNL_Next
+                lda temp2                   ;Y coordinates are always just blocks
+                cmp lvlLimitU,x
+                bcc FNL_Next
+                cmp lvlLimitD,x
+                bcc FNL_Found
+FNL_Next:       dex
+                bpl FNL_Loop                ;Will produce rubbish result if not found
+FNL_Found:      stx FNL_NewLevelNum+1
+                lda temp5
+                sec
+                sbc lvlLimitL,x             ;Subtract screen origin of new level
+                ldy #10
+                ldx #<temp3                 ;Convert back to blocks
+                jsr MulU
+                pla                         ;Add back block remainder
+                clc
+                adc temp3
+                pha                         ;New X coord
+                lda temp2
+                pha                         ;Old Y coord (temp2 will likely be trashed by ChangeLevel)
+FNL_NewLevelNum:lda #$00
+                jsr ChangeLevel
+                pla
+                tay
+                pla
+                tax
+                rts
+
         ; Ensure that zone's charset is loaded. Does not call InitMap on all code paths
         ;
         ; Parameters: -
@@ -353,6 +411,36 @@ ECS_CopyBlockInfo:
                 sta blockInfo,x
                 dex
                 bpl ECS_CopyBlockInfo
+                rts
+
+        ; Set zone's multicolors
+        ;
+        ; Parameters: zoneLo,zoneHi
+        ; Returns: -
+        ; Modifies: A,Y
+
+SetZoneColors:  ldy #ZONEH_BG1                  ;Set zone multicolors
+                lda (zoneLo),y
+                sta Irq1_Bg1+1
+                iny
+                lda (zoneLo),y
+                sta Irq1_Bg2+1
+                iny
+                lda (zoneLo),y
+                sta Irq1_Bg3+1
+                rts
+
+        ; Calculate horizontal centerpoint of zone
+        ;
+        ; Parameters: -
+        ; Returns: A zone center, also stored in temp8
+        ; Modifies: A, temp8
+
+GetZoneCenterX: lda limitL
+                clc
+                adc limitR
+                ror
+                sta temp8
                 rts
 
         ; Find the zone indicated by coordinates or number.
@@ -609,106 +697,6 @@ AO_DoReveal:    and #$7f
 AO_RevealNext:  dex                             ;to reveal the item as quickly as possible
                 bpl AO_RevealLoop
                 rts
-
-        ; Set zone's multicolors
-        ;
-        ; Parameters: zoneLo,zoneHi
-        ; Returns: -
-        ; Modifies: A,Y
-
-SetZoneColors:  ldy #ZONEH_BG1                  ;Set zone multicolors
-                lda (zoneLo),y
-                sta Irq1_Bg1+1
-                iny
-                lda (zoneLo),y
-                sta Irq1_Bg2+1
-                iny
-                lda (zoneLo),y
-                sta Irq1_Bg3+1
-                rts
-
-        ; Calculate horizontal centerpoint of zone
-        ;
-        ; Parameters: -
-        ; Returns: A zone center, also stored in temp8
-        ; Modifies: A, temp8
-
-GetZoneCenterX: lda limitL
-                clc
-                adc limitR
-                ror
-                sta temp8
-                rts
-
-        ; Find new level to load after entering a sidedoor
-        ;
-        ; Parameters: temp1 target X coord, temp2 target Y coord
-        ; Returns: new level loaded, X & Y new target coords
-        ; Modifies: A,X,Y,temp regs,loader temp regs
-
-FindNewLevel:   lda temp1                   ;Convert X coord to screens
-                cmp #$ff                    ;Handle -1 (moving left out of level) as a special case
-                bne FNL_NotNegative
-                lda #$ff
-                sta temp3
-                lda #9
-                bne FNL_NegativeDone
-FNL_NotNegative:ldy #10
-                ldx #<temp3
-                jsr DivU
-FNL_NegativeDone:
-                pha                         ;Store remainder
-                lda temp3
-                ldx levelNum
-                clc
-                adc lvlLimitL,x             ;Add level X origin in screens
-                sta temp5
-                ldx #NUMLEVELS-1
-FNL_Loop:       lda temp5
-                cmp lvlLimitL,x
-                bcc FNL_Next
-                cmp lvlLimitR,x
-                bcs FNL_Next
-                lda temp2                   ;Y coordinates are always just blocks
-                cmp lvlLimitU,x
-                bcc FNL_Next
-                cmp lvlLimitD,x
-                bcc FNL_Found
-FNL_Next:       dex
-                bpl FNL_Loop                ;Will produce rubbish result if not found
-FNL_Found:      stx FNL_NewLevelNum+1
-                lda temp5
-                sec
-                sbc lvlLimitL,x             ;Subtract screen origin of new level
-                ldy #10
-                ldx #<temp3                 ;Convert back to blocks
-                jsr MulU
-                pla                         ;Add back block remainder
-                clc
-                adc temp3
-                pha                         ;New X coord
-                lda temp2
-                pha                         ;Old Y coord (temp2 will likely be trashed by ChangeLevel)
-FNL_NewLevelNum:lda #$00
-                jsr ChangeLevel
-                pla
-                tay
-                pla
-                tax
-                rts
-
-        ; Object marker update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MoveObjectMarker:
-MObjMarker_Cmp: lda #$00                        ;Check if levelobjectnumber has changed
-                cmp lvlObjNum                   ;and disappear in that case
-                beq MObjMarker_OK
-                jmp RemoveActor
-MObjMarker_OK:  jmp FlashActor
 
         ; Align actor to center of block and ground level, ground must be below
         ;
@@ -1054,7 +1042,7 @@ ULO_EnterSideDoorLeft:
 ULO_EnterSideDoorCommon:
                 tax
                 lda lvlObjDL,y
-                bne ULO_SideDoorExplicitDest    ;Can also specify destination explicitly
+                bne ULO_EnterDoorDest           ;Can also specify destination explicitly
                 lda lvlObjY,y                   ;(TODO: doesn't work for object ID 0)
                 and #$7f
                 tay
@@ -1066,39 +1054,31 @@ ULO_Retry:      stx temp1
                 jmp ULO_Retry
 ULO_SameLevel:  ldy #$00
 ULO_DestDoorLoop:
-                lda lvlObjB,y
-                and #OBJ_TYPEBITS
-                bne ULO_DestDoorNext
-                lda lvlObjY,y                   ;Verify that object is inside zone
-                and #$7f                        ;and close enough
-                cmp temp2
-                bne ULO_DestDoorNext            ;Must match target coords
-                lda lvlObjX,y                   ;(TODO: allow small difference, but within same zone)
+                lda lvlObjB,y                   ;Object needs to be a sidedoor and match target
+                and #OBJ_TYPEBITS               ;coords exactly. Explicit dest. can be used in cases
+                bne ULO_DestDoorNext            ;where that isn't possible
+                lda lvlObjX,y
                 cmp temp1
-                beq ULO_EnterDoorCommon
+                bne ULO_DestDoorNext
+                lda lvlObjY,y
+                and #$7f
+                cmp temp2
+                bne ULO_DestDoorNext
+                tya
+                bpl ULO_EnterDoorDest
 ULO_DestDoorNext:
                 iny
-                bne ULO_DestDoorLoop
-                rts                             ;If fail to find door, do nothing
-                                                ;(if level was changed, this will likely be fatal)
-
+                bpl ULO_DestDoorLoop            ;If door search fails, enter a random door. Will probably
+                                                ;show trashed graphics and/or kill the player character
 ULO_EnterDoor:  lda lvlObjDL,y
-ULO_SideDoorExplicitDest:
-                tay
-ULO_EnterDoorCommon:
-                ldx #MAX_ACT-1                  ;When entering a door, remove all actors except player
-ULO_ClearActorLoop:                             ;back to leveldata
-                lda actT,x
-                beq ULO_ClearActorNext
-                jsr RemoveLevelActor
-ULO_ClearActorNext:
-                dex
-                bne ULO_ClearActorLoop
-                ldx #ACTI_PLAYER                ;Reset animation, falling distance and speed
+ULO_EnterDoorDest:
+                sta ULO_DestDoorNum+1
+                jsr RemoveLevelActors           ;X=0 on return
                 stx actSX+ACTI_PLAYER           ;Stop X-movement
                 jsr MH_StandAnim
                 jsr MH_SetGrounded
                 jsr MH_ResetFall
+ULO_DestDoorNum:ldy #$00
                 jsr SetActorAtObject
                 jsr ActivateObject              ;Activate the door that was entered
                 jsr FindPlayerZone              ;After entering door, face player toward zone center

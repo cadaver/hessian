@@ -1060,7 +1060,7 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 ldx temp6
                 rts
 
-        ; Save an in-memory checkpoint. All actors must be removed from screen at this point
+        ; Save an in-memory checkpoint. Removes other actors than player as a byproduct
         ;
         ; Parameters: -
         ; Returns: -

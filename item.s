@@ -9,6 +9,48 @@ INITIAL_MAX_WEAPONS = 3
 
 USEITEM_ATTACK_DELAY = 5                        ;Attack delay after using an item
 
+        ; Item update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveItem:       lda actMB,x                     ;Skip movement if grounded and stationary
+                lsr
+                bcs MoveItem_Done
+                lda actSY,x                     ;Store original Y-speed for bounce
+                sta temp1
+                lda #ITEM_HEIGHT                ;Actor height for ceiling check
+                sta temp4
+                lda #ITEM_ACCEL
+                ldy #ITEM_MAX_YSPEED
+                jsr MoveWithGravity             ;Move & check collisions
+                lsr
+                bcc MoveItem_Done
+                lda temp1                       ;Bounce: negate and halve velocity
+                jsr Negate8Asr8
+                beq MoveItem_Done               ;If velocity left, clear the grounded
+                sta actSY,x                     ;flag
+                lda #$00
+                sta actMB,x
+MoveItem_Done:  
+FlashActor:     lda #$01
+                sta actFlash,x
+                rts
+
+        ; Object marker update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveObjectMarker:
+MObjMarker_Cmp: lda #$00                        ;Check if levelobjectnumber has changed
+                cmp lvlObjNum                   ;and disappear in that case
+                beq MObjMarker_OK
+                jmp RemoveActor
+MObjMarker_OK:  jmp FlashActor
+
         ; Try picking up an item
         ;
         ; Parameters: Y item actor index
@@ -221,35 +263,6 @@ DA_NotNegative: sta invCount,y
                 cmp #ITEM_FIRST_CONSUMABLE      ;If it's a consumable item, remove when ammo
                 bcc SetPanelRedrawAmmo          ;goes to zero
                 jmp RemoveItemByIndex
-
-        ; Item update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MoveItem:       lda actMB,x                     ;Skip movement if grounded and stationary
-                lsr
-                bcs MoveItem_Done
-                lda actSY,x                     ;Store original Y-speed for bounce
-                sta temp1
-                lda #ITEM_HEIGHT                ;Actor height for ceiling check
-                sta temp4
-                lda #ITEM_ACCEL
-                ldy #ITEM_MAX_YSPEED
-                jsr MoveWithGravity             ;Move & check collisions
-                lsr
-                bcc MoveItem_Done
-                lda temp1                       ;Bounce: negate and halve velocity
-                jsr Negate8Asr8
-                beq MoveItem_Done               ;If velocity left, clear the grounded
-                sta actSY,x                     ;flag
-                lda #$00
-                sta actMB,x
-MoveItem_Done:  
-FlashActor:     lda #$01
-                sta actFlash,x
-                rts
 
         ; Use an inventory item
         ;

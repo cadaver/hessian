@@ -1561,6 +1561,21 @@ ALA_NoDefaultPickup:
                 ldx temp1
                 jmp ALA_Common
 
+        ; Remove all actors except player to leveldata if applicable
+        ;
+        ; Parameters: -
+        ; Returns: X=0
+        ; Modifies: A,X,Y,zpSrcLo
+
+RemoveLevelActors:
+                ldx #MAX_ACT-1
+RLA_Loop:       lda actT,x
+                beq RLA_Next
+                jsr RemoveLevelActor
+RLA_Next:       dex
+                bne RLA_Loop
+                rts
+
         ; Remove actor and return to leveldata if applicable
         ;
         ; Parameters: X actor index
