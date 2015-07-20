@@ -130,7 +130,6 @@ unsigned char textbuffer[80];
 unsigned char copybuffer[8];
 unsigned char bcopybuffer[16];
 unsigned char charused[256];
-unsigned char blockused[256];
 unsigned blockusecount[NUMCHARSETS][256];
 unsigned char animatingblock[NUMCHARSETS][256];
 unsigned char mapcopybuffer[MAPCOPYSIZE];
@@ -762,7 +761,7 @@ void level_mainloop(void)
 void zone_mainloop(void)
 {
   calculatelevelorigins();
-  
+
   for (;;)
   {
     int s, shiftdown, ctrldown;
@@ -912,8 +911,8 @@ void zone_mainloop(void)
         {
           int x = mapx+mousex/divisor;
           int y = mapy+mousey/divisor;
-          // Round to full screens
-          relocatezone(x / 10 * 10, y / 6 * 6);
+          // Round to full screens horizontally
+          relocatezone(x / 10 * 10, y);
         }
       }
       if (k == KEY_G && zonesx[zonenum] && zonesy[zonenum])
@@ -1248,7 +1247,7 @@ void map_mainloop(void)
                   int yc = ry & 3;
 
                   int b = mapdata[yb*mapsx+xb];
-                  if (b < maxusedblocks[charsetnum] && newblocks < 256)
+                  if (blockusecount[charsetnum][b] > 1 && b < maxusedblocks[charsetnum] && newblocks < 256)
                   {
                       copyblock(b, newblocks);
                       mapdata[yb*mapsx+xb] = newblocks;
@@ -1263,8 +1262,6 @@ void map_mainloop(void)
 
           optimizeblocks();
         }
-
-        findusedblocksandchars();
       }
       if ((k == KEY_G) || (ascii == 13))
       {
@@ -1530,9 +1527,9 @@ void drawmap(void)
         }
         // Draw screen edge indicators
         if (((x+mapx) % 10) == 0)
-          gfx_line(x*divisor, y*divisor, x*divisor, y*divisor+divminusone, 3);
+          gfx_line(x*divisor, y*divisor, x*divisor, y*divisor+divminusone, 12);
         if (((y+mapy) % 6) == 0)
-          gfx_line(x*divisor, y*divisor, x*divisor+divminusone, y*divisor, 3);
+          gfx_line(x*divisor, y*divisor, x*divisor+divminusone, y*divisor, 12);
       }
     }
   }
@@ -1587,7 +1584,7 @@ void drawmap(void)
     {
       l = finemarkx1 - mapx*4;
       u = finemarky1 - mapy*4;
-      if ((l >= 0) && (u >= 0) && (l < 40) && (u < 20))
+      if ((l >= 0) && (u >= 0) && (l < 40) && (u < 24))
       {
         gfx_line(l*8,u*8,l*8+7,u*8,1);
         gfx_line(l*8,u*8+1,l*8+7,u*8+1,1);
@@ -1599,7 +1596,7 @@ void drawmap(void)
     {
       r = finemarkx2 - mapx*4;
       d = finemarky2 - mapy*4;
-      if ((r >= 0) && (d >= 0) && (r < 40) && (d < 20))
+      if ((r >= 0) && (d >= 0) && (r < 40) && (d < 24))
       {
         gfx_line(r*8+6,d*8,r*8+6,d*8+7,1);
         gfx_line(r*8+7,d*8,r*8+7,d*8+7,1);
@@ -2232,6 +2229,27 @@ void char_mainloop(void)
     if (k == KEY_DOWN) scrollchardown();
     if (k == KEY_L) lightenchar();
     if (k == KEY_D) darkenchar();
+    if (k == KEY_U)
+    {
+      findusedblocksandchars();
+      if (!shiftdown)
+      {
+        if (maxusedblocks[charsetnum] < 256)
+          blocknum = maxusedblocks[charsetnum];
+      }
+      else
+      {
+        int c;
+        for (c = 0; c <= 255; c++)
+        {
+          if (!charused[c])
+          {
+            charnum = c;
+            break;
+          }
+        }
+      }
+    }
 
     changecol();
     changechar();
@@ -2989,8 +3007,8 @@ void calculatelevelorigins(void)
 
   for (c = 0; c < NUMLEVELS; ++c)
   {
-    levelx[c] = 0xffff;
-    levely[c] = 0xffff;
+    levelx[c] = 0;
+    levely[c] = 0;
     levelsx[c] = 0;
     levelsy[c] = 0;
   }
@@ -2999,22 +3017,30 @@ void calculatelevelorigins(void)
     if (zonesx[c] && zonesy[c])
     {
       int l = zonelevel[c];
-      if (zonex[c] < levelx[l])
+      if (!levelsx[l] && !levelsy[l])
+      {
         levelx[l] = zonex[c];
-      if (zoney[c] < levely[l])
         levely[l] = zoney[c];
+        levelsx[l] = zonesx[c];
+        levelsy[l] = zonesy[c];
+      }
+      else
+      {
+        if (zonex[c] < levelx[l])
+        {
+          levelsx[l] += levelx[l]-zonex[c];
+          levelx[l] = zonex[c];
+        }
+        if (zoney[c] < levely[l])
+        {
+          levelsy[l] += levely[l]-zoney[c];
+          levely[l] = zoney[c];
+        }
+      }
       if (zonex[c]+zonesx[c] > levelx[l]+levelsx[l])
         levelsx[l] = zonex[c]+zonesx[c]-levelx[l];
       if (zoney[c]+zonesy[c] > levely[l]+levelsy[l])
         levelsy[l] = zoney[c]+zonesy[c]-levely[l];
-    }
-  }
-  for (c = 0; c < NUMLEVELS; ++c)
-  {
-    if (!levelsx[c] && !levelsy[c])
-    {
-      levelx[c] = 0;
-      levely[c] = 0;
     }
   }
 }
@@ -3037,13 +3063,18 @@ void findusedblocksandchars(void)
     }
     FOUND:
     maxusedblocks[s] = c+1;
-    for (c = 0; c < 256; c++) charused[c] = 0;
-    for (c = 0; c < maxusedblocks[s]*16; c++)
-    {
-      charused[blockdata[s][c]] = 1;
-    }
     for (c = 0; c < 256; c++)
       blockusecount[s][c] = 0;
+    blockusecount[s][0] = 255; // Consider first block (emptiness) always used
+
+    if (s == charsetnum)
+    {
+      for (c = 0; c < 256; c++) charused[c] = 0;
+      for (c = 0; c < maxusedblocks[s]*16; c++)
+      {
+        charused[blockdata[s][c]] = 1;
+      }
+    }
   }
 
   for (c = 0; c < mapsx*mapsy; c++)
@@ -3098,8 +3129,8 @@ void transferblock(int c, int d)
   {
     if (mapdata[e] == c)
     {
-      int x = c % mapsx;
-      int y = c / mapsx;
+      int x = e % mapsx;
+      int y = e / mapsx;
       currentzone = findzonefast(x, y, currentzone);
       if (currentzone < NUMZONES && zonecharset[currentzone] == charsetnum)
         mapdata[e] = d;
@@ -3430,6 +3461,7 @@ void reorganizedata()
 void optimizeblocks(void)
 {
   int c,d;
+  unsigned char blockused[256];
 
   findusedblocksandchars();
 

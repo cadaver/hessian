@@ -1043,7 +1043,7 @@ ULO_EnterSideDoorCommon:
                 tax
                 lda lvlObjDL,y
                 bne ULO_EnterDoorDest           ;Can also specify destination explicitly
-                lda lvlObjY,y                   ;(TODO: doesn't work for object ID 0)
+                lda lvlObjY,y
                 and #$7f
                 tay
 ULO_Retry:      stx temp1
@@ -1072,6 +1072,7 @@ ULO_DestDoorNext:
                                                 ;show trashed graphics and/or kill the player character
 ULO_EnterDoor:  lda lvlObjDL,y
 ULO_EnterDoorDest:
+                and #$7f
                 sta ULO_DestDoorNum+1
                 jsr RemoveLevelActors           ;X=0 on return
                 stx actSX+ACTI_PLAYER           ;Stop X-movement
