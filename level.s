@@ -56,7 +56,8 @@ ChangeLevel:    cmp levelNum                    ;Check if level already loaded
                 sta levelNum
                 sec                             ;Load new level's leveldata actors
 
-        ; Load level without processing actor removal
+        ; Load level without processing actor removal. Note: does not call InitMap
+        ; as that is usually done later after finding the correct zone in the new level
         ;
         ; Parameters: levelNum, C=0 do not load leveldata actors, C=1 load
         ; Returns: -
@@ -142,9 +143,22 @@ LL_NoReveal:    jsr AnimateObjectActivation     ;Animate if necessary
 LL_NextLevelObject:
                 inx
                 bpl LL_SetLevelObjectsActive
+                rts
+
+        ; Find the zone at player's position. Also load the proper charset if not loaded
+        ; Falls through to InitMap regardless of whether charset was changed.
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,loader temp vars
+
+FindPlayerZone: ldx actXH+ACTI_PLAYER
+                ldy actYH+ACTI_PLAYER
+                jsr FindZoneXY
+                jsr EnsureCharSet
 
         ; Calculate start addresses for each map-row (of current zone) and for each
-        ; block, and set zone multicolors.
+        ; block
         ;
         ; Parameters: -
         ; Returns: -
@@ -305,17 +319,14 @@ SLOS_Loop:      jsr IsLevelObjectPersistent
                 sta (actLo),y
 SLOS_NextObject:inx
                 bpl SLOS_Loop
-                rts
+ECS_HasCharSet: rts
 
-        ; Find the zone at player's position. Also load the proper charset if not loaded
+        ; Ensure that zone's charset is loaded. Does not call InitMap on all code paths
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,X,Y,loader temp vars
+        ; Modifies: A,X,Y,loader temp regs
 
-FindPlayerZone: ldx actXH+ACTI_PLAYER
-                ldy actYH+ACTI_PLAYER
-                jsr FindZoneXY
 EnsureCharSet:  ldy #ZONEH_CHARSET              ;Switch charset if required
                 lda (zoneLo),y
 ECS_LoadedCharSet:
@@ -325,6 +336,9 @@ ECS_LoadedCharSet:
                 ldx #F_CHARSET
                 jsr MakeFileName
                 jsr BlankScreen                 ;Blank screen to make sure no animation
+                beq ECS_RetryCharSet            ;X=0 on return
+ECS_LoadCharSetError:
+                jsr LFR_ErrorPrompt
 ECS_RetryCharSet:
                 lda #<lvlCodeStart              ;Load char animation code, charset and colors/infos
                 ldx #>lvlCodeStart
@@ -339,10 +353,7 @@ ECS_CopyBlockInfo:
                 sta blockInfo,x
                 dex
                 bpl ECS_CopyBlockInfo
-ECS_HasCharSet: rts
-ECS_LoadCharSetError:
-                jsr LFR_ErrorPrompt
-                jmp ECS_RetryCharSet
+                rts
 
         ; Find the zone indicated by coordinates or number.
         ;
@@ -1096,14 +1107,13 @@ ULO_ClearActorNext:
                 cmp temp8
                 ror
                 sta actD+ACTI_PLAYER
-ULO_NoDirection:jsr InitMap
                 ldx #ACTI_PLAYER
                 jsr AlignActorOnGround
                 ldy #ZONEH_BG1
                 lda (zoneLo),y                  ;Check for save-disabled zone
-                bmi ULO_NoSave
+                bmi CP_HasZone
                 jsr SaveCheckpoint              ;Save checkpoint now
-ULO_NoSave:
+                jmp CP_HasZone
 
         ; Centers player on screen, redraws screen, adds all actors from leveldata, and jumps to mainloop
         ;
@@ -1112,8 +1122,7 @@ ULO_NoSave:
         ; Modifies: A,X,Y,temp vars
 
 CenterPlayer:   jsr FindPlayerZone
-                jsr InitMap
-                ldy #ZONEH_MUSIC
+CP_HasZone:     ldy #ZONEH_MUSIC
                 lda (zoneLo),y
                 jsr PlaySong                    ;Play zone's music
                 lda limitR
