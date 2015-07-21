@@ -12,7 +12,6 @@ write 05 @8:
 write 06 @8:
 write 10 @8:
 write 11 @8:
-write 12 @8:
 write 18 @8:
 write 19 @8:
 write 20 @8:

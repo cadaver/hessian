@@ -21,9 +21,9 @@ logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
-START_LEVEL     = $00
-START_X         = $0580
-START_Y         = $0b00
+START_LEVEL     = $00                           ;Warehouse
+START_X         = $6780
+START_Y         = $1d00
 
                 org scriptCodeStart
 

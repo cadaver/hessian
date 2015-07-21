@@ -67,6 +67,7 @@ LoadLevel:      ror LL_ActorMode+1              ;Set high bit if C=1
                 lda levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
+                jsr BlankScreen                 ;Level loading will trash the second screen partially, so blank
 LoadLevelRetry: lda #<lvlObjX                   ;Load level objects and level properties
                 ldx #>lvlObjX
                 jsr LoadFile
@@ -1060,16 +1061,27 @@ ULO_Retry:      stx temp1
                 jmp ULO_Retry
 ULO_SameLevel:  ldy #$00
 ULO_DestDoorLoop:
-                lda lvlObjB,y                   ;Object needs to be a sidedoor and match target
-                and #OBJ_TYPEBITS               ;coords exactly. Explicit dest. can be used in cases
-                bne ULO_DestDoorNext            ;where that isn't possible
+                lda lvlObjB,y                   ;Object needs to be a sidedoor, be inside same zone,
+                and #OBJ_TYPEBITS               ;and be small distance (1 block) from exact target
+                bne ULO_DestDoorNext
                 lda lvlObjX,y
-                cmp temp1
-                bne ULO_DestDoorNext
+                cmp limitL
+                bcc ULO_DestDoorNext
+                cmp limitR
+                bcs ULO_DestDoorNext
+                adc #$02                        ;Add 1 too much, as C will be 0 and will subtract one more
+                sbc temp1
+                cmp #$03
+                bcs ULO_DestDoorNext
                 lda lvlObjY,y
-                and #$7f
-                cmp temp2
-                bne ULO_DestDoorNext
+                cmp limitU
+                bcc ULO_DestDoorNext
+                cmp limitD
+                bcs ULO_DestDoorNext
+                adc #$02
+                sbc temp2
+                cmp #$03
+                bcs ULO_DestDoorNext
                 tya
                 bpl ULO_EnterDoorDest
 ULO_DestDoorNext:
@@ -1135,7 +1147,7 @@ CP_NotOverLeft: cmp temp1
                 ldx #1
 CP_NotOverRight:sta mapX
                 stx blockX
-                lda #$80
+                lda #$c0
                 clc
                 adc actYL+ACTI_PLAYER
                 php
@@ -1151,10 +1163,10 @@ CP_NotOverRight:sta mapX
                 cmp temp2
                 bcc CP_NotOverDown
                 bne CP_OverDown
-                cpy #$01
+                cpy #$02
                 bcc CP_NotOverDown
 CP_OverDown:    lda temp2
-                ldy #$01
+                ldy #$02
                 bne CP_NotOverUp
 CP_NotOverDown: cmp limitU
                 bcs CP_NotOverUp

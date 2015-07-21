@@ -126,7 +126,7 @@ SL_YPos:        lda mapY                        ;Are we on the edge of map?
                 cmp limitD
                 bcc SL_YPosOk
                 lda blockY
-                cmp #$01
+                cmp #$02
                 bcs SL_YZero
 SL_YPosOk:      lda blockY                      ;Update block & map-coords
                 adc #$01

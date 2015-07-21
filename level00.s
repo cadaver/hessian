@@ -7,7 +7,7 @@
                 incbin bg/world00.lvo
 
                 org lvlName
-                dc.b "TEST 1",0
+                dc.b "WAREHOUSE",0
 
                 org lvlWaterSplashColor
                 dc.b 0                          ;Water splash color override

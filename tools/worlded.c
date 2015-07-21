@@ -967,19 +967,36 @@ void zone_mainloop(void)
           int nsy = 3;
           if (checkzonelegal(zonenum, nx, ny, nsx, nsy))
           {
+            // Copy properties from nearest zone to speed up
+            int nearest = NUMZONES;
+            int nearestdist = 0x7fffffff;
+            int c;
+            for (c = 0; c < NUMZONES; c++)
+            {
+              if (zonesx[c] && zonesy[c])
+              {
+                int dist = abs((nx+nx+nsx)/2-(zonex[c]+zonex[c]+zonesx[c])/2) + abs((ny+ny+nsy)/2-(zoney[c]+zoney[c]+zonesy[c])/2);
+                if (dist < nearestdist)
+                {
+                  nearest = c;
+                  nearestdist = dist;
+                }
+              }
+            }
+
             zonex[zonenum] = nx;
             zoney[zonenum] = ny;
             zonesx[zonenum] = nsx;
             zonesy[zonenum] = nsy;
-            // Copy properties from previous zone to speed up
-            if (zonenum > 0)
+
+            if (nearest < NUMZONES)
             {
-              zonebg1[zonenum] = zonebg1[zonenum-1];
-              zonebg2[zonenum] = zonebg2[zonenum-1];
-              zonebg3[zonenum] = zonebg3[zonenum-1];
-              zonecharset[zonenum] = zonecharset[zonenum-1];
-              zonemusic[zonenum] = zonemusic[zonenum-1];
-              zonelevel[zonenum] = zonelevel[zonenum-1];
+              zonebg1[zonenum] = zonebg1[nearest];
+              zonebg2[zonenum] = zonebg2[nearest];
+              zonebg3[zonenum] = zonebg3[nearest];
+              zonecharset[zonenum] = zonecharset[nearest];
+              zonemusic[zonenum] = zonemusic[nearest];
+              zonelevel[zonenum] = zonelevel[nearest];
             }
 
             calculatelevelorigins();
@@ -4301,6 +4318,7 @@ void loadalldata(void)
         read(handle, &zonebg1[0], NUMZONES);
         read(handle, &zonebg2[0], NUMZONES);
         read(handle, &zonebg3[0], NUMZONES);
+        read(handle, &zonemusic[0], NUMZONES);
         read(handle, &zonespawnparam[0], NUMZONES);
         read(handle, &zonespawnspeed[0], NUMZONES);
         read(handle, &zonespawncount[0], NUMZONES);
@@ -4337,18 +4355,21 @@ void exportpng(void)
       int oldzonenum = zonenum;
       int c;
       char filename[256];
+      int minx = 0xffff, miny = 0xffff;
       int maxx = 0, maxy = 0;
       for (c = 0; c < NUMZONES; c++)
       {
         if (zonesx[c] && zonesy[c])
         {
+          if (zonex[c] < minx) minx = zonex[c];
+          if (zoney[c] < miny) miny = zoney[c];
           if (maxx < zonex[c]+zonesx[c]) maxx = zonex[c] + zonesx[c];
           if (maxy < zoney[c]+zonesy[c]) maxy = zoney[c] + zonesy[c];
         }
       }
       {
-        int sizex = maxx*32;
-        int sizey = maxy*32;
+        int sizex = (maxx-minx)*32;
+        int sizey = (maxy-miny)*32;
         unsigned char* image = malloc(sizey*sizex*3);
         if (image)
         {
@@ -4360,25 +4381,28 @@ void exportpng(void)
             for (xb = 0; xb < sizex / 32; xb++)
             {
               int x, y;
-              zonenum = findzonefast(xb, yb, zonenum);
-              if (zonenum < NUMZONES)
+              if (mapdata[(yb+miny)*mapsx+xb+minx])
               {
-                drawblock(0, 0, mapdata[yb*mapsx+xb], zonecharset[zonenum]);
-                for (y = 0; y < 32; y++)
+                zonenum = findzonefast(xb+minx, yb+miny, zonenum);
+                if (zonenum < NUMZONES)
                 {
-                  for (x = 0; x < 32; x++)
+                  drawblock(0, 0, mapdata[(yb+miny)*mapsx+xb+minx], zonecharset[zonenum]);
+                  for (y = 0; y < 32; y++)
                   {
-                    int r,g,b;
-                    r = gfx_palette[gfx_vscreen[y*320+x]*3] * 4;
-                    g = gfx_palette[gfx_vscreen[y*320+x]*3+1] * 4;
-                    b = gfx_palette[gfx_vscreen[y*320+x]*3+2] * 4;
-                    if (r > 255) r = 255;
-                    if (g > 255) g = 255;
-                    if (b > 255) b = 255;
-
-                    image[((yb*32+y)*sizex+(xb*32+x))*3] = r;
-                    image[((yb*32+y)*sizex+(xb*32+x))*3+1] = g;
-                    image[((yb*32+y)*sizex+(xb*32+x))*3+2] = b;
+                    for (x = 0; x < 32; x++)
+                    {
+                      int r,g,b;
+                      r = gfx_palette[gfx_vscreen[y*320+x]*3] * 4;
+                      g = gfx_palette[gfx_vscreen[y*320+x]*3+1] * 4;
+                      b = gfx_palette[gfx_vscreen[y*320+x]*3+2] * 4;
+                      if (r > 255) r = 255;
+                      if (g > 255) g = 255;
+                      if (b > 255) b = 255;
+  
+                      image[((yb*32+y)*sizex+(xb*32+x))*3] = r;
+                      image[((yb*32+y)*sizex+(xb*32+x))*3+1] = g;
+                      image[((yb*32+y)*sizex+(xb*32+x))*3+2] = b;
+                    }
                   }
                 }
               }
@@ -4558,6 +4582,7 @@ void savealldata(void)
         write(handle, &zonebg1[0], NUMZONES);
         write(handle, &zonebg2[0], NUMZONES);
         write(handle, &zonebg3[0], NUMZONES);
+        write(handle, &zonemusic[0], NUMZONES);
         write(handle, &zonespawnparam[0], NUMZONES);
         write(handle, &zonespawnspeed[0], NUMZONES);
         write(handle, &zonespawncount[0], NUMZONES);
@@ -4923,7 +4948,7 @@ void importlevelmap(void)
                 zonesx[z] = r-l;
                 zonesy[z] = d-u;
                 zonex[z] = l;
-                zoney[z] = r;
+                zoney[z] = u;
               }
               else
               {
