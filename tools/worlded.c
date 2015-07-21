@@ -4888,6 +4888,12 @@ void importlevelmap(void)
               if (zonesx[z] && zonesy[z] && zonelevel[z] >= freelevel)
                 freelevel = zonelevel[z]+1;
             }
+            // Import everything into a single zone for easy deletion later (colors may be wrong)
+            for (z = 0; z < NUMZONES-1; z++)
+            {
+              if (!zonesx[z] && !zonesy[z])
+                break;
+            }
 
             for (c = 0; c < activezones; c++)
             {
@@ -4896,17 +4902,13 @@ void importlevelmap(void)
 
             for (c = 0; c < activezones; c++)
             {
+              int l,r,u,d;
               lseek(handle, zoneoffsets[c], SEEK_SET);
-              for (z = 0; z < NUMZONES-1; z++)
-              {
-                if (!zonesx[z] && !zonesy[z])
-                  break;
-              }
 
-              zonex[z] = read8(handle);
-              zonesx[z] = read8(handle);
-              zoney[z] = read8(handle);
-              zonesy[z] = read8(handle);
+              l = read8(handle) + xofs;
+              r = read8(handle) + xofs;
+              u = read8(handle) + yofs;
+              d = read8(handle) + yofs;
               zonecharset[z] = charset;
               zonelevel[z] = freelevel;
               zonebg1[z] = read8(handle);
@@ -4916,15 +4918,34 @@ void importlevelmap(void)
               zonespawnparam[z] = read8(handle);
               zonespawnspeed[z] = read8(handle);
               zonespawncount[z] = read8(handle);
-              zonesx[z] -= zonex[z];
-              zonesy[z] -= zoney[z];
-              zonex[z] += xofs;
-              zoney[z] += yofs;
-              printf("Zone %d start %d %d size %d %d\n", z, zonex[z], zoney[z], zonesx[z], zonesy[z]);
-
-              for (y = zoney[z]; y < zoney[z]+zonesy[z]; y++)
+              if (!zonesx[z] && !zonesy[z])
               {
-                for (x = zonex[z]; x < zonex[z]+zonesx[z]; x++)
+                zonesx[z] = r-l;
+                zonesy[z] = d-u;
+                zonex[z] = l;
+                zoney[z] = r;
+              }
+              else
+              {
+                if (l < zonex[z])
+                {
+                  zonex[z] = l;
+                  zonesx[z] += (zonex[z]-l);
+                }
+                if (u < zoney[z])
+                {
+                  zoney[z] = u;
+                  zonesy[z] += (zoney[z]-u);
+                }
+                if (r > zonex[z]+zonesx[z])
+                  zonesx[z] = r-zonex[z];
+                if (d > zoney[z]+zonesy[z])
+                  zonesy[z] = d-zoney[z];
+              }
+
+              for (y = u; y < d; y++)
+              {
+                for (x = l; x < r; x++)
                 {
                   mapdata[y*mapsx+x] = read8(handle);
                 }
@@ -4933,6 +4954,7 @@ void importlevelmap(void)
             close(handle);
           }
         }
+        calculatelevelorigins();
         return;
       }
     }
