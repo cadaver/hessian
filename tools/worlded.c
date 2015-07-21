@@ -971,6 +971,17 @@ void zone_mainloop(void)
             zoney[zonenum] = ny;
             zonesx[zonenum] = nsx;
             zonesy[zonenum] = nsy;
+            // Copy properties from previous zone to speed up
+            if (zonenum > 0)
+            {
+              zonebg1[zonenum] = zonebg1[zonenum-1];
+              zonebg2[zonenum] = zonebg2[zonenum-1];
+              zonebg3[zonenum] = zonebg3[zonenum-1];
+              zonecharset[zonenum] = zonecharset[zonenum-1];
+              zonemusic[zonenum] = zonemusic[zonenum-1];
+              zonelevel[zonenum] = zonelevel[zonenum-1];
+            }
+
             calculatelevelorigins();
           }
         }

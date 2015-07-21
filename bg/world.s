@@ -1,34 +1,26 @@
-NUMLEVELS = 2
+NUMLEVELS = 1
 
-WORLDSIZEBLOCKS = 380
+WORLDSIZEBLOCKS = 160
 
-WORLDSIZESCREENS = 6
+WORLDSIZESCREENS = 3
 
-LVLDATAACTTOTALSIZE = 2
+LVLDATAACTTOTALSIZE = 1
 
-LVLOBJTOTALSIZE = 2
+LVLOBJTOTALSIZE = 1
 
 lvlDataActBitsStart:
                 dc.b 0
-                dc.b 1
 lvlDataActBitsLen:
-                dc.b 1
                 dc.b 1
 lvlObjBitsStart:
                 dc.b 0
-                dc.b 1
 lvlObjBitsLen:
-                dc.b 1
                 dc.b 1
 lvlLimitL:
                 dc.b 0
-                dc.b 2
 lvlLimitR:
                 dc.b 2
-                dc.b 4
 lvlLimitU:
-                dc.b 0
-                dc.b 0
+                dc.b 4
 lvlLimitD:
                 dc.b 12
-                dc.b 11

@@ -67,7 +67,6 @@ LoadLevel:      ror LL_ActorMode+1              ;Set high bit if C=1
                 lda levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
-                jsr BlankScreen                 ;Blank screen, stop level animation
 LoadLevelRetry: lda #<lvlObjX                   ;Load level objects and level properties
                 ldx #>lvlObjX
                 jsr LoadFile
@@ -771,7 +770,14 @@ ULO_NoTime:     bcs ULO_IsPaused
                 bmi ULO_NoAutoDeact
                 dec autoDeactObjCounter
                 bne ULO_NoAutoDeact
-                lda #$ff
+                cpy lvlObjNum                   ;If it's a sidedoor the player is standing at,
+                bne ULO_AutoDeactOK             ;do not deactivate until walked away
+                lda lvlObjB,y
+                and #OBJ_TYPEBITS
+                bne ULO_AutoDeactOK
+                inc autoDeactObjCounter         ;Retry next frame
+                bne ULO_NoAutoDeact
+ULO_AutoDeactOK:lda #$ff
                 sta autoDeactObjNum
                 jsr InactivateObject
 
@@ -1074,7 +1080,8 @@ ULO_EnterDoor:  lda lvlObjDL,y
 ULO_EnterDoorDest:
                 and #$7f
                 sta ULO_DestDoorNum+1
-                jsr RemoveLevelActors           ;X=0 on return
+                jsr RemoveLevelActors
+                jsr BlankScreen                 ;X=0 on return
                 stx actSX+ACTI_PLAYER           ;Stop X-movement
                 jsr MH_StandAnim
                 jsr MH_SetGrounded
