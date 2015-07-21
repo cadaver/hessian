@@ -299,7 +299,7 @@ Irq3_Wait2:     cpx $d012
                 bcs Irq3_Wait2
                 lda #$18
                 sta $d016
-                lda #$1f                        ;Switch screen back on
+                lda #$17                        ;Switch screen back on
                 sta $d011
                 if SHOW_PLAYROUTINE_TIME>0
                 inc $d020

@@ -39,7 +39,7 @@ MAX_BULLETS = ACTI_LASTNPCBULLET-ACTI_FIRSTPLRBULLET+1
 
 SAVEDESCSIZE    = 20
 SCRIPTAREASIZE  = 8*256
-SCROLLROWS      = 23
+SCROLLROWS      = 22
 
         ; Zeropage variables
 
@@ -182,7 +182,6 @@ playerStateZPEnd = nextTempLvlActIndex+1
 
 cacheSprAge     = $0100
 sprF            = $0140
-vColBuf         = $0158
 cacheSprFile    = $0200
 sprC            = $0240
 cacheSprFrame   = $02a7
@@ -193,6 +192,7 @@ mainCodeStart   = $0334
 spriteCache     = $d000
 fileAreaEnd     = spriteCache
 colors          = $d800
+vColBuf         = colors+24*40
 textChars       = $e000
 emptySprite     = $e300
 panelScreen     = $e000

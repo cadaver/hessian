@@ -418,5 +418,14 @@ keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
 fileLo:         ds.b MAX_CHUNKFILES,0
 fileHi:         ds.b MAX_CHUNKFILES,0
+
+                if MAX_CHUNKFILES <= 40
+fileNumObjects  = screen2+SCROLLROWS*40+96
+                else
 fileNumObjects: ds.b MAX_CHUNKFILES,0
+                endif
+                if MAX_CHUNKFILES <= 40
+fileAge         = screen1+SCROLLROWS*40+96
+                else
 fileAge:        ds.b MAX_CHUNKFILES,0
+                endif

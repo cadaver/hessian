@@ -92,6 +92,13 @@ ISpr_ClearCacheInUse:
                 sta cacheSprFile,x
                 dex
                 bpl ISpr_ClearCacheInUse
+                ldx #MAX_CHUNKFILES-1           ;fileNumObjects & fileAge may be stored in unused parts
+                lda #$00                        ;of screen1 & screen2, so reset here
+ISpr_ResetChunkFiles:
+                sta fileNumObjects,x
+                sta fileAge,x
+                dex
+                bpl ISpr_ResetChunkFiles
 
         ; Load resident sprites
 
@@ -159,18 +166,17 @@ IVid_SetEmptySpriteFrame:
                 ldx #39
 IVid_InitScorePanel:
                 lda #$20
-                sta panelScreen+22*40,x
+                sta panelScreen+PANELROW*40-40,x
                 lda scorePanel,x
-                sta panelScreen+23*40,x
+                sta panelScreen+PANELROW*40,x
                 lda scorePanelColors,x
-                sta colors+23*40,x
+                sta colors+PANELROW*40,x
                 lda scorePanel+40,x
-                sta panelScreen+24*40,x
+                sta panelScreen+PANELROW*40+40,x
                 lda scorePanelColors+40,x
-                sta colors+24*40,x
+                sta colors+PANELROW*40+40,x
                 dex
                 bpl IVid_InitScorePanel
-
                 lda #HP_PLAYER                  ;Init health & fists item immediately
                 sta actHp+ACTI_PLAYER           ;even before starting the game so that
                 lda #MAX_BATTERY
@@ -226,11 +232,11 @@ textCharsCopy:  incbin bg/scorescr.chr
 scorePanel:     dc.b 35,"       ",35,"                      ",35,"       ",35
                 dc.b 36
                 ds.b 7,61
-                dc.b 104
+                dc.b 120
                 ds.b 22,61
-                dc.b 104
+                dc.b 120
                 ds.b 7,61
-                dc.b 105
+                dc.b 121
 
 scorePanelColors:
                 dc.b 11

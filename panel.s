@@ -26,7 +26,7 @@ HEALTHBAR_COLOR = $0d
 
 DrawHealthBar:  ldy healthBarPosTbl,x
                 pha
-                lda panelScreen+23*40,y              ;Check if need to redraw completely
+                lda panelScreen+PANELROW*40,y              ;Check if need to redraw completely
                 cmp #33
                 pla
                 bcc DHB_Redraw
@@ -41,7 +41,7 @@ DHB_Redraw:     tya                             ;Start position
                 adc #HEALTHBAR_LENGTH           ;End position
                 sta temp2
                 lda healthBarLetter,x
-                sta panelScreen+23*40-1,y
+                sta panelScreen+PANELROW*40-1,y
                 lda displayedHealth,x
                 lsr
                 lsr
@@ -51,25 +51,25 @@ DHB_Redraw:     tya                             ;Start position
 DHB_WholeCharsLoop:
                 cpy temp1
                 bcs DHB_WholeCharsDone
-                lda #109
+                lda #126
                 jsr DHB_Sub
                 bne DHB_WholeCharsLoop
 DHB_WholeCharsDone:
                 lda displayedHealth,x
                 and #$03
                 beq DHB_EmptyCharsLoop
-                adc #104                        ;C=1
+                adc #121                       ;C=1
                 jsr DHB_Sub
 DHB_EmptyCharsLoop:
                 cpy temp2
                 bcs DHB_Done
-                lda #59
+                lda #122
                 jsr DHB_Sub
                 bne DHB_EmptyCharsLoop
 DHB_Done:       rts
-DHB_Sub:        sta panelScreen+23*40,y
+DHB_Sub:        sta panelScreen+PANELROW*40,y
                 lda #HEALTHBAR_COLOR
-                sta colors+23*40,y
+                sta colors+PANELROW*40,y
                 iny
                 rts
 
@@ -113,11 +113,11 @@ UpdatePanel:    lda menuMode                    ;Update health bars only when no
                 jsr PrintPanelChar
                 bne UP_SkipHealth
 UP_ClearOxygen: lda #32
-                cmp panelScreen+23*40+18
+                cmp panelScreen+PANELROW*40+18
                 beq UP_SkipHealth
                 ldx #3
 UP_ClearOxygenLoop:
-                sta panelScreen+23*40+18,x
+                sta panelScreen+PANELROW*40+18,x
                 dex
                 bpl UP_ClearOxygenLoop
 UP_SkipHealth:  if SHOW_BATTERY > 0
@@ -130,15 +130,15 @@ UP_SkipHealth:  if SHOW_BATTERY > 0
                 lsr panelUpdateFlags
                 bcc UP_SkipWeapon
                 ldx #91
-                stx panelScreen+23*40+32
+                stx panelScreen+PANELROW*40+32
                 inx
-                stx panelScreen+23*40+33
+                stx panelScreen+PANELROW*40+33
                 inx
-                stx panelScreen+23*40+34
+                stx panelScreen+PANELROW*40+34
                 lda #$08
-                sta colors+23*40+32
-                sta colors+23*40+33
-                sta colors+23*40+34
+                sta colors+PANELROW*40+32
+                sta colors+PANELROW*40+33
+                sta colors+PANELROW*40+34
                 ldy itemIndex
                 ldx invType,y
                 lda itemFrames,x
@@ -195,7 +195,7 @@ UP_Firearm:     lda reload
                 bcc UP_MagCountOK
                 lda #$09
 UP_MagCountOK:  ora #$30
-                sta panelScreen+23*40+38
+                sta panelScreen+PANELROW*40+38
                 bne UP_SkipAmmo
 UP_Consumable:  lda invType,y                   ;Draw the X for real consumables, but
                 cmp #ITEM_FIRST_CONSUMABLE      ;not for weapons such as the minigun
@@ -203,7 +203,7 @@ UP_Consumable:  lda invType,y                   ;Draw the X for real consumables
                 lda #32
                 skip2
 UP_IsConsumable:lda #42
-                sta panelScreen+23*40+35
+                sta panelScreen+PANELROW*40+35
                 lda invCount,y
                 jsr ConvertToBCD8
                 ldx #36
@@ -215,7 +215,7 @@ UP_MeleeWeapon: ldy #$03
                 ldx #$03
 UP_MeleeWeaponLoop:
                 lda txtInf,y
-                sta panelScreen+23*40+35,x
+                sta panelScreen+PANELROW*40+35,x
                 dey
                 dex
                 bpl UP_MeleeWeaponLoop
@@ -600,18 +600,18 @@ UM_RedrawCommon:
                 dec textLeftMargin
 UM_DrawSelectionArrows:
                 lda #1
-                sta colors+23*40+9
-                sta colors+23*40+30
+                sta colors+PANELROW*40+9
+                sta colors+PANELROW*40+30
                 lda #$20
                 cpx #$00
                 beq UM_NoLeftArrow
                 lda #60
-UM_NoLeftArrow: sta panelScreen+23*40+9
+UM_NoLeftArrow: sta panelScreen+PANELROW*40+9
                 lda #$20
                 cpy #$00
                 beq UM_NoRightArrow
                 lda #62
-UM_NoRightArrow:sta panelScreen+23*40+30
+UM_NoRightArrow:sta panelScreen+PANELROW*40+30
                 jmp SetPanelRedrawItemAmmo      ;Redraw item & ammo next time panel is updated
 
         ; Pause menu
@@ -649,7 +649,7 @@ UM_PauseMenuArrowLoop:
                 bne UM_PauseMenuSpace
                 lda #62
 UM_PauseMenuSpace:
-                sta panelScreen+23*40,x
+                sta panelScreen+PANELROW*40,x
                 dey
                 bpl UM_PauseMenuArrowLoop
 UM_RedrawDialogue:
@@ -715,9 +715,9 @@ PrintBCDDigits: pha
                 pla
 PrintBCDDigit:  and #$0f
                 ora #$30
-PrintPanelChar: sta panelScreen+23*40,x
+PrintPanelChar: sta panelScreen+PANELROW*40,x
                 lda #$01
-                sta colors+23*40,x
+                sta colors+PANELROW*40,x
                 inx
                 rts
 

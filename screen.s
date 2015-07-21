@@ -18,6 +18,8 @@ GAMESCR2_D018   = $ca
 TEXTSCR_D018    = $d8
 PANEL_D018      = $88
 
+PANELROW        = 22
+
         ; Blank the gamescreen and turn off sprites
         ; (return to normal display by calling UpdateFrame)
         ;
@@ -452,10 +454,10 @@ UF_WaitColorShift:
                 lda $d011
                 bmi UF_WaitColorShift
                 lda $d012                       ;Wait until we are near the scorescreen split
-                cmp #IRQ3_LINE-SCROLLSPLIT*8+14 ;but not over it
+                cmp #IRQ3_LINE-SCROLLSPLIT*8+14
                 bcc UF_WaitColorShift
 UF_ColorShiftLateCheck:
-                cmp #IRQ3_LINE+$10
+                cmp #IRQ3_LINE+$18
                 bcs UF_WaitColorShift
 UF_WaitDone:    lda scrollX                     ;Copy scrolling and screen number
                 eor #$07
@@ -911,7 +913,7 @@ SW_DrawDown:    lda screen
                 adc #$05
                 tax
                 lda blockY
-                adc #$02
+                adc #$01
                 cmp #$04
                 bcc SWDU_Common
                 and #$03
