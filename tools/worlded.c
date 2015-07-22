@@ -4484,6 +4484,7 @@ void savealldata(void)
           v += chardata[s][c];
         if (!v)
           continue;
+        charsetnum = s;
 
         sprintf(ib2, "%s%02d.chr", ib1, s);
         handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
