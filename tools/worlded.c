@@ -875,11 +875,13 @@ void zone_mainloop(void)
       {
         zonelevel[zonenum]++;
         zonelevel[zonenum] &= NUMLEVELS-1;
+        calculatelevelorigins();
       }
       if (k == KEY_K)
       {
         zonelevel[zonenum]--;
         zonelevel[zonenum] &= NUMLEVELS-1;
+        calculatelevelorigins();
       }
       if (k == KEY_U)
       {
