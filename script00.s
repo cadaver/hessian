@@ -361,6 +361,7 @@ IP_InitLevelData:
                 sta oxygen
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
+                jsr FindPlayerZone              ;Need to get starting level's charset so that save is named properly
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
                 jmp CenterPlayer
 

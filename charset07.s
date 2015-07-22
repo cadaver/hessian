@@ -8,22 +8,19 @@
 UpdateLevel:    rts
 
                 org charInfo
-                incbin bg/level07.chi
-                incbin bg/level07.chc
+                incbin bg/world07.chi
+                incbin bg/world07.chc
 
                 org chars
-                incbin bg/level07.chr
+                incbin bg/world07.chr
 
-                org lvlDataActX
-                incbin bg/level07.lva
+                org charsetLoadBlockInfo
+                incbin bg/world07.bli
 
-                org lvlLoadName
+                org charsetLoadName
                 dc.b "NANO RESEARCH",0
 
-                org lvlLoadWaterSplashColor
+                org charsetLoadWaterSplashColor
                 dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
                 dc.b 0                          ;Air toxicity delay counter
-
-                org blockInfo
-                incbin bg/level07.bli

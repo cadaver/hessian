@@ -253,16 +253,14 @@ charset01.pak: charset01.s memory.s bg/world01.blk bg/world01.bli bg/world01.chi
 	pchunk2 bg/world01.blk charset01_2.pak
 	filejoin charset01_1.pak+charset01_2.pak charset01.pak
 
-level00.pak: level00.s memory.s bg/world00.map bg/world00.lvo bg/world00.lva
-	dasm level00.s -olevel00_1.bin -f3
-	pack2 level00_1.bin level00_1.pak
+level00.pak: bg/world00.map bg/world00.lvo bg/world00.lva
+	pack2 bg/world00.lvo level00_1.pak
 	pack2 bg/world00.lva level00_2.pak
 	pchunk2 bg/world00.map level00_3.pak
 	filejoin level00_1.pak+level00_2.pak+level00_3.pak level00.pak
 
-level01.pak: level01.s memory.s bg/world01.map bg/world01.lvo bg/world01.lva
-	dasm level01.s -olevel01_1.bin -f3
-	pack2 level01_1.bin level01_1.pak
+level01.pak: bg/world01.map bg/world01.lvo bg/world01.lva
+	pack2 bg/world01.lvo level01_1.pak
 	pack2 bg/world01.lva level01_2.pak
 	pchunk2 bg/world01.map level01_3.pak
 	filejoin level01_1.pak+level01_2.pak+level01_3.pak level01.pak

@@ -59,22 +59,19 @@ waterTbl2:      dc.b %00000101,%00010100,%01010000,%01000001,%00000100
 waterTbl3:      dc.b %10111111,%11111110,%01111110,%11111011
 
                 org charInfo
-                incbin bg/level05.chi
-                incbin bg/level05.chc
+                incbin bg/world05.chi
+                incbin bg/world05.chc
 
                 org chars
-                incbin bg/level05.chr
+                incbin bg/world05.chr
 
-                org lvlDataActX
-                incbin bg/level05.lva
+                org charsetLoadBlockInfo
+                incbin bg/world05.bli
 
-                org lvlLoadName
+                org charsetLoadName
                 dc.b "SERVICE TUNNELS",0
 
-                org lvlLoadWaterSplashColor
-                dc.b 15                         ;Water splash color override
+                org charsetLoadWaterSplashColor
+                dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
                 dc.b 0                          ;Air toxicity delay counter
-
-                org blockInfo
-                incbin bg/level05.bli

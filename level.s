@@ -68,7 +68,7 @@ LoadLevel:      ror LL_ActorMode+1              ;Set high bit if C=1
                 ldx #F_LEVEL
                 jsr MakeFileName
                 jsr BlankScreen                 ;Level loading will trash the second screen partially, so blank
-LoadLevelRetry: lda #<lvlObjX                   ;Load level objects and level properties
+LoadLevelRetry: lda #<lvlObjX                   ;Load level objects
                 ldx #>lvlObjX
                 jsr LoadFile
                 bcs LoadLevelError
@@ -407,10 +407,16 @@ ECS_RetryCharSet:
                 bcs ECS_LoadCharSetError
                 ldx #MAX_BLK/2-1
 ECS_CopyBlockInfo:
-                lda screen2,x                   ;Copy blockinfo into place from beginning of screen2
+                lda charsetLoadBlockInfo,x      ;Copy blockinfo into place from beginning of screen2
                 sta blockInfo,x
                 dex
                 bpl ECS_CopyBlockInfo
+                ldx #18
+ECS_CopyLevelProperties:
+                lda charsetLoadName,x
+                sta lvlName,x
+                dex
+                bpl ECS_CopyLevelProperties
                 rts
 
         ; Set zone's multicolors
@@ -1061,11 +1067,8 @@ ULO_Retry:      stx temp1
                 jmp ULO_Retry
 ULO_SameLevel:  ldy #$00
 ULO_DestDoorLoop:
-                lda lvlObjB,y                   ;Object needs to be a sidedoor, be inside same zone,
-                and #OBJ_TYPEBITS               ;and be small distance (1 block) from exact target
-                bne ULO_DestDoorNext
-                lda lvlObjX,y
-                cmp limitL
+                lda lvlObjX,y                   ;Object needs to be inside same zone, and
+                cmp limitL                      ;a small distance (1 block) from exact target
                 bcc ULO_DestDoorNext
                 cmp limitR
                 bcs ULO_DestDoorNext
@@ -1074,6 +1077,7 @@ ULO_DestDoorLoop:
                 cmp #$03
                 bcs ULO_DestDoorNext
                 lda lvlObjY,y
+                and #$7f
                 cmp limitU
                 bcc ULO_DestDoorNext
                 cmp limitD

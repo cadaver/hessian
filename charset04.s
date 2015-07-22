@@ -8,22 +8,19 @@
 UpdateLevel:    rts
 
                 org charInfo
-                incbin bg/level04.chi
-                incbin bg/level04.chc
+                incbin bg/world04.chi
+                incbin bg/world04.chc
 
                 org chars
-                incbin bg/level04.chr
+                incbin bg/world04.chr
 
-                org lvlDataActX
-                incbin bg/level04.lva
+                org charsetLoadBlockInfo
+                incbin bg/world04.bli
 
-                org lvlLoadName
+                org charsetLoadName
                 dc.b "SECURITY CENTER",0
 
-                org lvlLoadWaterSplashColor
+                org charsetLoadWaterSplashColor
                 dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
                 dc.b 0                          ;Air toxicity delay counter
-
-                org blockInfo
-                incbin bg/level04.bli
