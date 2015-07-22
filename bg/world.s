@@ -25,10 +25,10 @@ lvlLimitL:
                 dc.b 18
 lvlLimitR:
                 dc.b 18
-                dc.b 35
+                dc.b 29
 lvlLimitU:
                 dc.b 17
-                dc.b 20
+                dc.b 12
 lvlLimitD:
                 dc.b 34
                 dc.b 30
