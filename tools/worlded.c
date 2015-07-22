@@ -193,10 +193,9 @@ unsigned char frommap = 0;
 int initchars(void);
 int findzone(int x, int y);
 int findzonefast(int x, int y, int lastzone);
+int findnearestzone(int x, int y);
 void moveonmap(int k, int shiftdown);
 void gotopos(int x, int y);
-void updatezone(int z);
-void updateallzones(void);
 void endblockeditmode(void);
 void initblockeditmode(int frommap);
 void findusedblocksandchars(void);
@@ -233,7 +232,7 @@ void drawsmallblock(int x, int y, int num, int charset);
 void drawchar(int x, int y, int num, int charset);
 void mouseupdate(void);
 void handle_int(int a);
-void drawmap(void);
+void drawmap();
 void drawblocks(void);
 void drawgrid(void);
 void changecol(void);
@@ -968,21 +967,7 @@ void zone_mainloop(void)
           if (checkzonelegal(zonenum, nx, ny, nsx, nsy))
           {
             // Copy properties from nearest zone to speed up
-            int nearest = NUMZONES;
-            int nearestdist = 0x7fffffff;
-            int c;
-            for (c = 0; c < NUMZONES; c++)
-            {
-              if (zonesx[c] && zonesy[c])
-              {
-                int dist = abs((nx+nx+nsx)/2-(zonex[c]+zonex[c]+zonesx[c])/2) + abs((ny+ny+nsy)/2-(zoney[c]+zoney[c]+zonesy[c])/2);
-                if (dist < nearestdist)
-                {
-                  nearest = c;
-                  nearestdist = dist;
-                }
-              }
-            }
+            int nearest = findnearestzone((nx+nx+nsx)/2, (nx+nx+nsy)/2);
 
             zonex[zonenum] = nx;
             zoney[zonenum] = ny;
@@ -1529,6 +1514,9 @@ void drawmap(void)
   int divminustwo = divisor-2;
   int limitx = zoomoutmode ? 40 : 10;
   int limity = zoomoutmode ? 24 : 6;
+  // For non-zoned map area, use charset from the one nearest to the visible map center
+  int defaultzone = findnearestzone(mapx+160/divisor, mapy+96/divisor);
+  if (defaultzone >= NUMZONES) defaultzone = 0;
 
   for (y = 0; y < 192/divisor; y++)
   {
@@ -1537,8 +1525,7 @@ void drawmap(void)
       if (mapx+x < mapsx && mapy+y < mapsy)
       {
         int newzonenum = findzonefast(mapx+x, mapy+y, zonenum);
-        zonenum = newzonenum;
-        if (zonenum >= NUMZONES) zonenum = 0;
+        zonenum = newzonenum < NUMZONES ? newzonenum : defaultzone;
         currentcharset = zonecharset[zonenum];
 
         if (!zoomoutmode)
@@ -1568,6 +1555,27 @@ void drawmap(void)
   if (editmode == EM_ZONE)
   {
     int c;
+
+    // In zoomed out zone edit mode, draw bounds for all zones
+    if (zoomoutmode)
+    {
+      for (c = 0; c < NUMZONES; c++)
+      {
+        if (zonesx[c] && zonesy[c])
+        {
+          int l,r,u,d;
+          l = zonex[c] - mapx;
+          r = l + zonesx[c]-1;
+          u = zoney[c] - mapy;
+          d = u + zonesy[c]-1;
+          gfx_line(l*divisor,u*divisor,r*divisor+divisor,u*divisor,2);
+          gfx_line(l*divisor,u*divisor,l*divisor,d*divisor+divisor,2);
+          gfx_line(l*divisor,d*divisor+divisor,r*divisor+divisor,d*divisor+divisor,2);
+          gfx_line(r*divisor+divisor,u*divisor,r*divisor+divisor,d*divisor+divisor,2);
+        }
+      }
+    }
+
     for (c = 0; c < NUMLEVELS; c++)
     {
       if (levelsx[c] && levelsy[c])
@@ -3379,7 +3387,6 @@ void reorganizedata()
   int charmapping[256];
   int c,d,e,z,x,y,s,newblk;
 
-  updateallzones();
   optimizechars();
   optimizeblocks();
   findusedblocksandchars();
@@ -4335,8 +4342,6 @@ void exportpng(void)
 {
   char ib1[80];
   strcpy(ib1, levelname);
-
-  updateallzones();
 
   for (;;)
   {
@@ -5608,11 +5613,22 @@ int findzonefast(int x, int y, int lastzone)
   return NUMZONES+1;
 }
 
-void updatezone(int z)
+int findnearestzone(int x, int y)
 {
+  int nearest = NUMZONES;
+  int nearestdist = 0x7fffffff;
+  int c;
+  for (c = 0; c < NUMZONES; c++)
+  {
+    if (zonesx[c] && zonesy[c])
+    {
+      int dist = abs(x - (zonex[c]+zonex[c]+zonesx[c])/2) + abs(y - (zoney[c]+zoney[c]+zonesy[c])/2);
+      if (dist < nearestdist)
+      {
+        nearest = c;
+        nearestdist = dist;
+      }
+    }
+  }
+  return nearest;
 }
-
-void updateallzones(void)
-{
-}
-
