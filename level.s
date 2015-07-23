@@ -715,11 +715,11 @@ AlignActorOnGround:
                 sta actXL,x
                 sta actYL,x
 AAOG_Loop:      jsr GetCharInfo
-                and #CI_GROUND|CI_OBSTACLE      ;Terminate loop if fall outside zone
+                and #CI_GROUND
                 bne AAOG_Done
-                lda #8*8
-                jsr MoveActorY
-                jmp AAOG_Loop
+                lda #8*8                        ;Will wrap the coordinates if ground not found
+                jsr MoveActorY                  ;If absolutely no ground at that X-position,
+                jmp AAOG_Loop                   ;loops forever
 
         ; Position actor to levelobject, coarsely only
         ;
