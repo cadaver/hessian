@@ -4445,6 +4445,7 @@ void savealldata(void)
   int totalactbitareasize = 0;
   int totalobjbitareasize = 0;
   int numlevels = 0;
+  int screensize = 0;
   memset(actorsperlevel, 0, sizeof actorsperlevel);
   memset(objectsperlevel, 0, sizeof objectsperlevel);
   memset(persistentobjectsperlevel, 0, sizeof persistentobjectsperlevel);
@@ -4721,6 +4722,7 @@ void savealldata(void)
               zoneoffsets[d] = datasize;
               datasize += 12 + zonesx[c]*zonesy[c];
               totalmapdatasize += zonesx[c]*zonesy[c];
+              screensize += (zonesx[c]/10)*((zonesy[c]+3)/5);
               d++;
             }
           }
@@ -4788,7 +4790,7 @@ void savealldata(void)
       {
         fprintf(out, "NUMLEVELS = %d\n\n", numlevels);
         fprintf(out, "WORLDSIZEBLOCKS = %d\n\n", totalmapdatasize);
-        fprintf(out, "WORLDSIZESCREENS = %d\n\n", (totalmapdatasize+30)/60);
+        fprintf(out, "WORLDSIZESCREENS = %d\n\n", screensize);
         fprintf(out, "LVLDATAACTTOTALSIZE = %d\n\n", totalactbitareasize);
         fprintf(out, "LVLOBJTOTALSIZE = %d\n\n", totalobjbitareasize);
 
