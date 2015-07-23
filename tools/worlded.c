@@ -3177,7 +3177,7 @@ void transferblock(int c, int d)
         if (currentzone < NUMZONES && zonecharset[currentzone] == charsetnum)
         {
           mapdata[e] = d;
-          blockusecount[charsetnum][e]++;
+          blockusecount[charsetnum][c]++;
         }
       }
     }

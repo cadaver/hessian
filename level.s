@@ -1031,6 +1031,11 @@ ULO_NoDoor:     lda lvlObjB,y                   ;Check for triggered activation
                 and #OBJ_MODEBITS+OBJ_ACTIVE
                 cmp #OBJMODE_TRIG
                 bne ULO_NoTrigger
+                lda lvlObjY,y                   ;If animating, play sound
+                bpl ULO_TriggerNoSound
+                lda #SFX_OBJECT
+                jsr PlaySfx
+ULO_TriggerNoSound:
                 jmp ActivateObject
 ULO_NoTrigger:  txa
                 and #OBJ_TYPEBITS               ;Check for entering a side door
@@ -1054,7 +1059,7 @@ ULO_EnterSideDoorLeft:
                 sbc #$00                        ;C=0
 ULO_EnterSideDoorCommon:
                 tax
-                lda lvlObjDL,y
+ULO_EnterDoor:  lda lvlObjDL,y
                 bne ULO_EnterDoorDest           ;Can also specify destination explicitly
                 lda lvlObjY,y
                 and #$7f
@@ -1085,14 +1090,12 @@ ULO_DestDoorLoop:
                 adc #$02
                 sbc temp2
                 cmp #$03
-                bcs ULO_DestDoorNext
                 tya
-                bpl ULO_EnterDoorDest
+                bcc ULO_EnterDoorDest           ;Found!
 ULO_DestDoorNext:
                 iny
                 bpl ULO_DestDoorLoop            ;If door search fails, enter a random door. Will probably
                                                 ;show trashed graphics and/or kill the player character
-ULO_EnterDoor:  lda lvlObjDL,y
 ULO_EnterDoorDest:
                 and #$7f
                 sta ULO_DestDoorNum+1
