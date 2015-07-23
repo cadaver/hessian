@@ -1542,11 +1542,14 @@ void drawmap(void)
           gfx_line(x*divisor, y*divisor, x*divisor+divminusone, y*divisor+divminusone, 2);
           gfx_line(x*divisor+divminusone, y*divisor, x*divisor, y*divisor+divminusone, 2);
         }
-        // Draw screen edge indicators
-        if (((x+mapx) % 10) == 0)
-          gfx_line(x*divisor, y*divisor, x*divisor, y*divisor+divminusone, 12);
-        if (((y+mapy) % 6) == 0)
-          gfx_line(x*divisor, y*divisor, x*divisor+divminusone, y*divisor, 12);
+        // Draw screen edge indicators (only when not in map edit mode or zoomed out)
+        if (editmode != EM_MAP || zoomoutmode)
+        {
+          if (((x+mapx) % 10) == 0)
+            gfx_line(x*divisor, y*divisor, x*divisor, y*divisor+divminusone, 12);
+          if (((y+mapy) % 6) == 0)
+            gfx_line(x*divisor, y*divisor, x*divisor+divminusone, y*divisor, 12);
+        }
       }
     }
   }
@@ -1595,7 +1598,7 @@ void drawmap(void)
     }
   }
 
-  // Draw current zone edge indicators
+  // Draw current zone edge indicators. In map mode dislocate the left & up edges to make sure no block data is obscured
   if (zonesx[zonenum] && zonesy[zonenum])
   {
     int l,r,u,d;
@@ -1604,10 +1607,21 @@ void drawmap(void)
     r = l + zonesx[zonenum]-1;
     u = zoney[zonenum] - mapy;
     d = u + zonesy[zonenum]-1;
-    gfx_line(l*divisor,u*divisor,r*divisor+divisor,u*divisor,7);
-    gfx_line(l*divisor,u*divisor,l*divisor,d*divisor+divisor,7);
-    gfx_line(l*divisor,d*divisor+divisor,r*divisor+divisor,d*divisor+divisor,7);
-    gfx_line(r*divisor+divisor,u*divisor,r*divisor+divisor,d*divisor+divisor,7);
+    l *= divisor;
+    r *= divisor;
+    r += divisor;
+    u *= divisor;
+    d *= divisor;
+    d += divisor;
+    if (editmode == EM_MAP && !zoomoutmode)
+    {
+      l--;
+      u--;
+    }
+    gfx_line(l,u,r,u,7);
+    gfx_line(l,u,l,d,7);
+    gfx_line(l,d,r,d,7);
+    gfx_line(r,u,r,d,7);
   }
 
   // Clean up lines that spill to the status area
