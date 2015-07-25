@@ -30,7 +30,7 @@ clean:
 hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak \
-	charset00.pak charset01.pak charset02.pak level00.pak level01.pak level02.pak \
+	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak level00.pak level01.pak level02.pak level03.pak \
 	common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
@@ -259,6 +259,18 @@ charset02.pak: charset02.s memory.s bg/world02.blk bg/world02.bli bg/world02.chi
 	pchunk2 bg/world02.blk charset02_2.pak
 	filejoin charset02_1.pak+charset02_2.pak charset02.pak
 
+charset03.pak: charset03.s memory.s bg/world03.blk bg/world03.bli bg/world03.chi bg/world03.chc bg/world03.chr
+	dasm charset03.s -ocharset03_1.bin -f3
+	pack2 charset03_1.bin charset03_1.pak
+	pchunk2 bg/world03.blk charset03_2.pak
+	filejoin charset03_1.pak+charset03_2.pak charset03.pak
+
+charset04.pak: charset04.s memory.s bg/world04.blk bg/world04.bli bg/world04.chi bg/world04.chc bg/world04.chr
+	dasm charset04.s -ocharset04_1.bin -f3
+	pack2 charset04_1.bin charset04_1.pak
+	pchunk2 bg/world04.blk charset04_2.pak
+	filejoin charset04_1.pak+charset04_2.pak charset04.pak
+
 level00.pak: bg/world00.map bg/world00.lvo bg/world00.lva
 	pack2 bg/world00.lvo level00_1.pak
 	pack2 bg/world00.lva level00_2.pak
@@ -276,6 +288,12 @@ level02.pak: bg/world02.map bg/world02.lvo bg/world02.lva
 	pack2 bg/world02.lva level02_2.pak
 	pchunk2 bg/world02.map level02_3.pak
 	filejoin level02_1.pak+level02_2.pak+level02_3.pak level02.pak
+
+level03.pak: bg/world03.map bg/world03.lvo bg/world03.lva
+	pack2 bg/world03.lvo level03_1.pak
+	pack2 bg/world03.lva level03_2.pak
+	pchunk2 bg/world03.map level03_3.pak
+	filejoin level03_1.pak+level03_2.pak+level03_3.pak level03.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak

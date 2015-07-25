@@ -11,9 +11,12 @@ playerba.pak 08
 level00.pak 10
 level01.pak 11
 level02.pak 12
+level03.pak 13
 charset00.pak 18
 charset01.pak 19
 charset02.pak 1a
+charset03.pak 1b
+charset04.pak 1c
 music00.pak 20
 music01.pak 21
 music02.pak 22

@@ -346,7 +346,9 @@ FNL_NegativeDone:
                 adc lvlLimitL,x             ;Add level X origin in screens
                 sta temp5
                 ldx #NUMLEVELS-1
-FNL_Loop:       lda temp5
+FNL_Loop:       cpx levelNum                ;Current level is always excluded
+                beq FNL_Next
+                lda temp5
                 cmp lvlLimitL,x
                 bcc FNL_Next
                 cmp lvlLimitR,x
@@ -385,10 +387,10 @@ FNL_NewLevelNum:lda #$00
         ; Returns: -
         ; Modifies: A,X,Y,loader temp regs
 
-EnsureCharSet:  ldy #ZONEH_CHARSET              ;Switch charset if required
+EnsureCharSet:  ldy #ZONEH_CHARSET
                 lda (zoneLo),y
 ECS_LoadedCharSet:
-                cmp #$ff
+                cmp #$ff                        ;Switch charset if required
                 beq ECS_HasCharSet
                 sta ECS_LoadedCharSet+1
                 ldx #F_CHARSET
@@ -1101,10 +1103,6 @@ ULO_EnterDoorDest:
                 sta ULO_DestDoorNum+1
                 jsr RemoveLevelActors
                 jsr BlankScreen                 ;X=0 on return
-                stx actSX+ACTI_PLAYER           ;Stop X-movement
-                jsr MH_StandAnim
-                jsr MH_SetGrounded
-                jsr MH_ResetFall
 ULO_DestDoorNum:ldy #$00
                 jsr SetActorAtObject
                 jsr ActivateObject              ;Activate the door that was entered
@@ -1115,6 +1113,10 @@ ULO_DestDoorNum:ldy #$00
                 ror
                 sta actD+ACTI_PLAYER
                 ldx #ACTI_PLAYER
+                stx actSX+ACTI_PLAYER           ;Stop X-movement
+                jsr MH_StandAnim
+                jsr MH_SetGrounded
+                jsr MH_ResetFall
                 jsr AlignActorOnGround
                 ldy #ZONEH_BG1
                 lda (zoneLo),y                  ;Check for save-disabled zone
