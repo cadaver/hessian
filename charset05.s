@@ -22,14 +22,14 @@ UL_LightState:  cpy #$01
                 ldy #2
 UL_ToggleLightLoop:
                 ldx charOffsetTbl,y
-                lda chars+25*8,x
+                lda chars+25*8+4,x
                 eor eorValue1Tbl,y
-                sta chars+25*8,x
-                sta chars+25*8+3,x
-                lda chars+25*8+1,x
+                sta chars+25*8+4,x
+                sta chars+25*8+7,x
+                lda chars+25*8+2,x
                 eor eorValue2Tbl,y
-                sta chars+25*8+1,x
                 sta chars+25*8+2,x
+                sta chars+25*8+6,x
                 dey
                 bpl UL_ToggleLightLoop
 UL_NoLightAnim: ldx #$00
