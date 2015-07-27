@@ -26,12 +26,12 @@ titleTexts      = chars+608+168*2
 ;START_Y         = $1d00
 
 ;START_LEVEL     = $01                          ;Courtyard
-;START_X         = $0280
+;START_X         = $3480
 ;START_Y         = $1d00
 
-START_LEVEL     = $03                           ;Security center
-START_X         = $0b80
-START_Y         = $1500
+START_LEVEL     = $03                           ;Service tunnels
+START_X         = $3380
+START_Y         = $2100
 
                 org scriptCodeStart
 

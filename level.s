@@ -328,7 +328,8 @@ ECS_HasCharSet: rts
         ; Returns: new level loaded, X & Y new target coords
         ; Modifies: A,X,Y,temp regs,loader temp regs
 
-FindNewLevel:   lda temp1                   ;Convert X coord to screens
+FindNewLevel:   inc $d020
+                lda temp1                   ;Convert X coord to screens
                 cmp #$ff                    ;Handle -1 (moving left out of level) as a special case
                 bne FNL_NotNegative
                 lda #$ff
@@ -345,20 +346,20 @@ FNL_NegativeDone:
                 clc
                 adc lvlLimitL,x             ;Add level X origin in screens
                 sta temp5
-                ldx #NUMLEVELS-1
+                ldx #$00
 FNL_Loop:       cpx levelNum                ;Current level is always excluded
                 beq FNL_Next
-                lda temp5
-                cmp lvlLimitL,x
+                lda temp5                   ;Note: if there's ambiguity in bounds
+                cmp lvlLimitL,x             ;the first matching level number is used
                 bcc FNL_Next
-                cmp lvlLimitR,x
+                cmp lvlLimitR,x             
                 bcs FNL_Next
                 lda temp2                   ;Y coordinates are always just blocks
                 cmp lvlLimitU,x
                 bcc FNL_Next
                 cmp lvlLimitD,x
                 bcc FNL_Found
-FNL_Next:       dex
+FNL_Next:       inx
                 bpl FNL_Loop                ;Will produce rubbish result if not found
 FNL_Found:      stx FNL_NewLevelNum+1
                 lda temp5
@@ -633,6 +634,8 @@ AOD_Done:       rts
         ; Returns: temp2: object number
         ; Modifies: A,X,Y,temp vars
 
+AO_Chain:       lda lvlObjDL,y
+                tay
 ActivateObject: sty temp2
                 lda lvlObjB,y                   ;Make sure that is inactive
                 bmi AO_Done
@@ -656,7 +659,7 @@ AO_NoAutoDeact: jsr AnimateObjectActivation     ;Animate object if necessary
                 pla
                 and #OBJ_TYPEBITS               ;Check for type-specific action
                 cmp #OBJTYPE_CHAIN
-                beq ActivateObject
+                beq AO_Chain
                 cmp #OBJTYPE_SCRIPT
                 beq AO_Script
                 cmp #OBJTYPE_SWITCH

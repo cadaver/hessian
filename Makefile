@@ -30,7 +30,8 @@ clean:
 hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak \
-	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak level00.pak level01.pak level02.pak level03.pak \
+	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak \
+	level00.pak level01.pak level02.pak level03.pak level04.pak \
 	common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
@@ -271,6 +272,12 @@ charset04.pak: charset04.s memory.s bg/world04.blk bg/world04.bli bg/world04.chi
 	pchunk2 bg/world04.blk charset04_2.pak
 	filejoin charset04_1.pak+charset04_2.pak charset04.pak
 
+charset05.pak: charset05.s memory.s bg/world05.blk bg/world05.bli bg/world05.chi bg/world05.chc bg/world05.chr
+	dasm charset05.s -ocharset05_1.bin -f3
+	pack2 charset05_1.bin charset05_1.pak
+	pchunk2 bg/world05.blk charset05_2.pak
+	filejoin charset05_1.pak+charset05_2.pak charset05.pak
+
 level00.pak: bg/world00.map bg/world00.lvo bg/world00.lva
 	pack2 bg/world00.lvo level00_1.pak
 	pack2 bg/world00.lva level00_2.pak
@@ -294,6 +301,12 @@ level03.pak: bg/world03.map bg/world03.lvo bg/world03.lva
 	pack2 bg/world03.lva level03_2.pak
 	pchunk2 bg/world03.map level03_3.pak
 	filejoin level03_1.pak+level03_2.pak+level03_3.pak level03.pak
+
+level04.pak: bg/world04.map bg/world04.lvo bg/world04.lva
+	pack2 bg/world04.lvo level04_1.pak
+	pack2 bg/world04.lva level04_2.pak
+	pchunk2 bg/world04.map level04_3.pak
+	filejoin level04_1.pak+level04_2.pak+level04_3.pak level04.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak

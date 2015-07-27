@@ -26,9 +26,9 @@ UL_ToggleLightLoop:
                 eor eorValue1Tbl,y
                 sta chars+25*8+4,x
                 sta chars+25*8+7,x
-                lda chars+25*8+2,x
+                lda chars+25*8+5,x
                 eor eorValue2Tbl,y
-                sta chars+25*8+2,x
+                sta chars+25*8+5,x
                 sta chars+25*8+6,x
                 dey
                 bpl UL_ToggleLightLoop
