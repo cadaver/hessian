@@ -328,8 +328,7 @@ ECS_HasCharSet: rts
         ; Returns: new level loaded, X & Y new target coords
         ; Modifies: A,X,Y,temp regs,loader temp regs
 
-FindNewLevel:   inc $d020
-                lda temp1                   ;Convert X coord to screens
+FindNewLevel:   lda temp1                   ;Convert X coord to screens
                 cmp #$ff                    ;Handle -1 (moving left out of level) as a special case
                 bne FNL_NotNegative
                 lda #$ff
@@ -685,7 +684,7 @@ AO_Toggle:      lda lvlObjDL,y
 AO_Reveal:      lda lvlObjX,y
                 sta AO_RevealXCmp+1
                 lda lvlObjY,y
-                ora #$80
+                ora #$80                        ;Check for hidden bit
                 sta AO_RevealYCmp+1
                 ldx #MAX_LVLACT-1
 AO_RevealLoop:  lda lvlActT,x
