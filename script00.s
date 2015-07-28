@@ -29,9 +29,10 @@ titleTexts      = chars+608+168*2
 ;START_X         = $3480
 ;START_Y         = $1d00
 
-START_LEVEL     = $03                           ;Service tunnels
-START_X         = $3380
+START_LEVEL     = $02                          ;Entrance, next to car park
+START_X         = $2980
 START_Y         = $2100
+
 
                 org scriptCodeStart
 
