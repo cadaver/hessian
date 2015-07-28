@@ -41,8 +41,8 @@ lvlLimitL:
                 dc.b 13
                 dc.b 29
                 dc.b 30
-                dc.b 41
                 dc.b 40
+                dc.b 45
 lvlLimitR:
                 dc.b 18
                 dc.b 33
@@ -56,7 +56,7 @@ lvlLimitU:
                 dc.b 14
                 dc.b 30
                 dc.b 3
-                dc.b 22
+                dc.b 24
 lvlLimitD:
                 dc.b 34
                 dc.b 48
