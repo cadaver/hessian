@@ -34,10 +34,10 @@ BgAnimSub:      and #$03
                 lda lightTbl,y
                 rts
 
-lightTbl:       dc.b %10101000
-                dc.b %10101100
-                dc.b %11101000
-                dc.b %11101100
+lightTbl:       dc.b %01010110
+                dc.b %01011110
+                dc.b %11010110
+                dc.b %11011110
 
 bgAnimDelay:    dc.b 0
 bgAnimIndex:    dc.b 0
