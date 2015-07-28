@@ -1556,10 +1556,11 @@ void drawmap(void)
 
   zonenum = oldzone;
 
-  // Draw level edge indicators
   if (editmode == EM_ZONE)
   {
     int c;
+    int levelcolors[] = {4,5,8,10,14,15};
+    int col = 0;
 
     // In zoomed out zone edit mode, draw bounds for all zones
     if (zoomoutmode)
@@ -1581,6 +1582,7 @@ void drawmap(void)
       }
     }
 
+    // Draw level bounds, colorcoded
     for (c = 0; c < NUMLEVELS; c++)
     {
       if (levelsx[c] && levelsy[c])
@@ -1590,10 +1592,12 @@ void drawmap(void)
         r = l + levelsx[c]-1;
         u = levely[c] - mapy;
         d = u + levelsy[c]-1;
-        gfx_line(l*divisor,u*divisor,r*divisor+divisor,u*divisor,10);
-        gfx_line(l*divisor,u*divisor,l*divisor,d*divisor+divisor,10);
-        gfx_line(l*divisor,d*divisor+divisor,r*divisor+divisor,d*divisor+divisor,10);
-        gfx_line(r*divisor+divisor,u*divisor,r*divisor+divisor,d*divisor+divisor,10);
+        gfx_line(l*divisor,u*divisor,r*divisor+divisor,u*divisor,levelcolors[col]);
+        gfx_line(l*divisor,u*divisor,l*divisor,d*divisor+divisor,levelcolors[col]);
+        gfx_line(l*divisor,d*divisor+divisor,r*divisor+divisor,d*divisor+divisor,levelcolors[col]);
+        gfx_line(r*divisor+divisor,u*divisor,r*divisor+divisor,d*divisor+divisor,levelcolors[col]);
+        col++;
+        if (col == 6) col = 0;
       }
     }
   }
