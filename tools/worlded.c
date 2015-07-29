@@ -1426,7 +1426,7 @@ void map_mainloop(void)
               {
                 int b = mapdata[mapx+x+(mapy+y)*mapsx];
                 int bx,by;
-                currentzone = findzonefast(mapx, mapy+y, currentzone);
+                currentzone = findzonefast(mapx+x, mapy+y, currentzone);
                 if (currentzone < NUMZONES)
                   currentcharset = zonecharset[currentzone];
   
