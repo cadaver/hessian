@@ -53,7 +53,7 @@ bgAnimIndex:    dc.b 0
                 incbin bg/world06.bli
 
                 org charsetLoadName
-                dc.b "HIDEOUT",0
+                dc.b "SERVICE TUNNELS",0
 
                 org charsetLoadWaterSplashColor
                 dc.b 0                          ;Water splash color override

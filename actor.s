@@ -1026,18 +1026,19 @@ GCI_Common3:    lsr
                 lsr
                 lsr
                 sta zpBitsLo
-                tya
-                bmi GCI_OutsideUD
-                lda mapTblHi,y
-                beq GCI_OutsideUD
-                sta zpDestHi
+                cpy limitU
+                bcc GCI_Outside
+                cpy limitD
+                bcs GCI_OutsideBelow
                 lda mapTblLo,y
                 sta zpDestLo
+                lda mapTblHi,y
+                sta zpDestHi
                 ldy zpBitsHi
                 cpy limitL
-                bcc GCI_OutsideLR
+                bcc GCI_Outside
                 cpy limitR
-                bcs GCI_OutsideLR
+                bcs GCI_Outside
                 lda (zpDestLo),y                ;Get block from map
                 tay
                 lda blkTblLo,y
@@ -1049,10 +1050,11 @@ GCI_Common3:    lsr
                 tay
                 lda charInfo,y                  ;Get charinfo
                 rts
-GCI_OutsideUD:  lda #$00                        ;Return emptiness above/below
+GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle outside zone
+                rts                             ;(left,right,above)
+GCI_OutsideBelow:                               ;Return emptiness below
+                lda #$00
                 rts
-GCI_OutsideLR:  lda #CI_OBSTACLE                ;and obstacle left/right so that
-                rts                             ;sidedoors work properly
 
         ; Get char collision info from the actor's position with Y offset
         ;

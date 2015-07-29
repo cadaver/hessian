@@ -143,9 +143,9 @@ SL_YPosOk2:     lda #$04
                 bpl SL_YDone
 SL_YNeg:        lda blockY                      ;Are we on the edge of map?
                 bne SL_YNegOk                   ;(top)
-                lda mapY
-                cmp limitU
-                beq SL_YZero
+                lda limitU
+                cmp mapY
+                bcs SL_YZero
 SL_YNegOk:      lda #$03
                 dec blockY                      ;Update block & map-coords
                 bpl SL_YNegOk2
