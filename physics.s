@@ -221,15 +221,11 @@ MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground
                 tay                             ;crossed a char vertically while on a slope, so may need
                 lsr                             ;to adjust position either up or down, or the ground might
                 bcs MWG_FinalizeGround          ;actually have disintegrated)
-                lda temp4                       ;If already has obstacle at head, do not move up
-                jsr GetCharInfoOffset
-                and #CI_OBSTACLE
-                bne MWG_CantMoveUp
                 jsr GetCharInfo1Above           ;Check first above
                 tay
                 lsr
                 bcs MWG_FinalizeGroundAbove
-MWG_CantMoveUp: jsr GetCharInfo1Below           ;Then below
+                jsr GetCharInfo1Below           ;Then below
                 tay
                 lsr
                 bcs MWG_FinalizeGroundBelow
