@@ -512,7 +512,7 @@ UA_ItemFlashCounter:                            ;Get color override for items + 
                 sta FlashActor+1
                 and #$07
                 tax
-                lda panelScreen+23*40+9
+                lda panelScreen+PANELROW*40+9
                 cmp #"H"
                 bne UA_NoHealthBarFlash
                 txa
@@ -520,13 +520,13 @@ UA_ItemFlashCounter:                            ;Get color override for items + 
                 cpy #LOW_HEALTH+1
                 bcc UA_FlashHealth
                 lda #$01
-UA_FlashHealth: sta colors+23*40+9
+UA_FlashHealth: sta colors+PANELROW*40+9
                 txa
                 ldy battery+1
                 cpy #LOW_BATTERY+1
                 bcc UA_FlashBattery
                 lda #$01
-UA_FlashBattery:sta colors+23*40+23
+UA_FlashBattery:sta colors+PANELROW*40+23
 UA_NoHealthBarFlash:
                 lda upgrade                     ;Fist II flashing effect when air is toxic
                 bmi UA_NoToxinEffect

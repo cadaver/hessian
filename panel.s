@@ -100,7 +100,7 @@ UpdatePanel:    lda menuMode                    ;Update health bars only when no
                 adc #$00                        ;Round upward
                 ldx #$01
                 jsr DrawHealthBar
-                lda oxygen                   ;Show oxygen meter if less than maximum
+                lda oxygen                      ;Show oxygen meter if less than maximum
                 cmp #MAX_OXYGEN
                 bcs UP_ClearOxygen
                 lsr
