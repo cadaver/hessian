@@ -19,7 +19,7 @@ See also [CovertBitops homepage](http://cadaver.homeftp.net).
 
 ## Code license
 
-Program oode (.s files) & build scripts are licensed under the MIT license:
+Program code (.s files) & build scripts are licensed under the MIT license:
 
 Copyright (c) 2007-2015 Lasse Öörni
 
