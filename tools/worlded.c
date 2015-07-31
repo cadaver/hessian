@@ -4495,6 +4495,19 @@ void savealldata(void)
 
       if (!strlen(ib1))
         return;
+
+      // Check first that we have some data (prevent mistaken save of empty data over existing)
+      for (s = 0; s < NUMLEVELS; ++s)
+      {
+        if (!levelsx[s] || !levelsy[s])
+          continue;
+        if (numlevels < s+1)
+          numlevels = s+1;
+      }
+      
+      if (!numlevels)
+        return;
+
       strcpy(levelname, ib1);
 
       for (s = 0; s < NUMCHARSETS; s++)
