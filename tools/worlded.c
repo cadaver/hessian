@@ -3154,12 +3154,13 @@ void findusedblocksandchars(void)
 
 void transferchar(int c, int d)
 {
-  int e;
+  int e,v;
   if (c == d) return;
   for (e = 0; e < 8; e++)
   {
     chardata[charsetnum][d*8+e] = chardata[charsetnum][c*8+e];
     chardata[charsetnum][c*8+e] = 0;
+    v += chardata[charsetnum][d*8+e];
   }
   for (e = 0; e < BLOCKS*16; e++)
   {
@@ -3167,8 +3168,12 @@ void transferchar(int c, int d)
   }
   chinfo[charsetnum][d] = chinfo[charsetnum][c];
   chinfo[charsetnum][c] = 0;
-  chcol[charsetnum][d] = chcol[charsetnum][c];
-  chcol[charsetnum][c] = 9;
+  // If char was empty, the color does not need to be copied
+  if (v)
+  {
+    chcol[charsetnum][d] = chcol[charsetnum][c];
+    chcol[charsetnum][c] = 9;
+  }
 }
 
 void transferblock(int c, int d)
@@ -3469,7 +3474,7 @@ void reorganizedata()
       newblk++;
     }
   }
-  
+
   // Rewrite mapdata
   for (z = 0; z < NUMZONES; z++)
   {
