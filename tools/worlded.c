@@ -991,33 +991,61 @@ void zone_mainloop(void)
         }
         else
         {
-          int px = x / 10 * 10;
-          int py = y;
-          int nx = zonex[zonenum];
-          int ny = zoney[zonenum];
-          int nsx = zonesx[zonenum];
-          int nsy = zonesy[zonenum];
-          if (px < nx)
+          if (!shiftdown)
           {
-            nx = px;
-            nsx = zonex[zonenum]+zonesx[zonenum]-nx;
+            int px = x / 10 * 10;
+            int py = y;
+            int nx = zonex[zonenum];
+            int ny = zoney[zonenum];
+            int nsx = zonesx[zonenum];
+            int nsy = zonesy[zonenum];
+            if (px < nx)
+            {
+              nx = px;
+              nsx = zonex[zonenum]+zonesx[zonenum]-nx;
+            }
+            else if (px+10-zonex[zonenum] > zonesx[zonenum])
+              nsx = px+10-zonex[zonenum];
+            if (py < ny)
+            {
+              ny = py;
+              nsy = zoney[zonenum]+zonesy[zonenum]-ny;
+            }
+            else if (py+1-zoney[zonenum] > zonesy[zonenum])
+              nsy = py+1-zoney[zonenum];
+            if (checkzonelegal(zonenum, nx, ny, nsx, nsy))
+            {
+              zonex[zonenum] = nx;
+              zoney[zonenum] = ny;
+              zonesx[zonenum] = nsx;
+              zonesy[zonenum] = nsy;
+              calculatelevelorigins();
+            }
           }
-          else if (px+10-zonex[zonenum] > zonesx[zonenum])
-            nsx = px+10-zonex[zonenum];
-          if (py < ny)
+          else
           {
-            ny = py;
-            nsy = zoney[zonenum]+zonesy[zonenum]-ny;
-          }
-          else if (py+1-zoney[zonenum] > zonesy[zonenum])
-            nsy = py+1-zoney[zonenum];
-          if (checkzonelegal(zonenum, nx, ny, nsx, nsy))
-          {
-            zonex[zonenum] = nx;
-            zoney[zonenum] = ny;
-            zonesx[zonenum] = nsx;
-            zonesy[zonenum] = nsy;
-            calculatelevelorigins();
+            if (x == zonex[zonenum] && zonesx[zonenum] > 10)
+            {
+              zonex[zonenum] += 10;
+              zonesx[zonenum] -= 10;
+              calculatelevelorigins();
+            }
+            else if (x == zonex[zonenum] + zonesx[zonenum] - 1 && zonesx[zonenum] > 10)
+            {
+              zonesx[zonenum] -= 10;
+              calculatelevelorigins();
+            }
+            else if (y == zoney[zonenum] && zonesy[zonenum] > 1)
+            {
+              zoney[zonenum] += 1;
+              zonesy[zonenum] -= 1;
+              calculatelevelorigins();
+            }
+            else if (y == zoney[zonenum] + zonesy[zonenum] - 1 && zonesy[zonenum] > 1)
+            {
+              zonesy[zonenum] -= 1;
+              calculatelevelorigins();
+            }
           }
         }
       }
