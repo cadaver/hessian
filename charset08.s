@@ -7,12 +7,32 @@
 
 UpdateLevel:    inc bgAnimDelay
                 lda bgAnimDelay
+                tay
                 and #$1f
                 bne ULSkipCursor
                 lda chars+166*8+6
                 eor #%00100000
                 sta chars+166*8+6
-ULSkipCursor:   rts
+ULSkipCursor:   tya
+                and #$07                        ;Todo: must be conditional on the generator
+                bne ULSkipGenerator             ;actually being switched on
+                ldx #$06
+ULGeneratorLoop:lda chars+227*8,x
+                asl
+                adc #$00
+                asl
+                adc #$00
+                sta chars+227*8,x
+                dex
+                bpl ULGeneratorLoop
+ULSkipGenerator:tya
+                lsr
+                bcc ULSkipLaser
+                lda chars+246*8+1
+                eor #%01010101
+                sta chars+246*8+1
+                sta chars+246*8+6
+ULSkipLaser:    rts
 
 bgAnimDelay:    dc.b 0
 
