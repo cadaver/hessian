@@ -5,7 +5,16 @@
 
                 org lvlCodeStart
 
-UpdateLevel:    rts
+UpdateLevel:    inc bgAnimDelay
+                lda bgAnimDelay
+                and #$1f
+                bne ULSkipCursor
+                lda chars+166*8+6
+                eor #%00100000
+                sta chars+166*8+6
+ULSkipCursor:   rts
+
+bgAnimDelay:    dc.b 0
 
                 org charInfo
                 incbin bg/world08.chi
