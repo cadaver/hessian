@@ -5,7 +5,38 @@
 
                 org lvlCodeStart
 
-UpdateLevel:    rts
+UpdateLevel:    inc animDelay
+                lda animDelay
+                and #$07
+                bne SkipMonitor
+                ldx #$00
+ScrollMonitor:  lda chars+216*8+1,x
+                sta chars+216*8,x
+                lda chars+217*8+1,x
+                sta chars+217*8,x
+                inx
+                cpx #$07
+                bcc ScrollMonitor
+                lda animDelay
+                and #$08
+                beq EmptyRow
+                inc randomIndex
+                ldx randomIndex
+                lda randomAreaStart,x
+                ora #%10101010
+                sta chars+216*8+7
+                lda randomAreaStart+$100,x
+                ora #%10101010
+                sta chars+217*8+7
+SkipMonitor:    rts
+EmptyRow:       lda #$ff
+                sta chars+216*8+7
+                sta chars+217*8+7
+                rts
+
+
+animDelay:      dc.b 0
+randomIndex:    dc.b 0
 
                 org charInfo
                 incbin bg/world07.chi
