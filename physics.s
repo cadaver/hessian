@@ -217,20 +217,29 @@ MWG_HitGround:  lda #$00
                 sta actMB,x
                 rts
 
-MWG_OnGround:   jsr GetCharInfo                 ;Check that we still have ground under feet (may have
-                tay                             ;crossed a char vertically while on a slope, so may need
-                lsr                             ;to adjust position either up or down, or the ground might
-                bcs MWG_FinalizeGround          ;actually have disintegrated)
-                jsr GetCharInfo1Above           ;Check first above
+MWG_OnGround:   cpx #MAX_COMPLEXACT
+                bcs MWG_PreferLevel
+                lda actMoveCtrl,x
+                and #JOY_UP
+                beq MWG_PreferLevel
+MWG_PreferUp:   jsr GetCharInfo1Above           ;Check first above if joystick held up
                 tay
                 lsr
                 bcs MWG_FinalizeGroundAbove
+MWG_PreferLevel:jsr GetCharInfo                 ;Then level
+                tay
+                lsr
+                bcs MWG_FinalizeGround
                 jsr GetCharInfo1Below           ;Then below
                 tay
                 lsr
                 bcs MWG_FinalizeGroundBelow
+                jsr GetCharInfo1Above           ;Finally above
+                tay                             ;(note: if player is holding up and is
+                lsr                             ;about to fall, above will be checked twice,
+                bcs MWG_FinalizeGroundAbove     ;but it's just a one frame CPU hit)
 MWG_StartFalling:
-                lda temp5                       ;Start falling
+                lda temp5                       ;If no ground anywhere, start falling
                 and #$ff-MB_GROUNDED
                 ora #MB_STARTFALLING
                 sta actMB,x

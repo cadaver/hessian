@@ -32,11 +32,11 @@ txtInstructions:dc.b "USE JOYSTICK IN PORT 2 AND KEYS",0
 txtInstructions2:
                 dc.b "MOVEMENT CONTROLS (FIRE NOT PRESSED)",0
                 dc.b 0
-                dc.b "JUMP  JUMP/CLIMB UP/ACTIVATE  JUMP",0
+                dc.b "JUMP    CLIMB/ACTIVATE    JUMP",0
                 dc.b 0
-                dc.b "GO LEFT   +   GO RIGHT",0
+                dc.b "GO LEFT  +  GO RIGHT",0
                 dc.b 0
-                dc.b "ROLL  DUCK/CLIMB DOWN/PICKUP  ROLL",0
+                dc.b "ROLL  DUCK/CLIMB/PICK UP  ROLL",0
 
 txtInstructions3:
                 dc.b "TO ATTACK, PRESS FIRE AND DIRECTION",0

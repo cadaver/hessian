@@ -329,7 +329,7 @@ MH_NoWallFlip:  lda #$00
                 sta actSX,x
 MH_NoHitWall:   lda temp1
                 lsr                             ;Grounded bit to C
-                and #MB_HITCEILING/2
+                and #MB_HITCEILING/2            ;If ceiling hitting head, do not allow jump
                 bne MH_NoNewJump
                 bcc MH_NoNewJump
                 lda actCtrl,x                   ;When holding fire can not initiate jump
@@ -360,6 +360,9 @@ MH_NoOperate:   lda temp3
                 beq MH_NoInitClimbUp
                 jmp MH_InitClimb
 MH_NoInitClimbUp:
+                lda actMoveCtrl,x               ;Jump requires left/right input (as in MW4)
+                and #JOY_LEFT|JOY_RIGHT
+                beq MH_NoNewJump
                 lda temp3
                 and #AMF_JUMP
                 beq MH_NoNewJump
