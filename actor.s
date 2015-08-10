@@ -542,7 +542,6 @@ UA_ToxinEffectFrame:
                 sta Irq1_Bg3+1
 UA_NoToxinEffect:
                 ldx #MAX_ACT-1
-                stx Irq4_LevelUpdate+1          ;Enable level animation when unpaused
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex

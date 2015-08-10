@@ -400,6 +400,8 @@ ECS_LoadedCharSet:
 ECS_LoadCharSetError:
                 jsr LFR_ErrorPrompt
 ECS_RetryCharSet:
+                lda #$00
+                sta lvlAirToxinDelay            ;Make sure to disable parallax scrolling
                 lda #<lvlCodeStart              ;Load char animation code, charset and colors/infos
                 ldx #>lvlCodeStart
                 jsr LoadFile
@@ -413,7 +415,7 @@ ECS_CopyBlockInfo:
                 sta blockInfo,x
                 dex
                 bpl ECS_CopyBlockInfo
-                ldx #18
+                ldx #lvlPropertiesEnd-lvlPropertiesStart-1
 ECS_CopyLevelProperties:
                 lda charsetLoadName,x
                 sta lvlName,x
@@ -753,7 +755,9 @@ ULO_DoToxinDamage:
                 dec toxinDelay
                 bpl ULO_ToxinDelay
                 dey
-                sty toxinDelay
+                tya
+                and #$7f                        ;There may be extra control data in the high bit
+                sta toxinDelay
 ULO_DoDrowningDamage:
                 ldy #$ff
                 lda #DMG_DROWNING
@@ -852,9 +856,6 @@ ULO_WaterDamageNotFiltered:
                 lda actMB+ACTI_PLAYER
                 and #MB_INWATER
                 beq ULO_NoWaterDamage
-                tya
-                and #$7f
-                tay
                 jsr ULO_DoToxinDamage
 ULO_NoWaterDamage:
                 ldy #ZONEH_BG2

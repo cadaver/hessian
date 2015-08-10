@@ -61,13 +61,15 @@ TitleScreen:    jsr BlankScreen
 
         ; Load logo chars & clear screen
 
+                lda #$ff                        ;Mark game charset destroyed
+                sta ECS_LoadedCharSet+1
+                lda #$00
+                sta lvlAirToxinDelay            ;Make sure to disable parallax scrolling
                 lda #F_LOGO
                 jsr MakeFileName_Direct
                 lda #<logoStart
                 ldx #>logoStart
                 jsr LoadFileRetry
-                lda #$ff                        ;Mark game charset destroyed
-                sta ECS_LoadedCharSet+1
                 lda #$00                        ;Fade out colors initially
                 sta Irq1_Bg1+1
                 sta Irq1_Bg2+1

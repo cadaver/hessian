@@ -5,7 +5,8 @@
 
                 org lvlCodeStart
 
-UpdateLevel:    lda mapX
+UpdateLevel:    jmp UL_NoParallax
+UpdateParallax: lda mapX
                 asl
                 asl
                 ora blockX
@@ -37,8 +38,7 @@ UL_Reload:      ldy UL_XPos+1
 UL_NoReload:    inx
                 cpx #$08
                 bne UL_Loop
-                rts
-
+UL_NoParallax:  rts
 
                 org charInfo
                 incbin bg/world09.chi
@@ -56,4 +56,4 @@ UL_NoReload:    inx
                 org charsetLoadWaterSplashColor
                 dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
-                dc.b 0                          ;Air toxicity delay counter
+                dc.b $80                        ;Air toxicity delay counter + $80 parallax flag

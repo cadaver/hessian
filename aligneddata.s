@@ -391,6 +391,7 @@ lvlObjB:        ds.b MAX_LVLOBJ,0
 lvlObjDL:       ds.b MAX_LVLOBJ,0
 lvlObjDH:       ds.b MAX_LVLOBJ,0
 
+lvlPropertiesStart:
 lvlName:        ds.b 16,0
 lvlWaterSplashColor:
                 dc.b 0
@@ -398,6 +399,7 @@ lvlWaterToxinDelay:
                 dc.b 0
 lvlAirToxinDelay:
                 dc.b 0
+lvlPropertiesEnd:                
 
         ; Target list for AI / collision
         ; Must not page-cross, as selfmodifying code is used to read it
