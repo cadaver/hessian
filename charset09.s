@@ -38,7 +38,38 @@ UL_Reload:      ldy UL_XPos+1
 UL_NoReload:    inx
                 cpx #$08
                 bne UL_Loop
-UL_NoParallax:  rts
+                rts
+UL_NoParallax:  ldy chars+101*8+7
+                ldx #$06
+UL_WaterLoop:   lda chars+101*8,x
+                sta chars+101*8+1,x
+                dex
+                bpl UL_WaterLoop
+                sty chars+101*8
+                lda chars+101*8+7
+                and #%11111100
+                sta chars+102*8+7
+                inc bgDelay
+                inx
+                lda bgDelay
+                and #$07
+                bne UL_SkipWater1
+                jsr UL_ScrollWaterSub
+UL_SkipWater1:  inx
+                lda bgDelay
+                and #$0f
+                bne UL_SkipWater2
+UL_ScrollWaterSub:
+                jsr UL_ScrollWaterSub2
+UL_ScrollWaterSub2:
+                lda chars+104*8,x
+                asl
+                rol chars+103*8,x
+                adc #$00
+                sta chars+104*8,x
+UL_SkipWater2:  rts
+
+bgDelay:        dc.b 0
 
                 org charInfo
                 incbin bg/world09.chi
@@ -54,6 +85,6 @@ UL_NoParallax:  rts
                 dc.b "UNDERGROUND",0
 
                 org charsetLoadWaterSplashColor
-                dc.b 0                          ;Water splash color override
+                dc.b 3                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
                 dc.b $80                        ;Air toxicity delay counter + $80 parallax flag

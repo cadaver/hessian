@@ -826,6 +826,8 @@ MH_ExitWaterCommon:
                 lda actYL,x
                 and #$c0
                 sta actYL,x
+                lda #SFX_JUMP
+                jsr PlayMovementSound
                 lda #MB_GROUNDED
                 jsr MH_SetMoveBits              ;A=0 when returning, resets falling
                 sta actSY,x
