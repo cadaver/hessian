@@ -9,15 +9,8 @@ UpdateLevel:    lda mapX
                 asl
                 asl
                 ora blockX
-                sta UL_XAdd+1
-                lda mapY
-                asl
-                asl
-                ora blockY
-                sta UL_YAdd+1
-                lda Irq1_ScrollX+1
                 clc
-UL_XAdd:        adc #$00
+                adc Irq1_ScrollX+1
                 and #$07
                 asl
                 asl
@@ -25,8 +18,12 @@ UL_XAdd:        adc #$00
                 sta UL_XPos+1
                 adc #$08
                 sta UL_EndCmp+1
-                lda Irq1_ScrollY+1
-UL_YAdd:        adc #$00
+                lda mapY
+                asl
+                asl
+                ora blockY
+                clc
+                adc Irq1_ScrollY+1
                 and #$07
 UL_XPos:        ora #$00
                 tay
