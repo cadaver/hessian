@@ -63,9 +63,8 @@ TitleScreen:    jsr BlankScreen
 
                 lda #$ff                        ;Mark game charset destroyed
                 sta ECS_LoadedCharSet+1
-                lda #$00
-                sta lvlAirToxinDelay            ;Make sure to disable parallax scrolling
                 lda #F_LOGO
+                sta lvlParallaxFlag             ;Make sure to disable parallax scrolling
                 jsr MakeFileName_Direct
                 lda #<logoStart
                 ldx #>logoStart

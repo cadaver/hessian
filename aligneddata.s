@@ -397,9 +397,10 @@ lvlWaterSplashColor:
                 dc.b 0
 lvlWaterToxinDelay:
                 dc.b 0
+lvlParallaxFlag:
 lvlAirToxinDelay:
                 dc.b 0
-lvlPropertiesEnd:                
+lvlPropertiesEnd:
 
         ; Target list for AI / collision
         ; Must not page-cross, as selfmodifying code is used to read it

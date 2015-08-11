@@ -36,6 +36,7 @@ DOORENTRYDELAY  = 6
 AUTODEACTDELAY  = 12
 
 UpdateLevel     = lvlCodeStart
+UpdateParallax  = lvlCodeStart+3
 
 LoadLevelError: jsr LFR_ErrorPrompt
                 jmp LoadLevelRetry
@@ -394,14 +395,13 @@ ECS_LoadedCharSet:
                 beq ECS_HasCharSet
                 sta ECS_LoadedCharSet+1
                 ldx #F_CHARSET
+                stx lvlParallaxFlag             ;Disable parallax scrolling in existing charset (if any)
                 jsr MakeFileName
                 jsr BlankScreen                 ;Blank screen to make sure no animation
                 beq ECS_RetryCharSet            ;X=0 on return
 ECS_LoadCharSetError:
                 jsr LFR_ErrorPrompt
 ECS_RetryCharSet:
-                lda #$00
-                sta lvlAirToxinDelay            ;Make sure to disable parallax scrolling
                 lda #<lvlCodeStart              ;Load char animation code, charset and colors/infos
                 ldx #>lvlCodeStart
                 jsr LoadFile
@@ -416,7 +416,7 @@ ECS_CopyBlockInfo:
                 dex
                 bpl ECS_CopyBlockInfo
                 ldx #lvlPropertiesEnd-lvlPropertiesStart-1
-ECS_CopyLevelProperties:
+ECS_CopyLevelProperties:                        ;Copy level properties into place
                 lda charsetLoadName,x
                 sta lvlName,x
                 dex
