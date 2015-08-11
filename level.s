@@ -827,7 +827,7 @@ ULO_NoRecharge: lda actF1+ACTI_PLAYER           ;Check for player losing oxygen
                 bcc ULO_RestoreOxygen
                 lda #-3
                 jsr GetCharInfoOffset
-                and #CI_WATER
+                and #CI_WATER|CI_OBSTACLE
                 beq ULO_RestoreOxygen
                 lda actFd+ACTI_PLAYER
                 bne ULO_OxygenDone
