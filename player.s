@@ -45,7 +45,7 @@ LOW_BATTERY     = MAX_BATTERY/4
 LOW_HEALTH      = HP_PLAYER/4
 
 DRAIN_WALK      = 6                             ;When animation wraps
-DRAIN_SWIM      = 18                            ;When animation wraps
+DRAIN_SWIM      = 24                            ;When animation wraps
 DRAIN_CLIMB     = 3                             ;At each movement step
 DRAIN_JUMP      = 16
 DRAIN_ROLL      = 20
