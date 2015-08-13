@@ -840,10 +840,12 @@ ULO_NoRecharge: lda actF1+ACTI_PLAYER           ;Check for player losing oxygen
                 jmp ULO_OxygenDone
 ULO_RestoreOxygen:
                 lda oxygen
-                cmp #MAX_OXYGEN
+                cmp #MAX_OXYGEN-1
+                beq ULO_RestoreOne
                 bcs ULO_OxygenDone
-                inc oxygen
-                bcc ULO_OxygenDone
+ULO_RestoreTwo: inc oxygen
+ULO_RestoreOne: inc oxygen
+                bne ULO_OxygenDone
 ULO_DecreaseOxygen:
                 dec oxygen
 

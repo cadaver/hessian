@@ -1028,8 +1028,10 @@ GCI_Common3:    lsr
                 cpy limitU
                 bcc GCI_Outside
                 cpy limitD
-                bcs GCI_OutsideBelow
-                lda mapTblLo,y
+                bcc GCI_NoClampDown
+                ldy limitD                       ;Clamp to last row below zone
+                dey
+GCI_NoClampDown:lda mapTblLo,y
                 sta zpDestLo
                 lda mapTblHi,y
                 sta zpDestHi
@@ -1049,10 +1051,7 @@ GCI_Common3:    lsr
                 tay
                 lda charInfo,y                  ;Get charinfo
                 rts
-GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle outside zone
-                rts                             ;(left,right,above)
-GCI_OutsideBelow:                               ;Return emptiness below
-                lda #$00
+GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle at sides & above
                 rts
 
         ; Get char collision info from the actor's position with Y offset
