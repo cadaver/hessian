@@ -350,6 +350,12 @@ level07.pak: bg/world07.map bg/world07.lvo bg/world07.lva
 	pchunk2 bg/world07.map level07_3.pak
 	filejoin level07_1.pak+level07_2.pak+level07_3.pak level07.pak
 
+level08.pak: bg/world08.map bg/world08.lvo bg/world08.lva
+	pack2 bg/world08.lvo level08_1.pak
+	pack2 bg/world08.lva level08_2.pak
+	pchunk2 bg/world08.map level08_3.pak
+	filejoin level08_1.pak+level08_2.pak+level08_3.pak level08.pak
+
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak
 

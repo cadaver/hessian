@@ -46,7 +46,7 @@ titleTexts      = chars+608+168*2
 ;START_Y         = $1d00
 
 START_LEVEL     = $07                          ;Caves
-START_X         = $0080
+START_X         = $1e80
 START_Y         = $2200
 
                 org scriptCodeStart
