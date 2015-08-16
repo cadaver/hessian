@@ -1,8 +1,8 @@
 NUMLEVELS = 10
 
-WORLDSIZEBLOCKS = 15780
+WORLDSIZEBLOCKS = 15560
 
-WORLDSIZESCREENS = 351
+WORLDSIZESCREENS = 347
 
 LVLDATAACTTOTALSIZE = 10
 
@@ -83,7 +83,7 @@ lvlLimitU:
                 dc.b 3
                 dc.b 5
                 dc.b 30
-                dc.b 62
+                dc.b 60
                 dc.b 20
 lvlLimitD:
                 dc.b 34
@@ -93,6 +93,6 @@ lvlLimitD:
                 dc.b 56
                 dc.b 26
                 dc.b 35
-                dc.b 68
-                dc.b 68
+                dc.b 66
+                dc.b 66
                 dc.b 30

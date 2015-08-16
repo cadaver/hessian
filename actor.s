@@ -1024,11 +1024,14 @@ GCI_Common3:    lsr
                 lsr
                 lsr
                 lsr
-                sta zpBitsLo
                 cpy limitU
                 bcc GCI_Outside
                 cpy limitD
-                bcs GCI_Outside
+                bcc GCI_NoLimitDown
+                ldy limitD
+                dey
+                ora #$0c
+GCI_NoLimitDown:sta zpBitsLo
                 lda mapTblLo,y
                 sta zpDestLo
                 lda mapTblHi,y
@@ -1049,7 +1052,7 @@ GCI_Common3:    lsr
                 tay
                 lda charInfo,y                  ;Get charinfo
                 rts
-GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle outside zone
+GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle outside zone left, right, above
                 rts
 
         ; Get char collision info from the actor's position with Y offset
