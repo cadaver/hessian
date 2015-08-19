@@ -7,24 +7,55 @@
 
 UpdateLevel:    inc bgDelay
                 lda bgDelay
+                tay
                 and #$07
                 bne UL_SkipWater1
-                ldx #$00
+                tax
                 jsr UL_ScrollWaterSub
-                ldy chars+102*8
+                lda chars+102*8
+                pha
 UL_ScrollBubbles:
                 lda chars+102*8+1,x
                 sta chars+102*8,x
                 inx
                 cpx #$06
                 bcc UL_ScrollBubbles
-                sty chars+102*8+6
-UL_SkipWater1:  lda bgDelay
+                pla
+                sta chars+102*8+6
+UL_SkipWater1:  tya
                 and #$0f
                 bne UL_SkipWater2
                 ldx #$02
                 jsr UL_ScrollWaterSub
-UL_SkipWater2:  rts
+UL_SkipWater2:  tya
+                and #$1f
+                bne ULSkipCursor
+                lda chars+178*8+6
+                eor #%00100000
+                sta chars+178*8+6
+ULSkipCursor:   tya
+                and #$03
+                bne ULSkipLights
+                tax
+                inc ULRandom+1
+ULRandom:       lda randomAreaStart
+                pha
+                jsr ULLightSub
+                pla
+                lsr
+                lsr
+                pha
+                ldx #$08
+                jsr ULLightSub
+                pla
+                lsr
+                lsr
+                ldx #$10
+ULLightSub:     and #$03
+                tay
+                lda lightTbl,y
+                sta chars+238*8+2,x
+ULSkipLights:   rts
 
 UL_ScrollWaterSub:
                 lda chars+101*8,x
@@ -41,6 +72,10 @@ UL_ScrollWaterSub:
 
 bgDelay:        dc.b 0
 
+lightTbl:       dc.b %00010001
+                dc.b %00010011
+                dc.b %00110001
+                dc.b %00110011
 
                 org charInfo
                 incbin bg/world10.chi
