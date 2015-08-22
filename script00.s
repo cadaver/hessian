@@ -50,8 +50,8 @@ titleTexts      = chars+608+168*2
 ;START_Y         = $2200
 
 START_LEVEL     = $08                          ;Lower labs
-START_X         = $4580
-START_Y         = $3f00
+START_X         = $3780
+START_Y         = $4700
 
                 org scriptCodeStart
 

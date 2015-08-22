@@ -1221,7 +1221,14 @@ RCP_ClearActorsLoop:
                 clc                             ;Savestate has all actors, do not load from disk
                 endif
                 jsr CreatePlayerActor
-                jmp CenterPlayer
+                jsr FindPlayerZone
+                ldx #ACTI_PLAYER                ;Check if player is at an obstacle door, move left
+                jsr GetCharInfo1Above           ;slightly in that case
+                and #CI_OBSTACLE
+                beq RCP_NoObstacle
+                lda #$7f
+                sta actXL+ACTI_PLAYER
+RCP_NoObstacle: jmp CenterPlayer
 
         ; Create player actor and (re)load level
         ;

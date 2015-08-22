@@ -1125,18 +1125,17 @@ ULO_DestDoorNum:ldy #$00
                 jsr AlignActorOnGround
                 ldy #ZONEH_BG1
                 lda (zoneLo),y                  ;Check for save-disabled zone
-                bmi CP_HasZone
+                bmi CenterPlayer
                 jsr SaveCheckpoint              ;Save checkpoint now
-                jmp CP_HasZone
 
         ; Centers player on screen, redraws screen, adds all actors from leveldata, and jumps to mainloop
+        ; Player zone must have been acquired beforehand
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-CenterPlayer:   jsr FindPlayerZone
-CP_HasZone:     ldy #ZONEH_MUSIC
+CenterPlayer:   ldy #ZONEH_MUSIC
                 lda (zoneLo),y
                 jsr PlaySong                    ;Play zone's music
                 lda limitR
