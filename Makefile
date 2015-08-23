@@ -33,7 +33,7 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
 	charset08.pak charset09.pak charset10.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
-	level09.pak \
+	level09.pak level10.pak level11.pak \
 	common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
@@ -369,6 +369,18 @@ level09.pak: bg/world09.map bg/world09.lvo bg/world09.lva
 	pack2 bg/world09.lva level09_2.pak
 	pchunk2 bg/world09.map level09_3.pak
 	filejoin level09_1.pak+level09_2.pak+level09_3.pak level09.pak
+
+level10.pak: bg/world10.map bg/world10.lvo bg/world10.lva
+	pack2 bg/world10.lvo level10_1.pak
+	pack2 bg/world10.lva level10_2.pak
+	pchunk2 bg/world10.map level10_3.pak
+	filejoin level10_1.pak+level10_2.pak+level10_3.pak level10.pak
+
+level11.pak: bg/world11.map bg/world11.lvo bg/world11.lva
+	pack2 bg/world11.lvo level11_1.pak
+	pack2 bg/world11.lva level11_2.pak
+	pchunk2 bg/world11.map level11_3.pak
+	filejoin level11_1.pak+level11_2.pak+level11_3.pak level11.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak
