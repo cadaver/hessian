@@ -530,12 +530,13 @@ UA_FlashBattery:sta colors+PANELROW*40+23
 UA_NoHealthBarFlash:
                 lda upgrade                     ;Fist II flashing effect when air is toxic
                 bmi UA_NoToxinEffect
-                ldy #ZONEH_BG2
+                ldy #ZONEH_BG1
                 lda (zoneLo),y
                 bpl UA_NoToxinEffect
                 lda UA_ItemFlashCounter+1
                 lsr
                 bcc UA_ToxinEffectFrame
+                iny
                 iny
 UA_ToxinEffectFrame:
                 lda (zoneLo),y
