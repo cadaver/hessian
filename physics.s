@@ -162,8 +162,7 @@ MWG_CheckLanding:
                 jsr GetCharInfo                 ;Get charinfo at actor pos
                 tay
                 lsr                             ;Hit ground?
-                bcc MWG_NoLanding
-                ;bcc MWG_CheckCharCrossY         ;If not directly, check also possible char crossing
+                bcc MWG_CheckCharCrossY         ;If not directly, check also possible char crossing
                 tya
                 ldy #$00
                 and #$e0                        ;Get the slopebits
@@ -183,24 +182,23 @@ MWG_CheckLanding:
                 adc actSY,x                     ;Check if we would hit the slope next frame
                 cmp slopeTbl,y                  ;(must land also in that case, because next frame
                 bcs MWG_HitGround               ;we also move in X-dir and possibly clip through)
+MWG_CheckCharCrossY:
+                lda actYL,x
+                and #$3f
+                sec
+                sbc actSY,x
+                bcs MWG_NoLanding
+MWG_CrossedChar:jsr GetCharInfo1Above           ;Get char above
+                tay
+                lsr
                 bcc MWG_NoLanding
-;MWG_CheckCharCrossY:
-;                lda actYL,x
-;                and #$3f
-;                sec
-;                sbc actSY,x
-;                bcs MWG_NoLanding
-;MWG_CrossedChar:jsr GetCharInfo1Above           ;Get char above
-;                tay
-;                lsr
-;                bcc MWG_NoLanding
-;                lda #-8*8                       ;Move the actor 1 char up
-;                jsr MoveActorY
-;                tya
-;                ldy #$00
-;                and #$e0                        ;Get slopebits again, optimize for slope0
-;                beq MWG_HitGround
-;                sta temp6
+                and #$70                        ;Char crossing is only important on slopes; skip on level ground
+                beq MWG_NoLanding               ;(prevents a certain bug with obstacle+ground underneath it)
+                lda #-8*8                       ;Move the actor 1 char up
+                jsr MoveActorY
+                tya
+                and #$e0                        
+                sta temp6
 MWG_HitGround2: lda actXL,x
                 lsr
                 and #$1c
