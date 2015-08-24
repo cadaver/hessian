@@ -31,9 +31,9 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak \
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
-	charset08.pak charset09.pak charset10.pak \
+	charset08.pak charset09.pak charset10.pak charset11.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
-	level09.pak level10.pak level11.pak \
+	level09.pak level10.pak level11.pak level12.pak \
 	common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak
 	makedisk hessian.d64 hessian.seq HESSIAN___________HE_2A 12
 
@@ -310,6 +310,12 @@ charset10.pak: charset10.s memory.s bg/world10.blk bg/world10.bli bg/world10.chi
 	pchunk2 bg/world10.blk charset10_2.pak
 	filejoin charset10_1.pak+charset10_2.pak charset10.pak
 
+charset11.pak: charset11.s memory.s bg/world11.blk bg/world11.bli bg/world11.chi bg/world11.chc bg/world11.chr
+	dasm charset11.s -ocharset11_1.bin -f3
+	pack2 charset11_1.bin charset11_1.pak
+	pchunk2 bg/world11.blk charset11_2.pak
+	filejoin charset11_1.pak+charset11_2.pak charset11.pak
+
 level00.pak: bg/world00.map bg/world00.lvo bg/world00.lva
 	pack2 bg/world00.lvo level00_1.pak
 	pack2 bg/world00.lva level00_2.pak
@@ -370,17 +376,17 @@ level09.pak: bg/world09.map bg/world09.lvo bg/world09.lva
 	pchunk2 bg/world09.map level09_3.pak
 	filejoin level09_1.pak+level09_2.pak+level09_3.pak level09.pak
 
-level10.pak: bg/world10.map bg/world10.lvo bg/world10.lva
-	pack2 bg/world10.lvo level10_1.pak
-	pack2 bg/world10.lva level10_2.pak
-	pchunk2 bg/world10.map level10_3.pak
-	filejoin level10_1.pak+level10_2.pak+level10_3.pak level10.pak
-
 level11.pak: bg/world11.map bg/world11.lvo bg/world11.lva
 	pack2 bg/world11.lvo level11_1.pak
 	pack2 bg/world11.lva level11_2.pak
 	pchunk2 bg/world11.map level11_3.pak
 	filejoin level11_1.pak+level11_2.pak+level11_3.pak level11.pak
+
+level12.pak: bg/world12.map bg/world12.lvo bg/world12.lva
+	pack2 bg/world12.lvo level12_1.pak
+	pack2 bg/world12.lva level12_2.pak
+	pchunk2 bg/world12.map level12_3.pak
+	filejoin level12_1.pak+level12_2.pak+level12_3.pak level12.pak
 
 common.pak: spr/common.spr
 	pchunk2 spr/common.spr common.pak
