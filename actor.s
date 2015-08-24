@@ -533,14 +533,14 @@ UA_NoHealthBarFlash:
                 ldy #ZONEH_BG1
                 lda (zoneLo),y
                 bpl UA_NoToxinEffect
+                pha
                 lda UA_ItemFlashCounter+1
                 lsr
-                bcc UA_ToxinEffectFrame
-                iny
-                iny
-UA_ToxinEffectFrame:
-                lda (zoneLo),y
-                sta Irq1_Bg3+1
+                pla
+                bcc UA_ToxinEffectColor
+                lda #$00
+UA_ToxinEffectColor:
+                sta Irq1_Bg1+1
 UA_NoToxinEffect:
                 ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
