@@ -13,7 +13,7 @@ OPTIMIZE_SPRITEIRQS = 1
 DROP_ITEM_TEST  = 1                             ;Drop a copy of current item to test actor save
 ITEM_CHEAT      = 1
 AMMO_CHEAT      = 0
-UPGRADE_CHEAT   = 0
+UPGRADE_CHEAT   = 1
 OPTIMIZE_SAVE   = 1                             ;Clean up temporary actors when saving/continuing
 
         ; Memory configuration & loader symbols

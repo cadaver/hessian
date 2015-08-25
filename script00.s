@@ -49,9 +49,13 @@ titleTexts      = chars+608+168*2
 ;START_X         = $1e80
 ;START_Y         = $1c00
 
-START_LEVEL     = $08                          ;Lower labs
-START_X         = $3780
-START_Y         = $4100
+;START_LEVEL     = $08                          ;Lower labs
+;START_X         = $3780
+;START_Y         = $4100
+
+START_LEVEL     = $0b                          ;Nether tunnel
+START_X         = $0080
+START_Y         = $5600
 
                 org scriptCodeStart
 
