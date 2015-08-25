@@ -23,35 +23,35 @@ titleTexts      = chars+608+168*2
 
 ;START_LEVEL     = $00                          ;Warehouse
 ;START_X         = $6780
-;START_Y         = $1d00
+;START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard
 ;START_X         = $3480
-;START_Y         = $1d00
+;START_Y         = $1700
 
 ;START_LEVEL     = $03                          ;Entrance, next to car park
 ;START_X         = $2980
-;START_Y         = $2100
+;START_Y         = $1b00
 
 ;START_LEVEL     = $04                          ;Service tunnels bridge
 ;START_X         = $5480
-;START_Y         = $3600
+;START_Y         = $3000
 
 ;START_LEVEL      = $05                          ;Security center
 ;START_X          = $0b80
-;START_Y          = $1500
+;START_Y          = $0f00
 
 ;START_LEVEL     = $06                          ;Upper labs
 ;START_X         = $0180
-;START_Y         = $1d00
+;START_Y         = $1700
 
 ;START_LEVEL     = $07                          ;Caves
 ;START_X         = $1e80
-;START_Y         = $2200
+;START_Y         = $1c00
 
 START_LEVEL     = $08                          ;Lower labs
 START_X         = $3780
-START_Y         = $4700
+START_Y         = $4100
 
                 org scriptCodeStart
 

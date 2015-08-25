@@ -251,7 +251,7 @@ void transferblock(int c, int d);
 void swapblocks(int c, int d);
 void insertblock(int c, int d);
 void copyblock(int c, int d);
-void relocatezone(int x, int y);
+int relocatezone(int x, int y);
 void reorganizedata(void);
 void optimizechars(void);
 void optimizeblocks(void);
@@ -908,12 +908,57 @@ void zone_mainloop(void)
       }
       if (k == KEY_R && shiftdown)
       {
-        if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 192))
+        if (!ctrldown)
         {
-          int x = mapx+mousex/divisor;
-          int y = mapy+mousey/divisor;
-          // Round to full screens horizontally
-          relocatezone(x / 10 * 10, y);
+          if ((mousex >= 0) && (mousex < 320) && (mousey >= 0) && (mousey < 192))
+          {             
+            int x = mapx+mousex/divisor;
+            int y = mapy+mousey/divisor;
+            // Round to full screens horizontally
+            relocatezone(x / 10 * 10, y);
+          }
+        }
+        else
+        {
+          // Global relocate to map top
+          int space = mapsy;
+          int c;
+          int oldzonenum = zonenum;
+          for (c = 0; c < NUMZONES; ++c)
+          {
+            if (zonesx[c] && zonesy[c] && zoney[c] < space)
+            {
+              space = zoney[c];
+            }
+          }
+          if (space > 0)
+          {
+            int zoneindices[NUMZONES];
+            int num = 0;
+            int done = 0;
+            for (c = 0; c < NUMZONES; ++c)
+            {
+              if (zonesx[c] && zonesy[c])
+                zoneindices[num++] = c;
+            }
+            // Loop until every zone moved
+            while (!done)
+            {
+              done = 1;
+              for (c = 0; c < num; ++c)
+              {
+                if (zoneindices[c] >= 0)
+                {
+                  zonenum = zoneindices[c];
+                  done = 0;
+                  if (relocatezone(zonex[zonenum], zoney[zonenum]-space))
+                    zoneindices[c] = -1;
+                }
+              }
+            }
+          }
+
+          zonenum = oldzonenum;
         }
       }
       if (k == KEY_G && zonesx[zonenum] && zonesy[zonenum])
@@ -3365,16 +3410,16 @@ int findsameblock(int c, int d)
   return 1;
 }
 
-void relocatezone(int x, int y)
+int relocatezone(int x, int y)
 {
   int sx, sy, oldx, oldy, ox, oy, c, bx, by;
   if (!zonesx[zonenum] || !zonesy[zonenum])
-    return;
+    return 0;
   sx = zonesx[zonenum];
   sy = zonesy[zonenum];
-  if (x + sx > mapsx) return;
-  if (y + sy > mapsy) return;
-  if (!checkzonelegal(zonenum, x, y, sx, sy)) return;
+  if (x + sx > mapsx) return 0;
+  if (y + sy > mapsy) return 0;
+  if (!checkzonelegal(zonenum, x, y, sx, sy)) return 0;
   unsigned char* tempmapdata = malloc(sx*sy);
   oldx = zonex[zonenum];
   oldy = zoney[zonenum];
@@ -3425,6 +3470,7 @@ void relocatezone(int x, int y)
 
   free(tempmapdata);
   calculatelevelorigins();
+  return 1;
 }
 
 void reorganizedata()
