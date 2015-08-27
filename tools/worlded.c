@@ -4587,6 +4587,53 @@ void savealldata(void)
       if (!numlevels)
         return;
 
+      for (c = 0; c < NUMLVLOBJ; c++)
+      {
+        if ((lvlobjx[c]) && (lvlobjy[c]))
+        {
+          // Check sidedoor destination validity
+          if ((lvlobjb[c] & 0x1c) == 0 && lvlobjdl[c] == 0)
+          {
+            int z1 = findzone(lvlobjx[c], lvlobjy[c]&0x7f);
+            int l1 = zonelevel[z1];
+            int z2,l2;
+            int d;
+            int found = 0;
+            int newx = lvlobjx[c] < (zonex[z1]+zonesx[z1])/2 ? zonex[z1]-1 : zonex[z1]+zonesx[z1];
+            int newy = lvlobjy[c]&0x7f;
+
+            for (d = 0; d < NUMLVLOBJ; d++)
+            {
+              if (d != c && lvlobjx[d] && lvlobjy[d] && ((newx+1-lvlobjx[d]) & 0xffff) <= 2 && ((newy+1-(lvlobjy[d]&0x7f)) & 0xffff) <= 2)
+              {
+                int l3;
+                z2 = findzone(lvlobjx[d], lvlobjy[d]&0x7f);
+                l2 = zonelevel[z2];
+                found = 1;
+
+                if (l2 != l1)
+                {
+                  for (l3 = 0; l3 < numlevels; ++l3)
+                  {
+                    if (l3 != l1 && newx >= levelx[l3] && newx < levelx[l3]+levelsx[l3] && newy >= levely[l3] && newy < levely[l3]+levelsy[l3])
+                    {
+                      if (l3 != l2)
+                        printf("Sidedoor destination mismatch! Object at %d,%d (level %d) should lead to level %d but search finds level %d instead\n", lvlobjx[c],lvlobjy[c]&0x7f, l1, l2, l3);
+                      break;
+                    }
+                  }
+                  if (l3 == numlevels)
+                    printf("Sidedoor at %d,%d (level %d) leads to nothingness\n", lvlobjx[c],lvlobjy[c]&0x7f, l1);
+                }
+                break;
+              }
+            }
+            if (!found || findzone(newx, newy) >= NUMZONES)
+              printf("Sidedoor at %d,%d (level %d) leads to nothingness\n", lvlobjx[c],lvlobjy[c]&0x7f, l1);
+          }
+        }
+      }
+
       strcpy(levelname, ib1);
 
       for (s = 0; s < NUMCHARSETS; s++)
