@@ -376,6 +376,12 @@ level09.pak: bg/world09.map bg/world09.lvo bg/world09.lva
 	pchunk2 bg/world09.map level09_3.pak
 	filejoin level09_1.pak+level09_2.pak+level09_3.pak level09.pak
 
+level10.pak: bg/world10.map bg/world10.lvo bg/world10.lva
+	pack2 bg/world10.lvo level10_1.pak
+	pack2 bg/world10.lva level10_2.pak
+	pchunk2 bg/world10.map level10_3.pak
+	filejoin level10_1.pak+level10_2.pak+level10_3.pak level10.pak
+
 level11.pak: bg/world11.map bg/world11.lvo bg/world11.lva
 	pack2 bg/world11.lvo level11_1.pak
 	pack2 bg/world11.lva level11_2.pak

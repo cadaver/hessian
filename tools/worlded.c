@@ -4599,7 +4599,7 @@ void savealldata(void)
             int z2,l2;
             int d;
             int found = 0;
-            int newx = lvlobjx[c] < (zonex[z1]+zonesx[z1])/2 ? zonex[z1]-1 : zonex[z1]+zonesx[z1];
+            int newx = lvlobjx[c] < zonex[z1]+zonesx[z1]/2 ? zonex[z1]-1 : zonex[z1]+zonesx[z1];
             int newy = lvlobjy[c]&0x7f;
 
             for (d = 0; d < NUMLVLOBJ; d++)
@@ -4618,18 +4618,18 @@ void savealldata(void)
                     if (l3 != l1 && newx >= levelx[l3] && newx < levelx[l3]+levelsx[l3] && newy >= levely[l3] && newy < levely[l3]+levelsy[l3])
                     {
                       if (l3 != l2)
-                        printf("Sidedoor destination mismatch! Object at %d,%d (level %d) should lead to level %d but search finds level %d instead\n", lvlobjx[c],lvlobjy[c]&0x7f, l1, l2, l3);
+                        printf("Sidedoor destination mismatch! Object at %d,%d (level %d) targetpos %d,%d should lead to level %d but search finds level %d instead\n", lvlobjx[c],lvlobjy[c]&0x7f, l1, newx, newy, l2, l3);
                       break;
                     }
                   }
                   if (l3 == numlevels)
-                    printf("Sidedoor at %d,%d (level %d) leads to nothingness\n", lvlobjx[c],lvlobjy[c]&0x7f, l1);
+                    printf("Sidedoor at %d,%d (level %d) targetpos %d,%d leads to nothingness\n", lvlobjx[c],lvlobjy[c]&0x7f, l1, newx,  newy);
                 }
                 break;
               }
             }
             if (!found || findzone(newx, newy) >= NUMZONES)
-              printf("Sidedoor at %d,%d (level %d) leads to nothingness\n", lvlobjx[c],lvlobjy[c]&0x7f, l1);
+              printf("Sidedoor at %d,%d (level %d) targetpos %d,%d leads to nothingness\n", lvlobjx[c],lvlobjy[c]&0x7f, l1, newx, newy);
           }
         }
       }
