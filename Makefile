@@ -31,7 +31,7 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak \
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
-	charset08.pak charset09.pak charset10.pak charset11.pak \
+	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
 	level09.pak level10.pak level11.pak \
 	common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak
@@ -315,6 +315,12 @@ charset11.pak: charset11.s memory.s bg/world11.blk bg/world11.bli bg/world11.chi
 	pack2 charset11_1.bin charset11_1.pak
 	pchunk2 bg/world11.blk charset11_2.pak
 	filejoin charset11_1.pak+charset11_2.pak charset11.pak
+
+charset12.pak: charset12.s memory.s bg/world12.blk bg/world12.bli bg/world12.chi bg/world12.chc bg/world12.chr
+	dasm charset12.s -ocharset12_1.bin -f3
+	pack2 charset12_1.bin charset12_1.pak
+	pchunk2 bg/world12.blk charset12_2.pak
+	filejoin charset12_1.pak+charset12_2.pak charset12.pak
 
 level00.pak: bg/world00.map bg/world00.lvo bg/world00.lva
 	pack2 bg/world00.lvo level00_1.pak
