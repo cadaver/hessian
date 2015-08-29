@@ -5,7 +5,30 @@
 
                 org lvlCodeStart
 
-UpdateLevel:    rts
+UpdateLevel:    inc bgDelay
+                lda bgDelay
+                and #$03
+                bne SkipLava1
+                ldy chars+254*8+7
+                ldx #$06
+ScrollLava1:    lda chars+254*8,x
+                sta chars+254*8+1,x
+                dex
+                bpl ScrollLava1
+                sty chars+254*8
+SkipLava1:      lda bgDelay
+                and #$07
+                bne SkipLava2
+                ldy chars+255*8+7
+                ldx #$02
+ScrollLava2:    lda chars+255*8+4,x
+                sta chars+255*8+5,x
+                dex
+                bpl ScrollLava2
+                sty chars+255*8+4
+SkipLava2:      rts
+
+bgDelay:        dc.b 0
 
                 org charInfo
                 incbin bg/world11.chi
