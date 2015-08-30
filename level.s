@@ -864,6 +864,9 @@ ULO_WaterDamageNotFiltered:
                 and #MB_INWATER
                 beq ULO_NoWaterDamage
                 jsr ULO_DoToxinDamage
+                jmp ULO_NoAirDamage             ;If already doing water damage, no air damage
+                                                ;(applies to the nether tunnel where water is lava
+                                                ;so it should take priority)
 ULO_NoWaterDamage:
 ULO_AirToxinFlag:
                 lda #$00
