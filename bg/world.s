@@ -46,7 +46,7 @@ lvlObjBitsStart:
                 dc.b 13
                 dc.b 15
                 dc.b 16
-                dc.b 17
+                dc.b 18
 lvlObjBitsLen:
                 dc.b 1
                 dc.b 1
@@ -58,8 +58,8 @@ lvlObjBitsLen:
                 dc.b 1
                 dc.b 2
                 dc.b 1
-                dc.b 1
                 dc.b 2
+                dc.b 1
 lvlLimitL:
                 dc.b 0
                 dc.b 18
@@ -84,8 +84,8 @@ lvlLimitR:
                 dc.b 56
                 dc.b 54
                 dc.b 45
-                dc.b 62
                 dc.b 79
+                dc.b 62
 lvlLimitU:
                 dc.b 11
                 dc.b 14
@@ -97,8 +97,8 @@ lvlLimitU:
                 dc.b 24
                 dc.b 43
                 dc.b 69
-                dc.b 14
                 dc.b 81
+                dc.b 14
 lvlLimitD:
                 dc.b 28
                 dc.b 42
@@ -110,5 +110,5 @@ lvlLimitD:
                 dc.b 60
                 dc.b 90
                 dc.b 84
-                dc.b 24
                 dc.b 119
+                dc.b 24
