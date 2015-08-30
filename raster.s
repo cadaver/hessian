@@ -11,6 +11,22 @@ TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
 
+        ; Blank the gamescreen and turn off sprites
+        ; (return to normal display by calling UpdateFrame)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X
+        
+BlankScreen:    jsr WaitBottom
+                lda #$57
+                sta Irq1_ScrollY+1
+BS_Common:      ldx #$00
+                stx Irq1_D015+1
+                stx Irq1_MaxSprY+1
+                stx Irq4_LevelUpdate+1          ;Disable level animation by default
+                rts
+                
         ; IRQ common startup code
 
 StartIrq:       cld
@@ -38,12 +54,8 @@ Irq5_Bg3:       lda #$09
         ; Raster interrupt 1. Show game screen
 
 Irq1:           jsr StartIrq
-                ldx #$00
-                lda ntscDelay
-                and newFrame
-                beq Irq1_NoFrameReset           ;Reset frame update if applicable
+                ldx #$00                        ;Reset frame update
                 stx newFrame
-Irq1_NoFrameReset:
 Irq1_MinSprY:   lda #$00                        ;Copy new min/max sprite Y range to know
 Irq1_StoreMinSprY:                              ;when fastloader can transfer data
                 sta FL_MinSprY+1
@@ -322,14 +334,7 @@ Irq4:           jsr StartIrq
                 inx
                 stx $d07b
                 stx $d030
-Irq4_NoTurbo:   lda ntscDelay
-                sec
-                sbc ntscFlag
-                bpl Irq4_NtscDelayNoWrap
-                lda #$05
-Irq4_NtscDelayNoWrap:
-                sta ntscDelay
-                beq Irq4_NoLevelUpdate
+Irq4_NoTurbo:   
 Irq4_LevelUpdate:
                 lda #$00                        ;Animate level background?
                 beq Irq4_NoLevelUpdate

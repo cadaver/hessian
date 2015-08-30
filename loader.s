@@ -517,8 +517,7 @@ IL_DetectNtsc2: cmp $d012
                 lda #$2c                        ;Adjust 2-bit fastload transfer
                 sta FL_Delay                    ;delay for PAL
                 dex
-IL_IsNtsc:      stx ntscFlag
-                lda #$7f                        ;Disable & acknowledge IRQ sources
+IL_IsNtsc:      lda #$7f                        ;Disable & acknowledge IRQ sources
                 sta $dc0d
                 lda $dc0d
                 inc $d019

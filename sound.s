@@ -240,9 +240,7 @@ Play_MasterVolume:
 
         ;Update duration counter
 
-Play_ChnExec:   lda ntscDelay                   ;If NTSC delay, only update pulse/wave
-                beq Play_JumpToPulse
-                inc ntChnCounter,x
+Play_ChnExec:   inc ntChnCounter,x
                 bne Play_NoPattern
 
         ;Get data from pattern

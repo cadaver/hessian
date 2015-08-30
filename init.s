@@ -208,13 +208,7 @@ InitRaster:     sei
                 lda #$2c
                 sta Irq1_StoreMinSprY
                 sta Irq1_StoreMaxSprY
-IR_UseFastLoad: lda #$01                        ;Init NTSC delay counter value to non-zero so that PAL machines
-                sta ntscDelay                   ;will never delay
-                lda ntscFlag
-                bne IR_IsNtsc
-                lda #$ff                        ;On PAL the colorshift check can be made more forgiving
-                sta UF_ColorShiftLateCheck+1
-IR_IsNtsc:      cli
+IR_UseFastLoad: cli
 
         ; Initializations are complete. Start the main program
 

@@ -20,22 +20,6 @@ PANEL_D018      = $88
 
 PANELROW        = 22
 
-        ; Blank the gamescreen and turn off sprites
-        ; (return to normal display by calling UpdateFrame)
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X
-        
-BlankScreen:    jsr WaitBottom
-                lda #$57
-                sta Irq1_ScrollY+1
-BS_Common:      ldx #$00
-                stx Irq1_D015+1
-                stx Irq1_MaxSprY+1
-                stx Irq4_LevelUpdate+1          ;Disable level animation by default
-                rts
-
         ; Perform scrolling logic
         ;
         ; Parameters: -
@@ -555,7 +539,7 @@ SW_DBUp:        jmp SW_DrawUp
 
 SW_Shift1:      adc #<SW_Shift1Loop
                 sta SW_Shift1Jump+1
-                if SW_Shift1Loop & $ff > $f9
+                if (SW_Shift1Loop & $ff) > $f9
                 lda #>SW_Shift1Loop
                 adc #$00
                 sta SW_Shift1Jump+2
@@ -581,7 +565,7 @@ SW_Shift1Done:  rts
 
 SW_Shift2:      adc #<SW_Shift2Loop
                 sta SW_Shift2Jump+1
-                if SW_Shift2Loop & $ff > $f9
+                if (SW_Shift2Loop & $ff) > $f9
                 lda #>SW_Shift2Loop
                 adc #$00
                 sta SW_Shift2Jump+2
