@@ -209,6 +209,11 @@ IM_BlockLoop:   lda zpSrcLo                     ;Store and increase block-
                 iny
                 cpy #MAX_BLK
                 bcc IM_BlockLoop
+                ldy #ZONEH_BG2                  ;Check if zone air is toxic
+                lda (zoneLo),y                  ;(result needed in several places)
+                bpl IM_NoToxicAir
+                eor upgrade
+IM_NoToxicAir:  sta ULO_AirToxinFlag+1
                 rts
 
         ; Get address of levelactor-bits according to current level
@@ -860,11 +865,9 @@ ULO_WaterDamageNotFiltered:
                 beq ULO_NoWaterDamage
                 jsr ULO_DoToxinDamage
 ULO_NoWaterDamage:
-                ldy #ZONEH_BG2
-                lda (zoneLo),y
-                bpl ULO_NoAirDamage             ;Toxic air (defined per zone)?
-                lda upgrade
-                bmi ULO_NoAirDamage             ;Always canceled by filter upgrade
+ULO_AirToxinFlag:
+                lda #$00
+                bpl ULO_NoAirDamage
                 ldy lvlAirToxinDelay
                 jsr ULO_DoToxinDamage
 
@@ -1125,8 +1128,10 @@ ULO_DestDoorNum:ldy #$00
                 jsr AlignActorOnGround
                 ldy #ZONEH_BG1
                 lda (zoneLo),y                  ;Check for save-disabled zone
-                bmi CenterPlayer
+                ora ULO_AirToxinFlag+1          ;Also don't save if toxic air and no filter
+                bmi ULO_NoCheckpoint
                 jsr SaveCheckpoint              ;Save checkpoint now
+ULO_NoCheckpoint:
 
         ; Centers player on screen, redraws screen, adds all actors from leveldata, and jumps to mainloop
         ; Player zone must have been acquired beforehand
