@@ -25,9 +25,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $6780
 ;START_Y         = $1700
 
-;START_LEVEL     = $01                          ;Courtyard
-;START_X         = $0280
-;START_Y         = $1700
+START_LEVEL     = $01                          ;Courtyard
+START_X         = $0280
+START_Y         = $1700
 
 ;START_LEVEL     = $03                          ;Entrance, next to car park
 ;START_X         = $2980
@@ -57,9 +57,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $0080
 ;START_Y         = $5600
 
-START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
-START_X         = $a580
-START_Y         = $7400
+;START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
+;START_X         = $a580
+;START_Y         = $7400
 
                 org scriptCodeStart
 
