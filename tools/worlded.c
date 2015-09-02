@@ -472,6 +472,8 @@ void level_mainloop(void)
           if (k == KEY_1 && shiftdown) actnum -= 16;
           if (k == KEY_2 && shiftdown) actnum += 16;
           if (k == KEY_I) actnum ^= 128;
+          if (actnum >= 0x8000) actnum = 0;
+          if (actnum >= 0xff) actnum = 0xff;
         }
 
         if (actfound)
