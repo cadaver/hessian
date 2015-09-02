@@ -3391,6 +3391,7 @@ int findsamechar(int c, int d)
   if (chcol[charsetnum][c] & 64) return 0; // No-optimize flag, is not duplicate
   if (chcol[charsetnum][d] & 64) return 0; // No-optimize flag, is not duplicate
   if (chcol[charsetnum][c] < 8 && chcol[charsetnum][c] != chcol[charsetnum][d]) return 0;
+  if (chcol[charsetnum][c] >= 8 && chcol[charsetnum][d] < 8) return 0;
   if (chcol[charsetnum][c] >= 8 && charcolorused && chcol[charsetnum][c] != chcol[charsetnum][d]) return 0;
 
   return 1;
