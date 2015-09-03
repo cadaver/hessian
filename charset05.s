@@ -33,30 +33,35 @@ UL_ToggleLightLoop:
                 dey
                 bpl UL_ToggleLightLoop
 UL_NoLightAnim: ldx #$00
-                lda waterTbl1,x
-                sta chars+228*8
-                lda waterTbl1+1,x
-                sta chars+229*8
-                lda waterTbl2,x
-                sta chars+228*8+2
-                sta chars+230*8+3
-                lda waterTbl2+1,x
-                sta chars+229*8+2
-                lda waterTbl3,x
-                sta chars+230*8
-                inx
-                txa
-                and #$03
-                sta UL_NoLightAnim+1
+                jsr UL_ScrollWaterSub
+                lsr
+                ora chars+228*8,x
+                ora #$aa
+                sta chars+230*8,x
+                ldx #$02
+                lda UL_Delay+1
+                and #$0f
+                bne UL_SkipWater2
+                jsr UL_ScrollWaterSub
+                sta chars+230*8+1,x
+UL_SkipWater2:
 UL_NoAnim:      rts
+
+UL_ScrollWaterSub:
+                lda chars+229*8,x
+                asl
+                rol chars+228*8,x
+                adc #$00
+                asl
+                rol chars+228*8,x
+                adc #$00
+                sta chars+229*8,x
+                lda chars+228*8,x
+                rts
 
 charOffsetTbl:  dc.b 0,8,16
 eorValue1Tbl:   dc.b %01101010,%10101010,%10101001
 eorValue2Tbl:   dc.b %10010101,%01010101,%01010110
-
-waterTbl1:      dc.b %00101010,%10001010,%00100010,%10101000,%10100010
-waterTbl2:      dc.b %00000101,%00010100,%01010000,%01000001,%00000100
-waterTbl3:      dc.b %10111111,%11111110,%10111110,%11111011
 
                 org charInfo
                 incbin bg/world05.chi
