@@ -346,16 +346,7 @@ Irq4_LevelUpdate:
                 dec $d020
                 endif
 Irq4_NoLevelUpdate:
-                lda lvlParallaxFlag             ;Update parallax separately if required
-                bpl Irq4_NoParallax
-                if SHOW_LEVELUPDATE_TIME > 0
-                inc $d020
-                endif
-                jsr UpdateParallax
-                if SHOW_LEVELUPDATE_TIME > 0
-                dec $d020
-                endif
-Irq4_NoParallax:lda #<Irq1
+                lda #<Irq1
                 ldx #>Irq1
                 ldy #IRQ1_LINE
                 bne Irq3_EndJump

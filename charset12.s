@@ -23,4 +23,4 @@ UpdateLevel:    rts
                 org charsetLoadWaterSplashColor
                 dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
-                dc.b 20                         ;Air toxicity delay counter + $80 parallax flag
+                dc.b 20                         ;Air toxicity delay counter

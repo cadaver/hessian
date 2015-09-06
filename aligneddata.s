@@ -397,7 +397,6 @@ lvlWaterSplashColor:
                 dc.b 0
 lvlWaterToxinDelay:
                 dc.b 0
-lvlParallaxFlag:
 lvlAirToxinDelay:
                 dc.b 0
 lvlPropertiesEnd:

@@ -36,7 +36,6 @@ DOORENTRYDELAY  = 6
 AUTODEACTDELAY  = 12
 
 UpdateLevel     = lvlCodeStart
-UpdateParallax  = lvlCodeStart+3
 
 LoadLevelError: jsr LFR_ErrorPrompt
                 jmp LoadLevelRetry
@@ -400,7 +399,6 @@ ECS_LoadedCharSet:
                 beq ECS_HasCharSet
                 sta ECS_LoadedCharSet+1
                 ldx #F_CHARSET
-                stx lvlParallaxFlag             ;Disable parallax scrolling in existing charset (if any)
                 jsr MakeFileName
                 jsr BlankScreen                 ;Blank screen to make sure no animation
                 beq ECS_RetryCharSet            ;X=0 on return
