@@ -1016,7 +1016,7 @@ void zone_mainloop(void)
           if (checkzonelegal(zonenum, nx, ny, nsx, nsy))
           {
             // Copy properties from nearest zone to speed up
-            int nearest = findnearestzone((nx+nx+nsx)/2, (nx+nx+nsy)/2);
+            int nearest = findnearestzone(x, y);
 
             zonex[zonenum] = nx;
             zoney[zonenum] = ny;
