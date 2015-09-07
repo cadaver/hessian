@@ -231,9 +231,8 @@ Irq2_SprIrqDone:
                 lda sprIrqJumpTbl,x             ;Get the correct jump address
                 sta Irq2_SprJump+1
                 tya
-                sec
-                sbc fileOpen                    ;One line advance if loading
                 sta $d012
+                sec
                 sbc #$03                        ;Already late from the next IRQ?
                 cmp $d012
                 bcs SetNextIrqNoAddress
@@ -249,10 +248,9 @@ Irq2_Direct:
 Irq2_SprIndex:  ldx #$00
 Irq2_SprJump:   jmp Irq2_Spr0
 
-Irq2_AllDone:   lda #IRQ3_LINE
-                sec
-                sbc fileOpen
+Irq2_AllDone:   lda #IRQ3_LINE-1
                 tay
+                sec
                 sbc #$03
                 cmp $d012                       ;Late from the scorepanel IRQ?
                 bcc Irq2_LatePanel

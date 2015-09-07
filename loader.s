@@ -55,27 +55,27 @@ SaveFile:       jmp FastSave
         ; $80 - Device not present
         ; Modifies: A
 
-GetByte:        lda fileOpen
+GetByte:        stx loadTempReg
+                ldx fileOpen
                 beq GB_Closed
-                stx loadTempReg
-                inc bufferStatus
-                ldx bufferStatus
-                lda loadBuffer+1,x
-GB_FastCmp:     cpx #$00                        ;Reach end of buffer?
-                bcc GB_Done
-                pha
-                jsr FL_FillBuffer               ;Fill buffer for next byte
+                lda loadBuffer,x
+GB_FastCmp:     cpx #$00
+                bcs GB_FastRefill
+                inx
+                stx fileOpen
+GB_FastCommon:  ldx loadTempReg
+FO_Done:        rts
+GB_FastRefill:  pha
+                jsr FL_FillBuffer
                 pla
                 clc
-GB_Done:        ldx loadTempReg
-FO_Done:        rts
+                bcc GB_FastCommon
 GB_Closed:      lda loadBuffer+2
                 sec
-                rts
+                bcs GB_FastCommon
 
 FastOpen:       ldx fileOpen                    ;A file already open? If so, do nothing
                 bne FO_Done                     ;(allows chaining of files)
-                inc fileOpen
                 txa                             ;Command 0 = load
                 sta $d07a                       ;SCPU to slow mode
                 sta $d030                       ;C128 to 1Mhz mode
@@ -121,15 +121,14 @@ FL_Eor:         eor #$00
                 sta loadBuffer,x
                 inx
                 bne FL_FillBufferLoop
-FL_Common:      stx bufferStatus                ;X is 0 here
-                ldx #$fe
-                lda loadBuffer                  ;Full 254 bytes?
+FL_Common:      dex                             ;X=$ff (end cmp for full buffer)
+                lda loadBuffer
                 bne FL_FullBuffer
-                ldx loadBuffer+1                ;End of load?
-                bne FL_NoLoadEnd
-                stx fileOpen                    ;Clear fileopen indicator
-FL_NoLoadEnd:   dex
+                ldx loadBuffer+1                ;File ended if T&S both zeroes
+                beq FL_LoadEnd
 FL_FullBuffer:  stx GB_FastCmp+1
+                ldx #$02
+FL_LoadEnd:     stx fileOpen                    ;Set buffer read position / fileopen indicator
                 rts
 
 FL_SendCommand: jsr FL_SendByte
@@ -349,12 +348,13 @@ literal_start1: ; if literal byte, a = 1, zpBitsHi = 0
 copy_start:
   ldy #$00
 copy_next:
-  bcs copy_noliteral
+  bcc copy_literal
+  lda (zpSrcLo),y
+  bcs copy_store
+copy_literal:
   jsr GetByte
   bcs LF_Error
-  dc.b $2c; skip next instruction
-copy_noliteral:
-  lda (zpSrcLo),y
+copy_store:
   sta (zpDestLo),y
   iny
   bne copy_skiphi1
@@ -1079,31 +1079,32 @@ ilSlowLoadStart:
                 jmp SlowOpen
                 jmp SlowSave
 
-SlowGetByte:    stx bufferStatus
-                lda fileOpen
+SlowGetByte:    lda fileOpen
                 beq SGB_Closed
+                stx loadTempReg
                 jsr KernalOnFast
                 jsr ChrIn
-                sta loadTempReg
+                pha
                 lda status
                 bne SGB_EOF
                 jsr KernalOff
-SGB_Done:       lda loadTempReg
+SGB_LastByte:   pla
+                ldx loadTempReg
                 clc
-SGB_Common:     ldx bufferStatus
-SO_Done:        rts
-
+                rts
 SGB_EOF:        and #$83
                 sta SGB_Closed+1
                 php
-                sty SGB_SaveY+1
+                sty loadTempReg2
                 jsr CloseKernalFile
-SGB_SaveY:      ldy #$00
+                ldy loadTempReg2
                 plp
-                beq SGB_Done                    ;If zero return code, return last file byte now
+                beq SGB_LastByte                ;If zero return code, return last file byte now
+                pha
+                ldx loadTempReg
 SGB_Closed:     lda #$00
                 sec
-                bcs SGB_Common
+SO_Done:        rts
 
 SlowOpen:       lda fileOpen
                 bne SO_Done

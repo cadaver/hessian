@@ -46,7 +46,7 @@ SCROLLROWS      = 22
                 varbase $02
 
                 var loadTempReg                 ;Loader variables
-                var bufferStatus
+                var loadTempReg2
                 var fileOpen
 
                 var zpLenLo                     ;Exomizer 2 depackroutine variables
