@@ -1079,32 +1079,32 @@ ilSlowLoadStart:
                 jmp SlowOpen
                 jmp SlowSave
 
-SlowGetByte:    lda fileOpen
+SlowGetByte:    stx loadTempReg
+                lda fileOpen
                 beq SGB_Closed
-                stx loadTempReg
-                jsr KernalOnFast
+                lda #$36
+                sta $01
                 jsr ChrIn
                 pha
                 lda status
                 bne SGB_EOF
-                jsr KernalOff
+                dec $01
 SGB_LastByte:   pla
-                ldx loadTempReg
                 clc
-                rts
-SGB_EOF:        and #$83
-                sta SGB_Closed+1
-                php
+SGB_EndCommon:  ldx loadTempReg
+SO_Done:        rts
+SGB_EOF:        pha
                 sty loadTempReg2
                 jsr CloseKernalFile
                 ldy loadTempReg2
-                plp
-                beq SGB_LastByte                ;If zero return code, return last file byte now
-                pha
-                ldx loadTempReg
+                pla
+                and #$83
+                sta SGB_Closed+1
+                beq SGB_LastByte
+                pla
 SGB_Closed:     lda #$00
                 sec
-SO_Done:        rts
+                bcs SGB_EndCommon
 
 SlowOpen:       lda fileOpen
                 bne SO_Done
@@ -1147,7 +1147,6 @@ SS_PreDecrement:dec zpBitsHi
 CloseKernalFile:lda #$02
                 jsr Close
                 dec fileOpen
-
 KernalOff:      lda #$35
 Store01Value:   sta $01
                 rts
