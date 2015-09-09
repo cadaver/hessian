@@ -169,20 +169,21 @@ SGLN_NoCoords:  and #$7f
 SGLN_Found:     ldx levelNamesTbl+3,y
                 lda saveSlotChoice
                 jsr GetSaveListPos
-                sty temp1
-CopyLevelName:  lda levelNames,x                ;Copy level name
+                adc #$10
+                sta temp1
+CopyLevelName:  lda levelNames,x                ;Copy level name until endzero
                 sta saveList,y
-                beq CLN_EndMark                 ;Keep copying the endzero until 16 chars
+                beq CLN_Done
+                iny
                 inx
-CLN_EndMark:    iny
-                cpy #$10
-                bcc CopyLevelName
+                bne CopyLevelName
 CLN_Done:       ldx #$00
+                ldy temp1
 CopySaveTime:   lda saveStateStart,x            ;Copy time
                 sta saveList,y
-                inx
                 iny
-                cpy #SAVEDESCSIZE
+                inx
+                cpx #$04
                 bcc CopySaveTime
                 lda #F_SAVELIST
                 jsr MakeFileName_Direct
@@ -354,7 +355,11 @@ LoadOrSaveGameMode:
                 lda #$00
                 beq LoadGameExec
                 jmp SaveGameExec
-LoadGameExec:   jsr OpenFile                    ;Load the savegame now
+LoadGameExec:   lda saveSlotChoice
+                jsr GetSaveListPos
+                lda saveList,y                  ;No save at slot yet?
+                beq LoadGameLoop
+                jsr OpenFile                    ;Load the savegame file (unpacked)
                 lda #<saveStateStart
                 sta zpDestLo
                 lda #>saveStateStart
@@ -367,8 +372,8 @@ RSF_Loop:       jsr GetByte
                 bne RSF_Loop
                 inc zpDestHi
                 bne RSF_Loop
-RSF_End:        lda saveStateStart              ;If first byte zero, it's an empty file (no save)
-                beq LoadGameLoop
+RSF_End:        tay                             ;Check if load errored
+                bne LoadGameLoop
                 lda fastLoadMode                ;Fade out screen, unless in slowload mode
                 beq LoadSkipFade
                 jsr FadeOutAll
@@ -907,7 +912,7 @@ levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
                 dc.b 8+$80,levelLowerLabs-levelNames
                 dc.b 9+$80,levelSecurityCenter-levelNames
                 dc.b 10+$80,levelNetherTunnel-levelNames
-                dc.b 11+$80,levelBioDome-levelNames
+                dc.b 11,$50,$00,levelBioDome-levelNames
                 dc.b 11+$80,levelCourtyard-levelNames
                 dc.b 12+$80,levelUnderground-levelNames
 
