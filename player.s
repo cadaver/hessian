@@ -1115,11 +1115,6 @@ SCP_SaveClearLoop:                              ;Finally clear unused slots
 SCP_SaveClearDone:
                 endif
                 jsr SaveLevelObjectState
-                ldx #15
-SCP_LevelName:  lda lvlName,x
-                sta saveLvlName,x
-                dex
-                bpl SCP_LevelName
                 ldx #playerStateZPEnd-playerStateZPStart
 SCP_ZPState:    lda playerStateZPStart-1,x
                 sta saveStateZP-1,x

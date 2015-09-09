@@ -392,7 +392,6 @@ lvlObjDL:       ds.b MAX_LVLOBJ,0
 lvlObjDH:       ds.b MAX_LVLOBJ,0
 
 lvlPropertiesStart:
-lvlName:        ds.b 16,0
 lvlWaterSplashColor:
                 dc.b 0
 lvlWaterToxinDelay:

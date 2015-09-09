@@ -40,10 +40,7 @@ bgDelay:        dc.b 0
                 org charsetLoadBlockInfo
                 incbin bg/world11.bli
 
-                org charsetLoadName
-                dc.b "NETHER TUNNEL",0
-
-                org charsetLoadWaterSplashColor
+                org charsetLoadProperties
                 dc.b 7                          ;Water splash color override
                 dc.b $81                        ;Water toxicity delay counter ($80=not affected by filter)
                 dc.b 20                         ;Air toxicity delay counter

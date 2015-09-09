@@ -47,10 +47,7 @@ bgDelay:        dc.b 0
                 org charsetLoadBlockInfo
                 incbin bg/world09.bli
 
-                org charsetLoadName
-                dc.b "UNDERGROUND",0
-
-                org charsetLoadWaterSplashColor
+                org charsetLoadProperties
                 dc.b 3                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
                 dc.b 0                          ;Air toxicity delay counter

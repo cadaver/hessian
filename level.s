@@ -420,8 +420,8 @@ ECS_CopyBlockInfo:
                 bpl ECS_CopyBlockInfo
                 ldx #lvlPropertiesEnd-lvlPropertiesStart-1
 ECS_CopyLevelProperties:                        ;Copy level properties into place
-                lda charsetLoadName,x
-                sta lvlName,x
+                lda charsetLoadProperties,x
+                sta lvlPropertiesStart,x
                 dex
                 bpl ECS_CopyLevelProperties
                 rts

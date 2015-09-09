@@ -25,10 +25,7 @@ UpdateLevel:    lda chars+247*8
                 org charsetLoadBlockInfo
                 incbin bg/world13.bli
 
-                org charsetLoadName
-                dc.b "BIO-DOME",0
-
-                org charsetLoadWaterSplashColor
+                org charsetLoadProperties
                 dc.b 3                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
                 dc.b 0                          ;Air toxicity delay counter

@@ -56,7 +56,6 @@ playerStateEnd:
         ; In-memory checkpoint save
 
 saveStateStart:
-saveLvlName:    ds.b 16,0
 saveState:      ds.b playerStateEnd - playerStateStart,0
 saveStateZP:    ds.b playerStateZPEnd - playerStateZPStart,0
                 if OPTIMIZE_SAVE > 0

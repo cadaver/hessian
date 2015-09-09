@@ -144,15 +144,46 @@ SaveGameExec:   jsr FadeOutText
                 lda #<saveStateStart
                 ldx #>saveStateStart
                 jsr SaveFile
+                ldy #$00
+SaveGetLevelName:
+                lda levelNamesTbl,y             ;Levelnum
+                bmi SGLN_NoCoords
+                cmp saveStateZP
+                bne SGLN_Next
+                lda saveXH                      ;If there are coord limits, they must be listed
+                cmp levelNamesTbl+1,y           ;in right->left and bottom->top order to work properly
+                bcc SGLN_Next
+                lda saveYH
+                cmp levelNamesTbl+2,y
+                bcs SGLN_Found
+SGLN_Next:      iny
+                iny
+SGLN_Next2:     iny
+                iny
+                bne SaveGetLevelName            ;Note: will loop endlessly if name not found
+SGLN_NoCoords:  and #$7f
+                cmp saveStateZP
+                bne SGLN_Next2
+                dey
+                dey
+SGLN_Found:     ldx levelNamesTbl+3,y
                 lda saveSlotChoice
                 jsr GetSaveListPos
-                ldx #$00
-CopySaveDesc:   lda saveStateStart,x            ;Copy levelname + time to the savegamelist
+                sty temp1
+CopyLevelName:  lda levelNames,x                ;Copy level name
                 sta saveList,y
-                iny
+                beq CLN_EndMark                 ;Keep copying the endzero until 16 chars
                 inx
-                cpx #SAVEDESCSIZE
-                bcc CopySaveDesc
+CLN_EndMark:    iny
+                cpy #$10
+                bcc CopyLevelName
+CLN_Done:       ldx #$00
+CopySaveTime:   lda saveStateStart,x            ;Copy time
+                sta saveList,y
+                inx
+                iny
+                cpy #SAVEDESCSIZE
+                bcc CopySaveTime
                 lda #F_SAVELIST
                 jsr MakeFileName_Direct
                 lda #<MAX_SAVES*SAVEDESCSIZE
@@ -862,5 +893,35 @@ optionMaxValue: dc.b 2,1,1
 
 cheatString:    dc.b KEY_K, KEY_V, KEY_L, KEY_T
 cheatIndex:     dc.b 0
+
+levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
+                dc.b 0+$80,levelCourtyard-levelNames
+                dc.b 1,$00,$18,levelCarPark-levelNames
+                dc.b 1+$80,levelCourtyard-levelNames
+                dc.b 2+$80,levelServiceTunnels-levelNames
+                dc.b 3+$80,levelEntrance-levelNames
+                dc.b 4+$80,levelServiceTunnels-levelNames
+                dc.b 5+$80,levelSecurityCenter-levelNames
+                dc.b 6+$80,levelUpperLabs-levelNames
+                dc.b 7+$80,levelUnderground-levelNames
+                dc.b 8+$80,levelLowerLabs-levelNames
+                dc.b 9+$80,levelSecurityCenter-levelNames
+                dc.b 10+$80,levelNetherTunnel-levelNames
+                dc.b 11+$80,levelBioDome-levelNames
+                dc.b 11+$80,levelCourtyard-levelNames
+                dc.b 12+$80,levelUnderground-levelNames
+
+levelNames:
+levelWarehouses:dc.b "WAREHOUSE",0
+levelCourtyard: dc.b "COURTYARD",0
+levelCarPark:   dc.b "CAR PARK",0
+levelServiceTunnels:dc.b "SERVICE TUNNELS",0
+levelEntrance:  dc.b "ENTRANCE",0
+levelSecurityCenter:dc.b "SECURITY CENTER",0
+levelUpperLabs: dc.b "UPPER LABS",0
+levelUnderground:dc.b "UNDERGROUND",0
+levelLowerLabs: dc.b "LOWER LABS",0
+levelNetherTunnel:dc.b "NETHER TUNNEL",0
+levelBioDome:   dc.b "BIO-DOME",0
 
                 checkscriptend

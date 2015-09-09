@@ -23,10 +23,7 @@ UL_Light:       lda chars+75*8+1,x
                 org charsetLoadBlockInfo
                 incbin bg/world00.bli
 
-                org charsetLoadName
-                dc.b "WAREHOUSE",0
-
-                org charsetLoadWaterSplashColor
+                org charsetLoadProperties
                 dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
                 dc.b 0                          ;Air toxicity delay counter

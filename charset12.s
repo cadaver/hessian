@@ -17,10 +17,7 @@ UpdateLevel:    rts
                 org charsetLoadBlockInfo
                 incbin bg/world12.bli
 
-                org charsetLoadName
-                dc.b "JORMUNGANDR",0
-
-                org charsetLoadWaterSplashColor
+                org charsetLoadProperties
                 dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
                 dc.b 20                         ;Air toxicity delay counter
