@@ -1,12 +1,12 @@
-NUMLEVELS = 13
+NUMLEVELS = 14
 
-WORLDSIZEBLOCKS = 27490
+WORLDSIZEBLOCKS = 27570
 
-WORLDSIZESCREENS = 603
+WORLDSIZESCREENS = 605
 
-LVLDATAACTTOTALSIZE = 13
+LVLDATAACTTOTALSIZE = 14
 
-LVLOBJTOTALSIZE = 20
+LVLOBJTOTALSIZE = 21
 
 lvlDataActBitsStart:
                 dc.b 0
@@ -22,7 +22,9 @@ lvlDataActBitsStart:
                 dc.b 10
                 dc.b 11
                 dc.b 12
+                dc.b 13
 lvlDataActBitsLen:
+                dc.b 1
                 dc.b 1
                 dc.b 1
                 dc.b 1
@@ -50,6 +52,7 @@ lvlObjBitsStart:
                 dc.b 16
                 dc.b 18
                 dc.b 19
+                dc.b 20
 lvlObjBitsLen:
                 dc.b 1
                 dc.b 1
@@ -62,6 +65,7 @@ lvlObjBitsLen:
                 dc.b 2
                 dc.b 1
                 dc.b 2
+                dc.b 1
                 dc.b 1
                 dc.b 1
 lvlLimitL:
@@ -77,6 +81,7 @@ lvlLimitL:
                 dc.b 41
                 dc.b 54
                 dc.b 54
+                dc.b 68
                 dc.b 59
 lvlLimitR:
                 dc.b 18
@@ -91,6 +96,7 @@ lvlLimitR:
                 dc.b 45
                 dc.b 79
                 dc.b 78
+                dc.b 70
                 dc.b 80
 lvlLimitU:
                 dc.b 11
@@ -105,6 +111,7 @@ lvlLimitU:
                 dc.b 69
                 dc.b 81
                 dc.b 9
+                dc.b 20
                 dc.b 22
 lvlLimitD:
                 dc.b 28
@@ -119,4 +126,5 @@ lvlLimitD:
                 dc.b 84
                 dc.b 119
                 dc.b 30
+                dc.b 24
                 dc.b 78

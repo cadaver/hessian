@@ -61,13 +61,13 @@ titleTexts      = chars+608+168*2
 ;START_X         = $a580
 ;START_Y         = $7400
 
-;START_LEVEL     = $0b                           ;Next to Bio-Dome
-;START_X         = $4780
-;START_Y         = $1700
+START_LEVEL     = $0b                          ;Next to Bio-Dome
+START_X         = $4780
+START_Y         = $1700
 
-START_LEVEL     = $0c                           ;Second cave
-START_X         = $1d80
-START_Y         = $1d00
+;START_LEVEL     = $0c                           ;Second cave
+;START_X         = $1d80
+;START_Y         = $1d00
 
                 org scriptCodeStart
 
@@ -914,7 +914,8 @@ levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
                 dc.b 10+$80,levelNetherTunnel-levelNames
                 dc.b 11,$50,$00,levelBioDome-levelNames
                 dc.b 11+$80,levelCourtyard-levelNames
-                dc.b 12+$80,levelUnderground-levelNames
+                dc.b 12+$80,levelThroneSuite-levelNames
+                dc.b 13+$80,levelUnderground-levelNames
 
 levelNames:
 levelWarehouses:dc.b "WAREHOUSE",0
@@ -928,5 +929,6 @@ levelUnderground:dc.b "UNDERGROUND",0
 levelLowerLabs: dc.b "LOWER LABS",0
 levelNetherTunnel:dc.b "NETHER TUNNEL",0
 levelBioDome:   dc.b "BIO-DOME",0
+levelThroneSuite:dc.b "THRONE SUITE",0
 
                 checkscriptend
