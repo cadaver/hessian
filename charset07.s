@@ -50,4 +50,4 @@ randomIndex:    dc.b 0
                 org charsetLoadProperties
                 dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
-                dc.b 25                         ;Air toxicity delay counter
+                dc.b 20+$80                     ;Air toxicity delay counter ($80=not affected by filter)

@@ -211,7 +211,10 @@ IM_BlockLoop:   lda zpSrcLo                     ;Store and increase block-
                 ldy #ZONEH_BG2                  ;Check if zone air is toxic
                 lda (zoneLo),y                  ;(result needed in several places)
                 bpl IM_NoToxicAir
+                ldy lvlAirToxinDelay            ;Unaffected by filter?
+                bmi IM_HasToxicAir
                 eor upgrade
+IM_HasToxicAir:                
 IM_NoToxicAir:  sta ULO_AirToxinFlag+1
                 rts
 
@@ -1129,7 +1132,7 @@ ULO_DestDoorNum:ldy #$00
                 jsr AlignActorOnGround
                 ldy #ZONEH_BG1
                 lda (zoneLo),y                  ;Check for save-disabled zone
-                ora ULO_AirToxinFlag+1          ;Also don't save if toxic air and no filter
+                ora ULO_AirToxinFlag+1          ;Also don't save if the zone is damaging
                 bmi ULO_NoCheckpoint
                 jsr SaveCheckpoint              ;Save checkpoint now
 ULO_NoCheckpoint:

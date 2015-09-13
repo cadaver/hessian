@@ -3584,7 +3584,7 @@ void reorganizedata()
     {
       int e;
       int charcolorused = 0;
-      if ((chcol[charsetnum][c] & 0xf) < 8)
+      if ((chcol[charsetnum][c] & 0xf) < 8 || (chcol[charsetnum][charnum] & 64))
         continue;
 
       for (e = 0; e < 8; e++)
