@@ -6,7 +6,7 @@ WORLDSIZESCREENS = 664
 
 LVLDATAACTTOTALSIZE = 14
 
-LVLOBJTOTALSIZE = 21
+LVLOBJTOTALSIZE = 23
 
 lvlDataActBitsStart:
                 dc.b 0
@@ -52,7 +52,7 @@ lvlObjBitsStart:
                 dc.b 16
                 dc.b 18
                 dc.b 19
-                dc.b 20
+                dc.b 22
 lvlObjBitsLen:
                 dc.b 1
                 dc.b 1
@@ -66,7 +66,7 @@ lvlObjBitsLen:
                 dc.b 1
                 dc.b 2
                 dc.b 1
-                dc.b 1
+                dc.b 3
                 dc.b 1
 lvlLimitL:
                 dc.b 0
