@@ -45,9 +45,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $0180
 ;START_Y         = $1700
 
-START_LEVEL     = $07                          ;First cave
-START_X         = $1e80
-START_Y         = $1c00
+;START_LEVEL     = $07                          ;First cave
+;START_X         = $1e80
+;START_Y         = $1c00
 
 ;START_LEVEL     = $08                          ;Lower labs
 ;START_X         = $3780
@@ -61,9 +61,9 @@ START_Y         = $1c00
 ;START_X         = $a580
 ;START_Y         = $7400
 
-;START_LEVEL     = $0b                          ;Next to Bio-Dome
-;START_X         = $4780
-;START_Y         = $1700
+START_LEVEL     = $0b                          ;Next to Bio-Dome
+START_X         = $4780
+START_Y         = $1700
 
 ;START_LEVEL      = $0d                          ;Server vault
 ;START_X          = $0180
