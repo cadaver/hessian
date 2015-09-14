@@ -2,10 +2,6 @@ GRENADE_DMG_RADIUS = 32
 GRENADE_MAX_YSPEED = 6*8
 GRENADE_ACCEL   = 4
 
-DRONE_IDLE_ACCEL = 4
-DRONE_ATTACK_ACCEL = 6
-DRONE_MAXSPEED = 4*8
-
         ; Smoketrail update routine
         ;
         ; Parameters: X actor index
