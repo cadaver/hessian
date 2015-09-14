@@ -859,6 +859,10 @@ void zone_mainloop(void)
       {
         zonebg2[zonenum] ^= 128;
       }
+      if (k == KEY_S)
+      {
+        zonebg3[zonenum] ^= 128;
+      }
       if (k == KEY_N)
       {
         if (!shiftdown)
@@ -1827,6 +1831,8 @@ void drawmap(void)
       strcat(textbuffer, "(NOCHECKP.)");
     if (zonebg2[zonenum] & 128)
       strcat(textbuffer, "(TOXIC AIR)");
+    if (zonebg3[zonenum] & 128)
+      strcat(textbuffer, "(NOSCROLL)");
     printtext_color(textbuffer, 0,175,SPR_FONTS,COL_WHITE);
 
     sprintf(textbuffer, "MUSIC %02X-%01X", zonemusic[zonenum] / 4, zonemusic[zonenum] % 4);

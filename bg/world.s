@@ -1,6 +1,6 @@
 NUMLEVELS = 14
 
-WORLDSIZEBLOCKS = 30290
+WORLDSIZEBLOCKS = 30330
 
 WORLDSIZESCREENS = 667
 
@@ -120,7 +120,7 @@ lvlLimitD:
                 dc.b 28
                 dc.b 50
                 dc.b 20
-                dc.b 34
+                dc.b 35
                 dc.b 60
                 dc.b 90
                 dc.b 84

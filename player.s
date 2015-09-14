@@ -103,7 +103,10 @@ MP_ControlMask: and #$ff
                 ora #JOY_DOWN
 MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
 MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
-MP_Scroll:      jsr GetActorCharCoords          ;Check scrolling
+MP_Scroll:      ldy #ZONEH_BG3
+                lda (zoneLo),y
+                bmi MP_SetWeapon                ;Scroll-disabled zone?
+                jsr GetActorCharCoords          ;Check scrolling
                 cmp #SCRCENTER_X-1
                 bcs MP_NotLeft1
                 dex
