@@ -45,9 +45,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $0180
 ;START_Y         = $1700
 
-;START_LEVEL     = $07                          ;First cave
-;START_X         = $1e80
-;START_Y         = $1c00
+START_LEVEL     = $07                          ;First cave
+START_X         = $1e80
+START_Y         = $1c00
 
 ;START_LEVEL     = $08                          ;Lower labs
 ;START_X         = $3780
@@ -65,9 +65,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $4780
 ;START_Y         = $1700
 
-START_LEVEL      = $0d                          ;Server vault
-START_X          = $0180
-START_Y          = $2300
+;START_LEVEL      = $0d                          ;Server vault
+;START_X          = $0180
+;START_Y          = $2300
 
 ;START_LEVEL     = $0e                           ;Second cave
 ;START_X         = $1d80
