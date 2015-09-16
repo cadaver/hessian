@@ -178,16 +178,6 @@ FS_PreDecrement:dec zpBitsHi
 
 FastLoadEnd:
 
-        ; Load file packed with Exomizer 2 forward mode
-        ;
-        ; Parameters: A,X load address, fileNumber
-        ; Returns: C=0 if loaded OK, or C=1 and error code in A (see GetByte)
-        ; Modifies: A,X,Y
-
-LoadFile:       sta zpDestLo
-                stx zpDestHi
-                jsr OpenFile
-
 ; -------------------------------------------------------------------
 ; This source code is altered and is not the original version found on
 ; the Exomizer homepage.
@@ -221,67 +211,6 @@ LoadFile:       sta zpDestLo
 ;   4. The names of this software and/or it's copyright holders may not be
 ;   used to endorse or promote products derived from this software without
 ;   specific prior written permission.
-;
-; -------------------------------------------------------------------
-; no code below this comment has to be modified in order to generate
-; a working decruncher of this source file.
-; However, you may want to relocate the tables last in the file to a
-; more suitable address.
-; -------------------------------------------------------------------
-;
-; -------------------------------------------------------------------
-; jsr this label to decrunch, it will in turn init the tables and
-; call the decruncher
-; no constraints on register content, however the
-; decimal flag has to be #0 (it almost always is, otherwise do a cld)
-exomizer:
-
-; -------------------------------------------------------------------
-; init zeropage, x and y regs.
-;
-  ldx #0
-  ldy #0
-init_zp:
-  jsr GetByte
-  bcs LF_Error
-  sta zpBitBuf
-
-; -------------------------------------------------------------------
-; calculate tables (50 bytes)
-; x and y must be #0 when entering
-;
-nextone:
-  inx
-  tya
-  and #$0f
-  beq shortcut    ; start with new sequence
-
-  txa          ; this clears reg a
-  lsr          ; and sets the carry flag
-  ldx tablBi-1,y
-rolle:
-  rol
-  rol zpBitsHi
-  dex
-  bpl rolle    ; c = 0 after this (rol zpBitsHi)
-
-  adc tablLo-1,y
-  tax
-
-  lda zpBitsHi
-  adc tablHi-1,y
-shortcut:
-  sta tablHi,y
-  txa
-  sta tablLo,y
-
-  ldx #4
-  jsr get_bits    ; clears x-reg.
-  sta tablBi,y
-  iny
-  cpy #52
-  bne nextone
-  beq begin
 
 ; -------------------------------------------------------------------
 ; get bits (29 bytes)
@@ -329,38 +258,65 @@ LF_Error2:
 LF_Error:
   rts
 
-; -------------------------------------------------------------------
-; main copy loop
-; x = length hi
-; y = length lo
-;
-copy_start:
-  ldy #$00
-copy_next:
-  lda (zpSrcLo),y
-  sta (zpDestLo),y
-  iny
-  bne copy_skiphi1
-  dex
-  inc zpSrcHi
-  inc zpDestHi
-copy_skiphi1:
-  cpy zpLenLo
-  bne copy_next
-  txa
-  bne copy_next
-  tya
-  clc
-  adc zpDestLo
-  sta zpDestLo
-  bcc copy_skiphi2
-copy_inchi2:
-  inc zpDestHi
-copy_skiphi2:
+        ; Load file packed with Exomizer 2 forward mode
+        ;
+        ; Parameters: A,X load address, fileNumber
+        ; Returns: C=0 if loaded OK, or C=1 and error code in A (see GetByte)
+        ; Modifies: A,X,Y
+
+LoadFile:       sta zpDestLo
+                stx zpDestHi
+                jsr OpenFile
 
 ; -------------------------------------------------------------------
-; decruncher entry point, needs calculated tables (21(13) bytes)
+; init zeropage, x and y regs.
+;
+  ldx #0
+  ldy #0
+init_zp:
+  jsr GetByte
+  bcs LF_Error
+  sta zpBitBuf
+
+; -------------------------------------------------------------------
+; calculate tables
 ; x and y must be #0 when entering
+;
+nextone:
+  inx
+  tya
+  and #$0f
+  beq shortcut    ; start with new sequence
+
+  txa          ; this clears reg a
+  lsr          ; and sets the carry flag
+  ldx tablBi-1,y
+rolle:
+  rol
+  rol zpBitsHi
+  dex
+  bpl rolle    ; c = 0 after this (rol zpBitsHi)
+
+  adc tablLo-1,y
+  tax
+
+  lda zpBitsHi
+  adc tablHi-1,y
+shortcut:
+  sta tablHi,y
+  txa
+  sta tablLo,y
+
+  ldx #4
+  jsr get_bits    ; clears x-reg.
+  sta tablBi,y
+  iny
+  cpy #52
+  bne nextone
+
+; -------------------------------------------------------------------
+; decruncher entry point, needs calculated tables
+; x must be #0 when entering
 ;
 begin:
   inx
@@ -387,19 +343,19 @@ getgamma:
   beq exomizer_ok   ; gamma = 17   : end of file
 
 ; -------------------------------------------------------------------
-; calulate length of sequence (zp_len) (11 bytes)
+; calculate length of sequence (zp_len)
 ;
   ldx tablBi-1,y
   jsr get_bits
   adc tablLo-1,y  ; we have now calculated zpLenLo
   sta zpLenLo
 ; -------------------------------------------------------------------
-; now do the hibyte of the sequence length calculation (6 bytes)
+; now do the hibyte of the sequence length calculation
   lda zpBitsHi
   adc tablHi-1,y  ; c = 0 after this.
   pha
 ; -------------------------------------------------------------------
-; here we decide what offset table to use (20 bytes)
+; here we decide what offset table to use
 ; x is 0 here
 ;
   bne nots123
@@ -433,12 +389,40 @@ skipcarry:
   sta zpSrcHi
 
 ; -------------------------------------------------------------------
-; prepare for copy loop (8(6) bytes)
+; prepare for copy loop
 ;
   pla
   tax
-  sec
-  jmp copy_start
+
+; -------------------------------------------------------------------
+; main copy loop
+; x = length hi
+; y = length lo
+;
+copy_start:
+  ldy #$00
+copy_next:
+  lda (zpSrcLo),y
+  sta (zpDestLo),y
+  iny
+  bne copy_skiphi1
+  dex
+  inc zpSrcHi
+  inc zpDestHi
+copy_skiphi1:
+  cpy zpLenLo
+  bne copy_next
+  txa
+  bne copy_next
+  tya
+  clc
+  adc zpDestLo
+  sta zpDestLo
+  bcc copy_skiphi2
+copy_inchi2:
+  inc zpDestHi
+copy_skiphi2:
+  jmp begin
 
 ; -------------------------------------------------------------------
 ; end of decruncher
