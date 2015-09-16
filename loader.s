@@ -186,8 +186,6 @@ FastLoadEnd:
 
 LoadFile:       sta zpDestLo
                 stx zpDestHi
-                tsx
-                stx LF_StackPtr+1
                 jsr OpenFile
 
 ; -------------------------------------------------------------------
@@ -309,7 +307,7 @@ bits_next:
   bne bits_ok
   pha
   jsr GetByte
-  bcs LF_Error
+  bcs LF_Error2
   sec
   ror
   sta zpBitBuf
@@ -324,21 +322,12 @@ bits_done:
 
 exomizer_ok:
   clc
-LF_Error:
-LF_StackPtr:
-  ldx #$ff
-  txs
   rts
-
-; -------------------------------------------------------------------
-; literal sequence handling
-;
-literal_start:
-  ldx #$10    ; these 16 bits
-  jsr get_bits; tell the length of the sequence
-  ldx zpBitsHi
-literal_start1: ; if literal byte, a = 1, zpBitsHi = 0
-  sta zpLenLo
+LF_Error2:
+  pla
+  pla
+LF_Error:
+  rts
 
 ; -------------------------------------------------------------------
 ; main copy loop
@@ -348,22 +337,15 @@ literal_start1: ; if literal byte, a = 1, zpBitsHi = 0
 copy_start:
   ldy #$00
 copy_next:
-  bcc copy_literal
   lda (zpSrcLo),y
-  bcs copy_store
-copy_literal:
-  jsr GetByte
-  bcs LF_Error
-copy_store:
   sta (zpDestLo),y
   iny
   bne copy_skiphi1
   dex
-  inc zpDestHi
   inc zpSrcHi
+  inc zpDestHi
 copy_skiphi1:
-  tya
-  eor zpLenLo
+  cpy zpLenLo
   bne copy_next
   txa
   bne copy_next
@@ -372,6 +354,7 @@ copy_skiphi1:
   adc zpDestLo
   sta zpDestLo
   bcc copy_skiphi2
+copy_inchi2:
   inc zpDestHi
 copy_skiphi2:
 
@@ -383,7 +366,17 @@ begin:
   inx
   jsr get_bits
   tay
-  bne literal_start1; if bit set, get a literal byte
+  beq getgamma ; if bit set, get a literal byte
+
+literal:
+  jsr GetByte
+  bcs LF_Error
+  dey
+  sta (zpDestLo),y
+  inc zpDestLo
+  bne begin
+  beq copy_inchi2
+
 getgamma:
   inx
   jsr bits_next
@@ -392,8 +385,6 @@ getgamma:
   bcc getgamma
   cpy #$11
   beq exomizer_ok   ; gamma = 17   : end of file
-  bcs literal_start ; gamma = 18   : literal sequence
-                    ; gamma = 1..16: sequence
 
 ; -------------------------------------------------------------------
 ; calulate length of sequence (zp_len) (11 bytes)
