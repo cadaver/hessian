@@ -60,8 +60,7 @@ GetByte:        ldx fileOpen
                 lda loadBuffer,x
 GB_FastCmp:     cpx #$00
                 bcs GB_FastRefill
-                inx
-                stx fileOpen
+                inc fileOpen
 FO_Done:        rts
 GB_FastRefill:  pha
                 jsr FL_FillBuffer
