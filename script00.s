@@ -581,11 +581,11 @@ ScanSaves:      lda #F_SAVELIST                 ;Load the savegamelist which con
                 cpx #MAX_SAVES
                 bne SaveSlotOK
                 sta saveSlotChoice
-SaveSlotOK:     tax
+SaveSlotOK:     tay
 ReadSaveList:   jsr GetByte
                 bcs ScanSaveLoop
-                sta saveList,x
-                inx
+                sta saveList,y
+                iny
                 bcc ReadSaveList
 ScanSaveLoop:   lda #8
                 sta temp1

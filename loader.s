@@ -1126,8 +1126,7 @@ SS_PreDecrement:dec zpBitsHi
 CloseKernalFile:lda #$02
                 jsr Close
                 dec fileOpen
-KernalOff:      lda #$35
-Store01Value:   sta $01
+KernalOff:      dec $01
                 rts
 
 PrepareKernalIO:inc fileOpen                    ;Set fileopen indicator, raster delays are to be expected
@@ -1155,7 +1154,8 @@ InitRegs:       jsr SilenceSID
                 sta $d015                       ;Sprites off
                 sta $d011                       ;Blank screen
 KernalOnFast:   lda #$36
-                bne Store01Value
+                sta $01
+                rts
 
 SetFileName:    lda #$02
                 ldx #<fileName
