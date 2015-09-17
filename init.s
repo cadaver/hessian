@@ -35,11 +35,11 @@ InitZP:         sta joystick,x
                 lda #F_OPTIONS
                 jsr MakeFileName_Direct
                 jsr OpenFile
-                ldx #$00
+                ldy #$00
 LoadOptions:    jsr GetByte
                 bcs LoadOptionsDone
-                sta difficulty,x
-                inx
+                sta difficulty,y
+                iny
                 bcc LoadOptions
 LoadOptionsDone:
 

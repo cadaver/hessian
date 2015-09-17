@@ -53,26 +53,24 @@ SaveFile:       jmp FastSave
         ; $01 - Read error
         ; $02 - File not found
         ; $80 - Device not present
-        ; Modifies: A
+        ; Modifies: A,X
 
-GetByte:        stx loadTempReg
-                ldx fileOpen
+GetByte:        ldx fileOpen
                 beq GB_Closed
                 lda loadBuffer,x
 GB_FastCmp:     cpx #$00
                 bcs GB_FastRefill
                 inx
                 stx fileOpen
-GB_FastCommon:  ldx loadTempReg
 FO_Done:        rts
 GB_FastRefill:  pha
                 jsr FL_FillBuffer
                 pla
                 clc
-                bcc GB_FastCommon
+                rts
 GB_Closed:      lda loadBuffer+2
                 sec
-                bcs GB_FastCommon
+                rts
 
 FastOpen:       ldx fileOpen                    ;A file already open? If so, do nothing
                 bne FO_Done                     ;(allows chaining of files)
@@ -234,10 +232,11 @@ get_bits:
 bits_next:
   lsr zpBitBuf
   bne bits_ok
-bits_refill:
   pha
+  stx loadTempReg
   jsr GetByte
-  bcs LF_Error2
+  ldx loadTempReg
+  bcs LF_Error3
   sec
   ror
   sta zpBitBuf
@@ -253,7 +252,8 @@ bits_done:
 exomizer_ok:
   clc
   rts
-LF_Error2:
+LF_Error3:
+  pla
   pla
   pla
 LF_Error:
@@ -272,12 +272,12 @@ LoadFile:       sta zpDestLo
 ; -------------------------------------------------------------------
 ; init zeropage, x and y regs.
 ;
-  ldx #0
-  ldy #0
 init_zp:
   jsr GetByte
   bcs LF_Error
   sta zpBitBuf
+  ldx #0
+  ldy #0
 
 ; -------------------------------------------------------------------
 ; calculate tables
@@ -317,15 +317,16 @@ shortcut:
 
 ; -------------------------------------------------------------------
 ; decruncher entry point, needs calculated tables
-; x must be #0 when entering
 ;
 begin:
   ldy #$00
   lsr zpBitBuf
   bne norefill1
-  inx
-  jsr bits_refill
-  lsr
+  jsr GetByte
+  bcs LF_Error
+  sec
+  ror
+  sta zpBitBuf
 norefill1:
   bcc getgamma ; if bit set, get a literal byte
 
@@ -340,9 +341,11 @@ literal:
 getgamma:
   lsr zpBitBuf
   bne norefill2
-  inx
-  jsr bits_refill
-  lsr
+  jsr GetByte
+  bcs LF_Error
+  sec
+  ror
+  sta zpBitBuf
 norefill2:
   iny
   bcc getgamma
@@ -1061,8 +1064,7 @@ ilSlowLoadStart:
                 jmp SlowOpen
                 jmp SlowSave
 
-SlowGetByte:    stx loadTempReg
-                lda fileOpen
+SlowGetByte:    lda fileOpen
                 beq SGB_Closed
                 lda #$36
                 sta $01
@@ -1073,7 +1075,6 @@ SlowGetByte:    stx loadTempReg
                 dec $01
 SGB_LastByte:   pla
                 clc
-SGB_EndCommon:  ldx loadTempReg
 SO_Done:        rts
 SGB_EOF:        pha
                 sty loadTempReg2
@@ -1086,7 +1087,7 @@ SGB_EOF:        pha
                 pla
 SGB_Closed:     lda #$00
                 sec
-                bcs SGB_EndCommon
+                rts
 
 SlowOpen:       lda fileOpen
                 bne SO_Done
