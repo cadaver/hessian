@@ -29,6 +29,265 @@ InitializeDrive = $d005         ;1541 only
 
                 org mainCodeStart
 
+; -------------------------------------------------------------------
+; This source code is altered and is not the original version found on
+; the Exomizer homepage.
+; It contains modifications made by Krill/Plush to depack a packed file
+; crunched forward and to work with his loader.
+;
+; Further modification & bugfixing of the forward decruncher by Lasse
+; Öörni
+; -------------------------------------------------------------------
+;
+; Copyright (c) 2002 - 2005 Magnus Lind.
+;
+; This software is provided 'as-is', without any express or implied warranty.
+; In no event will the authors be held liable for any damages arising from
+; the use of this software.
+;
+; Permission is granted to anyone to use this software for any purpose,
+; including commercial applications, and to alter it and redistribute it
+; freely, subject to the following restrictions:
+;
+;   1. The origin of this software must not be misrepresented; you must not
+;   claim that you wrote the original software. If you use this software in a
+;   product, an acknowledgment in the product documentation would be
+;   appreciated but is not required.
+;
+;   2. Altered source versions must be plainly marked as such, and must not
+;   be misrepresented as being the original software.
+;
+;   3. This notice may not be removed or altered from any distribution.
+;
+;   4. The names of this software and/or it's copyright holders may not be
+;   used to endorse or promote products derived from this software without
+;   specific prior written permission.
+
+; -------------------------------------------------------------------
+; get bits (29 bytes)
+;
+; args:
+;   x = number of bits to get
+; returns:
+;   a = #bits_lo
+;   x = #0
+;   c = 0
+;   z = 1
+;   zpBitsHi = #bits_hi
+; notes:
+;   y is untouched
+; -------------------------------------------------------------------
+get_bits:
+  lda #$00
+  sta zpBitsHi
+  cpx #$01
+  bcc bits_done
+bits_next:
+  lsr zpBitBuf
+  bne bits_ok
+  pha
+  stx loadTempReg
+  jsr GetByte
+  ldx loadTempReg
+  bcs LF_Error3
+  sec
+  ror
+  sta zpBitBuf
+  pla
+bits_ok:
+  rol
+  rol zpBitsHi
+  dex
+  bne bits_next
+bits_done:
+  rts
+
+LF_Error3:
+  pla
+  pla
+  pla
+LF_Error:
+  rts
+
+        ; Load file packed with Exomizer 2 forward mode
+        ;
+        ; Parameters: A,X load address, fileNumber
+        ; Returns: C=0 if loaded OK, or C=1 and error code in A (see GetByte)
+        ; Modifies: A,X,Y
+
+LoadFile:       sta zpDestLo
+                stx zpDestHi
+                jsr OpenFile
+
+; -------------------------------------------------------------------
+; init zeropage, x and y regs.
+;
+init_zp:
+  jsr GetByte
+  ;bcs LF_Error  ;Error will be caught later
+  sta zpBitBuf
+  ldx #0
+  ldy #0
+
+; -------------------------------------------------------------------
+; calculate tables
+; x and y must be #0 when entering
+;
+nextone:
+  inx
+  tya
+  and #$0f
+  beq shortcut    ; start with new sequence
+
+  txa          ; this clears reg a
+  lsr          ; and sets the carry flag
+  ldx tablBi-1,y
+rolle:
+  rol
+  rol zpBitsHi
+  dex
+  bpl rolle    ; c = 0 after this (rol zpBitsHi)
+
+  adc tablLo-1,y
+  tax
+
+  lda zpBitsHi
+  adc tablHi-1,y
+shortcut:
+  sta tablHi,y
+  txa
+  sta tablLo,y
+
+  ldx #4
+  jsr get_bits    ; clears x-reg.
+  sta tablBi,y
+  iny
+  cpy #52
+  bne nextone
+
+; -------------------------------------------------------------------
+; decruncher entry point, needs calculated tables
+;
+begin:
+  ldy #$00
+  lsr zpBitBuf
+  bne norefill1
+  jsr GetByte
+  bcs LF_Error
+  sec
+  ror
+  sta zpBitBuf
+norefill1:
+  bcc getgamma ; if bit set, get a literal byte
+
+literal:
+  jsr GetByte
+  ;bcs LF_Error ;Error will be caught later
+  sta (zpDestLo),y
+  inc zpDestLo
+  bne begin
+  beq copy_inchi2
+
+getgamma:
+  lsr zpBitBuf
+  bne norefill2
+  jsr GetByte
+  bcs LF_Error
+  sec
+  ror
+  sta zpBitBuf
+norefill2:
+  iny
+  bcc getgamma
+  cpy #$11
+  beq LF_Success   ; gamma = 17   : end of file
+
+; -------------------------------------------------------------------
+; calculate length of sequence (zp_len)
+;
+  ldx tablBi-1,y
+  jsr get_bits
+  adc tablLo-1,y  ; we have now calculated zpLenLo
+  sta zpLenLo
+; -------------------------------------------------------------------
+; now do the hibyte of the sequence length calculation
+  lda zpBitsHi
+  adc tablHi-1,y  ; c = 0 after this.
+  pha
+; -------------------------------------------------------------------
+; here we decide what offset table to use
+; x is 0 here
+;
+  bne nots123
+  ldy zpLenLo
+  cpy #$04
+  bcc size123
+nots123:
+  ldy #$03
+size123:
+  ldx tablBit-1,y
+  jsr get_bits
+  adc tablOff-1,y  ; c = 0 after this.
+  tay      ; 1 <= y <= 52 here
+
+; -------------------------------------------------------------------
+; calulate absolute offset (zp_src)
+;
+  ldx tablBi,y
+  jsr get_bits
+  adc tablLo,y
+  bcc skipcarry
+  inc zpBitsHi
+skipcarry:
+  sec
+  eor #$ff
+  adc zpDestLo
+  sta zpSrcLo
+  lda zpDestHi
+  sbc zpBitsHi
+  sbc tablHi,y
+  sta zpSrcHi
+
+; -------------------------------------------------------------------
+; prepare for copy loop
+;
+  pla
+  tax
+
+; -------------------------------------------------------------------
+; main copy loop
+; x = length hi
+; y = length lo
+;
+copy_start:
+  ldy #$00
+copy_next:
+  lda (zpSrcLo),y
+  sta (zpDestLo),y
+  iny
+  bne copy_skiphi1
+  dex
+  inc zpSrcHi
+  inc zpDestHi
+copy_skiphi1:
+  cpy zpLenLo
+  bne copy_next
+  txa
+  bne copy_next
+  tya
+  clc
+  adc zpDestLo
+  sta zpDestLo
+  bcc copy_skiphi2
+copy_inchi2:
+  inc zpDestHi
+copy_skiphi2:
+  jmp begin
+
+; -------------------------------------------------------------------
+; end of decruncher
+; -------------------------------------------------------------------
+
         ; Open file
         ;
         ; Parameters: fileNumber
@@ -65,8 +324,8 @@ FO_Done:        rts
 GB_FastRefill:  pha
                 jsr FL_FillBuffer
                 pla
-                clc
-                rts
+LF_Success:     clc                             ;Note: there is clc rts in the same location
+                rts                             ;also in the slowload routines
 GB_Closed:      lda loadBuffer+2
                 sec
                 rts
@@ -174,268 +433,6 @@ FS_PreDecrement:dec zpBitsHi
                 rts
 
 FastLoadEnd:
-
-; -------------------------------------------------------------------
-; This source code is altered and is not the original version found on
-; the Exomizer homepage.
-; It contains modifications made by Krill/Plush to depack a packed file
-; crunched forward and to work with his loader.
-;
-; Further modification & bugfixing of the forward decruncher by Lasse
-; Öörni
-; -------------------------------------------------------------------
-;
-; Copyright (c) 2002 - 2005 Magnus Lind.
-;
-; This software is provided 'as-is', without any express or implied warranty.
-; In no event will the authors be held liable for any damages arising from
-; the use of this software.
-;
-; Permission is granted to anyone to use this software for any purpose,
-; including commercial applications, and to alter it and redistribute it
-; freely, subject to the following restrictions:
-;
-;   1. The origin of this software must not be misrepresented; you must not
-;   claim that you wrote the original software. If you use this software in a
-;   product, an acknowledgment in the product documentation would be
-;   appreciated but is not required.
-;
-;   2. Altered source versions must be plainly marked as such, and must not
-;   be misrepresented as being the original software.
-;
-;   3. This notice may not be removed or altered from any distribution.
-;
-;   4. The names of this software and/or it's copyright holders may not be
-;   used to endorse or promote products derived from this software without
-;   specific prior written permission.
-
-; -------------------------------------------------------------------
-; get bits (29 bytes)
-;
-; args:
-;   x = number of bits to get
-; returns:
-;   a = #bits_lo
-;   x = #0
-;   c = 0
-;   z = 1
-;   zpBitsHi = #bits_hi
-; notes:
-;   y is untouched
-; -------------------------------------------------------------------
-get_bits:
-  lda #$00
-  sta zpBitsHi
-  cpx #$01
-  bcc bits_done
-bits_next:
-  lsr zpBitBuf
-  bne bits_ok
-  pha
-  stx loadTempReg
-  jsr GetByte
-  ldx loadTempReg
-  bcs LF_Error3
-  sec
-  ror
-  sta zpBitBuf
-  pla
-bits_ok:
-  rol
-  rol zpBitsHi
-  dex
-  bne bits_next
-bits_done:
-  rts
-
-exomizer_ok:
-  clc
-  rts
-LF_Error3:
-  pla
-  pla
-  pla
-LF_Error:
-  rts
-
-        ; Load file packed with Exomizer 2 forward mode
-        ;
-        ; Parameters: A,X load address, fileNumber
-        ; Returns: C=0 if loaded OK, or C=1 and error code in A (see GetByte)
-        ; Modifies: A,X,Y
-
-LoadFile:       sta zpDestLo
-                stx zpDestHi
-                jsr OpenFile
-
-; -------------------------------------------------------------------
-; init zeropage, x and y regs.
-;
-init_zp:
-  jsr GetByte
-  ;bcs LF_Error  ;Error will be caught later
-  sta zpBitBuf
-  ldx #0
-  ldy #0
-
-; -------------------------------------------------------------------
-; calculate tables
-; x and y must be #0 when entering
-;
-nextone:
-  inx
-  tya
-  and #$0f
-  beq shortcut    ; start with new sequence
-
-  txa          ; this clears reg a
-  lsr          ; and sets the carry flag
-  ldx tablBi-1,y
-rolle:
-  rol
-  rol zpBitsHi
-  dex
-  bpl rolle    ; c = 0 after this (rol zpBitsHi)
-
-  adc tablLo-1,y
-  tax
-
-  lda zpBitsHi
-  adc tablHi-1,y
-shortcut:
-  sta tablHi,y
-  txa
-  sta tablLo,y
-
-  ldx #4
-  jsr get_bits    ; clears x-reg.
-  sta tablBi,y
-  iny
-  cpy #52
-  bne nextone
-
-; -------------------------------------------------------------------
-; decruncher entry point, needs calculated tables
-;
-begin:
-  ldy #$00
-  lsr zpBitBuf
-  bne norefill1
-  jsr GetByte
-  bcs LF_Error
-  sec
-  ror
-  sta zpBitBuf
-norefill1:
-  bcc getgamma ; if bit set, get a literal byte
-
-literal:
-  jsr GetByte
-  ;bcs LF_Error ;Error will be caught later
-  sta (zpDestLo),y
-  inc zpDestLo
-  bne begin
-  beq copy_inchi2
-
-getgamma:
-  lsr zpBitBuf
-  bne norefill2
-  jsr GetByte
-  bcs LF_Error
-  sec
-  ror
-  sta zpBitBuf
-norefill2:
-  iny
-  bcc getgamma
-  cpy #$11
-  beq exomizer_ok   ; gamma = 17   : end of file
-
-; -------------------------------------------------------------------
-; calculate length of sequence (zp_len)
-;
-  ldx tablBi-1,y
-  jsr get_bits
-  adc tablLo-1,y  ; we have now calculated zpLenLo
-  sta zpLenLo
-; -------------------------------------------------------------------
-; now do the hibyte of the sequence length calculation
-  lda zpBitsHi
-  adc tablHi-1,y  ; c = 0 after this.
-  pha
-; -------------------------------------------------------------------
-; here we decide what offset table to use
-; x is 0 here
-;
-  bne nots123
-  ldy zpLenLo
-  cpy #$04
-  bcc size123
-nots123:
-  ldy #$03
-size123:
-  ldx tablBit-1,y
-  jsr get_bits
-  adc tablOff-1,y  ; c = 0 after this.
-  tay      ; 1 <= y <= 52 here
-
-; -------------------------------------------------------------------
-; calulate absolute offset (zp_src)
-;
-  ldx tablBi,y
-  jsr get_bits
-  adc tablLo,y
-  bcc skipcarry
-  inc zpBitsHi
-skipcarry:
-  sec
-  eor #$ff
-  adc zpDestLo
-  sta zpSrcLo
-  lda zpDestHi
-  sbc zpBitsHi
-  sbc tablHi,y
-  sta zpSrcHi
-
-; -------------------------------------------------------------------
-; prepare for copy loop
-;
-  pla
-  tax
-
-; -------------------------------------------------------------------
-; main copy loop
-; x = length hi
-; y = length lo
-;
-copy_start:
-  ldy #$00
-copy_next:
-  lda (zpSrcLo),y
-  sta (zpDestLo),y
-  iny
-  bne copy_skiphi1
-  dex
-  inc zpSrcHi
-  inc zpDestHi
-copy_skiphi1:
-  cpy zpLenLo
-  bne copy_next
-  txa
-  bne copy_next
-  tya
-  clc
-  adc zpDestLo
-  sta zpDestLo
-  bcc copy_skiphi2
-copy_inchi2:
-  inc zpDestHi
-copy_skiphi2:
-  jmp begin
-
-; -------------------------------------------------------------------
-; end of decruncher
-; -------------------------------------------------------------------
 
         ; Loading initialization related subroutines, also used by mainpart
 
