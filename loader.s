@@ -170,6 +170,7 @@ shortcut:
 ;
 begin:
   ldy #$00
+begin_yzero:
   lsr zpBitBuf
   bne norefill1
   jsr GetByte
@@ -185,7 +186,7 @@ literal:
   ;bcs LF_Error ;Error will be caught later
   sta (zpDestLo),y
   inc zpDestLo
-  bne begin
+  bne begin_yzero
   beq copy_inchi2
 
 getgamma:
