@@ -273,7 +273,7 @@ LoadFile:       sta zpDestLo
 ;
 init_zp:
   jsr GetByte
-  bcs LF_Error
+  ;bcs LF_Error  ;Error will be caught later
   sta zpBitBuf
   ldx #0
   ldy #0
@@ -331,7 +331,7 @@ norefill1:
 
 literal:
   jsr GetByte
-  bcs LF_Error
+  ;bcs LF_Error ;Error will be caught later
   sta (zpDestLo),y
   inc zpDestLo
   bne begin
