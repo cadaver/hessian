@@ -7,7 +7,11 @@ int main(int argc, char **argv)
   FILE *in;
   FILE *out;
   char cmd[256];
-  if (argc < 3) printf("Invokes exomizer2 (forward mode + literals), strips startaddress from header\nUsage: pack2 <infile> <outfile>\n");
+  if (argc < 3) 
+  {
+    printf("Invokes exomizer2 (forward mode + no lit.seq.), strips startaddress from header\nUsage: pack2 <infile> <outfile>\n");
+    return 1;
+  }
   
   sprintf(cmd, "exomizer2 level -c -f -o%s %s@0", "temp.bin", argv[1]);
   val = system(cmd);
