@@ -11,22 +11,6 @@ TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
 
-        ; Blank the gamescreen and turn off sprites
-        ; (return to normal display by calling UpdateFrame)
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X
-        
-BlankScreen:    jsr WaitBottom
-                lda #$57
-                sta Irq1_ScrollY+1
-BS_Common:      ldx #$00
-                stx Irq1_D015+1
-                stx Irq1_MaxSprY+1
-                stx Irq4_LevelUpdate+1          ;Disable level animation by default
-                rts
-                
         ; IRQ common startup code
 
 StartIrq:       cld
@@ -36,6 +20,32 @@ StartIrq:       cld
                 lda #$35                        ;Ensure IO memory is available
                 sta $01
                 rts
+
+        ;Raster interrupt 4. Set C128 to 2MHz mode and SCPU to turbo mode,
+        ;if no loading going on. Also animate level graphics
+
+Irq4:           jsr StartIrq
+                ldx fileOpen
+                bne Irq4_NoTurbo
+                inx
+                stx $d07b
+                stx $d030
+Irq4_NoTurbo:   
+Irq4_LevelUpdate:
+                lda #$00                        ;Animate level background?
+                beq Irq4_NoLevelUpdate
+                if SHOW_LEVELUPDATE_TIME > 0
+                inc $d020
+                endif
+                jsr UpdateLevel
+                if SHOW_LEVELUPDATE_TIME > 0
+                dec $d020
+                endif
+Irq4_NoLevelUpdate:
+                lda #<Irq1
+                ldx #>Irq1
+                ldy #IRQ1_LINE
+                jmp Irq3_EndJump
 
         ; Raster interrupt 5. Text screen split
 
@@ -322,29 +332,3 @@ Irq3_End:       lda #<Irq4
                 ldx #>Irq4
                 ldy #IRQ4_LINE
 Irq3_EndJump:   jmp SetNextIrq
-
-        ;Raster interrupt 4. Set C128 to 2MHz mode and SCPU to turbo mode,
-        ;if no loading going on. Also animate level graphics
-
-Irq4:           jsr StartIrq
-                ldx fileOpen
-                bne Irq4_NoTurbo
-                inx
-                stx $d07b
-                stx $d030
-Irq4_NoTurbo:   
-Irq4_LevelUpdate:
-                lda #$00                        ;Animate level background?
-                beq Irq4_NoLevelUpdate
-                if SHOW_LEVELUPDATE_TIME > 0
-                inc $d020
-                endif
-                jsr UpdateLevel
-                if SHOW_LEVELUPDATE_TIME > 0
-                dec $d020
-                endif
-Irq4_NoLevelUpdate:
-                lda #<Irq1
-                ldx #>Irq1
-                ldy #IRQ1_LINE
-                bne Irq3_EndJump

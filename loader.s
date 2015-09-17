@@ -164,42 +164,33 @@ shortcut:
   iny
   cpy #52
   bne nextone
-
-; -------------------------------------------------------------------
-; decruncher entry point, needs calculated tables
-;
-begin:
-  ldy #$00
-begin_yzero:
-  lsr zpBitBuf
-  bne norefill1
-  jsr GetByte
-  bcs LF_Error
-  sec
-  ror
-  sta zpBitBuf
-norefill1:
-  bcc getgamma ; if bit set, get a literal byte
+  beq begin
 
 literal:
   jsr GetByte
   ;bcs LF_Error ;Error will be caught later
   sta (zpDestLo),y
   inc zpDestLo
-  bne begin_yzero
   beq copy_inchi2
 
+; -------------------------------------------------------------------
+; decruncher entry point, needs calculated tables
+;
+begin:
+  ldy #$ff
 getgamma:
   lsr zpBitBuf
-  bne norefill2
+  bne norefill
   jsr GetByte
   bcs LF_Error
   sec
   ror
   sta zpBitBuf
-norefill2:
+norefill:
   iny
   bcc getgamma
+  tya
+  beq literal
   cpy #$11
   beq LF_Success   ; gamma = 17   : end of file
 
