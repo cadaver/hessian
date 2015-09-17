@@ -234,6 +234,7 @@ get_bits:
 bits_next:
   lsr zpBitBuf
   bne bits_ok
+bits_refill:
   pha
   jsr GetByte
   bcs LF_Error2
@@ -319,24 +320,30 @@ shortcut:
 ; x must be #0 when entering
 ;
 begin:
+  ldy #$00
+  lsr zpBitBuf
+  bne norefill1
   inx
-  jsr get_bits
-  tay
-  beq getgamma ; if bit set, get a literal byte
+  jsr bits_refill
+  lsr
+norefill1:
+  bcc getgamma ; if bit set, get a literal byte
 
 literal:
   jsr GetByte
   bcs LF_Error
-  dey
   sta (zpDestLo),y
   inc zpDestLo
   bne begin
   beq copy_inchi2
 
 getgamma:
+  lsr zpBitBuf
+  bne norefill2
   inx
-  jsr bits_next
+  jsr bits_refill
   lsr
+norefill2:
   iny
   bcc getgamma
   cpy #$11
