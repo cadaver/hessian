@@ -120,10 +120,13 @@ begin:
   bne sequence
 
 literal:
-  lda #1
-  sta zpLenLo
   jsr getbyte
-  bcs store
+  sta (zpDestLo),y
+  inc zpDestLo
+  bne begin
+inchi:
+  inc zpDestHi
+  bne begin
 
 sequence:
   cpy #$11
@@ -177,7 +180,6 @@ copy_start:
   ldy #$00
 copy_next:
   lda (zpSrcLo),y
-store:
   sta (zpDestLo),y
   iny
   cpy zpLenLo
@@ -188,8 +190,7 @@ store:
   adc zpDestLo
   sta zpDestLo
   bcc begin
-  inc zpDestHi
-  bcs begin
+  bcs inchi
 
 ready:
   jmp InitLoader
