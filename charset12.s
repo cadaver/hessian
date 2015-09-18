@@ -5,7 +5,43 @@
 
                 org lvlCodeStart
 
-UpdateLevel:    rts
+UpdateLevel:    lda elevatorCounter
+                clc
+                adc elevatorSpeed
+UL_ScrollLoop:  sta elevatorCounter
+                bmi UL_ScrollUp
+                cmp #$40
+                bcs UL_ScrollDown
+                rts
+UL_ScrollUp:    clc
+                adc #$40
+                pha
+                ldy chars+251*8+15
+                ldx #14
+UL_ScrollUpLoop:lda chars+251*8,x
+                sta chars+251*8+1,x
+                dex
+                bpl UL_ScrollUpLoop
+                sty chars+251*8
+UL_ScrollEndCommon:
+                pla
+                jmp UL_ScrollLoop
+UL_ScrollDown:  sbc #$40
+                pha
+                ldy chars+251*8
+                ldx #0
+UL_ScrollDownLoop:
+                lda chars+251*8+1,x
+                sta chars+251*8,x
+                inx
+                cpx #15
+                bcc UL_ScrollDownLoop
+                sty chars+251*8+15
+                bcs UL_ScrollEndCommon
+
+                org charInfo-2
+elevatorCounter:dc.b $20
+elevatorSpeed:  dc.b 0
 
                 org charInfo
                 incbin bg/world12.chi
