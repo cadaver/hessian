@@ -43,7 +43,7 @@ hessian.d81: hessian.d64 hessiand81.seq
 loader.prg: kernal.s loader.s loadsym.txt ldepack.s macros.s memory.s
 	dasm loader.s -oloader.bin -sloader.tbl -f3
 	symbols loader.tbl loadsym.s loadsym.txt
-	lpack loader.bin loader.pak
+	pack2 loader.bin loader.pak
 	dasm ldepack.s -oloader.prg
 
 sfx/pistol.sfx: sfx/pistol.ins
@@ -140,7 +140,7 @@ sfx/jump.sfx: sfx/jump.ins
 	ins2nt2 sfx/jump.ins sfx/jump.sfx
 
 main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s cutscene.s file.s init.s input.s item.s itemdata.s level.s \
-	leveldata.s levelactors.s macros.s main.s math.s memory.s panel.s paneldata.s physics.s player.s plot.s raster.s screen.s script.s \
+	leveldata.s macros.s main.s math.s memory.s panel.s paneldata.s physics.s player.s plot.s raster.s screen.s script.s \
 	sound.s sounddata.s sprite.s text.s weapon.s weapondata.s loader.prg bg/scorescr.chr bg/world.s sfx/pistol.sfx sfx/shotgun.sfx \
 	sfx/autorifle.sfx sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
