@@ -126,7 +126,6 @@ init_zp:
   jsr GetByte
   ;bcs LF_Error  ;Error will be caught later
   sta zpBitBuf
-  ldx #0
   ldy #0
 
 ; -------------------------------------------------------------------
@@ -134,7 +133,7 @@ init_zp:
 ; x and y must be #0 when entering
 ;
 nextone:
-  inx
+  ldx #1
   tya
   and #$0f
   beq shortcut    ; start with new sequence
