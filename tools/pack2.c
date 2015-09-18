@@ -9,11 +9,11 @@ int main(int argc, char **argv)
   char cmd[256];
   if (argc < 3) 
   {
-    printf("Invokes exomizer2 (forward mode + no lit.seq.), strips startaddress from header\nUsage: pack2 <infile> <outfile>\n");
+    printf("Invokes patched exomizer2.07 (forward mode + no literal sequences + max.sequence 255 bytes), strips startaddress from header\nUsage: pack2 <infile> <outfile>\n");
     return 1;
   }
   
-  sprintf(cmd, "exomizer2 level -c -f -o%s %s@0", "temp.bin", argv[1]);
+  sprintf(cmd, "exomizer207 level -M254 -c -f -o%s %s@0", "temp.bin", argv[1]);
   val = system(cmd);
   if (val > 0) return val;
 

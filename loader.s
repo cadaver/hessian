@@ -35,8 +35,8 @@ InitializeDrive = $d005         ;1541 only
 ; It contains modifications made by Krill/Plush to depack a packed file
 ; crunched forward and to work with his loader.
 ;
-; Further modification & bugfixing of the forward decruncher by Lasse
-; Öörni
+; Modified for Hessian (optimizations, max. sequence 255 bytes) by
+; Lasse Oorni
 ; -------------------------------------------------------------------
 ;
 ; Copyright (c) 2002 - 2005 Magnus Lind.
@@ -206,15 +206,9 @@ sequence:
   adc tablLo-1,y  ; we have now calculated zpLenLo
   sta zpLenLo
 ; -------------------------------------------------------------------
-; now do the hibyte of the sequence length calculation
-  lda zpBitsHi
-  adc tablHi-1,y  ; c = 0 after this.
-  pha
-; -------------------------------------------------------------------
 ; here we decide what offset table to use
 ; x is 0 here
 ;
-  bne nots123
   ldy zpLenLo
   cpy #$04
   bcc size123
@@ -245,14 +239,7 @@ skipcarry:
   sta zpSrcHi
 
 ; -------------------------------------------------------------------
-; prepare for copy loop
-;
-  pla
-  tax
-
-; -------------------------------------------------------------------
 ; main copy loop
-; x = length hi
 ; y = length lo
 ;
 copy_start:
@@ -261,14 +248,7 @@ copy_next:
   lda (zpSrcLo),y
   sta (zpDestLo),y
   iny
-  bne copy_skiphi1
-  dex
-  inc zpSrcHi
-  inc zpDestHi
-copy_skiphi1:
   cpy zpLenLo
-  bne copy_next
-  txa
   bne copy_next
   tya
   ldy #$00
