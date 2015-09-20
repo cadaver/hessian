@@ -419,7 +419,7 @@ UA_SpawnCount:  cmp #$00
                 beq UA_SpawnDone
 UA_NoSpawnLimit:dey
 UA_SpawnDelay:  lda #$00                      ;Spawn delay counting
-                sec
+                clc
                 ;adc (zoneLo),y
                 adc #$10
                 sta UA_SpawnDelay+1
@@ -1416,6 +1416,9 @@ AS_CheckBackground:
                 jsr GetCharInfo
                 and #CI_GROUND|CI_OBSTACLE|CI_NOSPAWN
                 cmp temp3
+                bne AS_Remove
+                jsr GetCharInfo1Above           ;Do not spawn into a wall
+                and #CI_OBSTACLE
                 bne AS_Remove
 AS_SpawnOK:     jsr InitActor
                 inc UA_SpawnCount+1
