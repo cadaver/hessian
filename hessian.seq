@@ -1,61 +1,63 @@
-loader.prg HESSIAN
-main.pak 00
-logo.pak 01
-common.pak 02
-item.pak 03
-weapon.pak 04
-playert.pak 05
-playerta.pak 06
-playerb.pak 07
-playerba.pak 08
-level00.pak 10
-level01.pak 11
-level02.pak 12
-level03.pak 13
-level04.pak 14
-level05.pak 15
-level06.pak 16
-level07.pak 17
-level08.pak 18
-level09.pak 19
-level10.pak 1a
-level11.pak 1b
-level12.pak 1c
-level13.pak 1d
-level14.pak 1e
-charset00.pak 20
-charset01.pak 21
-charset02.pak 22
-charset03.pak 23
-charset04.pak 24
-charset05.pak 25
-charset06.pak 26
-charset07.pak 27
-charset08.pak 28
-charset09.pak 29
-charset10.pak 2a
-charset11.pak 2b
-charset12.pak 2c
-charset13.pak 2d
-charset14.pak 2e
-music00.pak 30
-music01.pak 31
-music02.pak 32
-music03.pak 33
-music04.pak 34
-music05.pak 35
-music06.pak 36
-music07.pak 37
-music08.pak 38
-music09.pak 39
-music10.pak 3A
-music11.pak 3B
-music12.pak 3C
-script00.pak 40
-options.bin 70
-savelist.bin 71
-emptysave.bin 72
-emptysave.bin 73
-emptysave.bin 74
-emptysave.bin 75
-emptysave.bin 76
+format hessian,he d64 hessian.d64 8
+write loader.prg @8:hessian
+write main.pak @8:00
+write logo.pak @8:01
+write common.pak @8:02
+write item.pak @8:03
+write weapon.pak @8:04
+write playert.pak @8:05
+write playerta.pak @8:06
+write playerb.pak @8:07
+write playerba.pak @8:08
+write level00.pak @8:10
+write level01.pak @8:11
+write level02.pak @8:12
+write level03.pak @8:13
+write level04.pak @8:14
+write level05.pak @8:15
+write level06.pak @8:16
+write level07.pak @8:17
+write level08.pak @8:18
+write level09.pak @8:19
+write level10.pak @8:1a
+write level11.pak @8:1b
+write level12.pak @8:1c
+write level13.pak @8:1d
+write level14.pak @8:1e
+write charset00.pak @8:20
+write charset01.pak @8:21
+write charset02.pak @8:22
+write charset03.pak @8:23
+write charset04.pak @8:24
+write charset05.pak @8:25
+write charset06.pak @8:26
+write charset07.pak @8:27
+write charset08.pak @8:28
+write charset09.pak @8:29
+write charset10.pak @8:2a
+write charset11.pak @8:2b
+write charset12.pak @8:2c
+write charset13.pak @8:2d
+write charset14.pak @8:2e
+write music00.pak @8:30
+write music01.pak @8:31
+write music02.pak @8:32
+write music03.pak @8:33
+write music04.pak @8:34
+write music05.pak @8:35
+write music06.pak @8:36
+write music07.pak @8:37
+write music08.pak @8:38
+write music09.pak @8:39
+write music10.pak @8:3a
+write music11.pak @8:3b
+write music12.pak @8:3c
+write script00.pak @8:40
+write options.bin @8:70
+write savelist.bin @8:71
+write emptysave.bin @8:72
+write emptysave.bin @8:73
+write emptysave.bin @8:74
+write emptysave.bin @8:75
+write emptysave.bin @8:76
+
