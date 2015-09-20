@@ -164,9 +164,8 @@ AI_FollowCheckStairsLevel:
                 jmp AI_FollowHorizontal         ;Instead move to top of stairs first
 
 AI_FollowClimbToStairs:
-                lda #-8*8                       ;Note: this is a movement the player can not do, but this
-                jsr MoveActorY                  ;way we don't have to rely on the NPC being able to jump
-                jmp AI_FreeMove
+                lda #JOY_UP 
+                jmp AI_StoreMoveCtrl
 
 AI_FollowClimbing:
                 lda actYH,x                     ;First climb to the correct block

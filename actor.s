@@ -73,7 +73,6 @@ AMF_NOFALLDAMAGE = $20
 AMF_SWIM        = $80
 
 ADDACTOR_LEFT_LIMIT = 1
-ADDACTOR_TOP_LIMIT = 0
 ADDACTOR_RIGHT_LIMIT = 11
 ADDACTOR_BOTTOM_LIMIT = 8
 
@@ -90,8 +89,13 @@ LVLOBJSEARCH    = 32
 LVLACTSEARCH    = 32
 
 NODAMAGESRC     = $80
+NOPLOTBIT       = $80
 
 SPAWNINFRONT_PROBABILITY = $c0
+
+SPAWN_GROUND    = $00
+SPAWN_AIR       = $80
+SPAWN_AIRTOP    = $c0
 
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
@@ -356,15 +360,10 @@ GAB_RightOK1:   cmp limitR
 GAB_RightOK2:   sta UA_RARightCheck+1           ;Right border
                 sta AA_RightCheck+1
                 lda mapY
-                ;sec
-                ;sbc #ADDACTOR_TOP_LIMIT
-                ;bcs GAB_TopOK1
-                ;lda #$00
 GAB_TopOK1:     cmp limitU
                 bcs GAB_TopOK2
                 lda limitU
-GAB_TopOK2:     sta UA_RATopCheck+1             ;Top border
-                sta AA_TopCheck+1
+GAB_TopOK2:     sta AA_TopCheck+1
                 lda mapY
                 clc
                 adc #ADDACTOR_BOTTOM_LIMIT
@@ -413,28 +412,26 @@ AA_IndexNotOver:stx AA_Start+1
         ; Process spawning
 
 UA_DoSpawn:     ldy #ZONEH_SPAWNCOUNT
-                lda (zoneLo),y
+                ;lda (zoneLo),y
+                lda #$ff
                 bmi UA_NoSpawnLimit           ;Negative spawncount = unlimited
 UA_SpawnCount:  cmp #$00
                 beq UA_SpawnDone
 UA_NoSpawnLimit:dey
 UA_SpawnDelay:  lda #$00                      ;Spawn delay counting
-                clc
-                adc (zoneLo),y
+                sec
+                ;adc (zoneLo),y
+                adc #$10
                 sta UA_SpawnDelay+1
                 bcc UA_SpawnDone
                 dey
-                lda (zoneLo),y
-                lsr                           ;Param high nybble = add
-                lsr
-                lsr
-                lsr
-                sta temp8
+                ;lda (zoneLo),y                ;Take global spawnlist parameter
+                lda #$00
+                tay
                 jsr Random
-                and #$0f
-                and (zoneLo),y                ;Param low nybble = and
+                and spawnListAndTbl,y
                 clc
-                adc temp8
+                adc spawnListAddTbl,y
                 jsr AttemptSpawn
 UA_SpawnDone:
 
@@ -554,7 +551,7 @@ UA_RALeftCheck: cmp #$00
 UA_RARightCheck:cmp #$00
                 bcs UA_Remove
                 lda actYH,x
-UA_RATopCheck:  cmp #$00
+                cmp mapY
                 bcc UA_Remove
 UA_RABottomCheck:
                 cmp #$00
@@ -1359,10 +1356,9 @@ AS_Done2:       rts
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-AttemptSpawn:   rts                             ;Disabled for now until refactored to use global tables
-                sta temp2
+AttemptSpawn:   sta temp2
                 tax
-                ;lda lvlSpawnPlot,x              ;Requires a plotbit to spawn?
+                lda spawnPlotTbl,x              ;Requires a plotbit to spawn?
                 bmi AS_NoPlotBit
                 jsr GetPlotBit
                 beq AS_Done2
@@ -1375,9 +1371,9 @@ AS_NoPlotBit:   lda #ACTI_LASTNPC-MAX_SPAWNEDACT+1 ;Do not use all NPC slots for
                 lda #$00
                 sta actYL,y
                 ldx temp2
-                ;lda lvlSpawnT,x
+                lda spawnTypeTbl,x
                 sta actT,y
-                ;lda lvlSpawnWpn,x
+                lda spawnWpnTbl,x
                 pha
                 and #$3f
                 sta actWpn,y
@@ -1386,7 +1382,11 @@ AS_NoPlotBit:   lda #ACTI_LASTNPC-MAX_SPAWNEDACT+1 ;Do not use all NPC slots for
                 bcs AS_InAir
 AS_Ground:      lda #CI_GROUND
                 sta temp3
-                lda temp4                       ;For ground spawn, use Y-coord of spawner object
+                jsr Random
+                and #$03
+                clc
+                adc #$02
+                adc mapY
 AS_SideCommon:  sta actYH,y
                 jsr Random
                 cmp #SPAWNINFRONT_PROBABILITY   ;Prefer to spawn in front of player
@@ -1397,19 +1397,18 @@ AS_SideNoReverse:
                 asl
                 bcc AS_GroundRight
 AS_GroundLeft:  lda AA_LeftCheck+1
-                cmp limitL                      ;Never spawn at zone edge, would be visible
-                beq AS_GroundRight              ;(zones that are only one screen wide should not
-                sta actXH,y                     ;contain spawners, as otherwise this code will
-                lda #$00                        ;loop indefinitely)
-                beq AS_GroundStoreDir
-AS_GroundRight: ldx AA_RightCheck+1
-                cpx limitR
-                beq AS_GroundLeft
-                dex
-                txa
+                cmp limitL
+                beq AS_Remove2
+                ldx #$00
+                beq AS_GroundStorePosDir
+AS_GroundRight: lda AA_RightCheck+1
+                cmp limitR
+                beq AS_Remove2
+                sbc #$00                         ;C=0 here
+                ldx #$80
+AS_GroundStorePosDir:
                 sta actXH,y
-                lda #$80
-AS_GroundStoreDir:
+                txa
                 sta actD,y
 AS_CheckBackground:
                 tya
@@ -1417,18 +1416,17 @@ AS_CheckBackground:
                 jsr GetCharInfo
                 and #CI_GROUND|CI_OBSTACLE|CI_NOSPAWN
                 cmp temp3
-                beq AS_SpawnOK
-AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
+                bne AS_Remove
 AS_SpawnOK:     jsr InitActor
                 inc UA_SpawnCount+1
                 ldy #AL_SPAWNAIMODE
                 lda (actLo),y                   ;Set default AI mode for actor type
-                tay
-                and #$7f
                 sta actAIMode,x
-                tya
+                lda #POS_NOTPERSISTENT          ;Spawned actors never persistent
                 bmi AS_StoreLvlDataPos
-                lda #ORG_TEMP                   ;Set temp persistence
+AS_Remove2:     tya
+                tax
+AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
 
         ; Set persistence mode for a newly created actor
         ;
@@ -1454,7 +1452,7 @@ AS_InAirSide:   jsr Random
                 pla
                 and #$03
                 adc #$01
-                adc AA_TopCheck+1
+                adc mapY
                 jmp AS_SideCommon
 AS_InAirTop:    jsr Random
                 pha
@@ -1471,7 +1469,7 @@ AS_InAirTop:    jsr Random
 AS_InAirCoordOK:sec
                 adc AA_LeftCheck+1
                 sta actXH,y
-                lda AA_TopCheck+1
+                lda mapY
                 sta actYH,y
                 bpl AS_CheckBackground
 

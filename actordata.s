@@ -20,20 +20,23 @@ ACT_WATERSPLASH = 18
 ACT_SMALLSPLASH = 19
 ACT_OBJECTMARKER = 20
 ACT_SPEECHBUBBLE = 21
+ACT_TESTENEMY   = 22
 
 HP_PLAYER       = 56
 
 ITEM_OWNWEAPON = 0
-DROP_WEAPONCREDITS = $80
-DROP_WEAPON = $81
-DROP_WEAPONMEDKIT = $82
-DROP_WEAPONMEDKITCREDITS = $84
+DROP_WEAPONMEDKIT = $80
+DROP_WEAPON     = $82
+DROP_WEAPONBATTERY = $83
+DROP_WEAPONBATTERYHIGHPROB = $84
+DROP_WEAPONBATTERYMEDKIT = $85
 DROPTABLERANDOM = 8                             ;Pick random choice from 8 consecutive indices
 
         ; Enemy random item drops
 
 itemDropTable:  dc.b ITEM_MEDKIT
                 dc.b ITEM_MEDKIT
+                dc.b ITEM_OWNWEAPON
                 dc.b ITEM_OWNWEAPON
                 dc.b ITEM_OWNWEAPON
                 dc.b ITEM_OWNWEAPON
@@ -91,6 +94,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adSmallSplash
                 dc.b <adObjectMarker
                 dc.b <adSpeechBubble
+                dc.b <adTestEnemy
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -113,6 +117,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adSmallSplash
                 dc.b >adObjectMarker
                 dc.b >adSpeechBubble
+                dc.b >adTestEnemy
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -246,6 +251,16 @@ adSpeechBubble: dc.b ONESPRITE                  ;Number of sprites
                 dc.b 1                          ;Number of frames
                 dc.b 54
 
+adTestEnemy:    dc.b HUMANOID                   ;Number of sprites
+                dc.b C_PLAYER_BOTTOM_ARMOR      ;Lower part spritefile number
+                dc.b 0                          ;Lower part base spritenumber
+                dc.b 0                          ;Lower part base index into the frametable
+                dc.b 32                         ;Lower part left frame add
+                dc.b C_PLAYER_TOP_ARMOR         ;Upper part spritefile number
+                dc.b 0                          ;Upper part base spritenumber
+                dc.b 0                          ;Upper part base index into the frametable
+                dc.b 39                         ;Upper part left frame add
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -269,6 +284,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alSmallSplash
                 dc.b <alObjectMarker
                 dc.b <alSpeechBubble
+                dc.b <alTestEnemy
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -291,6 +307,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alSmallSplash
                 dc.b >alObjectMarker
                 dc.b >alSpeechBubble
+                dc.b >alTestEnemy
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
@@ -301,7 +318,7 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b HP_PLAYER                  ;Initial health
 plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
-                dc.b AIMODE_IDLE                ;AI mode when spawned randomly + persistence disable
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
                 dc.b ITEM_NONE                  ;Itemdrop table index or item override
                 dc.b $ff                        ;AI offense probability
                 dc.b $ff                        ;AI defense probability
@@ -428,3 +445,27 @@ alObjectMarker: dc.w MoveObjectMarker           ;Update routine
 alSpeechBubble: dc.w MoveSpeechBubble           ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
+
+alTestEnemy:    dc.w MoveAIHuman                ;Update routine
+                dc.w HumanDeath                 ;Destroy routine
+                dc.b GRP_ENEMIES|AF_ISORGANIC  ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 34                         ;Size up
+                dc.b 0                          ;Size down
+                dc.b HP_PLAYER/4                ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 25                         ;Score from kill
+                dc.b AIMODE_FOLLOW              ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERYMEDKIT   ;Itemdrop table index or item override
+                dc.b $10                        ;AI offense probability
+                dc.b $10                        ;AI defense probability
+                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB ;Move flags
+                dc.b 3*8                        ;Max. movement speed
+                dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
+                dc.b INITIAL_INAIRACC           ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 4                          ;Long jump gravity acceleration
+                dc.b INITIAL_GROUNDBRAKE        ;Ground braking
+                dc.b -4                         ;Height in chars for headbump check (negative)
+                dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
+                dc.b INITIAL_CLIMBSPEED-8       ;Climbing speed
