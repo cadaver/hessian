@@ -10,11 +10,11 @@ UpdateLevel:    lda elevatorCounter
                 adc elevatorSpeed
 UL_ScrollLoop:  sta elevatorCounter
                 bmi UL_ScrollUp
-                cmp #$40
+                cmp #$20
                 bcs UL_ScrollDown
                 rts
 UL_ScrollUp:    clc
-                adc #$40
+                adc #$20
                 pha
                 ldy chars+251*8+15
                 ldx #14
@@ -26,7 +26,7 @@ UL_ScrollUpLoop:lda chars+251*8,x
 UL_ScrollEndCommon:
                 pla
                 jmp UL_ScrollLoop
-UL_ScrollDown:  sbc #$40
+UL_ScrollDown:  sbc #$20
                 pha
                 ldy chars+251*8
                 ldx #0
@@ -40,7 +40,7 @@ UL_ScrollDownLoop:
                 bcs UL_ScrollEndCommon
 
                 org charInfo-2
-elevatorCounter:dc.b $20
+elevatorCounter:dc.b $10
 elevatorSpeed:  dc.b 0
 
                 org charInfo
