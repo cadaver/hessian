@@ -91,7 +91,7 @@ LVLACTSEARCH    = 32
 NODAMAGESRC     = $80
 NOPLOTBIT       = $80
 
-SPAWNINFRONT_PROBABILITY = $c0
+SPAWNINFRONT_PROBABILITY = $b0
 
 SPAWN_GROUND    = $00
 SPAWN_AIR       = $80
@@ -1356,94 +1356,6 @@ AS_Done2:       rts
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-AttemptSpawn:   sta temp2
-                tax
-                lda spawnPlotTbl,x              ;Requires a plotbit to spawn?
-                bmi AS_NoPlotBit
-                jsr GetPlotBit
-                beq AS_Done2
-AS_NoPlotBit:   lda #ACTI_LASTNPC-MAX_SPAWNEDACT+1 ;Do not use all NPC slots for spawned actors
-                ldy #ACTI_LASTNPC
-                jsr GetFreeActor
-                bcc AS_Done2
-                lda #$80
-                sta actXL,y                     ;Center into the upper edge of the block
-                lda #$00
-                sta actYL,y
-                ldx temp2
-                lda spawnTypeTbl,x
-                sta actT,y
-                lda spawnWpnTbl,x
-                pha
-                and #$3f
-                sta actWpn,y
-                pla
-                asl
-                bcs AS_InAir
-AS_Ground:      lda #CI_GROUND
-                sta temp3
-                jsr Random
-                and #$03
-                clc
-                adc #$02
-                adc mapY
-AS_SideCommon:  sta actYH,y
-                jsr Random
-                cmp #SPAWNINFRONT_PROBABILITY   ;Prefer to spawn in front of player
-                lda actD+ACTI_PLAYER
-                bcc AS_SideNoReverse
-                eor #$80
-AS_SideNoReverse:
-                asl
-                bcc AS_GroundRight
-AS_GroundLeft:  lda AA_LeftCheck+1
-                cmp limitL
-                beq AS_Remove2
-                ldx #$00
-                beq AS_GroundStorePosDir
-AS_GroundRight: lda AA_RightCheck+1
-                cmp limitR
-                beq AS_Remove2
-                sbc #$00                         ;C=0 here
-                ldx #$80
-AS_GroundStorePosDir:
-                sta actXH,y
-                txa
-                sta actD,y
-AS_CheckBackground:
-                tya
-                tax
-                jsr GetCharInfo
-                and #CI_GROUND|CI_OBSTACLE|CI_NOSPAWN
-                cmp temp3
-                bne AS_Remove
-                jsr GetCharInfo1Above           ;Do not spawn into a wall
-                and #CI_OBSTACLE
-                bne AS_Remove
-AS_SpawnOK:     jsr InitActor
-                inc UA_SpawnCount+1
-                ldy #AL_SPAWNAIMODE
-                lda (actLo),y                   ;Set default AI mode for actor type
-                sta actAIMode,x
-                lda #POS_NOTPERSISTENT          ;Spawned actors never persistent
-                bmi AS_StoreLvlDataPos
-AS_Remove2:     tya
-                tax
-AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
-
-        ; Set persistence mode for a newly created actor
-        ;
-        ; Parameters: A temporary/global bit, X actor index
-        ; Returns: -
-        ; Modifies: A
-
-SetPersistence: ora levelNum
-                sta actLvlDataOrg,x
-                jsr GetNextTempLevelActorIndex  ;Persist as a temporary actor
-AS_StoreLvlDataPos:
-                sta actLvlDataPos,x
-                rts
-
 AS_InAir:       asl
                 lda #$00
                 sta temp3
@@ -1476,6 +1388,104 @@ AS_InAirCoordOK:sec
                 sta actYH,y
                 bpl AS_CheckBackground
 
+AttemptSpawn:   sta temp2
+                tax
+                lda spawnPlotTbl,x              ;Requires a plotbit to spawn?
+                bmi AS_NoPlotBit
+                jsr GetPlotBit
+                beq AS_Done2
+AS_NoPlotBit:   lda #ACTI_LASTNPC-MAX_SPAWNEDACT+1 ;Do not use all NPC slots for spawned actors
+                ldy #ACTI_LASTNPC
+                jsr GetFreeActor
+                bcc AS_Done2
+                lda #$00
+                sta actYL,y
+                ldx temp2
+                lda spawnTypeTbl,x
+                sta actT,y
+                lda spawnWpnTbl,x
+                pha
+                and #$3f
+                sta actWpn,y
+                pla
+                asl
+                bcs AS_InAir
+AS_Ground:      lda #CI_GROUND
+                sta temp3
+                jsr Random
+                and #$03
+                clc
+                adc #$02
+                adc mapY
+AS_SideCommon:  sta actYH,y
+                jsr Random
+                cmp #SPAWNINFRONT_PROBABILITY   ;Prefer to spawn in front of player
+                lda actD+ACTI_PLAYER
+                bcc AS_SideNoReverse
+                eor #$80
+AS_SideNoReverse:
+                asl
+                bcc AS_GroundRight
+AS_GroundLeft:  lda AA_LeftCheck+1
+                ldx #$3f
+                bne AS_GroundStorePosDir
+AS_GroundRight: lda AA_RightCheck+1
+                sbc #$00                         ;C=0 here
+                ldx #$c0
+AS_GroundStorePosDir:
+                cmp actXH+ACTI_PLAYER            ;Do not spawn exactly at player
+                beq AS_Remove2
+                sta actXH,y
+                txa
+                sta actXL,y
+                sta actD,y
+AS_CheckBackground:
+                tya
+                tax
+AS_BGRetry:     jsr GetCharInfo
+                and #CI_GROUND|CI_OBSTACLE|CI_NOSPAWN
+                cmp temp3
+                beq AS_BGOK
+                lda temp3                       ;If trying to match ground, retry all sub-positions
+                lsr                             ;within block
+                bcc AS_Remove
+                lda #8*8
+                jsr MoveActorY
+                lda actYL,x
+                bne AS_BGRetry
+                beq AS_Remove
+
+AS_BGOK:        jsr GetCharInfo1Above           ;Do not spawn into a wall
+                and #CI_OBSTACLE
+                bne AS_Remove
+AS_SpawnOK:     jsr InitActor
+                inc UA_SpawnCount+1
+                ldy #AL_SPAWNAIMODE
+                lda (actLo),y                   ;Set default AI mode for actor type
+                tay                             ;+ check persistence disable
+                and #$0f
+                sta actAIMode,x
+                tya
+                bmi AS_StoreLvlDataPos
+                lda #ORG_TEMP
+
+        ; Set persistence mode for a newly created actor
+        ;
+        ; Parameters: A temporary/global bit, X actor index
+        ; Returns: -
+        ; Modifies: A
+
+SetPersistence: ora levelNum
+                sta actLvlDataOrg,x
+                jsr GetNextTempLevelActorIndex  ;Persist as a temporary actor
+AS_StoreLvlDataPos:
+                sta actLvlDataPos,x
+ALA_Fail2:      rts
+
+AS_Remove2:     tya
+                tax
+AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
+
         ; Add actor from leveldata
         ;
         ; Parameters: X leveldata index
@@ -1484,11 +1494,12 @@ AS_InAirCoordOK:sec
 
 AddLevelActor:  stx temp1
                 lda lvlActT,x
-                bmi ALA_IsItem
+                bpl ALA_IsNPC
+                jmp ALA_IsItem
 ALA_IsNPC:      lda #ACTI_FIRSTNPC
                 ldy #ACTI_LASTNPC
                 jsr GetFreeActor
-                bcc ALA_Fail
+                bcc ALA_Fail2
                 lda lvlActF,x
                 and #$0f
                 sta actAIMode,y
@@ -1515,10 +1526,18 @@ ALA_Common:     lda lvlActX,x
                 sta actXL,y
                 txa                             ;Store index, ideally same index will be used for removal
                 sta actLvlDataPos,y
-                lda lvlActOrg,x                 ;Store the persistence mode (leveldata/global/temp)
-                sta actLvlDataOrg,y
                 lda #$00                        ;Remove from leveldata
                 sta lvlActT,x
+                lda lvlActOrg,x                 ;Store the persistence mode (leveldata/global/temp)
+                sta actLvlDataOrg,y
+                cmp #ORG_GLOBAL                 ;If a spawned (temp persistent) enemy, simply remove if
+                bcs ALA_GlobalOrLevelOrItem     ;already max. amount of spawned enemies on screen
+                lda lvlActT,x                   ;to avoid swarming & performance loss
+                bmi ALA_GlobalOrLevelOrItem
+                lda numTargets
+                cmp #MAX_SPAWNEDACT+1
+                bcs ALA_Cancel
+ALA_GlobalOrLevelOrItem:
                 tya
                 tax
                 jsr InitActor
@@ -1541,6 +1560,7 @@ ALA_NotItem:    ldy #AL_MOVEFLAGS               ;If the actor can climb and has 
 ALA_NoInitClimb:ldy #AT_ADD                     ;Run the ADD trigger routine
                 jmp ActorTrigger
 ALA_Fail:       rts
+ALA_Cancel:     jmp AS_Remove2
 ALA_IsItem:     lda #ACTI_FIRSTITEM
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor

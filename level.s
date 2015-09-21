@@ -1200,6 +1200,7 @@ CP_NotOverUp:   sta mapY
                 ldx #$00
                 stx UA_SpawnCount+1             ;Reset enemy spawning variables
                 stx UA_SpawnDelay+1
+                stx numTargets                  ;Allow adding all enemies
                 dex
                 stx ULO_COSubY+1                ;Reset object search
                 ldx #ACTI_PLAYER
