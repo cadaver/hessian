@@ -21,6 +21,10 @@ logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
+START_LEVEL     = $00                          ;Pathfinding test
+START_X         = $0c80
+START_Y         = $2600
+
 ;START_LEVEL     = $00                          ;Warehouse
 ;START_X         = $6780
 ;START_Y         = $1700
@@ -45,9 +49,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $0180
 ;START_Y         = $1700
 
-START_LEVEL     = $07                          ;First cave
-START_X         = $1e80
-START_Y         = $1c00
+;START_LEVEL     = $07                          ;First cave
+;START_X         = $1e80
+;START_Y         = $1c00
 
 ;START_LEVEL     = $08                          ;Lower labs
 ;START_X         = $3780
