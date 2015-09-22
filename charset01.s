@@ -30,9 +30,6 @@ rainDelay:      dc.b 0
                 org chars
                 incbin bg/world01.chr
 
-                org charsetLoadBlockInfo
-                incbin bg/world01.bli
-
                 org charsetLoadProperties
                 dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)

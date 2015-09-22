@@ -84,9 +84,6 @@ lightTbl:       dc.b %00010001
                 org chars
                 incbin bg/world10.chr
 
-                org charsetLoadBlockInfo
-                incbin bg/world10.bli
-
                 org charsetLoadProperties
                 dc.b 5                          ;Water splash color override
                 dc.b 20                         ;Water toxicity delay counter ($80=not affected by filter)

@@ -464,21 +464,7 @@ CN_Next:        cpx CN_Current+1                ;Wrap search without finding a v
                 bne CN_Loop
                 beq CN_Done
 CN_Found:       stx CN_Current+1
-                jsr LineCheck                   ;Check line-of-sight to target
-                lda #LINE_YES
-                bcs CN_HasLineOfSight
-                lsr
-CN_HasLineOfSight:
-                sta actLine,x
-                lda actNavNewYH,x               ;Has a navigation (pathfinding) request?
-                bpl CN_Done
-                if SHOW_NAVIGATION_TIME > 0
-                inc $d020
-                endif
-                jsr NavigationCheck
-                if SHOW_NAVIGATION_TIME > 0
-                dec $d020
-                endif
+                jmp LineCheck
 CN_Done:        rts
 
         ; Call update routines of all actors, then interpolate. If game is paused, only interpolate
@@ -1681,9 +1667,7 @@ GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actFall,y
                 sta actFallL,y
                 sta actAIHelp,y
-                sta actNavNewYH,y
                 lda #NOTARGET
-                sta actNavYH,y
                 sta actWpnF,y
                 sta actAITarget,y               ;Start with no target
                 sec
@@ -1736,7 +1720,7 @@ SWO_SetCoords:  lda actXL,x
         ; Parameters: X actor index, Y target actor index
         ; Returns: temp5 X distance, temp6 abs X distance, temp7 Y distance, temp8 abs Y distance
         ; Modifies: A
-        
+
 GetActorDistance:
                 lda actYL,y
                 sec

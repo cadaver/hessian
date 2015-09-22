@@ -70,9 +70,6 @@ eorValue2Tbl:   dc.b %10010101,%01010101,%01010110
                 org chars
                 incbin bg/world05.chr
 
-                org charsetLoadBlockInfo
-                incbin bg/world05.bli
-
                 org charsetLoadProperties
                 dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)

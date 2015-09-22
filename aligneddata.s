@@ -321,10 +321,8 @@ routeYH:        ds.b 4,0
 
 sortSprY:       ds.b MAX_SPR*2,0
 sortSprX:       ds.b MAX_SPR*2,0
-sortSprD010:    ds.b MAX_SPR*2,0
 sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
-sprIrqLine:     ds.b MAX_SPR*2,0
 
         ; Actor variables
 
@@ -366,12 +364,6 @@ actAttackD:     ds.b MAX_COMPLEXACT,0
 actAIMode:      ds.b MAX_COMPLEXACT,0
 actAIHelp:      ds.b MAX_COMPLEXACT,0
 actLine:        ds.b MAX_COMPLEXACT,0
-actNavXH:       ds.b MAX_COMPLEXACT,0
-actNavYH:       ds.b MAX_COMPLEXACT,0
-actNavExclude:  ds.b MAX_COMPLEXACT,0
-actNavNewXH:    ds.b MAX_COMPLEXACT,0
-actNavNewYH:    ds.b MAX_COMPLEXACT,0
-actNavNewExclude:ds.b MAX_COMPLEXACT,0
 
         ; Misc. tables/variables to pad memory use
 
@@ -400,6 +392,12 @@ lvlAirToxinDelay:
                 dc.b 0
 lvlPropertiesEnd:
 
+        ; Rest of misc. tables / variables
+
+routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
+d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
+
         ; Target list for AI / collision
         ; Must not page-cross, as selfmodifying code is used to read it
 
@@ -408,12 +406,6 @@ targetListEnd:
                 if (targetList & $ff00) != ((targetListEnd-1) & $ff00)
                     err
                 endif
-
-        ; Rest of misc. tables / variables
-
-routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
-d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
         ; Chunk-file memory allocation variables
 

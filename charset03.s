@@ -14,9 +14,6 @@ UpdateLevel:    rts
                 org chars
                 incbin bg/world03.chr
 
-                org charsetLoadBlockInfo
-                incbin bg/world03.bli
-
                 org charsetLoadProperties
                 dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)

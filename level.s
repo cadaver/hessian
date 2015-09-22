@@ -415,12 +415,6 @@ ECS_RetryCharSet:
                 ldy #C_BLOCKS
                 jsr LoadAllocFile               ;Load BLOCKS chunk
                 bcs ECS_LoadCharSetError
-                ldx #MAX_BLK/2-1
-ECS_CopyBlockInfo:
-                lda charsetLoadBlockInfo,x      ;Copy blockinfo into place from beginning of screen2
-                sta blockInfo,x
-                dex
-                bpl ECS_CopyBlockInfo
                 ldx #lvlPropertiesEnd-lvlPropertiesStart-1
 ECS_CopyLevelProperties:                        ;Copy level properties into place
                 lda charsetLoadProperties,x
