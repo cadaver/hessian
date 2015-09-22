@@ -244,91 +244,91 @@ hessian.sid: hessiansid.s music00.bin music01.bin music02.bin music03.bin music0
 	music08.bin music09.bin music10.bin music11.bin music12.bin loadermusic2.bin
 	dasm hessiansid.s -ohessian.sid -f3
 
-charset00.pak: charset00.s memory.s bg/world00.blk bg/world00.bli bg/world00.chi bg/world00.chc bg/world00.chr
+charset00.pak: charset00.s memory.s bg/world00.blk bg/world00.chi bg/world00.chc bg/world00.chr
 	dasm charset00.s -ocharset00_1.bin -f3
 	pack2 charset00_1.bin charset00_1.pak
 	pchunk2 bg/world00.blk charset00_2.pak
 	filejoin charset00_1.pak+charset00_2.pak charset00.pak
 
-charset01.pak: charset01.s memory.s bg/world01.blk bg/world01.bli bg/world01.chi bg/world01.chc bg/world01.chr
+charset01.pak: charset01.s memory.s bg/world01.blk bg/world01.chi bg/world01.chc bg/world01.chr
 	dasm charset01.s -ocharset01_1.bin -f3
 	pack2 charset01_1.bin charset01_1.pak
 	pchunk2 bg/world01.blk charset01_2.pak
 	filejoin charset01_1.pak+charset01_2.pak charset01.pak
 
-charset02.pak: charset02.s memory.s bg/world02.blk bg/world02.bli bg/world02.chi bg/world02.chc bg/world02.chr
+charset02.pak: charset02.s memory.s bg/world02.blk bg/world02.chi bg/world02.chc bg/world02.chr
 	dasm charset02.s -ocharset02_1.bin -f3
 	pack2 charset02_1.bin charset02_1.pak
 	pchunk2 bg/world02.blk charset02_2.pak
 	filejoin charset02_1.pak+charset02_2.pak charset02.pak
 
-charset03.pak: charset03.s memory.s bg/world03.blk bg/world03.bli bg/world03.chi bg/world03.chc bg/world03.chr
+charset03.pak: charset03.s memory.s bg/world03.blk bg/world03.chi bg/world03.chc bg/world03.chr
 	dasm charset03.s -ocharset03_1.bin -f3
 	pack2 charset03_1.bin charset03_1.pak
 	pchunk2 bg/world03.blk charset03_2.pak
 	filejoin charset03_1.pak+charset03_2.pak charset03.pak
 
-charset04.pak: charset04.s memory.s bg/world04.blk bg/world04.bli bg/world04.chi bg/world04.chc bg/world04.chr
+charset04.pak: charset04.s memory.s bg/world04.blk bg/world04.chi bg/world04.chc bg/world04.chr
 	dasm charset04.s -ocharset04_1.bin -f3
 	pack2 charset04_1.bin charset04_1.pak
 	pchunk2 bg/world04.blk charset04_2.pak
 	filejoin charset04_1.pak+charset04_2.pak charset04.pak
 
-charset05.pak: charset05.s memory.s bg/world05.blk bg/world05.bli bg/world05.chi bg/world05.chc bg/world05.chr
+charset05.pak: charset05.s memory.s bg/world05.blk bg/world05.chi bg/world05.chc bg/world05.chr
 	dasm charset05.s -ocharset05_1.bin -f3
 	pack2 charset05_1.bin charset05_1.pak
 	pchunk2 bg/world05.blk charset05_2.pak
 	filejoin charset05_1.pak+charset05_2.pak charset05.pak
 
-charset06.pak: charset06.s memory.s bg/world06.blk bg/world06.bli bg/world06.chi bg/world06.chc bg/world06.chr
+charset06.pak: charset06.s memory.s bg/world06.blk  bg/world06.chi bg/world06.chc bg/world06.chr
 	dasm charset06.s -ocharset06_1.bin -f3
 	pack2 charset06_1.bin charset06_1.pak
 	pchunk2 bg/world06.blk charset06_2.pak
 	filejoin charset06_1.pak+charset06_2.pak charset06.pak
 
-charset07.pak: charset07.s memory.s bg/world07.blk bg/world07.bli bg/world07.chi bg/world07.chc bg/world07.chr
+charset07.pak: charset07.s memory.s bg/world07.blk bg/world07.chi bg/world07.chc bg/world07.chr
 	dasm charset07.s -ocharset07_1.bin -f3
 	pack2 charset07_1.bin charset07_1.pak
 	pchunk2 bg/world07.blk charset07_2.pak
 	filejoin charset07_1.pak+charset07_2.pak charset07.pak
 
-charset08.pak: charset08.s memory.s bg/world08.blk bg/world08.bli bg/world08.chi bg/world08.chc bg/world08.chr
+charset08.pak: charset08.s memory.s bg/world08.blk bg/world08.chi bg/world08.chc bg/world08.chr
 	dasm charset08.s -ocharset08_1.bin -f3
 	pack2 charset08_1.bin charset08_1.pak
 	pchunk2 bg/world08.blk charset08_2.pak
 	filejoin charset08_1.pak+charset08_2.pak charset08.pak
 
-charset09.pak: charset09.s memory.s bg/world09.blk bg/world09.bli bg/world09.chi bg/world09.chc bg/world09.chr
+charset09.pak: charset09.s memory.s bg/world09.blk bg/world09.chi bg/world09.chc bg/world09.chr
 	dasm charset09.s -ocharset09_1.bin -f3
 	pack2 charset09_1.bin charset09_1.pak
 	pchunk2 bg/world09.blk charset09_2.pak
 	filejoin charset09_1.pak+charset09_2.pak charset09.pak
 
-charset10.pak: charset10.s memory.s bg/world10.blk bg/world10.bli bg/world10.chi bg/world10.chc bg/world10.chr
+charset10.pak: charset10.s memory.s bg/world10.blk bg/world10.chi bg/world10.chc bg/world10.chr
 	dasm charset10.s -ocharset10_1.bin -f3
 	pack2 charset10_1.bin charset10_1.pak
 	pchunk2 bg/world10.blk charset10_2.pak
 	filejoin charset10_1.pak+charset10_2.pak charset10.pak
 
-charset11.pak: charset11.s memory.s bg/world11.blk bg/world11.bli bg/world11.chi bg/world11.chc bg/world11.chr
+charset11.pak: charset11.s memory.s bg/world11.blk bg/world11.chi bg/world11.chc bg/world11.chr
 	dasm charset11.s -ocharset11_1.bin -f3
 	pack2 charset11_1.bin charset11_1.pak
 	pchunk2 bg/world11.blk charset11_2.pak
 	filejoin charset11_1.pak+charset11_2.pak charset11.pak
 
-charset12.pak: charset12.s memory.s bg/world12.blk bg/world12.bli bg/world12.chi bg/world12.chc bg/world12.chr
+charset12.pak: charset12.s memory.s bg/world12.blk bg/world12.chi bg/world12.chc bg/world12.chr
 	dasm charset12.s -ocharset12_1.bin -f3
 	pack2 charset12_1.bin charset12_1.pak
 	pchunk2 bg/world12.blk charset12_2.pak
 	filejoin charset12_1.pak+charset12_2.pak charset12.pak
 
-charset13.pak: charset13.s memory.s bg/world13.blk bg/world13.bli bg/world13.chi bg/world13.chc bg/world13.chr
+charset13.pak: charset13.s memory.s bg/world13.blk bg/world13.chi bg/world13.chc bg/world13.chr
 	dasm charset13.s -ocharset13_1.bin -f3
 	pack2 charset13_1.bin charset13_1.pak
 	pchunk2 bg/world13.blk charset13_2.pak
 	filejoin charset13_1.pak+charset13_2.pak charset13.pak
 
-charset14.pak: charset14.s memory.s bg/world14.blk bg/world14.bli bg/world14.chi bg/world14.chc bg/world14.chr
+charset14.pak: charset14.s memory.s bg/world14.blk bg/world14.chi bg/world14.chc bg/world14.chr
 	dasm charset14.s -ocharset14_1.bin -f3
 	pack2 charset14_1.bin charset14_1.pak
 	pchunk2 bg/world14.blk charset14_2.pak

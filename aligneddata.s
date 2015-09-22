@@ -364,6 +364,10 @@ actAttackD:     ds.b MAX_COMPLEXACT,0
 actAIMode:      ds.b MAX_COMPLEXACT,0
 actAIHelp:      ds.b MAX_COMPLEXACT,0
 actLine:        ds.b MAX_COMPLEXACT,0
+actLastNavStairs:
+                ds.b MAX_COMPLEXACT,0
+actLastNavLadder:
+                ds.b MAX_COMPLEXACT,0
 
         ; Misc. tables/variables to pad memory use
 

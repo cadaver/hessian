@@ -31,6 +31,8 @@ HORIZMODE_MAX_YDIST = 2
 NAV_HORIZ           = 0
 NAV_VERT            = 1
 
+LADDER_DELAY        = $40
+
         ; AI character update routine
         ;
         ; Parameters: X actor index
@@ -49,20 +51,72 @@ MA_SkipAI:      jmp MoveAndAttackHuman
 
         ; Follow (pathfinding) AI
 
+AI_FollowClimbNewDir:
+                lda temp6
+                ora temp8
+                beq AI_FollowClimbDirDone
+                lda #JOY_UP
+                ldy temp7
+                bmi AI_FollowClimbDirDone
+                lda #JOY_DOWN
+AI_FollowClimbDirDone:
+                jmp AI_StoreMoveCtrl
+
+AI_FollowClimbCheckExit:
+                lda temp8                       ;If target is level, always exit
+                beq AI_FollowClimbDoExit
+                lda actMoveCtrl,x
+                and #JOY_UP
+                bne AI_FollowClimbCheckExitAbove
+AI_FollowClimbCheckExitBelow:
+                lda temp4                       ;If trying to climb down, but ladder doesn't continue, exit
+                and #CI_CLIMB
+                beq AI_FollowClimbDoExit
+AI_FollowClimbNoExit:
+                rts
+AI_FollowClimbCheckExitAbove:
+                jsr GetCharInfo4Above           ;If trying to climb up, but ladder doesn't continue, exit
+                and #CI_CLIMB
+                bne AI_FollowClimbNoExit
+AI_FollowClimbDoExit:
+                lda temp5                       ;Turn to target after climbing
+                sta actD,x
+                jmp AI_FreeMove
+
+AI_FollowClimb: lda #LADDER_DELAY
+                sta actLastNavLadder,x
+                lda temp6                       ;Get new dir if X-distance zero (on the same ladder)
+                beq AI_FollowClimbNewDir        ;or currently not moving
+                lda actMoveCtrl,x
+                beq AI_FollowClimbNewDir        ;Otherwise remove the left/right controls
+                and #JOY_UP|JOY_DOWN            ;and continue previous up/down direction
+                sta actMoveCtrl,x
+                lda temp4
+                and #CI_GROUND                  ;Can exit?
+                bne AI_FollowClimbCheckExit
+                rts
+
 AI_Follow:      lda #ACTI_PLAYER                ;Todo: do not hardcode player as target
                 sta actAITarget,x
                 ldy actAITarget,x
                 jsr GetActorDistance
-                lda actMB,y
-                lsr
-                bcs AI_FollowTargetGrounded
-                lda temp7                       ;If target is jumping and Y-distance is small & upward
-                cmp #$ff                        ;just disregard it
-                bne AI_FollowTargetGrounded
+                lda actF1,y
+                cmp #FR_JUMP
+                bcc AI_FollowTargetNoJump
+                cmp #FR_DUCK
+                bcs AI_FollowTargetNoJump
+                ldy temp7                       ;If target is jumping and Y-distance is small & upward
+                iny                             ;($ff, here check for increasing to $00) just disregard it
+                bne AI_FollowTargetNoJump
                 lda #$00
                 sta temp7
                 sta temp8
-AI_FollowTargetGrounded:
+AI_FollowTargetNoJump:
+                jsr GetCharInfo                 ;Get charinfo at feet for decisions
+                sta temp4
+                lda actF1,x                     ;Todo: must check for frame range once AI's can e.g. roll
+                cmp #FR_CLIMB
+                bcs AI_FollowClimb
                 lda actLine,x
                 bmi AI_FollowHasLOS             ;Check line of sight first
                 jmp AI_FreeMoveWithTurn         ;If none, walk forward & turn to appear to be doing something
@@ -70,31 +124,44 @@ AI_FollowHasLOS:lda #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
                 sta actAIHelp,x
                 lda #JOY_UP                     ;Prevent jumping
                 sta actPrevCtrl,x
-                jsr GetCharInfo                 ;Get charinfo at feet & above for decisions
-                sta temp3
-                jsr GetCharInfo1Above
-                sta temp4
-                lda temp3                       ;Special handling for turning when on stairs
+                lda temp4                       ;Dedicated turning logic on stairs
                 cmp #CI_GROUND+$80
                 beq AI_FollowOnStairs
-                lda temp8                       ;Turn to target if at same level or X & Y distance have same sign
-                beq AI_FollowTurnToTarget       ;and X-distance is greater
-                lda temp6
-                cmp temp8
-                beq AI_FollowWalk
-                bcc AI_FollowWalk
-                lda temp7
-                eor temp5
+                lda actLastNavStairs,x          ;Check if came to level ground from stairs
+                bpl AI_FollowNoStairExit
+                lda #$00
+                sta actLastNavStairs,x
+                lda temp8                       ;In that case turn to target if below (switch dir at junction)
                 bmi AI_FollowWalk
+                bpl AI_FollowTurnToTarget
+AI_FollowNoStairExit:
+                lda temp8                       ;Turn to target if at same level
+                bne AI_FollowWalk
 AI_FollowTurnToTarget:
                 lda temp5
 AI_FollowChangeDir:
                 sta actD,x
                 lda #AIH_AUTOSTOPLEDGE
                 sta actAIHelp,x
-AI_FollowWalk:  lda temp6                       ;If no X & Y distance, idle
+AI_FollowWalk:  lsr actLastNavLadder,x
+                lda temp6                       ;If no X & Y distance, idle
                 ora temp8
                 beq AI_Idle
+                lda temp4                       ;Check climbing down
+                and #CI_CLIMB
+                beq AI_FollowNoClimbDown
+                lda actLastNavLadder,x          ;Do not climb if delay count from last climb still active
+                bne AI_FollowNoClimbDown
+                lda temp7
+                bmi AI_FollowNoClimbDown
+                beq AI_FollowNoClimbDown
+                ldy #AL_MOVEFLAGS
+                lda (actLo),y
+                and #AMF_CLIMB                  ;Can climb?
+                beq AI_FollowNoClimbDown
+                lda #JOY_DOWN
+                bne AI_FollowNoWalkUp
+AI_FollowNoClimbDown:
                 lda #JOY_RIGHT
                 ldy actD,x
                 bpl AI_FollowWalkRight
@@ -102,11 +169,14 @@ AI_FollowWalk:  lda temp6                       ;If no X & Y distance, idle
 AI_FollowWalkRight:
                 ldy temp7                       ;Need to go up?
                 bpl AI_FollowNoWalkUp
+                ldy actLastNavLadder,x          ;Do not climb if delay count from last climb still active
+                bne AI_FollowNoWalkUp           ;(Todo: should still walk up stairs)
                 ora #JOY_UP
 AI_FollowNoWalkUp:
                 jmp AI_StoreMoveCtrl
 
 AI_FollowOnStairs:
+                sta actLastNavStairs,x
                 lda temp6                       ;When distance is more horizontal, do not turn in stairs
                 lsr
                 cmp temp8

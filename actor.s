@@ -1667,6 +1667,8 @@ GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actFall,y
                 sta actFallL,y
                 sta actAIHelp,y
+                sta actLastNavStairs,y
+                sta actLastNavLadder,y
                 lda #NOTARGET
                 sta actWpnF,y
                 sta actAITarget,y               ;Start with no target
