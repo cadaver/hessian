@@ -176,13 +176,13 @@ AI_FollowNoWalkUp:
                 jmp AI_StoreMoveCtrl
 
 AI_FollowOnStairs:
+                ldy actLastNavStairs,x          ;Turn once in each flight of stairs
+                bmi AI_FollowWalk
                 sta actLastNavStairs,x
-                lda temp6                       ;When distance is more horizontal, do not turn in stairs
-                lsr
-                cmp temp8
-                bcs AI_FollowWalk
-                lda actXL,x                     ;Find out stairs direction
-                eor actYL,x                     ;and turn if necessary
+                lda actYL,x                     ;Only turn at the bottom (going up)
+                bpl AI_FollowWalk               ;to prevent bugs when e.g. player has gone higher to a ladder
+                lda actXL,x                     ;Find out stairs direction and turn if necessary
+                eor actYL,x                    
                 and #$c0
                 beq AI_StairsDownRight
 AI_StairsDownLeft:

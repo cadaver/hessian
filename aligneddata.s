@@ -314,8 +314,7 @@ ntChnWaveOld:   dc.b 0
         ; Misc. tables/variables to pad memory use
 
 healthBarLetter:dc.b "H", "C"
-routeXH:        ds.b 4,0
-routeYH:        ds.b 4,0
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
         ; Sprite variables
 
@@ -323,6 +322,17 @@ sortSprY:       ds.b MAX_SPR*2,0
 sortSprX:       ds.b MAX_SPR*2,0
 sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
+
+        ; Target list for AI / collision
+        ; Must not page-cross, as selfmodifying code is used to read it
+
+targetList:     ds.b MAX_COMPLEXACT+1,0
+targetListEnd:
+                if (targetList & $ff00) != ((targetListEnd-1) & $ff00)
+                    err
+                endif
+
+saveSlotChoice: dc.b 0
 
         ; Actor variables
 
@@ -369,15 +379,6 @@ actLastNavStairs:
 actLastNavLadder:
                 ds.b MAX_COMPLEXACT,0
 
-        ; Misc. tables/variables to pad memory use
-
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
-healthBarPosTbl:dc.b 10,24
-timeMaxTbl:     dc.b 99,60,60,25
-saveSlotChoice: dc.b 0
-
         ; Level properties & objects (not saved)
 
 saveList:
@@ -396,20 +397,14 @@ lvlAirToxinDelay:
                 dc.b 0
 lvlPropertiesEnd:
 
-        ; Rest of misc. tables / variables
+        ; Rest of misc. tables/variables
 
-routeExclude:   dc.b DIR_DOWN,DIR_UP,DIR_RIGHT,DIR_LEFT
 d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
-
-        ; Target list for AI / collision
-        ; Must not page-cross, as selfmodifying code is used to read it
-
-targetList:     ds.b MAX_COMPLEXACT+1,0
-targetListEnd:
-                if (targetList & $ff00) != ((targetListEnd-1) & $ff00)
-                    err
-                endif
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
+healthBarPosTbl:dc.b 10,24
+timeMaxTbl:     dc.b 99,60,60,25
 
         ; Chunk-file memory allocation variables
 
