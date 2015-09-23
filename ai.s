@@ -13,6 +13,7 @@ AIMODE_TURNTO       = 1
 AIMODE_FOLLOW       = 2
 AIMODE_SNIPER       = 3
 AIMODE_MOVER        = 4
+AIMODE_GUARD        = 5
 AIMODE_NOTPERSISTENT = $80
 
 NOTARGET            = $ff
@@ -32,6 +33,8 @@ NAV_HORIZ           = 0
 NAV_VERT            = 1
 
 LADDER_DELAY        = $40
+
+GUARD_STOP_PROBABILITY = $04
 
         ; AI character update routine
         ;
@@ -227,6 +230,7 @@ AI_Sniper:      lda actTime,x                   ;Ongoing attack?
                 bmi AI_FreeMoveWithTurn         ;Negative control value: need to escape
                 cmp #JOY_FIRE
                 bcc AI_Idle
+AI_SniperPrepareAttack:
                 jsr PrepareAttack
                 bcc AI_Idle
 AI_MoverDone:   rts
@@ -245,6 +249,24 @@ AI_Mover:       lda actTime,x                   ;Ongoing attack?
                 bcc AI_FreeMoveWithTurn         ;Freemove while waiting to attack to be a harder target
 AI_MoverFollow: ldy actAITarget,x
                 jmp AI_FollowHasTargetDistance
+
+            ; Guard AI
+
+AI_Guard:       lda actTime,x                   ;Ongoing attack?
+                bmi AI_ContinueAttack
+                jsr FindTargetAndAttackDir
+                bcc AI_Idle
+                bmi AI_FreeMoveWithTurn
+                cmp #JOY_FIRE
+                bcc AI_MoverFollow              ;If cannot fire, pathfind to target
+                jsr PrepareAttack
+                bcs AI_MoverDone
+                lda actMoveCtrl,x
+                cmp #JOY_LEFT
+                bcc AI_Idle                     ;If already stopped for attack, continue to stand
+                jsr Random
+                cmp #GUARD_STOP_PROBABILITY     ;Otherwise random probability to stop, to keep
+                bcc AI_Idle                     ;multiple guard formations standing in the same X-pos
 
         ; Subroutine: free movement
 
@@ -276,14 +298,22 @@ AI_ContinueAttack:
 AI_RandomReleaseDuck:
                 lda actMoveCtrl,x
                 and #JOY_DOWN
-                beq AI_ContinueDuck
+                beq AI_ReleaseDuckDone
+                ldy actAITarget,x               ;If no target, random probability
+                bmi AI_ReleaseDuckCheck
+                lda actF1,y                     ;If has target and target is ducking,
+                cmp #FR_DUCK+1                  ;do *not* stand up
+                bcs AI_TargetIsDucking
+AI_ReleaseDuckCheck:
                 jsr Random
                 ldy #AL_OFFENSE
                 cmp (actLo),y
+AI_TargetIsDucking:
                 lda #JOY_DOWN
-                bcs AI_ContinueDuck
-                lda #$00
-AI_ContinueDuck:rts
+                bcs AI_ReleaseDuckDone
+AI_ReleaseDuck: lda #$00
+AI_ReleaseDuckDone:
+                rts
 
         ; Accumulate aggression & attack to specified direction. Also handle
         ; defensive ducking if the actor can duck
