@@ -13,6 +13,7 @@ AIMODE_IDLE         = 0
 AIMODE_TURNTO       = 1
 AIMODE_FOLLOW       = 2
 AIMODE_SNIPER       = 3
+AIMODE_MOVER        = 4
 AIMODE_NOTPERSISTENT = $80
 
 NOTARGET            = $ff
@@ -90,7 +91,7 @@ AI_FollowClimb: lda #LADDER_DELAY
                 lda actMoveCtrl,x
                 beq AI_FollowClimbNewDir        ;Otherwise remove the left/right controls
                 and #JOY_UP|JOY_DOWN            ;and continue previous up/down direction
-                sta actMoveCtrl,x
+                jsr AI_StoreMoveCtrl
                 lda temp4
                 and #CI_GROUND                  ;Can exit?
                 bne AI_FollowClimbCheckExit
@@ -100,6 +101,7 @@ AI_Follow:      lda #ACTI_PLAYER                ;Todo: do not hardcode player as
                 sta actAITarget,x
                 ldy actAITarget,x
                 jsr GetActorDistance
+AI_FollowHasTargetDistance:
                 lda actF1,y
                 cmp #FR_JUMP
                 bcc AI_FollowTargetNoJump
@@ -127,6 +129,8 @@ AI_FollowHasLOS:lda #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
                 lda temp4                       ;Dedicated turning logic on stairs
                 cmp #CI_GROUND+$80
                 beq AI_FollowOnStairs
+                and #CI_SHELF                   ;Do not follow target strictly when on "nonnavigable"
+                bne AI_FollowWalk               ;ledges, just turn when come to a stop
                 lda actLastNavStairs,x          ;Check if came to level ground from stairs
                 bpl AI_FollowNoStairExit
                 lda #$00
@@ -221,21 +225,19 @@ AI_Sniper:      jsr FindTarget                  ;Todo: add proper aggression/def
                 ldy actAITarget,x               ;for attack direction finding
                 bmi AI_Idle
                 lda actLine,x                   ;If line-of-sight blocked, try to get new target
-                bmi AI_HasLineOfSight
-                beq AI_Idle
+                bmi AI_SniperHasLineOfSight
+                beq AI_SniperIdle               ;Line of sight not yet determined
                 jsr FT_PickNew
-                jmp AI_Idle
-AI_HasLineOfSight:
+AI_SniperIdle:  jmp AI_Idle
+AI_SniperHasLineOfSight:
                 jsr GetAttackDir
-                bmi AI_FreeMoveWithTurn
-                sta actCtrl,x
-                cmp #JOY_FIRE
-                bcc AI_NoFire
+                bmi AI_FreeMoveWithTurn         ;Negative = escape to whatever direction
+AI_SetAttack:   sta actCtrl,x
                 lda #$00
-AI_NoFire:      sta actMoveCtrl,x
-                lda #AIH_AUTOSTOPLEDGE
-                sta actAIHelp,x
+                sta actMoveCtrl,x
                 rts
+
+        ; Free movement subroutine
 
 AI_FreeMoveWithTurn:
                 lda #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
@@ -250,6 +252,23 @@ AI_StoreMoveCtrl:
                 lda #$00
                 sta actCtrl,x
                 rts
+
+        ; Mover AI
+        
+AI_Mover:       jsr FindTarget
+                ldy actAITarget,x
+                bmi AI_FreeMoveWithTurn
+                lda actLine,x
+                bmi AI_MoverHasLineOfSight
+                beq AI_FreeMoveWithTurn         ;Not determined yet
+                jsr FT_PickNew
+                jmp AI_FreeMoveWithTurn
+AI_MoverHasLineOfSight:
+                jsr GetAttackDir
+                bmi AI_FreeMoveWithTurn         ;Escape when target too close
+                cmp #JOY_FIRE                   ;Attack possible?
+                bcs AI_SetAttack
+                jmp AI_FollowHasTargetDistance  ;If not firing, pathfind to target
 
         ; Validate existing AI target / find new target
         ;
@@ -279,6 +298,8 @@ FT_PickTargetOK:tay
                 eor actFlags,y
                 and #AF_GROUPBITS
                 beq FT_NoTarget
+                tya
+                sta actAITarget,x
                 lda #LINE_NOTCHECKED            ;Reset line-of-sight information now until checked
                 beq LC_StoreLine
 

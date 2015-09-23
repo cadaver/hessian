@@ -91,7 +91,7 @@ LVLACTSEARCH    = 32
 NODAMAGESRC     = $80
 NOPLOTBIT       = $80
 
-SPAWNINFRONT_PROBABILITY = $b0
+SPAWNINFRONT_PROBABILITY = $c0
 
 SPAWN_GROUND    = $00
 SPAWN_AIR       = $80
@@ -412,13 +412,15 @@ AA_IndexNotOver:stx AA_Start+1
         ; Process spawning
 
 UA_DoSpawn:     ldy #ZONEH_SPAWNCOUNT
-                lda (zoneLo),y
+                ;lda (zoneLo),y
+                lda #$ff
                 bmi UA_NoSpawnLimit           ;Negative spawncount = unlimited
 UA_SpawnCount:  cmp #$00
                 beq UA_SpawnDone
 UA_NoSpawnLimit:dey
 UA_SpawnDelay:  lda #$00                      ;Spawn delay counting
                 clc
+                ;adc (zoneLo),y
                 adc #$10
                 sta UA_SpawnDelay+1
                 bcc UA_SpawnDone

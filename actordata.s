@@ -455,7 +455,7 @@ alTestEnemy:    dc.w MoveAIHuman                ;Update routine
                 dc.b HP_PLAYER/4                ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 25                         ;Score from kill
-                dc.b AIMODE_FOLLOW              ;AI mode when spawned randomly + persistence disable
+                dc.b AIMODE_MOVER               ;AI mode when spawned randomly + persistence disable
                 dc.b DROP_WEAPONBATTERYMEDKIT   ;Itemdrop table index or item override
                 dc.b $10                        ;AI offense probability
                 dc.b $10                        ;AI defense probability

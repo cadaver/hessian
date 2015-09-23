@@ -71,8 +71,8 @@ UPG_TOXINFILTER = 128
 MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new joystick controls
                 sta actPrevCtrl+ACTI_PLAYER
                 ldy #$00
-                cpy menuMode                    ;When in inventory, no controls (idle)
-                bne MP_StoreControlMask
+                cpy menuMode                    ;When in inventory, no new controls
+                bne MP_Scroll
                 ldy actF1+ACTI_PLAYER
                 cpy #FR_DUCK+1
                 bne MP_NoDuckFirePrevent
