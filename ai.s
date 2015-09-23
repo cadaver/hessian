@@ -264,6 +264,9 @@ AI_Guard:       lda actTime,x                   ;Ongoing attack?
                 lda actMoveCtrl,x
                 cmp #JOY_LEFT
                 bcc AI_Idle                     ;If already stopped for attack, continue to stand
+                lda actWpn,x                    ;If using a melee weapon, *must* stop at earliest opportunity
+                cmp #ITEM_PISTOL                ;because otherwise may be too close to hit
+                bcc AI_Idle
                 jsr Random
                 cmp #GUARD_STOP_PROBABILITY     ;Otherwise random probability to stop, to keep
                 bcc AI_Idle                     ;multiple guard formations standing in the same X-pos

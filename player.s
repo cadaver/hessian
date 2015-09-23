@@ -1003,7 +1003,6 @@ DI_Retry:       ldy #AL_DROPITEMINDEX
                 bne DI_ItemNumber
                 lda actWpn,x
                 bcc DI_ItemNumber
-DI_Override:
 DI_ItemNumber:  tay
                 beq DI_NoItem
                 sta temp5                       ;Item type to drop
@@ -1019,27 +1018,27 @@ DI_CountGroundItems:                            ;if player can't pick up
                 lda actHp,y
                 clc
                 adc temp8
-                bcs DI_NoItem
+                bcs DI_Exceeded
                 sta temp8
 DI_CGINext:     iny
                 cpy #ACTI_LASTITEM+1
                 bcc DI_CountGroundItems
-                lda temp4
+                lda temp5
                 jsr FindItem
                 bcc DI_NotInInventory
                 lda invCount,y
                 clc
                 adc temp8
-                bcs DI_NoItem
+                bcs DI_Exceeded
                 sta temp8
 DI_NotInInventory:
                 ldy temp5
                 lda temp8
                 cmp itemMaxCount-1,y
                 bcc DI_HasCapacity
-                dec temp7
+DI_Exceeded:    dec temp7
                 bne DI_Retry                    ;If player has no capacity, retry to drop something else
-DI_NoItem:      rts                             ;(eg. credits)
+DI_NoItem:      rts                             ;(e.g. batteries or medkits)
 DI_HasCapacity: lda #ACTI_FIRSTITEM
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor

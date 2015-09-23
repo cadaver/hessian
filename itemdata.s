@@ -1,4 +1,5 @@
 ITEM_NONE       = 0
+ITEM_OWNWEAPON  = 0
 ITEM_FISTS      = 1
 ITEM_KNIFE      = 2
 ITEM_NIGHTSTICK = 3
@@ -25,6 +26,34 @@ ITEM_FIRST_NONWEAPON = ITEM_MEDKIT
 ITEM_FIRST_IMPORTANT = ITEM_BATTERY+1
 
 MAG_INFINITE = $ff
+
+DROP_WEAPONMEDKIT = $80
+DROP_WEAPON     = $81
+DROP_WEAPONBATTERY = $82
+DROP_WEAPONBATTERYMEDKIT = $83
+DROP_WEAPONBATTERYMEDKITHIGHPROB = $84
+DROPTABLERANDOM = 16                             ;Pick random choice from 16 consecutive indices
+
+itemDropTable:  dc.b ITEM_MEDKIT
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_OWNWEAPON
+                dc.b ITEM_BATTERY
+                dc.b ITEM_MEDKIT
+                dc.b ITEM_MEDKIT
 
 itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Knife
@@ -165,10 +194,10 @@ itemNPCAttackLength:                            ;Note: stored as negative
                 ;dc.b -4                         ;Mine (not used by NPCs)
 
 itemNPCAttackThreshold:
-                ;dc.b $18                        ;Fists (not used by NPCs)
-                dc.b $18                        ;Knife
-                dc.b $1c                        ;Nightstick
-                dc.b $20                        ;Bat
+                ;dc.b $20                        ;Fists (not used by NPCs)
+                dc.b $20                        ;Knife
+                dc.b $28                        ;Nightstick
+                dc.b $30                        ;Bat
                 dc.b $40                        ;Pistol
                 dc.b $60                        ;Shotgun
                 dc.b $50                        ;Auto rifle
