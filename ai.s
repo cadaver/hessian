@@ -179,8 +179,11 @@ AI_FollowOnStairs:
                 ldy actLastNavStairs,x          ;Turn once in each flight of stairs
                 bmi AI_FollowWalk
                 sta actLastNavStairs,x
-                lda actYL,x                     ;Only turn at the bottom (going up)
+                lda temp7
+                bpl AI_FollowStairTurnOK
+                lda actYL,x                     ;Only turn at the bottom when going up
                 bpl AI_FollowWalk               ;to prevent bugs when e.g. player has gone higher to a ladder
+AI_FollowStairTurnOK:
                 lda actXL,x                     ;Find out stairs direction and turn if necessary
                 eor actYL,x                    
                 and #$c0
