@@ -131,15 +131,15 @@ itemNPCMaxDist: dc.b 1                          ;Fists
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
-                dc.b 5                          ;Pistol
+                dc.b 4                          ;Pistol
                 dc.b 4                          ;Shotgun
-                dc.b 5                          ;Auto rifle
+                dc.b 4                          ;Auto rifle
                 dc.b 7                          ;Sniper rifle
-                dc.b 5                          ;Minigun
+                dc.b 4                          ;Minigun
                 dc.b 4                          ;Flamethrower
-                dc.b 6                          ;Laser rifle
-                dc.b 6                          ;Plasma gun
-                dc.b 6                          ;EMP generator (not used by NPCs)
+                dc.b 5                          ;Laser rifle
+                dc.b 5                          ;Plasma gun
+                dc.b 5                          ;EMP generator (not used by NPCs)
                 dc.b 5                          ;Grenade launcher
                 dc.b 7                          ;Bazooka
                 dc.b 6                          ;Grenade
