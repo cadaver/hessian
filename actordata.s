@@ -24,30 +24,6 @@ ACT_TESTENEMY   = 22
 
 HP_PLAYER       = 56
 
-ITEM_OWNWEAPON = 0
-DROP_WEAPONMEDKIT = $80
-DROP_WEAPON     = $82
-DROP_WEAPONBATTERY = $83
-DROP_WEAPONBATTERYHIGHPROB = $84
-DROP_WEAPONBATTERYMEDKIT = $85
-DROPTABLERANDOM = 8                             ;Pick random choice from 8 consecutive indices
-
-        ; Enemy random item drops
-
-itemDropTable:  dc.b ITEM_MEDKIT
-                dc.b ITEM_MEDKIT
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_BATTERY
-                dc.b ITEM_BATTERY
-                dc.b ITEM_MEDKIT
-
         ; Difficulty mod for attacks on player, minus 1
 
 playerAttackModTbl:
@@ -320,7 +296,7 @@ plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
                 dc.b ITEM_NONE                  ;Itemdrop table index or item override
-                dc.b $ff                        ;AI offense probability
+                dc.b $ff                        ;AI offense random AND-value
                 dc.b $ff                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP|AMF_SWIM ;Move flags
                 dc.b 4*8                        ;Max. movement speed
@@ -457,8 +433,8 @@ alTestEnemy:    dc.w MoveAIHuman                ;Update routine
                 dc.w 25                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly + persistence disable
                 dc.b DROP_WEAPONBATTERYMEDKIT   ;Itemdrop table index or item override
-                dc.b $10                        ;AI offense probability
-                dc.b $10                        ;AI defense probability
+                dc.b $0b                        ;AI offense AND-value
+                dc.b $05                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB ;Move flags
                 dc.b 3*8                        ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration

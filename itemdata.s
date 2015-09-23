@@ -109,7 +109,7 @@ itemDefaultPickup:
                 dc.b 1                          ;Medikit
                 dc.b 1                          ;Battery
 
-itemNPCMinDist: dc.b 0                          ;Fists
+itemNPCMinDist: ;dc.b 0                          ;Fists (not used by NPCs)
                 dc.b 0                          ;Knife
                 dc.b 0                          ;Nightstick
                 dc.b 0                          ;Bat
@@ -125,9 +125,9 @@ itemNPCMinDist: dc.b 0                          ;Fists
                 dc.b 2                          ;Grenade launcher
                 dc.b 3                          ;Bazooka
                 dc.b 2                          ;Grenade
-                dc.b 2                          ;Mine (not used by NPCs)
+                ;dc.b 2                          ;Mine (not used by NPCs)
 
-itemNPCMaxDist: dc.b 1                          ;Fists
+itemNPCMaxDist: ;dc.b 1                          ;Fists (not used by NPCs)
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
@@ -143,42 +143,42 @@ itemNPCMaxDist: dc.b 1                          ;Fists
                 dc.b 5                          ;Grenade launcher
                 dc.b 7                          ;Bazooka
                 dc.b 6                          ;Grenade
-                dc.b 2                          ;Mine (not used by NPCs)
+                ;dc.b 2                          ;Mine (not used by NPCs)
 
 itemNPCAttackLength:                            ;Note: stored as negative
-                dc.b -6/2                       ;Fists
-                dc.b -6/2                       ;Knife
-                dc.b -6/2                       ;Nightstick
-                dc.b -6/2                       ;Bat
-                dc.b -6/2                       ;Pistol
-                dc.b -6/2                       ;Shotgun
-                dc.b -10/2                      ;Auto rifle
-                dc.b -6/2                       ;Sniper rifle
-                dc.b -10/2                      ;Minigun
-                dc.b -10/2                      ;Flamethrower
-                dc.b -10/2                      ;Laser rifle
-                dc.b -6/2                       ;Plasma gun
-                dc.b -6/2                       ;EMP generator (not used by NPCs)
-                dc.b -6/2                       ;Grenade launcher
-                dc.b -6/2                       ;Bazooka
-                dc.b -6/2                       ;Grenade
-                dc.b -6/2                       ;Mine (not used by NPCs)
+                ;dc.b -5                         ;Fists (not used by NPCs)
+                dc.b -5                         ;Knife
+                dc.b -6                         ;Nightstick
+                dc.b -7                         ;Bat
+                dc.b -6                         ;Pistol
+                dc.b -9                         ;Shotgun
+                dc.b -8                         ;Auto rifle (2 shots)
+                dc.b -12                        ;Sniper rifle
+                dc.b -7                         ;Minigun (3 shots)
+                dc.b -7                         ;Flamethrower (3 shots)
+                dc.b -6                         ;Laser rifle
+                dc.b -7                         ;Plasma gun
+                dc.b -7                         ;EMP generator (not used by NPCs)
+                dc.b -12                        ;Grenade launcher
+                dc.b -16                        ;Bazooka
+                dc.b -4                         ;Grenade
+                ;dc.b -4                         ;Mine (not used by NPCs)
 
 itemNPCAttackThreshold:
-                dc.b $08                        ;Fists
-                dc.b $0c                        ;Knife
-                dc.b $0e                        ;Nightstick
-                dc.b $10                        ;Bat
-                dc.b $20                        ;Pistol
-                dc.b $30                        ;Shotgun
-                dc.b $20                        ;Auto rifle
-                dc.b $38                        ;Sniper rifle
-                dc.b $30                        ;Minigun
-                dc.b $30                        ;Flamethrower
-                dc.b $20                        ;Laser rifle
-                dc.b $28                        ;Plasma gun
-                dc.b $20                        ;EMP generator (not used by NPCs)
-                dc.b $40                        ;Grenade launcher
-                dc.b $50                        ;Bazooka
-                dc.b $40                        ;Grenade
-                dc.b $40                        ;Mine (not used by NPCs)
+                ;dc.b $18                        ;Fists (not used by NPCs)
+                dc.b $18                        ;Knife
+                dc.b $1c                        ;Nightstick
+                dc.b $20                        ;Bat
+                dc.b $40                        ;Pistol
+                dc.b $60                        ;Shotgun
+                dc.b $50                        ;Auto rifle
+                dc.b $70                        ;Sniper rifle
+                dc.b $58                        ;Minigun
+                dc.b $58                        ;Flamethrower
+                dc.b $48                        ;Laser rifle
+                dc.b $58                        ;Plasma gun
+                dc.b $7f                        ;EMP generator (not used by NPCs)
+                dc.b $7f                        ;Grenade launcher
+                dc.b $7f                        ;Bazooka
+                dc.b $7f                        ;Grenade
+                ;dc.b $7f                        ;Mine (not used by NPCs)

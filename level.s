@@ -781,6 +781,10 @@ ULO_TimeNotOver:sta time,x
                 bpl ULO_IncreaseTime
                 plp
 ULO_NoTime:     bcs ULO_IsPaused
+                lda attackTime                  ;Decrement global attack timer if necessary
+                bpl ULO_NoGlobalAttack
+                inc attackTime
+ULO_NoGlobalAttack:
                 ldy autoDeactObjNum
                 bmi ULO_NoAutoDeact
                 dec autoDeactObjCounter
@@ -1194,6 +1198,7 @@ CP_NotOverUp:   sta mapY
                 ldx #$00
                 stx UA_SpawnCount+1             ;Reset enemy spawning variables
                 stx UA_SpawnDelay+1
+                stx attackTime                  ;Reset global attack timer
                 stx numTargets                  ;Allow adding all enemies
                 dex
                 stx ULO_COSubY+1                ;Reset object search

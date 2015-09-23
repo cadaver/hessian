@@ -151,6 +151,9 @@ AH_NotExceeded: sta invMag,y
                 pha
                 ldy #WD_RELOADDELAY
                 lda (wpnLo),y
+AH_PlayerReloadTimeMod:
+                ldy #8
+                jsr ModifyDamage
                 sta actAttackD+ACTI_PLAYER
                 pla
                 ldy #WD_RELOADSFX

@@ -228,7 +228,7 @@ wdSniperRifle:  dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b 18                         ;Climbing weapon frame
                 dc.b 19                         ;Idle weapon frame (right)
                 dc.b 17                         ;Attack weapon frames (right)
-                dc.b 30                         ;Reload delay
+                dc.b 35                         ;Reload delay
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKSHOTGUN            ;Reload finished sound
 
@@ -246,7 +246,7 @@ wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_FL
                 dc.b 56                         ;Climbing weapon frame
                 dc.b 23                         ;Idle weapon frame (right)
                 dc.b 22-1                       ;Attack weapon frames (right)
-                dc.b 30                         ;Reload delay
+                dc.b 35                         ;Reload delay
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKWEAPON             ;Reload finished sound
                 dc.b FR_WALK+2                  ;Lock animation upper body frame
@@ -302,7 +302,7 @@ wdPlasmaGun:    dc.b WDB_FLICKERBULLET          ;Weapon bits
                 dc.b 52                         ;Climbing weapon frame
                 dc.b 53                         ;Idle weapon frame (right)
                 dc.b 51                         ;Attack weapon frames (right)
-                dc.b 25                         ;Reload delay
+                dc.b 30                         ;Reload delay
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_POWERUP                ;Reload finished sound
 
@@ -377,7 +377,7 @@ wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
 wdMine:         dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
-                dc.b 30                         ;Attack delay
+                dc.b 25                         ;Attack delay
                 dc.b ACT_MINE                   ;Bullet actor type
                 dc.b DMG_MINE                   ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic

@@ -1279,7 +1279,6 @@ AU_NoBottomArmor:
                 iny
 AU_NoTopArmor:  stx adPlayerBottomSprFile
                 sty adPlayerTopSprFile
-
                 lsr temp6                       ;Check movement
                 ldx #0
                 bcc AU_NoMovement
@@ -1303,7 +1302,6 @@ AU_NoMovement:  stx temp7
                 eor #$ff
                 adc #1-INITIAL_JUMPSPEED
                 sta plrJumpSpeed
-
                 lsr temp6                       ;Check strength
                 ldx #NO_MODIFY
                 ldy #0
@@ -1316,7 +1314,7 @@ AU_NoStrength:  stx AH_PlayerMeleeBonus+1
                 adc #INITIAL_MAX_WEAPONS
                 sta AI_MaxWeaponsCount+1
                 ldx #itemDefaultMaxCount - itemMaxCount
-AU_AmmoLoop:    lda itemDefaultMaxCount-1,x
+AU_AmmoLoop:    lda itemDefaultMaxCount-1,x     ;Set carrying capacity for weapons/items
                 cpy #$00
                 beq AU_NoAmmoIncrease
                 lsr
@@ -1327,32 +1325,30 @@ AU_NoAmmoIncrease:
                 dex
                 bne AU_AmmoLoop
                 lsr temp6
-
                 lsr temp6                       ;Check firearms
                 ldx #NO_MODIFY
+                ldy #NO_MODIFY
                 bcc AU_NoFirearms
                 ldx #12
+                ldy #6
 AU_NoFirearms:  stx AH_PlayerFirearmBonus+1
-
+                sty AH_PlayerReloadTimeMod+1
                 lsr temp6                       ;Check armor
                 ldx #NO_MODIFY
                 bcc AU_NoArmor
                 ldx #6
 AU_NoArmor:     stx plrDmgModify
-
                 lsr temp6                       ;Check healing speed
                 ldx #INITIAL_HEALTIMER-1        ;Healing code has C=1 while adding, so subtract 1 here
                 bcc AU_NoHealing
                 ldx #INITIAL_HEALTIMER*2-1
 AU_NoHealing:   stx ULO_HealingRate+1
-
                 lsr temp6                       ;Check battery drain reduce
                 ldx #$18                        ;CLC
                 bcc AU_NoDrainReduce
                 ldx #$4a                        ;LSR
 AU_NoDrainReduce:
                 stx DrainBatteryNoCheck
-
                 ldx difficulty
                 lda playerAttackModTbl,x
                 sta ATD_DifficultyMod+1         ;Finally add a difficulty-based modifier to attacks on player

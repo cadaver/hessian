@@ -415,7 +415,11 @@ IP_InitLevelData:
                 dex
                 bne IP_InitLevelData
                 lda #ITEM_FISTS
-                sta invType                     ;1 = fists
+                sta invType
+                lda #ITEM_PISTOL                ;Give pistol for testing
+                sta invType+1
+                lda #20
+                sta invCount+1
                 jsr StopScript                  ;Stop any continuous script
                 lda #START_LEVEL
                 sta levelNum
