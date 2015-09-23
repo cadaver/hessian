@@ -149,6 +149,7 @@ SCROLLROWS      = 22
 
 playerStateZPStart = levelNum
 playerStateZPEnd = nextTempLvlActIndex+1
+palFlag         = freeMemLo
 
                 varrange sprOrder,MAX_SPR+1
                 varrange sprY,MAX_SPR+1

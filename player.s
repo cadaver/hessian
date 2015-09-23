@@ -10,8 +10,8 @@ FR_SWIM         = 28
 FR_PREPARE      = 32
 FR_ATTACK       = 34
 
-DEATH_DISAPPEAR_DELAY = 75
-DEATH_FLICKER_DELAY = 25
+DEATH_DISAPPEAR_DELAY = 50
+DEATH_FLICKER_DELAY = 20
 DEATH_HEIGHT    = -3                            ;Ceiling check height for dead bodies
 DEATH_ACCEL     = 6
 DEATH_YSPEED    = -5*8

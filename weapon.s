@@ -244,8 +244,13 @@ AH_MeleeAnimation:
                 bcs AH_MeleeStrike              ;Show strike frame just before spawning bullet
                 inc actAttackD,x                ;In case melee attack fails, stay in strike position
 
-AH_SpawnBullet: lda actCtrl,x                   ;Require debounced input before actually firing
-                cmp actPrevCtrl,x               ;to prevent erroneous attack direction
+AH_SpawnBullet: ldy #1                          ;First check standing right next to a wall,
+                lda actD,x                      ;because otherwise one can stick the gun through it
+                bpl AH_SpawnRight
+                ldy #-1
+AH_SpawnRight:  lda #-3
+                jsr GetCharInfoXYOffset
+                and #CI_OBSTACLE
                 bne AH_CannotFire
                 jsr GetBulletOffset
                 txa                             ;Check whether to use player or NPC bullet actor
@@ -253,7 +258,10 @@ AH_SpawnBullet: lda actCtrl,x                   ;Require debounced input before 
                 lda #ACTI_FIRSTNPCBULLET
                 ldy #ACTI_LASTNPCBULLET
                 bne AH_IsNpc
-AH_IsPlayer:    lda #ACTI_FIRSTPLRBULLET
+AH_IsPlayer:    lda actCtrl,x                   ;For player, require debounced input before firing
+                cmp actPrevCtrl,x               ;to prevent erroneous attack direction
+                bne AH_CannotFire
+                lda #ACTI_FIRSTPLRBULLET
                 ldy #ACTI_LASTPLRBULLET
 AH_IsNpc:       jsr GetFreeActor
                 bcc AH_CannotFire

@@ -8,11 +8,14 @@ scriptCodeEnd   = scriptCodeStart+SCRIPTAREASIZE
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-InitAll:
+InitAll:        lda palFlag
+                bne IsPAL
+                lda #30                         ;Compensate game clock speed for NTSC
+                sta timeMaxTbl+3                ;(otherwise no compensation)
 
         ; Initialize zeropage variables
 
-                ldx #$90-joystick-1
+IsPAL:          ldx #$90-joystick-1
                 lda #$00
 InitZP:         sta joystick,x
                 dex

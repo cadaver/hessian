@@ -461,7 +461,7 @@ InitLoader:     sei
                 stx $d020
                 stx messages                    ;Disable KERNAL messages
                 stx fileOpen                    ;Clear fileopen indicator
-                inx
+                stx palFlag
 IL_DetectNtsc1: lda $d012                       ;Detect PAL/NTSC
 IL_DetectNtsc2: cmp $d012
                 beq IL_DetectNtsc2
@@ -470,7 +470,7 @@ IL_DetectNtsc2: cmp $d012
                 bcc IL_IsNtsc
                 lda #$2c                        ;Adjust 2-bit fastload transfer
                 sta FL_Delay                    ;delay for PAL
-                dex
+                inc palFlag
 IL_IsNtsc:      lda #$7f                        ;Disable & acknowledge IRQ sources
                 sta $dc0d
                 lda $dc0d
