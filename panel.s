@@ -425,8 +425,8 @@ UM_NoCounter:   ldy itemIndex
                 beq UM_MoveRight
                 cmp #KEY_R
                 beq UM_Reload
-                cmp #KEY_M
-                beq UM_Medkit
+                cmp #KEY_H
+                beq UM_Heal
                 cmp #KEY_B
                 beq UM_Battery
                 if ITEM_CHEAT > 0
@@ -440,7 +440,7 @@ UM_NoCounter:   ldy itemIndex
                 beq UM_DropItem
                 endif
 UM_ControlDone: rts
-UM_Medkit:      lda #ITEM_MEDKIT
+UM_Heal:        lda #ITEM_MEDKIT
                 skip2
 UM_Battery:     lda #ITEM_BATTERY
                 jsr FindItem

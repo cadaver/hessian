@@ -313,7 +313,7 @@ ntChnWaveOld:   dc.b 0
 
         ; Misc. tables/variables to pad memory use
 
-healthBarLetter:dc.b "H", "C"
+healthBarLetter:dc.b "H", "B"
 keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
         ; Sprite variables
