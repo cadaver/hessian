@@ -227,7 +227,7 @@ AI_Sniper:      lda actTime,x                   ;Ongoing attack?
                 bmi AI_ContinueAttack
                 jsr FindTargetAndAttackDir
                 bcc AI_Idle
-                bmi AI_FreeMoveWithTurn         ;Negative control value: need to escape
+                bmi AI_FreeMoveNoDuck           ;Negative control value: need to escape
                 cmp #JOY_FIRE
                 bcc AI_Idle
 AI_SniperPrepareAttack:
@@ -240,8 +240,8 @@ AI_MoverDone:   rts
 AI_Mover:       lda actTime,x                   ;Ongoing attack?
                 bmi AI_ContinueAttack
                 jsr FindTargetAndAttackDir
-                bcc AI_FreeMoveWithTurn
-                bmi AI_FreeMoveWithTurn
+                bcc AI_FreeMoveNoDuck
+                bmi AI_FreeMoveNoDuck
                 cmp #JOY_FIRE
                 bcc AI_MoverFollow              ;If cannot fire, pathfind to target
                 jsr PrepareAttack
@@ -256,7 +256,7 @@ AI_Guard:       lda actTime,x                   ;Ongoing attack?
                 bmi AI_ContinueAttack
                 jsr FindTargetAndAttackDir
                 bcc AI_Idle
-                bmi AI_FreeMoveWithTurn
+                bmi AI_FreeMoveNoDuck           ;Break from ducking if must flee
                 cmp #JOY_FIRE
                 bcc AI_MoverFollow              ;If cannot fire, pathfind to target
                 jsr PrepareAttack
@@ -276,6 +276,7 @@ AI_Guard:       lda actTime,x                   ;Ongoing attack?
 AI_FreeMoveWithTurn:
                 jsr AI_RandomReleaseDuck        ;If ducking, continue it randomly
                 bne AI_ClearAttackControl
+AI_FreeMoveNoDuck:
                 lda #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
                 sta actAIHelp,x
 AI_FreeMove:    lda #JOY_RIGHT                  ;Move forward into facing direction, turn at walls / ledges

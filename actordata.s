@@ -428,7 +428,7 @@ alTestEnemy:    dc.w MoveAIHuman                ;Update routine
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
-                dc.b HP_PLAYER/4                ;Initial health
+                dc.b 12                         ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 25                         ;Score from kill
                 dc.b AIMODE_GUARD               ;AI mode when spawned randomly + persistence disable
