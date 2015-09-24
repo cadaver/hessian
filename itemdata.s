@@ -181,7 +181,7 @@ itemNPCAttackLength:                            ;Note: stored as negative
                 dc.b -7                         ;Bat
                 dc.b -6                         ;Pistol
                 dc.b -9                         ;Shotgun
-                dc.b -8                         ;Auto rifle (2 shots)
+                dc.b -7                         ;Auto rifle (2 shots)
                 dc.b -12                        ;Sniper rifle
                 dc.b -7                         ;Minigun (3 shots)
                 dc.b -7                         ;Flamethrower (3 shots)

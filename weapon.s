@@ -94,7 +94,7 @@ AttackHuman:    ldy actWpn,x
                 beq AH_NoWeaponFrame
                 lda actF1,x                     ;No attacks/weapon if dead / rolling / swimming
                 cmp #FR_DIE
-                bcs AH_NoWeaponFrame
+                bcs AH_NoAttack
                 lda wpnTblLo-1,y
                 sta wpnLo
                 lda wpnTblHi-1,y
