@@ -1,7 +1,5 @@
 MAX_LINE_STEPS      = 10
 
-MAX_NAVIGATION_STEPS = 8
-
 AIH_AUTOTURNWALL    = $20
 AIH_AUTOTURNLEDGE   = $40
 AIH_AUTOSTOPLEDGE   = $80
@@ -27,10 +25,6 @@ DIR_DOWN            = $01
 DIR_LEFT            = $02
 DIR_RIGHT           = $03
 DIR_NONE            = $ff
-
-HORIZMODE_MAX_YDIST = 2
-NAV_HORIZ           = 0
-NAV_VERT            = 1
 
 LADDER_DELAY        = $40
 
