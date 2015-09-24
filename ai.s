@@ -336,18 +336,27 @@ PrepareAttack:  sta temp1                       ;Attack controls
                 bcs PA_NoDucking                ;C=1 here
 PA_NotYetDucked:cmp #FR_CLIMB
                 bcs PA_NoDucking
-                lda temp7                       ;No ducking if target not level
-                bne PA_NoDucking                ;or not facing target
-                lda temp5
+                lda actTime,x                   ;Only make the decision once at the start of attack
+                ora temp7                       ;No ducking if target not level
+                bne PA_NoDucking
+                lda temp5                       ;Or if not facing target
                 eor actD,x
                 bmi PA_NoDucking
-                ldy #AL_MOVEFLAGS
+                ldy #AL_MOVEFLAGS               ;No ducking if can't
                 lda (actLo),y
                 and #AMF_DUCK
                 beq PA_NoDucking
-                jsr Random
                 ldy #AL_DEFENSE
-                cmp (actLo),y
+                lda (actLo),y
+                sta temp2
+                ldy actAITarget,x
+                lda actF1,y
+                cmp #FR_DUCK+1                  ;Increased probability if target already ducked
+                bne PA_TargetNotDucking
+                asl temp2
+PA_TargetNotDucking:
+                jsr Random
+                cmp temp2
                 bcs PA_NoDucking
                 jsr GetCharInfo                 ;Verify not going to climb down instead
                 and #CI_CLIMB
@@ -372,7 +381,7 @@ PA_AggressionNotOver:
                 lda temp1
                 sta actCtrl,x
                 lda actMoveCtrl,x               ;NPC stops moving when attacking
-                and #JOY_DOWN                   ;(only retain ducking control as necessary)
+                and #JOY_DOWN|JOY_UP            ;(only retain ducking/climbing controls)
                 sta actMoveCtrl,x
                 lda itemNPCAttackLength-2,y     ;New attack: set both per-actor and global timers
                 sta attackTime

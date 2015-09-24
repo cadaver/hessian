@@ -434,7 +434,7 @@ alTestEnemy:    dc.w MoveAIHuman                ;Update routine
                 dc.b AIMODE_GUARD               ;AI mode when spawned randomly + persistence disable
                 dc.b DROP_WEAPONBATTERYMEDKIT   ;Itemdrop table index or item override
                 dc.b $0b                        ;AI offense AND-value
-                dc.b $05                        ;AI defense probability
+                dc.b $14                        ;AI defense probability
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB ;Move flags
                 dc.b 3*8                        ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
