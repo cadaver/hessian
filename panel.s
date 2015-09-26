@@ -194,24 +194,31 @@ UP_Firearm:     lda reload
                 cmp #$01                        ;if there's a remainder
                 lda temp7
                 adc #$00
-                cmp #$0a                        ;More than 9 can not be printed, clamp
-                bcc UP_MagCountOK
-                lda #$09
+                ;cmp #$0a                        ;More than 9 can not be printed, clamp
+                ;bcc UP_MagCountOK
+                ;lda #$09
 UP_MagCountOK:  ora #$30
                 sta panelScreen+PANELROW*40+38
                 bne UP_SkipAmmo
-UP_Consumable:  lda invType,y                   ;Draw the X for real consumables, but
-                cmp #ITEM_FIRST_CONSUMABLE      ;not for weapons such as the minigun
-                bcs UP_IsConsumable             ;that don't have magazines
+UP_Consumable:  txa
+                ldx #35
+                cmp #ITEM_ARMOR
+                php
+                beq UP_IsArmor
+                cmp #ITEM_FIRST_CONSUMABLE      ;Draw X only for real consumables, not for the minigun
+                bcs UP_IsConsumable
                 lda #32
                 skip2
 UP_IsConsumable:lda #42
-                sta panelScreen+PANELROW*40+35
-                lda invCount,y
+                jsr PrintPanelChar
+UP_IsArmor:     lda invCount,y
                 jsr ConvertToBCD8
-                ldx #36
                 jsr Print3BCDDigits
-                jmp UP_SkipAmmo
+                plp
+                bne UP_NotArmor
+                lda #"%"
+                jsr PrintPanelChar
+UP_NotArmor:    jmp UP_SkipAmmo
 UP_Reloading:   ldy #$07
                 skip2
 UP_MeleeWeapon: ldy #$03
