@@ -27,7 +27,7 @@ HEALTHBAR_COLOR = $0d
 
 DrawHealthBar:  ldy healthBarPosTbl,x
                 pha
-                lda panelScreen+PANELROW*40,y              ;Check if need to redraw completely
+                lda panelScreen+PANELROW*40,y   ;Check if need to redraw completely
                 cmp #33
                 pla
                 bcc DHB_Redraw

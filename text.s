@@ -28,9 +28,9 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtLv2ItPass
                 dc.b <txtLv2SecurityPass
                 dc.b <txtSuitePass
-                dc.b <txtVaultPass
+                dc.b <txtServerVaultPass
                 dc.b <txtBiometricId
-                
+
 itemNameHi:     dc.b >txtFists
                 dc.b >txtKnife
                 dc.b >txtNightstick
@@ -50,6 +50,7 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtMine
                 dc.b >txtMedKit
                 dc.b >txtBattery
+                dc.b >txtArmor
                 dc.b >txtWarehousePass
                 dc.b >txtItPass
                 dc.b >txtServicePass
@@ -58,7 +59,7 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtLv2ItPass
                 dc.b >txtLv2SecurityPass
                 dc.b >txtSuitePass
-                dc.b >txtVaultPass
+                dc.b >txtServerVaultPass
                 dc.b >txtBiometricId
 
 txtFists:       dc.b "FISTS",0
@@ -88,8 +89,8 @@ txtSecurityPass:dc.b "SECURITY PASS",0
 txtSciencePass: dc.b "SCIENCE PASS",0
 txtLv2ItPass:   dc.b "LV2 IT PASS",0
 txtLv2SecurityPass:dc.b "LV2 SECURITY PASS",0
-txtSuitePass:   dc.b "SUITE PASS",0
-txtVaultPass:   dc.b "SERVER VAULT PASS",0
+txtSuitePass:dc.b "THRONE SUITE PASS",0
+txtServerVaultPass:dc.b "SERVER VAULT PASS",0
 txtBiometricId: dc.b "BIOMETRIC ID",0
 
         ; Game messages

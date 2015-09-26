@@ -106,7 +106,7 @@ itemDefaultMaxCount:
                 dc.b 3                          ;Mine
                 dc.b 2                          ;Medikit
                 dc.b 2                          ;Battery
-                dc.b 99                         ;Armor
+                dc.b 100                        ;Armor
 
 itemMagazineSize:
                 dc.b MAG_INFINITE               ;Fists
