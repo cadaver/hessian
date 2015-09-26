@@ -37,14 +37,16 @@ ITEM_FIRST_IMPORTANT = ITEM_WAREHOUSEPASS
 
 MAG_INFINITE = $ff
 
-DROP_WEAPONMEDKIT = $80
-DROP_WEAPON     = $81
-DROP_WEAPONBATTERY = $82
-DROP_WEAPONBATTERYMEDKIT = $83
-DROP_WEAPONBATTERYMEDKITHIGHPROB = $84
+DROP_WEAPONMEDKITARMOR = $80
+DROP_WEAPONMEDKIT = $81
+DROP_WEAPON     = $82
+DROP_WEAPONBATTERY = $83
+DROP_WEAPONBATTERYMEDKIT = $84
+DROP_WEAPONBATTERYMEDKITHIGHPROB = $85
 DROPTABLERANDOM = 16                             ;Pick random choice from 16 consecutive indices
 
-itemDropTable:  dc.b ITEM_MEDKIT
+itemDropTable:  dc.b ITEM_ARMOR
+                dc.b ITEM_MEDKIT
                 dc.b ITEM_OWNWEAPON
                 dc.b ITEM_OWNWEAPON
                 dc.b ITEM_OWNWEAPON
@@ -126,7 +128,7 @@ itemMagazineSize:
                 dc.b 1                          ;Bazooka
                 dc.b 0                          ;Grenade
                 dc.b 0                          ;Mine
-                
+
 itemDefaultPickup:
                 dc.b 1                          ;Fists
                 dc.b 1                          ;Knife
@@ -147,7 +149,7 @@ itemDefaultPickup:
                 dc.b 2                          ;Mine
                 dc.b 1                          ;Medikit
                 dc.b 1                          ;Battery
-                dc.b 99                         ;Armor
+                dc.b 100                        ;Armor
 
 itemNPCMinDist: ;dc.b 0                          ;Fists (not used by NPCs)
                 dc.b 0                          ;Knife

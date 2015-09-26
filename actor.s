@@ -1212,7 +1212,6 @@ CAC_YNeg:       lsr
                 bcs CAC_HasCollision2
                 adc actSizeU,y
                 rts
-DA_Done:
 CAC_HasCollision:
                 sec
 CAC_HasCollision2:
@@ -1269,19 +1268,45 @@ ATD_Common:     tay
         ;
         ; Parameters: A damage amount (>= $80 skip modify), X actor index, Y damage source actor if applicable or >=$80 if none
         ; Returns: C=1 if actor is alive, C=0 if killed
-        ; Modifies: A,Y,temp7-temp8,possibly other temp registers
+        ; Modifies: A,Y,temp7-temp8,zpSrcLo,possibly other temp registers
 
 DamageActor:    sty temp7
+                sta temp8
                 tay
-                bpl DA_UseModify
-                and #$7f
+                bpl DA_UseModify                ;Unmodified damage (e.g. drowning) will not
+                and #$7f                        ;involve player's armor
                 bpl DA_SkipModify
-DA_UseModify:   pha
+DA_UseModify:   cpx #ACTI_PLAYER
+                bne DA_NoPlayerArmor
+                lda #ITEM_ARMOR
+                jsr FindItem
+                bcc DA_NoPlayerArmor
+                lda invCount,y                  ;Current armor strength before damage
+                pha
+                lda #5                          ;Round the armor strength reduction to next 5
+DA_NextMultiplyOf5:
+                cmp temp8
+                bcs DA_ReduceOK
+                adc #5
+                bcc DA_NextMultiplyOf5
+DA_ReduceOK:    jsr DecreaseAmmo
+                lda #INVENTORY_TEXT_DURATION    ;Show decreased armor level in the status
+                sta armorMsgTime                ;panel center (same as oxygen meter)
+                pla
+                cmp temp8                       ;Can reduce damage fully, or partially?
+                bcc DA_NotFullReduce
+                lda temp8
+DA_NotFullReduce:lsr                            ;Reduce max. half of the damage to health
+                eor #$ff
+                sec
+                adc temp8
+                sta temp8
+DA_NoPlayerArmor:
                 jsr GetActorLogicData
                 ldy #AL_DMGMODIFY
                 lda (actLo),y
                 tay
-                pla
+                lda temp8
                 jsr ModifyDamage
 DA_SkipModify:  cpx #ACTI_PLAYER
                 bne DA_NotPlayer
@@ -1333,6 +1358,7 @@ DA_NoScore:     ldy #AT_DESTROY                 ;Run the DESTROY trigger
 DA_DamageSrc:   ldy #$00
 DA_Jump:        jsr $0000
                 clc
+DA_Done:
 AS_Done2:       rts
 
         ; Attempt to spawn an actor to screen from a spawner object

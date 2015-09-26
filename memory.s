@@ -137,6 +137,7 @@ SCROLLROWS      = 22
                 var displayedItemName           ;Misc. game variables
                 var displayedHealth
                 var displayedBattery
+                var armorMsgTime
                 var healTimer
 
                 var difficulty                  ;Game options

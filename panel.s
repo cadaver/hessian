@@ -101,13 +101,30 @@ UpdatePanel:    lda menuMode                    ;Update health bars only when no
                 adc #$00                        ;Round upward
                 ldx #$01
                 jsr DrawHealthBar
+                lda #"O"
+                sta temp1
                 lda oxygen                      ;Show oxygen meter if less than maximum
                 cmp #MAX_OXYGEN
-                bcs UP_ClearOxygen
+                bcc UP_ShowOxygen
+                lda armorMsgTime                ;Armor meter requested?
+                beq UP_ClearOxygen
+                dec armorMsgTime
+                lda #ITEM_ARMOR
+                jsr FindItem
+                lda #$00
+                bcc UP_ZeroArmor
+                lda invCount,y
+                cmp #100                        ;If picked up a full armor while message
+                bcs UP_ClearOxygen              ;was displayed, show nothing
+UP_ZeroArmor:   ldy #"A"
+                bne UP_ShowOxygenOrArmor
+UP_ShowOxygen:  ldy #"O"
                 lsr
+UP_ShowOxygenOrArmor:
+                sty temp1
                 jsr ConvertToBCD8
                 ldx #18
-                lda #"O"
+                lda temp1
                 jsr PrintPanelChar
                 jsr PrintBCDDigitsLSB
                 lda #"%"
@@ -278,6 +295,7 @@ PrintPanelText: sty textDelay
 
 UP_UpdateText:  lda #$00
                 sta displayedItemName
+                sta armorMsgTime
                 ldx textLeftMargin
 UP_ContinueText:ldy #$00
                 lda textHi
