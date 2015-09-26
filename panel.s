@@ -5,6 +5,7 @@ MENU_MOVEDELAY  = 3
 
 INDEFINITE_TEXT_DURATION = $7f
 INVENTORY_TEXT_DURATION = 25
+REQUIREMENT_TEXT_DURATION = 50
 
 REDRAW_ITEM     = $01
 REDRAW_AMMO     = $02
@@ -169,6 +170,8 @@ UP_SkipWeapon:  lsr panelUpdateFlags
                 bcc UP_SkipAmmo
                 ldy itemIndex
                 ldx invType,y
+                cpx #ITEM_FIRST_NONWEAPON
+                bcs UP_Consumable
                 lda itemMagazineSize-1,x
                 sta temp2
                 beq UP_Consumable
@@ -496,8 +499,11 @@ UM_NextItem:    lda #$01
                 adc invType+1
                 sta invType+1
                 tax
+                lda #1
+                cpx #ITEM_FIRST_IMPORTANT
+                bcs UM_IsQuestItem
                 lda itemDefaultMaxCount-1,x
-                sta invCount+1
+UM_IsQuestItem: sta invCount+1
                 lda #$00
                 sta invMag+1
                 lda #$01

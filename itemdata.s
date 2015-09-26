@@ -1,5 +1,4 @@
 ITEM_NONE       = 0
-ITEM_OWNWEAPON  = 0
 ITEM_FISTS      = 1
 ITEM_KNIFE      = 2
 ITEM_NIGHTSTICK = 3
@@ -19,11 +18,22 @@ ITEM_GRENADE    = 16
 ITEM_MINE       = 17
 ITEM_MEDKIT     = 18
 ITEM_BATTERY    = 19
+ITEM_ARMOR      = 20
+ITEM_WAREHOUSEPASS = 21
+ITEM_ITPASS = 22
+ITEM_SERVICEPASS = 23
+ITEM_SECURITYPASS = 24
+ITEM_SCIENCEPASS = 25
+ITEM_LV2ITPASS = 26
+ITEM_LV2SECURITYPASS = 27
+ITEM_SUITEPASS = 28
+ITEM_VAULTPASS = 29
+ITEM_BIOMETRICID = 30
 
-ITEM_FIRST_FIREARM = ITEM_PISTOL
+ITEM_OWNWEAPON  = $80
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
 ITEM_FIRST_NONWEAPON = ITEM_MEDKIT
-ITEM_FIRST_IMPORTANT = ITEM_BATTERY+1
+ITEM_FIRST_IMPORTANT = ITEM_WAREHOUSEPASS
 
 MAG_INFINITE = $ff
 
@@ -74,6 +84,7 @@ itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Mine
                 dc.b 0                          ;Medikit
                 dc.b 0                          ;Battery
+                dc.b 0                          ;Armor
 
 itemDefaultMaxCount:
                 dc.b 1                          ;Fists
@@ -95,6 +106,7 @@ itemDefaultMaxCount:
                 dc.b 3                          ;Mine
                 dc.b 2                          ;Medikit
                 dc.b 2                          ;Battery
+                dc.b 99                         ;Armor
 
 itemMagazineSize:
                 dc.b MAG_INFINITE               ;Fists
@@ -114,9 +126,7 @@ itemMagazineSize:
                 dc.b 1                          ;Bazooka
                 dc.b 0                          ;Grenade
                 dc.b 0                          ;Mine
-                dc.b 0                          ;Medikit
-                dc.b 0                          ;Battery
-
+                
 itemDefaultPickup:
                 dc.b 1                          ;Fists
                 dc.b 1                          ;Knife
@@ -137,6 +147,7 @@ itemDefaultPickup:
                 dc.b 2                          ;Mine
                 dc.b 1                          ;Medikit
                 dc.b 1                          ;Battery
+                dc.b 99                         ;Armor
 
 itemNPCMinDist: ;dc.b 0                          ;Fists (not used by NPCs)
                 dc.b 0                          ;Knife

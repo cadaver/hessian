@@ -125,6 +125,9 @@ AddItem:        stx zpSrcHi
                 jsr FindItem
                 bcc AI_NewItem
 AI_HasItem:     tax
+                cpx #ITEM_FIRST_IMPORTANT       ;Quest items don't need checking, always x1
+                lda #1
+                bcs AI_AmmoNotExceeded
                 lda invCount,y                  ;Check for maximum ammo
                 cmp itemMaxCount-1,x
                 bcc AI_HasRoomForAmmo

@@ -424,4 +424,3 @@ RD_Loop:        lda actT,y
 RD_Next:        dey
                 bpl RD_Loop
                 rts
-

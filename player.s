@@ -325,7 +325,7 @@ MH_WallFlipRight:
                 cmp actMoveCtrl,x
                 bne MH_NoWallFlip
                 cmp #JOY_UP|JOY_RIGHT
-                jsr MH_GetSignedHalfSpeed
+                jsr GetSignedHalfSpeed
                 sta actSX,x
                 bne MH_StartJump
 MH_NoWallFlip:  lda #$00
@@ -713,7 +713,7 @@ MH_ClimbUp:     jsr GetCharInfo4Above
                 bne MH_ClimbUpNoJump
                 lda actMoveCtrl,x
                 cmp #JOY_RIGHT
-                jsr MH_GetSignedHalfSpeed
+                jsr GetSignedHalfSpeed
                 sta actSX,x
                 sta actD,x
                 jmp MH_StartJump
@@ -869,16 +869,57 @@ MH_ResetFall:   lda #$00
                 sta actFallL,x
                 rts
 
-MH_GetSignedHalfSpeed:
+        ; Get half of actor's movement speed
+        ;
+        ; Parameters: X actor number, C=1 get positive speed, C=0 negative
+        ; Returns: A speed
+        ; Modifies: A,Y
+
+GetSignedHalfSpeed:
                 ldy #AL_MOVESPEED
                 lda (actLo),y
                 php
                 lsr
                 plp
-                bcs MH_GSHSDone
+                bcs GSHSDone
                 eor #$ff
                 adc #$01
-MH_GSHSDone:    rts
+GSHSDone:       rts
+
+        ; Play footstep sound during player movement. No-op if music is on
+        ;
+        ; Parameters: X=0 (no-op otherwise)
+        ; Returns: -
+        ; Modifies: A,Y
+
+PlayFootstep:   lda #SFX_FOOTSTEP
+PlayMovementSound:
+                cpx #ACTI_PLAYER
+                bne PMS_NoSound
+                ldy PS_CurrentSong+1
+                beq PMS_DoPlay
+CS_NoFreeActor:
+PMS_NoSound:    rts
+
+        ; Create a water splash
+        ;
+        ; Parameters: X source actor
+        ; Returns: -
+        ; Modifies: A,Y
+
+CreateSplash:   lda #ACTI_FIRSTEFFECT
+                ldy #ACTI_LASTEFFECT
+                jsr GetFreeActor
+                bcc CS_NoFreeActor
+                lda #ACT_WATERSPLASH
+                jsr SpawnActor
+                lda lvlWaterSplashColor         ;Color override
+                sta actFlash,y
+                lda actYL,y                     ;Align to char boundary
+                and #$c0
+                sta actYL,y
+                lda #SFX_SPLASH
+PMS_DoPlay:     jmp PlaySfx
 
         ; Drain battery charge
         ;
@@ -1000,9 +1041,9 @@ DI_Retry:       ldy #AL_DROPITEMINDEX
                 adc temp5
                 tay
                 lda itemDropTable-$80,y
-                bne DI_ItemNumber
+                beq DI_NoItem
+                bpl DI_ItemNumber
                 lda actWpn,x
-                bcc DI_ItemNumber
 DI_ItemNumber:  tay
                 beq DI_NoItem
                 sta temp5                       ;Item type to drop
@@ -1049,8 +1090,11 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 stx temp6
                 tax
                 sta actF1,y
+                lda #1
+                cpx #ITEM_FIRST_IMPORTANT       ;Quest items always x1
+                bcs DI_NoCount
                 lda itemDefaultPickup-1,x
-                sta actHp,y
+DI_NoCount:     sta actHp,y
                 lda #ITEM_YSPEED
                 sta actSY,y
                 tya
@@ -1066,7 +1110,6 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 jsr SetPersistence
                 ldx temp6
                 rts
-
         ; Save an in-memory checkpoint. Removes other actors than player as a byproduct
         ;
         ; Parameters: -
@@ -1351,38 +1394,4 @@ AU_NoDrainReduce:
                 ldx difficulty
                 lda playerAttackModTbl,x
                 sta ATD_DifficultyMod+1         ;Finally add a difficulty-based modifier to attacks on player
-CS_NoFreeActor: rts
-
-        ; Create a water splash
-        ;
-        ; Parameters: X source actor
-        ; Returns: -
-        ; Modifies: A,Y
-
-CreateSplash:   lda #ACTI_FIRSTEFFECT
-                ldy #ACTI_LASTEFFECT
-                jsr GetFreeActor
-                bcc CS_NoFreeActor
-                lda #ACT_WATERSPLASH
-                jsr SpawnActor
-                lda lvlWaterSplashColor         ;Color override
-                sta actFlash,y
-                lda actYL,y                     ;Align to char boundary
-                and #$c0
-                sta actYL,y
-                lda #SFX_SPLASH
-PMS_DoPlay:     jmp PlaySfx
-
-        ; Play footstep sound during player movement. No-op if music is on
-        ;
-        ; Parameters: X=0 (no-op otherwise)
-        ; Returns: -
-        ; Modifies: A,Y
-
-PlayFootstep:   lda #SFX_FOOTSTEP
-PlayMovementSound:
-                cpx #ACTI_PLAYER
-                bne PMS_NoSound
-                ldy PS_CurrentSong+1
-                beq PMS_DoPlay
-PMS_NoSound:    rts
+                rts

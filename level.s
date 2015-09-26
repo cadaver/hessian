@@ -546,7 +546,7 @@ OO_NoSound:     lda lvlObjDH,y                  ;Check requirement item from obj
                 bcs OO_RequirementOK
                 lda #<txtRequired
                 ldx #>txtRequired
-                ldy #INVENTORY_TEXT_DURATION
+                ldy #REQUIREMENT_TEXT_DURATION
                 jsr PrintPanelText
                 lda temp3
                 jsr GetItemName

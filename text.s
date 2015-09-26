@@ -19,7 +19,18 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtMine
                 dc.b <txtMedKit
                 dc.b <txtBattery
-
+                dc.b <txtArmor
+                dc.b <txtWarehousePass
+                dc.b <txtItPass
+                dc.b <txtServicePass
+                dc.b <txtSecurityPass
+                dc.b <txtSciencePass
+                dc.b <txtLv2ItPass
+                dc.b <txtLv2SecurityPass
+                dc.b <txtSuitePass
+                dc.b <txtVaultPass
+                dc.b <txtBiometricId
+                
 itemNameHi:     dc.b >txtFists
                 dc.b >txtKnife
                 dc.b >txtNightstick
@@ -39,6 +50,16 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtMine
                 dc.b >txtMedKit
                 dc.b >txtBattery
+                dc.b >txtWarehousePass
+                dc.b >txtItPass
+                dc.b >txtServicePass
+                dc.b >txtSecurityPass
+                dc.b >txtSciencePass
+                dc.b >txtLv2ItPass
+                dc.b >txtLv2SecurityPass
+                dc.b >txtSuitePass
+                dc.b >txtVaultPass
+                dc.b >txtBiometricId
 
 txtFists:       dc.b "FISTS",0
 txtKnife:       dc.b "COMBAT KNIFE",0
@@ -59,6 +80,17 @@ txtGrenade:     dc.b "GRENADES",0
 txtMine:        dc.b "SMART MINE",0
 txtMedKit:      dc.b "MEDKIT",0
 txtBattery:     dc.b "BATTERY",0
+txtArmor:       dc.b "ARMOR",0
+txtWarehousePass:dc.b "WAREHOUSE PASS",0
+txtItPass:      dc.b "IT PASS",0
+txtServicePass: dc.b "SERVICE PASS",0
+txtSecurityPass:dc.b "SECURITY PASS",0
+txtSciencePass: dc.b "SCIENCE PASS",0
+txtLv2ItPass:   dc.b "LV2 IT PASS",0
+txtLv2SecurityPass:dc.b "LV2 SECURITY PASS",0
+txtSuitePass:   dc.b "SUITE PASS",0
+txtVaultPass:   dc.b "SERVER VAULT PASS",0
+txtBiometricId: dc.b "BIOMETRIC ID",0
 
         ; Game messages
 
