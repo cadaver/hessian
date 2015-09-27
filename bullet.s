@@ -1,6 +1,7 @@
 GRENADE_DMG_RADIUS = 32
 GRENADE_MAX_YSPEED = 6*8
 GRENADE_ACCEL   = 4
+GRENADE_BRAKE   = 8
 
         ; Extinguisher powder update routine
         ;
@@ -331,7 +332,7 @@ MoveGrenade:    dec actTime,x
                 lda temp1                       ;Bounce: negate and halve velocity
                 jsr Negate8Asr8
                 sta actSY,x
-                lda #8                          ;Brake X-speed with each bounce
+                lda #GRENADE_BRAKE              ;Brake X-speed with each bounce
                 jsr BrakeActorX
 MGrn_NoBounce:  lda actMB,x
                 tay

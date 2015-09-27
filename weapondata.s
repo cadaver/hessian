@@ -50,8 +50,8 @@ attackTbl:      dc.b AIM_NONE                   ;None
 
 bulletXSpdTbl:  dc.b 0,6,8,6,0                  ;Normal bullets
                 dc.b 0,-6,-8,-6,0
-                dc.b 7,8,7,0                    ;Thrown grenade
-                dc.b 0,-7,-8,-7
+                dc.b 8,8,8,0                    ;Thrown grenade
+                dc.b 0,-8,-8,-8
                 dc.b 0,7,8,7,0                  ;Launcher grenade
                 dc.b 0,-7,-8,-7
 
