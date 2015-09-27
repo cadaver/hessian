@@ -375,7 +375,7 @@ wdExtinguisher: dc.b WDB_FIREFROMHIP|WDB_NOSKILLBONUS|WDB_FLICKERBULLET ;Weapon 
                 dc.b 6                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_FLAMETHROWER           ;Sound effect
-                dc.b 59                         ;Climbing weapon frame
+                dc.b NOWEAPONFRAME              ;Climbing weapon frame
                 dc.b 58                         ;Idle weapon frame (right)
                 dc.b 58                         ;Attack weapon frames (right)
                 dc.b 0                          ;Reload delay
