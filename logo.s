@@ -24,7 +24,7 @@ txtInstructions:dc.b "USE JOYSTICK IN PORT 2 AND KEYS",0
                 dc.b 0
                 dc.b ", .     SELECT ITEM",0
                 dc.b $80+11,"R       RELOAD",0
-                dc.b $80+11,"H       HEAL (MEDKIT)",0
+                dc.b $80+11,"H       USE MEDKIT",0
                 dc.b $80+11,"B       USE BATTERY",0
                 dc.b "RUNSTOP PAUSE MENU",0
                 dc.b 0

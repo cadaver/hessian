@@ -295,7 +295,6 @@ PrintPanelText: sty textDelay
 
 UP_UpdateText:  lda #$00
                 sta displayedItemName
-                sta armorMsgTime
                 ldx textLeftMargin
 UP_ContinueText:ldy #$00
                 lda textHi
