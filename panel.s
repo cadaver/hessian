@@ -311,6 +311,7 @@ UP_PrintTextLoop:
                 stx zpSrcLo
 UP_ScanWordLoop:lda (textLo),y
                 beq UP_ScanWordDone
+                bmi UP_ScanWordDone
                 cmp #$20
                 beq UP_ScanWordDone
                 cmp #"-"
@@ -345,6 +346,7 @@ UP_WordCmp:     cpx zpSrcLo
                 bcc UP_WordLoop
 UP_SpaceLoop:   lda (textLo),y
                 beq UP_EndLine
+                bmi UP_TextJump
                 cmp #$20
                 bne UP_SpaceLoopDone
                 cpx textRightMargin
@@ -356,6 +358,15 @@ UP_SpaceLoopDone:
                 cpx textRightMargin
                 bcc UP_PrintTextLoop
                 bcs UP_EndLine
+UP_TextJump:    pha
+                iny
+                lda (textLo),y
+                sta textLo
+                pla
+                and #$7f
+                sta textHi
+                ldy #$00
+                beq UP_PrintTextLoop
 
 UP_DrawSlice:   txa
                 clc
@@ -554,11 +565,11 @@ SetMenuMode2:   jmp SetMenuMode
 UM_Dialogue:    ldx #MENU_NONE
                 lda textTime
                 beq SetMenuMode2
-                jsr GetFireClick                ;Speed up levelup text by pressing fire
-                bcc UM_LUNoFire
+                jsr GetFireClick                ;Skip to next text line by pressing fire
+                bcc UM_DNoFire
                 lda #$01
                 sta textTime
-UM_LUNoFire:    rts
+UM_DNoFire:     rts
 
         ; Pause menu
 

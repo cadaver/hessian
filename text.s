@@ -69,31 +69,48 @@ txtKnife:       dc.b "COMBAT KNIFE",0
 txtNightstick:  dc.b "NIGHTSTICK",0
 txtBat:         dc.b "BAT",0
 txtPistol:      dc.b "PISTOL",0
-txtShotgun:     dc.b "SHOTGUN",0
-txtAutoRifle:   dc.b "AUTO RIFLE",0
-txtSniperRifle: dc.b "SNIPER RIFLE",0
-txtMinigun:     dc.b "MINIGUN",0
+txtShotgun:     dc.b "SHOT"
+txtGun:         dc.b "GUN",0
+txtAutoRifle:   dc.b "AUTO"
+txtRifle:       dc.b " RIFLE",0
+txtSniperRifle: dc.b "SNIPER"
+                textjump txtRifle
+txtMinigun:     dc.b "MINI"
+                textjump txtGun
 txtFlameThrower:dc.b "FLAMETHROWER",0
-txtLaserRifle:  dc.b "LASER RIFLE",0
-txtPlasmaGun:   dc.b "PLASMA GUN",0
+txtLaserRifle:  dc.b "LASER"
+                textjump txtRifle
+txtPlasmaGun:   dc.b "PLASMA "
+                textjump txtGun
 txtEMPGenerator:dc.b "EMP GENERATOR",0
-txtGrenadeLauncher:dc.b "GRENADE LAUNCHER",0
+txtGrenadeLauncher:dc.b "GRENADE LAUNC"
+txtHer:         dc.b "HER",0
 txtBazooka:     dc.b "BAZOOKA",0
-txtExtinguisher:dc.b "FIRE EXTINGUISHER",0
+txtExtinguisher:dc.b "FIRE EXTINGUIS"
+                textjump txtHer
 txtGrenade:     dc.b "GRENADES",0
 txtMine:        dc.b "SMART MINE",0
 txtMedKit:      dc.b "MEDKIT",0
 txtBattery:     dc.b "BATTERY",0
 txtArmor:       dc.b "ARMOR",0
-txtWarehousePass:dc.b "WAREHOUSE PASS",0
-txtItPass:      dc.b "IT PASS",0
-txtServicePass: dc.b "SERVICE PASS",0
-txtSecurityPass:dc.b "SECURITY PASS",0
-txtSciencePass: dc.b "SCIENCE PASS",0
-txtLv2ItPass:   dc.b "LV2 IT PASS",0
-txtLv2SecurityPass:dc.b "LV2 SECURITY PASS",0
-txtSuitePass:dc.b "THRONE SUITE PASS",0
-txtServerVaultPass:dc.b "SERVER VAULT PASS",0
+txtWarehousePass:dc.b "WAREHOUSE"
+txtPass:        dc.b " PASS",0
+txtItPass:      dc.b "IT"
+                textjump txtPass
+txtServicePass: dc.b "SERVICE"
+                textjump txtPass
+txtSecurityPass:dc.b "SECURITY"
+                textjump txtPass
+txtSciencePass: dc.b "SCIENCE"
+                textjump txtPass
+txtLv2ItPass:   dc.b "LV2 "
+                textjump txtItPass
+txtLv2SecurityPass:dc.b "LV2 "
+                textjump txtSecurityPass
+txtSuitePass:dc.b "THRONE SUITE"
+                textjump txtPass
+txtServerVaultPass:dc.b "SERVER VAULT"
+                textjump txtPass
 txtBiometricId: dc.b "BIOMETRIC ID",0
 
         ; Game messages

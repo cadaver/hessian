@@ -36,6 +36,13 @@ NEXT_VAR        set NEXT_VAR + {2}
                 endif
                 endm
 
+        ; Text jump. Game texts need to be located between $0000-$7fff to use
+
+                mac textjump
+                dc.b >{1} | $80
+                dc.b <{1}
+                endm
+
         ; Scripting macros
 
                 mac setscript
@@ -43,7 +50,7 @@ NEXT_VAR        set NEXT_VAR + {2}
                 ldx #>{1}
                 jsr SetScript
                 endm
-                
+
                 mac stopscript
                 jsr StopScript
                 endm
@@ -61,7 +68,7 @@ NEXT_VAR        set NEXT_VAR + {2}
                 ldy #{1}
                 jsr RemoveActorTrigger
                 endm
-                
+
                 mac speak
                 ldy #{1}
                 lda #<{2}
@@ -73,15 +80,14 @@ NEXT_VAR        set NEXT_VAR + {2}
                 lda #{1}
                 jsr FindItem
                 endm
-                
+
                 mac additem
                 lda #{1}
                 lda #{2}
                 jsr AddItem
                 endm
-                
+
                 mac removeitem
                 lda #{1}
                 jsr RemoveItem
                 endm
-
