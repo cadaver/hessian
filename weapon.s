@@ -205,6 +205,9 @@ AH_StoreAttackFrame:
                 adc #5
                 sta AH_FireDir+1
 AH_AimRight:    jsr AH_SetWeaponFrame
+                lda actWpn,x                    ;Extinguisher does not have directional frames
+                cmp #ITEM_EXTINGUISHER
+                beq AH_NoWeaponFrame2
                 lda actWpnF,x
                 cmp #NOWEAPONFRAME
                 bcs AH_NoWeaponFrame2

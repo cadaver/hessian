@@ -79,6 +79,7 @@ wpnTblLo:       dc.b <wdFists
                 dc.b <wdEMPGenerator
                 dc.b <wdGrenadeLauncher
                 dc.b <wdBazooka
+                dc.b <wdExtinguisher
                 dc.b <wdGrenade
                 dc.b <wdMine
 
@@ -97,6 +98,7 @@ wpnTblHi:       dc.b >wdFists
                 dc.b >wdEMPGenerator
                 dc.b >wdGrenadeLauncher
                 dc.b >wdBazooka
+                dc.b >wdExtinguisher
                 dc.b >wdGrenade
                 dc.b >wdMine
 
@@ -246,7 +248,7 @@ wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_FL
                 dc.b 56                         ;Climbing weapon frame
                 dc.b 23                         ;Idle weapon frame (right)
                 dc.b 22-1                       ;Attack weapon frames (right)
-                dc.b 35                         ;Reload delay
+                dc.b 0                          ;Reload delay
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKWEAPON             ;Reload finished sound
                 dc.b FR_WALK+2                  ;Lock animation upper body frame
@@ -362,6 +364,24 @@ wdBazooka:      dc.b WDB_BULLETDIRFRAME|WDB_NOSKILLBONUS|WDB_LOCKANIMATION ;Weap
                 dc.b SFX_RELOADBAZOOKA          ;Reload finished sound
                 dc.b FR_PREPARE+1               ;Lock animation upper body frame
 
+wdExtinguisher: dc.b WDB_FIREFROMHIP|WDB_NOSKILLBONUS|WDB_FLICKERBULLET ;Weapon bits
+                dc.b AIM_DIAGONALUP             ;First aim direction
+                dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
+                dc.b 2                          ;Attack delay
+                dc.b ACT_POWDER                 ;Bullet actor type
+                dc.b 0                          ;Bullet damage
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b 15                         ;Bullet time duration
+                dc.b 6                          ;Bullet speed in pixels
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
+                dc.b SFX_FLAMETHROWER           ;Sound effect
+                dc.b 59                         ;Climbing weapon frame
+                dc.b 58                         ;Idle weapon frame (right)
+                dc.b 58                         ;Attack weapon frames (right)
+                dc.b 0                          ;Reload delay
+                dc.b SFX_RELOAD                 ;Reload sound
+                dc.b SFX_COCKWEAPON             ;Reload finished sound
+
 wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b AIM_DIAGONALUP             ;First aim direction
                 dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
@@ -370,7 +390,7 @@ wdGrenade:      dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b DMG_GRENADE                ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 30                         ;Bullet time duration
-                dc.b 6                          ;Bullet speed in pixels
+                dc.b 5                          ;Bullet speed in pixels
                 dc.b SPDTBL_GRENADE             ;Bullet speed table offset
                 dc.b SFX_THROW                  ;Sound effect
 

@@ -255,6 +255,7 @@ MH_NoRollSave:  sec
                 sta temp8
                 asl
                 adc temp8
+                ora #$80                        ;No modify (do not affect armor either)
                 jsr DamageSelf
 MH_NoFallDamage2:
                 jsr PlayFootstep

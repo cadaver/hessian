@@ -15,6 +15,7 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtEMPGenerator
                 dc.b <txtGrenadeLauncher
                 dc.b <txtBazooka
+                dc.b <txtExtinguisher
                 dc.b <txtGrenade
                 dc.b <txtMine
                 dc.b <txtMedKit
@@ -46,6 +47,7 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtEMPGenerator
                 dc.b >txtGrenadeLauncher
                 dc.b >txtBazooka
+                dc.b >txtExtinguisher
                 dc.b >txtGrenade
                 dc.b >txtMine
                 dc.b >txtMedKit
@@ -77,6 +79,7 @@ txtPlasmaGun:   dc.b "PLASMA GUN",0
 txtEMPGenerator:dc.b "EMP GENERATOR",0
 txtGrenadeLauncher:dc.b "GRENADE LAUNCHER",0
 txtBazooka:     dc.b "BAZOOKA",0
+txtExtinguisher:dc.b "FIRE EXTINGUISHER",0
 txtGrenade:     dc.b "GRENADES",0
 txtMine:        dc.b "SMART MINE",0
 txtMedKit:      dc.b "MEDKIT",0

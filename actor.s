@@ -412,16 +412,14 @@ AA_IndexNotOver:stx AA_Start+1
         ; Process spawning
 
 UA_DoSpawn:     ldy #ZONEH_SPAWNCOUNT
-                ;lda (zoneLo),y
-                lda #$ff
+                lda (zoneLo),y
                 bmi UA_NoSpawnLimit           ;Negative spawncount = unlimited
 UA_SpawnCount:  cmp #$00
                 beq UA_SpawnDone
 UA_NoSpawnLimit:dey
 UA_SpawnDelay:  lda #$00                      ;Spawn delay counting
                 clc
-                ;adc (zoneLo),y
-                adc #$10
+                adc (zoneLo),y
                 sta UA_SpawnDelay+1
                 bcc UA_SpawnDone
                 dey
@@ -1361,7 +1359,7 @@ DA_Jump:        jsr $0000
 DA_Done:
 AS_Done2:       rts
 
-        ; Attempt to spawn an actor to screen from a spawner object
+        ; Attempt to spawn an actor to screen edges (left, right or top, depending on spawn type)
         ;
         ; Parameters: A spawnlist index
         ; Returns: -

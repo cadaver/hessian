@@ -16,11 +16,12 @@ ACT_ROCKET      = 14
 ACT_MINE        = 15
 ACT_EXPLOSION   = 16
 ACT_SMOKETRAIL  = 17
-ACT_WATERSPLASH = 18
-ACT_SMALLSPLASH = 19
-ACT_OBJECTMARKER = 20
-ACT_SPEECHBUBBLE = 21
-ACT_TESTENEMY   = 22
+ACT_POWDER      = 18
+ACT_WATERSPLASH = 19
+ACT_SMALLSPLASH = 20
+ACT_OBJECTMARKER = 21
+ACT_SPEECHBUBBLE = 22
+ACT_TESTENEMY   = 23
 
 HP_PLAYER       = 56
 
@@ -66,6 +67,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adMine
                 dc.b <adExplosion
                 dc.b <adSmokeTrail
+                dc.b <adSmokeTrail
                 dc.b <adWaterSplash
                 dc.b <adSmallSplash
                 dc.b <adObjectMarker
@@ -88,6 +90,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adRocket
                 dc.b >adMine
                 dc.b >adExplosion
+                dc.b >adSmokeTrail
                 dc.b >adSmokeTrail
                 dc.b >adWaterSplash
                 dc.b >adSmallSplash
@@ -112,7 +115,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b 0                          ;Left frame add
                 dc.b 19                         ;Number of frames
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
-                dc.b 11,12,13,14,15,16,17,18
+                dc.b 11,12,13,14,22,15,16,17,18
                 dc.b 19,20,20,20,20,20,20,20,20,20,21
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
@@ -257,6 +260,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alMine
                 dc.b <alExplosion
                 dc.b <alSmokeTrail
+                dc.b <alPowder
                 dc.b <alWaterSplash
                 dc.b <alSmallSplash
                 dc.b <alObjectMarker
@@ -280,6 +284,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alMine
                 dc.b >alExplosion
                 dc.b >alSmokeTrail
+                dc.b >alPowder
                 dc.b >alWaterSplash
                 dc.b >alSmallSplash
                 dc.b >alObjectMarker
@@ -410,6 +415,13 @@ alExplosion:    dc.w MoveExplosion              ;Update routine
 alSmokeTrail:   dc.w MoveSmokeTrail             ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
+
+alPowder:       dc.w MovePowder                 ;Update routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 5                          ;Horizontal size
+                dc.b 5                          ;Size up
+                dc.b 5                          ;Size down
 
 alSmallSplash:  dc.w MoveSmallSplash            ;Update routine
                 dc.w RemoveActor                ;Destroy routine

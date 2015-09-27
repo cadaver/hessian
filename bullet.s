@@ -2,6 +2,21 @@ GRENADE_DMG_RADIUS = 32
 GRENADE_MAX_YSPEED = 6*8
 GRENADE_ACCEL   = 4
 
+        ; Extinguisher powder update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MovePowder:     lda #3
+                jsr AnimationDelay
+                bcc MP_NoAnimation
+                inc actF1,x
+                lda actF1,x
+                cmp #2
+                bcs MMH_Remove
+MP_NoAnimation: jmp MoveBullet_NoCollision      ;Todo: collision check that only affects fires
+
         ; Smoketrail update routine
         ;
         ; Parameters: X actor index
@@ -117,6 +132,7 @@ MSBlt_NoAnim:
         ; Modifies: A,Y
 
 MoveBullet:     jsr CheckBulletCollisionsApplyDamage
+MoveBullet_NoCollision:
                 dec actTime,x
                 bmi MBlt_Remove
 

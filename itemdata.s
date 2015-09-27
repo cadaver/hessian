@@ -14,21 +14,22 @@ ITEM_PLASMAGUN  = 12
 ITEM_EMPGENERATOR = 13
 ITEM_GRENADELAUNCHER = 14
 ITEM_BAZOOKA    = 15
-ITEM_GRENADE    = 16
-ITEM_MINE       = 17
-ITEM_MEDKIT     = 18
-ITEM_BATTERY    = 19
-ITEM_ARMOR      = 20
-ITEM_WAREHOUSEPASS = 21
-ITEM_ITPASS = 22
-ITEM_SERVICEPASS = 23
-ITEM_SECURITYPASS = 24
-ITEM_SCIENCEPASS = 25
-ITEM_LV2ITPASS = 26
-ITEM_LV2SECURITYPASS = 27
-ITEM_SUITEPASS = 28
-ITEM_VAULTPASS = 29
-ITEM_BIOMETRICID = 30
+ITEM_EXTINGUISHER = 16
+ITEM_GRENADE    = 17
+ITEM_MINE       = 18
+ITEM_MEDKIT     = 19
+ITEM_BATTERY    = 20
+ITEM_ARMOR      = 21
+ITEM_WAREHOUSEPASS = 22
+ITEM_ITPASS = 23
+ITEM_SERVICEPASS = 24
+ITEM_SECURITYPASS = 25
+ITEM_SCIENCEPASS = 26
+ITEM_LV2ITPASS = 27
+ITEM_LV2SECURITYPASS = 28
+ITEM_SUITEPASS = 29
+ITEM_VAULTPASS = 30
+ITEM_BIOMETRICID = 31
 
 ITEM_OWNWEAPON  = $80
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
@@ -82,6 +83,7 @@ itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;EMP generator
                 dc.b 0                          ;Grenade launcher
                 dc.b 0                          ;Bazooka
+                dc.b 0                          ;Extinguisher
                 dc.b 0                          ;Grenade
                 dc.b 0                          ;Mine
                 dc.b 0                          ;Medikit
@@ -104,6 +106,7 @@ itemDefaultMaxCount:
                 dc.b 8                          ;EMP generator
                 dc.b 6                          ;Grenade launcher
                 dc.b 4                          ;Bazooka
+                dc.b 100                        ;Extinguisher
                 dc.b 5                          ;Grenade
                 dc.b 3                          ;Mine
                 dc.b 2                          ;Medikit
@@ -126,6 +129,7 @@ itemMagazineSize:
                 dc.b 4                          ;EMP generator
                 dc.b 3                          ;Grenade launcher
                 dc.b 1                          ;Bazooka
+                dc.b 0                          ;Extinguisher
                 dc.b 0                          ;Grenade
                 dc.b 0                          ;Mine
 
@@ -145,6 +149,7 @@ itemDefaultPickup:
                 dc.b 4                          ;EMP generator
                 dc.b 2                          ;Grenade launcher
                 dc.b 2                          ;Bazooka
+                dc.b 100                        ;Extinguisher
                 dc.b 2                          ;Grenade
                 dc.b 2                          ;Mine
                 dc.b 1                          ;Medikit
@@ -166,6 +171,7 @@ itemNPCMinDist: ;dc.b 0                          ;Fists (not used by NPCs)
                 dc.b 1                          ;EMP generator (not used by NPCs)
                 dc.b 2                          ;Grenade launcher
                 dc.b 3                          ;Bazooka
+                dc.b 2                          ;Extinguisher (not an actual weapon, not used by NPCs)
                 dc.b 2                          ;Grenade
                 ;dc.b 2                          ;Mine (not used by NPCs)
 
@@ -184,6 +190,7 @@ itemNPCMaxDist: ;dc.b 1                          ;Fists (not used by NPCs)
                 dc.b 5                          ;EMP generator (not used by NPCs)
                 dc.b 5                          ;Grenade launcher
                 dc.b 7                          ;Bazooka
+                dc.b 3                          ;Extinguisher (not an actual weapon, not used by NPCs)
                 dc.b 6                          ;Grenade
                 ;dc.b 2                          ;Mine (not used by NPCs)
 
@@ -203,6 +210,7 @@ itemNPCAttackLength:                            ;Note: stored as negative
                 dc.b -7                         ;EMP generator (not used by NPCs)
                 dc.b -12                        ;Grenade launcher
                 dc.b -16                        ;Bazooka
+                dc.b -10                        ;Extinguisher (not an actual weapon, not used by NPCs)
                 dc.b -4                         ;Grenade
                 ;dc.b -4                         ;Mine (not used by NPCs)
 
@@ -222,5 +230,6 @@ itemNPCAttackThreshold:
                 dc.b $7f                        ;EMP generator (not used by NPCs)
                 dc.b $7f                        ;Grenade launcher
                 dc.b $7f                        ;Bazooka
+                dc.b $7f                        ;Extinguisher (not an actual weapon, not used by NPCs)
                 dc.b $7f                        ;Grenade
                 ;dc.b $7f                        ;Mine (not used by NPCs)
