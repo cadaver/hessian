@@ -1245,6 +1245,7 @@ ApplyTargetDamage:
                 beq ATD_NonOrganic
 ATD_Organic:    lda temp7
                 and #$0f
+                beq ATD_Skip                    ;Skip if no organic damage
                 cpy #ACTI_PLAYER                ;Difficulty-based mod on attacks on player
                 bne ATD_Common
 ATD_DifficultyMod:
@@ -1256,9 +1257,9 @@ ATD_NonOrganic: lda temp7
                 lsr
                 lsr
 ATD_Common:     tay
-                beq ATD_Skip                    ;If damage multiplier is actually zero, skip
-                lda temp8                       ;further processing, as the target should not be
-                jsr ModifyDamage                ;damaged at all
+                beq ATD_Skip                    ;Skip if multiplier zero now
+                lda temp8
+                jsr ModifyDamage
                 ldx tgtActIndex
                 ldy actIndex
 
