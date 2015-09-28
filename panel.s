@@ -296,16 +296,16 @@ PrintPanelText: sty textDelay
 UP_UpdateText:  lda #$00
                 sta displayedItemName
                 ldx textLeftMargin
-UP_ContinueText:lda textHi
+UP_ContinueText:ldy #$00
+                lda textHi
                 beq UP_NoLine
-                ;lda (textLo),y
-                ;bne UP_BeginLine
+                lda (textLo),y
+                bne UP_BeginLine
 UP_NoLine:      sta textTime
                 beq UP_ClearEndOfLine
 UP_BeginLine:   lda textDelay
                 asl
                 sta textTime
-UP_TextJumpDone:ldy #$00
 UP_PrintTextLoop:
                 sty zpSrcHi
                 stx zpSrcLo
@@ -365,7 +365,8 @@ UP_TextJump:    pha
                 pla
                 and #$7f
                 sta textHi
-                bne UP_TextJumpDone
+                ldy #$00
+                beq UP_PrintTextLoop
 
 UP_DrawSlice:   txa
                 clc
