@@ -33,6 +33,10 @@ INITIAL_JUMPSPEED = 40
 INITIAL_CLIMBSPEED = 84
 INITIAL_HEALTIMER = 4
 
+UPGRADE_DAMAGE_MODIFY = 6
+UPGRADE_ATTACK_MODIFY = 12
+UPGRADE_RELOADTIME_MODIFY = 6
+
 HEALTIMER_RESET = $c0
 
 DIFFICULTY_EASY = 0
@@ -1346,19 +1350,16 @@ AU_NoMovement:  stx temp7
                 adc #1-INITIAL_JUMPSPEED
                 sta plrJumpSpeed
                 lsr temp6                       ;Check strength
-                ldx #NO_MODIFY
-                ldy #0
+                ldy #NO_MODIFY
                 bcc AU_NoStrength
-                ldx #12
-                ldy #1
-AU_NoStrength:  stx AH_PlayerMeleeBonus+1
-                tya
-                clc
-                adc #INITIAL_MAX_WEAPONS
-                sta AI_MaxWeaponsCount+1
-                ldx #itemDefaultMaxCount - itemMaxCount
+                ldy #UPGRADE_ATTACK_MODIFY
+AU_NoStrength:  sty AH_PlayerMeleeBonus+1
+                lda #INITIAL_MAX_WEAPONS
+                adc #$00                        ;Add one more weapon if have strength upgrade
+                sta AI_MaxWeaponsCount+1        ;Todo: should this be two?
+                ldx #itemDefaultMaxCount-itemMaxCount-1
 AU_AmmoLoop:    lda itemDefaultMaxCount-1,x     ;Set carrying capacity for weapons/items
-                cpy #$00
+                cpy #NO_MODIFY                  ;except armor
                 beq AU_NoAmmoIncrease
                 lsr
                 clc
@@ -1367,32 +1368,31 @@ AU_NoAmmoIncrease:
                 sta itemMaxCount-1,x
                 dex
                 bne AU_AmmoLoop
-                lsr temp6
                 lsr temp6                       ;Check firearms
                 ldx #NO_MODIFY
-                ldy #NO_MODIFY
+                lda #NO_MODIFY
                 bcc AU_NoFirearms
-                ldx #12
-                ldy #6
+                ldx #UPGRADE_ATTACK_MODIFY
+                lda #UPGRADE_RELOADTIME_MODIFY
 AU_NoFirearms:  stx AH_PlayerFirearmBonus+1
-                sty AH_PlayerReloadTimeMod+1
-                lsr temp6                       ;Check armor
-                ldx #NO_MODIFY
+                sta AH_PlayerReloadTimeMod+1
+                lsr temp6                       ;Check subdermal armor for player damage
+                lda #NO_MODIFY                  ;modifier
                 bcc AU_NoArmor
-                ldx #6
-AU_NoArmor:     stx plrDmgModify
+                lda #UPGRADE_DAMAGE_MODIFY
+AU_NoArmor:     ldx difficulty                  ;Finally modify with difficulty level
+                ldy plrDmgModifyTbl,x
+                jsr ModifyDamage
+                sta plrDmgModify
                 lsr temp6                       ;Check healing speed
-                ldx #INITIAL_HEALTIMER-1        ;Healing code has C=1 while adding, so subtract 1 here
+                lda #INITIAL_HEALTIMER-1        ;Healing code has C=1 while adding, so subtract 1 here
                 bcc AU_NoHealing
-                ldx #INITIAL_HEALTIMER*2-1
-AU_NoHealing:   stx ULO_HealingRate+1
+                lda #INITIAL_HEALTIMER*2-1
+AU_NoHealing:   sta ULO_HealingRate+1
                 lsr temp6                       ;Check battery drain reduce
-                ldx #$18                        ;CLC
+                lda #$18                        ;CLC
                 bcc AU_NoDrainReduce
-                ldx #$4a                        ;LSR
+                lda #$4a                        ;LSR
 AU_NoDrainReduce:
-                stx DrainBatteryNoCheck
-                ldx difficulty
-                lda playerAttackModTbl,x
-                sta ATD_DifficultyMod+1         ;Finally add a difficulty-based modifier to attacks on player
+                sta DrainBatteryNoCheck
                 rts

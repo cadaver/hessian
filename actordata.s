@@ -25,10 +25,9 @@ ACT_TESTENEMY   = 23
 
 HP_PLAYER       = 56
 
-        ; Difficulty mod for attacks on player, minus 1
+        ; Difficulty mod for damage on player
 
-playerAttackModTbl:
-                dc.b $fd,$ff,$01
+plrDmgModifyTbl:dc.b 6,8,12
 
         ; Human Y-size reduce table based on animation
 

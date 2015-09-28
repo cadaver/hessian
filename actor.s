@@ -1245,11 +1245,6 @@ ApplyTargetDamage:
                 beq ATD_NonOrganic
 ATD_Organic:    lda temp7
                 and #$0f
-                beq ATD_Skip                    ;Skip if no organic damage
-                cpy #ACTI_PLAYER                ;Difficulty-based mod on attacks on player
-                bne ATD_Common
-ATD_DifficultyMod:
-                adc #$00                        ;C=1 here
                 bpl ATD_Common
 ATD_NonOrganic: lda temp7
                 lsr

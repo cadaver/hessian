@@ -88,7 +88,7 @@ itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Mine
                 dc.b 0                          ;Medikit
                 dc.b 0                          ;Battery
-                dc.b 0                          ;Armor
+                dc.b 100                        ;Armor
 
 itemDefaultMaxCount:
                 dc.b 1                          ;Fists
