@@ -87,8 +87,8 @@ TitleScreen:    jsr BlankScreen
 
         ; Load logo chars & clear screen
 
-                lda #$ff                        ;Mark game charset destroyed
-                sta ECS_LoadedCharSet+1
+                jsr StopScript
+                stx ECS_LoadedCharSet+1         ;Mark game charset destroyed (X=$ff)
                 lda #F_LOGO
                 jsr MakeFileName_Direct
                 lda #<logoStart

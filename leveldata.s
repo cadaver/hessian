@@ -20,14 +20,9 @@ time:           ds.b 4,0
 score:          ds.b 3,0
 battery:        ds.b 2,0
 oxygen:         dc.b 0
-upgrade:        dc.b 0
-reload:         dc.b 0
-toxinDelay:     dc.b 0
 invType:        ds.b MAX_INVENTORYITEMS,0
 invCount:       ds.b MAX_INVENTORYITEMS,0
 invMag:         ds.b MAX_INVENTORYITEMS,0
-scriptF:        dc.b $ff
-scriptEP:       dc.b 0
 plotBits:       ds.b MAX_PLOTBITS/8,0
 atType:         ds.b MAX_ACTORTRIGGERS+1,0
 atScriptF:      ds.b MAX_ACTORTRIGGERS,0

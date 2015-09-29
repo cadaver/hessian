@@ -144,9 +144,14 @@ SCROLLROWS      = 22
                 var musicMode
                 var soundMode
 
-                var levelNum                    ;Player state
+                var levelNum                    ;Player ZP state
                 var itemIndex
                 var nextTempLvlActIndex
+                var scriptF
+                var scriptEP
+                var upgrade
+                var reload
+                var toxinDelay
 
 playerStateZPStart = levelNum
 playerStateZPEnd = nextTempLvlActIndex+1
