@@ -5,7 +5,7 @@ ITEM_MAX_YSPEED = 6*8
 
 ITEM_SPAWN_OFFSET = -15*8
 
-INITIAL_MAX_WEAPONS = 3
+INITIAL_MAX_WEAPONS = 4                         ;3 + fists
 
 USEITEM_ATTACK_DELAY = 5                        ;Attack delay after using an item
 
@@ -147,17 +147,15 @@ AI_NewItem:     tya                             ;If first item, always stored to
                 cmp #ITEM_FIRST_CONSUMABLE
                 bcs AI_NoWeaponLimit
                 ldy #$00
-                ldx #$00
 AI_CheckWeapons:lda invType,y
                 beq AI_CheckWeaponsDone
                 cmp #ITEM_FIRST_CONSUMABLE
-                bcs AI_NotAWeapon
-                inx
-AI_NotAWeapon:  iny
+                bcs AI_CheckWeaponsDone
+                iny
                 bne AI_CheckWeapons
 AI_CheckWeaponsDone:
 AI_MaxWeaponsCount:
-                cpx #INITIAL_MAX_WEAPONS
+                cpy #INITIAL_MAX_WEAPONS
                 bcc AI_NoWeaponLimit
                 ldy itemIndex                   ;If weapon limit exceeded, check if current
                 bne AI_NotUsingFists            ;weapon can be swapped. If fists selected, swap
