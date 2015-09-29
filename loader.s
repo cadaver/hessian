@@ -163,14 +163,14 @@ shortcut:
   iny
   cpy #52
   bne nextone
+
+begin:
   ldy #$ff
 
 ; -------------------------------------------------------------------
 ; decruncher entry point, needs calculated tables
 ;
 getgamma:
-  iny
-begin:
   lsr zpBitBuf
   bne norefill
   jsr GetByte
@@ -179,8 +179,8 @@ begin:
   ror
   sta zpBitBuf
 norefill:
+  iny
   bcc getgamma
-  tya
   bne sequence
 
 literal:
@@ -250,12 +250,11 @@ copy_next:
   cpy zpLenLo
   bne copy_next
   tya
-  ldy #$00
   clc
   adc zpDestLo
   sta zpDestLo
+  bcc begin
   bcs inchi
-  jmp begin
 
 ; -------------------------------------------------------------------
 ; end of decruncher
