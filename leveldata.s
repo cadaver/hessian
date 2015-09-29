@@ -33,15 +33,13 @@ lvlDataActBits: ds.b LVLDATAACTTOTALSIZE,0
 lvlObjBits:     ds.b LVLOBJTOTALSIZE,0
                 if OPTIMIZE_SAVE > 0
 playerStateEnd:
-                endif
+                else
 lvlActX:        ds.b MAX_LVLACT,0
 lvlActY:        ds.b MAX_LVLACT,0
 lvlActF:        ds.b MAX_LVLACT,0
 lvlActT:        ds.b MAX_LVLACT,0
 lvlActWpn:      ds.b MAX_LVLACT,0
 lvlActOrg:      ds.b MAX_LVLACT,0
-                if OPTIMIZE_SAVE = 0
-playerStateEnd:
                 endif
 
                 if playerStateZeroEnd-playerStateStart > 255
