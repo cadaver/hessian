@@ -113,26 +113,6 @@ itemDefaultMaxCount:
                 dc.b 2                          ;Battery
                 dc.b 100                        ;Armor
 
-itemMagazineSize:
-                dc.b MAG_INFINITE               ;Fists
-                dc.b MAG_INFINITE               ;Knife
-                dc.b MAG_INFINITE               ;Nightstick
-                dc.b MAG_INFINITE               ;Bat
-                dc.b 10                         ;Pistol
-                dc.b 8                          ;Shotgun
-                dc.b 30                         ;Auto rifle
-                dc.b 5                          ;Sniper rifle
-                dc.b 0                          ;Minigun
-                dc.b 60                         ;Flamethrower
-                dc.b 15                         ;Laser rifle
-                dc.b 10                         ;Plasma gun
-                dc.b 4                          ;EMP generator
-                dc.b 3                          ;Grenade launcher
-                dc.b 1                          ;Bazooka
-                dc.b 0                          ;Extinguisher
-                dc.b 0                          ;Grenade
-                dc.b 0                          ;Mine
-
 itemDefaultPickup:
                 dc.b 1                          ;Fists
                 dc.b 1                          ;Knife
@@ -155,6 +135,26 @@ itemDefaultPickup:
                 dc.b 1                          ;Medikit
                 dc.b 1                          ;Battery
                 dc.b 100                        ;Armor
+
+itemMagazineSize:
+                dc.b MAG_INFINITE               ;Fists
+                dc.b MAG_INFINITE               ;Knife
+                dc.b MAG_INFINITE               ;Nightstick
+                dc.b MAG_INFINITE               ;Bat
+                dc.b 10                         ;Pistol
+                dc.b 8                          ;Shotgun
+                dc.b 30                         ;Auto rifle
+                dc.b 5                          ;Sniper rifle
+                dc.b 0                          ;Minigun
+                dc.b 60                         ;Flamethrower
+                dc.b 15                         ;Laser rifle
+                dc.b 10                         ;Plasma gun
+                dc.b 4                          ;EMP generator
+                dc.b 3                          ;Grenade launcher
+                dc.b 1                          ;Bazooka
+                dc.b 0                          ;Extinguisher
+                dc.b 0                          ;Grenade
+                dc.b 0                          ;Mine
 
 itemNPCMinDist: ;dc.b 0                          ;Fists (not used by NPCs)
                 dc.b 0                          ;Knife
