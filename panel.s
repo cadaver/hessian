@@ -281,6 +281,19 @@ ClearPanelText: ldx #$00
                 ldy #$00
                 beq PrintPanelText
 
+        ; Print continued panel text. Should be called immediately after printing
+        ; the beginning part.
+        ;
+        ; Parameters: A,X text address
+        ; Returns: -
+        ; Modifies: A
+
+ContinuePanelText:
+                sta textLo
+                stx textHi
+                ldx zpBitsLo
+                bpl UP_ContinueText
+
         ; Print text to panel, possibly multi-line
         ;
         ; Parameters: A,X text address, Y delay in game logic frames (25 = 1 sec)
@@ -383,19 +396,6 @@ UP_EmptySlice:  sta textChars+91*8,x
                 cpx zpDestLo
                 bcc UP_DrawSliceLoop
                 rts
-
-        ; Print continued panel text. Should be called immediately after printing
-        ; the beginning part.
-        ;
-        ; Parameters: A,X text address
-        ; Returns: -
-        ; Modifies: A
-
-ContinuePanelText:
-                sta textLo
-                stx textHi
-                ldx zpBitsLo
-                jmp UP_ContinueText
 
         ; Update menu system (inventory / pause / dialogue) in the panel.
         ;

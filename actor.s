@@ -1233,7 +1233,7 @@ ATD_Skip:       rts
         ;
         ; Parameters: X bullet actor Y target actor
         ; Returns: A modified damage
-        ; Modifies: A,Y,temp7,temp8,loader temp vars
+        ; Modifies: A,X,Y,temp7,temp8,loader temp vars
 
 ApplyTargetDamage:
                 lda actBulletDmgMod-ACTI_FIRSTPLRBULLET,x ;Damage modifier
