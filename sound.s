@@ -203,7 +203,8 @@ Play_FiltTimeM1:lda $1000,y
                 bcs Play_FiltJump
 Play_SetFilt:   sta $d417
                 and #$70
-                sta Play_FiltDone+1
+                ora #$0f
+                sta $d418
 Play_FiltJump:
 Play_FiltSpdM1a:lda $1000,y
                 bcs Play_FiltJump2
@@ -223,10 +224,7 @@ Play_FiltSpdM1b:adc $1000,y
 Play_StoreCutoff:
                 sta ntFiltCutoff
                 sta $d416
-Play_FiltDone:  lda #$00
-Play_MasterVolume:
-                ora #$0f
-                sta $d418
+Play_FiltDone:
 
         ;Channel execution
 
