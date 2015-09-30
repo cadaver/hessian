@@ -2,17 +2,11 @@
 
                 include bg/world.s
 
-        ; Check for size exceeded. The game start script does not handle
-        ; more than 255 bytes for the bitareas
+        ; Check for bitarea size exceeded
 
-                if LVLDATAACTTOTALSIZE > 255
+                if LVLDATAACTTOTALSIZE+LVLOBJTOTALSIZE > 255
                     err
                 endif
-
-                if LVLOBJTOTALSIZE > 255
-                    err
-                endif
-
         ; Player/world state
 
 playerStateStart:
@@ -29,8 +23,7 @@ atScriptF:      ds.b MAX_ACTORTRIGGERS,0
 atScriptEP:     ds.b MAX_ACTORTRIGGERS,0
 atMask:         ds.b MAX_ACTORTRIGGERS,0
 playerStateZeroEnd:
-lvlDataActBits: ds.b LVLDATAACTTOTALSIZE,0
-lvlObjBits:     ds.b LVLOBJTOTALSIZE,0
+lvlStateBits:   ds.b LVLDATAACTTOTALSIZE+LVLOBJTOTALSIZE,0
 playerStateEnd:
 
                 if playerStateZeroEnd-playerStateStart > 255

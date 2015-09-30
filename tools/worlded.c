@@ -4425,21 +4425,25 @@ void savealldata(void)
         fprintf(out, "LVLDATAACTTOTALSIZE = %d\n\n", totalactbitareasize);
         fprintf(out, "LVLOBJTOTALSIZE = %d\n\n", totalobjbitareasize);
 
+        /*
         fprintf(out, "lvlDataActBitsStart:\n");
         for (c = 0; c < numlevels; c++)
         {
             fprintf(out, "                dc.b %d\n", actbitareaindex[c]);
         }
+        */
         fprintf(out, "lvlDataActBitsLen:\n");
         for  (c = 0; c < numlevels; c++)
         {
             fprintf(out, "                dc.b %d\n", actbitareasize[c]);
         }
+        /*
         fprintf(out, "lvlObjBitsStart:\n");
         for (c = 0; c < numlevels; c++)
         {
             fprintf(out, "                dc.b %d\n", objbitareaindex[c]);
         }
+        */
         fprintf(out, "lvlObjBitsLen:\n");
         for (c = 0; c < numlevels; c++)
         {

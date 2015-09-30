@@ -407,13 +407,13 @@ IP_InitLevelActors:
                 bpl IP_InitLevelActors
                 ldx #LVLOBJTOTALSIZE
 IP_InitLevelObjects:
-                sta lvlObjBits-1,x              ;Assume all persistent levelobjects are inactive
-                dex                             ;at start
+                sta lvlStateBits+LVLDATAACTTOTALSIZE-1,x ;Assume all persistent levelobjects are inactive
+                dex                              ;at start
                 bne IP_InitLevelObjects
                 ldx #LVLDATAACTTOTALSIZE
                 lda #$ff
 IP_InitLevelData:
-                sta lvlDataActBits-1,x          ;Assume all leveldata-actors exist at start
+                sta lvlStateBits-1,x             ;Assume all leveldata-actors exist at start
                 dex
                 bne IP_InitLevelData
                 lda #ITEM_FISTS

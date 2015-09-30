@@ -221,33 +221,39 @@ IM_NoToxicAir:  sta ULO_AirToxinFlag+1
         ;
         ; Parameters: levelNum
         ; Returns: bits address in actLo
-        ; Modifies: A,X,actLo-actHi
+        ; Modifies: A,X,Y,actLo-actHi
 
 GetLevelDataActorBits:
-                ldx levelNum
-                lda #<lvlDataActBits
-                clc
-                adc lvlDataActBitsStart,x
-                sta actLo
-                lda #>lvlDataActBits
-GLB_Common:     adc #$00
-                sta actHi
-                rts
+                lda #$00
+                skip2
 
         ; Get address of levelobject-bits according to current level
         ;
         ; Parameters: levelNum
-        ; Returns: bits address in actLo
-        ; Modifies: A,X,actLo-actHi
+        ; Returns: bits address in actLo/actHi, Y bitarea size-1, A=0
+        ; Modifies: A,X,Y,actLo-actHi
 
 GetLevelObjectBits:
-                ldx levelNum
-                lda #<lvlObjBits
+                lda #NUMLEVELS
                 clc
-                adc lvlObjBitsStart,x
+                adc levelNum
                 sta actLo
-                lda #>lvlObjBits
-                bne GLB_Common
+                lda #$00
+                tax
+GLOB_Loop:      cpx actLo
+                bcs GLOB_Done
+                adc lvlDataActBitsLen,x
+                inx
+                bne GLOB_Loop
+GLOB_Done:      adc #<lvlStateBits
+                sta actLo
+                lda #>lvlStateBits
+                adc #$00
+                sta actHi
+                lda #$00
+                ldy lvlDataActBitsLen,x
+                dey
+                rts
 
         ; Check if a levelobject should be persisted. If yes, calculate its bitvalue
         ;
@@ -280,10 +286,7 @@ ILOP_No:        lda #$00
         ; Modifies: A,X,Y,actLo-actHi
 
 SaveLevelState: jsr RemoveLevelActors           ;Make sure are removed from screen first
-                jsr GetLevelDataActorBits
-                ldy lvlDataActBitsLen,x         ;Assume leveldata actors are all gone
-                dey
-                lda #$00
+                jsr GetLevelDataActorBits       ;First clear all actor bits, then set those that exist
 SLAS_ClearLoop: sta (actLo),y
                 dey
                 bpl SLAS_ClearLoop
@@ -298,10 +301,7 @@ SLAS_ActorLoop: lda lvlActT,x
                 sta (actLo),y
 SLAS_NextActor: dex
                 bpl SLAS_ActorLoop
-                jsr GetLevelObjectBits
-                ldy lvlObjBitsLen,x             ;Assume persistent levelobjects are inactive,
-                dey                             ;then set bits for active objects
-                lda #$00
+                jsr GetLevelObjectBits          ;First clear all object bits, then set those that are active
 SLOS_ClearLoop: sta (actLo),y
                 dey
                 bpl SLOS_ClearLoop
