@@ -31,16 +31,7 @@ atMask:         ds.b MAX_ACTORTRIGGERS,0
 playerStateZeroEnd:
 lvlDataActBits: ds.b LVLDATAACTTOTALSIZE,0
 lvlObjBits:     ds.b LVLOBJTOTALSIZE,0
-                if OPTIMIZE_SAVE > 0
 playerStateEnd:
-                else
-lvlActX:        ds.b MAX_LVLACT,0
-lvlActY:        ds.b MAX_LVLACT,0
-lvlActF:        ds.b MAX_LVLACT,0
-lvlActT:        ds.b MAX_LVLACT,0
-lvlActWpn:      ds.b MAX_LVLACT,0
-lvlActOrg:      ds.b MAX_LVLACT,0
-                endif
 
                 if playerStateZeroEnd-playerStateStart > 255
                     err
@@ -51,14 +42,12 @@ lvlActOrg:      ds.b MAX_LVLACT,0
 saveStateStart:
 saveState:      ds.b playerStateEnd - playerStateStart,0
 saveStateZP:    ds.b playerStateZPEnd - playerStateZPStart,0
-                if OPTIMIZE_SAVE > 0
 saveLvlActX:    ds.b MAX_SAVEACT,0
 saveLvlActY:    ds.b MAX_SAVEACT,0
 saveLvlActF:    ds.b MAX_SAVEACT,0
 saveLvlActT:    ds.b MAX_SAVEACT,0
 saveLvlActWpn:  ds.b MAX_SAVEACT,0
 saveLvlActOrg:  ds.b MAX_SAVEACT,0
-                endif
 saveXL:         dc.b 0
 saveXH:         dc.b 0
 saveYL:         dc.b 0

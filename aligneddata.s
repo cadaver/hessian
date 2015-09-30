@@ -397,16 +397,14 @@ lvlAirToxinDelay:
                 dc.b 0
 lvlPropertiesEnd:
 
-        ; Levelactor data for optimized saves (reduce page crosses)
+        ; Levelactor data
 
-                if OPTIMIZE_SAVE > 0
 lvlActX:        ds.b MAX_LVLACT,0
 lvlActY:        ds.b MAX_LVLACT,0
 lvlActF:        ds.b MAX_LVLACT,0
 lvlActT:        ds.b MAX_LVLACT,0
 lvlActWpn:      ds.b MAX_LVLACT,0
 lvlActOrg:      ds.b MAX_LVLACT,0
-                endif
 
         ; Rest of misc. tables/variables
 

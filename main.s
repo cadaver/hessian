@@ -12,7 +12,6 @@ DROP_ITEM_TEST  = 0                             ;Drop a copy of current item to 
 ITEM_CHEAT      = 1
 AMMO_CHEAT      = 0
 UPGRADE_CHEAT   = 0
-OPTIMIZE_SAVE   = 1                             ;Clean up temporary actors when saving/continuing
 
         ; Memory configuration & loader symbols
 

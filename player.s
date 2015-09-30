@@ -1121,8 +1121,7 @@ DI_NoCount:     sta actHp,y
         ; Returns: -
         ; Modifies: A,X,Y,temp regs
 
-SaveCheckpoint: if OPTIMIZE_SAVE > 0
-                jsr SaveLevelActorState
+SaveCheckpoint: jsr SaveLevelState
                 ldx #MAX_LVLACT-1
                 ldy #$00
 SCP_SaveGlobalLoop:
@@ -1163,8 +1162,6 @@ SCP_SaveClearLoop:                              ;Finally clear unused slots
                 iny
                 bpl SCP_SaveClearLoop
 SCP_SaveClearDone:
-                endif
-                jsr SaveLevelObjectState
                 ldx #playerStateZPEnd-playerStateZPStart
 SCP_ZPState:    lda playerStateZPStart-1,x
                 sta saveStateZP-1,x
@@ -1202,7 +1199,6 @@ SCP_HealthOK:   lda saveBattery+1
                 sta saveBattery
 SCP_BatteryOK:  rts
 
-                if OPTIMIZE_SAVE > 0
 SaveActorSub:   lda lvlActX,x
                 sta saveLvlActX,y
                 lda lvlActY,x
@@ -1217,7 +1213,6 @@ SaveActorSub:   lda lvlActX,x
                 sta saveLvlActOrg,y
                 iny
                 rts
-                endif
 
         ; Restore an in-memory checkpoint
         ;
@@ -1238,7 +1233,6 @@ RCP_ZPState:    lda saveStateZP-1,x
                 lda #<playerStateStart
                 ldx #>playerStateStart
                 jsr SaveState_CopyMemory
-                if OPTIMIZE_SAVE > 0
                 ldx #MAX_SAVEACT-1
 RCP_CopySaveActorsLoop:
                 lda saveLvlActX,x
@@ -1262,9 +1256,6 @@ RCP_ClearActorsLoop:
                 dex
                 bpl RCP_ClearActorsLoop
                 sec                             ;Need to load leveldata actors again
-                else
-                clc                             ;Savestate has all actors, do not load from disk
-                endif
                 jsr CreatePlayerActor
                 jsr FindPlayerZone
                 ldx #ACTI_PLAYER                ;Check if player is at an obstacle door, move left

@@ -50,8 +50,7 @@ LoadLevelError: jsr LFR_ErrorPrompt
 ChangeLevel:    cmp levelNum                    ;Check if level already loaded
                 beq CL_Done
                 pha
-                jsr SaveLevelActorState
-                jsr SaveLevelObjectState
+                jsr SaveLevelState
                 pla
                 sta levelNum
                 sec                             ;Load new level's leveldata actors
@@ -273,15 +272,14 @@ ILOP_Yes:       lda temp1
 ILOP_No:        lda #$00
                 rts
 
-        ; Save existence of leveldata actors as bits
-        ; Needs to be done on level change and on game save when optimizing the save size
+        ; Save state of leveldata actors & leveldata objects as bits
+        ; Needs to be done on level change and on game save
         ;
         ; Parameters: levelNum
         ; Returns: -
         ; Modifies: A,X,Y,actLo-actHi
 
-SaveLevelActorState:
-                jsr RemoveLevelActors           ;Make sure are removed from screen first
+SaveLevelState: jsr RemoveLevelActors           ;Make sure are removed from screen first
                 jsr GetLevelDataActorBits
                 ldy lvlDataActBitsLen,x         ;Assume leveldata actors are all gone
                 dey
@@ -300,16 +298,6 @@ SLAS_ActorLoop: lda lvlActT,x
                 sta (actLo),y
 SLAS_NextActor: dex
                 bpl SLAS_ActorLoop
-                rts
-
-        ; Save activation state of current level's persistent levelobjects as bits
-        ; Needs to be done on level change, and when saving a checkpoint
-        ;
-        ; Parameters: levelNum
-        ; Returns: -
-        ; Modifies: A,X,Y,temp1,actLo-actHi
-
-SaveLevelObjectState:
                 jsr GetLevelObjectBits
                 ldy lvlObjBitsLen,x             ;Assume persistent levelobjects are inactive,
                 dey                             ;then set bits for active objects
