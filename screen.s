@@ -344,11 +344,7 @@ SSpr_CopyLoop1Done:
                 sta sortSprD010-1,y
                 sty temp7                       ;Store sorted sprite end index
                 cpy firstSortSpr                ;Any sprites at all?
-                beq SSpr_NoSprites
-                lda sortSprC-1,y                ;Make first (and final) IRQ endmark
-                ora #$80
-                sta sortSprC-1,y
-                jmp SSpr_FinalEndMark
+                bne SSpr_EndMark                ;Make first (and final) IRQ endmask
 SSpr_NoSprites: jmp SSpr_AllDone
 
 SSpr_CopyLoop2Skip:
@@ -414,7 +410,7 @@ SSpr_IrqDone:   tya
                 ldx temp2
                 adc sortSprY,x
                 sta sprIrqLine-1,x              ;Store IRQ start line (with advance)
-                lda sortSprC-1,y                ;Make endmark
+SSpr_EndMark:   lda sortSprC-1,y                ;Make IRQ endmark
                 ora #$80
                 sta sortSprC-1,y
                 cpy temp7                       ;Sprites left?
