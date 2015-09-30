@@ -69,11 +69,11 @@ LFR_WaitFire:   jsr GetControls
                 bcc LFR_WaitFire
                 jmp ClearPanelText
 
-LF_NoMemory:    lda #$00                        ;No memory, purge the oldest chunkfile
+LF_NoMemory:    lda #$01                        ;No memory, purge the oldest chunkfile
                 sta zpBitBuf
                 ldx #C_FIRSTPURGEABLE
-LF_PurgeLoop:   ldy fileHi,x
-                beq LF_PurgeSkip
+LF_PurgeLoop:   ;ldy fileHi,x                   ;No need to check for existence, as unloaded
+                ;beq LF_PurgeSkip               ;files will have zero age
                 ldy fileAge,x
                 cpy zpBitBuf
                 bcc LF_PurgeSkip
@@ -84,7 +84,7 @@ LF_PurgeSkip:   inx
                 bcc LF_PurgeLoop
                 tay
                 jsr PurgeFile
-                jmp LF_MemLoop
+                beq LF_MemLoop                  ;PurgeFile returns with A=0
 
         ; Allocate & load a chunk-file. If no memory, purge unused files
         ;
@@ -201,7 +201,7 @@ PrintHexDigit_IsNumber:
         ; Remove a chunk-file from memory
         ;
         ; Parameters: Y file number
-        ; Returns: -
+        ; Returns: A=0
         ; Modifies: A,X,loader temp vars
 
 PurgeFile:      sty zpLenLo
