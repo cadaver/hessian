@@ -75,9 +75,9 @@ InitMusicData:  lda #<(musicData+NT_HEADERLENGTH-1)
                 sta zpSrcHi
                 ldx #NT_NUMFIXUPS-1
 IMD_Loop:       lda ntFixupTblLo,x
-                sta IMD_Store+1
+                sta zpDestLo
                 lda ntFixupTblHi,x
-                sta IMD_Store+2
+                sta zpDestHi
                 lda ntFixupTblAdd,x
                 pha
                 bmi IMD_AddDone
@@ -95,11 +95,11 @@ IMD_AddDone:    pla
                 clc
                 adc zpSrcLo
                 ldy #$01
-                jsr IMD_Store
+                sta (zpDestLo),y
                 lda #$00
                 adc zpSrcHi
                 iny
-                jsr IMD_Store
+                sta (zpDestLo),y
                 dex
                 bpl IMD_Loop
 PS_SameMusicFile:
@@ -107,9 +107,6 @@ PS_SameMusicFile:
                 and #$03
                 sta ntInitSong
 PS_Done:        rts
-
-IMD_Store:      sta PlayRoutine,y
-                rts
 
         ; Play a sound effect, with priority (higher memory address has precedence)
 

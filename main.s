@@ -29,10 +29,10 @@ OPTIMIZE_SAVE   = 1                             ;Clean up temporary actors when 
 
 randomAreaStart:
 
+                include sound.s
                 include screen.s
                 include sprite.s
                 include input.s
-                include sound.s
                 include file.s
                 include math.s
                 include actor.s
