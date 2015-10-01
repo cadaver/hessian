@@ -176,14 +176,8 @@ MH_DeathGrounded:
                 lda #$02
                 ldy #FR_DIE+2
 MH_DeathAnimDelay:
-                sty temp1
-                jsr AnimationDelay
-                bcc MH_DeathAnimDone
+                jsr OneShotAnimation
                 lda actF1,x
-                cmp temp1
-                bcs MH_DeathAnimDone
-                adc #$01
-                sta actF1,x
                 sta actF2,x
 MH_DeathAnimDone:
                 dec actTime,x
@@ -616,9 +610,8 @@ MH_NoFootstep:  pla
                 jsr DrainBatteryDouble          ;Drain battery when the walk animation wraps
                 lda #FR_WALK
                 bne MH_AnimDone
-MH_StandAnim:   lda #$00
+MH_StandAnim:   lda #$00                        ;0 = standing frame
                 sta actFd,x
-                lda #FR_STAND
 MH_AnimDone:    sta actF1,x
                 sta actF2,x
 MH_AnimDone2:   rts

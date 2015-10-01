@@ -10,11 +10,8 @@ GRENADE_BRAKE   = 8
         ; Modifies: A,Y
 
 MovePowder:     lda #3
-                jsr AnimationDelay
-                bcc MP_NoAnimation
-                inc actF1,x
-                lda actF1,x
-                cmp #2
+                ldy #1
+                jsr OneShotAnimation
                 bcs MMH_Remove
 MP_NoAnimation: jmp MoveBullet_NoCollision      ;Todo: collision check that only affects fires
 
@@ -24,7 +21,7 @@ MP_NoAnimation: jmp MoveBullet_NoCollision      ;Todo: collision check that only
         ; Returns: -
         ; Modifies: A,Y
 
-MoveSmokeTrail: ldy #2
+MoveSmokeTrail: ldy #1
                 SKIP2
 
         ; Small water splash update routine
@@ -33,7 +30,7 @@ MoveSmokeTrail: ldy #2
         ; Returns: -
         ; Modifies: A,Y
 
-MoveSmallSplash:ldy #3
+MoveSmallSplash:ldy #2
                 SKIP2
 
         ; Explosion / large water splash update routine
@@ -42,16 +39,9 @@ MoveSmallSplash:ldy #3
         ; Returns: -
         ; Modifies: A,Y
 
-MoveExplosion:  ldy #5
-AnimateAndRemoveDelay1:
+MoveExplosion:  ldy #4
                 lda #1
-AnimateAndRemove:
-                sty temp8
-                jsr AnimationDelay
-                bcc MExpl_NoAnimation
-                inc actF1,x
-                lda actF1,x
-                cmp temp8
+                jsr OneShotAnimation
                 bcs MMH_Remove
 MExpl_NoAnimation:
 MRckt_Done:
@@ -74,13 +64,9 @@ MMH_Remove:     jmp RemoveActor
         ; Modifies: A,Y
 
 MoveFlame:      lda #3
-                jsr AnimationDelay
-                bcc MoveBullet
-                lda actF1,x
-                cmp #$03
-                bcs MoveBullet
-                inc actF1,x
-                bcc MoveBullet
+                ldy #3
+                jsr OneShotAnimation
+                jmp MoveBullet
 
         ; Bullet update routine with muzzle flash as first frame
         ;
@@ -112,7 +98,7 @@ MoveShotgunBullet:
                 lda #$0a
                 bne MBltMF_Common
 MBlt_Remove:    jmp RemoveActor
-MSBlt_Cloud:    lda #$02
+MSBlt_Cloud:    lda #2
                 jsr AnimationDelay
                 bcc MSBlt_NoAnim
                 lda actSizeH,x                  ;C=1, increase size by 2
@@ -221,15 +207,12 @@ MRckt_NoSmoke:  sec
         ; Modifies: A,Y
 
 MoveLauncherGrenade:
-                lda #$02
-                jsr AnimationDelay
+                lda #2
+                ldy #2
+                jsr OneShotAnimation
                 bcc MLG_NoAnimation
-                lda actF1,x
-                adc #$00
-                cmp #$03
-                bcc MLG_AnimNotOver
                 lda #$00
-MLG_AnimNotOver:sta actF1,x
+                sta actF1,x
 MLG_NoAnimation:
                 sec
                 jsr CheckBulletCollisions
@@ -277,7 +260,7 @@ MM_NoSound:     sec
         ; Returns: -
         ; Modifies: A
 
-ExplodeGrenade: lda #2                          ;If there's ground (obstacle) below the grenade,
+ExplodeGrenade: lda #3                          ;If there's ground (obstacle) below the grenade,
                 jsr GetCharInfoOffset           ;reduce blast radius in down direction, otherwise
                 lsr                             ;it is equal size
                 lsr
@@ -375,11 +358,8 @@ MEMP_ColorDone: jsr RadiusDamage
                 lda actSX,x
                 jsr MoveActorX
                 lda #1
-                jsr AnimationDelay
-                bcc MEMP_NoAnim
-                inc actF1,x
-                lda actF1,x
-                cmp #$04
+                ldy #3
+                jsr OneShotAnimation
                 bcc MEMP_NoAnim
                 jmp RemoveActor
 

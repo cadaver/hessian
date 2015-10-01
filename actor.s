@@ -880,7 +880,7 @@ BAct_YNeg:      clc
                 bpl BAct_YZero
                 bmi AAY_Done
 
-        ; Process actor's animation delay
+        ; Process animation delay
         ;
         ; Parameters: X actor index, A animation speed-1 (in frames)
         ; Returns: C=1 delay exceeded, animationdelay reset
@@ -890,8 +890,27 @@ AnimationDelay: sta AD_Cmp+1
                 lda actFd,x
 AD_Cmp:         cmp #$00
                 bcs AD_Over
-                adc #$01
-                skip2
+                inc actFd,x
+                rts
+
+        ; Perform one-shot animation with delay
+        ;
+        ; Parameters: Y end frame, A animation speed-1 (in frames)
+        ; Returns: C=1 end reached
+        ; Modifies: A
+
+OneShotAnimation:
+                sta OSA_Cmp+1
+                sty OSA_FrameCmp+1
+                lda actFd,x
+OSA_Cmp:        cmp #$00
+                bcs OSA_NextFrame
+                inc actFd,x
+                rts
+OSA_NextFrame:  lda actF1,x
+OSA_FrameCmp:   cmp #$00
+                bcs AD_Over
+                inc actF1,x
 AD_Over:        lda #$00
                 sta actFd,x
                 rts
