@@ -1173,8 +1173,7 @@ StorePlayerActorVars:
                 lda actXL+ACTI_PLAYER,y
                 sta saveXL,x
                 tya
-                sec
-                sbc #MAX_ACT
+                sbc #MAX_ACT                    ;C=1 here
                 tay
                 dex
                 bpl StorePlayerActorVars
@@ -1280,8 +1279,7 @@ LoadPlayerActorVars:
                 lda saveXL,x
                 sta actXL+ACTI_PLAYER,y
                 tya
-                sec
-                sbc #MAX_ACT
+                sbc #MAX_ACT                    ;C=1 here
                 tay
                 dex
                 bpl LoadPlayerActorVars
@@ -1315,8 +1313,8 @@ AU_NoTopArmor:  stx adPlayerBottomSprFile
                 lda #INITIAL_CLIMBSPEED
                 bcc AU_NoMovement
                 ldx #2
-                lda #INITIAL_CLIMBSPEED+12
-AU_NoMovement:  sta plrClimbSpeed
+                ldy #INITIAL_CLIMBSPEED+12
+AU_NoMovement:  sty plrClimbSpeed
                 txa
                 clc
                 adc #INITIAL_GROUNDACC
@@ -1350,12 +1348,12 @@ AU_NoAmmoIncrease:
                 bne AU_AmmoLoop
                 lsr temp6                       ;Check firearms
                 ldx #NO_MODIFY
-                lda #NO_MODIFY
+                ldy #NO_MODIFY
                 bcc AU_NoFirearms
                 ldx #UPGRADE_ATTACK_MODIFY
-                lda #UPGRADE_RELOADTIME_MODIFY
+                ldy #UPGRADE_RELOADTIME_MODIFY
 AU_NoFirearms:  stx AH_PlayerFirearmBonus+1
-                sta AH_PlayerReloadTimeMod+1
+                sty AH_PlayerReloadTimeMod+1
                 lsr temp6                       ;Check subdermal armor for player damage
                 lda #NO_MODIFY                  ;modifier
                 bcc AU_NoArmor
