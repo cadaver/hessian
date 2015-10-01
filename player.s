@@ -1312,9 +1312,11 @@ AU_NoTopArmor:  stx adPlayerBottomSprFile
                 sty adPlayerTopSprFile
                 lsr temp6                       ;Check movement
                 ldx #0
+                lda #INITIAL_CLIMBSPEED
                 bcc AU_NoMovement
                 ldx #2
-AU_NoMovement:  stx temp7
+                lda #INITIAL_CLIMBSPEED+12
+AU_NoMovement:  sta plrClimbSpeed
                 txa
                 clc
                 adc #INITIAL_GROUNDACC
@@ -1322,12 +1324,6 @@ AU_NoMovement:  stx temp7
                 txa
                 adc #INITIAL_INAIRACC
                 sta plrInAirAcc
-                txa
-                asl
-                adc temp7
-                asl
-                adc #INITIAL_CLIMBSPEED
-                sta plrClimbSpeed
                 txa
                 asl
                 eor #$ff
