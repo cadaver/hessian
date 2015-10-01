@@ -159,8 +159,7 @@ AI_MaxWeaponsCount:
                 bcc AI_NoWeaponLimit
                 ldy itemIndex                   ;If weapon limit exceeded, check if current
                 bne AI_NotUsingFists            ;weapon can be swapped. If fists selected, swap
-                inc itemIndex                   ;with first droppable weapon
-                iny
+                iny                             ;with first droppable weapon
 AI_NotUsingFists:
                 lda invType,y
                 cmp #ITEM_FIRST_CONSUMABLE
