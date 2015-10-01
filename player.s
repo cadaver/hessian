@@ -192,8 +192,7 @@ MH_DeathRemove: jmp RemoveActor
 
 MoveHuman:      lda actMB,x
                 sta temp1                       ;Movement state bits
-                and #MB_INWATER
-                beq MH_NotInWater
+                bpl MH_NotInWater
                 lda #WATER_XBRAKING             ;Global water braking, both for alive & dead characters
                 jsr BrakeActorX
                 lda actF1,x                     ;Allow jump in water to begin without braking
@@ -393,8 +392,7 @@ MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
 MH_NoLongJump:  lda (actLo),y
                 ldy #HUMAN_MAX_YSPEED
                 jsr MoveWithGravity             ;Actually move & check collisions
-                and #MB_INWATER
-                beq MH_NoWater                  ;If in water, check for starting to swim
+                bpl MH_NoWater                  ;If in water, check for starting to swim
                 lda #-3
                 jsr GetCharInfoOffset           ;Must be deep in water before
                 and #CI_WATER                   ;swimming kicks in
@@ -508,8 +506,7 @@ MH_NewDuckOrRoll:
                 and #AMF_ROLL
                 beq MH_NoNewRoll
                 lda actMB,x                     ;Can't roll in water
-                and #MB_INWATER
-                bne MH_NoNewRoll
+                bmi MH_NoNewRoll
                 lda actMoveCtrl,x               ;To initiate a roll, must push the
                 cmp actPrevCtrl,x               ;joystick diagonally down
                 beq MH_NoNewRoll
@@ -1003,8 +1000,7 @@ HD_GotDir:      asl                             ;Direction to carry
                 jsr AccActorXNegOrPos
 HD_NoDamageSource:
                 lda actMB,x                     ;If in water, do not modify Y-speed
-                and #MB_INWATER
-                bne HD_NoYSpeed
+                bmi HD_NoYSpeed
                 lda #DEATH_YSPEED
                 sta actSY,x
                 jsr MH_ResetGrounded

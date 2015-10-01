@@ -1,9 +1,9 @@
 MB_GROUNDED    = 1
-MB_INWATER      = 2
-MB_LANDED      = 4
-MB_HITWALL     = 8
-MB_HITCEILING  = 16
-MB_STARTFALLING = 32
+MB_LANDED      = 2
+MB_HITWALL     = 4
+MB_HITCEILING  = 8
+MB_STARTFALLING = 16
+MB_INWATER      = 128
 
         ; Move actor and stop at obstacles
         ;
@@ -132,8 +132,7 @@ MWG_CheckCeiling:
                 sta actSY,x
                 lda temp5
                 ora #MB_HITCEILING
-                sta actMB,x
-                rts
+                bne MWG_StoreMB
 MWG_NoCeiling:  lda actSX,x
                 beq MWG_NoLanding               ;If abs. X-speed is higher than abs. Y-speed
                 bmi MWG_XSpeedNeg               ;while going up, there is possibility
@@ -155,7 +154,7 @@ MWG_XSpeedNeg:  cmp actSY,x
                 eor actSX,x                     ;If it's a diagonal slope, verify that X-speed
                 bpl MWG_HitGround2              ;is actually against it
 MWG_NoLanding:  lda temp5
-                sta actMB,x
+MWG_StoreMB:    sta actMB,x
                 rts
 
 MWG_CheckLanding:
@@ -197,7 +196,7 @@ MWG_CrossedChar:jsr GetCharInfo1Above           ;Get char above
                 lda #-8*8                       ;Move the actor 1 char up
                 jsr MoveActorY
                 tya
-                and #$e0                        
+                and #$e0
                 sta temp6
 MWG_HitGround2: lda actXL,x
                 lsr
@@ -214,8 +213,7 @@ MWG_HitGround:  lda #$00
                 sta actYL,x                     ;Align actor to slope
                 lda temp5
                 ora #MB_GROUNDED|MB_LANDED
-                sta actMB,x
-                rts
+                bne MWG_StoreMB
 
 MWG_OnGround:   cpx #MAX_COMPLEXACT
                 bcs MWG_PreferLevel
@@ -242,8 +240,7 @@ MWG_StartFalling:
                 lda temp5                       ;If no ground anywhere, start falling
                 and #$ff-MB_GROUNDED
                 ora #MB_STARTFALLING
-                sta actMB,x
-                rts
+                bne MWG_StoreMB2
 MWG_FinalizeGroundBelow:
                 lda #8*8
                 jsr MoveActorY
@@ -270,5 +267,5 @@ MWG_OnGroundDone:
                 ora slopeTbl,y
                 sta actYL,x
                 lda temp5
-                sta actMB,x
+MWG_StoreMB2:   sta actMB,x
                 rts

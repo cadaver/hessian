@@ -224,10 +224,7 @@ MLG_NoAnimation:
                 lda #GRENADE_ACCEL
                 ldy #GRENADE_MAX_YSPEED
                 jsr MoveWithGravity
-                tay
-                and #MB_INWATER
-                bne MGrn_HitWater
-                tya
+                bmi MGrn_HitWater
                 and #MB_HITWALL|MB_HITCEILING|MB_LANDED
                 bne ExplodeGrenade              ;Explode on any wall/ground contact
 MLG_DoNothing:  rts
@@ -318,10 +315,7 @@ MoveGrenade:    dec actTime,x
                 lda #GRENADE_BRAKE              ;Brake X-speed with each bounce
                 jsr BrakeActorX
 MGrn_NoBounce:  lda actMB,x
-                tay
-                and #MB_INWATER
-                bne MGrn_HitWater
-                tya
+                bmi MGrn_HitWater
                 and #MB_HITWALL|MB_HITCEILING
                 cmp #MB_HITWALL
                 bne MGrn_NoHitWall
