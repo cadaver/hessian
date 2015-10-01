@@ -72,14 +72,10 @@ ActorTrigger:   lda actFlags,x
                 beq AT_Fail
 ActorTriggerNoFlagCheck:
                 sty ES_ParamA+1
-                ldy #$00
-AT_Search:      lda atType,y                    ;Reached end of trigger list?
-                beq AT_Fail
-                cmp actT,x
-                beq AT_Found
-                iny
-                bne AT_Search
-AT_Found:       lda atMask,y
+                ldy actT,x
+                jsr ATSearch
+                bcc AT_Fail
+                lda atMask,y
 AT_MaskCheck:   and ES_ParamA+1
                 beq AT_Fail
                 stx ES_ParamX+1
