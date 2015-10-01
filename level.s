@@ -237,22 +237,17 @@ GetLevelObjectBits:
                 lda #NUMLEVELS
                 clc
                 adc levelNum
-                sta actLo
-                lda #$00
                 tax
-GLOB_Loop:      cpx actLo
-                bcs GLOB_Done
-                adc lvlDataActBitsLen,x
-                inx
-                bne GLOB_Loop
-GLOB_Done:      adc #<lvlStateBits
+                lda #<lvlStateBits
+                adc lvlDataActBitsStart,x
                 sta actLo
                 lda #>lvlStateBits
                 adc #$00
                 sta actHi
+                lda lvlDataActBitsStart+1,x
+                sbc lvlDataActBitsStart,x       ;C=0, subtract one more as intended (size-1)
+                tay
                 lda #$00
-                ldy lvlDataActBitsLen,x
-                dey
                 rts
 
         ; Check if a levelobject should be persisted. If yes, calculate its bitvalue
