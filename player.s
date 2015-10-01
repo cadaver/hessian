@@ -1261,7 +1261,7 @@ RCP_NoObstacle: jmp CenterPlayer
 
         ; Create player actor and (re)load level
         ;
-        ; Parameters: C=0 do not load actors from leveldata, C=1 load actors
+        ; Parameters: -
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 

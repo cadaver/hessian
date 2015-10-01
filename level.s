@@ -53,17 +53,15 @@ ChangeLevel:    cmp levelNum                    ;Check if level already loaded
                 jsr SaveLevelState
                 pla
                 sta levelNum
-                sec                             ;Load new level's leveldata actors
 
         ; Load level without processing actor removal. Note: does not call InitMap
         ; as that is usually done later after finding the correct zone in the new level
         ;
-        ; Parameters: levelNum, C=0 do not load leveldata actors, C=1 load
+        ; Parameters: levelNum
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-LoadLevel:      ror LL_ActorMode+1              ;Set high bit if C=1
-                lda levelNum
+LoadLevel:      lda levelNum
                 ldx #F_LEVEL
                 jsr MakeFileName
                 jsr BlankScreen                 ;Level loading will trash the second screen partially, so blank
@@ -80,8 +78,6 @@ LoadLevelRetry: lda #<lvlObjX                   ;Load level objects
                 bcs LoadLevelError
                 lda #$ff
                 sta autoDeactObjNum             ;Reset object auto-deactivation
-LL_ActorMode:   lda #$00                        ;Check if should copy leveldata actors
-                bpl LL_SkipLevelDataActors
                 ldx #MAX_LVLACT-1
 LL_PurgeOldLevelDataActors:
                 lda lvlActOrg,x                 ;Remove the current leveldata actors
@@ -220,7 +216,7 @@ IM_NoToxicAir:  sta ULO_AirToxinFlag+1
         ; Get address of levelactor-bits according to current level
         ;
         ; Parameters: levelNum
-        ; Returns: bits address in actLo
+        ; Returns: bits address in actLo/actHi, Y bitarea size-1, A=0
         ; Modifies: A,X,Y,actLo-actHi
 
 GetLevelDataActorBits:
