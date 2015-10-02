@@ -85,6 +85,13 @@ unsigned char ntcmdlen;
 unsigned char nthrparam = 0x00;
 unsigned char ntfirstwave = 0x09;
 
+unsigned char wavetblmap[256];
+unsigned char filttblmap[256];
+unsigned char vibdelay[256];
+unsigned char vibparam[256];
+unsigned char vibwavepos[256];
+int vibratos = 0;
+
 int prevwritebyte = 0x100;
 int blocklen = 0;
 FILE* out = 0;
@@ -100,6 +107,8 @@ void clearntsong(void);
 void convertsong(void);
 void getpatttempos(void);
 int getorcreatecommand(const char* name, unsigned char param, unsigned char ad, unsigned char sr, unsigned char wave, unsigned char pulse, unsigned char filt);
+int getorcreatevibrato(unsigned char delay, unsigned char param, int pos);
+void insertwavetable(int pos);
 void saventsong(const char* songfilename);
 void writeblock(unsigned char *adr, int len);
 void writebyte(unsigned char c);
@@ -985,17 +994,11 @@ void clearntsong(void)
 void convertsong(void)
 {
     int e,c,f;
-    unsigned char wavetblmap[256];
-    unsigned char filttblmap[256];
     wavetblmap[0] = 0;
     filttblmap[0] = 0;
     unsigned char lastfiltparam = 0;
     unsigned char lastcutoff = 0;
-    unsigned char vibdelay[256];
-    unsigned char vibparam[256];
-    unsigned char vibwavepos[256];
     unsigned char slidewavepos[256];
-    int vibratos = 0;
 
     memset(slidewavepos, 0, sizeof slidewavepos);
 
@@ -1208,12 +1211,11 @@ void convertsong(void)
         // Add instrument vibratos
         if (instr[e].ptr[STBL] && instr[e].ptr[WTBL])
         {
-            int srcpos = instr[e].ptr[STBL]-1;
-            int newvibwavepos = nttbllen[0];
+            int newvibwavepos = 0;
             int needcopy = 0;
             int waveends = 0;
+            int wavejumppos = 0;
             int f;
-            int existingvib = 0;
 
             for (f = 1; f <= highestusedinstr; f++)
             {
@@ -1228,7 +1230,17 @@ void convertsong(void)
                 if (ntwavetbl[c] == 0xff)
                 {
                     if (ntnotetbl[c] == 0x00)
+                    {
                         waveends = 1;
+                        wavejumppos = c;
+                    }
+                    break;
+                }
+                else if (ntwavetbl[c] >= 0xc0)
+                {
+                    needcopy = 1;
+                    wavejumppos = c;
+                    waveends = 1;
                     break;
                 }
             }
@@ -1238,53 +1250,17 @@ void convertsong(void)
                 continue;
             }
 
-            for (f = 0; f < vibratos; f++)
-            {
-                if (vibdelay[f] == instr[e].vibdelay && vibparam[f] == instr[e].ptr[STBL])
-                {
-                    existingvib = 1;
-                    newvibwavepos = vibwavepos[f];
-                }
-            }
-            if (!existingvib)
-            {
-                if (instr[e].vibdelay > 1 && instr[e].vibdelay < 0x30)
-                {
-                    ntwavetbl[nttbllen[0]] = instr[e].vibdelay + 0x90 - 2;
-                    ntnotetbl[nttbllen[0]] = 0;
-                    nttbllen[0]++;
-                }
-                ntwavetbl[nttbllen[0]] = ltable[STBL][srcpos] + 0xc0;
-                ntnotetbl[nttbllen[0]] = rtable[STBL][srcpos];
-                nttbllen[0]++;
-                vibdelay[vibratos] = instr[e].vibdelay;
-                vibparam[vibratos] = instr[e].ptr[STBL];
-                vibwavepos[vibratos] = newvibwavepos;
-                vibratos++;
-            }
-
-            if (!needcopy)
-            {
-                for (c = ntcmdwavepos[i-1]-1; c < 0x100; c++)
-                {
-                    if (ntwavetbl[c] == 0xff)
-                    {
-                        if (ntnotetbl[c] == 0x00)
-                            ntnotetbl[c] = newvibwavepos + 1;
-                        break;
-                    }
-                }
-            }
-            else
+            if (needcopy)
             {
                 int copywavepos = nttbllen[0];
                 for (c = ntcmdwavepos[i-1]-1; c < 0x100; c++)
                 {
                     ntwavetbl[nttbllen[0]] = ntwavetbl[c];
                     ntnotetbl[nttbllen[0]] = ntnotetbl[c];
-                    if (ntwavetbl[c] == 0xff)
+                    // Original wavetable may already have jump rewritten by vibrato
+                    if (ntwavetbl[c] >= 0xc0)
                     {
-                        ntnotetbl[nttbllen[0]] = newvibwavepos + 1;
+                        wavejumppos = nttbllen[0];
                         nttbllen[0]++;
                         break;
                     }
@@ -1293,6 +1269,11 @@ void convertsong(void)
                 }
                 ntcmdwavepos[i-1] = copywavepos + 1;
             }
+
+            newvibwavepos = getorcreatevibrato(instr[e].vibdelay, instr[e].ptr[STBL], wavejumppos);
+            // No need to write jump position if the jump was overwritten by vibrato
+            if (wavejumppos && newvibwavepos != wavejumppos && ntwavetbl[wavejumppos] == 0xff)
+                ntnotetbl[wavejumppos] = newvibwavepos + 1;
         }
     }
 
@@ -1329,29 +1310,7 @@ void convertsong(void)
             {
                 if (gtcmd == 0x4 && gtcmddata && (c == 0 || pattern[e][(c-1)*4+2] != 0x4)) // Vibrato, take only the starting command
                 {
-                    int f;
-                    int newvibwavepos = nttbllen[0];
-                    int existingvib = 0;
-                    int srcpos = gtcmddata - 1;
-    
-                    for (f = 0; f < vibratos; f++)
-                    {
-                        if (vibdelay[f] == 0 && vibparam[f] == gtcmddata)
-                        {
-                            existingvib = 1;
-                            newvibwavepos = vibwavepos[f];
-                        }
-                    }
-                    if (!existingvib)
-                    {
-                        ntwavetbl[nttbllen[0]] = ltable[STBL][srcpos] + 0xc0;
-                        ntnotetbl[nttbllen[0]] = rtable[STBL][srcpos];
-                        nttbllen[0]++;
-                        vibdelay[vibratos] = 0;
-                        vibparam[vibratos] = gtcmddata;
-                        vibwavepos[vibratos] = newvibwavepos;
-                        vibratos++;
-                    }
+                    int newvibwavepos = getorcreatevibrato(0, gtcmddata, 0);
                     getorcreatecommand("vib", gtcmddata, 0, 0, newvibwavepos + 1, 0, 0) | 0x80;
                 }
                 else if (gtcmd == 0x5) // AD modify
@@ -1481,29 +1440,7 @@ void convertsong(void)
                 }
                 else if (gtcmd == 0x4 && gtcmddata && (c == 0 || pattern[e][(c-1)*4+2] != 0x4)) // Vibrato, take only the starting command
                 {
-                    int f;
-                    int newvibwavepos = nttbllen[0];
-                    int existingvib = 0;
-                    int srcpos = gtcmddata - 1;
-
-                    for (f = 0; f < vibratos; f++)
-                    {
-                        if (vibdelay[f] == 0 && vibparam[f] == gtcmddata)
-                        {
-                            existingvib = 1;
-                            newvibwavepos = vibwavepos[f];
-                        }
-                    }
-                    if (!existingvib)
-                    {
-                        ntwavetbl[nttbllen[0]] = ltable[STBL][srcpos] + 0xc0;
-                        ntnotetbl[nttbllen[0]] = rtable[STBL][srcpos];
-                        nttbllen[0]++;
-                        vibdelay[vibratos] = 0;
-                        vibparam[vibratos] = gtcmddata;
-                        vibwavepos[vibratos] = newvibwavepos;
-                        vibratos++;
-                    }
+                    int newvibwavepos = getorcreatevibrato(0, gtcmddata, 0);
                     cmdcolumn[c] = getorcreatecommand("vib", gtcmddata, 0, 0, newvibwavepos + 1, 0, 0) | 0x80;
                 }
                 else if (gtcmd == 0x5) // AD modify
@@ -1815,6 +1752,80 @@ int getorcreatecommand(const char* name, unsigned char param, unsigned char ad, 
     sprintf(&ntcmdnames[ntcmdlen][0], "%s%02x", name, (int)param);
     ntcmdlen++;
     return ntcmdlen;
+}
+
+int getorcreatevibrato(unsigned char delay, unsigned char param, int pos)
+{
+    int startpos, f;
+    if (pos == 0 || pos > nttbllen[0])
+        pos = nttbllen[0];
+    if (pos >= 255)
+        return 0;
+
+    for (f = 0; f < vibratos; f++)
+    {
+        if (vibdelay[f] == delay && vibparam[f] == param)
+            return vibwavepos[f];
+    }
+
+    startpos = pos;
+    if (delay > 1 && delay < 0x30)
+    {
+        // Make room for both delay & vibrato if necessary
+        if (pos < nttbllen[0])
+            insertwavetable(pos);
+        ntwavetbl[pos] = delay + 0x90 - 2;
+        ntnotetbl[pos] = 0;
+        if (pos == nttbllen[0])
+            nttbllen[0]++;
+        pos++;
+    }
+    // If writing in the middle of wavetable, is rewriting a jump, and table length
+    // doesn't need to be increased
+    ntwavetbl[pos] = ltable[STBL][param-1] + 0xc0;
+    ntnotetbl[pos] = rtable[STBL][param-1];
+    if (pos == nttbllen[0])
+        nttbllen[0]++;
+    vibdelay[vibratos] = delay;
+    vibparam[vibratos] = param;
+    vibwavepos[vibratos] = startpos;
+    vibratos++;
+}
+
+void insertwavetable(int pos)
+{
+    int c;
+    if (pos >= 255)
+        return;
+    for (c = nttbllen[0]-1; c >= pos; --c)
+    {
+        ntwavetbl[c+1] = ntwavetbl[c];
+        ntnotetbl[c+1] = ntnotetbl[c];
+    }
+    nttbllen[0]++;
+    for (c = 0; c < nttbllen[0]; ++c)
+    {
+        if (ntwavetbl[c] == 0xff)
+        {
+            if (ntnotetbl[c]-1 >= pos)
+                ntnotetbl[c]++;
+        }
+    }
+    for (c = 0; c < 256; ++c)
+    {
+        if (wavetblmap[c]-1 >= pos)
+            wavetblmap[c]++;
+    }
+    for (c = 0; c < vibratos; ++c)
+    {
+        if (vibwavepos[c] >= pos)
+            vibwavepos[c]++;
+    }
+    for (c = 0; c < ntcmdlen; ++c)
+    {
+        if (ntcmdwavepos[c]-1 >= pos)
+            ntcmdwavepos[c]++;
+    }
 }
 
 void saventsong(const char* songfilename)
