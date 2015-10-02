@@ -1306,12 +1306,11 @@ AU_NoTopArmor:  stx adPlayerBottomSprFile
                 sty adPlayerTopSprFile
                 lsr temp6                       ;Check movement
                 ldx #0
-                lda #INITIAL_CLIMBSPEED
+                ldy #INITIAL_CLIMBSPEED
                 bcc AU_NoMovement
                 ldx #2
                 ldy #INITIAL_CLIMBSPEED+12
-AU_NoMovement:  sty plrClimbSpeed
-                txa
+AU_NoMovement:  txa
                 clc
                 adc #INITIAL_GROUNDACC
                 sta plrGroundAcc
@@ -1323,6 +1322,7 @@ AU_NoMovement:  sty plrClimbSpeed
                 eor #$ff
                 adc #1-INITIAL_JUMPSPEED
                 sta plrJumpSpeed
+                sty plrClimbSpeed
                 lsr temp6                       ;Check strength
                 ldy #NO_MODIFY
                 bcc AU_NoStrength
