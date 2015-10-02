@@ -1299,6 +1299,76 @@ void convertsong(void)
     // Convert patterns
     printf("Converting patterns\n");
 
+    // Pre-step to convert commands that define ADSR. Convert slides last so that they optimize away ADSR data
+    for (e = 0; e <= highestusedpatt; e++)
+    {
+        for (c = 0; c < MAX_PATTROWS+1; c++)
+        {
+            int note = pattern[e][c*4];
+            int gtcmd = pattern[e][c*4+2];
+            int gtcmddata = pattern[e][c*4+3];
+            int instr = pattinstr[e][c];
+            int ntinstr = instrmap[instr];
+            if (note == ENDPATT)
+                break;
+    
+            if (note >= FIRSTNOTE+12 && note <= LASTNOTE)
+            {
+                if (gtcmd == 0x5) // New note + AD modify
+                    getorcreatecommand("ad", gtcmddata, gtcmddata, ntcmdsr[ntinstr-1], ntcmdwavepos[ntinstr-1], ntcmdpulsepos[ntinstr-1], ntcmdfiltpos[ntinstr-1]);
+                else if (gtcmd == 0x6) // New note + SR modify
+                    getorcreatecommand("sr", gtcmddata, ntcmdad[ntinstr-1], gtcmddata, ntcmdwavepos[ntinstr-1], ntcmdpulsepos[ntinstr-1], ntcmdfiltpos[ntinstr-1]);
+                else if (gtcmd == 0x8) // New note + waveptr modify
+                    getorcreatecommand("wave", gtcmddata, ntcmdad[ntinstr-1], ntcmdsr[ntinstr-1], wavetblmap[gtcmddata], ntcmdpulsepos[ntinstr-1], ntcmdfiltpos[ntinstr-1]);
+                else if (gtcmd == 0x9) // New note + pulseptr modify
+                    getorcreatecommand("pulse", gtcmddata, ntcmdad[ntinstr-1], ntcmdsr[ntinstr-1], ntcmdwavepos[ntinstr-1], gtcmddata, ntcmdfiltpos[ntinstr-1]);
+                else if (gtcmd == 0xa) // New note + filtptr modify
+                    getorcreatecommand("filt", gtcmddata, ntcmdad[ntinstr-1], ntcmdsr[ntinstr-1], ntcmdwavepos[ntinstr-1], ntcmdpulsepos[ntinstr-1], filttblmap[gtcmddata]);
+            }
+            else
+            {
+                if (gtcmd == 0x4 && gtcmddata && (c == 0 || pattern[e][(c-1)*4+2] != 0x4)) // Vibrato, take only the starting command
+                {
+                    int f;
+                    int newvibwavepos = nttbllen[0];
+                    int existingvib = 0;
+                    int srcpos = gtcmddata - 1;
+    
+                    for (f = 0; f < vibratos; f++)
+                    {
+                        if (vibdelay[f] == 0 && vibparam[f] == gtcmddata)
+                        {
+                            existingvib = 1;
+                            newvibwavepos = vibwavepos[f];
+                        }
+                    }
+                    if (!existingvib)
+                    {
+                        ntwavetbl[nttbllen[0]] = ltable[STBL][srcpos] + 0xc0;
+                        ntnotetbl[nttbllen[0]] = rtable[STBL][srcpos];
+                        nttbllen[0]++;
+                        vibdelay[vibratos] = 0;
+                        vibparam[vibratos] = gtcmddata;
+                        vibwavepos[vibratos] = newvibwavepos;
+                        vibratos++;
+                    }
+                    getorcreatecommand("vib", gtcmddata, 0, 0, newvibwavepos + 1, 0, 0) | 0x80;
+                }
+                else if (gtcmd == 0x5) // AD modify
+                    getorcreatecommand("ad", gtcmddata, gtcmddata, ntcmdsr[ntinstr-1], 0, 0, 0);
+                else if (gtcmd == 0x6) // SR modify
+                    getorcreatecommand("sr", gtcmddata, ntcmdad[ntinstr-1], gtcmddata, 0, 0, 0);
+                else if (gtcmd == 0x8) // Waveptr modify
+                    getorcreatecommand("wave", gtcmddata, 0, 0, wavetblmap[gtcmddata], 0, 0) | 0x80;
+                else if (gtcmd == 0x9) // Pulseptr modify
+                    getorcreatecommand("pulse", gtcmddata, 0, 0, 0, gtcmddata, 0) | 0x80;
+                else if (gtcmd == 0xa) // Filtptr modify
+                    getorcreatecommand("filt", gtcmddata, 0, 0, 0, 0, filttblmap[gtcmddata]) | 0x80;
+            }
+        }
+    }
+
+    // Now actually write the pattern data
     for (e = 0; e <= highestusedpatt; e++)
     {
         unsigned char notecolumn[MAX_PATTROWS+1];
