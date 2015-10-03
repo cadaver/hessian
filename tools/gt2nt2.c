@@ -1205,12 +1205,10 @@ void convertsong(void)
 
     for (e = 1; e <= highestusedinstr; e++)
     {
-        int i = instrmap[e];
-        if (instr[e].name[0] == 0x00 || instr[e].name[0] == 0x20)
-            continue;
         // Add instrument vibratos
         if (instr[e].ptr[STBL] && instr[e].ptr[WTBL])
         {
+            int i = instrmap[e];
             int newvibwavepos = 0;
             int needcopy = 0;
             int waveends = 0;
