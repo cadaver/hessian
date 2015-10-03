@@ -13,7 +13,13 @@ Technical details:
 - Loader based on the CovertBitops Loader V2.24 (1541/1581/FD/HD/IDE64)
 - Exomizer2 compression
 
-"The whole idea, how everything got started, demanded visionary madness. How mankind would survive the journey to another planet, if the need arose. The answer: not as humans..."
+You take the role of Kim, a low-level security guard at a Throne Group
+science complex, during the worst night shift of her life. This involves
+the Group's inventions spiraling out of control thanks to the megalomaniacal
+visions of the head scientist Norman Throne, ad-hoc lifesaving nanomechanical
+surgical procedures that grant Kim superior strength and recovery capability,
+but also the constant dependence on battery power, lots of guns used against
+enemies both robotic and human, and an impending apocalypse.
 
 See also [CovertBitops homepage](http://cadaver.homeftp.net).
 
