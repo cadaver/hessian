@@ -144,6 +144,7 @@ SCROLLROWS      = 22
 
                 var levelNum                    ;Player ZP state
                 var itemIndex
+                var lastItemIndex
                 var nextTempLvlActIndex
                 var scriptF
                 var scriptEP

@@ -22,7 +22,6 @@ atMask:         ds.b MAX_ACTORTRIGGERS,0
 playerStateZeroEnd:
 invMag:         ds.b ITEM_LAST_MAG-ITEM_FIRST_MAG+1,0
 invCount:       ds.b ITEM_LAST-ITEM_FIRST+1,0
-lastItemIndex:  dc.b 0
 lvlStateBits:   ds.b LVLDATAACTTOTALSIZE+LVLOBJTOTALSIZE,0
 playerStateEnd:
 
