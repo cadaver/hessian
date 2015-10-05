@@ -127,6 +127,36 @@ GetMagazineSize:lda #$00
                 cmp #$01
                 rts
 
+        ; Select next item in inventory
+        ;
+        ; Parameters: -
+        ; Returns: C=1 itemIndex updated, C=0 already at end
+        ; Modifies: A,Y
+
+SelectNextItem: ldy itemIndex
+                cpy lastItemIndex
+                bcs SNI_Fail
+SNI_Loop:       iny
+                jsr FindItem
+                bcc SNI_Loop
+SPI_Done:       sty itemIndex
+                rts
+
+        ; Select previous item in inventory
+        ;
+        ; Parameters: -
+        ; Returns: C=1 itemIndex updated, C=0 already at beginning
+        ; Modifies: A,Y
+
+SelectPreviousItem:
+                ldy itemIndex
+SPI_Fast:       cpy #ITEM_FISTS
+                beq SPI_Fail
+SPI_Loop:       dey
+                jsr FindItem
+                bcc SPI_Loop
+                bcs SPI_Done
+
         ; Add item to inventory. If too many weapons, swap with current
         ;
         ; Parameters: A item type, X ammo amount
@@ -147,6 +177,8 @@ AI_HasItem:     cpy #ITEM_FIRST_IMPORTANT       ;Quest items don't need checking
                 lda invCount-1,y                ;Check for maximum ammo
                 cmp itemMaxCount-1,y
                 bcc AI_HasRoomForAmmo
+SNI_Fail:
+SPI_Fail:
 GMS_Fail:
 AI_Fail:        clc                             ;Maximum ammo already, fail pickup
                 rts
@@ -258,37 +290,6 @@ DA_NotNegative: sta invCount-1,y
                 cpy #ITEM_FIRST_CONSUMABLE      ;If it's a consumable item, remove when ammo
                 bcc SetPanelRedrawAmmo          ;goes to zero
                 jmp RemoveItem
-
-        ; Select next item in inventory
-        ;
-        ; Parameters: -
-        ; Returns: itemIndex updated
-        ; Modifies: A,Y
-
-SelectNextItem: ldy itemIndex
-                cpy lastItemIndex
-                bcs SNI_Done
-SNI_Loop:       iny
-                jsr FindItem
-                bcc SNI_Loop
-SPI_Done:
-SNI_Done:       sty itemIndex
-                rts
-
-        ; Select previous item in inventory
-        ;
-        ; Parameters: -
-        ; Returns: itemIndex updated
-        ; Modifies: A,Y
-
-SelectPreviousItem:
-                ldy itemIndex
-SPI_Fast:       cpy #ITEM_FISTS
-                beq SPI_Done
-SPI_Loop:       dey
-                jsr FindItem
-                bcc SPI_Loop
-                bcs SPI_Done
 
         ; Use an inventory item
         ;

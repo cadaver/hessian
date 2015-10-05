@@ -476,7 +476,7 @@ UM_Battery:     ldy #ITEM_BATTERY
 UM_Reload:      jmp UseItem
 
         ; Inventory
-        
+
 UM_Inventory:   ldx #MENU_NONE                  ;Check for exiting inventory or waiting for
                 lda joystick
                 ldy #$ff                        ;pause menu
@@ -495,7 +495,6 @@ UM_NoCounter2:
 UM_ForceRefresh:lda #$00                        ;Check for forced refresh (when inventory
                 bne RedrawMenu                  ;modified while open)
                 jsr MenuControl                 ;Check for selecting items
-                ldx itemIndex
                 lsr
                 bcs UM_MoveLeft
                 lsr
@@ -507,19 +506,17 @@ UM_ForceRefresh:lda #$00                        ;Check for forced refresh (when 
                 bne UM_Reload
 UM_MoveDone:    rts
 
-UM_MoveRight:   jsr SelectNextItem
-UM_MoveCommon:  cpx itemIndex
-                beq UM_MoveDone
-                bne RedrawInventory
-UM_MoveLeft:    jsr SelectPreviousItem
-                jmp UM_MoveCommon
-
                 if DROP_ITEM_TEST > 0
 UM_DropItem:    lda itemIndex
                 sta temp5
                 ldx #ACTI_PLAYER
                 jmp DI_HasCapacity
                 endif
+
+UM_MoveLeft:    jsr SelectPreviousItem
+                jmp UM_MoveCommon
+UM_MoveRight:   jsr SelectNextItem
+UM_MoveCommon:  bcc UM_MoveDone
 
 RedrawInventory:ldx #MENU_INVENTORY
                 skip2
