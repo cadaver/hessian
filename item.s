@@ -109,14 +109,16 @@ FindItem:       lda #NO_ITEM_COUNT-1
                 cmp invCount-1,y
                 rts
 
-        ; Return item's magazine size
+        ; Return weapon's magazine size
         ;
         ; Parameters: Y item type
         ; Returns: A=$00 & C=0 consumable or weapon with single ammo reserve
         ;          A=$ff & C=0 infinite (melee weapon)
-        ;          A=$01-$7f & C=1 firearm with mag size
+        ;          A=$01-$7f & C=1 firearm with magazine
         ; Modifies: -
 
+GetCurrentItemMagazineSize:
+                ldy itemIndex
 GetMagazineSize:lda #$00
                 cpy #ITEM_LAST_MAG+1
                 bcs GMS_Fail
@@ -156,7 +158,7 @@ AI_HasRoomForAmmo:
 AI_AmmoNotExceeded:
                 sta invCount-1,y
                 jmp AI_Success
-AI_NewItem:     cmp #ITEM_FIRST_CONSUMABLE
+AI_NewItem:     cpy #ITEM_FIRST_CONSUMABLE
                 bcs AI_NoWeaponLimit
                 ldx #$00
                 ldy #ITEM_FIRST_NONWEAPON-1
@@ -171,8 +173,8 @@ AI_MaxWeaponsCount:
                 cpx #INITIAL_MAX_WEAPONS
                 bcc AI_NoWeaponLimit
                 ldy itemIndex                   ;Swap with current weapon. If fists selected,
-                cpy #ITEM_FISTS
-                bne AI_NotUsingFists            ;select first droppable weapon first
+                cpy #ITEM_FISTS                 ;select first droppable weapon first
+                bne AI_NotUsingFists
                 jsr SelectNextItem
                 ldy itemIndex
 AI_NotUsingFists:

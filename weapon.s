@@ -104,8 +104,7 @@ AttackHuman:    ldy actWpn,x
                 sta wpnBits
                 txa                             ;Ammo check only for player
                 bne AH_NotPlayer
-AH_AmmoCheck:   ldy itemIndex                   ;Check for ammo & reloading
-                jsr GetMagazineSize
+AH_AmmoCheck:   jsr GetCurrentItemMagazineSize  ;Check ammo & reloading
                 bcs AH_CheckReload              ;Firearm with magazine
                 lda invCount-1,y
                 beq AH_FirearmEmpty

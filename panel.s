@@ -184,8 +184,7 @@ UP_SkipHealth:  if SHOW_BATTERY > 0
                 jsr UP_DrawSlice
 UP_SkipWeapon:  lsr panelUpdateFlags
                 bcc UP_SkipAmmo
-                ldy itemIndex
-                jsr GetMagazineSize
+                jsr GetCurrentItemMagazineSize
                 bcc UP_NotFirearm
 UP_Firearm:     sta temp2
                 lda reload
