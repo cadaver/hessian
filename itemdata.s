@@ -35,8 +35,10 @@ ITEM_OWNWEAPON  = $80
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
 ITEM_FIRST_NONWEAPON = ITEM_MEDKIT
 ITEM_FIRST_IMPORTANT = ITEM_WAREHOUSEPASS
-
-MAG_INFINITE = $ff
+ITEM_FIRST      = ITEM_FISTS
+ITEM_LAST       = ITEM_BIOMETRICID
+ITEM_FIRST_MAG  = ITEM_PISTOL
+ITEM_LAST_MAG   = ITEM_BAZOOKA
 
 DROP_WEAPONMEDKITARMOR = $80
 DROP_WEAPONMEDKIT = $81
@@ -152,9 +154,6 @@ itemMagazineSize:
                 dc.b 4                          ;EMP generator
                 dc.b 3                          ;Grenade launcher
                 dc.b 1                          ;Bazooka
-                dc.b 0                          ;Extinguisher
-                dc.b 0                          ;Grenade
-                dc.b 0                          ;Mine
 
 itemNPCMinDist: ;dc.b 0                          ;Fists (not used by NPCs)
                 dc.b 0                          ;Knife

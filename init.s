@@ -182,12 +182,12 @@ IVid_InitScorePanel:
                 bpl IVid_InitScorePanel
                 lda #HP_PLAYER                  ;Init health & fists item immediately
                 sta actHp+ACTI_PLAYER           ;even before starting the game so that
-                lda #MAX_BATTERY
+                lda #MAX_BATTERY                ;the panel looks nice
                 sta battery+1
                 lda #MAX_OXYGEN
                 sta oxygen
-                lda #ITEM_FISTS                 ;the panel looks nice
-                sta invType
+                lda #ITEM_FISTS
+                sta itemIndex
 
         ; Initialize raster IRQs
         ; Relies on loader init to have already disabled the timer interrupt

@@ -109,11 +109,11 @@ UpdatePanel:    lda menuMode                    ;Update health bars only when no
                 lda armorMsgTime                ;Armor meter requested?
                 beq UP_ClearOxygen
                 dec armorMsgTime
-                lda #ITEM_ARMOR
+                ldy #ITEM_ARMOR
                 jsr FindItem
                 lda #$00
                 bcc UP_ZeroArmor
-                lda invCount,y
+                lda invCount-1,y
                 cmp #100                        ;If picked up a full armor while message
                 bcs UP_ClearOxygen              ;was displayed, show nothing
 UP_ZeroArmor:   ldy #"A"
@@ -157,8 +157,7 @@ UP_SkipHealth:  if SHOW_BATTERY > 0
                 sta colors+PANELROW*40+32
                 sta colors+PANELROW*40+33
                 sta colors+PANELROW*40+34
-                ldy itemIndex
-                ldx invType,y
+                ldx itemIndex
                 lda itemFrames,x
                 asl
                 tay
@@ -186,25 +185,21 @@ UP_SkipHealth:  if SHOW_BATTERY > 0
 UP_SkipWeapon:  lsr panelUpdateFlags
                 bcc UP_SkipAmmo
                 ldy itemIndex
-                ldx invType,y
-                cpx #ITEM_FIRST_NONWEAPON
-                bcs UP_Consumable
-                lda itemMagazineSize-1,x
-                sta temp2
-                beq UP_Consumable
-                bmi UP_MeleeWeapon
-UP_Firearm:     lda reload
+                jsr GetMagazineSize
+                bcc UP_NotFirearm
+UP_Firearm:     sta temp2
+                lda reload
                 bne UP_Reloading
-                lda invMag,y                    ;Print rounds in magazine
+                lda invMag-ITEM_FIRST_MAG,y     ;Print rounds in magazine
                 jsr ConvertToBCD8
                 ldx #35
                 jsr PrintBCDDigitsLSB
                 lda #"/"
                 jsr PrintPanelChar
                 ldy itemIndex
-                lda invCount,y                  ;Get ammo in reserve
+                lda invCount-1,y                ;Get ammo in reserve
                 sec
-                sbc invMag,y
+                sbc invMag-ITEM_FIRST_MAG,y
                 ldy temp2
                 ldx #temp7
                 jsr DivU                        ;Divide by magazine size, add one
@@ -217,7 +212,9 @@ UP_Firearm:     lda reload
 UP_MagCountOK:  ora #$30
                 sta panelScreen+PANELROW*40+38
                 bne UP_SkipAmmo
-UP_Consumable:  txa
+UP_NotFirearm:  cmp #MAG_INFINITE
+                beq UP_MeleeWeapon
+UP_Consumable:  tya
                 ldx #35
                 cmp #ITEM_ARMOR
                 php
@@ -228,7 +225,7 @@ UP_Consumable:  txa
                 skip2
 UP_IsConsumable:lda #42
                 jsr PrintPanelChar
-UP_IsArmor:     lda invCount,y
+UP_IsArmor:     lda invCount-1,y
                 jsr ConvertToBCD8
                 jsr Print3BCDDigits
                 plp
@@ -467,20 +464,14 @@ UM_NoCounter:   ldy itemIndex
                 beq UM_Heal
                 cmp #KEY_B
                 beq UM_Battery
-                if ITEM_CHEAT > 0
-                cmp #KEY_Z
-                beq UM_PrevItem
-                cmp #KEY_X
-                beq UM_NextItem
-                endif
                 if DROP_ITEM_TEST > 0
                 cmp #KEY_D
                 beq UM_DropItem
                 endif
 UM_ControlDone: rts
-UM_Heal:        lda #ITEM_MEDKIT
+UM_Heal:        ldy #ITEM_MEDKIT
                 skip2
-UM_Battery:     lda #ITEM_BATTERY
+UM_Battery:     ldy #ITEM_BATTERY
                 jsr FindItem
                 bcc UM_ControlDone
 UM_Reload:      jmp UseItem
@@ -504,8 +495,8 @@ UM_StoreCounter2:
 UM_NoCounter2:
 UM_ForceRefresh:lda #$00                        ;Check for forced refresh (when inventory
                 bne RedrawMenu                  ;modified while open)
-                ldy itemIndex
                 jsr MenuControl                 ;Check for selecting items
+                ldx itemIndex
                 lsr
                 bcs UM_MoveLeft
                 lsr
@@ -517,38 +508,15 @@ UM_ForceRefresh:lda #$00                        ;Check for forced refresh (when 
                 bne UM_Reload
 UM_MoveDone:    rts
 
-UM_MoveRight:   lda invType+1,y
+UM_MoveRight:   jsr SelectNextItem
+UM_MoveCommon:  cpx itemIndex
                 beq UM_MoveDone
-                inc itemIndex
-                bpl RedrawInventory             ;Redraw the inventory explicitly, as items
-UM_MoveLeft:    tya                             ;can also be selected in NONE mode with keys
-                beq UM_MoveDone
-                dec itemIndex
-                bpl RedrawInventory
-
-                if ITEM_CHEAT > 0
-UM_PrevItem:    lda #$ff
-                skip2
-UM_NextItem:    lda #$01
-                clc
-                adc invType+1
-                sta invType+1
-                tax
-                lda #1
-                cpx #ITEM_FIRST_IMPORTANT
-                bcs UM_IsQuestItem
-                lda itemDefaultMaxCount-1,x
-UM_IsQuestItem: sta invCount+1
-                lda #$00
-                sta invMag+1
-                lda #$01
-                sta itemIndex
-                jmp SetPanelRedrawItemAmmo
-                endif
+                bne RedrawInventory
+UM_MoveLeft:    jsr SelectPreviousItem
+                jmp UM_MoveCommon
 
                 if DROP_ITEM_TEST > 0
-UM_DropItem:    ldy itemIndex
-                lda invType,y
+UM_DropItem:    lda itemIndex
                 sta temp5
                 ldx #ACTI_PLAYER
                 jmp DI_HasCapacity
@@ -626,8 +594,7 @@ UM_RedrawInventory:
                 lda #$00
                 sta UM_ForceRefresh+1
                 inc textLeftMargin
-                ldx itemIndex
-                lda invType,x
+                lda itemIndex
                 jsr GetItemName
                 ldy menuMode                    ;When using keys to select item,
                 bne UM_RedrawActive             ;only show the text for a short time
@@ -635,21 +602,20 @@ UM_RedrawInventory:
                 skip2
 UM_RedrawActive:ldy #INDEFINITE_TEXT_DURATION
                 jsr PrintPanelText
-                ldx itemIndex
-                ldy invType+1,x
 UM_RedrawCommon:
                 dec textLeftMargin
 UM_DrawSelectionArrows:
+                ldy itemIndex
                 lda #1
                 sta colors+PANELROW*40+9
                 sta colors+PANELROW*40+30
                 lda #$20
-                cpx #$00
+                cpy #ITEM_FISTS
                 beq UM_NoLeftArrow
                 lda #60
 UM_NoLeftArrow: sta panelScreen+PANELROW*40+9
                 lda #$20
-                cpy #$00
+                cpy lastItemIndex
                 beq UM_NoRightArrow
                 lda #62
 UM_NoRightArrow:sta panelScreen+PANELROW*40+30

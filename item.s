@@ -9,6 +9,9 @@ INITIAL_MAX_WEAPONS = 4                         ;3 + fists
 
 USEITEM_ATTACK_DELAY = 5                        ;Attack delay after using an item
 
+MAG_INFINITE    = $ff
+NO_ITEM_COUNT   = $ff
+
         ; Item update routine
         ;
         ; Parameters: X actor index
@@ -96,21 +99,31 @@ GetItemName:    tay
                 ldx itemNameHi-1,y
 TP_PickupFail:  rts
 
-        ; Find item from inventory
+        ; Find item from inventory (verify that has other than "none" count)
         ;
-        ; Parameters: A item type
-        ; Returns: C=1 if found (index in Y), C=0 not found (first free index in Y)
-        ; Modifies: A,Y,zpSrcLo
+        ; Parameters: Y item type
+        ; Returns: C=1 found, C=0 not found
+        ; Modifies: Y
 
-FindItem:       sta zpSrcLo
-                ldy #$ff
-FI_Loop:        iny
-                lda invType,y
-                clc
-                beq FI_NotFound
-                cmp zpSrcLo
-                bne FI_Loop
-FI_NotFound:    rts
+FindItem:       lda #NO_ITEM_COUNT-1
+                cmp invCount-1,y
+                rts
+
+        ; Return item's magazine size
+        ;
+        ; Parameters: Y item type
+        ; Returns: A=$00 & C=0 consumable or weapon with single ammo reserve
+        ;          A=$ff & C=0 infinite (melee weapon)
+        ;          A=$01-$7f & C=1 firearm with mag size
+        ; Modifies: -
+
+GetMagazineSize:lda #$00
+                cpy #ITEM_LAST_MAG+1
+                bcs GMS_Fail
+                lda itemMagazineSize-1,y
+                bmi GMS_Fail
+                cmp #$01
+                rts
 
         ; Add item to inventory. If too many weapons, swap with current
         ;
@@ -118,92 +131,75 @@ FI_NotFound:    rts
         ; Returns: C=1 successful, C=0 failed (no room), zpBitsLo dropped item (0=none),
         ;          zpBitsHi dropped ammo count
         ; Modifies: A,X,Y,loader temp vars
-        
-AddItem:        stx zpSrcHi
+
+AddItem:        sta zpSrcLo
+                stx zpSrcHi
                 ldx #$00
                 stx zpBitsLo                    ;Assume: don't have to drop an existing weapon
+                tay
                 jsr FindItem
                 bcc AI_NewItem
-AI_HasItem:     tax
-                cpx #ITEM_FIRST_IMPORTANT       ;Quest items don't need checking, always x1
+AI_HasItem:     cpy #ITEM_FIRST_IMPORTANT       ;Quest items don't need checking, always x1
                 lda #1
                 bcs AI_AmmoNotExceeded
-                lda invCount,y                  ;Check for maximum ammo
-                cmp itemMaxCount-1,x
+                lda invCount-1,y                ;Check for maximum ammo
+                cmp itemMaxCount-1,y
                 bcc AI_HasRoomForAmmo
-                clc                             ;Maximum ammo already, fail pickup
+GMS_Fail:
+AI_Fail:        clc                             ;Maximum ammo already, fail pickup
                 rts
 AI_HasRoomForAmmo:
                 adc zpSrcHi
-                cmp itemMaxCount-1,x
+                cmp itemMaxCount-1,y
                 bcc AI_AmmoNotExceeded
-                lda itemMaxCount-1,x
+                lda itemMaxCount-1,y
 AI_AmmoNotExceeded:
-                sta invCount,y
+                sta invCount-1,y
                 jmp AI_Success
-AI_NewItem:     tya                             ;If first item, always stored to slot 0 (and no swap check)
-                beq AI_StoreItem
-                lda zpSrcLo                     ;If a weapon, check if limit exceeded
-                cmp #ITEM_FIRST_CONSUMABLE
+AI_NewItem:     cmp #ITEM_FIRST_CONSUMABLE
                 bcs AI_NoWeaponLimit
-                ldy #$00
-AI_CheckWeapons:lda invType,y
-                beq AI_CheckWeaponsDone
-                cmp #ITEM_FIRST_CONSUMABLE
-                bcs AI_CheckWeaponsDone
-                iny
+                ldx #$00
+                ldy #ITEM_FIRST_NONWEAPON-1
+AI_CheckWeapons:lda invCount-1,y
+                cmp #NO_ITEM_COUNT
+                beq AI_CheckWeaponsNext
+                inx
+AI_CheckWeaponsNext:
+                dey
                 bne AI_CheckWeapons
-AI_CheckWeaponsDone:
 AI_MaxWeaponsCount:
-                cpy #INITIAL_MAX_WEAPONS
+                cpx #INITIAL_MAX_WEAPONS
                 bcc AI_NoWeaponLimit
-                ldy itemIndex                   ;If weapon limit exceeded, check if current
-                bne AI_NotUsingFists            ;weapon can be swapped. If fists selected, swap
-                iny                             ;with first droppable weapon
+                ldy itemIndex                   ;Swap with current weapon. If fists selected,
+                cpy #ITEM_FISTS
+                bne AI_NotUsingFists            ;select first droppable weapon first
+                jsr SelectNextItem
+                ldy itemIndex
 AI_NotUsingFists:
-                lda invType,y
-                cmp #ITEM_FIRST_CONSUMABLE
+                cpy #ITEM_FIRST_CONSUMABLE
                 bcc AI_CanBeSwapped
-                clc
 AI_CannotBeSwapped:
-                rts                             ;Weapon not selected, nothing to swap with, fail pickup
-AI_CanBeSwapped:sta zpBitsLo
-                lda invCount,y
+                clc                             ;If a consumable or quest item selected, cannot swap
+                rts
+AI_CanBeSwapped:sty zpBitsLo
+                lda invCount-1,y
                 sta zpBitsHi
-                jsr RemoveItemByIndex
+                jsr RemoveItem
+                lda zpSrcLo                     ;In case of swapping select the new item
+                sta itemIndex
 AI_NoWeaponLimit:
-                ldy #$00
-AI_FindPosLoop: lda invType,y                   ;Find proper position for new item (item types in sorted order)
-                beq AI_PosFound
-                cmp zpSrcLo
-                bcs AI_PosFound
-                iny
-                bne AI_FindPosLoop
-AI_PosFound:    sty zpBitBuf
-                ldx #MAX_INVENTORYITEMS-2       ;TODO: will bug when inventory is full
-AI_MakeRoomLoop:lda invType,x                   ;Shift items to make room
-                sta invType+1,x
-                lda invCount,x
-                sta invCount+1,x
-                lda invMag,x
-                sta invMag+1,x
-                cpx itemIndex                   ;Change selection if selected item was shifted
-                bne AI_NotSelected
-                inc itemIndex
-AI_NotSelected: cpx zpBitBuf
-                beq AI_StoreItem
-                dex
-                bpl AI_MakeRoomLoop
-AI_StoreItem:   lda zpSrcLo
-                sta invType,y
+                ldy zpSrcLo
                 lda zpSrcHi
-                sta invCount,y
-                lda #$00
-                sta invMag,y
-                lda zpBitsLo                    ;If swapped a weapon, select the new weapon now
-                beq AI_Success
-                sty itemIndex
-AI_Success:     
+                sta invCount-1,y
+                cpy lastItemIndex
+                bcc AI_NoNewLastItem
+                sty lastItemIndex
+AI_NoNewLastItem:
+                jsr GetMagazineSize
+                bcc AI_Success
+                lda #$00                        ;If is a weapon with magazine, start with it empty
+                sta invMag-ITEM_FIRST_MAG,y
+AI_Success:
 RI_Success:     sec
 SetPanelRedrawItemAmmo:
                 lda #REDRAW_ITEM+REDRAW_AMMO
@@ -216,68 +212,95 @@ RI_NotFound:    rts
 
         ; Remove item from inventory
         ;
-        ; Parameters: A item type
-        ; Returns: C=1 if found and removed
-        ; Modifies: A,Y,zpSrcLo
+        ; Parameters: Y item type (should never be fists)
+        ; Returns: Y new item index after removal
+        ; Modifies: A,Y
 
-RemoveItem:     jsr FindItem
-                bcc RI_NotFound
-RemoveItemByIndex:
-                cpy itemIndex                   ;If current item removed, or removed item is
-                beq RI_MoveSelection            ;earlier in inventory, shift selection back
-                bcs RI_ShiftLoop
-RI_MoveSelection:
-                dec itemIndex
-RI_ShiftLoop:   lda invCount+1,y                ;Shift items to remove the hole left by dropped item
-                sta invCount,y
-                lda invMag+1,y
-                sta invMag,y
-                lda invType+1,y
-                sta invType,y
-                beq RI_Done
-                iny
-                bne RI_ShiftLoop
-RI_Done:        inc UM_ForceRefresh+1           ;If inventory open, force it to refresh
-                jmp RI_Success
+RemoveItem:     lda #NO_ITEM_COUNT
+                sta invCount-1,y
+                sty RI_Cmp+1
+                cpy lastItemIndex
+                bne RI_NotLast
+RI_FindPrevious:dey
+                jsr FindItem
+                bcc RI_FindPrevious
+                sty lastItemIndex
+RI_NotLast:     ldy itemIndex                ;If selected item removed, switch
+RI_Cmp:         cpy #$00                     ;selection backward
+                bne RI_DidNotRemoveSelected
+                jsr SPI_Fast
+RI_DidNotRemoveSelected:
+                rts
 
         ; Decrease ammo in inventory
         ;
-        ; Parameters: A ammo amount, Y inventory index
+        ; Parameters: A ammo amount, Y item type
         ; Returns: -
         ; Modifies: A,Y,zpSrcLo
 
 DecreaseAmmoOne:lda #$01
 DecreaseAmmo:   sta zpSrcLo
-                sec
-                lda invMag,y                    ;Decrease ammo in magazine as well
+                jsr GetMagazineSize
+                bcc DA_NoAmmoInMag
+                lda invMag-ITEM_FIRST_MAG,y     ;Decrease ammo in magazine as well
                 beq DA_NoAmmoInMag
                 sbc zpSrcLo                     ;Is assumed not to overflow negatively, as
-                sta invMag,y                    ;when item has a magazine it is decreased
-DA_NoAmmoInMag: lda invCount,y                  ;only by one
+                sta invMag-ITEM_FIRST_MAG,y     ;when item has a magazine it is decreased
+DA_NoAmmoInMag: lda invCount-1,y                ;only by one
+                sec
                 sbc zpSrcLo
                 bcs DA_NotNegative
                 lda #$00
-DA_NotNegative: sta invCount,y
+DA_NotNegative: sta invCount-1,y
                 bne SetPanelRedrawAmmo
-                lda invType,y
-                cmp #ITEM_FIRST_CONSUMABLE      ;If it's a consumable item, remove when ammo
+                cpy #ITEM_FIRST_CONSUMABLE      ;If it's a consumable item, remove when ammo
                 bcc SetPanelRedrawAmmo          ;goes to zero
-                jmp RemoveItemByIndex
+                jmp RemoveItem
+
+        ; Select next item in inventory
+        ;
+        ; Parameters: -
+        ; Returns: itemIndex updated
+        ; Modifies: A,Y
+
+SelectNextItem: ldy itemIndex
+                cpy lastItemIndex
+                bcs SNI_Done
+SNI_Loop:       iny
+                jsr FindItem
+                bcc SNI_Loop
+SPI_Done:
+SNI_Done:       sty itemIndex
+                rts
+
+        ; Select previous item in inventory
+        ;
+        ; Parameters: -
+        ; Returns: itemIndex updated
+        ; Modifies: A,Y
+
+SelectPreviousItem:
+                ldy itemIndex
+SPI_Fast:       cpy #ITEM_FISTS
+                beq SPI_Done
+SPI_Loop:       dey
+                jsr FindItem
+                bcc SPI_Loop
+                bcs SPI_Done
 
         ; Use an inventory item
         ;
-        ; Parameters: Y inventory index
+        ; Parameters: Y item type
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
-        
+
 UseItem:        lda actHp+ACTI_PLAYER           ;Can't use/reload after dying
                 beq UI_Dead
-                lda invType,y
-                cmp #ITEM_FIRST_NONWEAPON
+                cpy #ITEM_FIRST_NONWEAPON
                 bcc UI_Reload
-                cmp #ITEM_MEDKIT
+                cpy #ITEM_MEDKIT
                 beq UseMedKit
-                cmp #ITEM_BATTERY
+                cpy #ITEM_BATTERY
                 beq UseBattery
 UI_Dead:
 UB_FullBattery:
@@ -302,16 +325,17 @@ UMK_PlaySound:  lda #SFX_POWERUP
 UI_ReduceAmmo:  lda #USEITEM_ATTACK_DELAY       ;In case the item is removed, give an
                 sta actAttackD+ACTI_PLAYER      ;attack delay to prevent accidental
                 jmp DecreaseAmmoOne             ;fire if a weapon becomes selected next
-UI_Reload:      lda reload
+UI_Reload:      jsr GetMagazineSize
+                bcc UI_DontReload
+                lda reload                      ;No reload if already reloading
                 bne UI_DontReload
                 lda actF1+ACTI_PLAYER           ;No reload if dead or swimming
                 cmp #FR_DIE
                 bcs UI_DontReload
-                ldx invType,y                   ;Do not reload if already full magazine
-                lda invMag,y                    ;or already reloading
-                cmp itemMagazineSize-1,x
+                lda invMag-ITEM_FIRST_MAG,y     ;No reload if magazine already full or no reserve
+                cmp itemMagazineSize-1,y
                 bcs UI_DontReload
-                cmp invCount,y
+                cmp invCount-1,y
                 bcs UI_DontReload
                 dec reload
 UI_DontReload:  rts

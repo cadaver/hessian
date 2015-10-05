@@ -416,6 +416,24 @@ IP_InitLevelData:
                 sta lvlStateBits-1,x             ;Assume all leveldata-actors exist at start
                 dex
                 bne IP_InitLevelData
+                ldx #ITEM_LAST-ITEM_FIRST+1     ;$ff=item not carried
+IP_InitInventory:
+                if ITEM_CHEAT>0
+                cpx #ITEM_FIRST_IMPORTANT
+                bcs IP_InitCount1
+                lda itemDefaultPickup-1,x
+                skip2
+IP_InitCount1:  lda #$02
+                endif
+                sta invCount-1,x
+                dex
+                bne IP_InitInventory
+                lda #ITEM_FISTS
+                sta itemIndex
+                if ITEM_CHEAT>0
+                lda #ITEM_LAST
+                endif
+                sta lastItemIndex
                 lda #ITEM_FISTS
                 ldx #1
                 jsr AddItem

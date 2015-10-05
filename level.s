@@ -521,6 +521,7 @@ OO_PlaySound:   lda #SFX_OBJECT
 OO_NoSound:     lda lvlObjDH,y                  ;Check requirement item from object parameters if has them
                 beq OO_RequirementOK
                 sta temp3
+                tay
                 jsr FindItem
                 bcs OO_RequirementOK
                 lda #<txtRequired

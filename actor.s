@@ -1291,10 +1291,9 @@ DamageActor:    sty temp7
                 bpl DA_SkipModify
 DA_UseModify:   cpx #ACTI_PLAYER
                 bne DA_NoPlayerArmor
-                lda #ITEM_ARMOR
-                jsr FindItem
-                bcc DA_NoPlayerArmor
-                lda invCount,y                  ;Current armor strength before damage
+                ldy #ITEM_ARMOR
+                lda invCount-1,y                ;Check player armor
+                bmi DA_NoPlayerArmor
                 pha
                 lda #5                          ;Round the armor strength reduction to next 5
 DA_NextMultiplyOf5:

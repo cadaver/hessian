@@ -9,7 +9,6 @@ MAX_CACHESPRITES = 64
 MAX_CHUNKFILES   = 32
 MAX_MAPROWS     = 128
 MAX_BLK         = 192
-MAX_INVENTORYITEMS = 24
 MAX_LVLDATAACT  = 80                            ;Defined actors per level, on/off persistency
 MAX_LVLACT      = 96                            ;Allow extra 16 global or temporary persistent actors
 MAX_GLOBALACT   = MAX_LVLACT-MAX_LVLDATAACT
@@ -132,7 +131,6 @@ SCROLLROWS      = 22
                 var wpnLo                       ;Weapon variables
                 var wpnHi
                 var wpnBits
-                var magazineSize
 
                 var displayedItemName           ;Misc. game variables
                 var displayedHealth

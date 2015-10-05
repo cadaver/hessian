@@ -138,14 +138,11 @@ MP_NotDown1:    cpy #SCRCENTER_Y+3
                 bcc MP_NotDown2
                 inx
 MP_NotDown2:    stx scrollSY
-MP_SetWeapon:   ldy itemIndex                   ;Set player weapon from inventory
-                ldx invType,y
-                lda itemMagazineSize-1,x        ;Mag size needed for weapon routines,
-                sta magazineSize                ;cache it now
-                cpx #ITEM_FIRST_NONWEAPON
+MP_SetWeapon:   ldy itemIndex
+                cpy #ITEM_FIRST_NONWEAPON
                 bcc MP_WeaponOK
-                ldx #ITEM_NONE
-MP_WeaponOK:    stx actWpn+ACTI_PLAYER
+                ldy #ITEM_NONE
+MP_WeaponOK:    sty actWpn+ACTI_PLAYER
                 ldx #ACTI_PLAYER
                 jmp MoveAndAttackHuman          ;Finally move player and handle weapon
 
@@ -1058,16 +1055,15 @@ DI_CountGroundItems:                            ;if player can't pick up
 DI_CGINext:     iny
                 cpy #ACTI_LASTITEM+1
                 bcc DI_CountGroundItems
-                lda temp5
+                ldy temp5
                 jsr FindItem
                 bcc DI_NotInInventory
-                lda invCount,y
+                lda invCount-1,y
                 clc
                 adc temp8
                 bcs DI_Exceeded
                 sta temp8
 DI_NotInInventory:
-                ldy temp5
                 lda temp8
                 cmp itemMaxCount-1,y
                 bcc DI_HasCapacity

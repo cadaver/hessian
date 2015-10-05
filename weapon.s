@@ -105,11 +105,14 @@ AttackHuman:    ldy actWpn,x
                 txa                             ;Ammo check only for player
                 bne AH_NotPlayer
 AH_AmmoCheck:   ldy itemIndex                   ;Check for ammo & reloading
-                lda magazineSize
-                bmi AH_AmmoCheckOK              ;Infinite (melee weapon)
-AH_CheckReload: cmp invCount,y
+                jsr GetMagazineSize
+                bcs AH_CheckReload              ;Firearm with magazine
+                lda invCount-1,y
+                beq AH_FirearmEmpty
+                bne AH_AmmoCheckOK
+AH_CheckReload: cmp invCount-1,y
                 bcc AH_HasFullMagReserve
-                lda invCount,y
+                lda invCount-1,y
 AH_HasFullMagReserve:
                 sta temp1                       ;Reload limit
                 lda reload
@@ -128,26 +131,23 @@ AH_ReloadComplete:
                 lda #$00
                 ldy #WD_RELOADDONESFX
                 bne AH_PlayReloadSound
-AH_NotReloading:lda invMag,y
+AH_NotReloading:lda invMag-ITEM_FIRST_MAG,y
                 bne AH_AmmoCheckOK
 AH_EmptyMagazine:
-                lda invCount,y                  ;Initiate reloading if mag empty and reserve left
+                lda invCount-1,y                ;Initiate reloading if mag empty and reserve left
                 beq AH_FirearmEmpty
-                lda magazineSize                ;Check for magazineless weapon
-                beq AH_AmmoCheckOK
 AH_BeginReload: lda actAttackD+ACTI_PLAYER      ;Do not start reloading before attack delay
                 bne AH_AmmoCheckOK              ;zero
 AH_ReloadNextShot:
-                lda invType,y                   ;Shotgun reloads one shot at a time
-                cmp #ITEM_SHOTGUN               ;but reload can be interrupted
+                cpy #ITEM_SHOTGUN               ;Shotgun reloads one shot at a time
                 bne AH_ReloadWholeMagazine
-                lda invMag,y
+                lda invMag-ITEM_FIRST_MAG,y
                 adc #$00
                 cmp temp1
                 bcc AH_NotExceeded
 AH_ReloadWholeMagazine:
                 lda temp1
-AH_NotExceeded: sta invMag,y
+AH_NotExceeded: sta invMag-ITEM_FIRST_MAG,y
                 pha
                 ldy #WD_RELOADDELAY
                 lda (wpnLo),y
@@ -326,10 +326,11 @@ AH_FireDir:     lda #$00
                 bpl AH_NoFlicker
                 lda #COLOR_FLICKER
                 sta actFlash,x
-AH_NoFlicker:   ldx actIndex                    ;If player, decrement ammo and apply skill bonus
+AH_NoFlicker:   ldx actIndex                    ;If player, decrement ammo (unless melee weapon) and apply skill bonus
                 bne AH_NoAmmoDecrement
-                lda magazineSize
-                bmi AH_PlayerMeleeAttack
+                lda wpnBits
+                and #WDB_MELEE
+                bne AH_PlayerMeleeAttack
                 ldy itemIndex
                 if AMMO_CHEAT=0
                 jsr DecreaseAmmoOne
