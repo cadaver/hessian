@@ -130,7 +130,7 @@ GetMagazineSize:lda #$00
         ; Select next item in inventory
         ;
         ; Parameters: -
-        ; Returns: C=1 itemIndex updated, C=0 already at end
+        ; Returns: Y index, C=1 itemIndex updated, C=0 already at end
         ; Modifies: A,Y
 
 SelectNextItem: ldy itemIndex
@@ -145,7 +145,7 @@ SPI_Done:       sty itemIndex
         ; Select previous item in inventory
         ;
         ; Parameters: -
-        ; Returns: C=1 itemIndex updated, C=0 already at beginning
+        ; Returns: Y index, C=1 itemIndex updated, C=0 already at beginning
         ; Modifies: A,Y
 
 SelectPreviousItem:
@@ -190,13 +190,12 @@ AI_HasRoomForAmmo:
 AI_AmmoNotExceeded:
                 sta invCount-1,y
                 jmp AI_Success
-AI_NewItem:     cpy #ITEM_FIRST_CONSUMABLE
+AI_NewItem:     cpy #ITEM_FIRST_CONSUMABLE      ;If picking up a weapon, check limit now
                 bcs AI_NoWeaponLimit
                 ldx #$00
                 ldy #ITEM_FIRST_NONWEAPON-1
-AI_CheckWeapons:lda invCount-1,y
-                cmp #NO_ITEM_COUNT
-                beq AI_CheckWeaponsNext
+AI_CheckWeapons:jsr FindItem
+                bcc AI_CheckWeaponsNext
                 inx
 AI_CheckWeaponsNext:
                 dey
@@ -207,8 +206,7 @@ AI_MaxWeaponsCount:
                 ldy itemIndex                   ;Swap with current weapon. If fists selected,
                 cpy #ITEM_FISTS                 ;select first droppable weapon first
                 bne AI_NotUsingFists
-                jsr SelectNextItem
-                ldy itemIndex
+                jsr SelectNextItem              ;New index to Y
 AI_NotUsingFists:
                 cpy #ITEM_FIRST_CONSUMABLE
                 bcc AI_CanBeSwapped
@@ -233,8 +231,7 @@ AI_NoNewLastItem:
                 bcc AI_Success
                 lda #$00                        ;If is a weapon with magazine, start with it empty
                 sta invMag-ITEM_FIRST_MAG,y
-AI_Success:
-RI_Success:     sec
+AI_Success:     sec
 SetPanelRedrawItemAmmo:
                 lda #REDRAW_ITEM+REDRAW_AMMO
                 SKIP2
@@ -243,6 +240,30 @@ SetPanelRedrawAmmo:
 SetPanelRedraw: ora panelUpdateFlags
                 sta panelUpdateFlags
 RI_NotFound:    rts
+
+        ; Decrease ammo in inventory
+        ;
+        ; Parameters: A ammo amount, Y item type
+        ; Returns: -
+        ; Modifies: A,Y,zpSrcLo
+
+DecreaseAmmoOne:lda #$01
+DecreaseAmmo:   sta zpSrcLo
+                jsr GetMagazineSize
+                bcc DA_NoAmmoInMag
+                lda invMag-ITEM_FIRST_MAG,y     ;Decrease ammo in magazine as well
+                ;beq DA_NoAmmoInMag
+                sbc zpSrcLo                     ;Is assumed not to overflow negatively, as
+                sta invMag-ITEM_FIRST_MAG,y     ;when item has a magazine it is decreased
+DA_NoAmmoInMag: lda invCount-1,y                ;only by one, and weapon code should not
+                sec                             ;allow to fire empty weapon
+                sbc zpSrcLo
+                bcs DA_NotNegative
+                lda #$00
+DA_NotNegative: sta invCount-1,y
+                bne SetPanelRedrawAmmo
+                cpy #ITEM_FIRST_CONSUMABLE      ;If it's a consumable item, remove when ammo
+                bcc SetPanelRedrawAmmo          ;goes to zero
 
         ; Remove item from inventory
         ;
@@ -261,35 +282,9 @@ RI_FindPrevious:dey
                 sty lastItemIndex
 RI_NotLast:     ldy itemIndex                ;If selected item removed, switch
 RI_Cmp:         cpy #$00                     ;selection backward
-                bne RI_DidNotRemoveSelected
+                bne SetPanelRedrawItemAmmo
                 jsr SPI_Fast
-RI_DidNotRemoveSelected:
-                rts
-
-        ; Decrease ammo in inventory
-        ;
-        ; Parameters: A ammo amount, Y item type
-        ; Returns: -
-        ; Modifies: A,Y,zpSrcLo
-
-DecreaseAmmoOne:lda #$01
-DecreaseAmmo:   sta zpSrcLo
-                jsr GetMagazineSize
-                bcc DA_NoAmmoInMag
-                lda invMag-ITEM_FIRST_MAG,y     ;Decrease ammo in magazine as well
-                beq DA_NoAmmoInMag
-                sbc zpSrcLo                     ;Is assumed not to overflow negatively, as
-                sta invMag-ITEM_FIRST_MAG,y     ;when item has a magazine it is decreased
-DA_NoAmmoInMag: lda invCount-1,y                ;only by one
-                sec
-                sbc zpSrcLo
-                bcs DA_NotNegative
-                lda #$00
-DA_NotNegative: sta invCount-1,y
-                bne SetPanelRedrawAmmo
-                cpy #ITEM_FIRST_CONSUMABLE      ;If it's a consumable item, remove when ammo
-                bcc SetPanelRedrawAmmo          ;goes to zero
-                jmp RemoveItem
+                bcs SetPanelRedrawItemAmmo
 
         ; Use an inventory item
         ;
