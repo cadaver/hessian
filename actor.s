@@ -1286,10 +1286,10 @@ ATD_Common:     tay
 DamageActor:    sty temp7
                 sta temp8
                 tay
-                bpl DA_UseModify                ;Unmodified damage (e.g. drowning) will not
-                and #$7f                        ;involve player's armor
+                bpl DA_UseModify                ;Unmodified damage (drowning, falling)
+                and #$7f                        ;will not involve player's armor
                 bpl DA_SkipModify
-DA_UseModify:   cpx #ACTI_PLAYER
+DA_UseModify:   txa
                 bne DA_NoPlayerArmor
                 ldy #ITEM_ARMOR
                 lda invCount-1,y                ;Check player armor
@@ -1320,12 +1320,12 @@ DA_NoPlayerArmor:
                 tay
                 lda temp8
                 jsr ModifyDamage
-DA_SkipModify:  cpx #ACTI_PLAYER
+DA_SkipModify:  sta temp8
+                txa
                 bne DA_NotPlayer
 DA_ResetRecharge:
                 stx healTimer                   ;If player hit, reset healing timer
-DA_NotPlayer:   sta temp8
-                lda actHp,x                     ;First check that there is health
+DA_NotPlayer:   lda actHp,x                     ;First check that there is health
                 beq DA_Done                     ;(prevent destroy being called multiple times)
                 sec
 DA_Sub:         sbc temp8

@@ -512,11 +512,8 @@ CheckCheat:     lda keyType
                 cpx #CHEATSTRING_LENGTH-1
                 bcc CC_NoCheat
 CC_ActivateCheat:
-                lda DA_ResetRecharge            ;Disable player damage & battery drain
-                eor #$2f
-                sta DA_ResetRecharge
-                lda DA_ResetRecharge+1
-                eor #<healTimer
+                lda DA_ResetRecharge+1            ;Disable player damage & battery drain
+                eor #healTimer^temp8
                 sta DA_ResetRecharge+1
                 lda DrainBatteryRound
                 eor #$40
