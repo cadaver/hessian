@@ -521,7 +521,7 @@ SW_DrawBlocks:  lda scrollCSX
                 beq SW_DBXDone
                 bmi SW_DBLeft
 SW_DBRight:     jsr SW_DrawRight
-                jmp SW_DBXDone
+                beq SW_DBXDone                  ;Z=1 always here
 SW_DBLeft:      jsr SW_DrawLeft
 SW_DBXDone:     lda scrollCSY
                 beq SW_NoWork
@@ -879,14 +879,9 @@ SWDL_Block:     inc SWDL_MapY+1
                 bpl SWDL_GetBlock
 SWDL_Ready:     rts
 
-SW_DrawDown:    lda screen
-                eor #$01
-                tay
-                lda #<(screen1+SCROLLROWS*40-40)
-                sta SWDU_Sta+1
-                lda screenBaseTbl,y
-                ora #>(SCROLLROWS*40-40)
-                sta SWDU_Sta+2
+SW_DrawDown:    ldy #<(screen1+SCROLLROWS*40-40)
+                sty SWDU_Sta+1
+                ldy #>(SCROLLROWS*40-40)
                 lda mapY
                 clc
                 adc #$05
@@ -899,13 +894,8 @@ SW_DrawDown:    lda screen
                 inx
                 bcs SWDU_Common
 
-SW_DrawUp:      lda screen
-                eor #$01
-                tay
-                lda #$00
-                sta SWDU_Sta+1
-                lda screenBaseTbl,y
-                sta SWDU_Sta+2
+SW_DrawUp:      ldy #$00
+                sty SWDU_Sta+1
                 ldx mapY
                 lda blockY
 SWDU_Common:    asl
@@ -917,6 +907,12 @@ SWDU_Common:    asl
                 lda mapTblHi,x
                 sta temp4
                 sta SWDU_GetBlock+1
+                lda screen
+                eor #$01
+                tax
+                tya
+                ora screenBaseTbl,x
+                sta SWDU_Sta+2
                 ldx #$00
                 ldy mapX
 SWDU_GetBlock:  lda #$00
