@@ -741,7 +741,7 @@ ULO_DoToxinDamage:
 ULO_DoDrowningDamage:
                 ldy #$ff
                 lda #DMG_DROWNING
-                jmp DamageActor
+                jmp DamageActor                 ;X must be 0
 
 UpdateLevelObjects:
                 ldx #$03
