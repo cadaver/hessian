@@ -441,12 +441,10 @@ UF_ColorShiftLateCheck:
                 cmp #IRQ3_LINE+$18
                 bcs UF_WaitColorShift
 UF_WaitDone:    lda scrollX                     ;Copy scrolling and screen number
-                eor #$07
-                ora #$10
+                eor #$17
                 sta Irq1_ScrollX+1
                 lda scrollY
-                eor #$07
-                ora #$10
+                eor #$17
                 sta Irq1_ScrollY+1
                 ldx screen
                 lda d018Tbl,x
