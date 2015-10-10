@@ -222,8 +222,6 @@ AH_NoWeaponFrame2:
                 beq AH_CannotFire
                 bne AH_MeleeIdle
 AH_MeleeIdle:   jmp AH_SetIdleWeaponFrame
-AH_MeleeStrike:
-AH_CannotFire:  rts
 
 AH_CanFire:     lda wpnBits                     ;Check for melee/throw weapon and play its
                 and #WDB_THROW|WDB_MELEE        ;animation, else go directly to firing
@@ -238,6 +236,8 @@ AH_MeleePrepare:lda #FR_PREPARE                 ;Show prepare frame for hands & 
                 sta actF2,x
                 ldy #WD_PREPAREFR
                 jmp AH_SetWeaponFrame
+AH_MeleeStrike:
+AH_CannotFire:  rts
 AH_MeleeAnimation:
                 lda actAttackD,x                ;Check for finishing animation
                 cmp #$83
@@ -254,8 +254,27 @@ AH_SpawnRight:  lda #-3
                 jsr GetCharInfoXYOffset
                 and #CI_OBSTACLE
                 bne AH_CannotFire
-                jsr GetBulletOffset
-                txa                             ;Check whether to use player or NPC bullet actor
+GetBulletOffset:ldy actT,x
+                lda actDispTblLo-1,y            ;Get actor display structure address
+                sta actLo
+                lda actDispTblHi-1,y
+                sta actHi
+                lda #$00
+                sta temp1
+                sta temp2
+                sta temp3
+                sta temp4
+                lda #MAX_SPR                    ;"Draw" the actor in a fake manner
+                sta sprIndex                    ;to get the last connect-spot
+                jsr DrawActorSub_NoColor
+                ldy #$3
+GBO_Loop:       asl temp1                       ;Multiply pixels back to map coordinates
+                rol temp2
+                asl temp3
+                rol temp4
+                dey
+                bne GBO_Loop
+                ldx actIndex                    ;Check whether to use player or NPC bullet actor
                 beq AH_IsPlayer                 ;indices
                 lda #ACTI_FIRSTNPCBULLET
                 ldy #ACTI_LASTNPCBULLET
@@ -360,44 +379,6 @@ AH_NoAmmoDecrement:
                 lda (wpnLo),y
                 jmp PlaySfx
 AH_InsideWall:  jsr RemoveActor
-                ldx actIndex
-                rts
-
-        ; Find spawn offset for bullet
-        ;
-        ; Parameters: X actor index
-        ; Returns: temp1-temp2 X offset, temp3-temp4 Y offset
-        ; Modifies: A,Y,loader temp regs
-
-GetBulletOffset:ldy actT,x
-                lda actDispTblLo-1,y            ;Get actor display structure address
-                sta actLo
-                lda actDispTblHi-1,y
-                sta actHi
-                lda #$00
-                sta temp1
-                sta temp2
-                sta temp3
-                sta temp4
-                lda #MAX_SPR                    ;"Draw" the actor in a fake manner
-                sta sprIndex                    ;to get the last connect-spot
-                jsr DrawActorSub_NoColor
-                lda temp1                       ;Multiply pixels back to map coordinates
-                asl
-                rol temp2
-                asl
-                rol temp2
-                asl
-                rol temp2
-                sta temp1
-                lda temp3
-                asl
-                rol temp4
-                asl
-                rol temp4
-                asl
-                rol temp4
-                sta temp3
                 ldx actIndex
                 rts
 
