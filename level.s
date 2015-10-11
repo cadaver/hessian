@@ -719,10 +719,109 @@ SetActorAtObject:
                 lda lvlObjY,y
                 and #$7f
                 sta actYH,x
+AAOG_Done:      rts
+
+        ; Save an in-memory checkpoint. Removes other actors than player as a byproduct
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp regs
+
+SaveCheckpoint: jsr SaveLevelState
+                ldx #6
+                ldy #6*MAX_ACT
+                sec
+StorePlayerActorVars:
+                lda actXL+ACTI_PLAYER,y
+                sta saveXL,x
+                tya
+                sbc #MAX_ACT
+                tay
+                dex
+                bpl StorePlayerActorVars
+                lda saveHP                      ;Ensure minimum health & battery level when saving
+                cmp #LOW_HEALTH
+                bcs SCP_HealthOK
+                lda #LOW_HEALTH
+                sta saveHP
+SCP_HealthOK:   lda saveBattery+1
+                cmp #LOW_BATTERY
+                bcs SCP_BatteryOK
+                lda #LOW_BATTERY
+                sta saveBattery+1
+                lda #$00
+                sta saveBattery
+SCP_BatteryOK:
+                ldx #MAX_LVLACT-1
+                ldy #$00
+SCP_SaveGlobalLoop:
+                lda lvlActT,x                   ;First save the important global actors
+                beq SCP_SaveGlobalNext
+                lda lvlActOrg,x
+                bmi SCP_SaveGlobalNext          ;(skip leveldata actors and temp now)
+                asl
+                bpl SCP_SaveGlobalNext
+                jsr SaveActorSub
+SCP_SaveGlobalNext:
+                dex
+                bpl SCP_SaveGlobalLoop
+                ldx nextTempLvlActIndex
+SCP_SaveItemsLoop:
+                cpy #MAX_SAVEACT                ;Then save as many temp items (weapons etc.)
+                bcs SCP_SaveItemsDone           ;as possible, from the latest created
+                lda lvlActT,x
+                bpl SCP_SaveItemsNext
+                lda lvlActOrg,x
+                cmp #ORG_GLOBAL
+                bcs SCP_SaveItemsNext
+                jsr SaveActorSub
+SCP_SaveItemsNext:
+                inx
+                cpx #MAX_LVLACT
+                bcc SCP_SaveItemsNotOver
+                ldx #$00
+SCP_SaveItemsNotOver:
+                cpx nextTempLvlActIndex         ;Exit when wrapped
+                bne SCP_SaveItemsLoop
+SCP_SaveItemsDone:
+                lda #$00
+SCP_SaveClearLoop:                              ;Finally clear unused slots
+                cpy #MAX_SAVEACT
+                bcs SCP_SaveClearDone
+                sta saveLvlActT,y
+                iny
+                bpl SCP_SaveClearLoop
+SCP_SaveClearDone:
+                ldx #playerStateZPEnd-playerStateZPStart
+SCP_ZPState:    lda playerStateZPStart-1,x
+                sta saveStateZP-1,x
+                dex
+                bne SCP_ZPState
+                lda #<playerStateStart
+                sta zpSrcLo
+                lda #>playerStateStart
+                sta zpSrcHi
+                lda #<saveState
+                ldx #>saveState
+                jmp SaveState_CopyMemory
+
+SaveActorSub:   lda lvlActX,x
+                sta saveLvlActX,y
+                lda lvlActY,x
+                sta saveLvlActY,y
+                lda lvlActF,x
+                sta saveLvlActF,y
+                lda lvlActT,x
+                sta saveLvlActT,y
+                lda lvlActWpn,x
+                sta saveLvlActWpn,y
+                lda lvlActOrg,x
+                sta saveLvlActOrg,y
+                iny
 ULO_IsPaused:
 ULO_PlayerDead:
 ULO_ToxinDelay:
-AAOG_Done:      rts
+                rts
 
         ; Update level objects. Handle operation, auto-deactivation and actually entering doors.
         ; Also check for picking up items, player health regeneration and incrementing game clock
@@ -1111,9 +1210,61 @@ ULO_DestDoorNum:ldy #$00
                 ldy #ZONEH_BG1
                 lda (zoneLo),y                  ;Check for save-disabled zone
                 ora ULO_AirToxinFlag+1          ;Also don't save if the zone is damaging
-                bmi ULO_NoCheckpoint
+                bmi CenterPlayer
                 jsr SaveCheckpoint              ;Save checkpoint now
-ULO_NoCheckpoint:
+                bmi CenterPlayer                ;N=1 upon returning
+
+        ; Restore an in-memory checkpoint
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+RestartCheckpoint:
+                ldx #playerStateZPEnd-playerStateZPStart
+RCP_ZPState:    lda saveStateZP-1,x
+                sta playerStateZPStart-1,x
+                dex
+                bne RCP_ZPState
+                lda #<saveState
+                sta zpSrcLo
+                lda #>saveState
+                sta zpSrcHi
+                lda #<playerStateStart
+                ldx #>playerStateStart
+                jsr SaveState_CopyMemory
+                ldx #MAX_SAVEACT-1
+RCP_CopySaveActorsLoop:
+                lda saveLvlActX,x
+                sta lvlActX,x
+                lda saveLvlActY,x
+                sta lvlActY,x
+                lda saveLvlActF,x
+                sta lvlActF,x
+                lda saveLvlActT,x
+                sta lvlActT,x
+                lda saveLvlActWpn,x
+                sta lvlActWpn,x
+                lda saveLvlActOrg,x
+                sta lvlActOrg,x
+                dex
+                bpl RCP_CopySaveActorsLoop
+RCP_ClearActors:ldx #MAX_LVLACT-MAX_SAVEACT-1
+                lda #$00
+RCP_ClearActorsLoop:
+                sta lvlActT+MAX_SAVEACT,x
+                dex
+                bpl RCP_ClearActorsLoop
+                sec                             ;Need to load leveldata actors again
+                jsr CreatePlayerActor
+                jsr FindPlayerZone
+                ldx #ACTI_PLAYER                ;Check if player is at an obstacle door, move left
+                jsr GetCharInfo1Above           ;slightly in that case
+                and #CI_OBSTACLE
+                beq RCP_NoObstacle
+                lda #$7f
+                sta actXL+ACTI_PLAYER
+RCP_NoObstacle:
 
         ; Centers player on screen, redraws screen, adds all actors from leveldata, and jumps to mainloop
         ; Player zone must have been acquired beforehand
@@ -1193,6 +1344,37 @@ CP_NotInWater:  ora #MB_GROUNDED                ;checkpoint restore
                 jsr SetZoneColors
                 jsr AddAllActorsNextFrame
                 jsr AddActors
-                jsr GetControls
-                jsr UpdateActors                ;Update actors once first
-                                                ;Fall through to main loop
+                jsr UpdateActors                ;Update actors once first to make sure
+                                                ;e.g. weapons are shown correctly
+
+        ; Game main loop
+
+StartMainLoop:  ldx #$ff
+                txs
+MainLoop:       jsr ScrollLogic
+                if SHOW_ACTOR_TIME > 0
+                lda #$02
+                sta $d020
+                endif
+                jsr DrawActors
+                jsr AddActors
+                if SHOW_ACTOR_TIME > 0
+                lda #$00
+                sta $d020
+                endif
+                jsr FinishFrame
+                jsr ScrollLogic
+                jsr GetControlsWaitFrame
+                jsr UpdateMenu
+                if SHOW_ACTOR_TIME > 0
+                lda #$02
+                sta $d020
+                endif
+                jsr UpdateActors
+                if SHOW_ACTOR_TIME > 0
+                lda #$00
+                sta $d020
+                endif
+                jsr FinishFrame
+                jsr UpdateLevelObjects
+                jmp MainLoop

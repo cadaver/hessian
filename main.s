@@ -44,39 +44,7 @@ randomAreaStart:
                 include ai.s
                 include script.s
                 include plot.s
-                include level.s                 ;Note: must be last due to intentional fallthrough
-
-        ; Game main loop
-
-StartMainLoop:  ldx #$ff
-                txs
-MainLoop:       jsr ScrollLogic
-                if SHOW_ACTOR_TIME > 0
-                lda #$02
-                sta $d020
-                endif
-                jsr DrawActors
-                jsr AddActors
-                if SHOW_ACTOR_TIME > 0
-                lda #$00
-                sta $d020
-                endif
-                jsr FinishFrame
-                jsr ScrollLogic
-                jsr GetControlsWaitFrame
-                jsr UpdateMenu
-                if SHOW_ACTOR_TIME > 0
-                lda #$02
-                sta $d020
-                endif
-                jsr UpdateActors
-                if SHOW_ACTOR_TIME > 0
-                lda #$00
-                sta $d020
-                endif
-                jsr FinishFrame
-                jsr UpdateLevelObjects
-                jmp MainLoop
+                include level.s
 
 randomAreaEnd:
 
