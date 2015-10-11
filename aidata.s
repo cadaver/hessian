@@ -6,6 +6,7 @@ aiJumpTblLo:    dc.b <AI_Idle
                 dc.b <AI_Sniper
                 dc.b <AI_Mover
                 dc.b <AI_Guard
+                dc.b <AI_Berzerk
 
 aiJumpTblHi:    dc.b >AI_Idle
                 dc.b >AI_TurnTo
@@ -13,6 +14,7 @@ aiJumpTblHi:    dc.b >AI_Idle
                 dc.b >AI_Sniper
                 dc.b >AI_Mover
                 dc.b >AI_Guard
+                dc.b >AI_Berzerk
 
         ; Spawn list entry selection tables
 

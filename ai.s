@@ -13,6 +13,7 @@ AIMODE_FOLLOW       = 2
 AIMODE_SNIPER       = 3
 AIMODE_MOVER        = 4
 AIMODE_GUARD        = 5
+AIMODE_BERZERK      = 6
 AIMODE_NOTPERSISTENT = $80
 
 NOTARGET            = $ff
@@ -125,10 +126,7 @@ AI_CantJump:    sta temp2
                 lda actF1,x                     ;Todo: must check for frame range once AI's can e.g. roll
                 cmp #FR_CLIMB
                 bcs AI_FollowClimb
-                ;lda actLine,x
-                ;bmi AI_FollowHasLOS             ;Check line of sight first
-                ;jmp AI_FreeMoveWithTurn         ;If none, walk forward & turn to appear to be doing something
-AI_FollowHasLOS:lda temp4                       ;Dedicated turning logic on stairs
+                lda temp4                       ;Dedicated turning logic on stairs
                 cmp #CI_GROUND+$80
                 beq AI_FollowOnStairs
                 and #CI_SHELF                   ;Do not follow target strictly when on "nonnavigable"
@@ -144,6 +142,8 @@ AI_FollowNoStairExit:
                 lda temp8                       ;Turn to target if at same level
                 bne AI_FollowWalk
 AI_FollowTurnToTarget:
+                lda actLine,x                   ;Don't turn when no line of sight
+                bpl AI_FollowWalk
                 lda temp5
 AI_FollowChangeDir:
                 sta actD,x
@@ -300,6 +300,38 @@ AI_ContinueAttack:
                 inc actTime,x
                 rts
 
+            ; Berzerk AI
+
+AI_Berzerk:     lda actTime,x                   ;Ongoing attack?
+                bmi AI_ContinueAttack
+                jsr FindTargetAndAttackDir
+                bcc AI_FreeMoveNoDuck
+                bmi AI_FreeMoveNoDuck
+                cmp #JOY_FIRE
+                bcc AI_MoverFollow              ;If cannot fire, pathfind to target
+                jsr PrepareAttack
+                bcs AI_MoverDone
+                lda #4                          ;Avoid mistaken climbing
+                jsr GetCharInfoOffset
+                and #CI_CLIMB
+                bne AI_FreeMoveWithTurn
+                lda actSY,x                     ;When jumping, jump maximally high
+                bmi AI_BerzerkContinueJump
+                lda temp8                       ;While waiting to attack, possibility to jump
+                bne AI_FreeMoveWithTurn
+                lda temp5
+                eor actD,x
+                bmi AI_FreeMoveWithTurn         ;Must be facing target and level
+                jsr Random
+                lsr
+                ldy #AL_OFFENSE
+                cmp (actLo),y
+                bcs AI_FreeMoveWithTurn
+AI_BerzerkContinueJump:
+                lda actMoveCtrl,x
+                ora #JOY_UP
+                bne AI_StoreMoveCtrl
+
         ; Subroutine: randomly release ducking control (determined by offense)
 
 AI_RandomReleaseDuck:
@@ -321,7 +353,7 @@ AI_TargetIsDucking:
 AI_ReleaseDuck: lda #$00
 AI_ReleaseDuckDone:
                 rts
-
+               
         ; Accumulate aggression & attack to specified direction. Also handle
         ; defensive ducking if the actor can duck
         ;
@@ -384,10 +416,16 @@ PA_AggressionNotOver:
                 bcc PA_CannotAttack
                 lda temp1
                 sta actCtrl,x
-                lda actMoveCtrl,x               ;NPC stops moving when attacking
+                lda actAIMode,x
+                cmp #AIMODE_BERZERK
+                bcc PA_StopMovement
+                lda temp5                       ;If firing behind back, stop
+                eor actD,x
+                bpl PA_NoStop
+PA_StopMovement:lda actMoveCtrl,x               ;NPC stops moving when attacking
                 and #JOY_DOWN|JOY_UP            ;(only retain ducking/climbing controls)
                 sta actMoveCtrl,x
-                lda itemNPCAttackLength-2,y     ;New attack: set both per-actor and global timers
+PA_NoStop:      lda itemNPCAttackLength-2,y     ;New attack: set both per-actor and global timers
                 sta attackTime
                 sec
 PA_CannotAttack:sta actTime,x
@@ -436,6 +474,13 @@ FT_PickTargetOK:tay
                 bpl FT_StoreTarget
 
 FT_TargetOK:    jsr GetActorDistance
+                lda temp7                       ;For purposes of diagonal attacks,
+                bne GAD_NotHorizontal           ;consider target below if half block or greater distance
+                lda temp4
+                bpl GAD_NotHorizontal
+                inc temp7
+                inc temp8
+GAD_NotHorizontal:
                 ldy actWpn,x
                 lda temp8
                 beq GAD_Horizontal
