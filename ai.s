@@ -311,8 +311,7 @@ AI_Berzerk:     lda actTime,x                   ;Ongoing attack?
                 bcc AI_MoverFollow              ;If cannot fire, pathfind to target
                 jsr PrepareAttack
                 bcs AI_MoverDone
-                lda #4                          ;Avoid mistaken climbing
-                jsr GetCharInfoOffset
+                jsr GetCharInfo4Above
                 and #CI_CLIMB
                 bne AI_FreeMoveWithTurn
                 lda actSY,x                     ;When jumping, jump maximally high
