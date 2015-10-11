@@ -1,5 +1,6 @@
 MAX_LINE_STEPS      = 10
 
+AIH_AUTOSCALEWALL   = $10
 AIH_AUTOTURNWALL    = $20
 AIH_AUTOTURNLEDGE   = $40
 AIH_AUTOSTOPLEDGE   = $80
@@ -110,19 +111,24 @@ AI_FollowHasTargetDistance:
                 sta temp7
                 sta temp8
 AI_FollowTargetNoJump:
+                ldy #AL_MOVEFLAGS               ;Get movement capability flags
+                lda (actLo),y
+                sta temp3
+                and #AMF_JUMP
+                beq AI_CantJump
+                lda #AIH_AUTOSCALEWALL
+AI_CantJump:    sta temp2
+                ora #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
+                sta actAIHelp,x
                 jsr GetCharInfo                 ;Get charinfo at feet for decisions
                 sta temp4
                 lda actF1,x                     ;Todo: must check for frame range once AI's can e.g. roll
                 cmp #FR_CLIMB
                 bcs AI_FollowClimb
-                lda actLine,x
-                bmi AI_FollowHasLOS             ;Check line of sight first
-                jmp AI_FreeMoveWithTurn         ;If none, walk forward & turn to appear to be doing something
-AI_FollowHasLOS:lda #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
-                sta actAIHelp,x
-                lda #JOY_UP                     ;Prevent jumping
-                sta actPrevCtrl,x
-                lda temp4                       ;Dedicated turning logic on stairs
+                ;lda actLine,x
+                ;bmi AI_FollowHasLOS             ;Check line of sight first
+                ;jmp AI_FreeMoveWithTurn         ;If none, walk forward & turn to appear to be doing something
+AI_FollowHasLOS:lda temp4                       ;Dedicated turning logic on stairs
                 cmp #CI_GROUND+$80
                 beq AI_FollowOnStairs
                 and #CI_SHELF                   ;Do not follow target strictly when on "nonnavigable"
@@ -142,6 +148,7 @@ AI_FollowTurnToTarget:
 AI_FollowChangeDir:
                 sta actD,x
                 lda #AIH_AUTOSTOPLEDGE
+                ora temp2
                 sta actAIHelp,x
 AI_FollowWalk:  lsr actLastNavLadder,x
                 lda temp6                       ;If no X & Y distance, idle
@@ -155,8 +162,7 @@ AI_FollowWalk:  lsr actLastNavLadder,x
                 lda temp7
                 bmi AI_FollowNoClimbDown
                 beq AI_FollowNoClimbDown
-                ldy #AL_MOVEFLAGS
-                lda (actLo),y
+                lda temp3
                 and #AMF_CLIMB                  ;Can climb?
                 beq AI_FollowNoClimbDown
                 lda #JOY_DOWN
@@ -167,11 +173,14 @@ AI_FollowNoClimbDown:
                 bpl AI_FollowWalkRight
                 lda #JOY_LEFT
 AI_FollowWalkRight:
+                ldy actSY,x                     ;If jumping upward, try to make the jump as long as possible
+                bmi AI_FollowInAir
                 ldy temp7                       ;Need to go up?
                 bpl AI_FollowNoWalkUp
                 ldy actLastNavLadder,x          ;Do not climb if delay count from last climb still active
                 bne AI_FollowNoWalkUp           ;(Todo: should still walk up stairs)
-                ora #JOY_UP
+AI_FollowInAir: ora #JOY_UP
+                sta actPrevCtrl,x               ;Prevent jumping
 AI_FollowNoWalkUp:
                 jmp AI_StoreMoveCtrl
 
@@ -390,7 +399,7 @@ PA_CannotAttack:sta actTime,x
         ; Parameters: X actor index
         ; Returns: C=0 No active target / no line of sight yet
         ;          C=1 Has active target, firing controls in A or special values:
-        ;              $01-$0f - Suggested movement to get into firing position. 
+        ;              $01-$0f - Suggested movement to get into firing position.
         ;                        Can also do pathfinding or be idle
         ;              $80     - Should evade by e.g. moving forward
         ; Modifies: A,Y,temp regs (temp5-8 contain target distance values if has good target)

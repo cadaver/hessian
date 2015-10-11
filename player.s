@@ -404,6 +404,13 @@ MH_NoWater:     lda actMB,x
                 bcc MH_NoFallStart
                 jsr MH_ResetFall
                 lda actAIHelp,x                 ;Check AI autoturn/stop
+                and #AIH_AUTOSCALEWALL
+                beq MH_NoDropDown
+                ldy #3                          ;Allow drop down if ground reasonably close
+                jsr GetCharInfoOffset
+                and #CI_GROUND|CI_OBSTACLE
+                bne MH_NoAutoTurn
+MH_NoDropDown:  lda actAIHelp,x
                 and #AIH_AUTOTURNLEDGE|AIH_AUTOSTOPLEDGE
                 beq MH_NoAutoTurn
                 php
@@ -420,8 +427,23 @@ MH_NoFallStart: lsr                             ;Grounded bit to carry
                 and #MB_HITWALL/2
                 beq MH_NoAutoTurn
                 lda actAIHelp,x                 ;Check AI autoturning
-                and #AIH_AUTOTURNWALL
+                and #AIH_AUTOTURNWALL|AIH_AUTOSCALEWALL
                 beq MH_NoAutoTurn
+                and #AIH_AUTOSCALEWALL
+                beq MH_DoAutoTurn
+                lda actMB,x                     ;Must be grounded to jump
+                lsr
+                bcc MH_NoAutoTurn
+                ldy #1
+                lda actD,x
+                bpl MH_CheckWallRight
+                ldy #-1
+MH_CheckWallRight:
+                lda #-3
+                jsr GetCharInfoXYOffset         ;Check that the wall is possible to scale
+                and #CI_OBSTACLE
+                bne MH_DoAutoTurn
+                jmp MH_StartJump
 MH_DoAutoTurn:  lda actSX,x
                 eor actD,x
                 bmi MH_AutoTurnDone
