@@ -137,7 +137,5 @@ GetFireClick:   clc
                 and #JOY_FIRE
                 bne GFC_Not
                 lda joystick
-                and #JOY_FIRE
-                beq GFC_Not
-                sec
+                adc #$100-JOY_FIRE              ;C=1 if fire pressed
 GFC_Not:        rts

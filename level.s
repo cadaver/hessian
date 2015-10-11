@@ -1262,9 +1262,8 @@ RCP_ClearActorsLoop:
                 jsr GetCharInfo1Above           ;slightly in that case
                 and #CI_OBSTACLE
                 beq RCP_NoObstacle
-                lda #$7f
-                sta actXL+ACTI_PLAYER
-RCP_NoObstacle:
+                dec actXL+ACTI_PLAYER
+RCP_NoObstacle:                                 ;Fall through to CenterPlayer
 
         ; Centers player on screen, redraws screen, adds all actors from leveldata, and jumps to mainloop
         ; Player zone must have been acquired beforehand
@@ -1367,7 +1366,7 @@ MainLoop:       jsr ScrollLogic
                 jsr GetControlsWaitFrame
                 jsr UpdateMenu
                 if SHOW_ACTOR_TIME > 0
-                lda #$02
+                lda #$0a
                 sta $d020
                 endif
                 jsr UpdateActors
