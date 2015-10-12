@@ -32,6 +32,8 @@ LADDER_DELAY        = $40
 
 GUARD_STOP_PROBABILITY = $04
 
+BERZERK_JUMP_MAXDIST    = 3
+
         ; AI character update routine
         ;
         ; Parameters: X actor index
@@ -68,7 +70,7 @@ AI_FollowClimbCheckExit:
                 and #JOY_UP
                 bne AI_FollowClimbCheckExitAbove
 AI_FollowClimbCheckExitBelow:
-                lda temp4                       ;If trying to climb down, but ladder doesn't continue, exit
+                lda actGroundCharInfo,x         ;If trying to climb down, but ladder doesn't continue, exit
                 and #CI_CLIMB
                 beq AI_FollowClimbDoExit
 AI_FollowClimbNoExit:
@@ -90,7 +92,7 @@ AI_FollowClimb: lda #LADDER_DELAY
                 beq AI_FollowClimbNewDir        ;Otherwise remove the left/right controls
                 and #JOY_UP|JOY_DOWN            ;and continue previous up/down direction
                 jsr AI_StoreMoveCtrl
-                lda temp4
+                lda actGroundCharInfo,x
                 and #CI_GROUND                  ;Can exit?
                 bne AI_FollowClimbCheckExit
                 rts
@@ -121,12 +123,10 @@ AI_FollowTargetNoJump:
 AI_CantJump:    sta temp2
                 ora #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
                 sta actAIHelp,x
-                jsr GetCharInfo                 ;Get charinfo at feet for decisions
-                sta temp4
                 lda actF1,x                     ;Todo: must check for frame range once AI's can e.g. roll
                 cmp #FR_CLIMB
                 bcs AI_FollowClimb
-                lda temp4                       ;Dedicated turning logic on stairs
+                lda actGroundCharInfo,x         ;Dedicated turning logic on stairs
                 cmp #CI_GROUND+$80
                 beq AI_FollowOnStairs
                 and #CI_SHELF                   ;Do not follow target strictly when on "nonnavigable"
@@ -154,7 +154,7 @@ AI_FollowWalk:  lsr actLastNavLadder,x
                 lda temp6                       ;If no X & Y distance, idle
                 ora temp8
                 beq AI_Idle
-                lda temp4                       ;Check climbing down
+                lda actGroundCharInfo,x         ;Check climbing down
                 and #CI_CLIMB
                 beq AI_FollowNoClimbDown
                 lda actLastNavLadder,x          ;Do not climb if delay count from last climb still active
@@ -253,6 +253,12 @@ AI_Mover:       lda actTime,x                   ;Ongoing attack?
 AI_MoverFollow: ldy actAITarget,x
                 jmp AI_FollowHasTargetDistance
 
+        ; Subroutine: continue ongoing attack (do nothing)
+
+AI_ContinueAttack:
+                inc actTime,x
+                rts
+                
             ; Guard AI
 
 AI_Guard:       lda actTime,x                   ;Ongoing attack?
@@ -280,6 +286,12 @@ AI_FreeMoveWithTurn:
                 jsr AI_RandomReleaseDuck        ;If ducking, continue it randomly
                 bne AI_ClearAttackControl
 AI_FreeMoveNoDuck:
+                lda actGroundCharInfo,x
+                and #CI_SHELF
+                beq AI_FreeMoveNormal
+                lda #$00                        ;If on nonnavigable platform, do not turn but fall as applicable
+                skip2
+AI_FreeMoveNormal:
                 lda #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
                 sta actAIHelp,x
 AI_FreeMove:    lda #JOY_RIGHT                  ;Move forward into facing direction, turn at walls / ledges
@@ -294,12 +306,6 @@ AI_ClearAttackControl:
                 sta actCtrl,x
                 rts
 
-        ; Subroutine: continue ongoing attack (do nothing)
-
-AI_ContinueAttack:
-                inc actTime,x
-                rts
-
             ; Berzerk AI
 
 AI_Berzerk:     lda actTime,x                   ;Ongoing attack?
@@ -310,17 +316,20 @@ AI_Berzerk:     lda actTime,x                   ;Ongoing attack?
                 cmp #JOY_FIRE
                 bcc AI_MoverFollow              ;If cannot fire, pathfind to target
                 jsr PrepareAttack
-                bcs AI_MoverDone
+                bcs AI_BerzerkDone
                 jsr GetCharInfo4Above
                 and #CI_CLIMB
                 bne AI_FreeMoveWithTurn
                 lda actSY,x                     ;When jumping, jump maximally high
                 bmi AI_BerzerkContinueJump
                 lda temp8                       ;While waiting to attack, possibility to jump
-                bne AI_FreeMoveWithTurn
+                bne AI_FreeMoveWithTurn         ;Must be facing target, level, and close enough
+                lda temp6
+                cmp #BERZERK_JUMP_MAXDIST
+                bcs AI_FreeMoveWithTurn
                 lda temp5
                 eor actD,x
-                bmi AI_FreeMoveWithTurn         ;Must be facing target and level
+                bmi AI_FreeMoveWithTurn
                 jsr Random
                 lsr
                 ldy #AL_OFFENSE
@@ -351,8 +360,9 @@ AI_TargetIsDucking:
                 bcs AI_ReleaseDuckDone
 AI_ReleaseDuck: lda #$00
 AI_ReleaseDuckDone:
+AI_BerzerkDone:
                 rts
-               
+
         ; Accumulate aggression & attack to specified direction. Also handle
         ; defensive ducking if the actor can duck
         ;

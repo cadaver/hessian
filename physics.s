@@ -250,6 +250,10 @@ MWG_FinalizeGroundAbove:
                 jsr MoveActorY
 MWG_FinalizeGround:
                 tya
+                cpx #MAX_COMPLEXACT
+                bcs MWG_DoNotSaveCharInfo
+                sta actGroundCharInfo,x
+MWG_DoNotSaveCharInfo:
                 ldy #$00                        ;Get slopebits, optimize for slope0
                 and #$e0
                 beq MWG_OnGroundDone

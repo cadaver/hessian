@@ -311,8 +311,6 @@ ntChnWaveOld:   dc.b 0
                 dc.b 0,0,0,0,0,0,0
                 dc.b 0,0,0,0,0,0,0
 
-        ; Misc. tables/variables to pad memory use
-
 healthBarLetter:dc.b "H", "B"
 keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
@@ -323,16 +321,7 @@ sortSprX:       ds.b MAX_SPR*2,0
 sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
 
-        ; Target list for AI / collision
-        ; Must not page-cross, as selfmodifying code is used to read it
-
-targetList:     ds.b MAX_COMPLEXACT+1,0
-targetListEnd:
-                if (targetList & $ff00) != ((targetListEnd-1) & $ff00)
-                    err
-                endif
-
-saveSlotChoice: dc.b 0
+healthBarPosTbl:dc.b 10,24
 
         ; Actor variables
 
@@ -378,6 +367,8 @@ actLastNavStairs:
                 ds.b MAX_COMPLEXACT,0
 actLastNavLadder:
                 ds.b MAX_COMPLEXACT,0
+actGroundCharInfo:
+                ds.b MAX_COMPLEXACT,0
 
         ; Level properties & objects (not saved)
 
@@ -406,13 +397,21 @@ lvlActT:        ds.b MAX_LVLACT,0
 lvlActWpn:      ds.b MAX_LVLACT,0
 lvlActOrg:      ds.b MAX_LVLACT,0
 
-        ; Rest of misc. tables/variables
+        ; Target list for AI / collision
+        ; Must not page-cross, as selfmodifying code is used to read it
+
+targetList:     ds.b MAX_COMPLEXACT+1,0
+targetListEnd:
+                if (targetList & $ff00) != ((targetListEnd-1) & $ff00)
+                    err
+                endif
+
+saveSlotChoice: dc.b 0
 
 d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 shiftOffsetTbl: dc.b 6,6,6
                 dc.b 0,0,0
                 dc.b 6,6,6
-healthBarPosTbl:dc.b 10,24
 timeMaxTbl:     dc.b 99,60,60,25
 attackTime:     dc.b 0
 

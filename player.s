@@ -658,11 +658,13 @@ MH_SwimNoYSpeedMod:
                 lda #FR_SWIM
                 jmp MH_AnimDone
 
-MH_Climbing:    jsr GetCharInfo                 ;Check water bit
+MH_Climbing:    jsr GetCharInfo
                 sta temp1
-                and #CI_WATER
-                lsr
-                lsr
+                sta actGroundCharInfo,x         ;Store char info for AI, like walking physics does
+                and #CI_WATER                   ;Store updated state of water bit
+                beq MH_ClimbNotInWater          ;for climbing out of water
+                lda #MB_INWATER
+MH_ClimbNotInWater:
                 sta actMB,x
                 ldy #AL_CLIMBSPEED
                 lda (actLo),y

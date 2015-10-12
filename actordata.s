@@ -443,17 +443,17 @@ alTestEnemy:    dc.w MoveAIHuman                ;Update routine
                 dc.b 12                         ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 25                         ;Score from kill
-                dc.b AIMODE_GUARD               ;AI mode when spawned randomly + persistence disable
+                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly + persistence disable
                 dc.b DROP_WEAPONMEDKITARMOR     ;Itemdrop table index or item override
                 dc.b $0b                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
-                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB ;Move flags
-                dc.b 3*8                        ;Max. movement speed
+                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_NOFALLDAMAGE ;Move flags
+                dc.b 4*8+4                      ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
                 dc.b 4                          ;Long jump gravity acceleration
                 dc.b INITIAL_GROUNDBRAKE        ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
-                dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
+                dc.b -48                        ;Jump initial speed (negative)
                 dc.b INITIAL_CLIMBSPEED-8       ;Climbing speed

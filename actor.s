@@ -415,13 +415,17 @@ UA_DoSpawn:     ldy #ZONEH_SPAWNCOUNT
                 lda (zoneLo),y
                 bmi UA_NoSpawnLimit           ;Negative spawncount = unlimited
 UA_SpawnCount:  cmp #$00
+                if SPAWN_TEST=0
                 beq UA_SpawnDone
+                endif
 UA_NoSpawnLimit:dey
 UA_SpawnDelay:  lda #$00                      ;Spawn delay counting
                 clc
                 adc (zoneLo),y
                 sta UA_SpawnDelay+1
+                if SPAWN_TEST=0
                 bcc UA_SpawnDone
+                endif
                 dey
                 lda (zoneLo),y                ;Take global spawnlist parameter
                 tay
