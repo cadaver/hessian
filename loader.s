@@ -416,9 +416,9 @@ WB_Loop2:       lda $d011
                 rts
 
 SilenceSID:     lda #$00                        ;Mute SID by setting frequencies to zero
-                tax
+                ldx #$01
                 jsr SS_Sub
-                inx
+                dex
 SS_Sub:         sta $d400,x
                 sta $d407,x
                 sta $d40e,x
@@ -457,8 +457,7 @@ InitLoader:     sei
                 sta $d07f                       ;Disable SCPU hardware regs
                 jsr WaitBottom
                 jsr ilSlowLoadStart+InitRegs-OpenFile
-                dex                             ;X=1 on return from InitRegs
-                stx $d020
+                stx $d020                       ;X=0 on return
                 stx messages                    ;Disable KERNAL messages
                 stx fileOpen                    ;Clear fileopen indicator
                 stx palFlag
@@ -1105,27 +1104,28 @@ KernalOff:      dec $01
 PrepareKernalIO:inc fileOpen                    ;Set fileopen indicator, raster delays are to be expected
                 lda fileNumber                  ;Convert filename
                 pha
-                lsr
-                lsr
-                lsr
-                lsr
-                ldx #$00
+                and #$0f
+                ldx #$01
                 jsr CFN_Sub
                 pla
-                inx
+                lsr
+                lsr
+                lsr
+                lsr
+                dex
                 jsr CFN_Sub
                 jsr WaitBottom
                 lda fastLoadMode                ;In fake-IRQload mode IRQs continue,
-                bne KernalOnFast                ;so no setup necessary
+                bne PrepareIOFast               ;so no setup necessary
                 lda $d01a                       ;If raster IRQs not yet active, no
                 lsr                             ;setup necessary
-                bcc KernalOnFast
+                bcc PrepareIOFast
 InitRegs:       jsr SilenceSID
-                sta $d07a                       ;SCPU to slow mode
-                sta $d030                       ;C128 back to 1MHz mode
-                sta $d01a                       ;Raster IRQs off
-                sta $d015                       ;Sprites off
-                sta $d011                       ;Blank screen
+                stx $d01a                       ;Raster IRQs off
+                stx $d015                       ;Sprites off
+                stx $d011                       ;Blank screen
+PrepareIOFast:  stx $d07a                       ;SCPU to slow mode
+                stx $d030                       ;C128 back to 1MHz mode
 KernalOnFast:   lda #$36
                 sta $01
                 rts
@@ -1141,8 +1141,7 @@ SetLFSOpen:     ldx fa
                 ldx #$02
                 rts
 
-CFN_Sub:        and #$0f
-                ora #$30
+CFN_Sub:        ora #$30
                 cmp #$3a
                 bcc CFN_Number
                 adc #$06
