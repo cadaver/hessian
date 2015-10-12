@@ -304,6 +304,7 @@ GB_Closed:      lda loadBuffer+2
 
 FastOpen:       ldx fileOpen                    ;A file already open? If so, do nothing
                 bne FO_Done                     ;(allows chaining of files)
+                inc fileOpen                    ;Set initial fileopen value to make sure IRQs don't enable turbo after this point
                 txa                             ;Command 0 = load
                 sta $d07a                       ;SCPU to slow mode
                 sta $d030                       ;C128 to 1Mhz mode
