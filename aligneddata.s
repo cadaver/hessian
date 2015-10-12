@@ -322,6 +322,13 @@ sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
 
 healthBarPosTbl:dc.b 10,24
+d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
+timeMaxTbl:     dc.b 99,60,60,25
+attackTime:     dc.b 0
+saveSlotChoice: dc.b 0
 
         ; Actor variables
 
@@ -405,15 +412,6 @@ targetListEnd:
                 if (targetList & $ff00) != ((targetListEnd-1) & $ff00)
                     err
                 endif
-
-saveSlotChoice: dc.b 0
-
-d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
-timeMaxTbl:     dc.b 99,60,60,25
-attackTime:     dc.b 0
 
         ; Chunk-file memory allocation variables
 

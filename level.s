@@ -739,23 +739,26 @@ StorePlayerActorVars:
                 tay
                 dex
                 bpl StorePlayerActorVars
-                lda saveHP                      ;Ensure minimum health & battery level when saving
-                cmp #LOW_HEALTH
+                ldx saveHP                      ;Ensure minimum health & battery level when saving
+                cpx #LOW_HEALTH
                 bcs SCP_HealthOK
-                lda #LOW_HEALTH
-                sta saveHP
-SCP_HealthOK:   lda saveBattery+1
-                cmp #LOW_BATTERY
+                ldx #LOW_HEALTH
+                stx saveHP
+SCP_HealthOK:   lda #$00
+                ldx saveBattery+1
+                cpx #LOW_BATTERY
                 bcs SCP_BatteryOK
-                lda #LOW_BATTERY
-                sta saveBattery+1
-                lda #$00
+                ldx #LOW_BATTERY
+                stx saveBattery+1
                 sta saveBattery
-SCP_BatteryOK:
+SCP_BatteryOK:  ldy #MAX_SAVEACT                ;Clear actor save table first
+SCP_ClearSaveLoop:
+                sta saveLvlActT-1,y
+                dey
+                bne SCP_ClearSaveLoop
                 ldx #MAX_LVLACT-1
-                ldy #$00
 SCP_SaveGlobalLoop:
-                lda lvlActT,x                   ;First save the important global actors
+                lda lvlActT,x                   ;Save the important global actors
                 beq SCP_SaveGlobalNext
                 lda lvlActOrg,x
                 bmi SCP_SaveGlobalNext          ;(skip leveldata actors and temp now)
@@ -784,14 +787,6 @@ SCP_SaveItemsNotOver:
                 cpx nextTempLvlActIndex         ;Exit when wrapped
                 bne SCP_SaveItemsLoop
 SCP_SaveItemsDone:
-                lda #$00
-SCP_SaveClearLoop:                              ;Finally clear unused slots
-                cpy #MAX_SAVEACT
-                bcs SCP_SaveClearDone
-                sta saveLvlActT,y
-                iny
-                bpl SCP_SaveClearLoop
-SCP_SaveClearDone:
                 ldx #playerStateZPEnd-playerStateZPStart
 SCP_ZPState:    lda playerStateZPStart-1,x
                 sta saveStateZP-1,x
