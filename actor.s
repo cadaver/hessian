@@ -411,15 +411,18 @@ AA_IndexNotOver:stx AA_Start+1
 
         ; Process spawning
 
-UA_DoSpawn:     ldy #ZONEH_SPAWNCOUNT
+UA_DoSpawn:     lda numTargetsAll               ;Skip if already max. spawned enemies + player
+                cmp #MAX_SPAWNEDACT+1
+                bcs UA_SpawnDone
+                ldy #ZONEH_SPAWNCOUNT
                 lda (zoneLo),y
-                bmi UA_NoSpawnLimit           ;Negative spawncount = unlimited
+                bmi UA_NoSpawnLimit             ;Negative spawncount = unlimited
 UA_SpawnCount:  cmp #$00
                 if SPAWN_TEST=0
                 beq UA_SpawnDone
                 endif
 UA_NoSpawnLimit:dey
-UA_SpawnDelay:  lda #$00                      ;Spawn delay counting
+UA_SpawnDelay:  lda #$00                        ;Spawn delay counting
                 clc
                 adc (zoneLo),y
                 sta UA_SpawnDelay+1
@@ -427,7 +430,7 @@ UA_SpawnDelay:  lda #$00                      ;Spawn delay counting
                 bcc UA_SpawnDone
                 endif
                 dey
-                lda (zoneLo),y                ;Take global spawnlist parameter
+                lda (zoneLo),y                  ;Take global spawnlist parameter
                 tay
                 jsr Random
                 and spawnListAndTbl,y
@@ -440,7 +443,11 @@ UA_SpawnDone:
 
 BuildTargetList:ldx #ACTI_LASTNPC
                 ldy #$00                        ;Target list index
-BTL_Loop:       lda actHp,x                     ;Actor must have nonzero health
+                sty numTargetsAll
+BTL_Loop:       lda actT,x
+                beq BTL_Next
+                inc numTargetsAll               ;Count alive + dead for spawning
+                lda actHp,x                     ;Actor must have nonzero health
                 beq BTL_Next
                 lda actFlags,x                  ;Actor must not be in bystander (none) group
                 and #AF_GROUPBITS
@@ -1421,9 +1428,7 @@ AttemptSpawn:   sta temp2
                 bmi AS_NoPlotBit
                 jsr GetPlotBit
                 beq AS_Done2
-AS_NoPlotBit:   lda #ACTI_LASTNPC-MAX_SPAWNEDACT+1 ;Do not use all NPC slots for spawned actors
-                ldy #ACTI_LASTNPC
-                jsr GetFreeActor
+AS_NoPlotBit:   jsr GetFreeNPC
                 bcc AS_Done2
                 lda #$00
                 sta actYL,y
@@ -1523,9 +1528,7 @@ AddLevelActor:  stx temp1
                 lda lvlActT,x
                 bpl ALA_IsNPC
                 jmp ALA_IsItem
-ALA_IsNPC:      lda #ACTI_FIRSTNPC
-                ldy #ACTI_LASTNPC
-                jsr GetFreeActor
+ALA_IsNPC:      jsr GetFreeNPC
                 bcc ALA_Fail2
                 lda lvlActF,x
                 and #$0f
@@ -1561,7 +1564,7 @@ ALA_Common:     lda lvlActX,x
                 bcs ALA_GlobalOrLevelOrItem     ;already max. amount of spawned enemies on screen
                 lda lvlActT,x                   ;to avoid swarming & performance loss
                 bmi ALA_GlobalOrLevelOrItem
-                lda numTargets
+                lda numTargetsAll
                 cmp #MAX_SPAWNEDACT+1
                 bcs ALA_Cancel
 ALA_GlobalOrLevelOrItem:
@@ -1686,6 +1689,8 @@ RA_Done:        rts
         ; Returns: C=1 free actor found (returned in Y), C=0 no free actor
         ; Modifies: A,Y
 
+GetFreeNPC:     lda #ACTI_FIRSTNPC
+                ldy #ACTI_LASTNPC
 GetFreeActor:   sta GFA_Cmp+1
 GFA_Loop:       lda actT,y
                 beq GFA_Found

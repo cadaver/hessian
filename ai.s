@@ -102,18 +102,6 @@ AI_Follow:      lda #ACTI_PLAYER                ;Todo: do not hardcode player as
                 ldy actAITarget,x
                 jsr GetActorDistance
 AI_FollowHasTargetDistance:
-                lda actF1,y
-                cmp #FR_JUMP
-                bcc AI_FollowTargetNoJump
-                cmp #FR_DUCK
-                bcs AI_FollowTargetNoJump
-                ldy temp7                       ;If target is jumping and Y-distance is small & upward
-                iny                             ;($ff, here check for increasing to $00) just disregard it
-                bne AI_FollowTargetNoJump
-                lda #$00
-                sta temp7
-                sta temp8
-AI_FollowTargetNoJump:
                 ldy #AL_MOVEFLAGS               ;Get movement capability flags
                 lda (actLo),y
                 sta temp3
@@ -123,9 +111,27 @@ AI_FollowTargetNoJump:
 AI_CantJump:    sta temp2
                 ora #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
                 sta actAIHelp,x
-                lda actF1,x                     ;Todo: must check for frame range once AI's can e.g. roll
+                lda actF1,x
                 cmp #FR_CLIMB
                 bcs AI_FollowClimb
+                ldy actAITarget,x
+                lda temp7                       ;If target 1 block above and jumping, treat as if level
+                cmp #$ff
+                bcc AI_TargetNotJumping
+                lda actMB,y
+                and #MB_GROUNDED
+                bne AI_TargetNotJumping
+                sta temp7
+                sta temp8
+AI_TargetNotJumping:
+                lda actGroundCharInfo,y         ;If target stands on nonnavigable chars,
+                sta temp1                       ;treat Y-distance as zero (turn to X-dir)
+                and #CI_SHELF
+                beq AI_FollowTargetIsNavigable
+                lda #$00
+                sta temp8
+                beq AI_FollowTurnToTarget
+AI_FollowTargetIsNavigable:
                 lda actGroundCharInfo,x         ;Dedicated turning logic on stairs
                 cmp #CI_GROUND+$80
                 beq AI_FollowOnStairs
@@ -141,6 +147,10 @@ AI_CantJump:    sta temp2
 AI_FollowNoStairExit:
                 lda temp8                       ;Turn to target if at same level
                 bne AI_FollowWalk
+                lda temp6                       ;Special case: don't turn when target is on stairs and X & Y dist
+                bne AI_FollowTurnToTarget       ;both zero
+                lda temp1
+                bmi AI_FollowWalk
 AI_FollowTurnToTarget:
                 lda actLine,x                   ;Don't turn when no line of sight
                 bpl AI_FollowWalk
@@ -185,6 +195,8 @@ AI_FollowNoWalkUp:
                 jmp AI_StoreMoveCtrl
 
 AI_FollowOnStairs:
+                ldy temp1                       ;Turning OK if target also on stairs
+                bmi AI_FollowStairTurnOK
                 ldy actLastNavStairs,x          ;Turn once in each flight of stairs
                 bmi AI_FollowWalk
                 sta actLastNavStairs,x
@@ -250,8 +262,7 @@ AI_Mover:       lda actTime,x                   ;Ongoing attack?
                 jsr PrepareAttack
                 bcs AI_MoverDone
                 bcc AI_FreeMoveWithTurn         ;Freemove while waiting to attack to be a harder target
-AI_MoverFollow: ldy actAITarget,x
-                jmp AI_FollowHasTargetDistance
+AI_MoverFollow: jmp AI_FollowHasTargetDistance
 
         ; Subroutine: continue ongoing attack (do nothing)
 

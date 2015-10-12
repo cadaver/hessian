@@ -3,7 +3,7 @@
         ; Constants that affect the memory map
 
 MAX_SPR         = 24
-MAX_ACT         = 21
+MAX_ACT         = 20
 MAX_COMPLEXACT  = 6
 MAX_CACHESPRITES = 64
 MAX_CHUNKFILES   = 32
@@ -24,11 +24,11 @@ ACTI_PLAYER     = 0
 ACTI_FIRSTNPC   = 1
 ACTI_LASTNPC    = 5
 ACTI_FIRSTITEM  = 6
-ACTI_LASTITEM   = 10
-ACTI_FIRSTPLRBULLET = 11
-ACTI_LASTPLRBULLET = 15
-ACTI_FIRSTNPCBULLET = 16
-ACTI_LASTNPCBULLET = 20
+ACTI_LASTITEM   = 9
+ACTI_FIRSTPLRBULLET = 10
+ACTI_LASTPLRBULLET = 14
+ACTI_FIRSTNPCBULLET = 15
+ACTI_LASTNPCBULLET = 19
 ACTI_FIRSTEFFECT = ACTI_LASTPLRBULLET
 ACTI_LASTEFFECT = ACTI_FIRSTNPCBULLET+1
 
@@ -97,8 +97,6 @@ SCROLLROWS      = 22
                 var limitU
                 var limitD
 
-                var firstSortSpr                ;Sprite multiplexing variables
-
                 var sprIndex                    ;Spritefile access variables
                 var sprFileNum
                 var sprFileLo
@@ -123,6 +121,7 @@ SCROLLROWS      = 22
                 var actHi
                 var tgtActIndex
                 var numTargets
+                var numTargetsAll
 
                 var lvlObjNum                   ;Level object variables
                 var autoDeactObjNum
@@ -165,7 +164,8 @@ palFlag         = freeMemLo
                 varrange sprXL,MAX_SPR+1
                 varrange sprXH,MAX_SPR+1
 
-                var newFrame                    ;Frame update/raster IRQ variables
+                var firstSortSpr                ;Frame update/raster IRQ variables
+                var newFrame
                 var irqSaveA
                 var irqSaveX
                 var irqSaveY

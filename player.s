@@ -278,14 +278,14 @@ MH_NoSpecial:   cmp #FR_DUCK+1
 MH_TurnRight:   sta actD,x
                 bcs MH_Brake2                   ;If ducking, only turn, then brake
 MH_RollAcc:     lda temp1
+                bpl MH_NoWaterMaxSpeed
+                lsr temp4                       ;If in water, halve max speed
+MH_NoWaterMaxSpeed:
                 lsr                             ;Faster acceleration when on ground
                 ldy #AL_GROUNDACCEL
-                bcs MH_OnGroundAcc
+                bcs MH_UseGroundAccel
                 iny
-MH_OnGroundAcc: lsr                             ;If in water, halve max speed
-                bcc MH_NoWaterMaxSpeed
-                lsr temp4
-MH_NoWaterMaxSpeed:
+MH_UseGroundAccel:
                 lda actD,x
                 asl                             ;Direction to carry
                 lda (actLo),y
@@ -393,70 +393,26 @@ MH_NoLongJump:  lda (actLo),y
                 lda #-3
                 jsr GetCharInfoOffset           ;Must be deep in water before
                 and #CI_WATER                   ;swimming kicks in
-                beq MH_NoWater
+                beq MH_NoWater2
                 lda temp3                       ;If actor can't swim, kill instantly
                 bmi MH_CanSwim
                 ldy #NODAMAGESRC
                 jmp DestroyActor
 MH_CanSwim:     jmp MH_InitSwim
-MH_NoWater:     lda actMB,x
-                cmp #MB_STARTFALLING
-                bcc MH_NoFallStart
-                jsr MH_ResetFall
-                lda actAIHelp,x                 ;Check AI autoturn/stop
-                and #AIH_AUTOSCALEWALL
-                beq MH_NoDropDown
-                ldy #3                          ;Allow drop down if ground reasonably close
-                jsr GetCharInfoOffset
-                and #CI_GROUND|CI_OBSTACLE
-                bne MH_NoAutoTurn
-MH_NoDropDown:  lda actAIHelp,x
-                and #AIH_AUTOTURNLEDGE|AIH_AUTOSTOPLEDGE
-                beq MH_NoAutoTurn
-                php
-                lda actSX,x
-                jsr MoveActorXNeg
-                jsr MH_SetGrounded
-                plp
-                bpl MH_DoAutoTurn
-MH_DoAutoStop:  lda #$00
-                sta actSX,x
-                sta actMoveCtrl,x
-                beq MH_AutoTurnDone             ;C must be 1 after autoturn/stop (grounded)
-MH_NoFallStart: lsr                             ;Grounded bit to carry
-                and #MB_HITWALL/2
-                beq MH_NoAutoTurn
-                lda actAIHelp,x                 ;Check AI autoturning
-                and #AIH_AUTOTURNWALL|AIH_AUTOSCALEWALL
-                beq MH_NoAutoTurn
-                and #AIH_AUTOSCALEWALL
-                beq MH_DoAutoTurn
-                lda actMB,x                     ;Must be grounded to jump
-                lsr
-                bcc MH_NoAutoTurn
-                ldy #1
-                lda actD,x
-                bpl MH_CheckWallRight
-                ldy #-1
-MH_CheckWallRight:
-                lda #-3
-                jsr GetCharInfoXYOffset         ;Check that the wall is possible to scale
-                and #CI_OBSTACLE
-                bne MH_DoAutoTurn
-                jmp MH_StartJump
-MH_DoAutoTurn:  lda actSX,x
-                eor actD,x
-                bmi MH_AutoTurnDone
-                ldy #JOY_LEFT
-                lda actD,x
-                eor #$80
-                bmi MH_AutoTurnLeft
-                ldy #JOY_RIGHT
-MH_AutoTurnLeft:sta actD,x
-                tya
-                sta actMoveCtrl,x
-MH_NoAutoTurn:  bcs MH_NoIncFall                ;Check for increasing fall distance
-                lda temp3
+
+MH_NoWater2:    lda actMB,x
+MH_NoWater:     lsr                             ;Grounded bit to carry
+                bcc MH_InAir
+                jmp MH_OnGround
+
+MH_InAir:       and #MB_STARTFALLING/2          ;Just dropped off a ledge?
+                bne MH_StartedToFall
+MH_InAirAnim:   lda actSY,x
+                bpl MH_IncFall
+                cmp #-2*8                       ;Do not grab when moving up fast
+                bcc MH_JumpAnim
+                bcs MH_NoIncFall
+MH_IncFall:     lda temp3
                 and #AMF_NOFALLDAMAGE
                 bne MH_NoIncFall
                 lda actSY,x
@@ -466,16 +422,7 @@ MH_NoAutoTurn:  bcs MH_NoIncFall                ;Check for increasing fall dista
                 sta actFallL,x
                 bcc MH_NoIncFall
                 inc actFall,x
-                clc
-MH_AutoTurnDone:
-MH_NoIncFall:   ldy temp2                       ;If rolling, continue roll animation
-                bne MH_RollAnim
-                bcs MH_GroundAnim
-                lda actSY,x                     ;Check for grabbing a ladder while
-                bpl MH_GrabLadderOK             ;in midair
-                cmp #-2*8
-                bcc MH_JumpAnim
-MH_GrabLadderOK:lda actMoveCtrl,x
+MH_NoIncFall:   lda actMoveCtrl,x               ;Check for grabbing a ladder while in midair
                 and #JOY_UP
                 beq MH_JumpAnim
                 lda actCtrl,x                   ;If fire is held, do not grab ladder
@@ -500,7 +447,62 @@ MH_JumpAnimDown:cmp #2*8
                 iny
 MH_JumpAnimDone:tya
                 jmp MH_AnimDone
-MH_AnimDone3:   rts
+
+MH_StartedToFall:
+                jsr MH_ResetFall
+                lda actAIHelp,x                 ;Check AI reactions to falling
+                and #AIH_AUTOSCALEWALL
+                beq MH_NoDropDown
+                lda #3                          ;Allow drop down if ground reasonably close
+                jsr GetCharInfoOffset
+                and #CI_GROUND|CI_OBSTACLE
+                bne MH_InAirAnim
+MH_NoDropDown:  lda actAIHelp,x                 ;Check autoturn or stop
+                and #AIH_AUTOTURNLEDGE|AIH_AUTOSTOPLEDGE
+                beq MH_InAirAnim                ;If none, just fall
+                php
+                lda actSX,x
+                jsr MoveActorXNeg
+                jsr MH_SetGrounded
+                plp
+                bpl MH_DoAutoTurn
+MH_DoAutoStop:  lda #$00
+                sta actSX,x
+                sta actMoveCtrl,x
+                beq MH_NoAutoTurn
+
+MH_OnGround:    and #MB_HITWALL/2
+                beq MH_NoAutoTurn
+                lda actAIHelp,x                 ;Check AI autoturning/jumping if hit wall
+                and #AIH_AUTOSCALEWALL
+                beq MH_NoAutoScale
+                ldy #1
+                lda actD,x
+                bpl MH_CheckWallRight
+                ldy #-1
+MH_CheckWallRight:
+                lda #-3
+                jsr GetCharInfoXYOffset         ;Check that the wall is possible to scale
+                and #CI_OBSTACLE|CI_SHELF       ;Do not jump to nonnavigable ledge, which could
+                bne MH_NoAutoScale              ;lead to a drop
+                jmp MH_StartJump
+MH_NoAutoScale: lda actAIHelp,x
+                and #AIH_AUTOTURNWALL
+                beq MH_NoAutoTurn
+MH_DoAutoTurn:  lda actSX,x
+                eor actD,x
+                bmi MH_NoAutoTurn
+                ldy #JOY_LEFT
+                lda actD,x
+                eor #$80
+                bmi MH_AutoTurnLeft
+                ldy #JOY_RIGHT
+MH_AutoTurnLeft:sta actD,x
+                tya
+                sta actMoveCtrl,x
+MH_NoAutoTurn:  ldy temp2                       ;If rolling, continue roll animation
+                beq MH_GroundAnim
+
 MH_RollAnim:    lda #$01
                 jsr AnimationDelay
                 bcc MH_AnimDone3
@@ -515,6 +517,8 @@ MH_RollToJump:  lda #FR_JUMP+2
                 skip2
 MH_RollToDuck:  lda #FR_DUCK+1
 MH_RollAnimDone:jmp MH_AnimDone
+MH_AnimDone3:   rts
+
 MH_GroundAnim:  lda actFall,x                   ;Forced duck after falling
                 bne MH_NoInitClimbDown
                 lda actMoveCtrl,x
