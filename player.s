@@ -48,9 +48,9 @@ MAX_BATTERY     = 56
 LOW_BATTERY     = MAX_BATTERY/4
 LOW_HEALTH      = HP_PLAYER/4
 
-DRAIN_WALK      = 6                             ;When animation wraps
+DRAIN_WALK      = 3                             ;At footstep sound, 6 per anim. cycle
 DRAIN_SWIM      = 24                            ;When animation wraps
-DRAIN_CLIMB     = 3                             ;At each movement step
+DRAIN_CLIMB     = 6                             ;At footstep sound, 12 per anim. cycle
 DRAIN_JUMP      = 16
 DRAIN_ROLL      = 20
 DRAIN_MELEE     = 20
@@ -252,7 +252,7 @@ MH_NoRollSave:  sec
                 ora #$80                        ;No modify (do not affect armor either)
                 jsr DamageSelf
 MH_NoFallDamage2:
-                jsr PlayFootstep
+                jsr PlayFootstepCheckPlayer
 MH_NoFallDamage:dec actFall,x
 MH_NoFallCheck: lda actF1,x                     ;Check for special movement states
                 cmp #FR_CLIMB
@@ -370,12 +370,14 @@ MH_NoInitClimbUp:
 MH_StartJump:   ldy #AL_JUMPSPEED
                 lda (actLo),y
                 sta actSY,x
-                ldy #UPG_MOVEMENT
-                lda #DRAIN_JUMP
+                txa
+                bne MH_JumpNoPlayer
+                lda #UPG_MOVEMENT
+                ldy #DRAIN_JUMP
                 jsr DrainBatteryDouble
                 lda #SFX_JUMP
                 jsr PlayMovementSound
-                jsr MH_ResetGrounded
+MH_JumpNoPlayer:jsr MH_ResetGrounded
 MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
                 lda (actLo),y
                 sta temp4
@@ -394,8 +396,8 @@ MH_NoLongJump:  lda (actLo),y
                 jsr GetCharInfoOffset           ;Must be deep in water before
                 and #CI_WATER                   ;swimming kicks in
                 beq MH_NoWater2
-                lda temp3                       ;If actor can't swim, kill instantly
-                bmi MH_CanSwim
+                txa                             ;If not player, kill instantly
+                beq MH_CanSwim
                 ldy #NODAMAGESRC
                 jmp DestroyActor
 MH_CanSwim:     jmp MH_InitSwim
@@ -541,12 +543,14 @@ MH_OldDir:      eor #$00
                 bne MH_NoNewRoll                ;Also, must not have turned
 MH_StartRoll:   lda #$00
                 sta actFd,x
-                ldy #UPG_MOVEMENT
-                lda #DRAIN_ROLL
+                txa
+                bne MH_RollNoPlayer
+                lda #UPG_MOVEMENT
+                ldy #DRAIN_ROLL
                 jsr DrainBatteryDouble
                 lda #SFX_ROLL
                 jsr PlayMovementSound
-                lda #FR_ROLL
+MH_RollNoPlayer:lda #FR_ROLL
                 jmp MH_AnimDone
 MH_NoNewRoll:   lda temp3
                 and #AMF_CLIMB
@@ -615,26 +619,29 @@ MH_WalkAnimSpeedPos:
                 sta actFd,x
                 bcc MH_AnimDone2
                 lda actF1,x
+                adc #$00
+                cmp #FR_WALK+8
+                bcc MH_NoWalkAnimWrap
+                lda #FR_WALK
+MH_NoWalkAnimWrap:
+                cpx #ACTI_PLAYER
+                bne MH_AnimDone
                 pha
                 and #$03
-                cmp #$01
-                bne MH_NoFootstep
+                cmp #$02
+                bne MH_NoWalkFootstep
                 jsr PlayFootstep
-MH_NoFootstep:  pla
-                clc
-                adc #$01
-                cmp #FR_WALK+8
-                bcc MH_AnimDone
-                ldy #UPG_MOVEMENT
-                lda #DRAIN_WALK
-                jsr DrainBatteryDouble          ;Drain battery when the walk animation wraps
-                lda #FR_WALK
-                bne MH_AnimDone
-MH_StandAnim:   lda #$00                        ;0 = standing frame
-                sta actFd,x
+                lda #UPG_MOVEMENT
+                ldy #DRAIN_WALK
+                jsr DrainBatteryDouble          ;Drain battery at each footstep
+MH_NoWalkFootstep:
+                pla
 MH_AnimDone:    sta actF1,x
                 sta actF2,x
 MH_AnimDone2:   rts
+MH_StandAnim:   lda #$00                        ;0 = standing frame
+                sta actFd,x
+                beq MH_AnimDone
 
 MH_InitClimb:   lda #$80
                 sta actXL,x
@@ -761,16 +768,20 @@ MH_ClimbAnimDown:
                 adc #FR_CLIMB-1
                 sta actF1,x
                 sta actF2,x
-                pha
+                lsr
+                php
                 tya
                 jsr MoveActorY
-                pla
-                lsr
-                bcc MH_NoClimbSound
+                plp
+                txa
+                bne MH_ClimbNotPlayer
+                bcc MH_ClimbNoSound
                 jsr PlayFootstep
-MH_NoClimbSound:ldy #UPG_MOVEMENT
-                lda #DRAIN_CLIMB
+                lda #UPG_MOVEMENT
+                ldy #DRAIN_CLIMB
                 jsr DrainBatteryDouble
+MH_ClimbNoSound:
+MH_ClimbNotPlayer:
                 jmp NoInterpolation
 
 MH_Swimming:    ldy #AL_MOVESPEED
@@ -850,7 +861,7 @@ MH_ExitWaterCommon:
                 and #$c0
                 sta actYL,x
                 lda #SFX_JUMP
-                jsr PlayMovementSound
+                jsr PlayMovementSound           ;Note: assumes that only the player will swim
                 lda #MB_GROUNDED
                 jsr MH_SetMoveBits              ;A=0 when returning, resets falling
                 sta actSY,x
@@ -871,10 +882,10 @@ MH_NotSwimmingUp:
                 adc #$00
                 cmp #FR_SWIM+4
                 bcc MH_SwimAnimDone
-                ldy #UPG_MOVEMENT
-                lda #DRAIN_SWIM
+                lda #UPG_MOVEMENT
+                ldy #DRAIN_SWIM
                 jsr DrainBatteryDouble          ;Drain battery when the animation wraps
-                lda #FR_SWIM
+                lda #FR_SWIM                    ;Assumes only the player will swim
 MH_SwimAnimDone:jmp MH_AnimDone
 
 MH_SetGrounded: lda actMB,x
@@ -908,14 +919,15 @@ GSHSDone:       rts
 
         ; Play footstep sound during player movement. No-op if music is on
         ;
-        ; Parameters: X=0 (no-op otherwise)
+        ; Parameters: -
         ; Returns: -
         ; Modifies: A,Y
 
+PlayFootstepCheckPlayer:
+                txa
+                bne PMS_NoSound
 PlayFootstep:   lda #SFX_FOOTSTEP
 PlayMovementSound:
-                cpx #ACTI_PLAYER
-                bne PMS_NoSound
                 ldy PS_CurrentSong+1
                 beq PMS_DoPlay
 CS_NoFreeActor:
@@ -941,47 +953,38 @@ CreateSplash:   lda #ACTI_FIRSTEFFECT
                 lda #SFX_SPLASH
 PMS_DoPlay:     jmp PlaySfx
 
-        ; Drain battery charge
-        ;
-        ; Parameters: A amount of drain, X=0
-        ; Returns: -
-        ; Modifies: A
-
-DrainBattery:   cpx #ACTI_PLAYER
-                beq DrainBatteryNoCheck
-DB_Done:        rts
-
         ; Drain battery charge, double if specified upgrade bit is on
         ;
-        ; Parameters: A amount of drain, Y=upgrade bitmask, X=0
+        ; Parameters: A upgrade bitmask, Y amount of drain
         ; Returns: -
         ; Modifies: A
 
 DrainBatteryDouble:
-                cpx #ACTI_PLAYER
-                bne DB_Done
-                pha
-                tya
                 and upgrade
                 cmp #$01
-                pla
-                bcc DrainBatteryNoCheck
+                tya
+                bcc DrainBattery
                 asl
-DrainBatteryNoCheck:
-                lsr
+
+        ; Drain battery charge
+        ;
+        ; Parameters: A amount of drain
+        ; Returns: -
+        ; Modifies: A
+
+DrainBattery:   lsr
 DrainBatteryRound:
                 adc #$00                        ;Round upward if reduced
                 sta DB_Amount+1
                 lda battery
                 sec
 DB_Amount:      sbc #$00
-                sta battery
                 bcs DB_Done
                 dec battery+1
                 bpl DB_Done
                 lda #$00
-                sta battery
                 sta battery+1
+DB_Done:        sta battery
                 rts
 
         ; Add score
@@ -989,7 +992,7 @@ DB_Amount:      sbc #$00
         ; Parameters: A score lowbyte, Y score highbyte
         ; Returns: -
         ; Modifies: A
-        
+
 AddScore:       clc
                 adc score
                 sta score
@@ -1243,5 +1246,5 @@ AU_NoHealing:   sta ULO_HealingRate+1
                 bcc AU_NoDrainReduce
                 lda #$4a                        ;LSR
 AU_NoDrainReduce:
-                sta DrainBatteryNoCheck
+                sta DrainBattery
                 rts

@@ -886,7 +886,7 @@ ULO_NoAutoDeact:ldx #ACTI_PLAYER
 ULO_HealingRate:adc #INITIAL_HEALTIMER-1        ;C=1 here
                 bcc ULO_NoHealing2
                 lda #DRAIN_HEAL
-                jsr DrainBatteryNoCheck
+                jsr DrainBattery
                 inc actHp+ACTI_PLAYER
                 lda #HEALTIMER_RESET            ;Heal faster after first unit
 ULO_NoHealing2: sta healTimer

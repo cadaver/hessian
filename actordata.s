@@ -303,7 +303,7 @@ plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
                 dc.b ITEM_NONE                  ;Itemdrop table index or item override
                 dc.b $ff                        ;AI offense random AND-value
                 dc.b $ff                        ;AI defense probability
-                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP|AMF_SWIM ;Move flags
+                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move flags
                 dc.b 4*8                        ;Max. movement speed
 plrGroundAcc:   dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
 plrInAirAcc:    dc.b INITIAL_INAIRACC           ;In air movement acceleration

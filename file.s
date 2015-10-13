@@ -167,7 +167,7 @@ LF_Error:
 PF_Done:        rts
 
                 if SHOW_FREE_MEMORY > 0
-PrintFreeMem:   ldx #0
+PrintFreeMem:   ldx #1
                 lda #<fileAreaEnd
                 sec
                 sbc freeMemLo
@@ -191,10 +191,7 @@ PrintHexDigit:  cmp #$0a
                 adc #$06
 PrintHexDigit_IsNumber:
                 adc #$30
-                sta panelScreen+SCROLLROWS*40+1,x
-                lda #$01
-                sta colors+SCROLLROWS*40+1,x
-                inx
+                jsr PrintPanelChar
                 rts
                 endif
 

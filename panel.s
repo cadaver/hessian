@@ -139,7 +139,7 @@ UP_ClearOxygenLoop:
                 dex
                 bpl UP_ClearOxygenLoop
 UP_SkipHealth:  if SHOW_BATTERY > 0
-                ldx #4
+                ldx #1
                 lda battery+1
                 jsr PrintHexByte
                 lda battery

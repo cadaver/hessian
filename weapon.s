@@ -360,8 +360,8 @@ AH_PlayerFirearmBonus:
                 ldy #NO_MODIFY
                 bpl AH_PlayerBonusCommon
 AH_PlayerMeleeAttack:
-                ldy #UPG_STRENGTH
-                lda #DRAIN_MELEE
+                lda #UPG_STRENGTH
+                ldy #DRAIN_MELEE
                 jsr DrainBatteryDouble
 AH_PlayerMeleeBonus:
                 ldy #NO_MODIFY
