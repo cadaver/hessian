@@ -267,7 +267,13 @@ GetBulletOffset:ldy actT,x
                 lda #MAX_SPR                    ;"Draw" the actor in a fake manner
                 sta sprIndex                    ;to get the last connect-spot
                 jsr DrawActorSub_NoColor
-                ldy #$3
+                if OPTIMIZE_SPRITECOORDS > 0
+                lda temp3
+                bpl GBO_YOffsetPos
+                dec temp4
+GBO_YOffsetPos:
+                endif
+                ldy #$03
 GBO_Loop:       asl temp1                       ;Multiply pixels back to map coordinates
                 rol temp2
                 asl temp3

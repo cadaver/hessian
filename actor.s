@@ -154,7 +154,11 @@ DA_SprSubYH:    sbc #$00
                 ora coordTblLo+1,y
                 sta temp3
                 lda coordTblHi+1,y
+                if OPTIMIZE_SPRITECOORDS = 0
                 sta temp4
+                else
+                bne DA_ActorDone                ;Skip if Y coord MSB nonzero
+                endif
                 lda actXL,x
                 sta actPrevXL,x
                 sec

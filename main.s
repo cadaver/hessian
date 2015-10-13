@@ -7,6 +7,7 @@ SHOW_PLAYROUTINE_TIME = 0
 SHOW_LEVELUPDATE_TIME = 0
 SHOW_SPRITEDEPACK_TIME = 0
 OPTIMIZE_SPRITEIRQS = 1
+OPTIMIZE_SPRITECOORDS = 0                       ;Disable 16-bit Y coord arithmetic in DrawActors
 
 DROP_ITEM_TEST  = 0                             ;Drop a copy of current item to test actor save
 AMMO_CHEAT      = 0

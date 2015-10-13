@@ -88,6 +88,7 @@ GASS_CSXCommon: adc sprXH,x
                 sbc (frameLo),y
                 iny
                 sta sprY,x
+                if OPTIMIZE_SPRITECOORDS = 0
                 bcs GASS_YNotOver
                 dec temp4
 GASS_YNotOver:  lda (frameLo),y                 ;Add Y-connect spot
@@ -103,6 +104,11 @@ GASS_CSYNeg:    adc sprY,x
 GASS_CSYCommon: adc temp4
                 sta temp4
                 bne GASS_DoNotAccept            ;Note: Y visibility checked incorrectly after adding the connect-spot
+                else
+                clc
+                adc (frameLo),y                 ;Add Y-connect spot (optimized)
+                sta temp3
+                endif
                 lda sprXH,x
                 beq GASS_Accept                 ;Check X visibility
                 lda sprXL,x
