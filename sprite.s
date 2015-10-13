@@ -57,13 +57,12 @@ GetAndStoreSprite:
                 iny
                 lda (sprFileLo),y
                 sta frameHi
-                lda #$00
-                rol
+                lda #$80
+                rol                             ;C=1 for the subtraction below
                 sta zpLenLo                     ;Sprite direction
                 ora #SPRH_HOTSPOTX
                 tay
                 lda temp1                       ;Subtract X-hotspot
-                sec
                 sbc (frameLo),y
                 sta sprXL,x
                 lda temp2

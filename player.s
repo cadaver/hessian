@@ -252,7 +252,9 @@ MH_NoRollSave:  sec
                 ora #$80                        ;No modify (do not affect armor either)
                 jsr DamageSelf
 MH_NoFallDamage2:
-                jsr PlayFootstepCheckPlayer
+                txa
+                bne MH_NoFallDamage
+                jsr PlayFootstep
 MH_NoFallDamage:dec actFall,x
 MH_NoFallCheck: lda actF1,x                     ;Check for special movement states
                 cmp #FR_CLIMB
@@ -923,9 +925,6 @@ GSHSDone:       rts
         ; Returns: -
         ; Modifies: A,Y
 
-PlayFootstepCheckPlayer:
-                txa
-                bne PMS_NoSound
 PlayFootstep:   lda #SFX_FOOTSTEP
 PlayMovementSound:
                 ldy PS_CurrentSong+1
