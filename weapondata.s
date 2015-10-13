@@ -170,7 +170,7 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b DMG_PISTOL                 ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 20                         ;Bullet time duration
-                dc.b 12                         ;Bullet speed in pixels
+                dc.b 13                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_PISTOL                 ;Sound effect
                 dc.b $ff                        ;Climbing weapon frame
