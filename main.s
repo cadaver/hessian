@@ -13,7 +13,7 @@ DROP_ITEM_TEST  = 0                             ;Drop a copy of current item to 
 AMMO_CHEAT      = 0
 ITEM_CHEAT      = 0
 UPGRADE_CHEAT   = 0
-SPAWN_TEST      = 0                             ;Continuously spawn the zone's enemies as fast as possible
+SPAWN_TEST      = 1                             ;Continuously spawn the zone's enemies as fast as possible
 
         ; Memory configuration & loader symbols
 

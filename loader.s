@@ -415,10 +415,10 @@ WB_Loop2:       lda $d011
                 bpl WB_Loop2
                 rts
 
-SilenceSID:     lda #$00                        ;Mute SID by setting frequencies to zero
-                ldx #$01
+SilenceSID:     ldx #$00                        ;Mute SID by setting frequencies to zero
+                txa
                 jsr SS_Sub
-                dex
+                inx
 SS_Sub:         sta $d400,x
                 sta $d407,x
                 sta $d40e,x
@@ -454,10 +454,13 @@ loaderCodeEnd:                                  ;Resident code ends here!
         ; Loader initialization
 
 InitLoader:     sei
-                sta $d07f                       ;Disable SCPU hardware regs
                 jsr WaitBottom
-                jsr ilSlowLoadStart+InitRegs-OpenFile
-                stx $d020                       ;X=0 on return
+                ldx #$00
+                stx $d07f                       ;Disable SCPU hardware regs
+                stx $d07a                       ;SCPU to slow mode
+                stx $d030                       ;C128 back to 1MHz mode
+                stx $d020
+                stx $d011
                 stx messages                    ;Disable KERNAL messages
                 stx fileOpen                    ;Clear fileopen indicator
                 stx palFlag
@@ -1114,18 +1117,18 @@ PrepareKernalIO:inc fileOpen                    ;Set fileopen indicator, raster 
                 lsr
                 dex
                 jsr CFN_Sub
-                jsr WaitBottom
-                lda fastLoadMode                ;In fake-IRQload mode IRQs continue,
-                bne PrepareIOFast               ;so no setup necessary
-                lda $d01a                       ;If raster IRQs not yet active, no
-                lsr                             ;setup necessary
-                bcc PrepareIOFast
-InitRegs:       jsr SilenceSID
-                stx $d01a                       ;Raster IRQs off
-                stx $d015                       ;Sprites off
-                stx $d011                       ;Blank screen
-PrepareIOFast:  stx $d07a                       ;SCPU to slow mode
+                stx $d07a                       ;SCPU to slow mode
                 stx $d030                       ;C128 back to 1MHz mode
+                lda fastLoadMode                ;In fake-IRQload mode IRQs continue,
+                bne KernalOnFast                ;so no setup necessary
+                lda $d01a                       ;If raster IRQs not yet active, no
+                lsr                             ;setup necessary (loading picture)
+                bcc KernalOnFast
+                jsr WaitBottom
+                jsr SilenceSID
+                sta $d01a                       ;Raster IRQs off
+                sta $d015                       ;Sprites off
+                sta $d011                       ;Blank screen
 KernalOnFast:   lda #$36
                 sta $01
                 rts
