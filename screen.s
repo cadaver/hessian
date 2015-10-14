@@ -290,16 +290,9 @@ SSpr_NoSwap2:   inx
                 endif
                 lda #$80                        ;Wait until last set sprites have displayed
                 jsr WaitFrame                   ;and the second doublebuffer half is free
-                ldx #$00
-SSpr_FindFirst: ldy sprOrder,x                  ;Find upmost visible sprite
-                lda sprY,y
-                cmp #MIN_SPRY
-                bcs SSpr_FirstFound
-                inx
-                bne SSpr_FindFirst
-SSpr_FirstFound:txa
-                adc #<sprOrder                  ;Add one more, C=1 becomes 0
-                sbc firstSortSpr                ;Subtract one more to cancel out
+                lda #<sprOrder
+                sec
+                sbc firstSortSpr
                 sta SSpr_CopyLoop1+1
                 ldy firstSortSpr
                 tya
@@ -309,7 +302,7 @@ SSpr_FirstFound:txa
 SSpr_CopyLoop1Skip:
                 inc SSpr_CopyLoop1+1
 SSpr_CopyLoop1: ldx sprOrder,y
-                lda sprY,x                      ;If reach the maximum Y-coord, all done
+                lda sprY,x                      ;If reach the maximum Y-coord endmark, all done
                 cmp #MAX_SPRY
                 bcs SSpr_CopyLoop1Done
                 sta sortSprY,y

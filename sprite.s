@@ -103,19 +103,25 @@ GASS_CSYNeg:    adc sprY,x
                 lda #$ff
 GASS_CSYCommon: adc temp4
                 sta temp4
-                bne GASS_DoNotAccept            ;Note: Y visibility checked incorrectly after adding the connect-spot
+                bne GASS_DoNotAccept            ;Note: Y highbyte checked incorrectly after adding the connect-spot
                 else
                 clc
                 adc (frameLo),y                 ;Add Y-connect spot (optimized)
                 sta temp3
                 endif
+                cpx #MAX_SPR                    ;Ran out of sprites?
+                bcs GASS_DoNotAccept
+                lda sprY,x                      ;Check Y visibility
+                cmp #MIN_SPRY
+                bcc GASS_DoNotAccept
+                cmp #MAX_SPRY
+                bcs GASS_DoNotAccept
                 lda sprXH,x
                 beq GASS_Accept                 ;Check X visibility
                 lda sprXL,x
                 cmp #MAX_SPRX-256
                 bcs GASS_DoNotAccept
-                cpx #MAX_SPR                    ;Ran out of sprites?
-                bcs GASS_DoNotAccept
+
 GASS_Accept:    lda actIndex                    ;Sprite was accepted: store actor index
                 sta sprAct,x                    ;for interpolation
                 ldy #SPRH_COLOR
