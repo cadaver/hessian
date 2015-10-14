@@ -134,7 +134,7 @@ GASS_ColorOr:   ora #$00
                 tay
                 lda (frameLo),y                 ;Check if already cached
                 beq GASS_CacheSprite
-                sta sprF,x
+GASS_StoreFrame:sta sprF,x
                 tay
                 lda GASS_CurrentFrame+1         ;Mark cached sprite in use
                 sta cacheSprAge-FIRSTCACHEFRAME,y
@@ -149,24 +149,27 @@ GASS_CacheSprite:
                 inc $d020
                 endif
                 stx zpBitsHi
-GASS_CachePos:  ldx #MAX_CACHESPRITES           ;Continue from where we left off last time
-GASS_Loop:      dex
+GASS_CachePos:  ldx #$7f                        ;Continue from where we left off last time
+GASS_Loop:      inx
                 bpl GASS_NotOver
-                ldx #MAX_CACHESPRITES-1
-GASS_NotOver:   lda cacheSprAge,x
+                ldx #FIRSTCACHEFRAME
+GASS_NotOver:   lda cacheSprAge-FIRSTCACHEFRAME,x
 GASS_CurrentFrame:
                 cmp #$01
                 beq GASS_Loop
 GASS_LastFrame: cmp #$01
                 beq GASS_Loop
-GASS_Found:     ldy cacheSprFile,x              ;Clear the old cache mapping if the old file still in memory
+GASS_Found:     stx GASS_CachePos+1             ;Store cache position for next search
+                txa
+                sta (frameLo),y                 ;Store cache frame into sprite header
+                ldy cacheSprFile-FIRSTCACHEFRAME,x ;Clear the old cache mapping if the old file still in memory
                 bmi GASS_NoOldSprite
                 lda fileHi,y
                 beq GASS_NoOldSprite
                 sta zpSrcHi
                 lda fileLo,y
                 sta zpSrcLo
-                lda cacheSprFrame,x
+                lda cacheSprFrame-FIRSTCACHEFRAME,x
                 asl
                 tay
                 lda (zpSrcLo),y
@@ -174,26 +177,23 @@ GASS_Found:     ldy cacheSprFile,x              ;Clear the old cache mapping if 
                 iny
                 lda (zpSrcLo),y
                 sta zpDestHi
-                lda #SPRH_CACHEFRAME
-                adc #$00
+                lda #SPRH_CACHEFRAME/2
+                rol
                 tay
                 lda #$00
                 sta (zpDestLo),y
 GASS_NoOldSprite:
-                stx GASS_CachePos+1             ;Store cache position for next search
                 lda sprFileNum                  ;Save new file & frame numbers so that this mapping
-                sta cacheSprFile,x              ;can be cleared in the future
+                sta cacheSprFile-FIRSTCACHEFRAME,x ;can be cleared in the future
                 tay
+                lda #$00
+                sta fileAge,y                   ;Reset file age, only done when depacking a new sprite
                 lda zpBitsLo
-                sta cacheSprFrame,x
-                lda GASS_CurrentFrame+1         ;Mark in use
-                sta cacheSprAge,x
+                sta cacheSprFrame-FIRSTCACHEFRAME,x
                 lda #$34                        ;Need access to RAM under the I/O area
                 sta irqSave01
                 sta $01
-                lda #$00
-                sta fileAge,y                   ;Reset file age, only done when depacking a new sprite
-                ldy zpLenLo                     ;Use normal or flipped routine?
+                lda zpLenLo                     ;Use normal or flipped routine?
                 bne GASS_Flipped
                 jmp GASS_NonFlipped
 
@@ -204,7 +204,7 @@ GASS_Flipped:   lda #$08
                 ror zpBitBuf
                 lsr
                 ror zpBitBuf
-                ora #>spriteCache
+                ora #>videoBank
                 cmp GASS_FlipFullSlice1+2           ;Modify STA-instructions as necessary
                 beq GASS_FlipAddressOk
                 sta GASS_FlipFullSlice1+2
@@ -295,20 +295,12 @@ GASS_FlipEmptySlice7:sta $1000+18,x
 GASS_DepackDone:lda #$35                        ;Restore I/O registers
                 sta irqSave01
                 sta $01
-                lda #SPRH_CACHEFRAME
-                ora zpLenLo
-                tay
-                lda GASS_CachePos+1             ;Store the used frame into the header for next time
-                ora #FIRSTCACHEFRAME
-                sta (frameLo),y
                 ldx zpBitsHi
-                sta sprF,x
-                inx                             ;Increment sprite count
+                lda GASS_CachePos+1
                 if SHOW_SPRITEDEPACK_TIME > 0
                 dec $d020
                 endif
-                rts
-
+                jmp GASS_StoreFrame
 GASS_DepackDone2:
                 beq GASS_DepackDone
 
@@ -318,7 +310,7 @@ GASS_NonFlipped:sta zpBitBuf
                 ror zpBitBuf
                 lsr
                 ror zpBitBuf
-                ora #>spriteCache
+                ora #>videoBank
                 cmp GASS_FullSlice1+2           ;Modify STA-instructions as necessary
                 beq GASS_AddressOk
                 sta GASS_FullSlice1+2

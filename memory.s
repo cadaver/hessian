@@ -193,6 +193,7 @@ sprAct          = $02e7
 
 mainCodeStart   = $0334
 
+videoBank       = $c000
 spriteCache     = $d000
 fileAreaEnd     = spriteCache
 colors          = $d800
