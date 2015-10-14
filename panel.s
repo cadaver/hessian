@@ -478,8 +478,8 @@ UM_Reload:      jmp UseItem
         ; Inventory
 
 UM_Inventory:   ldx #MENU_NONE                  ;Check for exiting inventory or waiting for
-                lda joystick
-                ldy #$ff                        ;pause menu
+                lda joystick                    ;pause menu
+                ldy #$ff
                 cmp #JOY_FIRE
                 bcc SetMenuMode2
                 bne UM_StoreCounter2
@@ -502,6 +502,7 @@ UM_ForceRefresh:lda #$00                        ;Check for forced refresh (when 
                 lda joystick
                 cmp #JOY_FIRE+JOY_DOWN          ;Check for reloading weapon
                 bne UM_MoveDone
+                ldy itemIndex
                 cmp prevJoy
                 bne UM_Reload
 UM_MoveDone:    rts
