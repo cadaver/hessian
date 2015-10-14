@@ -404,15 +404,6 @@ lvlActT:        ds.b MAX_LVLACT,0
 lvlActWpn:      ds.b MAX_LVLACT,0
 lvlActOrg:      ds.b MAX_LVLACT,0
 
-        ; Target list for AI / collision
-        ; Must not page-cross, as selfmodifying code is used to read it
-
-targetList:     ds.b MAX_COMPLEXACT+1,0
-targetListEnd:
-                if (targetList & $ff00) != ((targetListEnd-1) & $ff00)
-                    err
-                endif
-
         ; Chunk-file memory allocation variables
 
 fileLo:         ds.b MAX_CHUNKFILES,0

@@ -8,7 +8,9 @@ scriptCodeEnd   = scriptCodeStart+SCRIPTAREASIZE
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-InitAll:        lda palFlag
+InitAll:        ldx #STACKSTART
+                txs
+                lda palFlag
                 bne IsPAL
                 lda #30                         ;Compensate game clock speed for NTSC
                 sta timeMaxTbl+3                ;(otherwise no compensation)

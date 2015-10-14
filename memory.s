@@ -40,6 +40,8 @@ SAVEDESCSIZE    = 20
 SCRIPTAREASIZE  = 8*256
 SCROLLROWS      = 22
 
+STACKSTART      = $7f
+
         ; Zeropage variables
 
                 varbase $02
@@ -152,7 +154,7 @@ SCROLLROWS      = 22
                 var toxinDelay
 
 playerStateZPStart = levelNum
-playerStateZPEnd = nextTempLvlActIndex+1
+playerStateZPEnd = toxinDelay+1
 palFlag         = freeMemLo
 
                 varrange sprOrder,MAX_SPR+1
@@ -184,12 +186,13 @@ palFlag         = freeMemLo
 
         ; Memory areas and non-zeropage variables
 
-cacheSprAge     = $0100
-sprF            = $0140
-cacheSprFile    = $0200
-sprC            = $0240
-cacheSprFrame   = $02a7
-sprAct          = $02e7
+cacheSprFile    = $0180
+cacheSprFrame   = $0180+MAX_CACHESPRITES
+sprF            = $0200
+sprC            = $0200+MAX_SPR
+sprAct          = $0200+MAX_SPR*2
+cacheSprAge     = $02a7
+targetList      = $02a7+MAX_CACHESPRITES
 
 mainCodeStart   = $0334
 

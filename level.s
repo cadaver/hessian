@@ -1343,7 +1343,7 @@ CP_NotInWater:  ora #MB_GROUNDED                ;checkpoint restore
 
         ; Game main loop
 
-StartMainLoop:  ldx #$ff
+StartMainLoop:  ldx #STACKSTART
                 txs
 MainLoop:       jsr ScrollLogic
                 if SHOW_ACTOR_TIME > 0
