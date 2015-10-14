@@ -1125,7 +1125,7 @@ DI_NoCount:     sta actHp,y
                 lda temp5
                 cmp #ITEM_FIRST_IMPORTANT
                 ror
-                ror
+                ror                             ;Carry to bit 6
                 and #ORG_GLOBAL
                 jsr SetPersistence
                 ldx temp6

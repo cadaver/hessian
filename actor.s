@@ -1497,12 +1497,9 @@ AS_SpawnOK:     jsr InitActor
                 inc UA_SpawnCount+1
                 ldy #AL_SPAWNAIMODE
                 lda (actLo),y                   ;Set default AI mode for actor type
-                tay                             ;+ check persistence disable
-                and #$0f
                 sta actAIMode,x
-                tya
+                lda #POS_NOTPERSISTENT          ;Spawned actors never persistent (disappear at zone change)
                 bmi AS_StoreLvlDataPos
-                lda #ORG_TEMP
 
         ; Set persistence mode for a newly created actor
         ;
@@ -1563,14 +1560,6 @@ ALA_Common:     lda lvlActX,x
                 sta lvlActT,x
                 lda lvlActOrg,x                 ;Store the persistence mode (leveldata/global/temp)
                 sta actLvlDataOrg,y
-                cmp #ORG_GLOBAL                 ;If a spawned (temp persistent) enemy, simply remove if
-                bcs ALA_GlobalOrLevelOrItem     ;already max. amount of spawned enemies on screen
-                lda lvlActT,x                   ;to avoid swarming & performance loss
-                bmi ALA_GlobalOrLevelOrItem
-                lda numTargetsAll
-                cmp #MAX_SPAWNEDACT+1
-                bcs ALA_Cancel
-ALA_GlobalOrLevelOrItem:
                 tya
                 tax
                 jsr InitActor

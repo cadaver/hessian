@@ -443,7 +443,7 @@ alTestEnemy:    dc.w MoveAIHuman                ;Update routine
                 dc.b 12                         ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 25                         ;Score from kill
-                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly + persistence disable
+                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_WEAPONMEDKITARMOR     ;Itemdrop table index or item override
                 dc.b $0b                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
