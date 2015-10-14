@@ -305,12 +305,10 @@ GB_Closed:      lda loadBuffer+2
 FastOpen:       ldx fileOpen                    ;A file already open? If so, do nothing
                 bne FO_Done                     ;(allows chaining of files)
                 inc fileOpen                    ;Set initial fileopen value to make sure IRQs don't enable turbo after this point
+                stx $d07a                       ;SCPU to slow mode
+                stx $d030                       ;C128 to 1Mhz mode
                 txa                             ;Command 0 = load
-                sta $d07a                       ;SCPU to slow mode
-                sta $d030                       ;C128 to 1Mhz mode
                 jsr FL_SendCommand
-FL_PreDelay:    inx                             ;Wait to make sure the drive has also set
-                bne FL_PreDelay                 ;lines high
 FL_FillBuffer:  ldx #$00
 FL_FillBufferWait:
                 bit $dd00                       ;Wait for 1541 to signal data ready by
@@ -364,10 +362,7 @@ FL_SendCommand: jsr FL_SendByte
 FL_FileNumber:  lda fileNumber
 FL_SendByte:    sta loadTempReg
                 ldx #$08                        ;Bit counter
-FL_SendInner:   bit $dd00                       ;Wait for both DATA & CLK to go high
-                bpl FL_SendInner
-                bvc FL_SendInner
-                lsr loadTempReg                 ;Send one bit
+FL_SendLoop:    lsr loadTempReg                 ;Send one bit
                 lda #$10
                 ora $dd00
                 bcc FL_ZeroBit
@@ -379,8 +374,11 @@ FL_SendAck:     bit $dd00
                 lda #$ff-$30                    ;Set DATA and CLK high
                 and $dd00
                 sta $dd00
+FL_SendWait:    bit $dd00                       ;Wait for both DATA & CLK to go high
+                bpl FL_SendWait
+                bvc FL_SendWait
                 dex
-                bne FL_SendInner
+                bne FL_SendLoop
                 rts
 
 FastSave:       sta zpSrcLo
