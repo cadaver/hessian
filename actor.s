@@ -1338,7 +1338,11 @@ DA_SkipModify:  sta temp8
                 txa
                 bne DA_NotPlayer
 DA_ResetRecharge:
+                if GODMODE_CHEAT = 0
                 stx healTimer                   ;If player hit, reset healing timer
+                else
+                stx temp8
+                endif
 DA_NotPlayer:   lda actHp,x                     ;First check that there is health
                 beq DA_Done                     ;(prevent destroy being called multiple times)
                 sec

@@ -971,7 +971,12 @@ DrainBatteryDouble:
         ; Returns: -
         ; Modifies: A
 
-DrainBattery:   lsr
+DrainBattery:
+                if GODMODE_CHEAT = 0
+                lsr
+                else
+                rts
+                endif
 DrainBatteryRound:
                 adc #$00                        ;Round upward if reduced
                 sta DB_Amount+1

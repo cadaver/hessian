@@ -297,6 +297,10 @@ AI_FreeMoveWithTurn:
                 jsr AI_RandomReleaseDuck        ;If ducking, continue it randomly
                 bne AI_ClearAttackControl
 AI_FreeMoveNoDuck:
+                lda actF1,x                     ;If on ladder with target, use pathfinding
+                cmp #FR_CLIMB
+                bcs AI_FreeMoveFollow
+AI_FreeMoveNoClimb:
                 lda actGroundCharInfo,x
                 and #CI_SHELF
                 beq AI_FreeMoveNormal
@@ -316,6 +320,8 @@ AI_ClearAttackControl:
                 lda #$00
                 sta actCtrl,x
                 rts
+AI_FreeMoveFollow:
+                jmp AI_Follow
 
             ; Berzerk AI
 
