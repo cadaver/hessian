@@ -407,10 +407,7 @@ MH_CheckWallRight:
 MH_NoAutoScale: lda actAIHelp,x
                 and #AIH_AUTOTURNWALL
                 beq MH_NoAutoTurn
-MH_DoAutoTurn:  lda actSX,x
-                eor actD,x
-                bmi MH_NoAutoTurn
-                lda actD,x
+MH_DoAutoTurn:  lda actD,x
                 eor #$80
                 sta actD,x
 MH_ResetMoveCtrl:
