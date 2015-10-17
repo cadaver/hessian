@@ -411,7 +411,8 @@ MH_NoWater:     lsr                             ;Grounded bit to carry
 
 MH_InAir:       and #MB_STARTFALLING/2          ;Just dropped off a ledge?
                 bne MH_StartedToFall
-MH_InAirAnim:   lda actSY,x
+MH_InAirContinueFall:
+                lda actSY,x
                 bpl MH_IncFall
                 cmp #-2*8                       ;Do not grab when moving up fast
                 bcc MH_JumpAnim
@@ -439,7 +440,9 @@ MH_NoIncFall:   lda actMoveCtrl,x               ;Check for grabbing a ladder whi
                 and #CI_CLIMB
                 beq MH_JumpAnim
                 jmp MH_InitClimb
-MH_JumpAnim:    ldy #FR_JUMP+1
+MH_JumpAnim:    ldy temp2                       ;Continue roll animation in air
+                bne MH_RollAnim
+                ldy #FR_JUMP+1
                 lda actSY,x
                 bpl MH_JumpAnimDown
 MH_JumpAnimUp:  cmp #-1*8
@@ -460,10 +463,10 @@ MH_StartedToFall:
                 lda #3                          ;Allow drop down if ground reasonably close
                 jsr GetCharInfoOffset
                 and #CI_GROUND|CI_OBSTACLE
-                bne MH_InAirAnim
+                bne MH_InAirContinueFall
 MH_NoDropDown:  lda actAIHelp,x                 ;Check autoturn or stop
                 and #AIH_AUTOTURNLEDGE|AIH_AUTOSTOPLEDGE
-                beq MH_InAirAnim                ;If none, just fall
+                beq MH_InAirContinueFall        ;If none, just fall
                 php
                 lda actSX,x
                 jsr MoveActorXNeg
@@ -474,6 +477,22 @@ MH_DoAutoStop:  lda #$00
                 sta actSX,x
                 sta actMoveCtrl,x
                 beq MH_NoAutoTurn
+
+MH_RollAnim:    lda #$01
+                jsr AnimationDelay
+                bcc MH_AnimDone3
+                lda actF1,x
+                adc #$00
+                cmp #FR_ROLL+6                  ;Transition from roll to low duck
+                bcc MH_RollAnimDone
+                lda actMB,x                     ;If rolling and falling, transition
+                lsr                             ;to jump instead
+                bcs MH_RollToDuck
+MH_RollToJump:  lda #FR_JUMP+2
+                skip2
+MH_RollToDuck:  lda #FR_DUCK+1
+MH_RollAnimDone:jmp MH_AnimDone
+MH_AnimDone3:   rts
 
 MH_OnGround:    and #MB_HITWALL/2
                 beq MH_NoAutoTurn
@@ -505,23 +524,7 @@ MH_AutoTurnLeft:sta actD,x
                 tya
                 sta actMoveCtrl,x
 MH_NoAutoTurn:  ldy temp2                       ;If rolling, continue roll animation
-                beq MH_GroundAnim
-
-MH_RollAnim:    lda #$01
-                jsr AnimationDelay
-                bcc MH_AnimDone3
-                lda actF1,x
-                adc #$00
-                cmp #FR_ROLL+6                  ;Transition from roll to low duck
-                bcc MH_RollAnimDone
-                lda actMB,x                     ;If rolling and falling, transition
-                lsr                             ;to jump instead
-                bcs MH_RollToDuck
-MH_RollToJump:  lda #FR_JUMP+2
-                skip2
-MH_RollToDuck:  lda #FR_DUCK+1
-MH_RollAnimDone:jmp MH_AnimDone
-MH_AnimDone3:   rts
+                bne MH_RollAnim
 
 MH_GroundAnim:  lda actFall,x                   ;Forced duck after falling
                 bne MH_NoInitClimbDown
