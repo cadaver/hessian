@@ -12,16 +12,12 @@ FR_ATTACK       = 34
 
 DEATH_DISAPPEAR_DELAY = 50
 DEATH_FLICKER_DELAY = 20
-DEATH_HEIGHT    = -3                            ;Ceiling check height for dead bodies
-DEATH_ACCEL     = 6
-DEATH_YSPEED    = -5*8
-DEATH_MAX_XSPEED = 6*8
-DEATH_BRAKING   = 6
-DEATH_WATER_YBRAKING = 3                        ;Extra braking for corpses in water
 
 WATER_XBRAKING = 3
 WATER_YBRAKING = 3
 
+DEATH_YSPEED    = -6*8
+DEATH_MAX_XSPEED = 6*8
 HUMAN_MAX_YSPEED = 6*8
 
 DAMAGING_FALL_DISTANCE = 4
@@ -152,65 +148,9 @@ MP_WeaponOK:    sty actWpn+ACTI_PLAYER
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MH_DeathAnim:   lda #DEATH_HEIGHT               ;Actor height for ceiling check
-                sta temp4
-                lda #DEATH_ACCEL
-                ldy #HUMAN_MAX_YSPEED
-                jsr MoveWithGravity
-                lsr
-                bcs MH_DeathGrounded            ;If grounded, animate faster
-                and #MB_HITWALL/2               ;If hit wall, zero X-speed
-                beq MH_DeathNoHitWall
-                lda #$00
-                sta actSX,x
-MH_DeathNoHitWall:
-                lda #$06
-                ldy #FR_DIE+1
-                bne MH_DeathAnimDelay
-MH_DeathGrounded:
-                lda #DEATH_BRAKING
-                jsr BrakeActorX
-                lda #$02
-                ldy #FR_DIE+2
-MH_DeathAnimDelay:
-                jsr OneShotAnimation
-                lda actF1,x
-                sta actF2,x
-MH_DeathAnimDone:
-                dec actTime,x
-                bmi MH_DeathRemove
-                lda actTime,x
-                cmp #DEATH_FLICKER_DELAY
-                bne MH_DeathDone
-                lda #COLOR_FLICKER
-                sta actFlash,x
-MH_DeathDone:   rts
-MH_DeathRemove: jmp RemoveActor
-
-MoveHuman:      lda actMB,x
-                sta temp1                       ;Movement state bits
-                bpl MH_NotInWater
-                lda #WATER_XBRAKING             ;Global water braking, both for alive & dead characters
-                jsr BrakeActorX
-                lda actF1,x                     ;Allow jump in water to begin without braking
-                cmp #FR_JUMP                    ;(so that can get out of water)
-                beq MH_NoYBraking
-                lda actHp,x
-                cmp #$01
-                lda #WATER_YBRAKING
-                bcs MH_NoFloating
-                adc #DEATH_WATER_YBRAKING       ;Extra buoyancy for corpses
-MH_NoFloating:  jsr BrakeActorY
-MH_NoYBraking:
-MH_NotInWater:  lda actD,x
-                sta MH_OldDir+1
-                ldy #AL_SIZEUP                  ;Set size up based on currently displayed
-                lda (actLo),y                   ;frame
-                ldy actF1,x
-                sec
-                sbc humanSizeReduceTbl,y
-                sta actSizeU,x
-                lda #$00                        ;Roll flag
+MH_IsClimbing:  jmp MH_Climbing
+MH_IsSwimming:  jmp MH_Swimming
+MoveHuman:      lda actMoveCtrl,x               ;Current joystick controls
                 sta temp2
                 ldy #AL_MOVEFLAGS
                 lda (actLo),y
@@ -218,71 +158,76 @@ MH_NotInWater:  lda actD,x
                 iny
                 lda (actLo),y
                 sta temp4                       ;Movement speed
-                ldy actFall,x
-                beq MH_NoFallCheck
-                lda temp1
-                lsr                             ;Check after fall-effects (forced duck, damage)
-                bcc MH_NoFallCheck
-                and #MB_LANDED/2                ;Falling damage applied right after landing
-                beq MH_NoFallDamage
-                lda temp3                       ;Possibility to reduce damage by rolling
-                and #AMF_ROLL
-                beq MH_NoRollSave
-                lda actSX,x                     ;Must be facing move direction and have some X-speed
-                beq MH_NoRollSave
-                eor actD,x
-                bmi MH_NoRollSave
-                lda actMoveCtrl,x
-                and #JOY_DOWN|JOY_LEFT|JOY_RIGHT
-                cmp #JOY_DOWN+1
-                bcc MH_NoRollSave
-                lda #$01
-                sta actPrevCtrl,x               ;Reset prevctrl to allow roll regardless of timing
-                sta actFall,x                   ;Also reset remaining forced ducking from fall
-                dey
-MH_NoRollSave:  sec
-                tya
-                sbc #DAMAGING_FALL_DISTANCE
-                bcc MH_NoFallDamage2
-                beq MH_NoFallDamage2
-                asl
-                sta temp8
-                asl
-                adc temp8
-                ora #$80                        ;No modify (do not affect armor either)
-                jsr DamageSelf
-MH_NoFallDamage2:
-                txa
-                bne MH_NoFallDamage
-                jsr PlayFootstep
-MH_NoFallDamage:dec actFall,x
-MH_NoFallCheck: lda actF1,x                     ;Check for special movement states
-                cmp #FR_CLIMB
-                bcc MH_NoSpecial
-                cmp #FR_SWIM
+                lda actMB,x                     ;Previous frame's movement bits
+                sta temp1
+                bpl MH_NotInWater
+                lsr temp4                       ;Halve max. speed
+                lda #WATER_XBRAKING             ;Global water braking, both for alive & dead characters
+                jsr BrakeActorX
+                lda actF1,x                     ;Allow jump in water to begin without braking
+                cmp #FR_JUMP                    ;(so that can get out of water)
+                beq MH_NotInWater
+                lda #WATER_YBRAKING
+                jsr BrakeActorY
+MH_NotInWater:  ldy #AL_SIZEUP                  ;Set size up based on currently displayed
+                lda (actLo),y                   ;frame
+                ldy actF1,x
+                sec
+                sbc humanSizeReduceTbl,y
+                sta actSizeU,x
+                cpy #FR_CLIMB
+                bcc MH_NoClimb
+                cpy #FR_CLIMB+4
+                bcc MH_IsClimbing
+                cpy #FR_SWIM
                 bcs MH_IsSwimming
-                cmp #FR_ROLL
-                bcs MH_IsRolling
-                cmp #FR_DIE
-                bcs MH_IsDying
-                jmp MH_Climbing
-MH_IsDying:     jmp MH_DeathAnim
-MH_IsSwimming:  jmp MH_Swimming
-MH_IsRolling:   inc temp2
-                bne MH_RollAcc
-MH_NoSpecial:   cmp #FR_DUCK+1
-                lda actMoveCtrl,x               ;Check turning / X-acceleration / braking
+                cpy #FR_ROLL
+                bcs MH_RollAnim
+MH_DyingAnim:   lda temp1
+                lsr
+                lda #$00                        ;Make sure no movement when dead
+                sta temp2
+                lda #$06
+                ldy #FR_DIE+1
+                bcc MH_DeathAnimDelay
+MH_DeathGrounded:
+                lda #$02
+                ldy #FR_DIE+2
+MH_DeathAnimDelay:
+                jsr OneShotAnimation
+MH_DeathAnimDone:
+                dec actTime,x
+                bmi MH_DeathRemove
+                lda actTime,x                   ;Flicker and eventually remove the corpse
+                cmp #DEATH_FLICKER_DELAY
+                bcs MH_Brake
+                lda #COLOR_FLICKER
+                sta actFlash,x
+                bcc MH_Brake
+MH_DeathRemove: jmp RemoveActor
+MH_RollAnim:    lda #$01
+                jsr AnimationDelay
+                bcc MH_RollAcc
+                tya
+                adc #$00
+                cmp #FR_ROLL+6                  ;Transition from roll to low duck once the roll is complete
+                bcc MH_RollAnimDone
+                lda #FR_DUCK+1
+MH_RollAnimDone:sta actF1,x
+                bne MH_RollAcc                  ;Forced acceleration (regardless of controls) when rolling
+MH_NoClimb:     lda actD,x
+                sta MH_OldDir+1
+                lda temp2                       ;Check turning / X-acceleration / braking
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_Brake
                 and #JOY_RIGHT
                 bne MH_TurnRight
                 lda #$80
-MH_TurnRight:   sta actD,x
+MH_TurnRight:   cpy #FR_DUCK                    ;Only turn & brake if ducked
+                beq MH_Brake2
+MH_DuckBrake:   sta actD,x
                 bcs MH_Brake2                   ;If ducking, only turn, then brake
 MH_RollAcc:     lda temp1
-                bpl MH_NoWaterMaxSpeed
-                lsr temp4                       ;If in water, halve max speed
-MH_NoWaterMaxSpeed:
                 lsr                             ;Faster acceleration when on ground
                 ldy #AL_GROUNDACCEL
                 bcs MH_UseGroundAccel
@@ -301,16 +246,37 @@ MH_Brake2:      ldy #AL_BRAKING
                 lda (actLo),y
                 jsr BrakeActorX
 MH_HorizMoveDone:
-                lda temp1
-                and #MB_HITWALL|MB_LANDED       ;If hit wall (and did not land simultaneously), reset X-speed
+                ldy #AL_HEIGHT                  ;Actor height for ceiling check
+                lda (actLo),y
+                sta temp4
+                ldy #AL_FALLACCEL               ;Make jump longer by holding joystick up
+                lda actSY,x                     ;as long as still has upward velocity
+                bpl MH_NoLongJump
+                lda temp2
+                and #JOY_UP
+                beq MH_NoLongJump
+                ldy #AL_LONGJUMPACCEL
+MH_NoLongJump:  lda (actLo),y
+                ldy #HUMAN_MAX_YSPEED
+                jsr MoveWithGravity             ;Actually move & check collisions
+                sta temp1                       ;Update saved movement flags
+                bpl MH_NoStartSwim
+                lda #-3                         ;In water: check for starting to swim
+                jsr GetCharInfoOffset           ;(deep water)
+                and #CI_WATER
+                beq MH_NoStartSwim2
+                txa                             ;If not player, kill instantly
+                beq MH_CanSwim
+                ldy #NODAMAGESRC
+                jmp DestroyActor
+MH_CanSwim:     jmp MH_InitSwim
+MH_NoStartSwim2:lda temp1
+MH_NoStartSwim: and #MB_HITWALL+MB_LANDED       ;Hit wall (and didn't land at the same time)?
                 cmp #MB_HITWALL
                 bne MH_NoHitWall
                 lda temp3
                 and #AMF_WALLFLIP
                 beq MH_NoWallFlip
-                lda temp1                       ;Check for wallflip (push joystick up & opposite to wall)
-                lsr
-                bcs MH_NoWallFlip
                 lda actSY,x                     ;Must not have started descending yet
                 bpl MH_NoWallFlip
                 lda #JOY_UP|JOY_RIGHT
@@ -319,39 +285,83 @@ MH_HorizMoveDone:
                 bmi MH_WallFlipRight
                 lda #JOY_UP|JOY_LEFT
 MH_WallFlipRight:
-                cmp actMoveCtrl,x
+                cmp temp2
                 bne MH_NoWallFlip
                 cmp #JOY_UP|JOY_RIGHT
                 jsr GetSignedHalfSpeed
                 sta actSX,x
-                bne MH_StartJump
+                jmp MH_StartJump
 MH_NoWallFlip:  lda #$00
                 sta actSX,x
-MH_NoHitWall:   lda temp1
-                lsr                             ;Grounded bit to C
-                and #MB_HITCEILING/2            ;If ceiling hitting head, do not allow jump
-                bne MH_NoNewJump
-                bcc MH_NoNewJump
+MH_NoHitWall:   lda actF1,x                     ;If roll or death animation, continue it and don't animate
+                cmp #FR_DIE                     ;jump/walk/run
+                bcs MH_AnimDone2
+                lda temp1
+                lsr
+                bcc MH_InAir
+                jmp MH_OnGround
+
+MH_InAir:       lda actSY,x
+                bpl MH_IncFall
+                cmp #-2*8                       ;Do not grab when moving up fast
+                bcc MH_JumpAnim
+                bcs MH_NoIncFall
+MH_IncFall:     lda temp3
+                and #AMF_NOFALLDAMAGE
+                bne MH_NoIncFall
+                lda actSY,x
+                bmi MH_NoIncFall
+                asl
+                adc actFallL,x
+                sta actFallL,x
+                bcc MH_NoIncFall
+                inc actFall,x
+MH_NoIncFall:   lda temp2                       ;Check for grabbing a ladder while in midair
+                and #JOY_UP
+                beq MH_JumpAnim
+                lda actCtrl,x                   ;If fire is held, do not grab ladder
+                and #JOY_FIRE
+                bne MH_JumpAnim
+                lda temp3
+                and #AMF_CLIMB
+                beq MH_JumpAnim
+                jsr GetCharInfo4Above
+                and #CI_CLIMB
+                beq MH_JumpAnim
+                jmp MH_InitClimb
+MH_JumpAnim:    ldy #FR_JUMP+1
+                lda actSY,x
+                bpl MH_JumpAnimDown
+MH_JumpAnimUp:  cmp #-1*8
+                bcs MH_JumpAnimDone
+                dey
+                bcc MH_JumpAnimDone
+MH_JumpAnimDown:cmp #2*8
+                bcc MH_JumpAnimDone
+                iny
+MH_JumpAnimDone:tya
+MH_AnimDone2:   jmp MH_AnimDone
+
+MH_ForcedDuck:  dec actFall,x
+                jmp MH_NoInitClimbDown
+MH_OnGround:    lda actFall,x                   ;Forced duck after falling
+                bne MH_ForcedDuck
                 lda actCtrl,x                   ;When holding fire can not initiate jump
-                and #JOY_FIRE                   ;or grab a ladder
+                and #JOY_FIRE
                 bne MH_NoNewJump
-                lda actFall,x                   ;If still in falling autoduck mode,
-                bne MH_NoNewJump                ;no new jump
-                lda actMoveCtrl,x               ;If on ground, can initiate a jump
-                and #JOY_UP                     ;except if in the middle of a roll
+                lda temp2                       ;If on ground, can initiate a jump
+                cmp #JOY_UP+1
+                and #JOY_UP                     
                 beq MH_NoNewJump
-                lda temp2
-                bne MH_NoNewJump
+                bcs MH_NoOperate
                 txa                             ;If player, check for operating levelobjects
                 bne MH_NoOperate
                 ldy lvlObjNum
                 bmi MH_NoOperate
-                lda actMoveCtrl+ACTI_PLAYER
-                cmp #JOY_UP                     ;Must be holding only UP to operate
-                bne MH_NoOperate
                 jsr OperateObject
                 ldx #ACTI_PLAYER
-                bcs MH_NoNewJump
+                bcc MH_NoNewJump
+                rts                             ;If operated successfully, do nothing else
 MH_NoOperate:   lda temp3
                 and #AMF_CLIMB
                 beq MH_NoInitClimbUp
@@ -360,7 +370,7 @@ MH_NoOperate:   lda temp3
                 beq MH_NoInitClimbUp
                 jmp MH_InitClimb
 MH_NoInitClimbUp:
-                lda actMoveCtrl,x               ;Jump requires left/right input (as in MW4)
+                lda temp2                      ;Jump requires left/right input (as in MW4)
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_NoNewJump
                 lda temp3
@@ -380,172 +390,25 @@ MH_StartJump:   ldy #AL_JUMPSPEED
                 lda #SFX_JUMP
                 jsr PlayMovementSound
 MH_JumpNoPlayer:jsr MH_ResetGrounded
-MH_NoNewJump:   ldy #AL_HEIGHT                  ;Actor height for ceiling check
-                lda (actLo),y
-                sta temp4
-                ldy #AL_FALLACCEL               ;Make jump longer by holding joystick up
-                lda actSY,x                     ;as long as still has upward velocity
-                bpl MH_NoLongJump
-                lda actMoveCtrl,x
-                and #JOY_UP
-                beq MH_NoLongJump
-                ldy #AL_LONGJUMPACCEL
-MH_NoLongJump:  lda (actLo),y
-                ldy #HUMAN_MAX_YSPEED
-                jsr MoveWithGravity             ;Actually move & check collisions
-                bpl MH_NoWater                  ;If in water, check for starting to swim
-                lda #-3
-                jsr GetCharInfoOffset           ;Must be deep in water before
-                and #CI_WATER                   ;swimming kicks in
-                beq MH_NoWater2
-                txa                             ;If not player, kill instantly
-                beq MH_CanSwim
-                ldy #NODAMAGESRC
-                jmp DestroyActor
-MH_CanSwim:     jmp MH_InitSwim
-
-MH_NoWater2:    lda actMB,x
-MH_NoWater:     lsr                             ;Grounded bit to carry
-                bcc MH_InAir
-                jmp MH_OnGround
-
-MH_InAir:       and #MB_STARTFALLING/2          ;Just dropped off a ledge?
-                bne MH_StartedToFall
-MH_InAirContinueFall:
-                lda actSY,x
-                bpl MH_IncFall
-                cmp #-2*8                       ;Do not grab when moving up fast
-                bcc MH_JumpAnim
-                bcs MH_NoIncFall
-MH_IncFall:     lda temp3
-                and #AMF_NOFALLDAMAGE
-                bne MH_NoIncFall
-                lda actSY,x
-                bmi MH_NoIncFall
-                asl
-                adc actFallL,x
-                sta actFallL,x
-                bcc MH_NoIncFall
-                inc actFall,x
-MH_NoIncFall:   lda actMoveCtrl,x               ;Check for grabbing a ladder while in midair
-                and #JOY_UP
-                beq MH_JumpAnim
-                lda actCtrl,x                   ;If fire is held, do not grab ladder
-                and #JOY_FIRE
-                bne MH_JumpAnim
-                lda temp3
-                and #AMF_CLIMB
-                beq MH_JumpAnim
-                jsr GetCharInfo4Above
-                and #CI_CLIMB
-                beq MH_JumpAnim
-                jmp MH_InitClimb
-MH_JumpAnim:    ldy temp2                       ;Continue roll animation in air
-                bne MH_RollAnim
-                ldy #FR_JUMP+1
-                lda actSY,x
-                bpl MH_JumpAnimDown
-MH_JumpAnimUp:  cmp #-1*8
-                bcs MH_JumpAnimDone
-                dey
-                bcc MH_JumpAnimDone
-MH_JumpAnimDown:cmp #2*8
-                bcc MH_JumpAnimDone
-                iny
-MH_JumpAnimDone:tya
+                lda #FR_JUMP
                 jmp MH_AnimDone
-
-MH_StartedToFall:
-                jsr MH_ResetFall
-                lda actAIHelp,x                 ;Check AI reactions to falling
-                and #AIH_AUTOSCALEWALL
-                beq MH_NoDropDown
-                lda #3                          ;Allow drop down if ground reasonably close
-                jsr GetCharInfoOffset
-                and #CI_GROUND|CI_OBSTACLE
-                bne MH_InAirContinueFall
-MH_NoDropDown:  lda actAIHelp,x                 ;Check autoturn or stop
-                and #AIH_AUTOTURNLEDGE|AIH_AUTOSTOPLEDGE
-                beq MH_InAirContinueFall        ;If none, just fall
-                php
-                lda actSX,x
-                jsr MoveActorXNeg
-                jsr MH_SetGrounded
-                plp
-                bpl MH_DoAutoTurn
-MH_DoAutoStop:  lda #$00
-                sta actSX,x
-                sta actMoveCtrl,x
-                beq MH_NoAutoTurn
-
-MH_RollAnim:    lda #$01
-                jsr AnimationDelay
-                bcc MH_AnimDone3
-                lda actF1,x
-                adc #$00
-                cmp #FR_ROLL+6                  ;Transition from roll to low duck
-                bcc MH_RollAnimDone
-                lda actMB,x                     ;If rolling and falling, transition
-                lsr                             ;to jump instead
-                bcs MH_RollToDuck
-MH_RollToJump:  lda #FR_JUMP+2
-                skip2
-MH_RollToDuck:  lda #FR_DUCK+1
-MH_RollAnimDone:jmp MH_AnimDone
-MH_AnimDone3:   rts
-
-MH_OnGround:    and #MB_HITWALL/2
-                beq MH_NoAutoTurn
-                lda actAIHelp,x                 ;Check AI autoturning/jumping if hit wall
-                and #AIH_AUTOSCALEWALL
-                beq MH_NoAutoScale
-                ldy #1
-                lda actD,x
-                bpl MH_CheckWallRight
-                ldy #-1
-MH_CheckWallRight:
-                lda #-3
-                jsr GetCharInfoXYOffset         ;Check that the wall is possible to scale
-                and #CI_OBSTACLE|CI_SHELF       ;Do not jump to nonnavigable ledge, which could
-                bne MH_NoAutoScale              ;lead to a drop
-                jmp MH_StartJump
-MH_NoAutoScale: lda actAIHelp,x
-                and #AIH_AUTOTURNWALL
-                beq MH_NoAutoTurn
-MH_DoAutoTurn:  lda actSX,x
-                eor actD,x
-                bmi MH_NoAutoTurn
-                ldy #JOY_LEFT
-                lda actD,x
-                eor #$80
-                bmi MH_AutoTurnLeft
-                ldy #JOY_RIGHT
-MH_AutoTurnLeft:sta actD,x
-                tya
-                sta actMoveCtrl,x
-MH_NoAutoTurn:  ldy temp2                       ;If rolling, continue roll animation
-                bne MH_RollAnim
-
-MH_GroundAnim:  lda actFall,x                   ;Forced duck after falling
-                bne MH_NoInitClimbDown
-                lda actMoveCtrl,x
+MH_NoNewJump:   lda temp2
                 and #JOY_DOWN
                 beq MH_NoDuck
 MH_NewDuckOrRoll:
                 lda temp3
                 and #AMF_ROLL
                 beq MH_NoNewRoll
-                lda actMB,x                     ;Can't roll in water
+                lda temp1                       ;Can't roll in water
                 bmi MH_NoNewRoll
-                lda actMoveCtrl,x               ;To initiate a roll, must push the
+                lda temp2                       ;To initiate a roll, must push the
                 cmp actPrevCtrl,x               ;joystick diagonally down
                 beq MH_NoNewRoll
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_NoNewRoll
-                lda actD,x
+                lda actD,x                      ;If changed direction while ducking, no roll
 MH_OldDir:      eor #$00
-                and #$80
-                bne MH_NoNewRoll                ;Also, must not have turned
+                bmi MH_NoNewRoll
 MH_StartRoll:   lda #$00
                 sta actFd,x
                 txa
@@ -563,7 +426,7 @@ MH_NoNewRoll:   lda temp3
                 lda actCtrl,x                   ;When holding fire can not initiate climbing
                 and #JOY_FIRE
                 bne MH_NoInitClimbDown
-                jsr GetCharInfo                 ;Duck or climb?
+                lda actGroundCharInfo,x         ;Duck or climb?
                 and #CI_CLIMB
                 beq MH_NoInitClimbDown
                 jmp MH_InitClimb
@@ -592,28 +455,26 @@ MH_DuckAnimFrame:
 MH_NoDuck:      lda actF1,x                     ;If door enter/operate object animation,
                 cmp #FR_ENTER                   ;hold it as long as joystick is held up
                 bne MH_NoEnterAnim
-                lda actMoveCtrl,x
+                lda temp2
                 cmp #JOY_UP
                 bne MH_StandAnim
-                beq MH_AnimDone2
+                beq MH_AnimDone3
 MH_NoEnterAnim: cmp #FR_DUCK
                 bcc MH_StandOrWalk
 MH_DuckStandUpAnim:
                 lda #$01
                 jsr AnimationDelay
-                bcc MH_AnimDone2
+                bcc MH_AnimDone3
                 lda actF1,x
                 sbc #$01
                 cmp #FR_DUCK
                 bcc MH_StandAnim
                 bcs MH_AnimDone
-MH_StandOrWalk: lda actMB,x
-                and #MB_HITWALL
-                bne MH_StandAnim
-MH_WalkAnim:    lda actMoveCtrl,x
+MH_StandOrWalk: lda temp2
                 and #JOY_LEFT|JOY_RIGHT
-                beq MH_StandAnim
+                beq MH_AnimDone                 ;0 = walk frame
                 lda actSX,x
+                beq MH_AnimDone
                 asl
                 bcc MH_WalkAnimSpeedPos
                 eor #$ff
@@ -622,7 +483,7 @@ MH_WalkAnimSpeedPos:
                 adc #$40
                 adc actFd,x
                 sta actFd,x
-                bcc MH_AnimDone2
+                bcc MH_AnimDone3
                 lda actF1,x
                 adc #$00
                 cmp #FR_WALK+8
@@ -643,27 +504,22 @@ MH_NoWalkFootstep:
                 pla
 MH_AnimDone:    sta actF1,x
                 sta actF2,x
-MH_AnimDone2:   rts
-MH_StandAnim:   lda #$00                        ;0 = standing frame
-                sta actFd,x
+MH_AnimDone3:   rts
+MH_StandAnim:   lda #FR_STAND
                 beq MH_AnimDone
 
 MH_InitClimb:   lda #$80
                 sta actXL,x
                 sta actFd,x
                 lda actYL,x
-                and #$e0
+                and #$c0
                 sta actYL,x
-                and #$30
-                cmp #$20
-                lda #FR_CLIMB
-                adc #$00
-                sta actF1,x
-                sta actF2,x
                 lda #$00
                 sta actSX,x
                 sta actSY,x
-                jmp NoInterpolation
+                jsr NoInterpolation
+                lda #FR_CLIMB
+                bne MH_AnimDone
 
 MH_InitSwim:    lda actSY,x
                 bmi MH_SwimNoYSpeedMod          ;If falling down, reduce speed when hit water
@@ -687,13 +543,13 @@ MH_ClimbNotInWater:
                 sta zpSrcLo
                 lda actF1,x                     ;Reset frame in case attack ended
                 sta actF2,x
-                lda actMoveCtrl,x
+                lda temp2
                 lsr
                 bcc MH_NoClimbUp
                 jmp MH_ClimbUp
 MH_NoClimbUp:   lsr
                 bcs MH_ClimbDown
-                lda actMoveCtrl,x               ;Exit ladder?
+                lda temp2                       ;Exit ladder?
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_ClimbDone
                 lsr                             ;Left bit to direction
@@ -731,7 +587,7 @@ MH_ClimbUp:     jsr GetCharInfo4Above
                 sta temp8
                 and #CI_OBSTACLE
                 bne MH_ClimbUpNoJump
-                lda actMoveCtrl,x               ;Check for exiting the ladder
+                lda temp2                       ;Check for exiting the ladder
                 cmp actPrevCtrl,x               ;by jumping
                 beq MH_ClimbUpNoJump
                 and #JOY_LEFT|JOY_RIGHT
@@ -743,7 +599,7 @@ MH_ClimbUp:     jsr GetCharInfo4Above
                 jsr GetCharInfoOffset
                 and #CI_OBSTACLE
                 bne MH_ClimbUpNoJump
-                lda actMoveCtrl,x
+                lda temp2
                 cmp #JOY_RIGHT
                 jsr GetSignedHalfSpeed
                 sta actSX,x
@@ -796,7 +652,7 @@ MH_Swimming:    ldy #AL_MOVESPEED
                 iny
                 lda (actLo),y
                 sta temp5
-                ldy actMoveCtrl,x
+                ldy temp2
                 cpy #JOY_LEFT
                 bcc MH_SwimHorizDone
 MH_SwimHorizLeftOrRight:
@@ -810,7 +666,7 @@ MH_SwimRight:   sta actD,x
                 lda temp5
                 jsr AccActorXNegOrPos
 MH_SwimHorizDone:
-                lda actMoveCtrl,x
+                lda temp2
                 and #JOY_UP|JOY_DOWN
                 beq MH_SwimVertDone
                 lsr
@@ -830,7 +686,7 @@ MH_NotStationary:
                 bne MH_HasWaterAbove
                 lda #$00
                 sta actSY,x
-                lda actMoveCtrl,x               ;If joystick held up, exit if ground above
+                lda temp2                       ;If joystick held up, exit if ground above
                 lsr
                 bcc MH_NotExitingWater
                 cmp #JOY_LEFT/2                 ;Check for exiting to left/right
