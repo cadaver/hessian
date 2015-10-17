@@ -218,11 +218,11 @@ MH_NotInWater:  lda actD,x
                 iny
                 lda (actLo),y
                 sta temp4                       ;Movement speed
+                ldy actFall,x
+                beq MH_NoFallCheck
                 lda temp1
                 lsr                             ;Check after fall-effects (forced duck, damage)
                 bcc MH_NoFallCheck
-                ldy actFall,x
-                beq MH_NoFallCheck
                 and #MB_LANDED/2                ;Falling damage applied right after landing
                 beq MH_NoFallDamage
                 lda temp3                       ;Possibility to reduce damage by rolling
