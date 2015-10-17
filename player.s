@@ -460,21 +460,15 @@ MH_NoInitClimbDown:
                 lda actF1,x
                 cmp #FR_DUCK
                 bcs MH_DuckAnim
-                lda #$00
+MH_StartDuck:   lda #$00
                 sta actFd,x
                 lda #FR_DUCK
-                jmp MH_AnimDone
-MH_DuckAnim:    lda #$01
-                jsr AnimationDelay
-                bcs MH_DuckAnimFrame
-                rts
-MH_DuckAnimFrame:
-                lda actF1,x
-                adc #$00
-                cmp #FR_DUCK+2
-                bcc MH_AnimDone
-                lda #FR_DUCK+1
                 bne MH_AnimDone
+MH_DuckAnim:    lda #$01
+                ldy #FR_DUCK+1
+                jsr OneShotAnimation
+                lda actF1,x
+                bpl MH_AnimDone
 MH_NoDuck:      lda actF1,x                     ;If door enter/operate object animation,
                 cmp #FR_ENTER                   ;hold it as long as joystick is held up
                 bne MH_NoEnterAnim
