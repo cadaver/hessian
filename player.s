@@ -274,11 +274,11 @@ MH_NoStartSwim2:lda temp1
 MH_NoStartSwim: and #MB_HITWALL+MB_LANDED       ;Hit wall (and didn't land at the same time)?
                 cmp #MB_HITWALL
                 bne MH_NoHitWall
+                lda actSY,x                     ;If hit wall while ascending, check wallflip
+                bpl MH_NoWallFlip
                 lda temp3
                 and #AMF_WALLFLIP
                 beq MH_NoWallFlip
-                lda actSY,x                     ;Must not have started descending yet
-                bpl MH_NoWallFlip
                 lda #JOY_UP|JOY_RIGHT
                 ldy actSX,x
                 beq MH_NoWallFlip
@@ -301,7 +301,40 @@ MH_NoHitWall:   lda actF1,x                     ;If roll or death animation, con
                 bcc MH_InAir
                 jmp MH_OnGround
 
-MH_InAir:       lda temp3                       ;AI's will never grab ladders, so if enemy has nofalldamage bit
+MH_JumpAnim:    ldy #FR_JUMP+1
+                lda actSY,x
+                bpl MH_JumpAnimDown
+MH_JumpAnimUp:  cmp #-1*8
+                bcs MH_JumpAnimDone
+                dey
+                bcc MH_JumpAnimDone
+MH_JumpAnimDown:cmp #2*8
+                bcc MH_JumpAnimDone
+                iny
+MH_JumpAnimDone:tya
+MH_AnimDone2:   jmp MH_AnimDone
+
+MH_InAir:       and #MB_STARTFALLING/2
+                beq MH_OkToFall
+                lda actAIHelp,x                 ;Check AI reactions to falling off a ledge
+                bpl MH_NoDropDown
+                lda #3                          ;Allow drop down if ground reasonably close
+                jsr GetCharInfoOffset
+                and #CI_GROUND|CI_OBSTACLE
+                bne MH_OkToFall
+MH_NoDropDown:  lda actAIHelp,x                 ;Check autoturn or stop
+                and #AIH_AUTOSTOPLEDGE|AIH_AUTOTURNLEDGE
+                beq MH_OkToFall                 ;If none, just fall
+                pha
+                lda actSX,x
+                jsr MoveActorXNeg
+                jsr MH_SetGrounded
+                pla
+                lsr
+                bcs MH_DoAutoStop
+                jmp MH_DoAutoTurn
+MH_DoAutoStop:  jmp MH_ResetMoveCtrl
+MH_OkToFall:    lda temp3                       ;AI's will never grab ladders, so if enemy has nofalldamage bit
                 and #AMF_NOFALLDAMAGE           ;can also skip the grabbing code
                 bne MH_JumpAnim
                 lda actSY,x
@@ -327,18 +360,6 @@ MH_CheckGrab2:  lda temp2
                 and #CI_CLIMB
                 beq MH_JumpAnim
                 jmp MH_InitClimb
-MH_JumpAnim:    ldy #FR_JUMP+1
-                lda actSY,x
-                bpl MH_JumpAnimDown
-MH_JumpAnimUp:  cmp #-1*8
-                bcs MH_JumpAnimDone
-                dey
-                bcc MH_JumpAnimDone
-MH_JumpAnimDown:cmp #2*8
-                bcc MH_JumpAnimDone
-                iny
-MH_JumpAnimDone:tya
-MH_AnimDone2:   jmp MH_AnimDone
 
 MH_ForcedDuck:  lda temp1
                 and #MB_LANDED                  ;Falling damage applied right after landing
@@ -367,12 +388,39 @@ MH_NoRollSave:  jsr ApplyFallDamage
 MH_NoFallDamage:dec actFall,x
                 jmp MH_NoInitClimbDown
 
-MH_OnGround:    ldy actFall,x                   ;Forced duck after falling
+MH_OnGround:    ldy actFall,x                   ;Forced duck after falling?
                 bne MH_ForcedDuck
-                lda actCtrl,x                   ;When holding fire can not initiate jump
+                and #MB_HITWALL/2               ;Check AI reactions to hitting wall when on ground
+                beq MH_NoAutoTurn
+                lda actAIHelp,x
+                bpl MH_NoAutoScale
+                ldy #1
+                lda actD,x
+                bpl MH_CheckWallRight
+                ldy #-1
+MH_CheckWallRight:
+                lda #-3
+                jsr GetCharInfoXYOffset         ;Check that the wall is possible to scale
+                and #CI_OBSTACLE|CI_SHELF       ;Do not jump to nonnavigable ledge, which could
+                bne MH_NoAutoScale              ;lead to a drop
+                jmp MH_StartJump
+MH_NoAutoScale: lda actAIHelp,x
+                and #AIH_AUTOTURNWALL
+                beq MH_NoAutoTurn
+MH_DoAutoTurn:  lda actSX,x
+                eor actD,x
+                bmi MH_NoAutoTurn
+                lda actD,x
+                eor #$80
+                sta actD,x
+MH_ResetMoveCtrl:
+                lda #$00                        ;Reset movement until reassigned by AI
+                sta actMoveCtrl,x
+                sta actSX,x
+MH_NoAutoTurn:  lda actCtrl,x                   ;When holding fire can not initiate jump
                 and #JOY_FIRE
                 bne MH_NoNewJump
-                lda temp2                       ;If on ground, can initiate a jump
+                lda temp2
                 cmp #JOY_UP+1
                 and #JOY_UP
                 beq MH_NoNewJump
@@ -773,6 +821,7 @@ MH_ResetGrounded:
                 lda actMB,x
                 and #$ff-MB_GROUNDED
 MH_SetMoveBits: sta actMB,x
+                sta temp1
 MH_ResetFall:   lda #$00
                 sta actFall,x
                 sta actFallL,x
