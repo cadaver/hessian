@@ -1032,27 +1032,51 @@ GCI_Common3:    lsr
                 ora #$0c
 GCI_NoLimitDown:sta zpBitsLo
                 lda mapTblLo,y
-                sta zpDestLo
+                sta zpSrcLo
                 lda mapTblHi,y
-                sta zpDestHi
+                sta zpSrcHi
                 ldy zpBitsHi
                 cpy limitL
                 bcc GCI_Outside
                 cpy limitR
                 bcs GCI_Outside
-                lda (zpDestLo),y                ;Get block from map
+GCI_Optimized2: lda (zpSrcLo),y                ;Get block from map
                 tay
                 lda blkTblLo,y
                 sta zpDestLo
                 lda blkTblHi,y
                 sta zpDestHi
-                ldy zpBitsLo
+GCI_Optimized1: ldy zpBitsLo
                 lda (zpDestLo),y                ;Get char from block
                 tay
                 lda charInfo,y                  ;Get charinfo
                 rts
 GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle outside zone left, right, above
                 rts
+
+        ; Move char info "cursor" 1 char below, then get char info
+        ;
+        ; Parameters: X actor index
+        ; Returns: A charinfo
+        ; Modifies: A,Y,loader temp vars
+
+GetCharInfoMove1Below:
+                clc
+GetCharInfoMove1BelowNoClc:
+                lda zpBitsLo                    ;Optimized way to get charinfo 1 row below
+                adc #$04
+                cmp #$10
+                and #$0f
+                sta zpBitsLo
+                bcc GCI_Optimized1
+                ldy zpBitsHi
+                lda zpSrcLo
+                clc
+                adc mapSizeX
+                sta zpSrcLo
+                bcc GCI_Optimized2
+                inc zpSrcHi
+                bcs GCI_Optimized2
 
         ; Get char collision info from the actor's position with Y offset
         ;

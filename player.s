@@ -602,7 +602,7 @@ MH_ClimbNotInWater:
                 sta actMB,x
                 ldy #AL_CLIMBSPEED
                 lda (actLo),y
-                sta zpSrcLo
+                sta temp7
                 lda actF1,x                     ;Reset frame in case attack ended
                 sta actF2,x
                 lda temp2
@@ -675,7 +675,7 @@ MH_ClimbUpNoJump:
                 and #CI_CLIMB
                 beq MH_ClimbDone
 MH_ClimbUpOk:   ldy #-4*8
-MH_ClimbCommon: lda zpSrcLo                     ;Climbing speed
+MH_ClimbCommon: lda temp7                       ;Climbing speed
                 clc
                 adc actFd,x
                 sta actFd,x

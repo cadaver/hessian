@@ -76,7 +76,7 @@ MWG_NoXMove:    jsr GetCharInfo1Above           ;If grounded, only check wall 1 
                 lda temp5
                 lsr
                 bcs MWG_NoWallHit2
-                jsr GetCharInfo
+                jsr GetCharInfoMove1BelowNoClc
                 tay
                 and #CI_OBSTACLE
                 beq MWG_NoWallHit
@@ -224,11 +224,14 @@ MWG_PreferUp:   jsr GetCharInfo1Above           ;Check first above if joystick h
                 tay
                 lsr
                 bcs MWG_FinalizeGroundAbove
+                jsr GetCharInfoMove1BelowNoClc
+                jmp MWG_PreferLevelCheck
 MWG_PreferLevel:jsr GetCharInfo                 ;Then level
+MWG_PreferLevelCheck:
                 tay
                 lsr
                 bcs MWG_FinalizeGround
-                jsr GetCharInfo1Below           ;Then below
+                jsr GetCharInfoMove1BelowNoClc  ;Then below
                 tay
                 lsr
                 bcs MWG_FinalizeGroundBelow
