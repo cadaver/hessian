@@ -121,9 +121,9 @@ sfxMinigun:     include sfx/minigun.sfx
 sfxShotgun:     include sfx/shotgun.sfx
 sfxLaser:       include sfx/laser.sfx
 sfxPlasma:      include sfx/plasma.sfx
+sfxDeath:       include sfx/death.sfx
 sfxLauncher:    include sfx/launcher.sfx
 sfxSniperRifle: include sfx/sniperrifle.sfx
 sfxBazooka:     include sfx/bazooka.sfx
-sfxDeath:       include sfx/death.sfx
 sfxEMP:         include sfx/emp.sfx
 sfxExplosion:   include sfx/explosion.sfx
