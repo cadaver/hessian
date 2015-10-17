@@ -293,7 +293,10 @@ AH_IsPlayer:    lda actCtrl,x                   ;For player, require debounced i
 AH_IsNpc:       jsr GetFreeActor
                 bcc AH_CannotFire
                 sty tgtActIndex
-                ldy #WD_BULLETTYPE
+                ldy #WD_ATTACKDELAY             ;Set attack delay even if bullet spawn fails
+                lda (wpnLo),y                   ;to spread out CPU use
+                sta actAttackD,x
+                iny                             ;Bullet type
                 lda (wpnLo),y
                 ldy tgtActIndex
                 jsr SpawnWithOffset
@@ -378,9 +381,6 @@ AH_PlayerBonusCommon:
                 sta actHp,y                     ;Set bullet damage
 AH_NoPlayerBonus:
 AH_NoAmmoDecrement:
-                ldy #WD_ATTACKDELAY
-                lda (wpnLo),y
-                sta actAttackD,x
                 ldy #WD_SFX
                 lda (wpnLo),y
                 jmp PlaySfx

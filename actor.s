@@ -543,7 +543,7 @@ UA_RABottomCheck:
                 cmp #$00
                 bcc UA_NoRemove
 UA_Remove:      jsr RemoveLevelActor
-                jmp UA_Next
+                beq UA_Next                     ;A=0 on return
 UA_NoRemove:    ldy #AL_UPDATEROUTINE
                 lda (actLo),y
                 sta UA_Jump+1
@@ -1659,7 +1659,7 @@ RA_StoreCommon: sta lvlActWpn,y
         ; Remove actor without returning to leveldata
         ;
         ; Parameters: X actor index
-        ; Returns: -
+        ; Returns: A=0
         ; Modifies: A
 
 RemoveActor:    lda #ACT_NONE
