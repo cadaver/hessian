@@ -178,7 +178,10 @@ DA_SprSubXH:    sbc #$00
                 sta temp1
                 lda coordTblHi,y
                 sta temp2
+                stx actIndex
                 jsr DrawActorSub
+                stx sprIndex
+                ldx actIndex
 DA_ActorDone:   inx
                 cpx #MAX_ACT
                 bcc DA_Loop
@@ -198,8 +201,7 @@ DA_HitFlash:    inc actFlash,x
                 lda #$01
                 bne DA_NoFlicker
 
-DrawActorSub:   stx actIndex
-                lda actFlash,x                  ;Get programmatic color override
+DrawActorSub:   lda actFlash,x                  ;Get programmatic color override
                 bmi DA_HitFlash                 ;including one frame hit flash
                 cmp #COLOR_FLICKER
                 bcc DA_NoFlicker
@@ -229,34 +231,10 @@ DA_SprFileLoaded:
                 sta sprFileHi
                 lda fileLo,y
                 sta sprFileLo
-DA_SameSprFile: ldy #AD_NUMSPRITES              ;Get number of sprites / humanoid / invisible flag
+DA_SameSprFile: ldy #AD_NUMSPRITES              ;Get number of sprites / humanoid flag
                 clc
                 lda (actLo),y
-                bmi DA_Humanoid
-
-DA_Normal:      sta temp5
-                lda actF1,x
-                ldy actD,x
-                bpl DA_NormalRight
-                ldy #AD_LEFTFRADD               ;Add left frame offset if necessary
-                adc (actLo),y
-DA_NormalRight: adc #AD_FRAMES
-                sta temp6                       ;Store framepointer
-                ldx sprIndex
-DA_NormalLoop:  tay
-                lda (actLo),y
-                jsr GetAndStoreSprite
-                dec temp5                       ;Decrement actor sprite count
-                bmi DA_ActorSubDone
-                ldy #AD_NUMFRAMES
-                lda temp6                       ;Advance framepointer
-                clc
-                adc (actLo),y
-                sta temp6
-                bcc DA_NormalLoop
-DA_ActorSubDone:stx sprIndex
-                ldx actIndex
-DA_Invisible:   rts
+                bpl DA_Normal
 
 DA_Humanoid:    lda actWpnF,x
                 sta DA_HumanWpnF+1
@@ -313,9 +291,30 @@ DA_HumanWpnF:   lda #$00
                 sty sprFileLo
                 ldy fileHi+C_WEAPON
                 sty sprFileHi
+DA_NormalLast:  jmp GetAndStoreSprite
+
+DA_Normal:      sta temp5
+                lda actF1,x
+                ldy actD,x
+                bpl DA_NormalRight
+                ldy #AD_LEFTFRADD               ;Add left frame offset if necessary
+                adc (actLo),y
+DA_NormalRight: adc #AD_FRAMES
+                sta temp6                       ;Store framepointer
+                ldx sprIndex
+DA_NormalLoop:  tay
+                lda (actLo),y
+                dec temp5                       ;Decrement actor sprite count
+                bmi DA_NormalLast
                 jsr GetAndStoreSprite
+                ldy #AD_NUMFRAMES
+                lda temp6                       ;Advance framepointer
+                clc
+                adc (actLo),y
+                sta temp6
+                bcc DA_NormalLoop
 DA_HumanNoWeapon:
-                jmp DA_ActorSubDone
+                rts
 
         ; Set all actors to be added on screen. Used on level transitions
         ;
