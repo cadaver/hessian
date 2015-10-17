@@ -301,22 +301,20 @@ MH_NoHitWall:   lda actF1,x                     ;If roll or death animation, con
                 bcc MH_InAir
                 jmp MH_OnGround
 
-MH_InAir:       lda actSY,x
-                bpl MH_IncFall
-                cmp #-2*8                       ;Do not grab when moving up fast
-                bcc MH_JumpAnim
-                bcs MH_NoIncFall
-MH_IncFall:     lda temp3
-                and #AMF_NOFALLDAMAGE
-                bne MH_NoIncFall
+MH_InAir:       lda temp3                       ;AI's will never grab ladders, so if enemy has nofalldamage bit
+                and #AMF_NOFALLDAMAGE           ;can also skip the grabbing code
+                bne MH_JumpAnim
                 lda actSY,x
-                bmi MH_NoIncFall
-                asl
+                bmi MH_CheckGrab
+MH_IncFall:     asl
                 adc actFallL,x
                 sta actFallL,x
-                bcc MH_NoIncFall
+                bcc MH_CheckGrab2
                 inc actFall,x
-MH_NoIncFall:   lda temp2                       ;Check for grabbing a ladder while in midair
+                bcs MH_CheckGrab2
+MH_CheckGrab:   cmp #-2*8                       ;Do not grab when moving up fast
+                bcc MH_JumpAnim
+MH_CheckGrab2:  lda temp2
                 and #JOY_UP
                 beq MH_JumpAnim
                 lda actCtrl,x                   ;If fire is held, do not grab ladder
@@ -342,16 +340,41 @@ MH_JumpAnimDown:cmp #2*8
 MH_JumpAnimDone:tya
 MH_AnimDone2:   jmp MH_AnimDone
 
-MH_ForcedDuck:  dec actFall,x
+MH_ForcedDuck:  lda temp1
+                and #MB_LANDED                  ;Falling damage applied right after landing
+                beq MH_NoFallDamage
+                lda temp3                       ;Possibility to reduce damage by rolling
+                and #AMF_ROLL
+                beq MH_NoRollSave
+                lda actSX,x                     ;Must be facing move direction and have some X-speed
+                beq MH_NoRollSave
+                eor actD,x
+                bmi MH_NoRollSave
+                lda temp2
+                cmp #JOY_LEFT
+                and #JOY_DOWN
+                beq MH_NoRollSave
+                bcc MH_NoRollSave
+                lda #$00
+                sta actFall,x                   ;Reset remaining forced ducking
+                dey
+                jsr ApplyFallDamage
+                jmp MH_StartRoll
+MH_NoRollSave:  jsr ApplyFallDamage
+                txa
+                bne MH_NoFallDamage
+                jsr PlayFootstep
+MH_NoFallDamage:dec actFall,x
                 jmp MH_NoInitClimbDown
-MH_OnGround:    lda actFall,x                   ;Forced duck after falling
+
+MH_OnGround:    ldy actFall,x                   ;Forced duck after falling
                 bne MH_ForcedDuck
                 lda actCtrl,x                   ;When holding fire can not initiate jump
                 and #JOY_FIRE
                 bne MH_NoNewJump
                 lda temp2                       ;If on ground, can initiate a jump
                 cmp #JOY_UP+1
-                and #JOY_UP                     
+                and #JOY_UP
                 beq MH_NoNewJump
                 bcs MH_NoOperate
                 txa                             ;If player, check for operating levelobjects

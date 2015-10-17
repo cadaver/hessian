@@ -1244,11 +1244,20 @@ DS_Alive:
         ; Returns: C=1 if actor is alive, does not return if killed
         ; Modifies: A,Y,temp7-temp8,possibly other temp registers
 
+ApplyFallDamage:tya
+                sec
+                sbc #DAMAGING_FALL_DISTANCE
+                bcc NoFallDamage
+                beq NoFallDamage
+                asl
+                asl
+                ora #$80
 DamageSelf:     ldy #NODAMAGESRC
                 jsr DamageActor
                 bcs DS_Alive
                 pla
                 pla
+NoFallDamage:
 ATD_Skip:       rts
 
         ; Modify damage based on whether target is organic/nonorganic, then apply
