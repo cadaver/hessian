@@ -518,9 +518,11 @@ CC_ActivateCheat:
                 lda DrainBatteryRound
                 eor #$40
                 sta DrainBatteryRound
-                dec Irq1_Bg2+1
+                lda #$01
+                sta Irq1_Bg2+1                  ;Flash logo, then restore colors via the normal fadeout code
+                sta Irq1_Bg3+1
+                sta logoFadeDir
                 jsr WaitBottom
-                inc Irq1_Bg2+1
 CC_CheatWrong:  lda #$00
                 sta cheatIndex
 CC_NoCheat:
