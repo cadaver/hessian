@@ -377,22 +377,16 @@ SSpr_CopyLoop2Done:
                 beq SSpr_FinalEndMark
 SSpr_IrqLoop:   sty temp2                       ;Store IRQ startindex
                 lda sortSprY,y                  ;C=0 here
-                if OPTIMIZE_SPRITEIRQS > 0
                 sbc #21+12-1                    ;First sprite of IRQ: store the Y-coord
                 sta SSpr_IrqYCmp1+1             ;compare values
                 adc #21+12+6-1
-                else
-                adc #6
-                endif
                 sta SSpr_IrqYCmp2+1
 SSpr_IrqSprLoop:iny
                 cpy temp7
                 bcs SSpr_IrqDone
-                if OPTIMIZE_SPRITEIRQS > 0
                 lda sortSprY-8,y                ;Add next sprite to this IRQ?
 SSpr_IrqYCmp1:  cmp #$00                        ;(try to add as many as possible while
                 bcc SSpr_IrqSprLoop             ;avoiding glitches)
-                endif
                 lda sortSprY,y
 SSpr_IrqYCmp2:  cmp #$00
                 bcc SSpr_IrqSprLoop
