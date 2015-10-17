@@ -209,7 +209,7 @@ IM_BlockLoop:   lda zpSrcLo                     ;Store and increase block-
                 ldy lvlAirToxinDelay            ;Unaffected by filter?
                 bmi IM_HasToxicAir
                 eor upgrade
-IM_HasToxicAir:                
+IM_HasToxicAir:
 IM_NoToxicAir:  sta ULO_AirToxinFlag+1
                 rts
 
@@ -944,6 +944,13 @@ ULO_NoWaterDamage:
 ULO_AirToxinFlag:
                 lda #$00
                 bpl ULO_NoAirDamage
+                ldy #ZONEH_BG1
+                lda UA_ItemFlashCounter+1
+                and #$01
+                beq ULO_ToxinEffectColor
+                lda (zoneLo),y
+ULO_ToxinEffectColor:
+                sta Irq1_Bg1+1
                 ldy lvlAirToxinDelay
                 jsr ULO_DoToxinDamage
 

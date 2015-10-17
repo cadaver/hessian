@@ -521,16 +521,6 @@ UA_FlashHealth: sta colors+PANELROW*40+9
                 lda #$01
 UA_FlashBattery:sta colors+PANELROW*40+23
 UA_NoHealthBarFlash:
-                lda ULO_AirToxinFlag+1          ;Fist II flashing effect when air is toxic
-                bpl UA_NoToxinEffect
-                ldy #ZONEH_BG1
-                lda UA_ItemFlashCounter+1
-                and #$01
-                beq UA_ToxinEffectColor
-                lda (zoneLo),y
-UA_ToxinEffectColor:
-                sta Irq1_Bg1+1
-UA_NoToxinEffect:
                 ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
                 beq UA_Next
