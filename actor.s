@@ -934,45 +934,6 @@ AD_Over:        lda #$00
                 sta actFd,x
                 rts
 
-        ; Get screen relative char coordinates for actor. To be used for example in scrolling
-        ;
-        ; Parameters: X actor index
-        ; Returns: A X-coordinate, Y y-coordinate
-        ; Modifies: A,Y,zpSrcLo
-
-GetActorCharCoords:
-                lda actYL,x
-                rol
-                rol
-                rol
-                and #$03
-                sec
-                sbc SL_CSSBlockY+1
-                and #$03
-                sta zpSrcLo
-                lda actYH,x
-                sbc SL_CSSMapY+1
-                asl
-                asl
-                ora zpSrcLo
-                tay
-GetActorCharCoordX:
-                lda actXL,x
-                rol
-                rol
-                rol
-                and #$03
-                sec
-                sbc SL_CSSBlockX+1
-                and #$03
-                sta zpSrcLo
-                lda actXH,x
-                sbc SL_CSSMapX+1
-                asl
-                asl
-                ora zpSrcLo
-                rts
-
         ; Get char collision info from 1 block above or below actor's pos (optimized)
         ;
         ; Parameters: X actor index

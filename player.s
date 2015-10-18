@@ -106,40 +106,69 @@ MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
 MP_Scroll:      ldy #ZONEH_BG3
                 lda (zoneLo),y
                 bmi MP_SetWeapon                ;Scroll-disabled zone?
-                jsr GetActorCharCoords          ;Check scrolling
+MP_ScrollHorizontal:
+                ldy #$00
+                lda actXL+ACTI_PLAYER
+                rol
+                rol
+                rol
+                and #$03
+                sec
+                sbc SL_CSSBlockX+1
+                and #$03
+                sta zpSrcLo
+                lda actXH+ACTI_PLAYER
+                sbc SL_CSSMapX+1
+                asl
+                asl
+                ora zpSrcLo
                 cmp #SCRCENTER_X-1
                 bcs MP_NotLeft1
-                dex
+                dey
 MP_NotLeft1:    cmp #SCRCENTER_X
                 bcs MP_NotLeft2
-                dex
+                dey
 MP_NotLeft2:    cmp #SCRCENTER_X+1
                 bcc MP_NotRight1
-                inx
+                iny
 MP_NotRight1:   cmp #SCRCENTER_X+2
                 bcc MP_NotRight2
-                inx
-MP_NotRight2:   stx scrollSX
-                ldx #$00
-                cpy #SCRCENTER_Y-2
+                iny
+MP_NotRight2:   sty scrollSX
+MP_ScrollVertical:
+                ldy #$00
+                lda actYL+ACTI_PLAYER
+                rol
+                rol
+                rol
+                and #$03
+                sec
+                sbc SL_CSSBlockY+1
+                and #$03
+                sta zpSrcLo
+                lda actYH+ACTI_PLAYER
+                sbc SL_CSSMapY+1
+                asl
+                asl
+                ora zpSrcLo
+                cmp #SCRCENTER_Y-2
                 bcs MP_NotUp1
-                dex
-MP_NotUp1:      cpy #SCRCENTER_Y
+                dey
+MP_NotUp1:      cmp #SCRCENTER_Y
                 bcs MP_NotUp2
-                dex
-MP_NotUp2:      cpy #SCRCENTER_Y+1
+                dey
+MP_NotUp2:      cmp #SCRCENTER_Y+1
                 bcc MP_NotDown1
-                inx
-MP_NotDown1:    cpy #SCRCENTER_Y+3
+                iny
+MP_NotDown1:    cmp #SCRCENTER_Y+3
                 bcc MP_NotDown2
-                inx
-MP_NotDown2:    stx scrollSY
+                iny
+MP_NotDown2:    sty scrollSY
 MP_SetWeapon:   ldy itemIndex
                 cpy #ITEM_FIRST_NONWEAPON
                 bcc MP_WeaponOK
                 ldy #ITEM_NONE
 MP_WeaponOK:    sty actWpn+ACTI_PLAYER
-                ldx #ACTI_PLAYER
                 jmp MoveAndAttackHuman          ;Finally move player and handle weapon
 
         ; Humanoid character move routine
