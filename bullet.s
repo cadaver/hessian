@@ -98,7 +98,7 @@ MoveShotgunBullet:
                 lda #$0a
                 bne MBltMF_Common
 MBlt_Remove:    jmp RemoveActor
-MSBlt_Cloud:    lda #2
+MSBlt_Cloud:    lda #3
                 jsr AnimationDelay
                 bcc MSBlt_NoAnim
                 lda actSizeH,x                  ;C=1, increase size by 2

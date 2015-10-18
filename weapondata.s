@@ -169,8 +169,8 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b ACT_BULLET                 ;Bullet actor type
                 dc.b DMG_PISTOL                 ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 20                         ;Bullet time duration
-                dc.b 13                         ;Bullet speed in pixels
+                dc.b 22                         ;Bullet time duration
+                dc.b 12                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_PISTOL                 ;Sound effect
                 dc.b $ff                        ;Climbing weapon frame
@@ -187,8 +187,8 @@ wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b ACT_SHOTGUNBULLET          ;Bullet actor type
                 dc.b DMG_SHOTGUN                ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 11                         ;Bullet time duration
-                dc.b 14                         ;Bullet speed in pixels
+                dc.b 15                         ;Bullet time duration
+                dc.b 12                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_SHOTGUN                ;Sound effect
                 dc.b 8                          ;Climbing weapon frame
@@ -205,8 +205,8 @@ wdAutoRifle:    dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b ACT_RIFLEBULLET            ;Bullet actor type
                 dc.b DMG_AUTORIFLE              ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 18                         ;Bullet time duration
-                dc.b 14                         ;Bullet speed in pixels
+                dc.b 20                         ;Bullet time duration
+                dc.b 13                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_AUTORIFLE              ;Sound effect
                 dc.b 13                         ;Climbing weapon frame
@@ -224,7 +224,7 @@ wdSniperRifle:  dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b DMG_SNIPERRIFLE            ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 20                         ;Bullet time duration
-                dc.b 15                         ;Bullet speed in pixels
+                dc.b 14                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_SNIPERRIFLE            ;Sound effect
                 dc.b 18                         ;Climbing weapon frame
@@ -297,8 +297,8 @@ wdPlasmaGun:    dc.b WDB_FLICKERBULLET          ;Weapon bits
                 dc.b ACT_PLASMA                 ;Bullet actor type
                 dc.b DMG_PLASMA                 ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 21                         ;Bullet time duration
-                dc.b 13                         ;Bullet speed in pixels
+                dc.b 22                         ;Bullet time duration
+                dc.b 12                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_PLASMA                 ;Sound effect
                 dc.b 52                         ;Climbing weapon frame
