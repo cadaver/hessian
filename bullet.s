@@ -123,13 +123,12 @@ MoveBullet_NoCollision:
                 dec actTime,x
                 bmi MBlt_Remove
 
-        ; Move actor in a straight line and return charinfo from final position.
-        ; If hit water, transform into a splash
+        ; Move actor in a straight line. If hit water, transform into a splash
         ; If hit an obstacle, call the destruct routine
         ; Note: do not JSR into this, but jump at the end of bullet move routine
         ;
         ; Parameters: X actor index
-        ; Returns: A charinfo
+        ; Returns: -
         ; Modifies: A,Y,temp vars
 
 MoveProjectile: lda actSX,x
@@ -137,18 +136,16 @@ MoveProjectile: lda actSX,x
                 lda actSY,x
                 jsr MoveActorY
                 jsr GetCharInfo
-                tay
                 and #CI_WATER|CI_OBSTACLE
-                beq MProj_Done
-                cpy #CI_WATER
-                beq MProj_HitWater
+                bne MProj_ObstacleOrWater
+                rts
+MProj_ObstacleOrWater:
+                and #CI_WATER
+                bne MProj_HitWater
 MProj_HitObstacle:
                 ldy #NODAMAGESRC                ;Destroy actor without specific damage source
                 jmp DestroyActor
-MProj_Done:     tya
-                rts
-MProj_HitWater: lda #-1                         ;If water 1 already char above, move upward
-                jsr GetCharInfoOffset           ;(bullets may move faster than 8 pixels/frame)
+MProj_HitWater: jsr GetCharInfo1Above
                 and #CI_WATER
                 beq MProj_NoWaterAbove
                 lda #-8*8
@@ -385,7 +382,7 @@ CBC_HasCollision:
                 bmi CBC_ReportOnly
                 sty tgtActIndex
                 jsr ApplyTargetDamage
-CBC_NoDamage:   ldx actIndex
+                ldx actIndex
                 ldy #NODAMAGESRC                ;Destroy bullet with no damage source
                 pla
                 pla

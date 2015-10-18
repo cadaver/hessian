@@ -53,10 +53,9 @@ AL_HEIGHT       = 23                           ;Height for headbump check, negat
 AL_JUMPSPEED    = 24                           ;Negative
 AL_CLIMBSPEED   = 25
 
-GRP_NONE        = $00                           ;Does not collide/take damage
-GRP_HEROES      = $01
-GRP_ENEMIES     = $02
-GRP_BEASTS      = $03
+GRP_HEROES      = $00
+GRP_ENEMIES     = $01
+GRP_BEASTS      = $02
 
 AF_GROUPBITS    = $07
 AF_INITONLYSIZE = $08
@@ -458,9 +457,6 @@ BTL_Loop:       lda actT,x
                 beq BTL_Next
                 inc numTargetsAll               ;Count alive + dead for spawning
                 lda actHp,x                     ;Actor must have nonzero health
-                beq BTL_Next
-                lda actFlags,x                  ;Actor must not be in bystander (none) group
-                and #AF_GROUPBITS
                 beq BTL_Next
                 txa
                 sta targetList,y
