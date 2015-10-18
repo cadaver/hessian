@@ -86,8 +86,12 @@ AI_FollowClimbDoExit:
 
 AI_FollowClimb: lda #LADDER_DELAY
                 sta actLastNavLadder,x
+                lda actAIMode,x                 ;Do not do the X-check in combat to prevent stopping
+                cmp #AIMODE_FOLLOW
+                bne AI_FollowClimbInCombat
                 lda temp6                       ;Get new dir if X-distance zero (on the same ladder)
                 beq AI_FollowClimbNewDir        ;or currently not moving
+AI_FollowClimbInCombat:
                 lda actMoveCtrl,x
                 beq AI_FollowClimbNewDir        ;Otherwise remove the left/right controls
                 and #JOY_UP|JOY_DOWN            ;and continue previous up/down direction
@@ -297,9 +301,9 @@ AI_FreeMoveWithTurn:
                 jsr AI_RandomReleaseDuck        ;If ducking, continue it randomly
                 bne AI_ClearAttackControl
 AI_FreeMoveNoDuck:
-                lda actF1,x                     ;If on ladder with target, use pathfinding
+                lda actF1,x                     ;If on ladder, use pathfinding
                 cmp #FR_CLIMB
-                bcs AI_FreeMoveFollow
+                bcs AI_FreeMoveFollowClimb
 AI_FreeMoveNoClimb:
                 lda actGroundCharInfo,x
                 and #CI_SHELF
@@ -320,8 +324,8 @@ AI_ClearAttackControl:
                 lda #$00
                 sta actCtrl,x
                 rts
-AI_FreeMoveFollow:
-                jmp AI_Follow
+AI_FreeMoveFollowClimb:
+                jmp AI_FollowClimb
 
             ; Berzerk AI
 

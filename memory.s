@@ -14,11 +14,9 @@ MAX_LVLACT      = 96                            ;Allow extra 16 global or tempor
 MAX_GLOBALACT   = MAX_LVLACT-MAX_LVLDATAACT
 MAX_SAVEACT     = 24                            ;Amount of persistent actors saved in save optimize mode
 MAX_LVLOBJ      = 128                           ;Note: must be 128! And-operations are used in code
-MAX_SPAWNERS    = 16
 MAX_PLOTBITS    = 64
 MAX_ACTORTRIGGERS = 16
 MAX_SAVES       = 5
-NUM_SKILLS      = 5
 
 ACTI_PLAYER     = 0
 ACTI_FIRSTNPC   = 1
