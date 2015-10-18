@@ -8,6 +8,7 @@ aiJumpTblLo:    dc.b <AI_Player
                 dc.b <AI_Mover
                 dc.b <AI_Guard
                 dc.b <AI_Berzerk
+                dc.b <AI_Flyer
 
 aiJumpTblHi:    dc.b >AI_Player
                 dc.b >AI_Idle
@@ -17,7 +18,13 @@ aiJumpTblHi:    dc.b >AI_Player
                 dc.b >AI_Mover
                 dc.b >AI_Guard
                 dc.b >AI_Berzerk
+                dc.b >AI_Flyer
 
+flyerDirTbl:    dc.b JOY_LEFT|JOY_UP
+                dc.b JOY_LEFT|JOY_DOWN
+                dc.b JOY_RIGHT|JOY_UP
+                dc.b JOY_RIGHT|JOY_DOWN
+                
         ; Spawn list entry selection tables
 
 spawnListAndTbl:dc.b $00                        ;0: entry 0
@@ -26,8 +33,8 @@ spawnListAddTbl:dc.b $00                        ;0: entry 0
 
         ; Spawn list entries
 
-spawnTypeTbl:   dc.b ACT_TESTENEMY              ;0
+spawnTypeTbl:   dc.b ACT_TESTFLYINGENEMY        ;0
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
 
-spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
+spawnWpnTbl:    dc.b ITEM_PISTOL|SPAWN_AIR      ;0

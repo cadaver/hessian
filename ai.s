@@ -15,6 +15,7 @@ AIMODE_SNIPER       = 4
 AIMODE_MOVER        = 5
 AIMODE_GUARD        = 6
 AIMODE_BERZERK      = 7
+AIMODE_FLYER        = 8
 AIMODE_NOTPERSISTENT = $80
 
 NOTARGET            = $ff
@@ -258,7 +259,7 @@ AI_MoverFollow: jmp AI_FollowHasTargetDistance
 AI_ContinueAttack:
                 inc actTime,x
                 rts
-                
+
             ; Guard AI
 
 AI_Guard:       lda actTime,x                   ;Ongoing attack?
@@ -367,7 +368,65 @@ AI_TargetIsDucking:
 AI_ReleaseDuck: lda #$00
 AI_ReleaseDuckDone:
 AI_BerzerkDone:
+AI_FlyerDone:
                 rts
+
+AI_ContinueAttack2:
+                jmp AI_ContinueAttack
+
+        ; Flyer AI
+
+AI_Flyer:       lda actTime,x                   ;Ongoing attack?
+                bmi AI_ContinueAttack2
+                jsr FindTargetAndAttackDir
+                bcc AI_FlyerIdle
+                cmp #JOY_FIRE
+                bcc AI_FlyerFollow
+                sta temp1
+                jsr PA_NoDucking
+                bcs AI_FlyerDone
+AI_FlyerFollow: lda #$00                        ;Determine acceleration direction toward target
+                ldy temp5
+                beq AI_FlyerXDone
+                bmi AI_FlyerLeft
+                ora #JOY_RIGHT
+                skip2
+AI_FlyerLeft:   ora #JOY_LEFT
+AI_FlyerXDone:  ldy temp7
+                beq AI_FlyerYDone
+                bmi AI_FlyerUp
+                ora #JOY_DOWN
+                skip2
+AI_FlyerUp:     ora #JOY_UP
+AI_FlyerYDone:
+AI_FlyerStoreDir:
+                jmp AI_StoreMoveCtrl
+AI_FlyerIdle:   lda actMoveCtrl,x               ;When idle, make sure is going either left or right
+                tay                             ;and either up or down
+                and #JOY_LEFT|JOY_RIGHT
+                beq AI_FlyerPickDir
+                tya
+                and #JOY_UP|JOY_DOWN
+                beq AI_FlyerPickDir
+                lda actMB,x
+                tay
+                and #MB_HITWALL
+                beq AI_NoHorizWall
+                lda actMoveCtrl,x
+                eor #JOY_LEFT|JOY_RIGHT
+                bpl AI_FlyerStoreDir
+AI_NoHorizWall: tya
+                and #MB_HITWALLVERTICAL
+                beq AI_NoVertWall
+                lda actMoveCtrl,x
+                eor #JOY_UP|JOY_DOWN
+                bpl AI_FlyerStoreDir
+AI_NoVertWall:  jmp AI_ClearAttackControl       ;Continue existing dir, make sure fire isn't pressed
+AI_FlyerPickDir:jsr Random
+                and #$03
+                tay
+                lda flyerDirTbl,y
+                bpl AI_FlyerStoreDir
 
         ; Accumulate aggression & attack to specified direction. Also handle
         ; defensive ducking if the actor can duck
@@ -587,6 +646,7 @@ LineCheck:      lda actXH,x
                 sta zpSrcLo
                 lda mapTblHi,y
                 sta zpSrcHi
+                bne LC_InitialCheck             ;Check that isn't inside an obstacle (flyers)
 LC_Loop:        ldy temp1
 LC_CmpX:        cpy #$00
                 bcc LC_MoveRight
@@ -616,7 +676,7 @@ LC_MoveYDone:   sty temp2
                 sta zpSrcHi
 LC_MoveYDone2:  dec temp3
                 beq LC_NoLine
-                ldy temp1
+LC_InitialCheck:ldy temp1
                 lda (zpSrcLo),y
                 tay
                 lda blkTblLo,y

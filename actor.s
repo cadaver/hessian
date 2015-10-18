@@ -1395,10 +1395,6 @@ AS_InAir:       asl
                 sta temp3
                 bcs AS_InAirTop
 AS_InAirSide:   jsr Random
-                pha
-                and #$c0
-                sta actYL,y
-                pla
                 and #$03
                 adc #$01
                 adc mapY

@@ -177,7 +177,9 @@ AIP_WeaponOK:   sty actWpn+ACTI_PLAYER
 
 MH_IsClimbing:  jmp MH_Climbing
 MH_IsSwimming:  jmp MH_Swimming
-MoveHuman:      lda actMoveCtrl,x               ;Current joystick controls
+MoveHuman:      lda actD,x                      ;Current dir for roll control check
+                sta MH_OldDir+1
+                lda actMoveCtrl,x               ;Current joystick controls
                 sta temp2
                 ldy #AL_MOVEFLAGS
                 lda (actLo),y
@@ -242,9 +244,7 @@ MH_RollAnim:    lda #$01
                 lda #FR_DUCK+1
 MH_RollAnimDone:sta actF1,x
                 bne MH_RollAcc                  ;Forced acceleration (regardless of controls) when rolling
-MH_NoClimb:     lda actD,x
-                sta MH_OldDir+1
-                lda temp2                       ;Check turning / X-acceleration / braking
+MH_NoClimb:     lda temp2                       ;Check turning / X-acceleration / braking
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_Brake
                 and #JOY_RIGHT
@@ -957,133 +957,6 @@ AddScore:       clc
 SetPanelRedrawScore:
 AS_Done:        lda #REDRAW_SCORE
                 jmp SetPanelRedraw
-
-        ; Humanoid character destroy routine
-        ;
-        ; Parameters: X actor index,Y damage source actor or $ff if none
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8
-
-HumanDeath:     tya                             ;Check if has a damage source
-                bmi HD_NoDamageSource
-                lda actHp,y
-                sta temp8
-                lda actSX,y                     ;Check if final attack came from right or left
-                bne HD_GotDir
-                lda actXL,x
-                sec
-                sbc actXL,y
-                lda actXH,x
-                sbc actXH,y
-HD_GotDir:      asl                             ;Direction to carry
-                lda temp8
-                ldy #DEATH_MAX_XSPEED
-                jsr AccActorXNegOrPos
-HD_NoDamageSource:
-                lda actMB,x                     ;If in water, do not modify Y-speed
-                bmi HD_NoYSpeed
-                lda #DEATH_YSPEED
-                sta actSY,x
-                jsr MH_ResetGrounded
-HD_NoYSpeed:    lda #SFX_DEATH
-                jsr PlaySfx
-                lda #FR_DIE
-                sta actF1,x
-                sta actF2,x
-                lda #DEATH_DISAPPEAR_DELAY
-                sta actTime,x
-                lda #POS_NOTPERSISTENT          ;Bodies are supposed to eventually vanish, so mark as
-                sta actLvlDataPos,x             ;nonpersistent if goes off the screen
-                lda #$00
-                sta actFd,x
-                sta actHp,x
-                sta actAIMode,x                ;Reset any ongoing AI
-
-        ; Drop item from dead enemy
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8
-
-DropItem:       lda #$02                        ;Retry counter
-                sta temp7
-DI_Retry:       ldy #AL_DROPITEMINDEX
-                lda (actLo),y
-                bpl DI_ItemNumber
-                sta temp5
-                jsr Random
-                and #DROPTABLERANDOM-1
-                adc temp5
-                tay
-                lda itemDropTable-$80,y
-                beq DI_NoItem
-                bpl DI_ItemNumber
-                lda actWpn,x
-DI_ItemNumber:  tay
-                beq DI_NoItem
-                sta temp5                       ;Item type to drop
-                lda #$00
-                sta temp8                       ;Capacity counter
-                ldy #ACTI_FIRSTITEM             ;Count capacity on both ground and inventory, do not spawn
-DI_CountGroundItems:                            ;if player can't pick up
-                lda actT,y
-                beq DI_CGINext
-                lda actF1,y
-                cmp temp5
-                bne DI_CGINext
-                lda actHp,y
-                clc
-                adc temp8
-                bcs DI_Exceeded
-                sta temp8
-DI_CGINext:     iny
-                cpy #ACTI_LASTITEM+1
-                bcc DI_CountGroundItems
-                ldy temp5
-                jsr FindItem
-                bcc DI_NotInInventory
-                lda invCount-1,y
-                clc
-                adc temp8
-                bcs DI_Exceeded
-                sta temp8
-DI_NotInInventory:
-                lda temp8
-                cmp itemMaxCount-1,y
-                bcc DI_HasCapacity
-DI_Exceeded:    dec temp7
-                bne DI_Retry                    ;If player has no capacity, retry to drop something else
-DI_NoItem:      rts                             ;(e.g. batteries or medkits)
-DI_HasCapacity: lda #ACTI_FIRSTITEM
-                ldy #ACTI_LASTITEM
-                jsr GetFreeActor
-                bcc DI_NoItem
-                lda #ACT_ITEM
-                jsr SpawnActor
-                lda temp5
-                stx temp6
-                tax
-                sta actF1,y
-                lda #1
-                cpx #ITEM_FIRST_IMPORTANT       ;Quest items always x1
-                bcs DI_NoCount
-                lda itemDefaultPickup-1,x
-DI_NoCount:     sta actHp,y
-                lda #ITEM_YSPEED
-                sta actSY,y
-                tya
-                tax
-                jsr InitActor
-                lda #ITEM_SPAWN_OFFSET
-                jsr MoveActorY
-                lda temp5
-                cmp #ITEM_FIRST_IMPORTANT
-                ror
-                ror                             ;Carry to bit 6
-                and #ORG_GLOBAL
-                jsr SetPersistence
-                ldx temp6
-                rts
 
         ; Create player actor and (re)load level
         ;
