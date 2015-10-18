@@ -69,55 +69,55 @@ MoveWithGravity:sta temp6
 MWG_NoYMove:    lda actSX,x                     ;Have X-speed?
                 beq MWG_NoXMove
                 jsr MoveActorX
-MWG_NoXMove:    jsr GetCharInfo1Above           ;If grounded, only check wall 1 char higher
-                tay                             ;If in air, check both at feet & 1 char higher
+MWG_NoXMove:    jsr GetCharInfo1Above           ;Charinfos above & at needed several times,
+                sta temp7                       ;get them now
+                ldy actSX,x
+                beq MWG_NoWallHit
                 and #CI_OBSTACLE
                 bne MWG_HasWallHit
-                lda temp5
-                lsr
-                bcs MWG_NoWallHit2
-                jsr GetCharInfoMove1BelowNoClc
-                tay
+                jsr GetCharInfo
+                sta temp8
                 and #CI_OBSTACLE
-                beq MWG_NoWallHit
-MWG_HasWallHit: lda actSX,x                     ;If hit wall, back out & set flag
-                beq MWG_WallHitDone
+                beq MWG_NoWallHit2
+MWG_HasWallHit: tya
                 bmi MWG_WallHitLeft
 MWG_WallHitRight:
                 lda #-8*8
                 jsr MoveActorX
                 ora #$3f
-                bne MWG_WallHitDone2
+                bne MWG_WallHitDone
 MWG_WallHitLeft:lda #8*8
                 jsr MoveActorX
                 and #$c0
-MWG_WallHitDone2:
-                sta actXL,x
-MWG_WallHitDone:lda temp5
+MWG_WallHitDone:sta actXL,x
+                lda temp5
                 ora #MB_HITWALL
                 sta temp5
-MWG_NoWallHit:  lda temp5                       ;Check enter/leave water
-                lsr
-MWG_NoWallHit2: and #MB_INWATER/2
-                bne MWG_CheckLeaveWater
+                jsr GetCharInfo1Above           ;Need to re-get the charinfos after modifying position
+                sta temp7
+MWG_NoWallHit:  jsr GetCharInfo
+                sta temp8
+MWG_NoWallHit2: lda temp7
+                ldy temp5
+                bmi MWG_CheckLeaveWater
 MWG_CheckEnterWater:
-                tya
                 and #CI_WATER
                 beq MWG_NoLeaveWater
-                php
                 jsr CreateSplash
-                plp
                 lda temp5
                 ora #MB_INWATER
-                bne MWG_StoreFlags
+                bne MWG_CheckWaterStoreFlags
 MWG_CheckLeaveWater:
-                tya
                 and #CI_WATER|CI_OBSTACLE|CI_GROUND ;Leaving water conclusive only if no ground/obstacles at feet
                 bne MWG_NoLeaveWater
                 lda temp5
                 and #$ff-MB_INWATER
-MWG_StoreFlags: sta temp5
+MWG_CheckWaterStoreFlags:
+                sta temp5
+                tay
 MWG_NoLeaveWater:
+                tya
+                lsr
                 bcc MWG_InAir
                 jmp MWG_OnGround
 
@@ -141,11 +141,10 @@ MWG_NoCeiling:  lda actSX,x
                 adc #$01
 MWG_XSpeedNeg:  cmp actSY,x
                 bcs MWG_NoLanding
-                jsr GetCharInfo
-                tay
+                lda temp8
                 lsr
                 bcc MWG_NoLanding
-                tya
+                rol
                 and #$e0
                 beq MWG_NoLanding               ;If no slope, can't be a landing
                 sta temp6
@@ -158,11 +157,10 @@ MWG_StoreMB:    sta actMB,x
                 rts
 
 MWG_CheckLanding:
-                jsr GetCharInfo                 ;Get charinfo at actor pos
-                tay
+                lda temp8                       ;Charinfo at actor pos
                 lsr                             ;Hit ground?
                 bcc MWG_CheckCharCrossY         ;If not directly, check also possible char crossing
-                tya
+                rol
                 ldy #$00
                 and #$e0                        ;Get the slopebits
                 beq MWG_HitGround               ;Optimization for slope0 (most common)
@@ -187,15 +185,14 @@ MWG_CheckCharCrossY:
                 sec
                 sbc actSY,x
                 bcs MWG_NoLanding
-MWG_CrossedChar:jsr GetCharInfo1Above           ;Get char above
-                tay
+MWG_CrossedChar:lda temp7                       ;Get char above
                 lsr
                 bcc MWG_NoLanding
                 and #$70                        ;Char crossing is only important on slopes; skip on level ground
                 beq MWG_NoLanding               ;(prevents a certain bug with obstacle+ground underneath it)
                 lda #-8*8                       ;Move the actor 1 char up
                 jsr MoveActorY
-                tya
+                lda temp7
                 and #$e0
                 sta temp6
 MWG_HitGround2: lda actXL,x
@@ -215,44 +212,48 @@ MWG_HitGround:  lda #$00
                 ora #MB_GROUNDED|MB_LANDED
                 bne MWG_StoreMB
 
-MWG_OnGround:   cpx #MAX_COMPLEXACT
+MWG_OnGround:   cpx #MAX_COMPLEXACT             ;Check for player/NPC wanting to go up stairs
                 bcs MWG_PreferLevel
                 lda actMoveCtrl,x
-                and #JOY_UP
-                beq MWG_PreferLevel
-MWG_PreferUp:   jsr GetCharInfo1Above           ;Check first above if joystick held up
-                tay
+                lsr
+                bcc MWG_PreferLevel
+MWG_PreferUp:   lda temp7
                 lsr
                 bcs MWG_FinalizeGroundAbove
-                jsr GetCharInfoMove1BelowNoClc
-                jmp MWG_PreferLevelCheck
-MWG_PreferLevel:jsr GetCharInfo                 ;Then level
-MWG_PreferLevelCheck:
-                tay
+                lda temp8
                 lsr
                 bcs MWG_FinalizeGround
-                jsr GetCharInfoMove1BelowNoClc  ;Then below
-                tay
+                jsr GetCharInfo1Below
                 lsr
                 bcs MWG_FinalizeGroundBelow
-                jsr GetCharInfo1Above           ;Finally above
-                tay                             ;(note: if player is holding up and is
-                lsr                             ;about to fall, above will be checked twice,
-                bcs MWG_FinalizeGroundAbove     ;but it's just a one frame CPU hit)
+                bcc MWG_StartFalling
+MWG_PreferLevel:lda temp8
+                lsr
+                bcs MWG_FinalizeGround
+                jsr GetCharInfo1Below
+                lsr
+                bcs MWG_FinalizeGroundBelow
+                lda temp7
+                lsr
+                bcs MWG_FinalizeGroundAbove
 MWG_StartFalling:
                 lda temp5                       ;If no ground anywhere, start falling
                 and #$ff-MB_GROUNDED
                 ora #MB_STARTFALLING
                 bne MWG_StoreMB2
 MWG_FinalizeGroundBelow:
+                tay
                 lda #8*8
-                jsr MoveActorY
-                jmp MWG_FinalizeGround
+                bne MWG_FinalizeGroundMove
 MWG_FinalizeGroundAbove:
+                tay
                 lda #-8*8
+MWG_FinalizeGroundMove:
                 jsr MoveActorY
-MWG_FinalizeGround:
                 tya
+                sec
+MWG_FinalizeGround:
+                rol
                 cpx #MAX_COMPLEXACT
                 bcs MWG_DoNotSaveCharInfo
                 sta actGroundCharInfo,x

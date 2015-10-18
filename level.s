@@ -1353,29 +1353,14 @@ CP_NotInWater:  ora #MB_GROUNDED                ;checkpoint restore
 StartMainLoop:  ldx #STACKSTART
                 txs
 MainLoop:       jsr ScrollLogic
-                if SHOW_ACTOR_TIME > 0
-                lda #$02
-                sta $d020
                 endif
                 jsr DrawActors
                 jsr AddActors
-                if SHOW_ACTOR_TIME > 0
-                lda #$00
-                sta $d020
-                endif
                 jsr FinishFrame
                 jsr ScrollLogic
                 jsr GetControlsWaitFrame
                 jsr UpdateMenu
-                if SHOW_ACTOR_TIME > 0
-                lda #$0a
-                sta $d020
-                endif
                 jsr UpdateActors
-                if SHOW_ACTOR_TIME > 0
-                lda #$00
-                sta $d020
-                endif
                 jsr FinishFrame
                 jsr UpdateLevelObjects
                 jmp MainLoop

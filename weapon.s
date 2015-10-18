@@ -313,15 +313,15 @@ AH_BulletFrameDone:
 AH_FireDir:     lda #$00
                 clc
                 adc (wpnLo),y
-                tay
-                sty zpSrcLo
-                lda bulletXSpdTbl,y
-                ldy temp4
+                tax
+                stx zpSrcLo
+                lda temp4
+                ldy bulletXSpdTbl,x
                 ldx #temp1
                 jsr MulU
-                ldy zpSrcLo
-                lda bulletYSpdTbl,y
-                ldy temp4
+                ldx zpSrcLo
+                lda temp4
+                ldy bulletYSpdTbl,x
                 ldx #temp3
                 jsr MulU
                 lda zpSrcLo

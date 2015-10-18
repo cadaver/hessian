@@ -130,7 +130,11 @@ DA_CacheAgeNotOver:
                 ldx #$00                        ;Reset amount of used sprites
                 stx sprIndex
 DA_Loop:        ldy actT,x
-                beq DA_ActorDone
+                beq DA_ActorDone2
+                if SHOW_ACTOR_TIME > 0
+                lda #$02
+                sta $d020
+                endif
                 lda actDispTblHi-1,y            ;Zero display address = invisible
                 beq DA_ActorDone
                 sta actHi
@@ -182,7 +186,11 @@ DA_SprSubXH:    sbc #$00
                 jsr DrawActorSub
                 stx sprIndex
                 ldx actIndex
-DA_ActorDone:   inx
+DA_ActorDone:   if SHOW_ACTOR_TIME > 0
+                lda #$00
+                sta $d020
+                endif
+DA_ActorDone2:  inx
                 cpx #MAX_ACT
                 bcc DA_Loop
 DA_FillSprites: ldx sprIndex                    ;If less sprites used than last frame, set unused Y-coords to max.
@@ -550,7 +558,15 @@ UA_NoRemove:    ldy #AL_UPDATEROUTINE
                 iny
                 lda (actLo),y
                 sta UA_Jump+2
+                if SHOW_ACTOR_TIME > 0
+                lda #$0a
+                sta $d020
+                endif
 UA_Jump:        jsr $0000
+                if SHOW_ACTOR_TIME > 0
+                lda #$00
+                sta $d020
+                endif
 UA_Next:        dex
                 bpl UA_Loop
 
@@ -1053,30 +1069,6 @@ GCI_Optimized1: ldy zpBitsLo
                 rts
 GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle outside zone left, right, above
                 rts
-
-        ; Move char info "cursor" 1 char below, then get char info
-        ;
-        ; Parameters: X actor index
-        ; Returns: A charinfo
-        ; Modifies: A,Y,loader temp vars
-
-GetCharInfoMove1Below:
-                clc
-GetCharInfoMove1BelowNoClc:
-                lda zpBitsLo                    ;Optimized way to get charinfo 1 row below
-                adc #$04
-                cmp #$10
-                and #$0f
-                sta zpBitsLo
-                bcc GCI_Optimized1
-                ldy zpBitsHi
-                lda zpSrcLo
-                clc
-                adc mapSizeX
-                sta zpSrcLo
-                bcc GCI_Optimized2
-                inc zpSrcHi
-                bcs GCI_Optimized2
 
         ; Get char collision info from the actor's position with Y offset
         ;
