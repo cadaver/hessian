@@ -69,17 +69,18 @@ MoveWithGravity:sta temp6
 MWG_NoYMove:    lda actSX,x                     ;Have X-speed?
                 beq MWG_NoXMove
                 jsr MoveActorX
-MWG_NoXMove:    jsr GetCharInfo1Above           ;Charinfos above & at needed several times,
+                jsr GetCharInfo1Above           ;Charinfos above & at needed several times,
                 sta temp7                       ;get them now
-                ldy actSX,x
-                beq MWG_NoWallHit
                 and #CI_OBSTACLE
                 bne MWG_HasWallHit
+                lda temp5                       ;If grounded, do not check obstacle at feet
+                lsr                             ;(would prevent going up slopes with obstacle below)
+                bcs MWG_NoWallHit
                 jsr GetCharInfo
                 sta temp8
                 and #CI_OBSTACLE
                 beq MWG_NoWallHit2
-MWG_HasWallHit: tya
+MWG_HasWallHit: lda actSX,x
                 bmi MWG_WallHitLeft
 MWG_WallHitRight:
                 lda #-8*8
@@ -93,7 +94,7 @@ MWG_WallHitDone:sta actXL,x
                 lda temp5
                 ora #MB_HITWALL
                 sta temp5
-                jsr GetCharInfo1Above           ;Need to re-get the charinfos after modifying position
+MWG_NoXMove:    jsr GetCharInfo1Above           ;Need to re-get the charinfos after modifying position
                 sta temp7
 MWG_NoWallHit:  jsr GetCharInfo
                 sta temp8
