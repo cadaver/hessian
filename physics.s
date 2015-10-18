@@ -76,7 +76,7 @@ MWG_NoYMove:    lda actSX,x                     ;Have X-speed?
                 lda temp5                       ;If grounded, do not check obstacle at feet
                 lsr                             ;(would prevent going up slopes with obstacle below)
                 bcs MWG_NoWallHit
-                jsr GetCharInfo
+                jsr GetCharInfoOptimizedAfter1Above
                 sta temp8
                 and #CI_OBSTACLE
                 beq MWG_NoWallHit2
@@ -96,7 +96,7 @@ MWG_WallHitDone:sta actXL,x
                 sta temp5
 MWG_NoXMove:    jsr GetCharInfo1Above           ;Need to re-get the charinfos after modifying position
                 sta temp7
-MWG_NoWallHit:  jsr GetCharInfo
+MWG_NoWallHit:  jsr GetCharInfoOptimizedAfter1Above
                 sta temp8
 MWG_NoWallHit2: lda temp7
                 ldy temp5

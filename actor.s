@@ -1041,34 +1041,42 @@ GCI_Common3:    lsr
                 lsr
                 cpy limitU
                 bcc GCI_Outside
-                cpy limitD
+GCI_Optimized:  cpy limitD
                 bcc GCI_NoLimitDown
                 ldy limitD
                 dey
                 ora #$0c
 GCI_NoLimitDown:sta zpBitsLo
                 lda mapTblLo,y
-                sta zpSrcLo
+                sta zpDestLo
                 lda mapTblHi,y
-                sta zpSrcHi
+                sta zpDestHi
                 ldy zpBitsHi
                 cpy limitL
                 bcc GCI_Outside
                 cpy limitR
                 bcs GCI_Outside
-GCI_Optimized2: lda (zpSrcLo),y                ;Get block from map
+                lda (zpDestLo),y                ;Get block from map
                 tay
                 lda blkTblLo,y
                 sta zpDestLo
                 lda blkTblHi,y
                 sta zpDestHi
-GCI_Optimized1: ldy zpBitsLo
+                ldy zpBitsLo
                 lda (zpDestLo),y                ;Get char from block
                 tay
                 lda charInfo,y                  ;Get charinfo
                 rts
 GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle outside zone left, right, above
                 rts
+
+GetCharInfoOptimizedAfter1Above:
+                ldy actYH,x
+                lda zpBitsLo
+                clc
+                adc #$04
+                and #$0f
+                bpl GCI_Optimized
 
         ; Get char collision info from the actor's position with Y offset
         ;
