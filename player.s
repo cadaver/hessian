@@ -62,51 +62,49 @@ UPG_DRAIN       = 32
 UPG_RECHARGE    = 64
 UPG_TOXINFILTER = 128
 
-        ; Player update routine
+        ; Player logic ("AI") routine
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MovePlayer:     lda actCtrl+ACTI_PLAYER         ;Get new joystick controls
-                sta actPrevCtrl+ACTI_PLAYER
-                ldy #$00
+AI_Player:      ldy #$00
                 cpy menuMode                    ;When in inventory, no new controls
-                bne MP_Scroll
+                bne AIP_Scroll
                 ldy actF1+ACTI_PLAYER
                 cpy #FR_DUCK+1
-                bne MP_NoDuckFirePrevent
+                bne AIP_NoDuckFirePrevent
                 cmp #JOY_DOWN                   ;Prevent fire+down immediately after ducking
-                bne MP_NoDuckFirePrevent        ;(need to release down direction first)
+                bne AIP_NoDuckFirePrevent        ;(need to release down direction first)
                 lda joystick
                 cmp #JOY_DOWN+JOY_FIRE
-                bne MP_NoDuckFirePrevent
+                bne AIP_NoDuckFirePrevent
                 ldy #$ff-JOY_FIRE
-                bne MP_StoreControlMask
-MP_NoDuckFirePrevent:
+                bne AIP_StoreControlMask
+AIP_NoDuckFirePrevent:
                 lda joystick
                 cmp #JOY_DOWN+JOY_FIRE
-                beq MP_ControlMask
+                beq AIP_ControlMask
                 ldy #$ff
-MP_StoreControlMask:
-                sty MP_ControlMask+1
-MP_ControlMask: and #$ff
+AIP_StoreControlMask:
+                sty AIP_ControlMask+1
+AIP_ControlMask:and #$ff
                 sta actCtrl+ACTI_PLAYER
                 cmp #JOY_FIRE
-                bcc MP_NewMoveCtrl
+                bcc AIP_NewMoveCtrl
                 and #$0f                        ;When fire held down, eliminate the opposite
                 tay                             ;directions from the previous move control
                 lda moveCtrlAndTbl,y
                 ldy actF1+ACTI_PLAYER
                 cpy #FR_DUCK+1                  ;When already ducked, keep the down control
-                bne MP_NotDucked
+                bne AIP_NotDucked
                 ora #JOY_DOWN
-MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
-MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
-MP_Scroll:      ldy #ZONEH_BG3
+AIP_NotDucked:  and actMoveCtrl+ACTI_PLAYER
+AIP_NewMoveCtrl:sta actMoveCtrl+ACTI_PLAYER
+AIP_Scroll:     ldy #ZONEH_BG3
                 lda (zoneLo),y
-                bmi MP_SetWeapon                ;Scroll-disabled zone?
-MP_ScrollHorizontal:
+                bmi AIP_SetWeapon                ;Scroll-disabled zone?
+AIP_ScrollHorizontal:
                 ldy #$00
                 lda actXL+ACTI_PLAYER
                 rol
@@ -123,19 +121,19 @@ MP_ScrollHorizontal:
                 asl
                 ora zpSrcLo
                 cmp #SCRCENTER_X-1
-                bcs MP_NotLeft1
+                bcs AIP_NotLeft1
                 dey
-MP_NotLeft1:    cmp #SCRCENTER_X
-                bcs MP_NotLeft2
+AIP_NotLeft1:   cmp #SCRCENTER_X
+                bcs AIP_NotLeft2
                 dey
-MP_NotLeft2:    cmp #SCRCENTER_X+1
-                bcc MP_NotRight1
+AIP_NotLeft2:   cmp #SCRCENTER_X+1
+                bcc AIP_NotRight1
                 iny
-MP_NotRight1:   cmp #SCRCENTER_X+2
-                bcc MP_NotRight2
+AIP_NotRight1:  cmp #SCRCENTER_X+2
+                bcc AIP_NotRight2
                 iny
-MP_NotRight2:   sty scrollSX
-MP_ScrollVertical:
+AIP_NotRight2:  sty scrollSX
+AIP_ScrollVertical:
                 ldy #$00
                 lda actYL+ACTI_PLAYER
                 rol
@@ -152,24 +150,24 @@ MP_ScrollVertical:
                 asl
                 ora zpSrcLo
                 cmp #SCRCENTER_Y-2
-                bcs MP_NotUp1
+                bcs AIP_NotUp1
                 dey
-MP_NotUp1:      cmp #SCRCENTER_Y
-                bcs MP_NotUp2
+AIP_NotUp1:     cmp #SCRCENTER_Y
+                bcs AIP_NotUp2
                 dey
-MP_NotUp2:      cmp #SCRCENTER_Y+1
-                bcc MP_NotDown1
+AIP_NotUp2:     cmp #SCRCENTER_Y+1
+                bcc AIP_NotDown1
                 iny
-MP_NotDown1:    cmp #SCRCENTER_Y+3
-                bcc MP_NotDown2
+AIP_NotDown1:   cmp #SCRCENTER_Y+3
+                bcc AIP_NotDown2
                 iny
-MP_NotDown2:    sty scrollSY
-MP_SetWeapon:   ldy itemIndex
+AIP_NotDown2:   sty scrollSY
+AIP_SetWeapon:  ldy itemIndex
                 cpy #ITEM_FIRST_NONWEAPON
-                bcc MP_WeaponOK
+                bcc AIP_WeaponOK
                 ldy #ITEM_NONE
-MP_WeaponOK:    sty actWpn+ACTI_PLAYER
-                jmp MoveAndAttackHuman          ;Finally move player and handle weapon
+AIP_WeaponOK:   sty actWpn+ACTI_PLAYER
+                rts
 
         ; Humanoid character move routine
         ;

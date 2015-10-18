@@ -39,6 +39,7 @@ randomAreaStart:
                 include actor.s
                 include physics.s
                 include player.s
+                include enemy.s
                 include weapon.s
                 include bullet.s
                 include item.s

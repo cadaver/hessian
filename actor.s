@@ -45,7 +45,11 @@ AL_DEFENSE      = 15
 AL_MOVEFLAGS    = 16
 AL_MOVESPEED    = 17
 AL_GROUNDACCEL  = 18
+AL_HORIZACCEL   = 18
 AL_INAIRACCEL   = 19
+AL_VERTACCEL    = 19
+AL_XCHECKOFFSET = 20
+AL_YCHECKOFFSET = 21
 AL_FALLACCEL    = 20                           ;Gravity acceleration
 AL_LONGJUMPACCEL = 21                          ;Gravity acceleration in longjump
 AL_BRAKING      = 22
@@ -548,16 +552,26 @@ UA_RABottomCheck:
                 bcc UA_NoRemove
 UA_Remove:      jsr RemoveLevelActor
                 beq UA_Next                     ;A=0 on return
-UA_NoRemove:    ldy #AL_UPDATEROUTINE
+UA_NoRemove:    if SHOW_ACTOR_TIME > 0
+                lda #$0a
+                sta $d020
+                endif
+                ldy #AL_UPDATEROUTINE
                 lda (actLo),y
                 sta UA_Jump+1
                 iny
                 lda (actLo),y
                 sta UA_Jump+2
-                if SHOW_ACTOR_TIME > 0
-                lda #$0a
-                sta $d020
-                endif
+                cpx #MAX_COMPLEXACT             ;Run AI for NPCs
+                bcs UA_Jump
+                lda actCtrl,x
+                sta actPrevCtrl,x
+                ldy actAIMode,x
+                lda aiJumpTblLo,y
+                sta UA_AIJump+1
+                lda aiJumpTblHi,y
+                sta UA_AIJump+2
+UA_AIJump:      jsr $0000
 UA_Jump:        jsr $0000
                 if SHOW_ACTOR_TIME > 0
                 lda #$00

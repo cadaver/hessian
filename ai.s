@@ -7,13 +7,14 @@ AIH_AUTOSCALEWALL   = $80
 
 JOY_FREEMOVE        = $80
 
-AIMODE_IDLE         = 0
-AIMODE_TURNTO       = 1
-AIMODE_FOLLOW       = 2
-AIMODE_SNIPER       = 3
-AIMODE_MOVER        = 4
-AIMODE_GUARD        = 5
-AIMODE_BERZERK      = 6
+AIMODE_NONE         = 0
+AIMODE_IDLE         = 1
+AIMODE_TURNTO       = 2
+AIMODE_FOLLOW       = 3
+AIMODE_SNIPER       = 4
+AIMODE_MOVER        = 5
+AIMODE_GUARD        = 6
+AIMODE_BERZERK      = 7
 AIMODE_NOTPERSISTENT = $80
 
 NOTARGET            = $ff
@@ -33,22 +34,6 @@ LADDER_DELAY        = $40
 GUARD_STOP_PROBABILITY = $04
 
 BERZERK_JUMP_MAXDIST    = 3
-
-        ; AI character update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveAIHuman:    lda actCtrl,x
-                sta actPrevCtrl,x
-                ldy actAIMode,x
-                lda aiJumpTblLo,y
-                sta MA_AIJump+1
-                lda aiJumpTblHi,y
-                sta MA_AIJump+2
-MA_AIJump:      jsr $0000
-MA_SkipAI:      jmp MoveAndAttackHuman
 
         ; Follow (pathfinding) AI
 

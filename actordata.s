@@ -22,6 +22,7 @@ ACT_SMALLSPLASH = 20
 ACT_OBJECTMARKER = 21
 ACT_SPEECHBUBBLE = 22
 ACT_TESTENEMY   = 23
+ACT_TESTFLYINGENEMY = 24
 
 HP_PLAYER       = 56
 
@@ -72,6 +73,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adObjectMarker
                 dc.b <adSpeechBubble
                 dc.b <adTestEnemy
+                dc.b <adTestEnemy
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -95,6 +97,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adSmallSplash
                 dc.b >adObjectMarker
                 dc.b >adSpeechBubble
+                dc.b >adTestEnemy
                 dc.b >adTestEnemy
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
@@ -265,6 +268,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alObjectMarker
                 dc.b <alSpeechBubble
                 dc.b <alTestEnemy
+                dc.b <alTestFlyingEnemy
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -289,8 +293,9 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alObjectMarker
                 dc.b >alSpeechBubble
                 dc.b >alTestEnemy
+                dc.b >alTestFlyingEnemy
 
-alPlayer:       dc.w MovePlayer                 ;Update routine
+alPlayer:       dc.w MoveAndAttackHuman         ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
                 dc.b 8                          ;Horizontal size
@@ -434,7 +439,7 @@ alSpeechBubble: dc.w MoveSpeechBubble           ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
-alTestEnemy:    dc.w MoveAIHuman                ;Update routine
+alTestEnemy:    dc.w MoveAndAttackHuman         ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b GRP_ENEMIES|AF_ISORGANIC   ;Actor flags
                 dc.b 8                          ;Horizontal size
@@ -457,3 +462,24 @@ alTestEnemy:    dc.w MoveAIHuman                ;Update routine
                 dc.b -4                         ;Height in chars for headbump check (negative)
                 dc.b -48                        ;Jump initial speed (negative)
                 dc.b INITIAL_CLIMBSPEED-8       ;Climbing speed
+
+alTestFlyingEnemy:
+                dc.w MoveFlyingEnemy            ;Update routine
+                dc.w HumanDeath                 ;Destroy routine
+                dc.b GRP_ENEMIES|AF_ISORGANIC   ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 34                         ;Size up
+                dc.b 0                          ;Size down
+                dc.b 12                         ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 25                         ;Score from kill
+                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
+                dc.b DROP_WEAPONMEDKITARMOR     ;Itemdrop table index or item override
+                dc.b $0b                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_NOFALLDAMAGE ;Move flags
+                dc.b 4*8                        ;Max. movement speed
+                dc.b 4                          ;Horizontal acceleration
+                dc.b 2                          ;Vertical acceleration
+                dc.b 0                          ;Horizontal obstacle check offset
+                dc.b -2                         ;Vertical obstacle check offset

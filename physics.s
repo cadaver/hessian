@@ -1,8 +1,9 @@
 MB_GROUNDED    = 1
 MB_LANDED      = 2
 MB_HITWALL     = 4
-MB_HITCEILING  = 8
-MB_STARTFALLING = 16
+MB_HITWALLVERTICAL = 8
+MB_HITCEILING  = 16
+MB_STARTFALLING = 32
 MB_INWATER      = 128
 
         ; Move actor and stop at obstacles
@@ -14,15 +15,16 @@ MB_INWATER      = 128
 
 MoveFlyer:      sta temp5
                 sty temp6
+                lda #$00
+                sta actMB,x
                 lda actSX,x
                 beq MF_XMoveOK
                 bpl MF_NoNegate
                 lda temp4                       ;Negate X check offset if moving left
                 beq MF_NoNegate2
                 eor #$ff
-                clc
-                adc #$01
                 sta temp4
+                inc temp4
 MF_NoNegate2:   lda actSX,x
 MF_NoNegate:    jsr MoveActorX
                 lda temp5
@@ -31,6 +33,9 @@ MF_NoNegate:    jsr MoveActorX
                 and #CI_OBSTACLE|CI_WATER
                 cmp temp6
                 beq MF_XMoveOK
+                lda actMB,x
+                ora #MB_HITWALL
+                sta actMB,x
                 lda actSX,x
                 jsr MoveActorXNeg
                 lda #$00
@@ -43,6 +48,9 @@ MF_XMoveOK:     lda actSY,x
                 and #CI_OBSTACLE|CI_WATER
                 cmp temp6
                 beq MF_YMoveOK
+                lda actMB,x
+                ora #MB_HITWALLVERTICAL
+                sta actMB,x
                 lda actSY,x
                 jsr MoveActorYNeg
                 lda #$00
