@@ -378,7 +378,9 @@ AI_ContinueAttack2:
 
 AI_Flyer:       lda actTime,x                   ;Ongoing attack?
                 bmi AI_ContinueAttack2
+                inc actYH,x                     ;Aim 1 block above the target
                 jsr FindTargetAndAttackDir
+                dec actYH,x
                 bcc AI_FlyerIdle
                 cmp #JOY_FIRE
                 bcc AI_FlyerFollow
@@ -388,13 +390,11 @@ AI_Flyer:       lda actTime,x                   ;Ongoing attack?
 AI_FlyerFollow: lda #$00                        ;Determine acceleration direction toward target
                 sta actAIHelp,x
                 ldy temp5
-                beq AI_FlyerXDone
                 bmi AI_FlyerLeft
                 ora #JOY_RIGHT
                 skip2
 AI_FlyerLeft:   ora #JOY_LEFT
 AI_FlyerXDone:  ldy temp7
-                beq AI_FlyerYDone
                 bmi AI_FlyerUp
                 ora #JOY_DOWN
                 skip2

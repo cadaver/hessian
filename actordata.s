@@ -73,7 +73,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adObjectMarker
                 dc.b <adSpeechBubble
                 dc.b <adTestEnemy
-                dc.b <adTestEnemy
+                dc.b <adTestFlyingEnemy
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -98,7 +98,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adObjectMarker
                 dc.b >adSpeechBubble
                 dc.b >adTestEnemy
-                dc.b >adTestEnemy
+                dc.b >adTestFlyingEnemy
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -242,6 +242,13 @@ adTestEnemy:    dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
+
+adTestFlyingEnemy:
+                dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_SMALLROBOT               ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 3                          ;Number of frames
+                dc.b 0,1,2
 
         ; Actor logic data
 
@@ -466,15 +473,15 @@ alTestEnemy:    dc.w MoveAndAttackHuman         ;Update routine
 alTestFlyingEnemy:
                 dc.w MoveFlyingEnemy            ;Update routine
                 dc.w ExplodeEnemy               ;Destroy routine
-                dc.b GRP_ENEMIES|AF_ISORGANIC   ;Actor flags
+                dc.b GRP_ENEMIES|AF_ISORGANIC|AF_NOWEAPON  ;Actor flags
                 dc.b 8                          ;Horizontal size
-                dc.b 34                         ;Size up
-                dc.b 0                          ;Size down
+                dc.b 8                          ;Size up
+                dc.b 8                          ;Size down
                 dc.b 12                         ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 25                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONMEDKITARMOR     ;Itemdrop table index or item override
+                dc.b DROP_WEAPONBATTERYMEDKIT   ;Itemdrop table index or item override
                 dc.b $0b                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b 4*8                        ;Horiz max movement speed
@@ -482,4 +489,4 @@ alTestFlyingEnemy:
                 dc.b 3*8                        ;Vert max movement speed
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
-                dc.b -2                         ;Vert obstacle check offset
+                dc.b 0                          ;Vert obstacle check offset

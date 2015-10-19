@@ -34,7 +34,7 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
 	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak \
-	common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak
+	common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak smallrobot.pak
 	c1541 < hessian.seq
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -444,3 +444,6 @@ playerta.pak: spr/playerta.spr
 
 playerba.pak: spr/playerba.spr
 	pchunk2 spr/playerba.spr playerba.pak
+
+smallrobot.pak: spr/smallrobot.spr
+	pchunk2 spr/smallrobot.spr smallrobot.pak

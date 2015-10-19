@@ -4,11 +4,14 @@
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveFlyingEnemy:lda #FR_JUMP                    ;Set jump frame (todo: remove/replace)
+MoveFlyingEnemy:lda #$02
+                ldy #$02
+                jsr OneShotAnimation
+                bcc MFE_AnimDone
+                lda #$00
                 sta actF1,x
-                sta actF2,x
-                jsr MoveAccelerateFlyer
-                jmp AttackHuman
+MFE_AnimDone:   jsr MoveAccelerateFlyer
+                jmp AttackGeneric
 
 MoveAccelerateFlyer:
                 ldy #AL_XMOVESPEED
@@ -65,8 +68,8 @@ MFE_NoHorizWall:lda actMB,x
                 sta actSY,x
                 tya
                 beq MFE_NoVertTurn
-MFE_Reverse:    lda #JOY_UP|JOY_DOWN
-                eor actMoveCtrl,x
+                lda #JOY_UP|JOY_DOWN
+MFE_Reverse:    eor actMoveCtrl,x
                 sta actMoveCtrl,x
 MFE_NoVertTurn:
 MFE_NoVertWall: rts
@@ -77,9 +80,7 @@ MFE_NoVertWall: rts
         ; Returns: -
         ; Modifies: A,Y,temp vars
 
-ExplodeEnemy:   lda #-16*8                      ;Todo: position adjust or multi-enemies
-                jsr MoveActorY
-                jsr DropItem
+ExplodeEnemy:   jsr DropItem
                 jmp ExplodeActor
 
         ; Initiate humanoid enemy or player death
@@ -142,6 +143,9 @@ DI_Retry:       ldy #AL_DROPITEMINDEX
                 lda itemDropTable-$80,y
                 beq DI_NoItem
                 bpl DI_ItemNumber
+                lda actFlags,x                  ;Check if enemy has weapon "integrated"
+                asl                             ;in which case no drop
+                bmi DI_NoItem
                 lda actWpn,x
 DI_ItemNumber:  tay
                 beq DI_NoItem

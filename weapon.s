@@ -90,6 +90,7 @@ AH_NoWeaponFrame:
 
 MoveAndAttackHuman:
                 jsr MoveHuman
+AttackGeneric:
 AttackHuman:    ldy actWpn,x
                 beq AH_NoWeaponFrame
                 lda actF1,x                     ;No attacks/weapon if dead / rolling / swimming
@@ -165,6 +166,7 @@ AH_NoAttack2:   jmp AH_NoAttack
 AH_FirearmEmpty:lda #$01                        ;If no bullets, set a constant attack delay to
                 sta actAttackD+ACTI_PLAYER      ;prevent firing but allow brandishing empty weapon
 AH_AmmoCheckOK:
+
 AH_NotPlayer:   lda actCtrl,x
                 cmp #JOY_FIRE
                 bcc AH_NoAttack2
@@ -246,7 +248,11 @@ AH_MeleeAnimation:
                 bcs AH_MeleeStrike              ;Show strike frame just before spawning bullet
                 inc actAttackD,x                ;In case melee attack fails, stay in strike position
 
-AH_SpawnBullet: ldy #1                          ;First check standing right next to a wall,
+AH_SpawnBullet: lda actFlags,x                  ;If enemy has integrated weapon, skip the next check
+                asl
+                sta AH_NoWeaponFlag+1
+                bmi GetBulletOffset
+                ldy #1                          ;First check standing right next to a wall,
                 lda actD,x                      ;because otherwise one can stick the gun through it
                 bpl AH_SpawnRight
                 ldy #-1
@@ -334,6 +340,13 @@ AH_FireDir:     lda #$00
                 lda temp3
                 sta actSY,x
                 jsr InitActor                   ;Set collision size
+AH_NoWeaponFlag:lda #$00                        ;If using integrated weapon, move bullet once
+                bpl AH_SkipFirstMove            ;to get direction-dependent separation from the enemy
+                lda temp1
+                jsr MoveActorX
+                lda temp3
+                jsr MoveActorY
+AH_SkipFirstMove:
                 ldy actIndex
                 lda actFlags,y
                 and #AF_GROUPBITS               ;Copy group from attacker
