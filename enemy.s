@@ -55,9 +55,8 @@ MFE_NoVertAccel:ldy #AL_XCHECKOFFSET            ;Horizontal obstacle check offse
                 sta actSX,x
                 tya
                 beq MFE_NoHorizTurn
-                lda actMoveCtrl,x
-                eor #JOY_LEFT|JOY_RIGHT
-                sta actMoveCtrl,x
+                lda #JOY_LEFT|JOY_RIGHT
+                jsr MFE_Reverse
 MFE_NoHorizTurn:
 MFE_NoHorizWall:lda actMB,x
                 and #MB_HITWALLVERTICAL
@@ -66,8 +65,8 @@ MFE_NoHorizWall:lda actMB,x
                 sta actSY,x
                 tya
                 beq MFE_NoVertTurn
-                lda actMoveCtrl,x
-                eor #JOY_UP|JOY_DOWN
+MFE_Reverse:    lda #JOY_UP|JOY_DOWN
+                eor actMoveCtrl,x
                 sta actMoveCtrl,x
 MFE_NoVertTurn:
 MFE_NoVertWall: rts
