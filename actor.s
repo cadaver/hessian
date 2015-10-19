@@ -45,17 +45,20 @@ AL_DEFENSE      = 15
 AL_MOVEFLAGS    = 16
 AL_MOVESPEED    = 17
 AL_GROUNDACCEL  = 18
-AL_HORIZACCEL   = 18
 AL_INAIRACCEL   = 19
-AL_VERTACCEL    = 19
-AL_XCHECKOFFSET = 20
-AL_YCHECKOFFSET = 21
 AL_FALLACCEL    = 20                           ;Gravity acceleration
 AL_LONGJUMPACCEL = 21                          ;Gravity acceleration in longjump
 AL_BRAKING      = 22
 AL_HEIGHT       = 23                           ;Height for headbump check, negative
 AL_JUMPSPEED    = 24                           ;Negative
 AL_CLIMBSPEED   = 25
+
+AL_XMOVESPEED   = 16
+AL_XACCEL       = 17
+AL_YMOVESPEED   = 18
+AL_YACCEL       = 19
+AL_XCHECKOFFSET = 20
+AL_YCHECKOFFSET = 21
 
 GRP_HEROES      = $00
 GRP_ENEMIES     = $01

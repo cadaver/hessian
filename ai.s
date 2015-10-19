@@ -386,6 +386,7 @@ AI_Flyer:       lda actTime,x                   ;Ongoing attack?
                 jsr PA_NoDucking
                 bcs AI_FlyerDone
 AI_FlyerFollow: lda #$00                        ;Determine acceleration direction toward target
+                sta actAIHelp,x
                 ldy temp5
                 beq AI_FlyerXDone
                 bmi AI_FlyerLeft
@@ -401,27 +402,16 @@ AI_FlyerUp:     ora #JOY_UP
 AI_FlyerYDone:
 AI_FlyerStoreDir:
                 jmp AI_StoreMoveCtrl
-AI_FlyerIdle:   lda actMoveCtrl,x               ;When idle, make sure is going either left or right
+AI_FlyerIdle:   lda #AIH_AUTOTURNWALL           ;Turn automatically if hit horizontal/vertical wall
+                sta actAIHelp,x
+                lda actMoveCtrl,x               ;When idle, make sure is going either left or right
                 tay                             ;and either up or down
                 and #JOY_LEFT|JOY_RIGHT
                 beq AI_FlyerPickDir
                 tya
                 and #JOY_UP|JOY_DOWN
                 beq AI_FlyerPickDir
-                lda actMB,x
-                tay
-                and #MB_HITWALL
-                beq AI_NoHorizWall
-                lda actMoveCtrl,x
-                eor #JOY_LEFT|JOY_RIGHT
-                bpl AI_FlyerStoreDir
-AI_NoHorizWall: tya
-                and #MB_HITWALLVERTICAL
-                beq AI_NoVertWall
-                lda actMoveCtrl,x
-                eor #JOY_UP|JOY_DOWN
-                bpl AI_FlyerStoreDir
-AI_NoVertWall:  jmp AI_ClearAttackControl       ;Continue existing dir, make sure fire isn't pressed
+                jmp AI_ClearAttackControl       ;Continue existing dir, make sure fire isn't pressed
 AI_FlyerPickDir:jsr Random
                 and #$03
                 tay

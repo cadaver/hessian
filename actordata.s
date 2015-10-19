@@ -477,9 +477,9 @@ alTestFlyingEnemy:
                 dc.b DROP_WEAPONMEDKITARMOR     ;Itemdrop table index or item override
                 dc.b $0b                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
-                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_NOFALLDAMAGE ;Move flags
-                dc.b 4*8                        ;Max. movement speed
-                dc.b 3                          ;Horizontal acceleration
-                dc.b 1                          ;Vertical acceleration
-                dc.b 0                          ;Horizontal obstacle check offset
-                dc.b -2                         ;Vertical obstacle check offset
+                dc.b 4*8                        ;Horiz max movement speed
+                dc.b 3                          ;Horiz acceleration
+                dc.b 3*8                        ;Vert max movement speed
+                dc.b 1                          ;Vert acceleration
+                dc.b 0                          ;Horiz obstacle check offset
+                dc.b -2                         ;Vert obstacle check offset

@@ -11,9 +11,9 @@ MoveFlyingEnemy:lda #FR_JUMP                    ;Set jump frame (todo: remove/re
                 jmp AttackHuman
 
 MoveAccelerateFlyer:
-                ldy #AL_MOVESPEED
+                ldy #AL_XMOVESPEED
                 lda (actLo),y
-                sta temp4                       ;Max. speed
+                sta temp4                       ;Horizontal max. speed
                 lda actMoveCtrl,x
                 and #JOY_LEFT|JOY_RIGHT
                 beq MFE_NoHorizAccel
@@ -27,13 +27,16 @@ MFE_TurnRight:  sta actD,x
                 ldy temp4
                 jsr AccActorXNegOrPos
 MFE_NoHorizAccel:
+                ldy #AL_YMOVESPEED
+                lda (actLo),y
+                sta temp4                       ;Vertical max. speed
                 lda actMoveCtrl,x
                 and #JOY_UP|JOY_DOWN
                 beq MFE_NoVertAccel
                 cmp #JOY_UP
                 beq MFE_AccelUp                 ;C=1 accelerate up (negative)
                 clc
-MFE_AccelUp:    ldy #AL_VERTACCEL
+MFE_AccelUp:    iny
                 lda (actLo),y                   ;Vertical acceleration
                 ldy temp4
                 jsr AccActorYNegOrPos
@@ -42,19 +45,31 @@ MFE_NoVertAccel:ldy #AL_XCHECKOFFSET            ;Horizontal obstacle check offse
                 sta temp4
                 iny
                 lda (actLo),y                   ;Vertical obstacle check offset
-                ldy #0
+                ldy #$00                        ;Require charinfo free of obstacles
                 jsr MoveFlyer
+                ldy actAIHelp,x                 ;Zero speed and reverse dir if requested
                 lda actMB,x
-                tay
                 and #MB_HITWALL
                 beq MFE_NoHorizWall
                 lda #$00
-                sta actSX,x                     ;Stop speed if hit wall
-MFE_NoHorizWall:tya
+                sta actSX,x
+                tya
+                beq MFE_NoHorizTurn
+                lda actMoveCtrl,x
+                eor #JOY_LEFT|JOY_RIGHT
+                sta actMoveCtrl,x
+MFE_NoHorizTurn:
+MFE_NoHorizWall:lda actMB,x
                 and #MB_HITWALLVERTICAL
                 beq MFE_NoVertWall
                 lda #$00
                 sta actSY,x
+                tya
+                beq MFE_NoVertTurn
+                lda actMoveCtrl,x
+                eor #JOY_UP|JOY_DOWN
+                sta actMoveCtrl,x
+MFE_NoVertTurn:
 MFE_NoVertWall: rts
 
         ; Turn enemy into an explosion & drop item
