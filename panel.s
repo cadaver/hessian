@@ -23,7 +23,7 @@ HEALTHBAR_COLOR = $0d
         ;
         ; Parameters: A value to display, X healthbar index (0 = health, 1 = battery)
         ; Returns: -
-        ; Modifies: A,X,Y,temp1-temp2
+        ; Modifies: A,Y,temp1-temp2
 
 DrawHealthBar:  ldy healthBarPosTbl,x
                 pha
@@ -92,34 +92,32 @@ UpdatePanel:    lda menuMode                    ;Update health bars only when no
                 ora textTime
                 ora displayedItemName
                 bne UP_SkipHealth
+                tax
                 lda actHp+ACTI_PLAYER
                 lsr
-                ldx #$00
                 jsr DrawHealthBar
                 lda battery+1
                 lsr
                 adc #$00                        ;Round upward
-                ldx #$01
+                inx
                 jsr DrawHealthBar
                 lda #"O"
                 sta temp1
                 lda oxygen                      ;Show oxygen meter if less than maximum
-                cmp #MAX_OXYGEN
+                lsr
+                cmp #MAX_OXYGEN/2
                 bcc UP_ShowOxygen
                 lda armorMsgTime                ;Armor meter requested?
                 beq UP_ClearOxygen
                 dec armorMsgTime
-                ldy #ITEM_ARMOR
-                jsr FindItem
+                lda invCount+ITEM_ARMOR-1
+                bpl UP_HasArmor
                 lda #$00
-                bcc UP_ZeroArmor
-                lda invCount-1,y
-                cmp #100                        ;If picked up a full armor while message
+UP_HasArmor:    cmp #100                        ;If picked up a full armor while message
                 bcs UP_ClearOxygen              ;was displayed, show nothing
-UP_ZeroArmor:   ldy #"A"
-                bne UP_ShowOxygenOrArmor
+                ldy #"A"
+                skip2
 UP_ShowOxygen:  ldy #"O"
-                lsr
 UP_ShowOxygenOrArmor:
                 sty temp1
                 jsr ConvertToBCD8
@@ -147,16 +145,15 @@ UP_SkipHealth:  if SHOW_BATTERY > 0
                 endif
                 lsr panelUpdateFlags
                 bcc UP_SkipWeapon
-                ldx #91
-                stx panelScreen+PANELROW*40+32
-                inx
-                stx panelScreen+PANELROW*40+33
-                inx
-                stx panelScreen+PANELROW*40+34
+                ldx #$02
+                ldy #93
+UP_DrawItemLoop:tya                             ;Draw the item image
+                sta panelScreen+PANELROW*40+32,x
                 lda #$08
-                sta colors+PANELROW*40+32
-                sta colors+PANELROW*40+33
-                sta colors+PANELROW*40+34
+                sta colors+PANELROW*40+32,x
+                dey
+                dex
+                bpl UP_DrawItemLoop
                 ldx itemIndex
                 lda itemFrames,x
                 asl
@@ -172,16 +169,26 @@ UP_SkipHealth:  if SHOW_BATTERY > 0
                 sta zpSrcHi
                 ldy #SPRH_MASK
                 lda (zpSrcLo),y
-                sta zpBitBuf                    ;Slice bitmask
+                sta zpBitBuf                        ;Slice bitmask
                 ldy #SPRH_DATA
-                ldx #$01
-                jsr UP_DrawSlice
-                lsr zpBitBuf
+                ldx #$00
+UP_DrawSlice:   txa
+                ora #$07
+                sta zpDestLo
+UP_DrawSliceLoop:
                 inx
-                jsr UP_DrawSlice
-                lsr zpBitBuf
+                lda zpBitBuf
+                and #$01
+                beq UP_EmptySlice
+                lda (zpSrcLo),y
+                iny
+UP_EmptySlice:  sta textChars+91*8,x
+                cpx zpDestLo
+                bcc UP_DrawSliceLoop
                 inx
-                jsr UP_DrawSlice
+                lsr zpBitBuf
+                cpx #$18
+                bne UP_DrawSlice
 UP_SkipWeapon:  lsr panelUpdateFlags
                 bcc UP_SkipAmmo
                 jsr GetCurrentItemMagazineSize
@@ -377,23 +384,7 @@ UP_TextJump:    pha
                 ldy #$00
                 beq UP_PrintTextLoop
 
-UP_DrawSlice:   txa
-                clc
-                adc #$07
-                sta zpDestLo
-UP_DrawSliceLoop:
-                lda zpBitBuf
-                and #$01
-                beq UP_EmptySlice
-                lda (zpSrcLo),y
-                iny
-UP_EmptySlice:  sta textChars+91*8,x
-                inx
-                cpx zpDestLo
-                bcc UP_DrawSliceLoop
-                rts
-
-        ; Update menu system (inventory / pause / dialogue) in the panel.
+        ; Update menu system (inventory / pause / dialogue) in the panel
         ;
         ; Parameters: -
         ; Returns: -
@@ -418,9 +409,11 @@ SetGameOverMenu:lda fastLoadMode                ;In Kernal loading mode, do not 
                 jsr PlaySong
 SkipGameOverMusic:
                 ldx #MENU_PAUSE
-SetMenuMode:    stx menuMode
-                lda #$00
+                lda #$01                        ;Start from the "retry" choice
+                skip2
+SetMenuMode:    lda #$00
                 sta menuCounter
+                stx menuMode
 SMM_Redraw:     lda menuRedrawTblLo,x
                 sta SMM_RedrawJump+1
                 lda menuRedrawTblHi,x
@@ -538,29 +531,11 @@ UM_DNoFire:     rts
 
         ; Pause menu
 
-UM_PauseMenuExit:
-                jsr SetPanelRedrawItemAmmo      ;Erase the time display when exiting pause menu
-                ldx #MENU_NONE
-                beq SetMenuMode2
-UM_PauseMenuLeft:
-                tya
-                beq UM_PauseMenuDone
-                dec menuCounter
-                bpl RedrawMenu
-UM_PauseMenuRight:
-                tya
-                bne UM_PauseMenuDone
-                inc menuCounter
-                bpl RedrawMenu
-
-UM_PauseMenu:   ldy menuCounter
+UM_PauseMenu:   lda keyType
+                bpl UM_PauseMenuExit
+                ldy menuCounter
                 jsr GetFireClick
                 bcs UM_PauseMenuAction
-                lda keyType
-                bmi UM_PauseMenuNoExit
-                lda actT+ACTI_PLAYER            ;If no player actor anymore, can not exit but must choose
-                bne UM_PauseMenuExit
-UM_PauseMenuNoExit:
                 jsr MenuControl
                 lsr
                 bcs UM_PauseMenuLeft
@@ -569,19 +544,36 @@ UM_PauseMenuNoExit:
 UM_PauseMenuDone:
                 rts
 UM_PauseMenuAction:
-                tya
-                beq UM_ResumeOrRetry
-                sta ES_LoadedScriptFile+1       ;Always reload title script (A!=0)
+                dey
+                bmi UM_PauseMenuExit
+                php
+                jsr UM_PauseMenuClear
+                plp
+                beq UM_Retry
                 lda #<EP_TITLE                  ;Execute titlescreen in "save" mode
                 ldx #>EP_TITLE                  ;(parameter 1)
                 ldy #$01
+                sty ES_LoadedScriptFile+1       ;Always reload title script
                 jmp ExecScriptParam
+UM_Retry:       jmp RestartCheckpoint
 
-UM_ResumeOrRetry:
-                jsr UM_PauseMenuExit
-                lda actHp+ACTI_PLAYER
-                bne UM_PauseMenuDone
-                jmp RestartCheckpoint
+UM_PauseMenuLeft:
+                tya
+                beq UM_PauseMenuDone
+                dec menuCounter
+                bpl RedrawMenu
+UM_PauseMenuRight:
+                cpy #$02
+                beq UM_PauseMenuDone
+                inc menuCounter
+                bpl RedrawMenu
+UM_PauseMenuExit:
+                lda actT+ACTI_PLAYER            ;If player actor already vanished after death, can't exit/resume
+                beq UM_PauseMenuDone
+UM_PauseMenuClear:
+                jsr SetPanelRedrawItemAmmo      ;Erase the time display when exiting pause menu
+                ldx #MENU_NONE
+                beq SetMenuMode2
 
         ; Menu redraw routines
 
@@ -621,10 +613,8 @@ UM_NoRightArrow:sta panelScreen+PANELROW*40+30
         ; Pause menu
 
 UM_RedrawPauseMenu:
-                lda #<txtPauseRetry
-                ldx #>txtPauseRetry
-                ldy actHp+ACTI_PLAYER           ;Player alive?
-                beq UM_PauseRetryText
+                lda actT+ACTI_PLAYER            ;Player actor exists?
+                beq UM_PauseDead
                 lda #$00
                 sta panelUpdateFlags
                 lda time                        ;Print game time over the weapon/ammo display if alive
@@ -636,16 +626,10 @@ UM_RedrawPauseMenu:
                 jsr PrintTimeSub
                 lda time+2
                 jsr PrintTimeSub
-                lda #<txtPauseResume
-                ldx #>txtPauseResume
-UM_PauseRetryText:
+UM_PauseDead:   lda #<txtPause
+                ldx #>txtPause
                 jsr PrintPanelTextIndefinite
-                lda #21
-                sta zpBitsLo
-                lda #<txtPauseSave
-                ldx #>txtPauseSave
-                jsr ContinuePanelText
-                ldy #1
+                ldy #2
 UM_PauseMenuArrowLoop:
                 ldx pauseMenuArrowPosTbl,y
                 lda #$20

@@ -154,7 +154,7 @@ shiftEndTbl:    dc.b 79,79,78
                 dc.b 39,39,38
 
 pauseMenuArrowPosTbl:
-                dc.b 9,20
+                dc.b 9,16,22
 
 itemFlashTbl:   dc.b 7,10,7,1
 

@@ -119,9 +119,7 @@ txtPickedUp:    dc.b "GOT ",0
 txtRequired:    dc.b "NEED ",0
 txtInf:         dc.b "*INF"
 txtLoad:        dc.b "LOAD"
-txtPauseResume: dc.b " RESUME",0
-txtPauseRetry:  dc.b " RETRY",0
-txtPauseSave:   dc.b "SAVE&EXIT",0
+txtPause:       dc.b " RESUME RETRY SAVE&END",0
 
         ; System messages
 
