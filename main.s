@@ -51,6 +51,10 @@ randomAreaStart:
 
 randomAreaEnd:
 
+        ; Disposable init part, overwritten by loadable script code
+
+                include init.s
+                
         ; Non-aligned data
 
                 include sounddata.s
@@ -60,10 +64,6 @@ randomAreaEnd:
                 include weapondata.s
                 include actordata.s
                 include text.s
-
-        ; Disposable init part, overwritten by loadable script code
-
-                include init.s
 
         ; Aligned data and game state
 
