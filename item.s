@@ -3,8 +3,6 @@ ITEM_ACCEL      = 4
 ITEM_YSPEED     = -24
 ITEM_MAX_YSPEED = 6*8
 
-ITEM_SPAWN_OFFSET = -15*8
-
 INITIAL_MAX_WEAPONS = 4                         ;3 + fists
 
 USEITEM_ATTACK_DELAY = 5                        ;Attack delay after using an item

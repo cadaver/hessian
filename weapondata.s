@@ -188,7 +188,7 @@ wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b DMG_SHOTGUN                ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 15                         ;Bullet time duration
-                dc.b 12                         ;Bullet speed in pixels
+                dc.b 13                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_SHOTGUN                ;Sound effect
                 dc.b 8                          ;Climbing weapon frame

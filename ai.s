@@ -380,8 +380,11 @@ AI_Flyer:       lda actTime,x                   ;Ongoing attack?
                 bmi AI_ContinueAttack2
                 inc actYH,x                     ;Aim 1 block above the target
                 jsr FindTargetAndAttackDir
+                php
                 dec actYH,x
+                plp
                 bcc AI_FlyerIdle
+                bmi AI_FlyerIdle                ;Too close to target, make a diagonal pass
                 cmp #JOY_FIRE
                 bcc AI_FlyerFollow
                 sta temp1
@@ -411,6 +414,7 @@ AI_FlyerIdle:   lda #AIH_AUTOTURNWALL           ;Turn automatically if hit horiz
                 tya
                 and #JOY_UP|JOY_DOWN
                 beq AI_FlyerPickDir
+AI_FlyerIdleContinue:
                 jmp AI_ClearAttackControl       ;Continue existing dir, make sure fire isn't pressed
 AI_FlyerPickDir:jsr Random
                 and #$03

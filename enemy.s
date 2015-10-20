@@ -1,3 +1,5 @@
+HUMAN_ITEM_SPAWN_OFFSET = -15*8
+
         ; Flying enemy update routine
         ;
         ; Parameters: X actor index
@@ -80,7 +82,8 @@ MFE_NoVertWall: rts
         ; Returns: -
         ; Modifies: A,Y,temp vars
 
-ExplodeEnemy:   jsr DropItem
+ExplodeEnemy:   lda #$00
+                jsr DropItem
                 jmp ExplodeActor
 
         ; Initiate humanoid enemy or player death
@@ -123,14 +126,16 @@ HD_NoYSpeed:    lda #SFX_DEATH
                 sta actFd,x
                 sta actHp,x
                 sta actAIMode,x                ;Reset any ongoing AI
+                lda #HUMAN_ITEM_SPAWN_OFFSET
 
         ; Drop item from dead enemy
         ;
-        ; Parameters: X actor index
+        ; Parameters: A Vertical offset X actor index
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8
 
-DropItem:       lda #$02                        ;Retry counter
+DropItem:       sta temp4
+                lda #$02                        ;Retry counter
                 sta temp7
 DI_Retry:       ldy #AL_DROPITEMINDEX
                 lda (actLo),y
@@ -202,7 +207,7 @@ DI_NoCount:     sta actHp,y
                 tya
                 tax
                 jsr InitActor
-                lda #ITEM_SPAWN_OFFSET
+                lda temp4
                 jsr MoveActorY
                 lda temp5
                 cmp #ITEM_FIRST_IMPORTANT

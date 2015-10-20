@@ -1398,7 +1398,9 @@ AS_InAir:       asl
                 lda #$00
                 sta temp3
                 bcs AS_InAirTop
-AS_InAirSide:   jsr Random
+AS_InAirSide:   lda #$80                        ;Middle of block
+                sta actYL,y
+                jsr Random
                 and #$03
                 adc #$01
                 adc mapY

@@ -477,16 +477,16 @@ alTestFlyingEnemy:
                 dc.b 8                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 8                          ;Size down
-                dc.b 12                         ;Initial health
+                dc.b 8                          ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 25                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYMEDKIT   ;Itemdrop table index or item override
-                dc.b $0b                        ;AI offense AND-value
+                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b $05                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b 4*8                        ;Horiz max movement speed
                 dc.b 3                          ;Horiz acceleration
-                dc.b 3*8                        ;Vert max movement speed
+                dc.b 2*8                        ;Vert max movement speed
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 0                          ;Vert obstacle check offset
