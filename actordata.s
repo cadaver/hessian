@@ -351,8 +351,8 @@ alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 2                          ;Horizontal size
-                dc.b 2                          ;Size up
-                dc.b 2                          ;Size down
+                dc.b 1                          ;Size up
+                dc.b 1                          ;Size down
 
 alShotgunBullet:dc.w MoveShotgunBullet          ;Update routine
                 dc.w RemoveActor                ;Destroy routine
@@ -474,9 +474,9 @@ alTestFlyingEnemy:
                 dc.w MoveFlyingEnemy            ;Update routine
                 dc.w ExplodeEnemy               ;Destroy routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
-                dc.b 8                          ;Horizontal size
-                dc.b 8                          ;Size up
-                dc.b 8                          ;Size down
+                dc.b 7                          ;Horizontal size
+                dc.b 7                          ;Size up
+                dc.b 7                          ;Size down
                 dc.b 8                          ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 25                         ;Score from kill
