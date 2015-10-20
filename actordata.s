@@ -473,7 +473,7 @@ alTestEnemy:    dc.w MoveAndAttackHuman         ;Update routine
 alTestFlyingEnemy:
                 dc.w MoveFlyingEnemy            ;Update routine
                 dc.w ExplodeEnemy               ;Destroy routine
-                dc.b GRP_ENEMIES|AF_ISORGANIC|AF_NOWEAPON  ;Actor flags
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 8                          ;Size down
