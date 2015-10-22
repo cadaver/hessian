@@ -1400,10 +1400,6 @@ AS_InAir:       asl
                 bcs AS_InAirTop
 AS_InAirSide:   lda #$80                        ;Middle of block
                 sta actYL,y
-                jsr Random
-                and #$03
-                adc #$01
-                adc mapY
                 jmp AS_SideCommon
 AS_InAirTop:    jsr Random
                 pha
@@ -1446,12 +1442,14 @@ AS_NoPlotBit:   jsr GetFreeNPC
                 bcs AS_InAir
 AS_Ground:      lda #CI_GROUND
                 sta temp3
-                jsr Random
-                and #$03
+AS_SideCommon:  jsr Random
+                and #$07
+                cmp #$06
+                bcc AS_SideYOK
+                sbc #$03
                 clc
-                adc #$02
-                adc mapY
-AS_SideCommon:  sta actYH,y
+AS_SideYOK:     adc mapY
+                sta actYH,y
                 jsr Random
                 cmp #SPAWNINFRONT_PROBABILITY   ;Prefer to spawn in front of player
                 lda actD+ACTI_PLAYER
