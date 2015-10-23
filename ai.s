@@ -116,7 +116,7 @@ AI_CantJump:    sta temp2
 AI_TargetNotJumping:
                 lda actGroundCharInfo,y         ;If target stands on nonnavigable chars,
                 sta temp1                       ;treat Y-distance as zero (turn to X-dir)
-                and #CI_SHELF
+                and #CI_NOPATH
                 beq AI_FollowTargetIsNavigable
                 lda #$00
                 sta temp8
@@ -125,7 +125,7 @@ AI_FollowTargetIsNavigable:
                 lda actGroundCharInfo,x         ;Dedicated turning logic on stairs
                 cmp #CI_GROUND+$80
                 beq AI_FollowOnStairs
-                and #CI_SHELF                   ;Do not follow target strictly when on "nonnavigable"
+                and #CI_NOPATH                  ;Do not follow target strictly when on nonnavigable
                 bne AI_FollowWalk               ;ledges, just turn when come to a stop
                 lda actLastNavStairs,x          ;Check if came to level ground from stairs
                 bpl AI_FollowNoStairExit
@@ -292,7 +292,7 @@ AI_FreeMoveNoDuck:
                 bcs AI_FreeMoveFollowClimb
 AI_FreeMoveNoClimb:
                 lda actGroundCharInfo,x
-                and #CI_SHELF
+                and #CI_NOPATH
                 beq AI_FreeMoveNormal
                 lda #$00                        ;If on nonnavigable platform, do not turn but fall as applicable
                 skip2
@@ -677,7 +677,7 @@ LC_InitialCheck:ldy temp1
                 sta zpDestLo
                 lda blkTblHi,y
                 sta zpDestHi
-                ldy #$06                        ;Check from middle of block, second row
+                ldy #$06                        ;Check from upper middle of block
 LC_Lda:         lda (zpDestLo),y
                 tay
                 lda charInfo,y

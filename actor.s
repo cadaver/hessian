@@ -1475,7 +1475,7 @@ AS_CheckBackground:
                 tya
                 tax
 AS_BGRetry:     jsr GetCharInfo
-                and #CI_GROUND|CI_OBSTACLE|CI_NOSPAWN
+                and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN
                 cmp temp3
                 beq AS_BGOK
                 lda temp3                       ;If trying to match ground, retry all sub-positions
