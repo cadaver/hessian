@@ -63,7 +63,7 @@ BIOMETRICID
 end
 ;Actor mode names
 ;----------------
-NONE
+PLAYER
 IDLE
 TURNTO
 FOLLOW

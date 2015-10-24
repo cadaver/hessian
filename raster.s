@@ -1,9 +1,8 @@
-IRQ1_LINE       = MIN_SPRY-12                   ;Allow 12 lines for loading the sprites & frameupdate
+IRQ1_LINE       = 2
 IRQ3_LINE       = SCROLLROWS*8+44
 IRQ4_LINE       = 251
 IRQ5_LINE       = 143
 
-PANEL_BG1       = $00
 PANEL_BG2       = $0b
 PANEL_BG3       = $0c
 
@@ -321,9 +320,10 @@ Irq3_NoBadLine: ora #$07                        ;No badline: stabilize Y-scroll 
 Irq3_Delay:     dex
                 bpl Irq3_Delay
                 bmi Irq3_Blank
-Irq3_SplitDone: lda #PANEL_BG1                  ;Set scorepanel multicolors
-                sta $d021
-                lda #PANEL_BG2
+Irq3_SplitDone: lda #$00
+                sta $d015                       ;Make sure sprites are off in the border and
+                sta $d021                       ;do not disturb the fastloader
+                lda #PANEL_BG2                  ;Set scorepanel multicolors
                 sta $d022
                 lda #PANEL_BG3
                 sta $d023
