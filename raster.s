@@ -1,6 +1,6 @@
 IRQ1_LINE       = 2
 IRQ3_LINE       = SCROLLROWS*8+44
-IRQ4_LINE       = 251
+IRQ4_LINE       = IRQ3_LINE+8
 IRQ5_LINE       = 143
 
 PANEL_BG2       = $0b
@@ -26,55 +26,44 @@ BS_Common:      ldx #$00
                 stx Irq4_LevelUpdate+1          ;Disable level animation by default
                 rts
 
-        ; IRQ common startup code
+        ; Raster interrupt 3. Gamescreen / scorepanel split
 
-StartIrq:       cld
-                sta irqSaveA
+Irq3:           sta irqSaveA
                 stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
-                rts
-
-        ;Raster interrupt 4. Set C128 to 2MHz mode and SCPU to turbo mode,
-        ;if no loading going on. Also animate level graphics
-
-Irq4:           jsr StartIrq
-                ldx fileOpen
-                bne Irq4_NoTurbo
-                inx
-                stx $d07b
-                stx $d030
-Irq4_NoTurbo:   
-Irq4_LevelUpdate:
-                lda #$00                        ;Animate level background?
-                beq Irq4_NoLevelUpdate
-                if SHOW_LEVELUPDATE_TIME > 0
-                inc $d020
-                endif
-                jsr UpdateLevel
-                if SHOW_LEVELUPDATE_TIME > 0
-                dec $d020
-                endif
-Irq4_NoLevelUpdate:
-                lda #<Irq1
-                ldx #>Irq1
-                ldy #IRQ1_LINE
-                jmp Irq3_EndJump
-
-        ; Raster interrupt 5. Text screen split
-
-Irq5:           jsr StartIrq
-Irq5_Wait:      lda $d012
-                cmp #IRQ5_LINE+3
-                bcc Irq5_Wait
-                lda #TEXTSCR_D018
+                lda #$35
+                sta $01                         ;Ensure IO memory is available
+Irq3_Direct:    lda $d011
+                ldx #IRQ3_LINE
+Irq3_Wait:      cpx $d012
+                bcs Irq3_Wait
+                cmp #$15
+                bne Irq3_NoBadLine
+Irq3_Blank:     lda #$57                        ;Immediate blanking if badline
+                sta $d011
+                lda #PANEL_D018                 ;Set panelscreen screen ptr.
                 sta $d018
-Irq5_Bg2:       lda #$0a
+Irq3_SplitDone: sty irqSaveY
+                lsr newFrame                    ;Can update sprites now
+                lda #$00
+                sta $d015                       ;Make sure sprites are off in the border and
+                sta $d021                       ;do not disturb the fastloader
+                lda #PANEL_BG2                  ;Set scorepanel multicolors & X-scrolling
                 sta $d022
-Irq5_Bg3:       lda #$09
+                lda #PANEL_BG3
                 sta $d023
-                jmp Irq2_AllDone
+                lda #$18
+                sta $d016
+                lda #<Irq4
+                ldx #>Irq4
+                ldy #IRQ4_LINE
+Irq3_EndJump:   jmp SetNextIrq
+Irq3_NoBadLine: ora #$07                        ;No badline: stabilize Y-scroll first
+                sta $d011
+                nop
+                ldx #5
+Irq3_Delay:     dex
+                bpl Irq3_Delay
+                bmi Irq3_Blank
 
         ; Raster interrupt 1. Show game screen
 
@@ -294,57 +283,63 @@ SetNextIrqNoAddress:
                 rti
 
 Irq2_LatePanel: ldy irqSaveY
-                bcc Irq3_Direct
+                jmp Irq3_Direct
 
-        ; Raster interrupt 3. Gamescreen / scorepanel split
+        ;Raster interrupt 4. Show panel, play music, set C128 to 2MHz mode and SCPU to turbo mode,
+        ;if no loading going on. Also animate level graphics
 
-Irq3:           sta irqSaveA
-                stx irqSaveX
-                lda #$35
-                sta $01                         ;Ensure IO memory is available
-Irq3_Direct:    lda $d011
-                ldx #IRQ3_LINE
-Irq3_Wait:      cpx $d012
-                bcs Irq3_Wait
-                cmp #$15
-                bne Irq3_NoBadLine
-Irq3_Blank:     lda #$57                        ;Immediate blanking if badline
-                sta $d011
-                lda #PANEL_D018                 ;Set panelscreen screen ptr.
-                sta $d018
-                bne Irq3_SplitDone
-Irq3_NoBadLine: ora #$07                        ;No badline: stabilize Y-scroll first
-                sta $d011
-                nop
-                ldx #5
-Irq3_Delay:     dex
-                bpl Irq3_Delay
-                bmi Irq3_Blank
-Irq3_SplitDone: lda #$00
-                sta $d015                       ;Make sure sprites are off in the border and
-                sta $d021                       ;do not disturb the fastloader
-                lda #PANEL_BG2                  ;Set scorepanel multicolors
-                sta $d022
-                lda #PANEL_BG3
-                sta $d023
-                cld
-                sty irqSaveY
-                lsr newFrame                    ;Can update sprites now
-                ldx #IRQ3_LINE+2
-Irq3_Wait2:     cpx $d012
-                bcs Irq3_Wait2
-                lda #$18
-                sta $d016
+Irq4:           jsr StartIrq
                 lda #$17                        ;Switch screen back on
                 sta $d011
-                if SHOW_PLAYROUTINE_TIME>0
+                if SHOW_PLAYROUTINE_TIME > 0
                 inc $d020
                 endif
                 jsr PlayRoutine                 ;Play music/sound effects
-                if SHOW_PLAYROUTINE_TIME>0
+                if SHOW_PLAYROUTINE_TIME > 0
                 dec $d020
                 endif
-Irq3_End:       lda #<Irq4
-                ldx #>Irq4
-                ldy #IRQ4_LINE
-Irq3_EndJump:   jmp SetNextIrq
+                ldx fileOpen
+                bne Irq4_NoTurbo
+                inx
+Irq4_WaitTurbo: lda $d012                       ;Busy-wait for the last badline (required for C128)
+                cmp #240
+                bcc Irq4_WaitTurbo
+Irq4_EnableTurbo:
+                stx $d07b
+                stx $d030
+Irq4_NoTurbo:
+Irq4_LevelUpdate:
+                lda #$00                        ;Animate level background?
+                beq Irq4_NoLevelUpdate
+                if SHOW_LEVELUPDATE_TIME > 0
+                inc $d020
+                endif
+                jsr UpdateLevel
+                if SHOW_LEVELUPDATE_TIME > 0
+                dec $d020
+                endif
+Irq4_NoLevelUpdate:
+                lda #<Irq1
+                ldx #>Irq1
+                ldy #IRQ1_LINE
+                jmp SetNextIrq
+
+        ; Raster interrupt 5. Text screen split
+
+Irq5:           jsr StartIrq
+Irq5_Wait:      lda $d012
+                cmp #IRQ5_LINE+3
+                bcc Irq5_Wait
+                lda #TEXTSCR_D018
+                sta $d018
+                jmp Irq2_AllDone
+
+        ; IRQ common startup code
+
+StartIrq:       cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+                rts

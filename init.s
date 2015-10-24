@@ -14,10 +14,19 @@ InitAll:        ldx #STACKSTART
                 bne IsPAL
                 lda #30                         ;Compensate game clock speed for NTSC
                 sta timeMaxTbl+3                ;(otherwise no compensation)
+IsPAL:          lda $d030
+                cmp #$ff                        ;Turbo mode wait needed only on C128
+                bne Is128
+                lda #$4c
+                sta Irq4_WaitTurbo
+                lda #<Irq4_EnableTurbo
+                sta Irq4_WaitTurbo+1
+                lda #>Irq4_EnableTurbo
+                sta Irq4_WaitTurbo+2
 
         ; Initialize zeropage variables
 
-IsPAL:          ldx #$90-joystick-1
+Is128:          ldx #$90-joystick-1
                 lda #$00
 InitZP:         sta joystick,x
                 dex
