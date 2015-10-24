@@ -327,9 +327,6 @@ Irq4_NoLevelUpdate:
         ; Raster interrupt 5. Text screen split
 
 Irq5:           jsr StartIrq
-Irq5_Wait:      lda $d012
-                cmp #IRQ5_LINE+3
-                bcc Irq5_Wait
                 lda #TEXTSCR_D018
                 sta $d018
                 jmp Irq2_AllDone
