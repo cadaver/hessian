@@ -620,13 +620,17 @@ GAD_Done:       tay                             ;Get flags of A
 
 LineCheck:      lda actXH,x
                 sta temp1
+                lda actXH,y
+                sta LC_CmpX+1
+                cmp temp1                       ;Check left side of block if going left
+                lda #$05                        ;or vice versa to stop at narrow walls
+                adc #$00                        ;(significant in Bio-dome level)
+                sta LC_BlockPos+1
                 lda actYL,x                     ;Check 1 block higher if low Y-pos < $80
                 asl
                 lda actYH,x
                 sbc #$00
                 sta temp2
-                lda actXH,y
-                sta LC_CmpX+1
                 lda actYL,y                     ;Check 1 block higher if low Y-pos < $80
                 asl
                 lda actYH,y
@@ -677,7 +681,7 @@ LC_InitialCheck:ldy temp1
                 sta zpDestLo
                 lda blkTblHi,y
                 sta zpDestHi
-                ldy #$06                        ;Check from upper middle of block
+LC_BlockPos:    ldy #$06                        ;Check from upper middle of block
 LC_Lda:         lda (zpDestLo),y
                 tay
                 lda charInfo,y
