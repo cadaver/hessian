@@ -43,8 +43,8 @@ LSF_SaveX:      ldx #$00
 
         ; Get and store a sprite. Cache (depack) if not cached yet.
         ;
-        ; Parameters: A frame number, X sprite index, temp1-temp2 X offset, temp3 X coord,
-        ;             temp4 Y coord, actIndex actor index, sprFileLo-Hi spritefile
+        ; Parameters: A frame number, X sprite index, temp1 X coord,
+        ;             temp3 Y coord, actIndex actor index, sprFileLo-Hi spritefile
         ; Returns: X incremented if sprite accepted, temp1-temp4 modified for next sprite
         ; Modifies: A,X,Y,temp1-temp4
 
@@ -62,33 +62,33 @@ GetAndStoreSprite:
                 sta zpLenLo                     ;Sprite direction
                 ora #SPRH_HOTSPOTX
                 tay
-                lda temp3                       ;Subtract X-hotspot
+                lda temp1                       ;Subtract X-hotspot
                 sbc (frameLo),y
-                pha
+                sta temp2
                 iny
                 iny
                 clc
                 adc (frameLo),y                 ;Add X-connect spot
-                sta temp3
+                sta temp1
                 ldy #SPRH_HOTSPOTY
-                lda temp4                       ;Subtract Y-hotspot
+                lda temp3                       ;Subtract Y-hotspot
                 sec
                 sbc (frameLo),y
                 sta sprY,x
                 iny
                 clc
                 adc (frameLo),y                 ;Add Y-connect spot
-                sta temp4
-                ldy #$00
+                sta temp3
                 cpx #MAX_SPR                    ;Ran out of sprites?
-                pla                             ;Finalize X-pos
                 bcs GASS_DoNotAccept
-                bpl GASS_XPos                   ;C=0 for the addition, set add highbyte in Y
+                ldy #$00
+                lda temp2                       ;Finalize X-pos
+                bpl GASS_XLo
                 dey
-GASS_XPos:      adc temp1
+GASS_XLo:       adc #$00                        ;C=0 here
                 sta sprXL,x
                 tya
-                adc temp2
+GASS_XHi:       adc #$00
                 sta sprXH,x
                 beq GASS_XOK
                 lda sprXL,x                     ;Check X visibility

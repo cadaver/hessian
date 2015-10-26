@@ -266,18 +266,18 @@ GetBulletOffset:ldy actT,x
                 lda actDispTblHi-1,y
                 sta actHi
                 lda #$00
-                sta temp2
+                sta temp1
                 sta temp3
-                sta temp4
                 lda #MAX_SPR                    ;"Draw" the actor in a fake manner
                 sta sprIndex                    ;to get the last connect-spot
                 jsr DrawActorSub_NoColor
+                ldy #$00
+                lda temp1                       ;Sign expand sprite offset, convert back
+                bpl GBO_XPos                    ;to map coords
+                dey
+GBO_XPos:       sty temp2
+                ldy #$00
                 lda temp3
-                sta temp1
-                bpl GBO_XPos
-                dec temp2
-GBO_XPos:       ldy #$00
-                lda temp4
                 bpl GBO_YPos
                 dey
 GBO_YPos:       sty temp4
