@@ -94,12 +94,7 @@ GASS_XHi:       adc #$00
                 lda sprXL,x                     ;Check X visibility
                 cmp #MAX_SPRX-256
                 bcs GASS_DoNotAccept
-GASS_XOK:       lda sprY,x                      ;Check Y visibility
-                cmp #MIN_SPRY
-                bcc GASS_DoNotAccept
-                cmp #MAX_SPRY
-                bcs GASS_DoNotAccept
-GASS_Accept:    lda actIndex                    ;Sprite was accepted: store actor index
+GASS_XOK:       lda actIndex                    ;Sprite was accepted: store actor index
                 sta sprAct,x                    ;for interpolation
                 ldy #SPRH_COLOR
                 lda (frameLo),y
