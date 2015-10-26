@@ -43,8 +43,8 @@ LSF_SaveX:      ldx #$00
 
         ; Get and store a sprite. Cache (depack) if not cached yet.
         ;
-        ; Parameters: A frame number, X sprite index, temp1-temp2 X coord, temp3-temp4 Y coord,
-        ;             actIndex actor index, sprFileLo-Hi spritefile
+        ; Parameters: A frame number, X sprite index, temp1-temp2 X offset, temp3 X coord,
+        ;             temp4 Y coord, actIndex actor index, sprFileLo-Hi spritefile
         ; Returns: X incremented if sprite accepted, temp1-temp4 modified for next sprite
         ; Modifies: A,X,Y,temp1-temp4
 
@@ -62,66 +62,43 @@ GetAndStoreSprite:
                 sta zpLenLo                     ;Sprite direction
                 ora #SPRH_HOTSPOTX
                 tay
-                lda temp1                       ;Subtract X-hotspot
+                lda temp3                       ;Subtract X-hotspot
                 sbc (frameLo),y
-                sta sprXL,x
-                lda temp2
-                sbc #$00
-                sta sprXH,x
+                pha
                 iny
                 iny
-                lda (frameLo),y                 ;Add X-connect spot
                 clc
-                bmi GASS_CSXNeg
-                adc sprXL,x
-                sta temp1
-                lda #$00
-                beq GASS_CSXCommon
-GASS_CSXNeg:    adc sprXL,x
-                sta temp1
-                lda #$ff
-GASS_CSXCommon: adc sprXH,x
-                sta temp2
+                adc (frameLo),y                 ;Add X-connect spot
+                sta temp3
                 ldy #SPRH_HOTSPOTY
-                lda temp3                       ;Subtract Y-hotspot
+                lda temp4                       ;Subtract Y-hotspot
                 sec
                 sbc (frameLo),y
-                iny
                 sta sprY,x
-                if OPTIMIZE_SPRITECOORDS = 0
-                bcs GASS_YNotOver
-                dec temp4
-GASS_YNotOver:  lda (frameLo),y                 ;Add Y-connect spot
+                iny
                 clc
-                bmi GASS_CSYNeg
-                adc sprY,x
-                sta temp3
-                lda #$00
-                beq GASS_CSYCommon
-GASS_CSYNeg:    adc sprY,x
-                sta temp3
-                lda #$ff
-GASS_CSYCommon: adc temp4
+                adc (frameLo),y                 ;Add Y-connect spot
                 sta temp4
-                bne GASS_DoNotAccept            ;Note: Y highbyte checked incorrectly after adding the connect-spot
-                else
-                clc
-                adc (frameLo),y                 ;Add Y-connect spot (optimized)
-                sta temp3
-                endif
+                ldy #$00
                 cpx #MAX_SPR                    ;Ran out of sprites?
+                pla                             ;Finalize X-pos
                 bcs GASS_DoNotAccept
-                lda sprY,x                      ;Check Y visibility
+                bpl GASS_XPos                   ;C=0 for the addition, set add highbyte in Y
+                dey
+GASS_XPos:      adc temp1
+                sta sprXL,x
+                tya
+                adc temp2
+                sta sprXH,x
+                beq GASS_XOK
+                lda sprXL,x                     ;Check X visibility
+                cmp #MAX_SPRX-256
+                bcs GASS_DoNotAccept
+GASS_XOK:       lda sprY,x                      ;Check Y visibility
                 cmp #MIN_SPRY
                 bcc GASS_DoNotAccept
                 cmp #MAX_SPRY
                 bcs GASS_DoNotAccept
-                lda sprXH,x
-                beq GASS_Accept                 ;Check X visibility
-                lda sprXL,x
-                cmp #MAX_SPRX-256
-                bcs GASS_DoNotAccept
-
 GASS_Accept:    lda actIndex                    ;Sprite was accepted: store actor index
                 sta sprAct,x                    ;for interpolation
                 ldy #SPRH_COLOR

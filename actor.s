@@ -151,25 +151,21 @@ DA_GetScreenPos:lda actYL,x                     ;Convert actor coordinates to sc
                 sta actPrevYL,x
                 sec
 DA_SprSubYL:    sbc #$00
-                sta temp3
+                sta temp4
                 lda actYH,x
                 sta actPrevYH,x
 DA_SprSubYH:    sbc #$00
                 cmp #MAX_ACTY
                 bcs DA_ActorDone
                 tay
-                lda temp3
+                lda temp4
                 lsr
                 lsr
                 lsr
                 ora coordTblLo+1,y
-                sta temp3
+                sta temp4                       ;Y pos
                 lda coordTblHi+1,y
-                if OPTIMIZE_SPRITECOORDS = 0
-                sta temp4
-                else
                 bne DA_ActorDone                ;Skip if Y coord MSB nonzero
-                endif
                 lda actXL,x
                 sta actPrevXL,x
                 sec
@@ -186,9 +182,11 @@ DA_SprSubXH:    sbc #$00
                 lsr
                 lsr
                 ora coordTblLo,y
-                sta temp1
+                sta temp1                       ;X add
                 lda coordTblHi,y
                 sta temp2
+                lda #$00                        ;X current pos within actor
+                sta temp3
                 stx actIndex
                 jsr DrawActorSub
                 stx sprIndex

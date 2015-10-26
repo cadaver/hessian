@@ -1,19 +1,18 @@
 SHOW_FREE_MEMORY = 0
 SHOW_BATTERY = 0
-SHOW_ACTOR_TIME = 0
+SHOW_ACTOR_TIME = 1
 SHOW_SPRITESORT_TIME = 0
 SHOW_SCROLLWORK_TIME = 0
 SHOW_PLAYROUTINE_TIME = 0
 SHOW_LEVELUPDATE_TIME = 0
 SHOW_SPRITEDEPACK_TIME = 0
-OPTIMIZE_SPRITECOORDS = 1                       ;Disable 16-bit Y coord arithmetic in DrawActors
 
 DROP_ITEM_TEST  = 0                             ;Drop a copy of current item to test actor save
-AMMO_CHEAT      = 0
-ITEM_CHEAT      = 0
+AMMO_CHEAT      = 1
+ITEM_CHEAT      = 1
 UPGRADE_CHEAT   = 0
 GODMODE_CHEAT   = 0                             ;Whether health/battery cheat is on initially
-SPAWN_TEST      = 1                             ;Continuously spawn the zone's enemies as fast as possible
+SPAWN_TEST      = 0                             ;Continuously spawn the zone's enemies as fast as possible
 
         ; Memory configuration & loader symbols
 
@@ -54,7 +53,7 @@ randomAreaEnd:
         ; Disposable init part, overwritten by loadable script code
 
                 include init.s
-                
+
         ; Non-aligned data
 
                 include sounddata.s

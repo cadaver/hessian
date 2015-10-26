@@ -266,26 +266,29 @@ GetBulletOffset:ldy actT,x
                 lda actDispTblHi-1,y
                 sta actHi
                 lda #$00
-                sta temp1
                 sta temp2
                 sta temp3
                 sta temp4
                 lda #MAX_SPR                    ;"Draw" the actor in a fake manner
                 sta sprIndex                    ;to get the last connect-spot
                 jsr DrawActorSub_NoColor
-                if OPTIMIZE_SPRITECOORDS > 0
                 lda temp3
-                bpl GBO_YOffsetPos
-                dec temp4
-GBO_YOffsetPos:
-                endif
+                sta temp1
+                bpl GBO_XPos
+                dec temp2
+GBO_XPos:       ldy #$00
+                lda temp4
+                bpl GBO_YPos
+                dey
+GBO_YPos:       sty temp4
                 ldy #$03
-GBO_Loop:       asl temp1                       ;Multiply pixels back to map coordinates
+GBO_ShiftLoop:  asl temp1                       ;Convert screen coords back to map coords
                 rol temp2
-                asl temp3
+                asl
                 rol temp4
                 dey
-                bne GBO_Loop
+                bne GBO_ShiftLoop
+                sta temp3
                 ldx actIndex                    ;Check whether to use player or NPC bullet actor
                 beq AH_IsPlayer                 ;indices
                 lda #ACTI_FIRSTNPCBULLET
