@@ -1,4 +1,4 @@
-all: d642prg.exe filejoin.exe gfxconv.exe gt2nt2.exe invert.exe countobj.exe pack2.exe pchunk2.exe pic2chr.exe prg2d64.exe mchunk.exe leveled.exe worlded.exe spred.exe symbols.exe ins2nt2.exe
+all: d642prg.exe filejoin.exe gfxconv.exe gt2nt2.exe invert.exe countobj.exe pack2.exe pchunk2.exe pic2chr.exe prg2d64.exe mchunk.exe leveled.exe worlded.exe spred.exe symbols.exe ins2nt2.exe spr2txt.exe
 
 clean:
 	del *.exe
@@ -72,3 +72,6 @@ symbols.exe: symbols.c
 
 ins2nt2.exe: ins2nt2.c fileio.c
 	gcc ins2nt2.c fileio.c -oins2nt2.exe
+	
+spr2txt.exe: spr2txt.c fileio.c
+	gcc spr2txt.c fileio.c -ospr2txt.exe
