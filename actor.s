@@ -132,7 +132,7 @@ DA_CheckCacheAge:
 DA_CacheAgeOK:  dex
                 txa
                 and #MAX_CACHESPRITES-1
-                stx DA_CheckCacheAge+1          ;Check next cache sprite on next frame
+                sta DA_CheckCacheAge+1          ;Check next cache sprite on next frame
                 ldx #$00                        ;Reset amount of used sprites
                 stx sprIndex
 DA_Loop:        ldy actT,x
