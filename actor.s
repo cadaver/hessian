@@ -116,24 +116,23 @@ DrawActors:     lda scrollX                     ;Save this frame's finescrolling
                 sta IA_PrevScrollY+1
                 ldx GASS_CurrentFrame+1
                 stx GASS_LastFrame+1
+DA_IncCacheFrame:
                 inx                             ;Increment framenumber for sprite cache
-                bne DA_FrameOK                  ;(framenumber is never 0)
-                inx
-DA_FrameOK:     stx GASS_CurrentFrame+1
+                beq DA_IncCacheFrame            ;(framenumber is never 0)
+                stx GASS_CurrentFrame+1
                 txa
 DA_CheckCacheAge:
                 ldx #MAX_CACHESPRITES-1
                 sec                             ;If age stored in cache is older than significant, reset
                 sbc cacheSprAge,x               ;to prevent overflow error (check one sprite per frame)
-                cmp #4
+                cmp #$04
                 bcc DA_CacheAgeOK
-                lda #0
+                lda #$00
                 sta cacheSprAge,x
 DA_CacheAgeOK:  dex
-                bpl DA_CacheAgeNotOver
-                ldx #MAX_CACHESPRITES-1
-DA_CacheAgeNotOver:
-                stx DA_CheckCacheAge+1
+                txa
+                and #MAX_CACHESPRITES-1
+                stx DA_CheckCacheAge+1          ;Check next cache sprite on next frame
                 ldx #$00                        ;Reset amount of used sprites
                 stx sprIndex
 DA_Loop:        ldy actT,x
