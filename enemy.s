@@ -1,4 +1,5 @@
 HUMAN_ITEM_SPAWN_OFFSET = -15*8
+MULTIEXPLOSION_DELAY = 3
 
         ; Flying enemy update routine
         ;
@@ -76,6 +77,71 @@ MFE_Reverse:    eor actMoveCtrl,x
 MFE_NoVertTurn:
 MFE_NoVertWall: rts
 
+        ; Generate 2 explosions at 8 pixel radius
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy2_8:lda #2
+                ldy #$3f
+
+        ; Turn enemy into a multiple explosion generator & drop item
+        ;
+        ; Parameters: X actor index, A number of explosions, Y radius
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemyMultiple:
+                sta actSX,x
+                tya
+                sta actSY,x
+                lda #ACT_EXPLOSIONGENERATOR
+                jsr TransformBullet
+                lda #$00
+                jmp DropItem
+
+        ; Explosion generator update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveExplosionGenerator:
+                dec actFd,x
+                bpl MEG_NoNewExplosion
+                lda #MULTIEXPLOSION_DELAY
+                sta actFd,x
+                lda #ACTI_FIRSTEFFECT
+                ldy #ACTI_LASTEFFECT
+                jsr GetFreeActor
+                bcc MEG_NoRoom                  ;If no room, simply explode self
+                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
+                lda actSY,x
+                sta temp1
+                lsr
+                sta temp2
+                tya
+                tax
+                jsr ExplodeActor                ;Play explosion sound & init animation
+                jsr MEG_GetOffset
+                jsr MoveActorX
+                jsr MEG_GetOffset
+                jsr MoveActorY
+                ldx actIndex
+                dec actSX,x
+                bne MEG_NotLastExplosion
+                jmp RemoveActor
+MEG_NotLastExplosion:
+MEG_NoNewExplosion:
+                rts
+
+MEG_GetOffset:  jsr Random
+                and temp1
+                sec
+                sbc temp2
+                rts
+
         ; Turn enemy into an explosion & drop item
         ;
         ; Parameters: X actor index
@@ -84,7 +150,7 @@ MFE_NoVertWall: rts
 
 ExplodeEnemy:   lda #$00
                 jsr DropItem
-                jmp ExplodeActor
+MEG_NoRoom:     jmp ExplodeActor
 
         ; Initiate humanoid enemy or player death
         ;

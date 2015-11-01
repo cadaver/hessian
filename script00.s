@@ -512,11 +512,11 @@ CheckCheat:     lda keyType
                 cpx #CHEATSTRING_LENGTH-1
                 bcc CC_NoCheat
 CC_ActivateCheat:
-                lda DA_ResetRecharge+1            ;Disable player damage & battery drain
+                lda DA_ResetRecharge+1          ;Disable player damage & battery drain
                 eor #healTimer^temp8
                 sta DA_ResetRecharge+1
                 lda DrainBatteryRound
-                eor #$40
+                eor #$69^$a9
                 sta DrainBatteryRound
                 lda #$01
                 sta Irq1_Bg2+1                  ;Flash logo, then restore colors via the normal fadeout code

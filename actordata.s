@@ -21,10 +21,15 @@ ACT_WATERSPLASH = 19
 ACT_SMALLSPLASH = 20
 ACT_OBJECTMARKER = 21
 ACT_SPEECHBUBBLE = 22
-ACT_TESTENEMY   = 23
-ACT_TESTFLYINGENEMY = 24
+ACT_EXPLOSIONGENERATOR = 23
+ACT_SMALLDROID  = 24
+ACT_LARGEDROID  = 25
+ACT_LARGEDROIDSUPER = 26
 
 HP_PLAYER       = 56
+HP_SMALLDROID   = 8
+HP_LARGEDROID   = 16
+HP_LARGEDROIDSUPER = 20
 
         ; Difficulty mod for damage on player
 
@@ -49,6 +54,7 @@ humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5
 
 adMeleeHit      = $0000                         ;Invisible
 adLargeMeleeHit = $0000
+adExplosionGenerator = $0000
 
 actDispTblLo:   dc.b <adPlayer
                 dc.b <adItem
@@ -72,8 +78,10 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adSmallSplash
                 dc.b <adObjectMarker
                 dc.b <adSpeechBubble
-                dc.b <adTestEnemy
-                dc.b <adTestFlyingEnemy
+                dc.b <adExplosionGenerator
+                dc.b <adSmallDroid
+                dc.b <adLargeDroid
+                dc.b <adLargeDroid
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -97,8 +105,10 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adSmallSplash
                 dc.b >adObjectMarker
                 dc.b >adSpeechBubble
-                dc.b >adTestEnemy
-                dc.b >adTestFlyingEnemy
+                dc.b >adExplosionGenerator
+                dc.b >adSmallDroid
+                dc.b >adLargeDroid
+                dc.b >adLargeDroid
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -233,22 +243,17 @@ adSpeechBubble: dc.b ONESPRITE                  ;Number of sprites
                 dc.b 1                          ;Number of frames
                 dc.b 54
 
-adTestEnemy:    dc.b HUMANOID                   ;Number of sprites
-                dc.b C_PLAYER_BOTTOM_ARMOR      ;Lower part spritefile number
-                dc.b 0                          ;Lower part base spritenumber
-                dc.b 0                          ;Lower part base index into the frametable
-                dc.b 32                         ;Lower part left frame add
-                dc.b C_PLAYER_TOP_ARMOR         ;Upper part spritefile number
-                dc.b 0                          ;Upper part base spritenumber
-                dc.b 0                          ;Upper part base index into the frametable
-                dc.b 39                         ;Upper part left frame add
-
-adTestFlyingEnemy:
-                dc.b ONESPRITE                  ;Number of sprites
+adSmallDroid:   dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_SMALLROBOT               ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
                 dc.b 0,1,2
+
+adLargeDroid:   dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_SMALLROBOT               ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 3                          ;Number of frames
+                dc.b 3,4,5
 
         ; Actor logic data
 
@@ -274,8 +279,10 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alSmallSplash
                 dc.b <alObjectMarker
                 dc.b <alSpeechBubble
-                dc.b <alTestEnemy
-                dc.b <alTestFlyingEnemy
+                dc.b <alExplosionGenerator
+                dc.b <alSmallDroid
+                dc.b <alLargeDroid
+                dc.b <alLargeDroidSuper
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -299,15 +306,17 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alSmallSplash
                 dc.b >alObjectMarker
                 dc.b >alSpeechBubble
-                dc.b >alTestEnemy
-                dc.b >alTestFlyingEnemy
+                dc.b >alExplosionGenerator
+                dc.b >alSmallDroid
+                dc.b >alLargeDroid
+                dc.b >alLargeDroidSuper
 
 alPlayer:       dc.w MoveAndAttackHuman         ;Update routine
-                dc.w HumanDeath                 ;Destroy routine
                 dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
+                dc.w HumanDeath                 ;Destroy routine
                 dc.b HP_PLAYER                  ;Initial health
 plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
@@ -327,159 +336,173 @@ plrJumpSpeed:   dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
 plrClimbSpeed:  dc.b INITIAL_CLIMBSPEED         ;Climbing speed
 
 alItem:         dc.w MoveItem                   ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 10                         ;Horizontal size
                 dc.b 7                          ;Size up
                 dc.b 0                          ;Size down
 
 alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
 
 alLargeMeleeHit:dc.w MoveMeleeHit               ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 8                          ;Horizontal size
+                dc.b 6                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
 
 alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 2                          ;Horizontal size
                 dc.b 1                          ;Size up
                 dc.b 1                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
 
 alShotgunBullet:dc.w MoveShotgunBullet          ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 3                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
 
 alFlame:        dc.w MoveFlame                  ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 5                          ;Horizontal size
                 dc.b 5                          ;Size up
                 dc.b 3                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
 
 alEMP:          dc.w MoveEMP                    ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 128                        ;Horizontal size
                 dc.b 128                        ;Size up
                 dc.b 128                        ;Size down
+                dc.w RemoveActor                ;Destroy routine
 
 alLaser:        dc.w MoveBullet                 ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 3                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
 
 alPlasma:       dc.w MoveBullet                 ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 7                          ;Horizontal size
-                dc.b 7                          ;Size up
-                dc.b 7                          ;Size down
+                dc.b 6                          ;Horizontal size
+                dc.b 6                          ;Size up
+                dc.b 6                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
 
 alLauncherGrenade:
                 dc.w MoveLauncherGrenade        ;Update routine
-                dc.w ExplodeGrenade             ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 3                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
+                dc.w ExplodeGrenade             ;Destroy routine
 
 alGrenade:      dc.w MoveGrenade                ;Update routine
-                dc.w ExplodeGrenade             ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 3                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
+                dc.w ExplodeGrenade             ;Destroy routine
 
 alRocket:       dc.w MoveRocket                 ;Update routine
-                dc.w ExplodeGrenade             ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
-                dc.b 4                          ;Size up
-                dc.b 4                          ;Size down
+                dc.b 2                          ;Size up
+                dc.b 2                          ;Size down
+                dc.w ExplodeGrenade             ;Destroy routine
 
 alMine:         dc.w MoveMine                   ;Update routine
-                dc.w ExplodeGrenade             ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 0                          ;Size down
+                dc.w ExplodeGrenade             ;Destroy routine
 
 alWaterSplash:
 alExplosion:    dc.w MoveExplosion              ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
 alSmokeTrail:   dc.w MoveSmokeTrail             ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
 alPowder:       dc.w MovePowder                 ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 5                          ;Horizontal size
                 dc.b 5                          ;Size up
                 dc.b 5                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
 
 alSmallSplash:  dc.w MoveSmallSplash            ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
 alObjectMarker: dc.w MoveObjectMarker           ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
 alSpeechBubble: dc.w MoveSpeechBubble           ;Update routine
-                dc.w RemoveActor                ;Destroy routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
-alTestEnemy:    dc.w MoveAndAttackHuman         ;Update routine
-                dc.w HumanDeath                 ;Destroy routine
-                dc.b GRP_ENEMIES|AF_ISORGANIC   ;Actor flags
-                dc.b 8                          ;Horizontal size
-                dc.b 34                         ;Size up
-                dc.b 0                          ;Size down
-                dc.b 12                         ;Initial health
-                dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 25                         ;Score from kill
-                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b DROP_WEAPONMEDKITARMOR     ;Itemdrop table index or item override
-                dc.b $0b                        ;AI offense AND-value
-                dc.b $10                        ;AI defense probability
-                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_NOFALLDAMAGE ;Move flags
-                dc.b 4*8+4                      ;Max. movement speed
-                dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
-                dc.b INITIAL_INAIRACC           ;In air movement acceleration
-                dc.b 8                          ;Gravity acceleration
-                dc.b 4                          ;Long jump gravity acceleration
-                dc.b INITIAL_GROUNDBRAKE        ;Ground braking
-                dc.b -4                         ;Height in chars for headbump check (negative)
-                dc.b -48                        ;Jump initial speed (negative)
-                dc.b INITIAL_CLIMBSPEED-8       ;Climbing speed
+alExplosionGenerator: 
+                dc.w MoveExplosionGenerator     ;Update routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
 
-alTestFlyingEnemy:
-                dc.w MoveFlyingEnemy            ;Update routine
-                dc.w ExplodeEnemy               ;Destroy routine
+alSmallDroid:   dc.w MoveFlyingEnemy            ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
-                dc.b 7                          ;Horizontal size
-                dc.b 7                          ;Size up
-                dc.b 7                          ;Size down
-                dc.b 8                          ;Initial health
+                dc.b 6                          ;Horizontal size
+                dc.b 6                          ;Size up
+                dc.b 6                          ;Size down
+                dc.w ExplodeEnemy               ;Destroy routine
+                dc.b HP_SMALLDROID              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 25                         ;Score from kill
+                dc.b AIMODE_FLYER               ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b $05                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b 4*8                        ;Horiz max movement speed
+                dc.b 3                          ;Horiz acceleration
+                dc.b 2*8                        ;Vert max movement speed
+                dc.b 1                          ;Vert acceleration
+                dc.b 0                          ;Horiz obstacle check offset
+                dc.b 0                          ;Vert obstacle check offset
+
+alLargeDroid:   dc.w MoveFlyingEnemy            ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
+                dc.b 9                          ;Horizontal size
+                dc.b 8                          ;Size up
+                dc.b 8                          ;Size down
+                dc.w ExplodeEnemy2_8            ;Destroy routine
+                dc.b HP_LARGEDROID              ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 45                         ;Score from kill
+                dc.b AIMODE_FLYER               ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b $05                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b 3*8                        ;Horiz max movement speed
+                dc.b 2                          ;Horiz acceleration
+                dc.b 3*4                        ;Vert max movement speed
+                dc.b 1                          ;Vert acceleration
+                dc.b 0                          ;Horiz obstacle check offset
+                dc.b 0                          ;Vert obstacle check offset
+
+alLargeDroidSuper:
+                dc.w MoveFlyingEnemy            ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
+                dc.b 9                          ;Horizontal size
+                dc.b 8                          ;Size up
+                dc.b 8                          ;Size down
+                dc.w ExplodeEnemy2_8            ;Destroy routine
+                dc.b HP_LARGEDROIDSUPER         ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 65                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value

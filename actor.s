@@ -30,11 +30,11 @@ COLOR_INVISIBLE = $80
 COLOR_ONETIMEFLASH = $ff
 
 AL_UPDATEROUTINE = 0
-AL_DESTROYROUTINE = 2
-AL_ACTORFLAGS   = 4
-AL_SIZEHORIZ    = 5
-AL_SIZEUP       = 6
-AL_SIZEDOWN     = 7
+AL_ACTORFLAGS   = 2
+AL_SIZEHORIZ    = 3
+AL_SIZEUP       = 4
+AL_SIZEDOWN     = 5
+AL_DESTROYROUTINE = 6
 AL_INITIALHP    = 8
 AL_DMGMODIFY    = 9
 AL_SCORE        = 10
@@ -1150,7 +1150,7 @@ InitActor:      jsr GetActorLogicData
                 sta actSizeD,x
                 plp
                 bne IA_SkipHealth
-                iny
+                ldy #AL_INITIALHP
                 lda (actLo),y
                 sta actHp,x
 IA_SkipHealth:  rts

@@ -920,14 +920,13 @@ DrainBatteryDouble:
         ; Returns: -
         ; Modifies: A
 
-DrainBattery:
-                if GODMODE_CHEAT = 0
-                lsr
-                else
-                rts
-                endif
+DrainBattery:   lsr                             ;Replaced by CLC if no battery upgrade
 DrainBatteryRound:
+                if GODMODE_CHEAT = 0
                 adc #$00                        ;Round upward if reduced
+                else
+                lda #$00
+                endif
                 sta DB_Amount+1
                 lda battery
                 sec

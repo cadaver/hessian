@@ -1,6 +1,6 @@
 SHOW_FREE_MEMORY = 0
 SHOW_BATTERY = 0
-SHOW_ACTOR_TIME = 1
+SHOW_ACTOR_TIME = 0
 SHOW_SPRITESORT_TIME = 0
 SHOW_SCROLLWORK_TIME = 0
 SHOW_PLAYROUTINE_TIME = 0
@@ -11,8 +11,8 @@ DROP_ITEM_TEST  = 0                             ;Drop a copy of current item to 
 AMMO_CHEAT      = 1
 ITEM_CHEAT      = 1
 UPGRADE_CHEAT   = 0
-GODMODE_CHEAT   = 0                             ;Whether health/battery cheat is on initially
-SPAWN_TEST      = 0                             ;Continuously spawn the zone's enemies as fast as possible
+GODMODE_CHEAT   = 1                             ;Whether health/battery cheat is on initially
+SPAWN_TEST      = 1                             ;Continuously spawn the zone's enemies as fast as possible
 
         ; Memory configuration & loader symbols
 
