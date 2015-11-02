@@ -25,10 +25,12 @@ ACT_EXPLOSIONGENERATOR = 23
 ACT_SMALLDROID  = 24
 ACT_LARGEDROID  = 25
 ACT_LARGEDROIDSUPER = 26
+ACT_FLYINGCRAFT = 27
 
 HP_PLAYER       = 56
 HP_SMALLDROID   = 8
 HP_LARGEDROID   = 16
+HP_FLYINGCRAFT  = 16
 HP_LARGEDROIDSUPER = 20
 
         ; Difficulty mod for damage on player
@@ -82,6 +84,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adSmallDroid
                 dc.b <adLargeDroid
                 dc.b <adLargeDroid
+                dc.b <adFlyingCraft
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -109,6 +112,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adSmallDroid
                 dc.b >adLargeDroid
                 dc.b >adLargeDroid
+                dc.b >adFlyingCraft
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -255,6 +259,12 @@ adLargeDroid:   dc.b ONESPRITE                  ;Number of sprites
                 dc.b 3                          ;Number of frames
                 dc.b 3,4,5
 
+adFlyingCraft:  dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_SMALLROBOT               ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 5                          ;Number of frames
+                dc.b $80+6,$80+7,8,7,6
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -283,6 +293,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alSmallDroid
                 dc.b <alLargeDroid
                 dc.b <alLargeDroidSuper
+                dc.b <alFlyingCraft
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -310,6 +321,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alSmallDroid
                 dc.b >alLargeDroid
                 dc.b >alLargeDroidSuper
+                dc.b >alFlyingCraft
 
 alPlayer:       dc.w MoveAndAttackHuman         ;Update routine
                 dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -453,7 +465,7 @@ alExplosionGenerator:
                 dc.w MoveExplosionGenerator     ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
-alSmallDroid:   dc.w MoveFlyingEnemy            ;Update routine
+alSmallDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 6                          ;Horizontal size
                 dc.b 6                          ;Size up
@@ -473,7 +485,7 @@ alSmallDroid:   dc.w MoveFlyingEnemy            ;Update routine
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 0                          ;Vert obstacle check offset
 
-alLargeDroid:   dc.w MoveFlyingEnemy            ;Update routine
+alLargeDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 9                          ;Horizontal size
                 dc.b 8                          ;Size up
@@ -481,7 +493,7 @@ alLargeDroid:   dc.w MoveFlyingEnemy            ;Update routine
                 dc.w ExplodeEnemy2_8            ;Destroy routine
                 dc.b HP_LARGEDROID              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 45                         ;Score from kill
+                dc.w 50                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value
@@ -494,7 +506,7 @@ alLargeDroid:   dc.w MoveFlyingEnemy            ;Update routine
                 dc.b 0                          ;Vert obstacle check offset
 
 alLargeDroidSuper:
-                dc.w MoveFlyingEnemy            ;Update routine
+                dc.w MoveDroid                  ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 9                          ;Horizontal size
                 dc.b 8                          ;Size up
@@ -502,7 +514,7 @@ alLargeDroidSuper:
                 dc.w ExplodeEnemy2_8            ;Destroy routine
                 dc.b HP_LARGEDROIDSUPER         ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 65                         ;Score from kill
+                dc.w 75                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value
@@ -512,4 +524,24 @@ alLargeDroidSuper:
                 dc.b 2*8                        ;Vert max movement speed
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
+                dc.b 0                          ;Vert obstacle check offset
+
+alFlyingCraft:  dc.w MoveFlyingCraft            ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON|AF_HORIZATTACKONLY    ;Actor flags
+                dc.b 11                         ;Horizontal size
+                dc.b 8                          ;Size up
+                dc.b 7                          ;Size down
+                dc.w DestroyFlyingCraft         ;Destroy routine
+                dc.b HP_FLYINGCRAFT             ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 65                         ;Score from kill
+                dc.b AIMODE_FLYER               ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b $06                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b 5*8                        ;Horiz max movement speed
+                dc.b 3                          ;Horiz acceleration
+                dc.b 2*8                        ;Vert max movement speed
+                dc.b 2                          ;Vert acceleration
+                dc.b 1                          ;Horiz obstacle check offset
                 dc.b 0                          ;Vert obstacle check offset

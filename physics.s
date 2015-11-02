@@ -65,6 +65,12 @@ MF_YMoveOK:     lda temp8
         ; Returns: actMB updated, also returned in A
         ; Modifies: A,Y,temp5-temp8
 
+GrenadeMotionCommon:
+                lda #-1                         ;Ceiling check offset
+                sta temp4
+                lda #GRENADE_ACCEL
+                ldy #GRENADE_MAX_YSPEED
+                
 MoveWithGravity:sta temp6
                 lda actMB,x                     ;Only retain the grounded & water flags
                 and #MB_GROUNDED|MB_INWATER

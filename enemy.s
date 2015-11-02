@@ -1,20 +1,61 @@
 HUMAN_ITEM_SPAWN_OFFSET = -15*8
 MULTIEXPLOSION_DELAY = 3
 
-        ; Flying enemy update routine
+        ; Floating droid update routine
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveFlyingEnemy:lda #$02
+MoveDroid:      lda #$02
                 ldy #$02
                 jsr OneShotAnimation
-                bcc MFE_AnimDone
+                bcc MD_AnimDone
                 lda #$00
                 sta actF1,x
-MFE_AnimDone:   jsr MoveAccelerateFlyer
-                jmp AttackGeneric
+MD_AnimDone:    jsr MoveAccelerateFlyer
+MFC_CanAttack:  jmp AttackGeneric
+
+        ; Flying craft update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveFlyingCraft:lda actHp,x
+                beq MFC_Fall
+                jsr MoveAccelerateFlyer
+                lda actSX,x
+                clc
+                adc #2*8+4
+                bpl MFC_FrameOK1
+                lda #0
+MFC_FrameOK1:   lsr
+                lsr
+                lsr
+                cmp #5
+                bcc MFC_FrameOK2
+                lda #4
+MFC_FrameOK2:   sta actF1,x
+                cmp #2                          ;Cannot fire when no speed (middle frame)
+                bne MFC_CanAttack
+                rts
+MFC_Fall:       jsr GrenadeMotionCommon
+                tay
+                beq MFC_ContinueFall
+                jmp ExplodeEnemy2_8             ;Drop item & explode
+
+DestroyFlyingCraft:
+                jsr SpawnExplosion              ;Spawn one explosion when starting to fall
+                ldx actIndex
+MFC_ContinueFall:
+                rts
+
+        ; Flying enemy movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveAccelerateFlyer:
                 ldy #AL_XMOVESPEED
@@ -112,18 +153,12 @@ MoveExplosionGenerator:
                 bpl MEG_NoNewExplosion
                 lda #MULTIEXPLOSION_DELAY
                 sta actFd,x
-                lda #ACTI_FIRSTEFFECT
-                ldy #ACTI_LASTEFFECT
-                jsr GetFreeActor
-                bcc MEG_NoRoom                  ;If no room, simply explode self
-                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
                 lda actSY,x
                 sta temp1
                 lsr
                 sta temp2
-                tya
-                tax
-                jsr ExplodeActor                ;Play explosion sound & init animation
+                jsr SpawnExplosion
+                bcc MEG_NoRoom                  ;If no room, simply explode self
                 jsr MEG_GetOffset
                 jsr MoveActorX
                 jsr MEG_GetOffset
@@ -140,7 +175,22 @@ MEG_GetOffset:  jsr Random
                 and temp1
                 sec
                 sbc temp2
-                rts
+SE_Fail:        rts
+
+        ; Spawn an explosion
+        ;
+        ; Parameters: X actor index
+        ; Returns: C=1 success (X=explosion actor index), C=0 fail
+        ; Modifies: A,X,Y (restore X using actIndex)
+        
+SpawnExplosion: lda #ACTI_FIRSTEFFECT
+                ldy #ACTI_LASTEFFECT
+                jsr GetFreeActor
+                bcc SE_Fail
+                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
+                tya
+                tax
+                jmp ExplodeActor                ;Play explosion sound & init animation
 
         ; Turn enemy into an explosion & drop item
         ;

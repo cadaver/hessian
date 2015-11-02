@@ -216,11 +216,7 @@ MLG_NoAnimation:
                 bcs ExplodeGrenade
                 dec actTime,x
                 bmi ExplodeGrenade
-                lda #-1                         ;Ceiling check offset
-                sta temp4
-                lda #GRENADE_ACCEL
-                ldy #GRENADE_MAX_YSPEED
-                jsr MoveWithGravity
+                jsr GrenadeMotionCommon
                 bmi MGrn_HitWater
                 and #MB_HITWALL|MB_HITCEILING|MB_LANDED
                 bne ExplodeGrenade              ;Explode on any wall/ground contact
@@ -274,11 +270,12 @@ EGrn_FullDamageBelow:
         ; Turn an actor into an explosion
         ;
         ; Parameters: X actor index
-        ; Returns: -
+        ; Returns: C=1
         ; Modifies: A
 
 ExplodeActor:   lda #SFX_EXPLOSION
                 jsr PlaySfx
+                sec
                 lda #ACT_EXPLOSION
 TransformBullet:sta actT,x
                 lda #$00
@@ -299,11 +296,7 @@ MoveGrenade:    dec actTime,x
                 sta actMB,x
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
-                lda #-1                         ;Ceiling check offset
-                sta temp4
-                lda #GRENADE_ACCEL
-                ldy #GRENADE_MAX_YSPEED
-                jsr MoveWithGravity
+                jsr GrenadeMotionCommon
                 lsr
                 bcc MGrn_NoBounce
                 lda temp1                       ;Bounce: negate and halve velocity

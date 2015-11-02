@@ -552,6 +552,9 @@ GAD_NotHorizontal:
                 ldy actWpn,x
                 lda temp8
                 beq GAD_Horizontal
+                lda actFlags,x                  ;Check if can attack diagonally/vertically
+                and #AF_HORIZATTACKONLY
+                bne GAD_NeedLessDistance
                 lda temp6
                 beq GAD_Vertical
                 cmp temp8
