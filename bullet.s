@@ -216,7 +216,7 @@ MLG_NoAnimation:
                 bcs ExplodeGrenade
                 dec actTime,x
                 bmi ExplodeGrenade
-                jsr GrenadeMotionCommon
+                jsr FallingMotionCommon
                 bmi MGrn_HitWater
                 and #MB_HITWALL|MB_HITCEILING|MB_LANDED
                 bne ExplodeGrenade              ;Explode on any wall/ground contact
@@ -296,7 +296,7 @@ MoveGrenade:    dec actTime,x
                 sta actMB,x
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
-                jsr GrenadeMotionCommon
+                jsr FallingMotionCommon
                 lsr
                 bcc MGrn_NoBounce
                 lda temp1                       ;Bounce: negate and halve velocity

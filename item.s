@@ -1,8 +1,3 @@
-ITEM_HEIGHT     = -1
-ITEM_ACCEL      = 4
-ITEM_YSPEED     = -24
-ITEM_MAX_YSPEED = 6*8
-
 INITIAL_MAX_WEAPONS = 4                         ;3 + fists
 
 USEITEM_ATTACK_DELAY = 5                        ;Attack delay after using an item
@@ -21,11 +16,7 @@ MoveItem:       lda actMB,x                     ;Skip movement if grounded and s
                 bcs MoveItem_Done
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
-                lda #ITEM_HEIGHT                ;Actor height for ceiling check
-                sta temp4
-                lda #ITEM_ACCEL
-                ldy #ITEM_MAX_YSPEED
-                jsr MoveWithGravity             ;Move & check collisions
+                jsr FallingMotionCommon         ;Move & check collisions
                 lsr
                 bcc MoveItem_Done
                 lda temp1                       ;Bounce: negate and halve velocity

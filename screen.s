@@ -967,7 +967,7 @@ RS_Loop:        sta temp6
 RS_NotOver:     iny
                 cpy #39
                 bcc RS_Loop
-                jsr SL_SwapScreen               ;SWDL_Common draws to the other screen, need to swap now
+                jsr SL_SwapScreen               ;SWDL_Common draws to the hidden screen, swap now
 
         ; Reset & center scrolling
         ;

@@ -14,7 +14,7 @@ TEXT_BG3        = $0c
         ; (return to normal display by calling UpdateFrame)
         ;
         ; Parameters: -
-        ; Returns: -
+        ; Returns: X=0
         ; Modifies: A,X
         
 BlankScreen:    jsr WaitBottom

@@ -1,4 +1,5 @@
 HUMAN_ITEM_SPAWN_OFFSET = -15*8
+ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 3
 
         ; Floating droid update routine
@@ -40,7 +41,7 @@ MFC_FrameOK2:   sta actF1,x
                 cmp #2                          ;Cannot fire when no speed (middle frame)
                 bne MFC_CanAttack
                 rts
-MFC_Fall:       jsr GrenadeMotionCommon
+MFC_Fall:       jsr FallingMotionCommon
                 tay
                 beq MFC_ContinueFall
                 jmp ExplodeEnemy2_8             ;Drop item & explode
@@ -318,7 +319,7 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 bcs DI_NoCount
                 lda itemDefaultPickup-1,x
 DI_NoCount:     sta actHp,y
-                lda #ITEM_YSPEED
+                lda #ITEM_SPAWN_YSPEED
                 sta actSY,y
                 tya
                 tax
