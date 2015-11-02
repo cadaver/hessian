@@ -47,12 +47,10 @@ Irq3_SplitDone: sty irqSaveY
                 lda #$00
                 sta $d015                       ;Make sure sprites are off in the border and
                 sta $d021                       ;do not disturb the fastloader
-                lda #PANEL_BG2                  ;Set scorepanel multicolors & X-scrolling
+                lda #PANEL_BG2                  ;Set scorepanel multicolors
                 sta $d022
                 lda #PANEL_BG3
                 sta $d023
-                lda #$18
-                sta $d016
                 lda #<Irq4
                 ldx #>Irq4
                 ldy #IRQ4_LINE
@@ -289,6 +287,8 @@ Irq2_LatePanel: ldy irqSaveY
         ;if no loading going on. Also animate level graphics
 
 Irq4:           jsr StartIrq
+                lda #$18
+                sta $d016
                 lda #$17                        ;Switch screen back on
                 sta $d011
                 if SHOW_PLAYROUTINE_TIME > 0
