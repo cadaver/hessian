@@ -151,15 +151,15 @@ MoveExplosionGenerator:
                 bpl MEG_NoNewExplosion
                 lda #MULTIEXPLOSION_DELAY
                 sta actFd,x
-                lda actSY,x
-                sta temp1
-                lsr
-                sta temp2
                 lda #ACTI_FIRSTEFFECT
                 ldy #ACTI_LASTEFFECT
                 jsr GetFreeActor
                 bcc MEG_NoRoom                  ;If no room, simply explode self
                 jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
+                lda actSY,x
+                sta temp1
+                lsr
+                sta temp2
                 tya
                 tax
                 jsr ExplodeActor                ;Play explosion sound & init animation
@@ -174,6 +174,7 @@ MoveExplosionGenerator:
 MEG_NotLastExplosion:
 MEG_NoNewExplosion:
                 rts
+
 MEG_GetOffset:  jsr Random
                 and temp1
                 sec

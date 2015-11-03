@@ -186,7 +186,7 @@ wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b 10                         ;Attack delay
                 dc.b ACT_SHOTGUNBULLET          ;Bullet actor type
                 dc.b DMG_SHOTGUN                ;Bullet damage
-                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b DMGMOD_NONORGANIC75        ;Damage modifier nonorganic/organic
                 dc.b 15                         ;Bullet time duration
                 dc.b 13                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
