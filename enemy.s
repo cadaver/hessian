@@ -2,56 +2,6 @@ HUMAN_ITEM_SPAWN_OFFSET = -15*8
 ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 3
 
-        ; Floating droid update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveDroid:      lda #$02
-                ldy #$02
-                jsr OneShotAnimation
-                bcc MD_AnimDone
-                lda #$00
-                sta actF1,x
-MD_AnimDone:    jsr MoveAccelerateFlyer
-MFC_CanAttack:  jmp AttackGeneric
-
-        ; Flying craft update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveFlyingCraft:lda actHp,x
-                beq MFC_Fall
-                jsr MoveAccelerateFlyer
-                lda actSX,x
-                clc
-                adc #2*8+4
-                bpl MFC_FrameOK1
-                lda #0
-MFC_FrameOK1:   lsr
-                lsr
-                lsr
-                cmp #5
-                bcc MFC_FrameOK2
-                lda #4
-MFC_FrameOK2:   sta actF1,x
-                cmp #2                          ;Cannot fire when no speed (middle frame)
-                bne MFC_CanAttack
-                rts
-MFC_Fall:       jsr FallingMotionCommon
-                tay
-                beq MFC_ContinueFall
-                jmp ExplodeEnemy2_8             ;Drop item & explode
-
-DestroyFlyingCraft:
-                jsr SpawnExplosion              ;Spawn one explosion when starting to fall
-                ldx actIndex
-MFC_ContinueFall:
-                rts
-
         ; Flying enemy movement
         ;
         ; Parameters: X actor index
@@ -117,7 +67,54 @@ MFE_NoHorizWall:lda actMB,x
 MFE_Reverse:    eor actMoveCtrl,x
                 sta actMoveCtrl,x
 MFE_NoVertTurn:
-MFE_NoVertWall: rts
+MFE_NoVertWall:
+MFC_ContinueFall:
+DestroyFlyingCraft:
+                rts
+
+        ; Flying craft update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveFlyingCraft:lda actHp,x
+                beq MFC_Fall
+                jsr MoveAccelerateFlyer
+                lda actSX,x
+                clc
+                adc #2*8+4
+                bpl MFC_FrameOK1
+                lda #0
+MFC_FrameOK1:   lsr
+                lsr
+                lsr
+                cmp #5
+                bcc MFC_FrameOK2
+                lda #4
+MFC_FrameOK2:   sta actF1,x
+                cmp #2                          ;Cannot fire when no speed (middle frame)
+                bne MFC_CanAttack
+                rts
+MFC_Fall:       jsr FallingMotionCommon
+                tay
+                beq MFC_ContinueFall
+                jmp ExplodeEnemy2_8             ;Drop item & explode at any collision
+
+        ; Floating droid update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveDroid:      lda #$02
+                ldy #$02
+                jsr OneShotAnimation
+                bcc MD_AnimDone
+                lda #$00
+                sta actF1,x
+MD_AnimDone:    jsr MoveAccelerateFlyer
+MFC_CanAttack:  jmp AttackGeneric
 
         ; Generate 2 explosions at 8 pixel radius
         ;
@@ -158,8 +155,14 @@ MoveExplosionGenerator:
                 sta temp1
                 lsr
                 sta temp2
-                jsr SpawnExplosion
+                lda #ACTI_FIRSTEFFECT
+                ldy #ACTI_LASTEFFECT
+                jsr GetFreeActor
                 bcc MEG_NoRoom                  ;If no room, simply explode self
+                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
+                tya
+                tax
+                jsr ExplodeActor                ;Play explosion sound & init animation
                 jsr MEG_GetOffset
                 jsr MoveActorX
                 jsr MEG_GetOffset
@@ -171,27 +174,11 @@ MoveExplosionGenerator:
 MEG_NotLastExplosion:
 MEG_NoNewExplosion:
                 rts
-
 MEG_GetOffset:  jsr Random
                 and temp1
                 sec
                 sbc temp2
-SE_Fail:        rts
-
-        ; Spawn an explosion
-        ;
-        ; Parameters: X actor index
-        ; Returns: C=1 success (X=explosion actor index), C=0 fail
-        ; Modifies: A,X,Y (restore X using actIndex)
-        
-SpawnExplosion: lda #ACTI_FIRSTEFFECT
-                ldy #ACTI_LASTEFFECT
-                jsr GetFreeActor
-                bcc SE_Fail
-                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
-                tya
-                tax
-                jmp ExplodeActor                ;Play explosion sound & init animation
+                rts
 
         ; Turn enemy into an explosion & drop item
         ;

@@ -270,12 +270,11 @@ EGrn_FullDamageBelow:
         ; Turn an actor into an explosion
         ;
         ; Parameters: X actor index
-        ; Returns: C=1
+        ; Returns: -
         ; Modifies: A
 
 ExplodeActor:   lda #SFX_EXPLOSION
                 jsr PlaySfx
-                sec
                 lda #ACT_EXPLOSION
 TransformBullet:sta actT,x
                 lda #$00
