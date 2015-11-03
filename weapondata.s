@@ -9,7 +9,7 @@ DMG_NIGHTSTICK  = 6
 DMG_AUTORIFLE   = 7
 DMG_BAT         = 8
 DMG_PISTOL      = 8
-DMG_LASER       = 15
+DMG_LASER       = 14
 DMG_SHOTGUN     = 16                            ;Reduced by 3 per animation frame
 DMG_PLASMA      = 18
 DMG_SNIPERRIFLE = 20
@@ -186,7 +186,7 @@ wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b 10                         ;Attack delay
                 dc.b ACT_SHOTGUNBULLET          ;Bullet actor type
                 dc.b DMG_SHOTGUN                ;Bullet damage
-                dc.b DMGMOD_NONORGANIC75        ;Damage modifier nonorganic/organic
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 15                         ;Bullet time duration
                 dc.b 13                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
@@ -275,7 +275,7 @@ wdFlameThrower: dc.b WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOSKILLBONUS|WDB_FLIC
 wdLaserRifle:   dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
-                dc.b 7                          ;Attack delay
+                dc.b 6                          ;Attack delay
                 dc.b ACT_LASER                  ;Bullet actor type
                 dc.b DMG_LASER                  ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
