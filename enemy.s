@@ -240,8 +240,16 @@ HD_NoYSpeed:    lda #SFX_DEATH
         ; Modifies: A,Y,temp1-temp8
 
 DropItem:       sta temp4
-                lda #$02                        ;Retry counter
+                lda #$03                        ;Retry counter
                 sta temp7
+                ldy #AL_SIZEHORIZ               ;If enemy is going to drop parts, make their
+                jsr Random                      ;count proportional to the enemy size + random add
+                and #$0c
+                clc
+                adc (actLo),y
+                lsr
+                lsr
+                sta itemDefaultPickup+ITEM_PARTS-1
 DI_Retry:       ldy #AL_DROPITEMINDEX
                 lda (actLo),y
                 bpl DI_ItemNumber
@@ -304,14 +312,9 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 sta actF1,y
                 lda #1
                 cpx #ITEM_FIRST_IMPORTANT       ;Quest items always x1
-                bcs DI_NoCount
-                jsr Random                      ;Randomize amount of parts dropped (1-3)
-                and #$03
-                bne DI_PartsCountOK
-                lda #$01
-DI_PartsCountOK:sta itemDefaultPickup+ITEM_PARTS-1
+                bcs DI_CountOK
                 lda itemDefaultPickup-1,x
-DI_NoCount:     sta actHp,y
+DI_CountOK:     sta actHp,y
                 lda #ITEM_SPAWN_YSPEED
                 sta actSY,y
                 tya
