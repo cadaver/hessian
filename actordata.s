@@ -527,7 +527,7 @@ alLargeDroidSuper:
                 dc.b 0                          ;Vert obstacle check offset
 
 alFlyingCraft:  dc.w MoveFlyingCraft            ;Update routine
-                dc.b GRP_ENEMIES|AF_NOWEAPON|AF_HORIZATTACKONLY    ;Actor flags
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 11                         ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 7                          ;Size down
