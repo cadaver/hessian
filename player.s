@@ -1034,9 +1034,9 @@ AU_NoStrength:  sty AH_PlayerMeleeBonus+1
                 lda #INITIAL_MAX_WEAPONS
                 adc #$00                        ;Add one more weapon if have strength upgrade
                 sta AI_MaxWeaponsCount+1        ;Todo: should this be two?
-                ldx #itemDefaultMaxCount-itemMaxCount-1
-AU_AmmoLoop:    lda itemDefaultMaxCount-1,x     ;Set carrying capacity for weapons/items
-                cpy #NO_MODIFY                  ;except armor
+                ldx #itemDefaultPickup-itemDefaultMaxCount
+AU_AmmoLoop:    lda itemDefaultMaxCount-1,x     ;Set carrying capacity for weapons/consumables
+                cpy #NO_MODIFY
                 beq AU_NoAmmoIncrease
                 lsr
                 clc

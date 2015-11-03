@@ -305,6 +305,11 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 lda #1
                 cpx #ITEM_FIRST_IMPORTANT       ;Quest items always x1
                 bcs DI_NoCount
+                jsr Random                      ;Randomize amount of parts dropped (1-3)
+                and #$03
+                bne DI_PartsCountOK
+                lda #$01
+DI_PartsCountOK:sta itemDefaultPickup+ITEM_PARTS-1
                 lda itemDefaultPickup-1,x
 DI_NoCount:     sta actHp,y
                 lda #ITEM_SPAWN_YSPEED

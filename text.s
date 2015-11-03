@@ -21,6 +21,7 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtMedKit
                 dc.b <txtBattery
                 dc.b <txtArmor
+                dc.b <txtParts
                 dc.b <txtWarehousePass
                 dc.b <txtItPass
                 dc.b <txtServicePass
@@ -53,6 +54,7 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtMedKit
                 dc.b >txtBattery
                 dc.b >txtArmor
+                dc.b >txtParts
                 dc.b >txtWarehousePass
                 dc.b >txtItPass
                 dc.b >txtServicePass
@@ -93,6 +95,7 @@ txtMine:        dc.b "SMART MINE",0
 txtMedKit:      dc.b "MEDKIT",0
 txtBattery:     dc.b "BATTERY",0
 txtArmor:       dc.b "ARMOR",0
+txtParts:       dc.b "PARTS",0
 txtWarehousePass:dc.b "WAREHOUSE"
 txtPass:        dc.b " PASS",0
 txtItPass:      dc.b "IT"

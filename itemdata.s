@@ -20,16 +20,17 @@ ITEM_MINE       = 18
 ITEM_MEDKIT     = 19
 ITEM_BATTERY    = 20
 ITEM_ARMOR      = 21
-ITEM_WAREHOUSEPASS = 22
-ITEM_ITPASS = 23
-ITEM_SERVICEPASS = 24
-ITEM_SECURITYPASS = 25
-ITEM_SCIENCEPASS = 26
-ITEM_LV2ITPASS = 27
-ITEM_LV2SECURITYPASS = 28
-ITEM_SUITEPASS = 29
-ITEM_VAULTPASS = 30
-ITEM_BIOMETRICID = 31
+ITEM_PARTS      = 22
+ITEM_WAREHOUSEPASS = 23
+ITEM_ITPASS = 24
+ITEM_SERVICEPASS = 25
+ITEM_SECURITYPASS = 26
+ITEM_SCIENCEPASS = 27
+ITEM_LV2ITPASS = 28
+ITEM_LV2SECURITYPASS = 29
+ITEM_SUITEPASS = 30
+ITEM_VAULTPASS = 31
+ITEM_BIOMETRICID = 32
 
 ITEM_OWNWEAPON  = $80
 ITEM_FIRST_CONSUMABLE = ITEM_GRENADE
@@ -44,31 +45,14 @@ DROP_WEAPONMEDKITARMOR = $80
 DROP_WEAPONMEDKIT = $81
 DROP_WEAPON     = $82
 DROP_WEAPONBATTERY = $83
-DROP_WEAPONBATTERYMEDKIT = $84
-DROP_WEAPONBATTERYMEDKITHIGHPROB = $85
+DROP_WEAPONBATTERYPARTS = $89
 DROPTABLERANDOM = 16                             ;Pick random choice from 16 consecutive indices
 
 itemDropTable:  dc.b ITEM_ARMOR
                 dc.b ITEM_MEDKIT
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
-                dc.b ITEM_OWNWEAPON
+                ds.b 16,ITEM_OWNWEAPON
                 dc.b ITEM_BATTERY
-                dc.b ITEM_MEDKIT
-                dc.b ITEM_MEDKIT
+                ds.b 6,ITEM_PARTS
 
 itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Knife
@@ -91,6 +75,7 @@ itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Medikit
                 dc.b 0                          ;Battery
                 dc.b 100                        ;Armor
+                dc.b 250                        ;Parts
 
 itemDefaultMaxCount:
                 dc.b 1                          ;Fists
@@ -113,7 +98,6 @@ itemDefaultMaxCount:
                 dc.b 3                          ;Mine
                 dc.b 2                          ;Medikit
                 dc.b 2                          ;Battery
-                dc.b 100                        ;Armor
 
 itemDefaultPickup:
                 dc.b 1                          ;Fists
@@ -137,6 +121,7 @@ itemDefaultPickup:
                 dc.b 1                          ;Medikit
                 dc.b 1                          ;Battery
                 dc.b 100                        ;Armor
+                dc.b 1                          ;Parts
 
 itemMagazineSize:
                 dc.b MAG_INFINITE               ;Fists

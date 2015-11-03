@@ -132,7 +132,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b 19                         ;Number of frames
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 11,12,13,14,22,15,16,17,18
-                dc.b 19,20,20,20,20,20,20,20,20,20,21
+                dc.b 19,23,20,20,20,20,20,20,20,20,20,21
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -475,7 +475,7 @@ alSmallDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 25                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b 4*8                        ;Horiz max movement speed
@@ -495,7 +495,7 @@ alLargeDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 50                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b 3*8                        ;Horiz max movement speed
@@ -516,7 +516,7 @@ alLargeDroidSuper:
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b DROP_WEAPON                ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b 4*8                        ;Horiz max movement speed
@@ -536,7 +536,7 @@ alFlyingCraft:  dc.w MoveFlyingCraft            ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 65                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $06                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b 5*8                        ;Horiz max movement speed
