@@ -26,11 +26,13 @@ ACT_SMALLDROID  = 24
 ACT_LARGEDROID  = 25
 ACT_LARGEDROIDSUPER = 26
 ACT_FLYINGCRAFT = 27
+ACT_SMALLWALKER = 28
 
 HP_PLAYER       = 56
 HP_SMALLDROID   = 8
+HP_SMALLWALKER  = 12
+HP_FLYINGCRAFT  = 14
 HP_LARGEDROID   = 16
-HP_FLYINGCRAFT  = 16
 HP_LARGEDROIDSUPER = 20
 
         ; Difficulty mod for damage on player
@@ -85,6 +87,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adLargeDroid
                 dc.b <adLargeDroid
                 dc.b <adFlyingCraft
+                dc.b <adSmallWalker
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -113,6 +116,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adLargeDroid
                 dc.b >adLargeDroid
                 dc.b >adFlyingCraft
+                dc.b >adSmallWalker
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -265,6 +269,13 @@ adFlyingCraft:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b 5                          ;Number of frames
                 dc.b $80+6,$80+7,8,7,6
 
+adSmallWalker:  dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_SMALLROBOT               ;Spritefile number
+                dc.b 12                         ;Left frame add
+                dc.b 24                         ;Number of frames
+                dc.b 10,9,10,11,10,9,10,11,10,12,12,10
+                dc.b $80+10,$80+9,$80+10,$80+11,$80+10,$80+9,$80+10,$80+11,$80+10,$80+12,$80+12,$80+10
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -294,6 +305,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alLargeDroid
                 dc.b <alLargeDroidSuper
                 dc.b <alFlyingCraft
+                dc.b <alSmallWalker
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -322,6 +334,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alLargeDroid
                 dc.b >alLargeDroidSuper
                 dc.b >alFlyingCraft
+                dc.b >alSmallWalker
 
 alPlayer:       dc.w MoveAndAttackHuman         ;Update routine
                 dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -545,3 +558,26 @@ alFlyingCraft:  dc.w MoveFlyingCraft            ;Update routine
                 dc.b 2                          ;Vert acceleration
                 dc.b 1                          ;Horiz obstacle check offset
                 dc.b 0                          ;Vert obstacle check offset
+                
+alSmallWalker:  dc.w MoveWalker                 ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON|AF_HORIZATTACKONLY ;Actor flags
+                dc.b 12                         ;Horizontal size
+                dc.b 21                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
+                dc.b HP_SMALLWALKER             ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 35                         ;Score from kill
+                dc.b AIMODE_MOVER               ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b $05                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AMF_JUMP                   ;Move flags
+                dc.b 3*8                        ;Max. movement speed
+                dc.b 6                          ;Ground movement acceleration
+                dc.b 2                          ;In air movement acceleration
+                dc.b 6                          ;Gravity acceleration
+                dc.b 6                          ;Long jump gravity acceleration
+                dc.b 8                          ;Ground braking
+                dc.b -3                         ;Height in chars for headbump check (negative)
+                dc.b -6*8                       ;Jump initial speed (negative)

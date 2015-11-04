@@ -122,6 +122,10 @@ MFC_CanAttack:  jmp AttackGeneric
         ; Returns: -
         ; Modifies: A,Y,temp vars
 
+ExplodeEnemy2_8_Ofs10:
+                lda #-10*8
+                jsr MoveActorY
+                jsr NoInterpolation
 ExplodeEnemy2_8:lda #2
                 ldy #$3f
 
