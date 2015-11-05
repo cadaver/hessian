@@ -27,12 +27,14 @@ ACT_LARGEDROID  = 25
 ACT_LARGEDROIDSUPER = 26
 ACT_FLYINGCRAFT = 27
 ACT_SMALLWALKER = 28
+ACT_SMALLTANK   = 29
 
 HP_PLAYER       = 56
 HP_SMALLDROID   = 8
 HP_FLYINGCRAFT  = 13
 HP_LARGEDROID   = 14
 HP_SMALLWALKER  = 16
+HP_SMALLTANK    = 18
 HP_LARGEDROIDSUPER = 20
 
         ; Difficulty mod for damage on player
@@ -88,6 +90,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adLargeDroid
                 dc.b <adFlyingCraft
                 dc.b <adSmallWalker
+                dc.b <adSmallTank
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -117,6 +120,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adLargeDroid
                 dc.b >adFlyingCraft
                 dc.b >adSmallWalker
+                dc.b >adSmallTank
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -276,6 +280,13 @@ adSmallWalker:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b 10,9,10,11,10,9,10,11,10,12,12,10
                 dc.b $80+10,$80+9,$80+10,$80+11,$80+10,$80+9,$80+10,$80+11,$80+10,$80+12,$80+12,$80+10
 
+adSmallTank:    dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_SMALLROBOT               ;Spritefile number
+                dc.b 4                          ;Left frame add
+                dc.b 8                          ;Number of frames
+                dc.b 15,14,13,16
+                dc.b $80+15,$80+14,$80+13,$80+16
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -306,6 +317,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alLargeDroidSuper
                 dc.b <alFlyingCraft
                 dc.b <alSmallWalker
+                dc.b <alSmallTank
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -335,6 +347,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alLargeDroidSuper
                 dc.b >alFlyingCraft
                 dc.b >alSmallWalker
+                dc.b >alSmallTank
 
 alPlayer:       dc.w MoveAndAttackHuman         ;Update routine
                 dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -581,3 +594,25 @@ alSmallWalker:  dc.w MoveWalker                 ;Update routine
                 dc.b 8                          ;Ground braking
                 dc.b -3                         ;Height in chars for headbump check (negative)
                 dc.b -6*8                       ;Jump initial speed (negative)
+
+alSmallTank:    dc.w MoveTank                   ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON|AF_HORIZATTACKONLY    ;Actor flags
+                dc.b 12                         ;Horizontal size
+                dc.b 21                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
+                dc.b HP_SMALLTANK               ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 50                         ;Score from kill
+                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b $06                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AMF_NOFALLDAMAGE|AMF_CUSTOMANIMATION ;Move flags
+                dc.b 3*8+4                      ;Max. movement speed
+                dc.b 4                          ;Ground movement acceleration
+                dc.b 0                          ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 8                          ;Long jump gravity acceleration
+                dc.b 4                          ;Ground braking
+                dc.b -3                         ;Height in chars for headbump check (negative)

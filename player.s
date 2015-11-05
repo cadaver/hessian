@@ -177,9 +177,15 @@ AIP_WeaponOK:   sty actWpn+ACTI_PLAYER
 
 MH_IsClimbing:  jmp MH_Climbing
 MH_IsSwimming:  jmp MH_Swimming
-MoveHuman:      lda actD,x                      ;Current dir for roll control check
+MoveHuman:      ldy #AL_SIZEUP                  ;Set size up based on currently displayed
+                lda (actLo),y                   ;frame
+                ldy actF1,x
+                sec
+                sbc humanSizeReduceTbl,y
+                sta actSizeU,x
+                lda actD,x                      ;Current dir for roll control check
                 sta MH_OldDir+1
-                lda actMoveCtrl,x               ;Current joystick controls
+MoveGeneric:    lda actMoveCtrl,x               ;Current joystick controls
                 sta temp2
                 ldy #AL_MOVEFLAGS
                 lda (actLo),y
@@ -198,12 +204,7 @@ MoveHuman:      lda actD,x                      ;Current dir for roll control ch
                 beq MH_NotInWater
                 lda #WATER_YBRAKING
                 jsr BrakeActorY
-MH_NotInWater:  ldy #AL_SIZEUP                  ;Set size up based on currently displayed
-                lda (actLo),y                   ;frame
-                ldy actF1,x
-                sec
-                sbc humanSizeReduceTbl,y
-                sta actSizeU,x
+MH_NotInWater:  ldy actF1,x
                 cpy #FR_CLIMB
                 bcc MH_NoClimb
                 cpy #FR_CLIMB+4
@@ -559,7 +560,9 @@ MH_DuckStandUpAnim:
                 cmp #FR_DUCK
                 bcc MH_StandAnim
                 bcs MH_AnimDone
-MH_StandOrWalk: lda temp2
+MH_StandOrWalk: lda temp3                       ;Custom stand/walk animation?
+                bmi MH_AnimDone3
+                lda temp2
                 and #JOY_LEFT|JOY_RIGHT
                 beq MH_AnimDone                 ;0 = walk frame
                 lda actSX,x

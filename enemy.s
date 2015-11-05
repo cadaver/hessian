@@ -116,6 +116,33 @@ MoveDroid:      lda #$02
 MD_AnimDone:    jsr MoveAccelerateFlyer
 MFC_CanAttack:  jmp AttackGeneric
 
+        ; Tank update routine
+
+MoveTank:       jsr MoveGeneric                   ;Use human movement for physics
+                lda actSX,x                       ;Then overwrite animation
+                eor actD,x                        ;If direction & speed don't agree, show the
+                bmi MT_CenterFrame                ;center frame (turning)
+                lda actSX,x
+MT_NoCenter:    bmi MT_GoLeft
+MT_AnimCommon:  clc
+                adc actFd,x
+                cmp #$30
+                bcc MT_NoWrap
+                sbc #$30
+MT_NoWrap:      sta actFd,x
+                lsr
+                lsr
+                lsr
+                lsr
+MT_FrameCommon: sta actF1,x
+                jmp AttackGeneric
+MT_GoLeft:      eor #$ff
+                clc
+                adc #$00
+                jmp MT_AnimCommon
+MT_CenterFrame: lda #3                              ;When showing the center frame, no attacks
+                bne MT_FrameCommon
+                
         ; Generate 2 explosions at 8 pixel radius
         ;
         ; Parameters: X actor index
