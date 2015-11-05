@@ -6,12 +6,12 @@ DMG_FLAMETHROWER = 5
 DMG_MINIGUN     = 6
 DMG_KNIFE       = 6
 DMG_NIGHTSTICK  = 6
-DMG_AUTORIFLE   = 7
-DMG_BAT         = 8
+DMG_AUTORIFLE   = 6
+DMG_BAT         = 7
 DMG_PISTOL      = 8
-DMG_LASER       = 14
-DMG_SHOTGUN     = 16                            ;Reduced by 3 per animation frame
-DMG_PLASMA      = 18
+DMG_LASER       = 12
+DMG_SHOTGUN     = 14                            ;Reduced by 2 per animation frame
+DMG_PLASMA      = 16
 DMG_SNIPERRIFLE = 20
 DMG_LAUNCHERGRENADE = 32
 DMG_GRENADE     = 40
@@ -187,7 +187,7 @@ wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b ACT_SHOTGUNBULLET          ;Bullet actor type
                 dc.b DMG_SHOTGUN                ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 15                         ;Bullet time duration
+                dc.b 11                         ;Bullet time duration
                 dc.b 13                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_SHOTGUN                ;Sound effect
