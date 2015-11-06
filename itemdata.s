@@ -45,14 +45,14 @@ DROP_WEAPONMEDKITARMOR = $80
 DROP_WEAPONMEDKIT = $81
 DROP_WEAPON     = $82
 DROP_WEAPONBATTERY = $83
-DROP_WEAPONBATTERYPARTS = $89
+DROP_WEAPONBATTERYPARTS = $88
 DROPTABLERANDOM = 16                             ;Pick random choice from 16 consecutive indices
 
 itemDropTable:  dc.b ITEM_ARMOR
                 dc.b ITEM_MEDKIT
                 ds.b 16,ITEM_OWNWEAPON
                 dc.b ITEM_BATTERY
-                ds.b 6,ITEM_PARTS
+                ds.b 5,ITEM_PARTS
 
 itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Knife
