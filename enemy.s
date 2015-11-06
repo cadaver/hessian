@@ -119,12 +119,16 @@ MFC_CanAttack:  jmp AttackGeneric
         ; Tank update routine
 
 MoveTank:       jsr MoveGeneric                   ;Use human movement for physics
+                jsr AttackGeneric
                 lda actSX,x                       ;Then overwrite animation
                 eor actD,x                        ;If direction & speed don't agree, show the
                 bmi MT_CenterFrame                ;center frame (turning)
                 lda actSX,x
-MT_NoCenter:    bmi MT_GoLeft
-MT_AnimCommon:  clc
+                bpl MT_GoRight
+MT_GoLeft:      eor #$ff
+                clc
+                adc #$00
+MT_GoRight:     clc
                 adc actFd,x
                 cmp #$30
                 bcc MT_NoWrap
@@ -135,14 +139,10 @@ MT_NoWrap:      sta actFd,x
                 lsr
                 lsr
 MT_FrameCommon: sta actF1,x
-                jmp AttackGeneric
-MT_GoLeft:      eor #$ff
-                clc
-                adc #$00
-                jmp MT_AnimCommon
-MT_CenterFrame: lda #3                              ;When showing the center frame, no attacks
+                rts
+MT_CenterFrame: lda #3
                 bne MT_FrameCommon
-                
+
         ; Generate 2 explosions at 8 pixel radius
         ;
         ; Parameters: X actor index

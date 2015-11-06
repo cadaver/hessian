@@ -285,7 +285,7 @@ adSmallTank:    dc.b ONESPRITE                  ;Number of sprites
                 dc.b 4                          ;Left frame add
                 dc.b 8                          ;Number of frames
                 dc.b 15,14,13,16
-                dc.b $80+15,$80+14,$80+13,$80+16
+                dc.b $80+15,$80+14,$80+13,16
 
         ; Actor logic data
 
