@@ -116,7 +116,20 @@ MoveDroid:      lda #$02
 MD_AnimDone:    jsr MoveAccelerateFlyer
 MFC_CanAttack:  jmp AttackGeneric
 
+        ; Walking robot update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveWalker:     jsr MoveGeneric
+                jmp AttackGeneric
+
         ; Tank update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveTank:       jsr MoveGeneric                   ;Use human movement for physics
                 jsr AttackGeneric

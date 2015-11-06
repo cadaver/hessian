@@ -88,7 +88,6 @@ AH_NoWeaponFrame:
                 sta actWpnF,x
                 rts
 
-MoveWalker:
 MoveAndAttackHuman:
                 jsr MoveHuman
 AttackGeneric:
