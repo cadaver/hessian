@@ -42,35 +42,35 @@ AL_SPAWNAIMODE  = 12
 AL_DROPITEMINDEX = 13
 AL_OFFENSE      = 14
 AL_DEFENSE      = 15
-AL_MOVEFLAGS    = 16
-AL_MOVESPEED    = 17
-AL_GROUNDACCEL  = 18
-AL_INAIRACCEL   = 19
-AL_FALLACCEL    = 20                           ;Gravity acceleration
-AL_LONGJUMPACCEL = 21                          ;Gravity acceleration in longjump
-AL_BRAKING      = 22
-AL_HEIGHT       = 23                           ;Height for headbump check, negative
-AL_JUMPSPEED    = 24                           ;Negative
-AL_CLIMBSPEED   = 25
+AL_ATTACKDIRS   = 16
+AL_MOVEFLAGS    = 17
+AL_MOVESPEED    = 18
+AL_GROUNDACCEL  = 19
+AL_INAIRACCEL   = 20
+AL_FALLACCEL    = 21                           ;Gravity acceleration
+AL_LONGJUMPACCEL = 22                         ;Gravity acceleration in longjump
+AL_BRAKING      = 23
+AL_HEIGHT       = 24                           ;Height for headbump check, negative
+AL_JUMPSPEED    = 25                           ;Negative
+AL_CLIMBSPEED   = 26
 
-AL_XMOVESPEED   = 16
-AL_XACCEL       = 17
-AL_YMOVESPEED   = 18
-AL_YACCEL       = 19
-AL_XCHECKOFFSET = 20
-AL_YCHECKOFFSET = 21
+AL_XMOVESPEED   = 17
+AL_XACCEL       = 18
+AL_YMOVESPEED   = 19
+AL_YACCEL       = 20
+AL_XCHECKOFFSET = 21
+AL_YCHECKOFFSET = 22
 
 GRP_HEROES      = $00
 GRP_ENEMIES     = $01
 GRP_BEASTS      = $02
 
 AF_GROUPBITS    = $03
-AF_HORIZATTACKONLY = $04
 AF_INITONLYSIZE = $08
 AF_ISORGANIC    = $10
 AF_USETRIGGERS  = $20
-AF_NOWEAPON     = $40
-AF_NOREMOVECHECK = $80
+AF_NOREMOVECHECK = $40
+AF_NOWEAPON     = $80
 
 AMF_JUMP        = $01
 AMF_DUCK        = $02
@@ -541,6 +541,7 @@ UA_NotZero:     stx actIndex
                 lda actLogicTblHi-1,y
                 sta actHi
                 lda actFlags,x                  ;Perform remove check?
+                asl
                 bmi UA_NoRemove
                 lda actXH,x
 UA_RALeftCheck: cmp #$00
@@ -1155,7 +1156,13 @@ InitActor:      jsr GetActorLogicData
                 ldy #AL_INITIALHP
                 lda (actLo),y
                 sta actHp,x
-IA_SkipHealth:  rts
+IA_SkipHealth:  cpx #MAX_COMPLEXACT             ;Two-part actors with noweapon flag (turret):
+                bcs IA_NoTurret                 ;init frame2 with the turret horizontal
+                lda actFlags,x
+                bpl IA_NoTurret
+                lda #2
+                sta actF2,x
+IA_NoTurret:    rts
 
         ; Check if two actors have collided. Actors further apart than 128 pixels
         ; are assumed to not collide, regardless of sizes

@@ -16,19 +16,12 @@ AIMODE_MOVER        = 5
 AIMODE_GUARD        = 6
 AIMODE_BERZERK      = 7
 AIMODE_FLYER        = 8
-AIMODE_NOTPERSISTENT = $80
 
 NOTARGET            = $ff
 
 LINE_NOTCHECKED     = $00
 LINE_NO             = $40
 LINE_YES            = $80
-
-DIR_UP              = $00
-DIR_DOWN            = $01
-DIR_LEFT            = $02
-DIR_RIGHT           = $03
-DIR_NONE            = $ff
 
 LADDER_DELAY        = $40
 
@@ -504,10 +497,10 @@ PA_CannotAttack:sta actTime,x
         ;
         ; Parameters: X actor index
         ; Returns: C=0 No active target / no line of sight yet
-        ;          C=1 Has active target, firing controls in A or special values:
-        ;              $01-$0f - Suggested movement to get into firing position.
-        ;                        Can also do pathfinding or be idle
-        ;              $80     - Should evade by e.g. moving forward
+        ;          C=1 Has active target, controls in A:
+        ;              $00     - No opportunity to fire, need to pathfind/follow
+        ;              $10-$1f - Attack dir with fire pressed
+        ;              $ff     - Too close; should evade by e.g. moving forward
         ; Modifies: A,Y,temp regs (temp5-8 contain target distance values if has good target)
 
 FindTargetAndAttackDir:
@@ -542,78 +535,73 @@ FT_PickTargetOK:tay
                 bpl FT_StoreTarget
 
 FT_TargetOK:    jsr GetActorDistance
+                ldy #AL_ATTACKDIRS
+                lda (actLo),y
+                sta temp1                       ;Store valid attack dirs
                 lda temp7                       ;For purposes of diagonal attacks,
-                bne GAD_NotHorizontal           ;consider target below if half block or greater distance
+                bne FT_NotHorizontal            ;consider target below if half block or greater distance
                 lda temp4
-                bpl GAD_NotHorizontal
+                bpl FT_NotHorizontal
                 inc temp7
                 inc temp8
-GAD_NotHorizontal:
+FT_NotHorizontal:
                 ldy actWpn,x
-                lda temp8
-                beq GAD_Horizontal
-                lda actFlags,x                  ;Check if can attack diagonally/vertically
-                and #AF_HORIZATTACKONLY
-                bne GAD_NeedLessDistance
                 lda temp6
                 beq GAD_Vertical
-                cmp temp8
-                beq GAD_Diagonal
-GAD_NoAttackDir:bcc GAD_GoVertical              ;Diagonal, but not completely: need to move either closer or away
-GAD_NeedLessDistance:
-                sec
-                lda temp5
-                bmi GAD_NLDLeft
-GAD_NLDRight:   lda #JOY_RIGHT
-                rts
-GAD_NLDLeft:    lda #JOY_LEFT
-                rts
-GAD_GoVertical: asl                             ;If is closer to a fully vertical angle, reduce distance instead
-                cmp temp8
-                bcc GAD_NeedLessDistance
-GAD_NoAttackHint:
-                lda #$00                        ;Otherwise, it is not wise to go away from target, as target may
-                rts                             ;be moving under a platform, where the routecheck is broken
-                                                ;(note: C=1 here)
-GAD_NeedMoreDistance:
-                sec
-                lda temp6                       ;If target is at same block (possibly using a melee weapon)
-                ora temp8                       ;break away into whatever direction available
-                bne GAD_NotAtSameBlock
-                lda #JOY_FREEMOVE
-                rts
-GAD_NotAtSameBlock:
-                lda temp5
-                bmi GAD_NLDRight
-                bpl GAD_NLDLeft
-GAD_Diagonal:
-GAD_Horizontal: lda temp6                       ;Verify horizontal distance too close / too far
-                cmp itemNPCMinDist-2,y
+GAD_Horizontal2:cmp itemNPCMinDist-2,y
                 bcc GAD_NeedMoreDistance
                 cmp itemNPCMaxDist-2,y
-                bcs GAD_NeedLessDistance
-                lda #JOY_RIGHT|JOY_FIRE
+                bcs GAD_NoAttackDir
+                lda temp8
+                beq GAD_Horizontal
+                cmp temp6
+                beq GAD_Diagonal
+GAD_NoAttackDir:lda #$00                        ;Need to pathfind
+                skip2
+GAD_NeedMoreDistance:
+                lda #$ff                        ;Freemove to break away
+GAD_NoAttackDir2:
+GAD_HasAttackDir:
+                sec
+                rts
+GAD_Horizontal: lda temp1                       ;Check valid attack direction
+                and #AB_HORIZONTAL
+                beq GAD_NoAttackDir2
+                lda #$00
+GAD_DiagonalCommon:
                 ldy temp5
-                bpl GAD_AttackRight
-                lda #JOY_LEFT|JOY_FIRE
-GAD_AttackRight:ldy temp8                       ;If block-distance is zero, do not fire diagonally
-                beq GAD_Done
-GAD_AttackAboveOrBelow:
-                sec
-                ldy temp7
-                beq GAD_Done
-                bpl GAD_AttackBelow
-GAD_AttackAbove:ora #JOY_UP|JOY_FIRE
-                rts
-GAD_AttackBelow:ora #JOY_DOWN|JOY_FIRE
-                rts
-GAD_Vertical:   lda temp8                       ;For vertical distance, only check if too far
+                bmi GAD_Left
+GAD_Right:      ora #JOY_RIGHT|JOY_FIRE
+                bne GAD_HasAttackDir
+GAD_Left:       ora #JOY_LEFT|JOY_FIRE
+                bne GAD_HasAttackDir
+GAD_Vertical:   lda temp8                       ;If both X & Y dist zero, rather use
+                beq GAD_Horizontal2             ;horizontal attack
                 cmp itemNPCMaxDist-2,y
-                lda #$00                        ;If so, currently there is no navigation hint
-                bcc GAD_AttackAboveOrBelow
-GAD_Done:       tay                             ;Get flags of A
-                sec
-                rts
+                bcs GAD_NoAttackDir
+                lda temp1
+                ldy temp7
+                bmi GAD_Up
+GAD_Down:       and #AB_DOWN                    ;Check valid attack direction
+                beq GAD_NoAttackDir2
+                lda #JOY_DOWN|JOY_FIRE
+                bne GAD_HasAttackDir
+GAD_Up:         and #AB_UP
+                beq GAD_NoAttackDir2
+                lda #JOY_UP|JOY_FIRE
+                bne GAD_HasAttackDir
+GAD_Diagonal:   lda temp1
+                ldy temp7
+                bmi GAD_DiagonalUp
+GAD_DiagonalDown:
+                and #AB_DIAGONALDOWN
+                beq GAD_NoAttackDir2
+                lda #JOY_DOWN|JOY_FIRE
+                bne GAD_DiagonalCommon
+GAD_DiagonalUp: and #AB_DIAGONALUP
+                beq GAD_NoAttackDir2
+                lda #JOY_UP|JOY_FIRE
+                bne GAD_DiagonalCommon
 
         ; Check if there are obstacles between actors (coarse line-of-sight)
         ;

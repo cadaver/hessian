@@ -46,15 +46,25 @@ plrDmgModifyTbl:dc.b 6,8,12
 humanSizeReduceTbl:
                 dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,10,10,10,10
 
+        ; Tank Y-size addition table (based on turret direction)
+
+tankSizeAddTbl: dc.b 8,6,0
+
         ; Human actor upper part framenumbers
 
 humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,22,23,24,23,3,4,5,6,7,8,9
                 dc.b $80+1,$80+0,$80+0,$80+1,$80+1,$80+2,$80+2,$80+1,$80+1,$80+2,$80+1,$80+0,$80+0,$80+0,15,13,12,13,14,$80+3,$80+10,$80+11,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+22,$80+23,$80+24,$80+23,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9
+        ; Tank turret right
+                dc.b 2,1,0
+        ; Tank turret left
+                dc.b 2,3,4
 
         ; Human actor lower part framenumbers
 
 humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9,14,14,13,14,15,$80+10,$80+11,$80+12,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+22,$80+23,$80+24,$80+23
                 dc.b 0,1,2,3,4,1,2,3,4,5,6,7,8,9,14,14,13,14,15,10,11,12,16,17,18,19,20,21,22,23,24,23
+        ; Tank tracks
+                dc.b 0,1,2
 
         ; Actor display data
 
@@ -256,36 +266,39 @@ adSpeechBubble: dc.b ONESPRITE                  ;Number of sprites
                 dc.b 54
 
 adSmallDroid:   dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_SMALLROBOT               ;Spritefile number
+                dc.b C_FLYER                    ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
                 dc.b 0,1,2
 
 adLargeDroid:   dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_SMALLROBOT               ;Spritefile number
+                dc.b C_FLYER                    ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
                 dc.b 3,4,5
 
 adFlyingCraft:  dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_SMALLROBOT               ;Spritefile number
+                dc.b C_FLYER                    ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 5                          ;Number of frames
                 dc.b $80+6,$80+7,8,7,6
 
 adSmallWalker:  dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_SMALLROBOT               ;Spritefile number
+                dc.b C_GROUNDBASED              ;Spritefile number
                 dc.b 12                         ;Left frame add
                 dc.b 24                         ;Number of frames
-                dc.b 10,9,10,11,10,9,10,11,10,12,12,10
-                dc.b $80+10,$80+9,$80+10,$80+11,$80+10,$80+9,$80+10,$80+11,$80+10,$80+12,$80+12,$80+10
+                dc.b 1,0,1,2,1,0,1,2,1,3,3,1
+                dc.b $80+1,$80+0,$80+1,$80+2,$80+1,$80+0,$80+1,$80+2,$80+1,$80+3,$80+3,$80+1
 
-adSmallTank:    dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_SMALLROBOT               ;Spritefile number
-                dc.b 4                          ;Left frame add
-                dc.b 8                          ;Number of frames
-                dc.b 15,14,13,16
-                dc.b $80+15,$80+14,$80+13,16
+adSmallTank:    dc.b HUMANOID                   ;Number of sprites
+                dc.b C_GROUNDBASED              ;Lower part spritefile number
+                dc.b 4                          ;Lower part base spritenumber
+                dc.b 64                         ;Lower part base index into the frametable
+                dc.b 0                          ;Lower part left frame add
+                dc.b C_GROUNDBASED              ;Upper part spritefile number
+                dc.b 7                          ;Upper part base spritenumber
+                dc.b 78                         ;Upper part base index into the frametable
+                dc.b 3                          ;Upper part left frame add
 
         ; Actor logic data
 
@@ -362,6 +375,7 @@ plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
                 dc.b ITEM_NONE                  ;Itemdrop table index or item override
                 dc.b $ff                        ;AI offense random AND-value
                 dc.b $ff                        ;AI defense probability
+                dc.b $ff                        ;Attack directions
                 dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move flags
                 dc.b 4*8                        ;Max. movement speed
 plrGroundAcc:   dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
@@ -504,12 +518,13 @@ alSmallDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
+                dc.b AB_ALL                     ;Attack directions
                 dc.b 4*8                        ;Horiz max movement speed
                 dc.b 3                          ;Horiz acceleration
                 dc.b 2*8                        ;Vert max movement speed
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
-                dc.b 0                          ;Vert obstacle check offset
+                dc.b 1                          ;Vert obstacle check offset
 
 alLargeDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
@@ -524,12 +539,13 @@ alLargeDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
+                dc.b AB_ALL                     ;Attack directions
                 dc.b 3*8                        ;Horiz max movement speed
                 dc.b 2                          ;Horiz acceleration
                 dc.b 3*4                        ;Vert max movement speed
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
-                dc.b 0                          ;Vert obstacle check offset
+                dc.b 1                          ;Vert obstacle check offset
 
 alLargeDroidSuper:
                 dc.w MoveDroid                  ;Update routine
@@ -545,12 +561,13 @@ alLargeDroidSuper:
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
+                                dc.b AB_ALL                     ;Attack directions
                 dc.b 4*8                        ;Horiz max movement speed
                 dc.b 3                          ;Horiz acceleration
                 dc.b 2*8                        ;Vert max movement speed
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
-                dc.b 0                          ;Vert obstacle check offset
+                dc.b 1                          ;Vert obstacle check offset
 
 alFlyingCraft:  dc.w MoveFlyingCraft            ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
@@ -565,15 +582,16 @@ alFlyingCraft:  dc.w MoveFlyingCraft            ;Update routine
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $06                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL|AB_DIAGONALDOWN ;Attack directions
                 dc.b 5*8                        ;Horiz max movement speed
                 dc.b 3                          ;Horiz acceleration
                 dc.b 2*8                        ;Vert max movement speed
                 dc.b 2                          ;Vert acceleration
                 dc.b 1                          ;Horiz obstacle check offset
-                dc.b 0                          ;Vert obstacle check offset
+                dc.b 1                          ;Vert obstacle check offset
                 
 alSmallWalker:  dc.w MoveWalker                 ;Update routine
-                dc.b GRP_ENEMIES|AF_NOWEAPON|AF_HORIZATTACKONLY ;Actor flags
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 12                         ;Horizontal size
                 dc.b 21                         ;Size up
                 dc.b 0                          ;Size down
@@ -585,6 +603,7 @@ alSmallWalker:  dc.w MoveWalker                 ;Update routine
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL              ;Attack directions
                 dc.b AMF_JUMP                   ;Move flags
                 dc.b 3*8                        ;Max. movement speed
                 dc.b 6                          ;Ground movement acceleration
@@ -596,9 +615,9 @@ alSmallWalker:  dc.w MoveWalker                 ;Update routine
                 dc.b -6*8                       ;Jump initial speed (negative)
 
 alSmallTank:    dc.w MoveTank                   ;Update routine
-                dc.b GRP_ENEMIES|AF_NOWEAPON|AF_HORIZATTACKONLY    ;Actor flags
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 12                         ;Horizontal size
-                dc.b 21                         ;Size up
+                dc.b 22                         ;Size up
                 dc.b 0                          ;Size down
                 dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
                 dc.b HP_SMALLTANK               ;Initial health
@@ -608,6 +627,7 @@ alSmallTank:    dc.w MoveTank                   ;Update routine
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $06                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL|AB_DIAGONALUP|AB_UP ;Attack directions
                 dc.b AMF_NOFALLDAMAGE|AMF_CUSTOMANIMATION ;Move flags
                 dc.b 3*8+4                      ;Max. movement speed
                 dc.b 4                          ;Ground movement acceleration

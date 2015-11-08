@@ -43,7 +43,12 @@ MFE_NoVertAccel:ldy #AL_XCHECKOFFSET            ;Horizontal obstacle check offse
                 sta temp4
                 iny
                 lda (actLo),y                   ;Vertical obstacle check offset
-                ldy #$00                        ;Require charinfo free of obstacles
+                ldy actSY,x                     ;Reverse if going up
+                bpl MFE_NoNegate
+                clc
+                eor #$ff
+                adc #$01
+MFE_NoNegate:   ldy #$00                        ;Require charinfo free of obstacles
                 jsr MoveFlyer
                 ldy actAIHelp,x                 ;Zero speed and reverse dir if requested
                 lda actMB,x
@@ -133,28 +138,29 @@ MoveWalker:     jsr MoveGeneric
 
 MoveTank:       jsr MoveGeneric                   ;Use human movement for physics
                 jsr AttackGeneric
-                lda actSX,x                       ;Then overwrite animation
-                eor actD,x                        ;If direction & speed don't agree, show the
-                bmi MT_CenterFrame                ;center frame (turning)
-                lda actSX,x
-                bpl MT_GoRight
-MT_GoLeft:      eor #$ff
+                lda actFd,x                       ;Then overwrite lower part animation
+                sec
+                sbc actSX,x
+                bpl MT_NoWrapLeft
                 clc
-                adc #$00
-MT_GoRight:     clc
-                adc actFd,x
-                cmp #$30
-                bcc MT_NoWrap
+                adc #$30
+                bpl MT_WrapDone
+MT_NoWrapLeft:  cmp #$30
+                bcc MT_WrapDone
                 sbc #$30
-MT_NoWrap:      sta actFd,x
+MT_WrapDone:    sta actFd,x
                 lsr
                 lsr
                 lsr
                 lsr
-MT_FrameCommon: sta actF1,x
+                sta actF1,x
+                ldy #AL_SIZEUP                      ;Modify size up based on turret direction
+                lda (actLo),y
+                ldy actF2,x
+                clc
+                adc tankSizeAddTbl,y
+                sta actSizeU,x
                 rts
-MT_CenterFrame: lda #3
-                bne MT_FrameCommon
 
         ; Generate 2 explosions at 8 pixel radius
         ;
@@ -306,8 +312,7 @@ DI_Retry:       ldy #AL_DROPITEMINDEX
                 beq DI_NoItem
                 bpl DI_ItemNumber
                 lda actFlags,x                  ;Check if enemy has weapon "integrated"
-                asl                             ;in which case no drop
-                bmi DI_NoItem
+                bmi DI_NoItem                   ;in which case no drop
                 lda actWpn,x
 DI_ItemNumber:  tay
                 beq DI_NoItem

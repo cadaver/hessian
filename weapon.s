@@ -5,6 +5,13 @@ AIM_DIAGONALDOWN = 3
 AIM_DOWN        = 4
 AIM_NONE        = $ff
 
+AB_UP           = 1
+AB_DIAGONALUP   = 2
+AB_HORIZONTAL   = 4
+AB_DIAGONALDOWN = 8
+AB_DOWN         = 16
+AB_ALL          = $1f
+
 WD_BITS         = 0
 WD_MINAIM       = 1
 WD_MAXAIM       = 2
@@ -55,6 +62,8 @@ AH_NoAttack:    lda actAttackD,x
 AH_DecrementDelay:
                 dec actAttackD,x
 AH_SetIdleWeaponFrame:
+                lda actFlags,x                  ;"Humanoid" with no weapon: do not touch upper part frame
+                bmi AH_NoWeaponFrame
                 lda actF1,x
                 sta actF2,x
                 cmp #FR_DIE
@@ -62,8 +71,8 @@ AH_SetIdleWeaponFrame:
                 ldy #WD_BACKFR
                 cmp #FR_ENTER
                 bcs AH_SetWeaponFrame
-                lda wpnBits                     ;Check for animation lock (for weapons with
-                and #WDB_LOCKANIMATION          ;backpack)
+                lda wpnBits                     ;Check for animation lock (for weapons with backpack)
+                and #WDB_LOCKANIMATION
                 beq AH_NoLockAnimation
                 ldy #WD_LOCKANIMFRAME
                 lda (wpnLo),y
@@ -71,6 +80,8 @@ AH_SetIdleWeaponFrame:
 AH_NoLockAnimation:
                 ldy #WD_IDLEFR
 AH_SetWeaponFrame:
+                lda actFlags,x
+                bmi AH_NoWeaponFrame
                 lda wpnBits
                 lsr
                 bcs AH_NoWeaponFrame
@@ -191,6 +202,8 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
 AH_DirOk2:      sta temp2                       ;Final aim direction
                 sta AH_FireDir+1
                 clc
+                ldy actFlags,x                  ;Use different frame numbering for integrated weapon two-part enemies (turret)
+                bmi AH_StoreAttackFrame
                 ldy wpnBits                     ;Check fire-from-hip animation mode
                 bpl AH_NormalAttack
                 tay
@@ -249,9 +262,8 @@ AH_MeleeAnimation:
                 inc actAttackD,x                ;In case melee attack fails, stay in strike position
 
 AH_SpawnBullet: lda actFlags,x                  ;If enemy has integrated weapon, skip the next check
-                asl
                 sta AH_NoWeaponFlag+1
-                bmi GetBulletOffset
+                bmi AH_GetBulletOffset
                 ldy #1                          ;First check standing right next to a wall,
                 lda actD,x                      ;because otherwise one can stick the gun through it
                 bpl AH_SpawnRight
@@ -260,7 +272,8 @@ AH_SpawnRight:  lda #-3
                 jsr GetCharInfoXYOffset
                 and #CI_OBSTACLE
                 bne AH_CannotFire
-GetBulletOffset:ldy actT,x
+AH_GetBulletOffset:
+                ldy actT,x
                 lda actDispTblLo-1,y            ;Get actor display structure address
                 sta actLo
                 lda actDispTblHi-1,y

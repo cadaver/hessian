@@ -9,7 +9,8 @@ write playert.pak @8:05
 write playerta.pak @8:06
 write playerb.pak @8:07
 write playerba.pak @8:08
-write smallrobot.pak @8:09
+write flyer.pak @8:09
+write groundbased.pak @8:0a
 write level00.pak @8:10
 write level01.pak @8:11
 write level02.pak @8:12
