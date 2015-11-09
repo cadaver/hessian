@@ -54,17 +54,17 @@ tankSizeAddTbl: dc.b 0,6,8
 
 humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,22,23,24,23,3,4,5,6,7,8,9
                 dc.b $80+1,$80+0,$80+0,$80+1,$80+1,$80+2,$80+2,$80+1,$80+1,$80+2,$80+1,$80+0,$80+0,$80+0,15,13,12,13,14,$80+3,$80+10,$80+11,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+22,$80+23,$80+24,$80+23,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9
-        ; Tank turret right
+        ; Tank turret
                 dc.b 0,1,2
-        ; Tank turret left
-                dc.b 4,3,2
+                dc.b $80+0,$80+1,$80+2
 
         ; Human actor lower part framenumbers
 
 humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9,14,14,13,14,15,$80+10,$80+11,$80+12,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+22,$80+23,$80+24,$80+23
                 dc.b 0,1,2,3,4,1,2,3,4,5,6,7,8,9,14,14,13,14,15,10,11,12,16,17,18,19,20,21,22,23,24,23
         ; Tank tracks
-                dc.b 0,1,2
+                dc.b 2,1,0
+                dc.b $80+2,$80+1,$80+0
 
         ; Actor display data
 
@@ -294,7 +294,7 @@ adSmallTank:    dc.b HUMANOID                   ;Number of sprites
                 dc.b C_GROUNDBASED              ;Lower part spritefile number
                 dc.b 4                          ;Lower part base spritenumber
                 dc.b 64                         ;Lower part base index into the frametable
-                dc.b 0                          ;Lower part left frame add
+                dc.b 3                          ;Lower part left frame add
                 dc.b C_GROUNDBASED              ;Upper part spritefile number
                 dc.b 7                          ;Upper part base spritenumber
                 dc.b 78                         ;Upper part base index into the frametable
@@ -561,7 +561,7 @@ alLargeDroidSuper:
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
-                                dc.b AB_ALL                     ;Attack directions
+                dc.b AB_ALL                     ;Attack directions
                 dc.b 4*8                        ;Horiz max movement speed
                 dc.b 3                          ;Horiz acceleration
                 dc.b 2*8                        ;Vert max movement speed

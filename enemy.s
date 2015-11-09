@@ -140,17 +140,17 @@ MoveWalker:     jsr MoveGeneric
 MoveTank:       jsr MoveGeneric                   ;Use human movement for physics
                 jsr AnimateTurret
                 jsr AttackGeneric
-                lda actFd,x                       ;Then overwrite lower part animation
-                sec
-                sbc actSX,x
-                bpl MT_NoWrapLeft
+                lda actSX,x                       ;Tracks animation from absolute speed
+                bpl MT_SpeedPos
                 clc
-                adc #$30
-                bpl MT_WrapDone
-MT_NoWrapLeft:  cmp #$30
-                bcc MT_WrapDone
+                eor #$ff
+                adc #$01
+MT_SpeedPos:    clc
+                adc actFd,x
+                cmp #$30
+                bcc MT_NoWrap
                 sbc #$30
-MT_WrapDone:    sta actFd,x
+MT_NoWrap:      sta actFd,x
                 lsr
                 lsr
                 lsr
