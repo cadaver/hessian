@@ -48,16 +48,16 @@ humanSizeReduceTbl:
 
         ; Tank Y-size addition table (based on turret direction)
 
-tankSizeAddTbl: dc.b 8,6,0
+tankSizeAddTbl: dc.b 0,6,8
 
         ; Human actor upper part framenumbers
 
 humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,22,23,24,23,3,4,5,6,7,8,9
                 dc.b $80+1,$80+0,$80+0,$80+1,$80+1,$80+2,$80+2,$80+1,$80+1,$80+2,$80+1,$80+0,$80+0,$80+0,15,13,12,13,14,$80+3,$80+10,$80+11,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+22,$80+23,$80+24,$80+23,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9
         ; Tank turret right
-                dc.b 2,1,0
+                dc.b 0,1,2
         ; Tank turret left
-                dc.b 2,3,4
+                dc.b 4,3,2
 
         ; Human actor lower part framenumbers
 

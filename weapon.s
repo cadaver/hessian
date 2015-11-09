@@ -202,16 +202,16 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
 AH_DirOk2:      sta temp2                       ;Final aim direction
                 sta AH_FireDir+1
                 clc
-                ldy actFlags,x                  ;Use different frame numbering for integrated weapon two-part enemies (turret)
-                bmi AH_StoreAttackFrame
+                ldy actFlags,x                  ;Do not touch frame for integrated weapon two-part enemies (turret)
+                bmi AH_SkipAttackFrame
                 ldy wpnBits                     ;Check fire-from-hip animation mode
                 bpl AH_NormalAttack
                 tay
                 lda fromHipFrameTbl-1,y
                 skip2
 AH_NormalAttack:adc #FR_ATTACK
-AH_StoreAttackFrame:
                 sta actF2,x
+AH_SkipAttackFrame:
                 ldy #WD_ATTACKFR
                 lda actD,x
                 bpl AH_AimRight

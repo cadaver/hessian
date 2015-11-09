@@ -1,6 +1,7 @@
 HUMAN_ITEM_SPAWN_OFFSET = -15*8
 ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 3
+TURRET_ANIMDELAY = 1
 
         ; Flying enemy movement
         ;
@@ -137,6 +138,7 @@ MoveWalker:     jsr MoveGeneric
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveTank:       jsr MoveGeneric                   ;Use human movement for physics
+                jsr AnimateTurret
                 jsr AttackGeneric
                 lda actFd,x                       ;Then overwrite lower part animation
                 sec
@@ -161,6 +163,35 @@ MT_WrapDone:    sta actFd,x
                 adc tankSizeAddTbl,y
                 sta actSizeU,x
                 rts
+
+        ; Turret animation routine
+
+AnimateTurret:  ldy #0                            ;Determine turret target frame from controls
+                lda actCtrl,x
+                cmp #JOY_FIRE|JOY_UP
+                bcc AT_FrameDone
+                bne AT_HorizOrDiag
+                ldy #2                            ;Vertical
+                bne AT_FrameDone
+AT_HorizOrDiag: and #JOY_UP|JOY_DOWN
+                beq AT_Horiz
+                ldy #1
+AT_FrameDone:   tya
+AT_Horiz:       cmp actF2,x
+                beq AT_NoAnim
+                ldy actAttackD,x
+                bne AT_NoAnim
+                bcc AT_AnimDown
+AT_AnimUp:      inc actF2,x
+                bne AT_AnimCommon
+AT_AnimDown:    dec actF2,x
+AT_AnimCommon:  lda #TURRET_ANIMDELAY
+                sta actAttackD,x
+                lda actTime,x
+                bpl AT_NoOngoingAttack
+                dec actTime,x                       ;Restore time to the AI attack counter,
+AT_NoOngoingAttack:                                 ;since time was lost animating
+AT_NoAnim:      rts
 
         ; Generate 2 explosions at 8 pixel radius
         ;

@@ -1156,13 +1156,7 @@ InitActor:      jsr GetActorLogicData
                 ldy #AL_INITIALHP
                 lda (actLo),y
                 sta actHp,x
-IA_SkipHealth:  cpx #MAX_COMPLEXACT             ;Two-part actors with noweapon flag (turret):
-                bcs IA_NoTurret                 ;init frame2 with the turret horizontal
-                lda actFlags,x
-                bpl IA_NoTurret
-                lda #2
-                sta actF2,x
-IA_NoTurret:    rts
+IA_SkipHealth:  rts
 
         ; Check if two actors have collided. Actors further apart than 128 pixels
         ; are assumed to not collide, regardless of sizes
