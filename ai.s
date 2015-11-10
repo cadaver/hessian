@@ -16,7 +16,6 @@ AIMODE_MOVER        = 5
 AIMODE_GUARD        = 6
 AIMODE_BERZERK      = 7
 AIMODE_FLYER        = 8
-AIMODE_MINE         = 9
 
 NOTARGET            = $ff
 
@@ -378,9 +377,12 @@ AI_Flyer:       lda actTime,x                   ;Ongoing attack?
                 dec actYH,x
                 plp
                 bcc AI_FlyerIdle
-                bmi AI_FlyerIdle                ;Too close to target, make a diagonal pass
                 cmp #JOY_FIRE
                 bcc AI_FlyerFollow
+                ldy actWpn,x                    ;If no weapon, always follow (mines)
+                beq AI_FlyerFollow
+                tay
+                bmi AI_FlyerIdle                ;Too close to target, make a diagonal pass
                 sta temp1
                 jsr PA_NoDucking
                 bcs AI_FlyerDone
@@ -415,21 +417,6 @@ AI_FlyerPickDir:jsr Random
                 tay
                 lda flyerDirTbl,y
                 bpl AI_FlyerStoreDir
-
-        ; Mine AI
-        
-AI_Mine:        dec actTime,x                   ;Aim alternatively high & low so the mine will
-                bmi AI_MineSteerHigher          ;eventually hit
-                jsr FindTargetAndAttackDir
-                jmp AI_MineDecision
-AI_MineSteerHigher:
-                inc actYH,x
-                jsr FindTargetAndAttackDir
-                php
-                dec actYH,x
-                plp
-AI_MineDecision:bcc AI_FlyerIdle
-                bcs AI_FlyerFollow
 
         ; Accumulate aggression & attack to specified direction. Also handle
         ; defensive ducking if the actor can duck

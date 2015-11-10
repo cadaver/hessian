@@ -414,7 +414,7 @@ alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
 
 alLargeMeleeHit:dc.w MoveMeleeHit               ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 6                          ;Horizontal size
+                dc.b 7                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
                 dc.w RemoveActor                ;Destroy routine
@@ -658,14 +658,14 @@ alFloatingMine: dc.w MoveFloatingMine           ;Update routine
                 dc.b HP_FLOATINGMINE            ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 15                         ;Score from kill
-                dc.b AIMODE_MINE                ;AI mode when spawned randomly
+                dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
                 dc.b $00                        ;AI offense AND-value
                 dc.b $00                        ;AI defense probability
                 dc.b AB_NONE                    ;Attack directions
                 dc.b 2*8                        ;Horiz max movement speed
                 dc.b 1                          ;Horiz acceleration
-                dc.b 1*8                        ;Vert max movement speed
+                dc.b 1*8+2                      ;Vert max movement speed
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
