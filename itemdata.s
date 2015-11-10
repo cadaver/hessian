@@ -140,7 +140,8 @@ itemMagazineSize:
                 dc.b 3                          ;Grenade launcher
                 dc.b 1                          ;Bazooka
 
-itemNPCMinDist: ;dc.b 0                          ;Fists (not used by NPCs)
+                dc.b 1                          ;None weapon for mine AI
+itemNPCMinDist: dc.b 0                          ;Fists (not used by NPCs)
                 dc.b 0                          ;Knife
                 dc.b 0                          ;Nightstick
                 dc.b 0                          ;Bat
@@ -159,7 +160,8 @@ itemNPCMinDist: ;dc.b 0                          ;Fists (not used by NPCs)
                 dc.b 2                          ;Grenade
                 ;dc.b 2                          ;Mine (not used by NPCs)
 
-itemNPCMaxDist: ;dc.b 1                          ;Fists (not used by NPCs)
+                dc.b 3                          ;None weapon for mine AI
+itemNPCMaxDist: dc.b 1                          ;Fists (not used by NPCs)
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat

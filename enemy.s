@@ -172,10 +172,30 @@ MoveFloatingMine:
                 ldy #$03
                 jsr LoopingAnimation
                 jsr MoveAccelerateFlyer
-                lda #DMG_MINE
+MineCommon:     lda #DMG_MINE
                 jsr CollideAndDamageTarget
                 bcc MFM_NoExplosion
-                jmp ExplodeEnemy
+                ldy #NODAMAGESRC                ;Make sure no score is given
+                jmp DestroyActor
+
+        ; Rolling mine update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveRollingMine:jsr MoveGeneric
+                lda actFd,x
+                clc
+                adc actSX,x
+                sta actFd,x
+                rol
+                rol
+                rol
+                rol
+                and #$01
+                sta actF1,x
+                bpl MineCommon
 
         ; Turret animation routine
 
@@ -281,6 +301,9 @@ MEG_GetOffset:  jsr Random
         ; Returns: -
         ; Modifies: A,Y,temp vars
 
+ExplodeEnemy_Ofs8:
+                lda #-8*8
+                jsr MoveActorY
 ExplodeEnemy:   lda #$00
                 jsr DropItem
 MEG_NoRoom:     jmp ExplodeActor

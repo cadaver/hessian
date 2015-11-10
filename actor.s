@@ -1401,12 +1401,6 @@ DA_NotDead:     sta actHp,x
 DestroyActor:   sty DA_DamageSrc+1
                 cpy #ACTI_FIRSTNPCBULLET
                 jsr GetActorLogicData
-                ldy #AL_DESTROYROUTINE
-                lda (actLo),y
-                sta DA_Jump+1
-                iny
-                lda (actLo),y
-                sta DA_Jump+2
                 bcs DA_NoScore
                 ldy #AL_SCORE
                 lda (actLo),y
@@ -1416,8 +1410,14 @@ DestroyActor:   sty DA_DamageSrc+1
                 tay
                 pla
                 jsr AddScore
-DA_NoScore:     ldy #AT_DESTROY                 ;Run the DESTROY trigger
-                jsr ActorTrigger
+DA_NoScore:     ldy #AL_DESTROYROUTINE
+                lda (actLo),y
+                sta DA_Jump+1
+                iny
+                lda (actLo),y
+                sta DA_Jump+2
+                ;ldy #AT_DESTROY                 ;Run the DESTROY trigger
+                ;jsr ActorTrigger
 DA_DamageSrc:   ldy #$00
 DA_Jump:        jsr $0000
                 clc

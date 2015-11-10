@@ -317,6 +317,7 @@ AI_Berzerk:     lda actTime,x                   ;Ongoing attack?
                 bcc AI_MoverFollow              ;If cannot fire, pathfind to target
                 jsr PrepareAttack
                 bcs AI_BerzerkDone
+                jsr Random
                 jsr GetCharInfo4Above
                 and #CI_CLIMB
                 bne AI_FreeMoveWithTurn
@@ -330,7 +331,6 @@ AI_Berzerk:     lda actTime,x                   ;Ongoing attack?
                 lda temp5
                 eor actD,x
                 bmi AI_FreeMoveWithTurn
-                jsr Random
                 lsr
                 ldy #AL_OFFENSE
                 cmp (actLo),y
@@ -427,6 +427,8 @@ AI_FlyerPickDir:jsr Random
         ;          C=1 Attacked
         ; Modifies: A,Y,temp1
 
+PA_NoWeapon:    clc
+                rts
 PrepareAttack:  sta temp1                       ;Attack controls
                 lda actF1,x
                 cmp #FR_DUCK+1
@@ -551,9 +553,9 @@ FT_NotHorizontal:
                 ldy actWpn,x
                 lda temp6
                 beq GAD_Vertical
-GAD_Horizontal2:cmp itemNPCMinDist-2,y
+GAD_Horizontal2:cmp itemNPCMinDist-1,y
                 bcc GAD_NeedMoreDistance
-                cmp itemNPCMaxDist-2,y
+                cmp itemNPCMaxDist-1,y
                 bcs GAD_NoAttackDir
                 lda temp8
                 beq GAD_Horizontal
@@ -580,7 +582,7 @@ GAD_Left:       ora #JOY_LEFT|JOY_FIRE
                 bne GAD_HasAttackDir
 GAD_Vertical:   lda temp8                       ;If both X & Y dist zero, rather use
                 beq GAD_Horizontal2             ;horizontal attack
-                cmp itemNPCMaxDist-2,y
+                cmp itemNPCMaxDist-1,y
                 bcs GAD_NoAttackDir
                 lda temp1
                 ldy temp7

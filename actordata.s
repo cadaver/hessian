@@ -29,10 +29,12 @@ ACT_FLYINGCRAFT = 27
 ACT_SMALLWALKER = 28
 ACT_SMALLTANK   = 29
 ACT_FLOATINGMINE = 30
+ACT_ROLLINGMINE = 31
 
 HP_PLAYER       = 56
 HP_SMALLDROID   = 8
 HP_FLOATINGMINE = 8
+HP_ROLLINGMINE  = 12
 HP_FLYINGCRAFT  = 13
 HP_LARGEDROID   = 14
 HP_SMALLWALKER  = 16
@@ -104,6 +106,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adSmallWalker
                 dc.b <adSmallTank
                 dc.b <adFloatingMine
+                dc.b <adRollingMine
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -135,6 +138,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adSmallWalker
                 dc.b >adSmallTank
                 dc.b >adFloatingMine
+                dc.b >adRollingMine
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -310,6 +314,12 @@ adFloatingMine: dc.b ONESPRITE                  ;Number of sprites
                 dc.b 4                          ;Number of frames
                 dc.b 9,10,11,10
 
+adRollingMine:  dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_GROUNDBASED              ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 2                          ;Number of frames
+                dc.b 10,11
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -342,6 +352,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alSmallWalker
                 dc.b <alSmallTank
                 dc.b <alFloatingMine
+                dc.b <alRollingMine
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -373,6 +384,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alSmallWalker
                 dc.b >alSmallTank
                 dc.b >alFloatingMine
+                dc.b >alRollingMine
 
 alPlayer:       dc.w MoveAndAttackHuman         ;Update routine
                 dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -513,7 +525,7 @@ alObjectMarker: dc.w MoveObjectMarker           ;Update routine
 alSpeechBubble: dc.w MoveSpeechBubble           ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
-alExplosionGenerator: 
+alExplosionGenerator:
                 dc.w MoveExplosionGenerator     ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
@@ -601,7 +613,7 @@ alFlyingCraft:  dc.w MoveFlyingCraft            ;Update routine
                 dc.b 2                          ;Vert acceleration
                 dc.b 1                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
-                
+
 alSmallWalker:  dc.w MoveWalker                 ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 12                         ;Horizontal size
@@ -669,3 +681,27 @@ alFloatingMine: dc.w MoveFloatingMine           ;Update routine
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
+
+alRollingMine:  dc.w MoveRollingMine            ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
+                dc.b 9                          ;Horizontal size
+                dc.b 16                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w ExplodeEnemy_Ofs8          ;Destroy routine
+                dc.b HP_ROLLINGMINE             ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 30                         ;Score from kill
+                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
+                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b $10                        ;AI offense AND-value
+                dc.b $05                        ;AI defense probability
+                dc.b AB_HORIZONTAL              ;Attack directions
+                dc.b AMF_JUMP|AMF_NOFALLDAMAGE|AMF_CUSTOMANIMATION ;Move flags
+                dc.b 4*8-4                      ;Max. movement speed
+                dc.b 2                          ;Ground movement acceleration
+                dc.b 2                          ;In air movement acceleration
+                dc.b 6                          ;Gravity acceleration
+                dc.b 6                          ;Long jump gravity acceleration
+                dc.b 8                          ;Ground braking
+                dc.b -2                         ;Height in chars for headbump check (negative)
+                dc.b -5*8                       ;Jump initial speed (negative)
