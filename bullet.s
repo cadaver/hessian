@@ -390,11 +390,8 @@ CBC_ReportOnly: rts
         ; Modifies: A,Y,tgtActIndex,possibly other temp registers
 
 RadiusDamage:   ldy #ACTI_LASTNPC
-RD_Loop:        lda actT,y
+RD_Loop:        lda actHp,y                     ;Skip if bystander or already dead
                 beq RD_Next
-                lda actFlags,y
-                and #AF_GROUPBITS
-                beq RD_Next                     ;Skip bystander (none) group
                 jsr CheckActorCollision
                 bcc RD_Next
                 sty tgtActIndex

@@ -16,6 +16,7 @@ AIMODE_MOVER        = 5
 AIMODE_GUARD        = 6
 AIMODE_BERZERK      = 7
 AIMODE_FLYER        = 8
+AIMODE_MINE         = 9
 
 NOTARGET            = $ff
 
@@ -414,6 +415,21 @@ AI_FlyerPickDir:jsr Random
                 tay
                 lda flyerDirTbl,y
                 bpl AI_FlyerStoreDir
+
+        ; Mine AI
+        
+AI_Mine:        dec actTime,x                   ;Aim alternatively high & low so the mine will
+                bmi AI_MineSteerHigher          ;eventually hit
+                jsr FindTargetAndAttackDir
+                jmp AI_MineDecision
+AI_MineSteerHigher:
+                inc actYH,x
+                jsr FindTargetAndAttackDir
+                php
+                dec actYH,x
+                plp
+AI_MineDecision:bcc AI_FlyerIdle
+                bcs AI_FlyerFollow
 
         ; Accumulate aggression & attack to specified direction. Also handle
         ; defensive ducking if the actor can duck

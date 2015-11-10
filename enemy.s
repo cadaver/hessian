@@ -115,11 +115,8 @@ MFC_Fall:       jsr FallingMotionCommon
 
 MoveDroid:      lda #$02
                 ldy #$02
-                jsr OneShotAnimation
-                bcc MD_AnimDone
-                lda #$00
-                sta actF1,x
-MD_AnimDone:    jsr MoveAccelerateFlyer
+                jsr LoopingAnimation
+                jsr MoveAccelerateFlyer
 MFC_CanAttack:  jmp AttackGeneric
 
         ; Walking robot update routine
@@ -162,7 +159,23 @@ MT_NoWrap:      sta actFd,x
                 clc
                 adc tankSizeAddTbl,y
                 sta actSizeU,x
-                rts
+MFM_NoExplosion:rts
+
+        ; Floating mine update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveFloatingMine:
+                lda #$03
+                ldy #$03
+                jsr LoopingAnimation
+                jsr MoveAccelerateFlyer
+                lda #DMG_MINE
+                jsr CollideAndDamageTarget
+                bcc MFM_NoExplosion
+                jmp ExplodeEnemy
 
         ; Turret animation routine
 

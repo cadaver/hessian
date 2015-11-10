@@ -28,9 +28,11 @@ ACT_LARGEDROIDSUPER = 26
 ACT_FLYINGCRAFT = 27
 ACT_SMALLWALKER = 28
 ACT_SMALLTANK   = 29
+ACT_FLOATINGMINE = 30
 
 HP_PLAYER       = 56
 HP_SMALLDROID   = 8
+HP_FLOATINGMINE = 8
 HP_FLYINGCRAFT  = 13
 HP_LARGEDROID   = 14
 HP_SMALLWALKER  = 16
@@ -101,6 +103,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adFlyingCraft
                 dc.b <adSmallWalker
                 dc.b <adSmallTank
+                dc.b <adFloatingMine
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -131,6 +134,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adFlyingCraft
                 dc.b >adSmallWalker
                 dc.b >adSmallTank
+                dc.b >adFloatingMine
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -300,6 +304,12 @@ adSmallTank:    dc.b HUMANOID                   ;Number of sprites
                 dc.b 78                         ;Upper part base index into the frametable
                 dc.b 3                          ;Upper part left frame add
 
+adFloatingMine: dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_FLYER                    ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 4                          ;Number of frames
+                dc.b 9,10,11,10
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -331,6 +341,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alFlyingCraft
                 dc.b <alSmallWalker
                 dc.b <alSmallTank
+                dc.b <alFloatingMine
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -361,6 +372,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alFlyingCraft
                 dc.b >alSmallWalker
                 dc.b >alSmallTank
+                dc.b >alFloatingMine
 
 alPlayer:       dc.w MoveAndAttackHuman         ;Update routine
                 dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -636,3 +648,24 @@ alSmallTank:    dc.w MoveTank                   ;Update routine
                 dc.b 8                          ;Long jump gravity acceleration
                 dc.b 4                          ;Ground braking
                 dc.b -3                         ;Height in chars for headbump check (negative)
+
+alFloatingMine: dc.w MoveFloatingMine           ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
+                dc.b 6                          ;Horizontal size
+                dc.b 5                          ;Size up
+                dc.b 5                          ;Size down
+                dc.w ExplodeEnemy               ;Destroy routine
+                dc.b HP_FLOATINGMINE            ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 15                         ;Score from kill
+                dc.b AIMODE_MINE                ;AI mode when spawned randomly
+                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b $00                        ;AI offense AND-value
+                dc.b $00                        ;AI defense probability
+                dc.b AB_NONE                    ;Attack directions
+                dc.b 2*8                        ;Horiz max movement speed
+                dc.b 1                          ;Horiz acceleration
+                dc.b 1*8                        ;Vert max movement speed
+                dc.b 1                          ;Vert acceleration
+                dc.b 0                          ;Horiz obstacle check offset
+                dc.b 1                          ;Vert obstacle check offset

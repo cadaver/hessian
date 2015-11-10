@@ -5,6 +5,7 @@ AIM_DIAGONALDOWN = 3
 AIM_DOWN        = 4
 AIM_NONE        = $ff
 
+AB_NONE         = 0
 AB_UP           = 1
 AB_DIAGONALUP   = 2
 AB_HORIZONTAL   = 4

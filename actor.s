@@ -948,6 +948,13 @@ AD_Over:        lda #$00
                 sta actFd,x
                 rts
 
+LoopingAnimation:
+                jsr OneShotAnimation
+                bcc LA_NotOver
+                lda #$00
+                sta actF1,x
+LA_NotOver:     rts
+
         ; Get char collision info from 1 block above or below actor's pos (optimized)
         ;
         ; Parameters: X actor index
@@ -1221,7 +1228,7 @@ CAC_YPos:       lsr
                 bcc CAC_HasCollision
                 sbc actSizeD,y
                 bcc CAC_HasCollision
-                clc                             ;Too far apart in Y-dir
+CADT_NoTarget:  clc                             ;Too far apart in Y-dir
                 rts
 CAC_YNeg:       lsr
                 lda temp8
@@ -1234,7 +1241,35 @@ CAC_YNeg:       lsr
 CAC_HasCollision:
                 sec
 CAC_HasCollision2:
-DS_Alive:
+CADT_NoCollision:
+                rts
+
+        ; Check collision to target and apply damage
+        ;
+        ; Parameters: A damage X enemy actor Y target actor
+        ; Returns: C=1 if collided
+        ; Modifies: A,Y,temp6-temp8,loader temp vars
+
+CollideAndDamageTarget:
+                sta temp6
+                ldy actAITarget,x
+                bmi CADT_NoTarget
+                jsr CheckActorCollision
+                bcc CADT_NoCollision
+
+        ; Apply damage to target from enemy touch (not bullet)
+        ;
+        ; Parameters: temp1 damage X enemy actor Y target actor
+        ; Returns: C=1
+        ; Modifies: A,Y,temp6-temp8,loader temp vars
+
+ApplyEnemyDamage:tya
+                tax
+                ldy #NODAMAGESRC
+                lda temp6
+                jsr DamageActor
+                ldx actIndex
+                sec
                 rts
 
         ; Apply damage to self, and do not return if killed. To be called from move routines
@@ -1257,6 +1292,7 @@ DamageSelf:     ldy #NODAMAGESRC
                 pla
                 pla
 NoFallDamage:
+DS_Alive:
 ATD_Skip:       rts
 
         ; Modify damage based on whether target is organic/nonorganic, then apply
