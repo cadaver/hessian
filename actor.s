@@ -715,6 +715,8 @@ IA_Done:        rts
         ; Returns: -
         ; Modifies: A
 
+MoveActorYNoInterpolation:
+                jsr MoveActorY
 NoInterpolation:lda actXL,x
                 sta actPrevXL,x
                 lda actXH,x

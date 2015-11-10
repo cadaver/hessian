@@ -15,7 +15,8 @@ MB_INWATER      = 128
 
 MoveFlyer:      sta temp5
                 sty temp6
-                lda #$00
+                lda actMB,x                     ;Clear other bits except water
+                and #MB_INWATER
                 sta actMB,x
                 lda actSX,x
                 beq MF_XMoveOK

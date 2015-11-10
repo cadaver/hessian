@@ -114,7 +114,7 @@ MFC_Fall:       jsr FallingMotionCommon
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveDroid:      lda #$02
-                ldy #$02
+                tay
                 jsr LoopingAnimation
                 jsr MoveAccelerateFlyer
 MFC_CanAttack:  jmp AttackGeneric
@@ -185,14 +185,14 @@ MineCommon:     lda #DMG_MINE
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveRollingMine:jsr MoveGeneric
+                lda actMB,x                         ;If not grounded and hitting wall,
+                cmp #MB_HITWALL                     ;climb up the wall
+                bne MRM_NoClimb
+                lda #10
+                ldy #4*8
+                jsr AccActorYNeg
+MRM_NoClimb:    inc actFd,x
                 lda actFd,x
-                clc
-                adc actSX,x
-                sta actFd,x
-                rol
-                rol
-                rol
-                rol
                 and #$01
                 sta actF1,x
                 bpl MineCommon
@@ -234,8 +234,7 @@ AT_NoAnim:      rts
 
 ExplodeEnemy2_8_Ofs10:
                 lda #-10*8
-                jsr MoveActorY
-                jsr NoInterpolation
+                jsr MoveActorYNoInterpolation
 ExplodeEnemy2_8:lda #2
                 ldy #$3f
 
@@ -303,7 +302,7 @@ MEG_GetOffset:  jsr Random
 
 ExplodeEnemy_Ofs8:
                 lda #-8*8
-                jsr MoveActorY
+                jsr MoveActorYNoInterpolation
 ExplodeEnemy:   lda #$00
                 jsr DropItem
 MEG_NoRoom:     jmp ExplodeActor
