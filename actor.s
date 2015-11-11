@@ -438,11 +438,15 @@ UA_SpawnCount:  cmp #$00
                 beq UA_SpawnDone
                 endif
 UA_NoSpawnLimit:dey
-UA_SpawnDelay:  lda #$00                        ;Spawn delay counting
-                clc
-                adc (zoneLo),y
-                sta UA_SpawnDelay+1
+                jsr Random
                 if SPAWN_TEST=0
+                and (zoneLo),y
+                else
+                and #$0f
+                endif
+                clc
+UA_SpawnDelay:  adc #$00                        ;Spawn delay counting
+                sta UA_SpawnDelay+1
                 bcc UA_SpawnDone
                 endif
                 dey
@@ -452,7 +456,9 @@ UA_SpawnDelay:  lda #$00                        ;Spawn delay counting
                 and spawnListAndTbl,y
                 clc
                 adc spawnListAddTbl,y
+                inc $d020
                 jsr AttemptSpawn
+                dec $d020
 UA_SpawnDone:
 
         ; Build target list for AI & bullet collision
@@ -1046,7 +1052,7 @@ GCI_NoLimitDown:sta zpBitsLo
                 sta zpDestLo
                 lda blkTblHi,y
                 sta zpDestHi
-                ldy zpBitsLo
+GCI_WithinBlock:ldy zpBitsLo
                 lda (zpDestLo),y                ;Get char from block
                 tay
                 lda charInfo,y                  ;Get charinfo
@@ -1458,6 +1464,10 @@ AS_InAirCoordOK:sec
                 sta actYH,y
                 bpl AS_CheckBackground
 
+AS_Remove2:     tya
+                tax
+AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
+
 AttemptSpawn:   sta temp2
                 tax
                 lda spawnPlotTbl,x              ;Requires a plotbit to spawn?
@@ -1516,18 +1526,25 @@ AS_BGRetry:     jsr GetCharInfo
                 and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN
                 cmp temp3
                 beq AS_BGOK
-                lda temp3                       ;If trying to match ground, retry all sub-positions
-                lsr                             ;within block
-                bcc AS_Remove
+                tay                             ;If found emptiness and trying to match ground
+                bne AS_Remove3                  ;retry sub-positions within block
+AS_BGRetryWithinBlock:
+                lda zpBitsLo
+                adc #$03                        ;C=1
+                sta zpBitsLo
                 lda #8*8
                 jsr MoveActorY
+                jsr GCI_WithinBlock
+                and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN
+                cmp temp3
+                beq AS_BGOK
                 lda actYL,x
-                bne AS_BGRetry
-                beq AS_Remove
+                bne AS_BGRetryWithinBlock
+AS_Remove3:     jmp RemoveActor
 
 AS_BGOK:        jsr GetCharInfo1Above           ;Do not spawn into a wall
                 and #CI_OBSTACLE
-                bne AS_Remove
+                bne AS_Remove3
 AS_SpawnOK:     jsr InitActor
                 inc UA_SpawnCount+1
                 ldy #AL_SPAWNAIMODE
@@ -1548,10 +1565,6 @@ SetPersistence: ora levelNum
 AS_StoreLvlDataPos:
                 sta actLvlDataPos,x
 ALA_Fail2:      rts
-
-AS_Remove2:     tya
-                tax
-AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
 
         ; Add actor from leveldata
         ;
