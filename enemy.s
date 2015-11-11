@@ -175,7 +175,9 @@ MoveFloatingMine:
 MineCommon:     lda #DMG_MINE
                 jsr CollideAndDamageTarget
                 bcc MFM_NoExplosion
-                ldy #NODAMAGESRC                ;Make sure no score is given
+                lda #$00                        ;Make sure the explosion can't be destroyed
+                sta actHp,x                     ;for points
+                ldy #NODAMAGESRC                ;Make sure no score is given now
                 jmp DestroyActor
 
         ; Rolling mine update routine
