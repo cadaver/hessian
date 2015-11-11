@@ -317,7 +317,6 @@ AI_Berzerk:     lda actTime,x                   ;Ongoing attack?
                 bcc AI_MoverFollow              ;If cannot fire, pathfind to target
                 jsr PrepareAttack
                 bcs AI_BerzerkDone
-                jsr Random
                 jsr GetCharInfo4Above
                 and #CI_CLIMB
                 bne AI_FreeMoveWithTurn
@@ -331,6 +330,7 @@ AI_Berzerk:     lda actTime,x                   ;Ongoing attack?
                 lda temp5
                 eor actD,x
                 bmi AI_FreeMoveWithTurn
+                jsr Random
                 lsr
                 ldy #AL_OFFENSE
                 cmp (actLo),y
@@ -478,6 +478,7 @@ PA_AggressionNotOver:
                 ldy actAttackD,x                ;Check weapon's attack timer
                 bne PA_CannotAttack
                 ldy actWpn,x
+                beq PA_NoWeapon
                 cmp itemNPCAttackThreshold-2,y  ;Enough aggression?
                 bcc PA_CannotAttack
                 lda temp1

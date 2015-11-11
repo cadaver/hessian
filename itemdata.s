@@ -140,7 +140,7 @@ itemMagazineSize:
                 dc.b 3                          ;Grenade launcher
                 dc.b 1                          ;Bazooka
 
-                dc.b 1                          ;None weapon for mine AI
+                dc.b 0                          ;None weapon for mine AI
 itemNPCMinDist: dc.b 0                          ;Fists (not used by NPCs)
                 dc.b 0                          ;Knife
                 dc.b 0                          ;Nightstick

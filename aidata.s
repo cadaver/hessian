@@ -37,4 +37,4 @@ spawnTypeTbl:   dc.b ACT_ROLLINGMINE         ;0
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
 
-spawnWpnTbl:    dc.b ITEM_AUTORIFLE              ;0
+spawnWpnTbl:    dc.b ITEM_NONE              ;0

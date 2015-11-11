@@ -693,15 +693,15 @@ alRollingMine:  dc.w MoveRollingMine            ;Update routine
                 dc.w 30                         ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
-                dc.b $10                        ;AI offense AND-value
+                dc.b $08                        ;AI offense AND-value
                 dc.b $05                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
                 dc.b AMF_JUMP|AMF_NOFALLDAMAGE|AMF_CUSTOMANIMATION ;Move flags
                 dc.b 4*8-4                      ;Max. movement speed
-                dc.b 2                          ;Ground movement acceleration
-                dc.b 2                          ;In air movement acceleration
+                dc.b 3                          ;Ground movement acceleration
+                dc.b 3                          ;In air movement acceleration
                 dc.b 6                          ;Gravity acceleration
                 dc.b 6                          ;Long jump gravity acceleration
-                dc.b 8                          ;Ground braking
+                dc.b 0                          ;Ground braking
                 dc.b -2                         ;Height in chars for headbump check (negative)
                 dc.b -5*8                       ;Jump initial speed (negative)
