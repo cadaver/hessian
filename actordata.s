@@ -48,7 +48,7 @@ plrDmgModifyTbl:dc.b 6,8,12
         ; Human Y-size reduce table based on animation
 
 humanSizeReduceTbl:
-                dc.b 1,2,1,0,1,2,1,0,1,2,0,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,10,10,10,10
+                dc.b 1,2,1,0,1,2,1,0,1,2,2,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,10,10,10,10
 
         ; Tank Y-size addition table (based on turret direction)
 
@@ -684,8 +684,8 @@ alFloatingMine: dc.w MoveFloatingMine           ;Update routine
 
 alRollingMine:  dc.w MoveRollingMine            ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
-                dc.b 9                          ;Horizontal size
-                dc.b 16                         ;Size up
+                dc.b 8                          ;Horizontal size
+                dc.b 15                         ;Size up
                 dc.b 0                          ;Size down
                 dc.w ExplodeEnemy_Ofs8          ;Destroy routine
                 dc.b HP_ROLLINGMINE             ;Initial health
