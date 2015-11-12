@@ -442,13 +442,14 @@ UA_NoSpawnLimit:dey
                 if SPAWN_TEST=0
                 and (zoneLo),y
                 else
-                and #$0f
+                and #$1f
                 endif
                 clc
 UA_SpawnDelay:  adc #$00                        ;Spawn delay counting
-                sta UA_SpawnDelay+1
+                bcc UA_SpawnNotOver
+                lda #$ff                        ;Clamp to maximum so that we will retry each frame
+UA_SpawnNotOver:sta UA_SpawnDelay+1             ;until spawn actually successful
                 bcc UA_SpawnDone
-                endif
                 dey
                 lda (zoneLo),y                  ;Take global spawnlist parameter
                 tay
@@ -456,9 +457,7 @@ UA_SpawnDelay:  adc #$00                        ;Spawn delay counting
                 and spawnListAndTbl,y
                 clc
                 adc spawnListAddTbl,y
-                inc $d020
                 jsr AttemptSpawn
-                dec $d020
 UA_SpawnDone:
 
         ; Build target list for AI & bullet collision
@@ -1468,8 +1467,7 @@ AS_Remove2:     tya
                 tax
 AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
 
-AttemptSpawn:   sta temp2
-                tax
+AttemptSpawn:   tax
                 lda spawnPlotTbl,x              ;Requires a plotbit to spawn?
                 bmi AS_NoPlotBit
                 jsr GetPlotBit
@@ -1478,19 +1476,19 @@ AS_NoPlotBit:   jsr GetFreeNPC
                 bcc AS_Done2
                 lda #$00
                 sta actYL,y
-                ldx temp2
                 lda spawnTypeTbl,x
                 sta actT,y
                 lda spawnWpnTbl,x
-                pha
+                tax
                 and #$3f
                 sta actWpn,y
-                pla
+                txa
                 asl
                 bcs AS_InAir
 AS_Ground:      lda #CI_GROUND
                 sta temp3
 AS_SideCommon:  jsr Random
+                tax
                 and #$07
                 cmp #$06
                 bcc AS_SideYOK
@@ -1498,7 +1496,7 @@ AS_SideCommon:  jsr Random
                 clc
 AS_SideYOK:     adc mapY
                 sta actYH,y
-                jsr Random
+                txa
                 cmp #SPAWNINFRONT_PROBABILITY   ;Prefer to spawn in front of player
                 lda actD+ACTI_PLAYER
                 bcc AS_SideNoReverse
@@ -1529,16 +1527,18 @@ AS_BGRetry:     jsr GetCharInfo
                 tay                             ;If found emptiness and trying to match ground
                 bne AS_Remove3                  ;retry sub-positions within block
 AS_BGRetryWithinBlock:
+                lda actYL,x
+                clc
+                adc #$40
+                bcs AS_Remove3
+                sta actYL,x
                 lda zpBitsLo
-                adc #$03                        ;C=1
+                adc #$04
                 sta zpBitsLo
-                lda #8*8
-                jsr MoveActorY
                 jsr GCI_WithinBlock
                 and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN
                 cmp temp3
                 beq AS_BGOK
-                lda actYL,x
                 bne AS_BGRetryWithinBlock
 AS_Remove3:     jmp RemoveActor
 
@@ -1547,6 +1547,8 @@ AS_BGOK:        jsr GetCharInfo1Above           ;Do not spawn into a wall
                 bne AS_Remove3
 AS_SpawnOK:     jsr InitActor
                 inc UA_SpawnCount+1
+                lda #$00                        ;Now reset the spawn delay counting
+                sta UA_SpawnDelay+1
                 ldy #AL_SPAWNAIMODE
                 lda (actLo),y                   ;Set default AI mode for actor type
                 sta actAIMode,x
