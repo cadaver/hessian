@@ -7,8 +7,8 @@ AIH_AUTOSCALEWALL   = $80
 
 JOY_FREEMOVE        = $80
 
-AIMODE_NONE         = 0
-AIMODE_IDLE         = 1
+AIMODE_IDLE         = 0
+AIMODE_PLAYER       = 1
 AIMODE_TURNTO       = 2
 AIMODE_FOLLOW       = 3
 AIMODE_SNIPER       = 4

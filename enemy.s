@@ -1,7 +1,7 @@
 HUMAN_ITEM_SPAWN_OFFSET = -15*8
 ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 3
-TURRET_ANIMDELAY = 1
+TURRET_ANIMDELAY = 2
 
         ; Flying enemy movement
         ;
@@ -224,9 +224,44 @@ AT_AnimCommon:  lda #TURRET_ANIMDELAY
                 sta actAttackD,x
                 lda actTime,x
                 bpl AT_NoOngoingAttack
-                dec actTime,x                       ;Restore time to the AI attack counter,
+                sec
+                sbc #TURRET_ANIMDELAY
+                sta actTime,x                       ;Restore time to the AI attack counter,
 AT_NoOngoingAttack:                                 ;since time was lost animating
 AT_NoAnim:      rts
+
+        ; Ceiling turret update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveTurret:     ldy actF2,x
+                lda actFd,x                         ;Start from middle frame
+                bne MT_NoInit
+                inc actFd,x
+                ldy #2
+MT_NoInit:      lda actCtrl,x                       ;Todo: use a table
+                cmp #JOY_FIRE|JOY_DOWN
+                bne MT_NotFrame0
+                ldy #2
+MT_NotFrame0:   cmp #JOY_FIRE|JOY_DOWN|JOY_RIGHT
+                bne MT_NotFrame1
+                ldy #1
+MT_NotFrame1:   cmp #JOY_FIRE|JOY_RIGHT
+                bne MT_NotFrame2
+                ldy #0
+                jsr AT_FrameDone
+MT_NotFrame2:   cmp #JOY_FIRE|JOY_DOWN|JOY_LEFT
+                bne MT_NotFrame3
+                ldy #3
+MT_NotFrame3:   cmp #JOY_FIRE|JOY_LEFT
+                bne MT_NotFrame4
+                ldy #4
+MT_NotFrame4:   jsr AT_FrameDone
+                lda actF2,x
+                sta actF1,x                         ;Ceiling turret uses only 1-part animation
+                jmp AttackGeneric
 
         ; Generate 2 explosions at 8 pixel radius
         ;
@@ -234,6 +269,9 @@ AT_NoAnim:      rts
         ; Returns: -
         ; Modifies: A,Y,temp vars
 
+ExplodeEnemy2_8_OfsD6:
+                lda #6*8
+                skip2
 ExplodeEnemy2_8_Ofs10:
                 lda #-10*8
                 jsr MoveActorYNoInterpolation

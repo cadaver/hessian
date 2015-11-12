@@ -30,6 +30,7 @@ ACT_SMALLWALKER = 28
 ACT_SMALLTANK   = 29
 ACT_FLOATINGMINE = 30
 ACT_ROLLINGMINE = 31
+ACT_CEILINGTURRET = 32
 
 HP_PLAYER       = 56
 HP_FLOATINGMINE = 7
@@ -40,6 +41,7 @@ HP_LARGEDROID   = 14
 HP_SMALLWALKER  = 16
 HP_SMALLTANK    = 18
 HP_LARGEDROIDSUPER = 20
+HP_CEILINGTURRET = 24
 
         ; Difficulty mod for damage on player
 
@@ -107,6 +109,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adSmallTank
                 dc.b <adFloatingMine
                 dc.b <adRollingMine
+                dc.b <adCeilingTurret
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -139,6 +142,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adSmallTank
                 dc.b >adFloatingMine
                 dc.b >adRollingMine
+                dc.b >adCeilingTurret
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -320,6 +324,12 @@ adRollingMine:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b 2                          ;Number of frames
                 dc.b 10,11
 
+adCeilingTurret:dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_FLYER                    ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 5                          ;Number of frames
+                dc.b 12,13,14,15,16
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -353,6 +363,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alSmallTank
                 dc.b <alFloatingMine
                 dc.b <alRollingMine
+                dc.b <alCeilingTurret
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -385,6 +396,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alSmallTank
                 dc.b >alFloatingMine
                 dc.b >alRollingMine
+                dc.b >alCeilingTurret
 
 alPlayer:       dc.w MoveAndAttackHuman         ;Update routine
                 dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -705,3 +717,19 @@ alRollingMine:  dc.w MoveRollingMine            ;Update routine
                 dc.b 0                          ;Ground braking
                 dc.b -2                         ;Height in chars for headbump check (negative)
                 dc.b -5*8                       ;Jump initial speed (negative)
+
+alCeilingTurret:dc.w MoveTurret                 ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
+                dc.b 6                          ;Horizontal size
+                dc.b 0                          ;Size up
+                dc.b 12                         ;Size down
+                dc.w ExplodeEnemy2_8_OfsD6      ;Destroy routine
+                dc.b HP_CEILINGTURRET           ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 75                         ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b $06                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
+                dc.b AMF_NOFALLDAMAGE|AMF_CUSTOMANIMATION ;Move flags

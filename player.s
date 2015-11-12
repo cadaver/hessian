@@ -987,6 +987,8 @@ LoadPlayerActorVars:
                 bpl LoadPlayerActorVars
                 inx                             ;X=0
                 jsr InitActor
+                lda #AIMODE_PLAYER
+                sta actAIMode+ACTI_PLAYER
                 lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE
                 sta panelUpdateFlags
 
