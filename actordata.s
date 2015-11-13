@@ -56,6 +56,23 @@ humanSizeReduceTbl:
 
 tankSizeAddTbl: dc.b 0,6,8
 
+        ; Turret firing ctrl + frame table
+
+turretFrameTbl:
+tankTurretOfs:  dc.b JOY_LEFT|JOY_FIRE,0
+                dc.b JOY_RIGHT|JOY_FIRE,0
+                dc.b JOY_LEFT|JOY_UP|JOY_FIRE,1
+                dc.b JOY_RIGHT|JOY_UP|JOY_FIRE,1
+                dc.b JOY_UP|JOY_FIRE,2
+                dc.b 0
+ceilingTurretOfs:
+                dc.b JOY_RIGHT|JOY_FIRE,0
+                dc.b JOY_RIGHT|JOY_DOWN|JOY_FIRE,1
+                dc.b JOY_DOWN|JOY_FIRE,2
+                dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE,3
+                dc.b JOY_LEFT|JOY_FIRE,4
+                dc.b 0
+
         ; Human actor upper part framenumbers
 
 humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,22,23,24,23,3,4,5,6,7,8,9
@@ -729,7 +746,7 @@ alCeilingTurret:dc.w MoveTurret                 ;Update routine
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $06                        ;AI offense AND-value
+                dc.b $1f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
                 dc.b AMF_NOFALLDAMAGE|AMF_CUSTOMANIMATION ;Move flags

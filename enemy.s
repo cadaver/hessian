@@ -135,6 +135,8 @@ MoveWalker:     jsr MoveGeneric
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveTank:       jsr MoveGeneric                   ;Use human movement for physics
+                ldy #tankTurretOfs-turretFrameTbl
+                lda #0
                 jsr AnimateTurret
                 jsr AttackGeneric
                 lda actSX,x                       ;Tracks animation from absolute speed
@@ -201,18 +203,18 @@ MRM_NoClimb:    inc actFd,x
 
         ; Turret animation routine
 
-AnimateTurret:  ldy #0                            ;Determine turret target frame from controls
-                lda actCtrl,x
-                cmp #JOY_FIRE|JOY_UP
-                bcc AT_FrameDone
-                bne AT_HorizOrDiag
-                ldy #2                            ;Vertical
-                bne AT_FrameDone
-AT_HorizOrDiag: and #JOY_UP|JOY_DOWN
-                beq AT_Horiz
-                ldy #1
-AT_FrameDone:   tya
-AT_Horiz:       cmp actF2,x
+AnimateTurret:  sta AT_Default+1
+AT_Loop:        lda turretFrameTbl,y
+                beq AT_Default
+                cmp actCtrl,x
+                beq AT_Found
+                iny
+                iny
+                bne AT_Loop
+AT_Found:       lda turretFrameTbl+1,y
+                skip2
+AT_Default:     lda #$00
+AT_FrameDone:   cmp actF2,x
                 beq AT_NoAnim
                 ldy actAttackD,x
                 bne AT_NoAnim
@@ -236,31 +238,16 @@ AT_NoAnim:      rts
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveTurret:     ldy actF2,x
-                lda actFd,x                         ;Start from middle frame
+MoveTurret:     lda actF2,x
+                ldy actFd,x                         ;Start from middle frame
                 bne MT_NoInit
                 inc actFd,x
-                ldy #2
-MT_NoInit:      lda actCtrl,x                       ;Todo: use a table
-                cmp #JOY_FIRE|JOY_DOWN
-                bne MT_NotFrame0
-                ldy #2
-MT_NotFrame0:   cmp #JOY_FIRE|JOY_DOWN|JOY_RIGHT
-                bne MT_NotFrame1
-                ldy #1
-MT_NotFrame1:   cmp #JOY_FIRE|JOY_RIGHT
-                bne MT_NotFrame2
-                ldy #0
-                jsr AT_FrameDone
-MT_NotFrame2:   cmp #JOY_FIRE|JOY_DOWN|JOY_LEFT
-                bne MT_NotFrame3
-                ldy #3
-MT_NotFrame3:   cmp #JOY_FIRE|JOY_LEFT
-                bne MT_NotFrame4
-                ldy #4
-MT_NotFrame4:   jsr AT_FrameDone
+                lda #2
+                sta actF2,x
+MT_NoInit:      ldy #ceilingTurretOfs-turretFrameTbl
+                jsr AnimateTurret
                 lda actF2,x
-                sta actF1,x                         ;Ceiling turret uses only 1-part animation
+                sta actF1,x                         ;Ceiling turret uses only 1-part animation, so copy to frame1
                 jmp AttackGeneric
 
         ; Generate 2 explosions at 8 pixel radius
