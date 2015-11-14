@@ -161,6 +161,7 @@ MT_NoWrap:      sta actFd,x
                 clc
                 adc tankSizeAddTbl,y
                 sta actSizeU,x
+MC_NoCollision:
 MFM_NoExplosion:rts
 
         ; Floating mine update routine
@@ -174,12 +175,10 @@ MoveFloatingMine:
                 ldy #$03
                 jsr LoopingAnimation
                 jsr MoveAccelerateFlyer
-MineCommon:     lda #DMG_MINE
+MineCommon:     ldy actAITarget,x
+                lda #DMG_ENEMYMINE
                 jsr CollideAndDamageTarget
-                bcc MFM_NoExplosion
-                lda #$00                        ;Make sure the explosion can't be destroyed
-                sta actHp,x                     ;for points
-                ldy #NODAMAGESRC                ;Make sure no score is given now
+                bcc MC_NoCollision
                 jmp DestroyActor
 
         ; Rolling mine update routine

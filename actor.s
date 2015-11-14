@@ -414,7 +414,7 @@ AA_TopCheck:    cmp #$00
 AA_BottomCheck: cmp #$00
                 bcs AA_Skip
                 jsr AddLevelActor
-                ldx temp1
+                ldx temp8
 AA_Skip:        inx
 AA_EndCmp:      cpx #LVLACTSEARCH
                 bne AA_Loop
@@ -1254,38 +1254,6 @@ CAC_YNeg:       lsr
 CAC_HasCollision:
                 sec
 CAC_HasCollision2:
-CADT_NoCollision:
-                rts
-
-        ; Check collision to target and apply damage
-        ;
-        ; Parameters: A damage X enemy actor
-        ; Returns: C=1 if collided
-        ; Modifies: A,Y,temp6-temp8,loader temp vars
-
-CollideAndDamageTarget:
-                ldy actAITarget,x
-                bmi CADT_NoTarget
-                skip2
-CollideAndDamagePlayer:
-                ldy #ACTI_PLAYER
-                sta temp6
-                jsr CheckActorCollision
-                bcc CADT_NoCollision
-
-        ; Apply damage to target from enemy touch (not bullet)
-        ;
-        ; Parameters: temp6 damage X & actIndex enemy actor Y target actor
-        ; Returns: C=1
-        ; Modifies: A,Y,temp6-temp8,loader temp vars
-
-ApplyEnemyDamage:tya
-                tax
-                ldy #NODAMAGESRC
-                lda temp6
-                jsr DamageActor
-                ldx actIndex
-                sec
                 rts
 
         ; Apply damage to self, and do not return if killed. To be called from move routines
@@ -1309,19 +1277,40 @@ DamageSelf:     ldy #NODAMAGESRC
                 pla
 NoFallDamage:
 DS_Alive:
-ATD_Skip:       rts
+ATD_Skip:
+CADP_NoCollision:
+                rts
+
+        ; Check collision to player and apply damage
+        ;
+        ; Parameters: A damage X & actIndex enemy actor
+        ; Returns: C=1 collided
+        ; Modifies: A,Y,temp7-temp8,loader temp vars
+
+CollideAndDamagePlayer:
+                ldy #ACTI_PLAYER
+CollideAndDamageTarget:
+                sty tgtActIndex
+                pha
+                jsr CheckActorCollision
+                pla
+                bcc CADP_NoCollision
+                jsr ATD_NoModify
+                ldx actIndex
+                sec
+                rts
 
         ; Modify damage based on whether target is organic/nonorganic, then apply
         ;
-        ; Parameters: X bullet actor Y target actor
+        ; Parameters: X & actIndex bullet actor Y & tgtActIndex target actor
         ; Returns: A modified damage
         ; Modifies: A,X,Y,temp7,temp8,loader temp vars
 
 ApplyTargetDamage:
-                lda actBulletDmgMod-ACTI_FIRSTPLRBULLET,x ;Damage modifier
-                sta temp7
                 lda actHp,x                     ;Amount of damage
                 sta temp8
+                lda actBulletDmgMod-ACTI_FIRSTPLRBULLET,x ;Damage modifier
+                sta temp7
                 lda actFlags,y                  ;Check if target is organic
                 and #AF_ISORGANIC
                 beq ATD_NonOrganic
@@ -1337,7 +1326,7 @@ ATD_Common:     tay
                 beq ATD_Skip                    ;Skip if multiplier zero now
                 lda temp8
                 jsr ModifyDamage
-                ldx tgtActIndex
+ATD_NoModify:   ldx tgtActIndex
                 ldy actIndex
 
         ; Damage actor, and destroy if health goes to zero
@@ -1416,11 +1405,14 @@ DA_SkipSfx:     lda #COLOR_ONETIMEFLASH
         ;
         ; Parameters: X actor index, Y damage source actor if applicable or >=$80 if none
         ; Returns: C=0
-        ; Modifies: A,Y,possibly temp registers
+        ; Modifies: A,Y,temp8,possibly other temp registers
 
-DestroyActor:   sty DA_DamageSrc+1
+DestroyActor:   sty temp8
+                jsr GetActorLogicData           ;We may have the bullet's logic data pointer
+                ldy temp8                       ;so get the damage target's pointer now
+                cpy #ACTI_FIRSTPLRBULLET
+                bcc DA_NoScore
                 cpy #ACTI_FIRSTNPCBULLET
-                jsr GetActorLogicData
                 bcs DA_NoScore
                 ldy #AL_SCORE
                 lda (actLo),y
@@ -1436,9 +1428,9 @@ DA_NoScore:     ldy #AL_DESTROYROUTINE
                 iny
                 lda (actLo),y
                 sta DA_Jump+2
-                ;ldy #AT_DESTROY                 ;Run the DESTROY trigger
-                ;jsr ActorTrigger
-DA_DamageSrc:   ldy #$00
+                ldy #AT_DESTROY                 ;Run the DESTROY trigger
+                jsr ActorTrigger
+                ldy temp8
 DA_Jump:        jsr $0000
                 clc
 DA_Done:
@@ -1584,10 +1576,10 @@ ALA_Fail2:      rts
         ; Add actor from leveldata
         ;
         ; Parameters: X leveldata index
-        ; Returns: temp1 stored value of X
+        ; Returns: temp8 stored value of X
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-AddLevelActor:  stx temp1
+AddLevelActor:  stx temp8
                 lda lvlActT,x
                 bpl ALA_IsNPC
                 jmp ALA_IsItem
@@ -1662,7 +1654,7 @@ ALA_IsItem:     lda #ACTI_FIRSTITEM
                 lda itemDefaultPickup-1,x
 ALA_NoDefaultPickup:
                 sta actHp,y
-                ldx temp1
+                ldx temp8
                 jmp ALA_Common
 
         ; Remove all actors except player to leveldata if applicable

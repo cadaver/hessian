@@ -226,7 +226,13 @@ MoveLauncherGrenade:
                 jsr FallingMotionCommon
                 bmi MGrn_HitWater
                 and #MB_HITWALL|MB_HITCEILING|MB_LANDED
-                beq MGrn_Common
+                bne ExplodeGrenade
+MGrn_Common:    sec
+                jsr CheckBulletCollisions
+                bcs ExplodeGrenade
+                dec actTime,x
+                bmi ExplodeGrenade
+                rts
 
         ; Explode grenade and do radius damage
         ;
@@ -264,7 +270,8 @@ TransformBullet:sta actT,x
                 lda #$00
                 sta actF1,x
                 sta actFd,x
-                rts
+                sta actHp,x                     ;Make sure the transformed actor has no health
+                rts                             ;so it cannot be shot
 
         ; Grenade update routine
         ;
@@ -299,13 +306,8 @@ MGrn_NoHitWall: and #MB_HITCEILING              ;Halve X-speed when hit ceiling
                 jsr Asr8
 MGrn_StoreNewXSpeed:
                 sta actSX,x
-MGrn_Common:    sec
-                jsr CheckBulletCollisions
-                bcs ExplodeGrenade
-                dec actTime,x
-                bmi ExplodeGrenade
-                rts
-         
+                jmp MGrn_Common
+
         ; Mine update routine
         ;
         ; Parameters: X actor index
@@ -321,7 +323,7 @@ MoveMine:       lda #7
                 lda #SFX_PICKUP
                 jsr PlaySfx
                 jmp MoveGrenade
-
+                         
         ; EMP blast update routine
         ;
         ; Parameters: X actor index

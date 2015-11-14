@@ -141,7 +141,7 @@ sfx/jump.sfx: sfx/jump.ins
 	ins2nt2 sfx/jump.ins sfx/jump.sfx
 
 main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s enemy.s file.s init.s input.s item.s itemdata.s level.s \
-	leveldata.s macros.s main.s math.s memory.s panel.s paneldata.s physics.s player.s plot.s raster.s screen.s script.s \
+	leveldata.s macros.s main.s math.s memory.s panel.s paneldata.s physics.s player.s raster.s screen.s script.s \
 	sound.s sounddata.s sprite.s text.s weapon.s weapondata.s loader.prg bg/scorescr.chr bg/world.s sfx/pistol.sfx sfx/shotgun.sfx \
 	sfx/autorifle.sfx sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \

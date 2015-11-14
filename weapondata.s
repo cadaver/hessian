@@ -15,6 +15,7 @@ DMG_PLASMA      = 16
 DMG_SNIPERRIFLE = 20
 DMG_LAUNCHERGRENADE = 32
 DMG_GRENADE     = 40
+DMG_ENEMYMINE   = 40
 DMG_MINE        = 56
 DMG_BAZOOKA     = 56
 DMG_EMP         = 4                             ;4 damage for 8 frames = 32 total
