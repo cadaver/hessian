@@ -8,11 +8,11 @@ SHOW_LEVELUPDATE_TIME = 0
 SHOW_SPRITEDEPACK_TIME = 0
 
 DROP_ITEM_TEST  = 0                             ;Drop a copy of current item to test actor save
-AMMO_CHEAT      = 0
+AMMO_CHEAT      = 1
 ALLITEMS_CHEAT  = 1
 STARTITEM_CHEAT = 0                             ;Start with pistol & armor instead of empty inventory
 UPGRADE_CHEAT   = 0
-GODMODE_CHEAT   = 1                             ;Whether health/battery cheat is on initially
+GODMODE_CHEAT   = 0                             ;Whether health/battery cheat is on initially
 SPAWN_TEST      = 0                             ;Continuously spawn the zone's enemies as fast as possible
 
         ; Memory configuration & loader symbols

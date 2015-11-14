@@ -404,7 +404,7 @@ wdMine:         dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b ACT_MINE                   ;Bullet actor type
                 dc.b DMG_MINE                   ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 75                         ;Bullet time duration
+                dc.b 79                         ;Bullet time duration
                 dc.b 2                          ;Bullet speed in pixels
                 dc.b SPDTBL_GRENADE             ;Bullet speed table offset
                 dc.b SFX_MELEE                  ;Sound effect

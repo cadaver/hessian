@@ -673,7 +673,7 @@ alSmallWalker:  dc.w MoveWalker                 ;Update routine
                 dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
                 dc.b HP_SMALLWALKER             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 35                         ;Score from kill
+                dc.w 45                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $05                        ;AI offense AND-value
@@ -720,7 +720,7 @@ alFloatingMine: dc.w MoveFloatingMine           ;Update routine
                 dc.w ExplodeEnemy               ;Destroy routine
                 dc.b HP_FLOATINGMINE            ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 15                         ;Score from kill
+                dc.w 25                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
                 dc.b $00                        ;AI offense AND-value
@@ -765,10 +765,10 @@ alCeilingTurret:dc.w MoveTurret                 ;Update routine
                 dc.w ExplodeEnemy2_8_OfsD6      ;Destroy routine
                 dc.b HP_CEILINGTURRET           ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 75                         ;Score from kill
+                dc.w 150                        ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $1f                        ;AI offense AND-value
+                dc.b $3f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
 

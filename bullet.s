@@ -222,43 +222,11 @@ MRckt_NoSmoke:  sec
 MoveLauncherGrenade:
                 lda #2
                 ldy #2
-                jsr OneShotAnimation
-                bcc MLG_NoAnimation
-                lda #$00
-                sta actF1,x
-MLG_NoAnimation:
-                sec
-                jsr CheckBulletCollisions
-                bcs ExplodeGrenade
-                dec actTime,x
-                bmi ExplodeGrenade
+                jsr LoopingAnimation
                 jsr FallingMotionCommon
                 bmi MGrn_HitWater
                 and #MB_HITWALL|MB_HITCEILING|MB_LANDED
-                bne ExplodeGrenade              ;Explode on any wall/ground contact
-MLG_DoNothing:  rts
-
-        ; Mine update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y
-
-MoveMine:       lda actTime,x
-                tay
-                lsr
-                lsr
-                and #$01
-                sta actF1,x
-                tya
-                and #$07
-                bne MM_NoSound
-                lda #SFX_PICKUP
-                jsr PlaySfx
-MM_NoSound:     sec
-                jsr CheckBulletCollisions       ;Explode on enemy contact
-                bcs ExplodeGrenade
-                jmp MoveGrenade                 ;Otherwise behave like a grenade
+                beq MGrn_Common
 
         ; Explode grenade and do radius damage
         ;
@@ -305,9 +273,7 @@ TransformBullet:sta actT,x
         ; Modifies: A,Y
 
 MGrn_HitWater:  jmp RemoveActor                 ;MoveWithGravity already created splash, just remove
-MoveGrenade:    dec actTime,x
-                bmi ExplodeGrenade
-                lda #$00                        ;Grenade never stays grounded
+MoveGrenade:    lda #$00                        ;Grenade never stays grounded
                 sta actMB,x
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
@@ -328,13 +294,33 @@ MGrn_NoBounce:  lda actMB,x
                 jsr Negate8Asr8
                 jmp MGrn_StoreNewXSpeed
 MGrn_NoHitWall: and #MB_HITCEILING              ;Halve X-speed when hit ceiling
-                beq MGrn_Done
+                beq MGrn_Common
                 lda actSX,x
                 jsr Asr8
 MGrn_StoreNewXSpeed:
                 sta actSX,x
-MEMP_NoAnim:
-MGrn_Done:      rts
+MGrn_Common:    sec
+                jsr CheckBulletCollisions
+                bcs ExplodeGrenade
+                dec actTime,x
+                bmi ExplodeGrenade
+                rts
+         
+        ; Mine update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y
+
+MoveMine:       lda #7
+                ldy #1
+                jsr LoopingAnimation
+                lda actF1,x
+                ora actFd,x
+                bne MoveGrenade
+                lda #SFX_PICKUP
+                jsr PlaySfx
+                jmp MoveGrenade
 
         ; EMP blast update routine
         ;
@@ -396,7 +382,8 @@ CBC_HasCollision:
                 pla
                 jmp DestroyActor
 CBC_Done:       clc
-CBC_ReportOnly: rts
+CBC_ReportOnly: 
+MEMP_NoAnim:    rts
 
         ; Give radius damage to all NPC actors. Prior to calling, expand the
         ; collision size of the source actor as necessary

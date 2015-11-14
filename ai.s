@@ -624,12 +624,15 @@ LineCheck:      lda actXH,x
                 lda #$05                        ;or vice versa to stop at narrow walls
                 adc #$00                        ;(significant in Bio-dome level)
                 sta LC_BlockPos+1
-                lda actYL,x                     ;Check 1 block higher if low Y-pos < $80
-                asl
-                lda actYH,x
+                lda actAIMode,x
+                cmp #AIMODE_FLYER
+                beq LC_NotHigher
+                lda actYL,x                     ;Check 1 block higher if own low Y-pos < $80
+                asl                             ;(except for flyer / ceiling turret AI)
+LC_NotHigher:   lda actYH,x
                 sbc #$00
                 sta temp2
-                lda actYL,y                     ;Check 1 block higher if low Y-pos < $80
+                lda actYL,y                     ;Check 1 block higher if target low Y-pos < $80
                 asl
                 lda actYH,y
                 sbc #$00
