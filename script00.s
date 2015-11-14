@@ -29,9 +29,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $0280
 ;START_Y         = $1700
 
-;START_LEVEL     = $03                          ;Entrance, next to car park
-;START_X         = $2980
-;START_Y         = $1b00
+START_LEVEL     = $03                          ;Entrance, next to car park
+START_X         = $2980
+START_Y         = $1b00
 
 ;START_LEVEL     = $04                          ;Service tunnels bridge
 ;START_X         = $5480
@@ -61,9 +61,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $a580
 ;START_Y         = $7400
 
-START_LEVEL     = $0b                          ;Next to Bio-Dome
-START_X         = $4780
-START_Y         = $1700
+;START_LEVEL     = $0b                          ;Next to Bio-Dome
+;START_X         = $4780
+;START_Y         = $1700
 
 ;START_LEVEL      = $0d                          ;Server vault
 ;START_X          = $0180
@@ -418,7 +418,7 @@ IP_InitLevelData:
                 bne IP_InitLevelData
                 ldx #ITEM_LAST-ITEM_FIRST+1     ;$ff=item not carried
 IP_InitInventory:
-                if ITEM_CHEAT>0
+                if ALLITEMS_CHEAT>0
                 cpx #ITEM_FIRST_IMPORTANT
                 bcs IP_InitCount1
                 lda itemDefaultPickup-1,x
@@ -430,19 +430,21 @@ IP_InitCount1:  lda #$02
                 bne IP_InitInventory
                 lda #ITEM_FISTS
                 sta itemIndex
-                if ITEM_CHEAT>0
+                if ALLITEMS_CHEAT>0
                 lda #ITEM_LAST
                 endif
                 sta lastItemIndex
                 lda #ITEM_FISTS
                 ldx #1
                 jsr AddItem
+                if STARTITEM_CHEAT>0
                 lda #ITEM_PISTOL
                 ldx #20
                 jsr AddItem
                 lda #ITEM_ARMOR
                 ldx #100
                 jsr AddItem
+                endif
                 jsr StopScript                  ;Stop any continuous script
                 lda #START_LEVEL
                 sta levelNum

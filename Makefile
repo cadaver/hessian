@@ -34,7 +34,8 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
 	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak \
-	common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak flyer.pak groundbased.pak
+	common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak flyer.pak groundbased.pak \
+	fire.pak
 	c1541 < hessian.seq
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -450,3 +451,6 @@ flyer.pak: spr/flyer.spr
 
 groundbased.pak: spr/groundbased.spr
 	pchunk2 spr/groundbased.spr groundbased.pak
+	
+fire.pak: spr/fire.spr
+	pchunk2 spr/fire.spr fire.pak

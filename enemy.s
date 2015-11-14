@@ -250,6 +250,74 @@ MT_NoInit:      ldy #ceilingTurretOfs-turretFrameTbl
                 sta actF1,x                         ;Ceiling turret uses only 1-part animation, so copy to frame1
                 jmp AttackGeneric
 
+        ; Fire movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MF_Destroy:     jmp DestroyActor
+MoveFire:       lda actTime,x                   ;Restore oxygen level if not extinguished
+                beq MF_FullOxygen               ;completely, destroy if depleted enough
+                cmp #EXTINGUISH_THRESHOLD
+                bcs MF_Destroy
+                dec actTime,x
+                bcc MF_Flash
+MF_FullOxygen:  sta actFlash,x                  ;Stop flickering at full oxygen
+MF_Flash:       lda #DMG_FIRE
+                jsr CollideAndDamagePlayer
+                lda #2
+                ldy #3
+                jsr LoopingAnimation
+                lda actF1,x
+                ora actFd,x
+                bne MF_NoSpawn
+                lda #ACTI_FIRSTEFFECT
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc MF_NoSpawn
+                lda #ACT_SMOKECLOUD
+                jsr SpawnActor
+                tya
+                tax
+                jsr InitActor                   ;Set collision size
+                lda #-15*8
+                jsr MoveActorY
+                lda #COLOR_FLICKER
+                sta actFlash,x
+                ldx actIndex
+MSC_NoRemove:
+MF_NoSpawn:     rts
+
+
+        ; Fire destruction (transform into smoke)
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+DestroyFire:    lda #ACT_SMOKECLOUD
+                jmp TransformBullet
+
+        ; Smokecloud movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveSmokeCloud: lda upgrade
+                bmi MSC_NoSmokeDamage           ;If filter installed, no damage
+                lda #DMG_SMOKE
+                jsr CollideAndDamagePlayer
+MSC_NoSmokeDamage:
+                lda #-12
+                jsr MoveActorY
+                lda #4
+                ldy #3
+                jsr OneShotAnimation
+                bcc MSC_NoRemove
+                jmp RemoveActor
+
         ; Generate 2 explosions at 8 pixel radius
         ;
         ; Parameters: X actor index

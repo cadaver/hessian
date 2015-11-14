@@ -8,14 +8,14 @@ AIH_AUTOSCALEWALL   = $80
 JOY_FREEMOVE        = $80
 
 AIMODE_IDLE         = 0
-AIMODE_PLAYER       = 1
-AIMODE_TURNTO       = 2
-AIMODE_FOLLOW       = 3
-AIMODE_SNIPER       = 4
-AIMODE_MOVER        = 5
-AIMODE_GUARD        = 6
-AIMODE_BERZERK      = 7
-AIMODE_FLYER        = 8
+AIMODE_TURNTO       = 1
+AIMODE_FOLLOW       = 2
+AIMODE_SNIPER       = 3
+AIMODE_MOVER        = 4
+AIMODE_GUARD        = 5
+AIMODE_BERZERK      = 6
+AIMODE_FLYER        = 7
+AIMODE_TURRET       = 7
 
 NOTARGET            = $ff
 
@@ -231,6 +231,7 @@ AI_Sniper:      lda actTime,x                   ;Ongoing attack?
 AI_SniperPrepareAttack:
                 jsr PrepareAttack
                 bcc AI_Idle
+AI_DoNothing:
 AI_MoverDone:   rts
 
             ; Mover AI

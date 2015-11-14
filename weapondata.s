@@ -18,6 +18,9 @@ DMG_GRENADE     = 40
 DMG_MINE        = 56
 DMG_BAZOOKA     = 56
 DMG_EMP         = 4                             ;4 damage for 8 frames = 32 total
+DMG_FIRE        = 2+NOMODIFY
+DMG_SMOKE       = 1+NOMODIFY
+DMG_EXTINGUISHER = 1
 
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
 DMGMOD_NOORGANIC = $80                          ;No organic damage
@@ -369,7 +372,7 @@ wdExtinguisher: dc.b WDB_FIREFROMHIP|WDB_NOSKILLBONUS|WDB_FLICKERBULLET ;Weapon 
                 dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 2                          ;Attack delay
                 dc.b ACT_POWDER                 ;Bullet actor type
-                dc.b 0                          ;Bullet damage
+                dc.b DMG_EXTINGUISHER           ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 15                         ;Bullet time duration
                 dc.b 6                          ;Bullet speed in pixels

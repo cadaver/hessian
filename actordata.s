@@ -31,6 +31,8 @@ ACT_SMALLTANK   = 29
 ACT_FLOATINGMINE = 30
 ACT_ROLLINGMINE = 31
 ACT_CEILINGTURRET = 32
+ACT_FIRE        = 33
+ACT_SMOKECLOUD  = 34
 
 HP_PLAYER       = 56
 HP_FLOATINGMINE = 7
@@ -127,6 +129,8 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adFloatingMine
                 dc.b <adRollingMine
                 dc.b <adCeilingTurret
+                dc.b <adFire
+                dc.b <adSmokeCloud
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -160,6 +164,8 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adFloatingMine
                 dc.b >adRollingMine
                 dc.b >adCeilingTurret
+                dc.b >adFire
+                dc.b >adSmokeCloud
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -347,6 +353,18 @@ adCeilingTurret:dc.b ONESPRITE                  ;Number of sprites
                 dc.b 5                          ;Number of frames
                 dc.b 12,13,14,15,16
 
+adFire:         dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_FIRE                     ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 4                          ;Number of frames
+                dc.b 0,1,2,3
+
+adSmokeCloud:   dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_FIRE                     ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 4                          ;Number of frames
+                dc.b 4,5,6,7
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -381,6 +399,8 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alFloatingMine
                 dc.b <alRollingMine
                 dc.b <alCeilingTurret
+                dc.b <alFire
+                dc.b <alSmokeCloud
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -414,8 +434,10 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alFloatingMine
                 dc.b >alRollingMine
                 dc.b >alCeilingTurret
+                dc.b >alFire
+                dc.b >alSmokeCloud
 
-alPlayer:       dc.w MoveAndAttackHuman         ;Update routine
+alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
@@ -540,9 +562,9 @@ alSmokeTrail:   dc.w MoveSmokeTrail             ;Update routine
 
 alPowder:       dc.w MovePowder                 ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 5                          ;Horizontal size
-                dc.b 5                          ;Size up
-                dc.b 5                          ;Size down
+                dc.b 1                          ;Horizontal size
+                dc.b 3                          ;Size up
+                dc.b 3                          ;Size down
                 dc.w RemoveActor                ;Destroy routine
 
 alSmallSplash:  dc.w MoveSmallSplash            ;Update routine
@@ -744,9 +766,25 @@ alCeilingTurret:dc.w MoveTurret                 ;Update routine
                 dc.b HP_CEILINGTURRET           ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
-                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+                dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $1f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
-                dc.b AMF_NOFALLDAMAGE|AMF_CUSTOMANIMATION ;Move flags
+
+alFire:         dc.w MoveFire                   ;Update routine
+                dc.b AF_INITONLYSIZE|AF_NOWEAPON ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 20                         ;Size up
+                dc.b 1                          ;Size down
+                dc.w DestroyFire                ;Destroy routine
+                dc.b 0                          ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 100                        ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+
+alSmokeCloud:   dc.w MoveSmokeCloud             ;Update routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 10                         ;Horizontal size
+                dc.b 6                          ;Size up
+                dc.b 0                          ;Size down

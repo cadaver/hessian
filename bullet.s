@@ -3,6 +3,9 @@ GRENADE_MAX_YSPEED = 6*8
 GRENADE_ACCEL   = 4
 GRENADE_BRAKE   = 8
 
+EXTINGUISH_ADD = 5
+EXTINGUISH_THRESHOLD = 48
+
         ; Extinguisher powder update routine
         ;
         ; Parameters: X actor index
@@ -13,7 +16,23 @@ MovePowder:     lda #3
                 ldy #1
                 jsr OneShotAnimation
                 bcs MMH_Remove
-MP_NoAnimation: jmp MoveBullet_NoCollision      ;Todo: collision check that only affects fires
+                ldy #ACTI_FIRSTNPC-1
+MP_GetNextTarget:
+                iny
+                cpy #ACTI_LASTNPC+1
+                bcs MP_Done
+                lda actT,y                      ;Check collision only against fires
+                cmp #ACT_FIRE
+                bne MP_GetNextTarget
+                jsr CheckActorCollision
+                bcc MP_GetNextTarget
+                lda #COLOR_FLICKER
+                sta actFlash,y
+                lda actTime,y                   ;Reduce fire "oxygen level"
+                adc #EXTINGUISH_ADD-1
+                sta actTime,y
+                jmp RemoveActor
+MP_Done:        jmp MoveBullet_NoCollision
 
         ; Smoketrail update routine
         ;

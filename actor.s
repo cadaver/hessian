@@ -105,6 +105,8 @@ SPAWN_GROUND    = $00
 SPAWN_AIR       = $80
 SPAWN_AIRTOP    = $c0
 
+DMG_SFX_DELAY   = 2
+
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
         ;
@@ -510,6 +512,10 @@ UA_Paused:      ldx #$00                        ;Stop scrolling & level animatio
 UpdateActors:   lda menuMode
                 cmp #MENU_PAUSE
                 bcs UA_Paused
+                lda DA_SfxDelay+1               ;Decrement damage sound delay count now
+                beq UA_NoDmgSfxDelay
+                dec DA_SfxDelay+1
+UA_NoDmgSfxDelay:
                 inc UA_ItemFlashCounter+1
 UA_ItemFlashCounter:                            ;Get color override for items + object marker
                 lda #$00
@@ -573,13 +579,13 @@ UA_NoRemove:    if SHOW_ACTOR_TIME > 0
                 sta UA_Jump+2
                 cpx #MAX_COMPLEXACT             ;Run AI for NPCs
                 bcs UA_Jump
-                lda actCtrl,x
-                sta actPrevCtrl,x
                 ldy actAIMode,x
                 lda aiJumpTblLo,y
                 sta UA_AIJump+1
                 lda aiJumpTblHi,y
                 sta UA_AIJump+2
+                lda actCtrl,x
+                sta actPrevCtrl,x
 UA_AIJump:      jsr $0000
 UA_Jump:        jsr $0000
                 if SHOW_ACTOR_TIME > 0
@@ -1253,20 +1259,23 @@ CADT_NoCollision:
 
         ; Check collision to target and apply damage
         ;
-        ; Parameters: A damage X enemy actor Y target actor
+        ; Parameters: A damage X enemy actor
         ; Returns: C=1 if collided
         ; Modifies: A,Y,temp6-temp8,loader temp vars
 
 CollideAndDamageTarget:
-                sta temp6
                 ldy actAITarget,x
                 bmi CADT_NoTarget
+                skip2
+CollideAndDamagePlayer:
+                ldy #ACTI_PLAYER
+                sta temp6
                 jsr CheckActorCollision
                 bcc CADT_NoCollision
 
         ; Apply damage to target from enemy touch (not bullet)
         ;
-        ; Parameters: temp1 damage X enemy actor Y target actor
+        ; Parameters: temp6 damage X & actIndex enemy actor Y target actor
         ; Returns: C=1
         ; Modifies: A,Y,temp6-temp8,loader temp vars
 
@@ -1391,10 +1400,14 @@ DA_Sub:         sbc temp8
                 lda #$00
 DA_NotDead:     sta actHp,x
                 php
-                lda #COLOR_ONETIMEFLASH
-                sta actFlash,x
+DA_SfxDelay:    lda #$00                        ;If trying to play damage sound each frame,
+                bne DA_SkipSfx                  ;nothing will be heard. Therefore set a delay
+                lda #DMG_SFX_DELAY
+                sta DA_SfxDelay+1
                 lda #SFX_DAMAGE
                 jsr PlaySfx
+DA_SkipSfx:     lda #COLOR_ONETIMEFLASH
+                sta actFlash,x
                 plp
                 bne DA_Done
                 ldy temp7
