@@ -3,20 +3,20 @@ ACT_PLAYER      = 1
 ACT_ITEM        = 2
 ACT_MELEEHIT    = 3
 ACT_LARGEMELEEHIT = 4
-ACT_BULLET      = 5
-ACT_SHOTGUNBULLET = 6
-ACT_RIFLEBULLET = 7
-ACT_FLAME       = 8
-ACT_EMP         = 9
-ACT_LASER       = 10
-ACT_PLASMA      = 11
-ACT_LAUNCHERGRENADE = 12
-ACT_GRENADE     = 13
-ACT_ROCKET      = 14
-ACT_MINE        = 15
-ACT_EXPLOSION   = 16
-ACT_SMOKETRAIL  = 17
-ACT_POWDER      = 18
+ACT_POWDER      = 5
+ACT_BULLET      = 6
+ACT_SHOTGUNBULLET = 7
+ACT_RIFLEBULLET = 8
+ACT_FLAME       = 9
+ACT_EMP         = 10
+ACT_LASER       = 11
+ACT_PLASMA      = 12
+ACT_LAUNCHERGRENADE = 13
+ACT_GRENADE     = 14
+ACT_ROCKET      = 15
+ACT_MINE        = 16
+ACT_EXPLOSION   = 17
+ACT_SMOKETRAIL  = 18
 ACT_WATERSPLASH = 19
 ACT_SMALLSPLASH = 20
 ACT_OBJECTMARKER = 21
@@ -101,6 +101,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adItem
                 dc.b <adMeleeHit
                 dc.b <adLargeMeleeHit
+                dc.b <adSmokeTrail
                 dc.b <adBullet
                 dc.b <adShotgunBullet
                 dc.b <adRifleBullet
@@ -113,7 +114,6 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adRocket
                 dc.b <adMine
                 dc.b <adExplosion
-                dc.b <adSmokeTrail
                 dc.b <adSmokeTrail
                 dc.b <adWaterSplash
                 dc.b <adSmallSplash
@@ -136,6 +136,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
                 dc.b >adMeleeHit
                 dc.b >adLargeMeleeHit
+                dc.b >adSmokeTrail
                 dc.b >adBullet
                 dc.b >adShotgunBullet
                 dc.b >adRifleBullet
@@ -148,7 +149,6 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adRocket
                 dc.b >adMine
                 dc.b >adExplosion
-                dc.b >adSmokeTrail
                 dc.b >adSmokeTrail
                 dc.b >adWaterSplash
                 dc.b >adSmallSplash
@@ -371,6 +371,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alItem
                 dc.b <alMeleeHit
                 dc.b <alLargeMeleeHit
+                dc.b <alPowder
                 dc.b <alBullet
                 dc.b <alShotgunBullet
                 dc.b <alBullet
@@ -384,7 +385,6 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alMine
                 dc.b <alExplosion
                 dc.b <alSmokeTrail
-                dc.b <alPowder
                 dc.b <alWaterSplash
                 dc.b <alSmallSplash
                 dc.b <alObjectMarker
@@ -406,6 +406,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
                 dc.b >alMeleeHit
                 dc.b >alLargeMeleeHit
+                dc.b >alPowder
                 dc.b >alBullet
                 dc.b >alShotgunBullet
                 dc.b >alBullet
@@ -419,7 +420,6 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alMine
                 dc.b >alExplosion
                 dc.b >alSmokeTrail
-                dc.b >alPowder
                 dc.b >alWaterSplash
                 dc.b >alSmallSplash
                 dc.b >alObjectMarker
@@ -482,6 +482,13 @@ alLargeMeleeHit:dc.w MoveMeleeHit               ;Update routine
                 dc.b 4                          ;Size down
                 dc.w RemoveActor                ;Destroy routine
 
+alPowder:       dc.w MovePowder                 ;Update routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b 1                          ;Horizontal size
+                dc.b 3                          ;Size up
+                dc.b 3                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
+                
 alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 2                          ;Horizontal size
@@ -559,13 +566,6 @@ alExplosion:    dc.w MoveExplosion              ;Update routine
 
 alSmokeTrail:   dc.w MoveSmokeTrail             ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-
-alPowder:       dc.w MovePowder                 ;Update routine
-                dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 1                          ;Horizontal size
-                dc.b 3                          ;Size up
-                dc.b 3                          ;Size down
-                dc.w RemoveActor                ;Destroy routine
 
 alSmallSplash:  dc.w MoveSmallSplash            ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags

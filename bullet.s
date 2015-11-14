@@ -164,20 +164,7 @@ MProj_ObstacleOrWater:
 MProj_HitObstacle:
                 ldy #NODAMAGESRC                ;Destroy actor without specific damage source
                 jmp DestroyActor
-MProj_HitWater: jsr GetCharInfo1Above
-                and #CI_WATER
-                beq MProj_NoWaterAbove
-                lda #-8*8
-                jsr MoveActorY
-MProj_NoWaterAbove:
-                lda actYL,x
-                and #$c0
-                sta actYL,x
-                lda actSX,x
-                jsr Asr8
-                jsr MoveActorXNeg               ;Move actor halfway back in X-dir
-                jsr NoInterpolation
-                lda actT,x
+MProj_HitWater: lda actT,x
                 cmp #ACT_LASER
                 bcs MProj_LargeSplash
                 lda #ACT_SMALLSPLASH
@@ -187,9 +174,19 @@ MProj_LargeSplash:
                 jsr PlaySfx
                 lda #ACT_WATERSPLASH
 MProj_SplashOK: jsr TransformBullet
+FixSplashPosition:
                 lda lvlWaterSplashColor         ;Color override
                 sta actFlash,x
-                rts
+                lda actYL,x                     ;Align to char
+                and #$c0
+                sta actYL,x
+FSP_Loop:       jsr GetCharInfo1Above           ;Steer higher until found the edge of water
+                and #CI_WATER
+                beq FSP_PosOK
+                lda #-8*8
+                jsr MoveActorY
+                jmp FSP_Loop
+FSP_PosOK:      jmp NoInterpolation
 
         ; Rocket update routine
         ;

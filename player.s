@@ -896,11 +896,10 @@ CreateSplash:   lda #ACTI_FIRSTEFFECT
                 bcc CS_NoFreeActor
                 lda #ACT_WATERSPLASH
                 jsr SpawnActor
-                lda lvlWaterSplashColor         ;Color override
-                sta actFlash,y
-                lda actYL,y                     ;Align to char boundary
-                and #$c0
-                sta actYL,y
+                tya
+                tax
+                jsr FixSplashPosition
+                ldx actIndex
                 lda #SFX_SPLASH
 PMS_DoPlay:     jmp PlaySfx
 
