@@ -436,7 +436,7 @@ HD_NoYSpeed:    lda #SFX_DEATH
                 sta actF2,x
                 lda #DEATH_DISAPPEAR_DELAY
                 sta actTime,x
-                jsr SetNotPersistent            ;Mark body nonpersistent in case goes off screen
+                jsr SetNotPersistent           ;Mark body nonpersistent in case goes off screen
                 lda #$00
                 sta actFd,x
                 sta actAIMode,x                ;Reset any ongoing AI
@@ -532,9 +532,9 @@ DI_CountOK:     sta actHp,y
                 jsr MoveActorY
                 lda temp5
                 cmp #ITEM_FIRST_IMPORTANT
-                ror
-                ror                             ;Carry to bit 6
-                and #ORG_GLOBAL
-                jsr SetPersistence
+                lda levelNum
+                bcc DI_NotImportant
+                ora #ORG_GLOBAL
+DI_NotImportant:sta actLvlDataOrg,x             ;Make item either persistent or temp persistent
                 ldx temp6
                 rts

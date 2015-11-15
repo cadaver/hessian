@@ -148,28 +148,7 @@ MWG_CheckCeiling:
                 lda temp5
                 ora #MB_HITCEILING
                 bne MWG_StoreMB
-MWG_NoCeiling:  lda actSX,x
-                beq MWG_NoLanding               ;If abs. X-speed is higher than abs. Y-speed
-                bmi MWG_XSpeedNeg               ;while going up, there is possibility
-                eor #$ff                        ;of clipping through a slope. Check landing
-                clc                             ;to prevent that
-                adc #$01
-MWG_XSpeedNeg:  cmp actSY,x
-                bcs MWG_NoLanding
-                lda temp8
-                lsr
-                bcc MWG_NoLanding
-                rol
-                and #$e0
-                beq MWG_NoLanding               ;If no slope, can't be a landing
-                sta temp6
-                cmp #$80                        ;Slope 4 = stairs, land regardless of direction
-                beq MWG_HitGround2
-                eor actSX,x                     ;If it's a diagonal slope, verify that X-speed
-                bpl MWG_HitGround2              ;is actually against it
-MWG_NoLanding:  lda temp5
-MWG_StoreMB:    sta actMB,x
-                rts
+MWG_NoCeiling:  rts
 
 MWG_CheckLanding:
                 lda temp8                       ;Charinfo at actor pos
@@ -225,7 +204,10 @@ MWG_HitGround:  lda #$00
                 sta actYL,x                     ;Align actor to slope
                 lda temp5
                 ora #MB_GROUNDED|MB_LANDED
-                bne MWG_StoreMB
+                skip2
+MWG_NoLanding:  lda temp5
+MWG_StoreMB:    sta actMB,x
+                rts
 
 MWG_OnGround:   cpx #MAX_COMPLEXACT             ;Check for player/NPC wanting to go up stairs
                 bcs MWG_PreferLevel

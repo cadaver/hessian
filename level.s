@@ -84,6 +84,7 @@ LL_PurgeOldLevelDataActors:
                 bpl LL_PurgeNext                ;to make room for new
                 lda #$00
                 sta lvlActT,x
+                sta lvlActOrg,x
 LL_PurgeNext:   dex
                 bpl LL_PurgeOldLevelDataActors
                 jsr GetLevelDataActorBits
@@ -95,8 +96,6 @@ LL_CopyLevelDataActors:
                 jsr DecodeBit
                 and (actLo),y                   ;Check state, whether actor still exists
                 beq LL_NextLevelDataActor
-                jsr GetNextTempLevelActorIndex  ;It's actually not a temp actor, but use the same
-                tay                             ;FIFO indexing scheme
                 jsr GetLevelActorIndex
                 lda lvlDataActX,x
                 sta lvlActX,y
@@ -768,10 +767,10 @@ SCP_SaveGlobalLoop:
 SCP_SaveGlobalNext:
                 dex
                 bpl SCP_SaveGlobalLoop
-                ldx nextTempLvlActIndex
+                ldx GLAI_StartPos+1
 SCP_SaveItemsLoop:
                 cpy #MAX_SAVEACT                ;Then save as many temp items (weapons etc.)
-                bcs SCP_SaveItemsDone           ;as possible, from the latest created
+                bcs SCP_SaveItemsDone           ;as possible, from the latest stored
                 lda lvlActT,x
                 bpl SCP_SaveItemsNext
                 lda lvlActOrg,x
@@ -784,7 +783,7 @@ SCP_SaveItemsNext:
                 bcc SCP_SaveItemsNotOver
                 ldx #$00
 SCP_SaveItemsNotOver:
-                cpx nextTempLvlActIndex         ;Exit when wrapped
+                cpx GLAI_StartPos+1             ;Exit when wrapped
                 bne SCP_SaveItemsLoop
 SCP_SaveItemsDone:
                 ldx #playerStateZPEnd-playerStateZPStart

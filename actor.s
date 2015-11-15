@@ -87,9 +87,8 @@ ADDACTOR_BOTTOM_LIMIT = 8
 ORG_TEMP        = $00                           ;Temporary actor, may be overwritten by global or leveldata
 ORG_GLOBAL      = $40                           ;Global important actor
 ORG_LEVELDATA   = $80                           ;Leveldata actor, added/removed at level change
+ORG_NOTPERSISTENT = $ff
 ORG_LEVELNUM    = $3f
-
-POS_NOTPERSISTENT = $80
 
 DEFAULT_PICKUP  = $ff
 
@@ -469,7 +468,7 @@ BuildTargetList:ldx #ACTI_LASTNPC
                 sty numSpawned
 BTL_Loop:       lda actT,x
                 beq BTL_Next
-                lda actLvlDataPos,x
+                lda actLvlDataOrg,x
                 bpl BTL_NotSpawned
                 inc numSpawned
 BTL_NotSpawned: lda actHp,x                     ;Actor must have nonzero health
@@ -1558,30 +1557,25 @@ AS_BGOK:        jsr GetCharInfo1Above           ;Do not spawn into a wall
                 and #CI_OBSTACLE
                 bne AS_Remove3
 AS_SpawnOK:     jsr InitActor
+                jsr SetNotPersistent
                 inc UA_SpawnCount+1
                 ldy #AL_SPAWNAIMODE
                 lda (actLo),y                   ;Set default AI mode for actor type
                 sta actAIMode,x
-                jsr SetNotPersistent            ;Spawned actors never persistent (disappear at zone change)
 AS_Done2:       lda #$00                        ;Now reset the spawn delay counting
                 sta UA_SpawnDelay+1
-                rts
+ALA_Fail2:      rts
 
-        ; Set persistence mode for a newly created actor
+        ; Set actor as not persistent
         ;
-        ; Parameters: A temporary/global bit, X actor index
+        ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A
-
-SetPersistence: ora levelNum
-                sta actLvlDataOrg,x
-                jsr GetNextTempLevelActorIndex  ;Persist as a temporary actor
-                skip2
+        
 SetNotPersistent:
-                lda #POS_NOTPERSISTENT
-AS_StoreLvlDataPos:
-                sta actLvlDataPos,x
-ALA_Fail2:      rts
+                lda #ORG_NOTPERSISTENT
+                sta actLvlDataOrg,x
+                rts
 
         ; Add actor from leveldata
         ;
@@ -1619,12 +1613,11 @@ ALA_Common:     lda lvlActX,x
                 asl
                 and #$c0
                 sta actXL,y
-                txa                             ;Store index, ideally same index will be used for removal
-                sta actLvlDataPos,y
-                lda #$00                        ;Remove from leveldata
-                sta lvlActT,x
                 lda lvlActOrg,x                 ;Store the persistence mode (leveldata/global/temp)
                 sta actLvlDataOrg,y
+                lda #$00                        ;Remove from leveldata
+                sta lvlActT,x
+                sta lvlActOrg,x
                 tya
                 tax
                 jsr InitActor
@@ -1691,15 +1684,17 @@ RLA_Next:       dex
 RemoveLevelActor:
                 cpx #MAX_PERSISTENTACT          ;Should be persisted?
                 bcs RemoveActor
-                ldy actLvlDataPos,x
-                bmi RemoveActor
+                lda actLvlDataOrg,x
+                cmp #ORG_NOTPERSISTENT
+                beq RemoveActor
+                pha
                 jsr GetLevelActorIndex
+                pla
+                sta lvlActOrg,y                 ;Store levelnumber / persistence mode
                 lda actXH,x                     ;Store block coordinates
                 sta lvlActX,y
                 lda actYH,x
                 sta lvlActY,y
-                lda actLvlDataOrg,x             ;Store levelnumber / persistence mode
-                sta lvlActOrg,y
                 lda actXL,x                     ;Store char coordinates
                 and #$c0
                 lsr
@@ -1737,8 +1732,7 @@ RA_StoreCommon: sta lvlActWpn,y
 RemoveActor:    lda #ACT_NONE
                 sta actT,x
                 sta actHp,x                     ;Clear hitpoints so that bullet collision can not cause damage to an
-                sta actFlags,x                  ;actor removed on the same frame (outdated collision list)
-RA_Done:        rts
+RA_Done:        rts                             ;actor removed on the same frame (outdated collision list)
 
         ; Get a free actor
         ;
@@ -1894,31 +1888,26 @@ FLA_Cmp:        cmp #$00
         ; Get a free index from levelactortable. May overwrite a temp-actor.
         ; If no room (fatal error, possibly would make game unfinishable) will loop infinitely
         ;
-        ; Parameters: Y search startpos
+        ; Parameters: -
         ; Returns: Y free index
         ; Modifies: A,Y
 
-GLAI_Wrap:      ldy #MAX_LVLACT-1
 GetLevelActorIndex:
-GLAI_Loop:      lda lvlActT,y
-                beq FA_Found
-                lda lvlActOrg,y
-                cmp #ORG_GLOBAL                 ;Can't overwrite a leveldata-actor
-                bcc FA_Found                    ;or an important global actor
-GLAI_NotFound:  dey
-                bpl GLAI_Loop
-                bmi GLAI_Wrap
-
-        ; Get the next leveldata index for a temp actor. Note: does not confirm it is free
-        ;
-        ; Parameters: -
-        ; Returns: nextTempLvlActIndex updated, also returned in A
-        ; Modifies: A
-
-GetNextTempLevelActorIndex:
-                dec nextTempLvlActIndex
-                bpl GNTLAI_NoWrap
-                lda #MAX_LVLACT-1
-                sta nextTempLvlActIndex
-GNTLAI_NoWrap:  lda nextTempLvlActIndex
+GLAI_StartPos:  ldy #$00
+                sty GLAI_EndCmp+1
+GLAI_Loop1:     lda lvlActT,y                   ;First try to find an empty position without overwrite
+                beq GLAI_Found
+                dey
+                bpl GLAI_EndCmp
+                ldy #MAX_LVLACT-1
+GLAI_EndCmp:    cpy #$00                        ;Wrapped to start?
+                bne GLAI_Loop1
+GLAI_Loop2:     lda lvlActOrg,y                 ;Second loop: overwrite any temp actors
+                cmp #ORG_GLOBAL
+                bcc GLAI_Found
+                dey
+                bpl GLAI_Loop2
+                ldy #MAX_LVLACT-1
+                bne GLAI_Loop2
+GLAI_Found:     sty GLAI_StartPos+1             ;Store pos for next search
                 rts
