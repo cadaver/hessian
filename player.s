@@ -986,6 +986,7 @@ LoadPlayerActorVars:
                 bpl LoadPlayerActorVars
                 inx                             ;X=0
                 jsr InitActor
+                jsr SetNotPersistent
                 lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE
                 sta panelUpdateFlags
 

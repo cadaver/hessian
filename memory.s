@@ -121,7 +121,7 @@ STACKSTART      = $7f
                 var actHi
                 var tgtActIndex
                 var numTargets
-                var numTargetsAll
+                var numSpawned
 
                 var lvlObjNum                   ;Level object variables
                 var autoDeactObjNum

@@ -429,7 +429,7 @@ AA_IndexNotOver:stx AA_Start+1
 
         ; Process spawning
 
-UA_DoSpawn:     lda numTargetsAll               ;Skip if already max. spawned enemies + player
+UA_DoSpawn:     lda numSpawned                  ;Skip if already max. spawned enemies + player
                 cmp #MAX_SPAWNEDACT+1
                 bcs UA_SpawnDone
                 ldy #ZONEH_SPAWNCOUNT
@@ -466,13 +466,13 @@ UA_SpawnDone:
 
 BuildTargetList:ldx #ACTI_LASTNPC
                 ldy #$00                        ;Target list index
-                sty numTargetsAll
-BTL_Loop:       lda actT,x
+                sty numSpawned
+BTL_Loop:       lda actHp,x                     ;Actor must have nonzero health
                 beq BTL_Next
-                inc numTargetsAll               ;Count alive + dead for spawning
-                lda actHp,x                     ;Actor must have nonzero health
-                beq BTL_Next
-                txa
+                lda actLvlDataPos,x
+                bpl BTL_NotSpawned
+                inc numSpawned
+BTL_NotSpawned: txa
                 sta targetList,y
                 iny
 BTL_Next:       dex
@@ -1401,7 +1401,7 @@ DA_SkipSfx:     lda #COLOR_ONETIMEFLASH
                 bne DA_Done
                 ldy temp7
 
-        ; Call destroy routine of an actor
+        ; Call destroy routine of an actor and make sure the hitpoints are set to 0
         ;
         ; Parameters: X actor index, Y damage source actor if applicable or >=$80 if none
         ; Returns: C=0
@@ -1432,9 +1432,10 @@ DA_NoScore:     ldy #AL_DESTROYROUTINE
                 jsr ActorTrigger
                 ldy temp8
 DA_Jump:        jsr $0000
+                lda #$00
+                sta actHp,x
                 clc
-DA_Done:
-AS_Done2:       rts
+DA_Done:        rts
 
         ; Attempt to spawn an actor to screen edges (left, right or top, depending on spawn type)
         ;
@@ -1471,14 +1472,15 @@ AS_InAirCoordOK:sec
 AS_Remove2:     tya
                 tax
 AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background type, remove
+AS_Done3:       jmp AS_Done2                    ;Reset spawn delay if fail hard (no need to retry on next frame)
 
 AttemptSpawn:   tax
                 lda spawnPlotTbl,x              ;Requires a plotbit to spawn?
                 bmi AS_NoPlotBit
                 jsr GetPlotBit
-                beq AS_Done2
+                beq AS_Done3
 AS_NoPlotBit:   jsr GetFreeNPC
-                bcc AS_Done2
+                bcc AS_Done3
                 lda #$00
                 sta actYL,y
                 lda spawnTypeTbl,x
@@ -1490,6 +1492,7 @@ AS_NoPlotBit:   jsr GetFreeNPC
                 txa
                 asl
                 bcs AS_InAir
+
 AS_Ground:      lda #CI_GROUND
                 sta temp3
 AS_SideCommon:  jsr Random
@@ -1546,19 +1549,19 @@ AS_BGRetryWithinBlock:
                 beq AS_BGOK
                 bne AS_BGRetryWithinBlock
 AS_Remove3:     jmp RemoveActor
-
+  
 AS_BGOK:        jsr GetCharInfo1Above           ;Do not spawn into a wall
                 and #CI_OBSTACLE
                 bne AS_Remove3
 AS_SpawnOK:     jsr InitActor
                 inc UA_SpawnCount+1
-                lda #$00                        ;Now reset the spawn delay counting
-                sta UA_SpawnDelay+1
                 ldy #AL_SPAWNAIMODE
                 lda (actLo),y                   ;Set default AI mode for actor type
                 sta actAIMode,x
-                lda #POS_NOTPERSISTENT          ;Spawned actors never persistent (disappear at zone change)
-                bmi AS_StoreLvlDataPos
+                jsr SetNotPersistent            ;Spawned actors never persistent (disappear at zone change)
+AS_Done2:       lda #$00                        ;Now reset the spawn delay counting
+                sta UA_SpawnDelay+1
+                rts
 
         ; Set persistence mode for a newly created actor
         ;
@@ -1569,6 +1572,9 @@ AS_SpawnOK:     jsr InitActor
 SetPersistence: ora levelNum
                 sta actLvlDataOrg,x
                 jsr GetNextTempLevelActorIndex  ;Persist as a temporary actor
+                skip2
+SetNotPersistent:
+                lda #POS_NOTPERSISTENT
 AS_StoreLvlDataPos:
                 sta actLvlDataPos,x
 ALA_Fail2:      rts

@@ -435,11 +435,9 @@ HD_NoYSpeed:    lda #SFX_DEATH
                 sta actF2,x
                 lda #DEATH_DISAPPEAR_DELAY
                 sta actTime,x
-                lda #POS_NOTPERSISTENT          ;Bodies are supposed to eventually vanish, so mark as
-                sta actLvlDataPos,x             ;nonpersistent if goes off the screen
+                jsr SetNotPersistent            ;Mark body nonpersistent in case goes off screen
                 lda #$00
                 sta actFd,x
-                sta actHp,x
                 sta actAIMode,x                ;Reset any ongoing AI
                 lda #HUMAN_ITEM_SPAWN_OFFSET
 

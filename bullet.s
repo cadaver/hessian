@@ -162,7 +162,7 @@ MProj_ObstacleOrWater:
                 and #CI_WATER
                 bne MProj_HitWater
 MProj_HitObstacle:
-                ldy #NODAMAGESRC                ;Destroy actor without specific damage source
+MProj_Destroy:  ldy #NODAMAGESRC                ;Destroy actor without specific damage source
                 jmp DestroyActor
 MProj_HitWater: lda actT,x
                 cmp #ACT_LASER
@@ -270,8 +270,7 @@ TransformBullet:sta actT,x
                 lda #$00
                 sta actF1,x
                 sta actFd,x
-                sta actHp,x                     ;Make sure the transformed actor has no health
-                rts                             ;so it cannot be shot
+                rts
 
         ; Grenade update routine
         ;
@@ -379,10 +378,9 @@ CBC_HasCollision:
                 sty tgtActIndex
                 jsr ApplyTargetDamage
                 ldx actIndex
-                ldy #NODAMAGESRC                ;Destroy bullet with no damage source
                 pla
                 pla
-                jmp DestroyActor
+                jmp MProj_Destroy
 CBC_Done:       clc
 CBC_ReportOnly: 
 MEMP_NoAnim:    rts
