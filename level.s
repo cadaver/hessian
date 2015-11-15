@@ -767,7 +767,7 @@ SCP_SaveGlobalLoop:
 SCP_SaveGlobalNext:
                 dex
                 bpl SCP_SaveGlobalLoop
-                ldx GLAI_StartPos+1
+                ldx levelActorIndex
 SCP_SaveItemsLoop:
                 cpy #MAX_SAVEACT                ;Then save as many temp items (weapons etc.)
                 bcs SCP_SaveItemsDone           ;as possible, from the latest stored
@@ -783,7 +783,7 @@ SCP_SaveItemsNext:
                 bcc SCP_SaveItemsNotOver
                 ldx #$00
 SCP_SaveItemsNotOver:
-                cpx GLAI_StartPos+1             ;Exit when wrapped
+                cpx levelActorIndex             ;Exit when wrapped
                 bne SCP_SaveItemsLoop
 SCP_SaveItemsDone:
                 ldx #playerStateZPEnd-playerStateZPStart

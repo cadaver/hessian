@@ -1893,14 +1893,13 @@ FLA_Cmp:        cmp #$00
         ; Modifies: A,Y
 
 GetLevelActorIndex:
-GLAI_StartPos:  ldy #$00
-                sty GLAI_EndCmp+1
+                ldy levelActorIndex
 GLAI_Loop1:     lda lvlActT,y                   ;First try to find an empty position without overwrite
                 beq GLAI_Found
                 dey
                 bpl GLAI_EndCmp
                 ldy #MAX_LVLACT-1
-GLAI_EndCmp:    cpy #$00                        ;Wrapped to start?
+GLAI_EndCmp:    cpy levelActorIndex             ;Wrapped to start?
                 bne GLAI_Loop1
 GLAI_Loop2:     lda lvlActOrg,y                 ;Second loop: overwrite any temp actors
                 cmp #ORG_GLOBAL
@@ -1909,5 +1908,5 @@ GLAI_Loop2:     lda lvlActOrg,y                 ;Second loop: overwrite any temp
                 bpl GLAI_Loop2
                 ldy #MAX_LVLACT-1
                 bne GLAI_Loop2
-GLAI_Found:     sty GLAI_StartPos+1             ;Store pos for next search
+GLAI_Found:     sty levelActorIndex             ;Store pos for next search
                 rts

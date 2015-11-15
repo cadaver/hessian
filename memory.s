@@ -144,6 +144,7 @@ STACKSTART      = $7f
                 var levelNum                    ;Player ZP state
                 var itemIndex
                 var lastItemIndex
+                var levelActorIndex
                 var scriptF
                 var scriptEP
                 var upgrade
