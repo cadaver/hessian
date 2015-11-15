@@ -1391,15 +1391,17 @@ DA_Sub:         sbc temp8
                 lda #$00
 DA_NotDead:     sta actHp,x
                 php
-DA_SfxDelay:    lda #$00                        ;If trying to play damage sound each frame,
+DA_SfxDelay:    ldy #$00                        ;If trying to play damage sound each frame,
                 bne DA_SkipSfx                  ;nothing will be heard. Therefore set a delay
                 lda #DMG_SFX_DELAY
                 sta DA_SfxDelay+1
                 lda #SFX_DAMAGE
                 jsr PlaySfx
-DA_SkipSfx:     lda #COLOR_ONETIMEFLASH
+DA_SkipSfx:     dey                             ;If the delay value is 1 (inbetween) skip
+                beq DA_SkipFlash                ;flashing effect
+                lda #COLOR_ONETIMEFLASH
                 sta actFlash,x
-                plp
+DA_SkipFlash:   plp
                 bne DA_Done
                 ldy temp7
 

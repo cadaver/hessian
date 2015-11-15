@@ -961,9 +961,10 @@ ULO_NoAirDamage:lda actYH+ACTI_PLAYER           ;Kill player actor if fallen out
 ULO_NotOutside: lda battery
                 ora battery+1
                 bne ULO_CheckPickupIndex
-ULO_Outside:    jsr HD_NoYSpeed
-                lda #$00
-                sta actSX+ACTI_PLAYER
+ULO_Outside:    ldy #NODAMAGESRC
+                jsr DestroyActor
+                txa
+                sta actSY,x
                 rts
 ULO_CheckPickupIndex:                           ;Check if player is colliding with an item
                 ldy #ACTI_FIRSTITEM             ;If was at an item last frame, continue search from that
