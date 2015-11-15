@@ -52,7 +52,7 @@ plrDmgModifyTbl:dc.b 6,8,12
         ; Human Y-size reduce table based on animation
 
 humanSizeReduceTbl:
-                dc.b 1,2,1,0,1,2,1,0,1,2,2,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,10,10,10,10
+                dc.b 1,2,1,0,1,2,1,0,1,2,2,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,12,12,12,12
 
         ; Tank Y-size addition table (based on turret direction)
 
@@ -768,7 +768,7 @@ alCeilingTurret:dc.w MoveTurret                 ;Update routine
                 dc.w 150                        ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $3f                        ;AI offense AND-value
+                dc.b $1f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
 

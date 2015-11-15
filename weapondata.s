@@ -338,7 +338,7 @@ wdGrenadeLauncher:
                 dc.b ACT_LAUNCHERGRENADE        ;Bullet actor type
                 dc.b DMG_LAUNCHERGRENADE        ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 25                         ;Bullet time duration
+                dc.b 30                         ;Bullet time duration
                 dc.b 7                          ;Bullet speed in pixels
                 dc.b SPDTBL_LAUNCHER            ;Bullet speed table offset
                 dc.b SFX_GRENADELAUNCHER        ;Sound effect

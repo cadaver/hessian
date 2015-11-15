@@ -827,7 +827,7 @@ MH_HasWaterAbove:
 MH_NotSwimmingUp:
                 lda #2
                 sta temp4
-                lda #-1                         ;Use middle of player for obstacle check
+                lda #0
                 ldy #CI_WATER
                 jsr MoveFlyer
                 lda #$03
