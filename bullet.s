@@ -4,7 +4,7 @@ GRENADE_ACCEL   = 4
 GRENADE_BRAKE   = 8
 
 EXTINGUISH_ADD = 5
-EXTINGUISH_THRESHOLD = 48
+EXTINGUISH_THRESHOLD = 45
 
         ; Extinguisher powder update routine
         ;
