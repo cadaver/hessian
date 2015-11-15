@@ -467,12 +467,14 @@ UA_SpawnDone:
 BuildTargetList:ldx #ACTI_LASTNPC
                 ldy #$00                        ;Target list index
                 sty numSpawned
-BTL_Loop:       lda actHp,x                     ;Actor must have nonzero health
+BTL_Loop:       lda actT,x
                 beq BTL_Next
                 lda actLvlDataPos,x
                 bpl BTL_NotSpawned
                 inc numSpawned
-BTL_NotSpawned: txa
+BTL_NotSpawned: lda actHp,x                     ;Actor must have nonzero health
+                beq BTL_Next
+                txa
                 sta targetList,y
                 iny
 BTL_Next:       dex
