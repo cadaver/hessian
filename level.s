@@ -961,8 +961,7 @@ ULO_NoAirDamage:lda actYH+ACTI_PLAYER           ;Kill player actor if fallen out
 ULO_NotOutside: lda battery
                 ora battery+1
                 bne ULO_CheckPickupIndex
-ULO_Outside:    ldy #NODAMAGESRC
-                jsr DestroyActor
+ULO_Outside:    jsr DestroyActorNoSource
                 txa
                 sta actSY,x
                 rts

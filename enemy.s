@@ -179,7 +179,7 @@ MineCommon:     ldy actAITarget,x
                 lda #DMG_ENEMYMINE
                 jsr CollideAndDamageTarget
                 bcc MC_NoCollision
-                jmp DestroyActor
+                jmp DestroyActorNoSource
 
         ; Rolling mine update routine
         ;
@@ -255,7 +255,8 @@ MT_NoInit:      ldy #ceilingTurretOfs-turretFrameTbl
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MF_Destroy:     jmp DestroyActor
+MF_Destroy:     ldy #ACTI_FIRSTPLRBULLET        ;Make sure player receives score
+                jmp DestroyActor
 MoveFire:       lda actTime,x                   ;Restore oxygen level if not extinguished
                 beq MF_FullOxygen               ;completely, destroy if depleted enough
                 cmp #EXTINGUISH_THRESHOLD

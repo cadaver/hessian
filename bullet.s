@@ -162,8 +162,7 @@ MProj_ObstacleOrWater:
                 and #CI_WATER
                 bne MProj_HitWater
 MProj_HitObstacle:
-MProj_Destroy:  ldy #NODAMAGESRC                ;Destroy actor without specific damage source
-                jmp DestroyActor
+MProj_Destroy:  jmp DestroyActorNoSource        ;Destroy actor without specific damage source
 MProj_HitWater: lda actT,x
                 cmp #ACT_LASER
                 bcs MProj_LargeSplash

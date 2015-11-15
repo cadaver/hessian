@@ -213,10 +213,16 @@ MH_NotInWater:  ldy actF1,x
                 bcs MH_IsSwimming
                 cpy #FR_ROLL
                 bcs MH_RollAnim
-MH_DyingAnim:   lda temp1
-                lsr
-                lda #$00                        ;Make sure no movement when dead
+MH_DyingAnim:   lda #$00                        ;Make sure no movement when dead
                 sta temp2
+                lda temp1                       ;Extra braking for corpse in water
+                bpl MH_NoExtraBraking
+                pha
+                lda #WATER_YBRAKING*2
+                jsr BrakeActorY
+                pla
+MH_NoExtraBraking:
+                lsr
                 lda #$06
                 ldy #FR_DIE+1
                 bcc MH_DeathAnimDelay
@@ -295,9 +301,13 @@ MH_NoLongJump:  lda (actLo),y
                 beq MH_NoStartSwim2
                 txa                             ;If not player, kill instantly
                 beq MH_CanSwim
+DestroyActorNoSource:
                 ldy #NODAMAGESRC
                 jmp DestroyActor
-MH_CanSwim:     jmp MH_InitSwim
+MH_CanSwim:     lda actHp,x                     ;If already dead, do not start to swim
+                beq MH_NoStartSwim2
+                lda #FR_SWIM
+                jmp MH_AnimDone
 MH_NoStartSwim2:lda temp1
 MH_NoStartSwim: and #MB_HITWALL+MB_LANDED       ;Hit wall (and didn't land at the same time)?
                 cmp #MB_HITWALL
@@ -612,15 +622,6 @@ MH_InitClimb:   lda #$80
                 jsr NoInterpolation
                 lda #FR_CLIMB
                 bne MH_AnimDone
-
-MH_InitSwim:    lda actSY,x
-                bmi MH_SwimNoYSpeedMod          ;If falling down, reduce speed when hit water
-                ldy #6
-                jsr ModifyDamage                ;Hack: modifydamage used for multiplying Y-speed
-                sta actSY,x
-MH_SwimNoYSpeedMod:
-                lda #FR_SWIM
-                jmp MH_AnimDone
 
 MH_Climbing:    jsr GetCharInfo
                 sta temp1
