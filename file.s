@@ -11,6 +11,7 @@ C_PLAYER_BOTTOM_ARMOR = 8
 C_FLYER         = 9
 C_GROUNDBASED   = 10
 C_FIRE          = 11
+C_ANIMAL        = 12
 C_FIRSTPURGEABLE = C_PLAYER_TOP
 
 F_LOGO          = $01

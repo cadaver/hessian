@@ -12,6 +12,7 @@ write playerba.pak @8:08
 write flyer.pak @8:09
 write groundbased.pak @8:0a
 write fire.pak @8:0b
+write animal.pak @8:0c
 write level00.pak @8:10
 write level01.pak @8:11
 write level02.pak @8:12
