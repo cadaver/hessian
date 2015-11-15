@@ -21,6 +21,7 @@ DMG_BAZOOKA     = 56
 DMG_EMP         = 4                             ;4 damage for 8 frames = 32 total
 DMG_FIRE        = 2+NOMODIFY
 DMG_SMOKE       = 1+NOMODIFY
+DMG_ANIMAL      = 1+NOMODIFY
 DMG_EXTINGUISHER = 1
 
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic

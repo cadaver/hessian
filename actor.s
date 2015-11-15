@@ -63,11 +63,11 @@ AL_YCHECKOFFSET = 22
 
 GRP_HEROES      = $00
 GRP_ENEMIES     = $01
-GRP_BEASTS      = $02
+GRP_ANIMALS     = $02
 
 AF_GROUPBITS    = $03
 AF_INITONLYSIZE = $08
-AF_ISORGANIC    = $10
+AF_ORGANIC      = $10
 AF_USETRIGGERS  = $20
 AF_NOREMOVECHECK = $40
 AF_NOWEAPON     = $80
@@ -1313,7 +1313,7 @@ ApplyTargetDamage:
                 lda actBulletDmgMod-ACTI_FIRSTPLRBULLET,x ;Damage modifier
                 sta temp7
                 lda actFlags,y                  ;Check if target is organic
-                and #AF_ISORGANIC
+                and #AF_ORGANIC
                 beq ATD_NonOrganic
 ATD_Organic:    lda temp7
                 and #$0f

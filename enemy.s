@@ -3,6 +3,9 @@ ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 3
 TURRET_ANIMDELAY = 2
 
+FR_DEADANIMALAIR = 12
+FR_DEADANIMALGROUND = 13
+
         ; Flying enemy movement
         ;
         ; Parameters: X actor index
@@ -289,7 +292,6 @@ MF_Flash:       lda #DMG_FIRE
 MSC_NoRemove:
 MF_NoSpawn:     rts
 
-
         ; Fire destruction (transform into smoke)
         ;
         ; Parameters: X actor index
@@ -317,6 +319,36 @@ MSC_NoSmokeDamage:
                 jsr OneShotAnimation
                 bcc MSC_NoRemove
                 jmp RemoveActor
+
+        ; Rat movement
+
+MoveRat:        lda actHp,x
+                beq MR_Dead
+                jsr MoveGeneric
+                jmp AttackGeneric
+MR_Dead:        jsr DeathFlickerAndRemove
+                jsr FallingMotionCommon
+                lda actMB,x
+                lsr
+                bcc RD_SetFlyingFrame
+MR_DeadGrounded:lda #$00
+                sta actSX,x                     ;Instant braking
+                lda #FR_DEADANIMALGROUND
+                bne RD_SetFrame
+
+        ; Initiate rat death
+        ;
+        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Returns: -
+        ; Modifies: A
+
+RatDeath:       jsr HumanDeath
+                lda #-28
+                sta actSY,x                     ;Adjust up speed smaller
+RD_SetFlyingFrame:
+                lda #FR_DEADANIMALAIR
+RD_SetFrame:    sta actF1,x
+                rts
 
         ; Generate 2 explosions at 8 pixel radius
         ;
@@ -538,3 +570,22 @@ DI_CountOK:     sta actHp,y
 DI_NotImportant:sta actLvlDataOrg,x             ;Make item either persistent or temp persistent
                 ldx temp6
                 rts
+
+        ; Flicker corpse, then remove. Will not return when removes the actor
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp regs
+        
+DeathFlickerAndRemove:
+                dec actTime,x
+                bmi DFAR_Remove
+                lda actTime,x                   ;Flicker and eventually remove the corpse
+                cmp #DEATH_FLICKER_DELAY
+                bcs DFAR_Done
+                lda #COLOR_FLICKER
+                sta actFlash,x
+DFAR_Done:      rts
+DFAR_Remove:    pla
+                pla
+                jmp RemoveActor

@@ -232,15 +232,8 @@ MH_DeathGrounded:
 MH_DeathAnimDelay:
                 jsr OneShotAnimation
 MH_DeathAnimDone:
-                dec actTime,x
-                bmi MH_DeathRemove
-                lda actTime,x                   ;Flicker and eventually remove the corpse
-                cmp #DEATH_FLICKER_DELAY
-                bcs MH_Brake
-                lda #COLOR_FLICKER
-                sta actFlash,x
-                bcc MH_Brake
-MH_DeathRemove: jmp RemoveActor
+                jsr DeathFlickerAndRemove
+                jmp MH_Brake
 MH_RollAnim:    lda #$01
                 jsr AnimationDelay
                 bcc MH_RollAcc

@@ -16,6 +16,7 @@ AIMODE_GUARD        = 5
 AIMODE_BERZERK      = 6
 AIMODE_FLYER        = 7
 AIMODE_TURRET       = 7
+AIMODE_ANIMAL       = 8
 
 NOTARGET            = $ff
 
@@ -288,7 +289,7 @@ AI_FreeMoveNoClimb:
                 lda actGroundCharInfo,x
                 and #CI_NOPATH
                 beq AI_FreeMoveNormal
-                lda #$00                        ;If on nonnavigable platform, do not turn but fall as applicable
+                lda #AIH_AUTOTURNWALL           ;If on nonnavigable platform, do not turn but fall as applicable
                 skip2
 AI_FreeMoveNormal:
                 lda #AIH_AUTOTURNLEDGE|AIH_AUTOTURNWALL
@@ -316,6 +317,7 @@ AI_Berzerk:     lda actTime,x                   ;Ongoing attack?
                 bmi AI_FreeMoveNoDuck
                 cmp #JOY_FIRE
                 bcc AI_MoverFollow              ;If cannot fire, pathfind to target
+AI_BerzerkCommon:
                 jsr PrepareAttack
                 bcs AI_BerzerkDone
                 jsr GetCharInfo4Above
@@ -340,6 +342,17 @@ AI_BerzerkContinueJump:
                 lda actMoveCtrl,x
                 ora #JOY_UP
                 bne AI_StoreMoveCtrl
+
+        ; Animal AI (variation of berzerk)
+        
+AI_Animal:      lda actTime,x
+                bmi AI_ContinueAttack2
+                jsr FindTargetAndAttackDir
+                bcc AI_FreeMoveNoDuck
+                bmi AI_FreeMoveNoDuck
+                cmp #JOY_FIRE
+                bcc AI_FreeMoveNoDuck
+                bcs AI_BerzerkCommon
 
         ; Subroutine: randomly release ducking control (determined by offense)
 

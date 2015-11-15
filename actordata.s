@@ -33,8 +33,10 @@ ACT_ROLLINGMINE = 31
 ACT_CEILINGTURRET = 32
 ACT_FIRE        = 33
 ACT_SMOKECLOUD  = 34
+ACT_RAT         = 35
 
 HP_PLAYER       = 56
+HP_RAT          = 4
 HP_FLOATINGMINE = 7
 HP_ROLLINGMINE  = 7
 HP_SMALLDROID   = 8
@@ -131,6 +133,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adCeilingTurret
                 dc.b <adFire
                 dc.b <adSmokeCloud
+                dc.b <adRat
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -166,6 +169,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adCeilingTurret
                 dc.b >adFire
                 dc.b >adSmokeCloud
+                dc.b >adRat
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -365,6 +369,13 @@ adSmokeCloud:   dc.b ONESPRITE                  ;Number of sprites
                 dc.b 4                          ;Number of frames
                 dc.b 4,5,6,7
 
+adRat:          dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_ANIMAL                   ;Spritefile number
+                dc.b 14                         ;Left frame add
+                dc.b 28                         ;Number of frames
+                dc.b 1,0,1,2,1,0,1,2,1,3,3,3,4,5
+                dc.b $80+1,$80+0,$80+1,$80+2,$80+1,$80+0,$80+1,$80+2,$80+1,$80+3,$80+3,$80+3,$80+4,$80+5
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -401,6 +412,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alCeilingTurret
                 dc.b <alFire
                 dc.b <alSmokeCloud
+                dc.b <alRat
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -436,9 +448,10 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alCeilingTurret
                 dc.b >alFire
                 dc.b >alSmokeCloud
+                dc.b >alRat
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
-                dc.b GRP_HEROES|AF_ISORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
+                dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 34                         ;Size up
                 dc.b 0                          ;Size down
@@ -788,3 +801,27 @@ alSmokeCloud:   dc.w MoveSmokeCloud             ;Update routine
                 dc.b 10                         ;Horizontal size
                 dc.b 6                          ;Size up
                 dc.b 0                          ;Size down
+
+alRat:          dc.w MoveRat                    ;Update routine
+                dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 8                          ;Size up
+                dc.b 0                          ;Size down
+                dc.w RatDeath                   ;Destroy routine
+                dc.b HP_RAT                     ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 10                         ;Score from kill
+                dc.b AIMODE_ANIMAL              ;AI mode when spawned randomly
+                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b $07                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL              ;Attack directions
+                dc.b AMF_JUMP                   ;Move flags
+                dc.b 3*8                        ;Max. movement speed
+                dc.b 8                          ;Ground movement acceleration
+                dc.b 1                          ;In air movement acceleration
+                dc.b 6                          ;Gravity acceleration
+                dc.b 6                          ;Long jump gravity acceleration
+                dc.b 3                          ;Ground braking
+                dc.b -1                         ;Height in chars for headbump check (negative)
+                dc.b -4*8                       ;Jump initial speed (negative)
