@@ -27,7 +27,8 @@ HUMANOID        = $80
 
 COLOR_FLICKER   = $40
 COLOR_INVISIBLE = $80
-COLOR_ONETIMEFLASH = $ff
+COLOR_ONETIMEFLASH = $fe
+COLOR_ONETIMEFLASHDELAY = $ff
 
 AL_UPDATEROUTINE = 0
 AL_ACTORFLAGS   = 2
@@ -213,8 +214,9 @@ DA_FillSpritesDone:
                 rts
 
 DA_HitFlash:    inc actFlash,x
-                lda #$01
-                bne DA_NoFlicker
+                eor #$01
+                and #$01
+                bpl DA_NoFlicker
 
 DrawActorSub:   lda actFlash,x                  ;Get programmatic color override
                 bmi DA_HitFlash                 ;including one frame hit flash
@@ -513,10 +515,6 @@ UA_Paused:      ldx #$00                        ;Stop scrolling & level animatio
 UpdateActors:   lda menuMode
                 cmp #MENU_PAUSE
                 bcs UA_Paused
-                lda DA_SfxDelay+1               ;Decrement damage sound delay count now
-                beq UA_NoDmgSfxDelay
-                dec DA_SfxDelay+1
-UA_NoDmgSfxDelay:
                 inc UA_ItemFlashCounter+1
 UA_ItemFlashCounter:                            ;Get color override for items + object marker
                 lda #$00
@@ -1390,16 +1388,13 @@ DA_Sub:         sbc temp8
                 lda #$00
 DA_NotDead:     sta actHp,x
                 php
-DA_SfxDelay:    ldy #$00                        ;If trying to play damage sound each frame,
-                bne DA_SkipSfx                  ;nothing will be heard. Therefore set a delay
-                lda #DMG_SFX_DELAY
-                sta DA_SfxDelay+1
-                lda #SFX_DAMAGE
-                jsr PlaySfx
-DA_SkipSfx:     dey                             ;If the delay value is 1 (inbetween) skip
-                beq DA_SkipFlash                ;flashing effect
+                lda actFlash,x                  ;Do not flash / play sound every frame
+                cmp #COLOR_ONETIMEFLASH         ;even if damage is continous
+                bcs DA_SkipFlash
                 lda #COLOR_ONETIMEFLASH
                 sta actFlash,x
+                lda #SFX_DAMAGE
+                jsr PlaySfx
 DA_SkipFlash:   plp
                 bne DA_Done
                 ldy temp7
