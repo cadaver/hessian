@@ -486,63 +486,54 @@ alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
                 dc.b 4                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
-                dc.w RemoveActor                ;Destroy routine
 
 alLargeMeleeHit:dc.w MoveMeleeHit               ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 7                          ;Horizontal size
                 dc.b 4                          ;Size up
                 dc.b 4                          ;Size down
-                dc.w RemoveActor                ;Destroy routine
 
 alPowder:       dc.w MovePowder                 ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 1                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
-                dc.w RemoveActor                ;Destroy routine
-                
+
 alBullet:       dc.w MoveBulletMuzzleFlash      ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 2                          ;Horizontal size
                 dc.b 1                          ;Size up
                 dc.b 1                          ;Size down
-                dc.w RemoveActor                ;Destroy routine
 
 alShotgunBullet:dc.w MoveShotgunBullet          ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 3                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
-                dc.w RemoveActor                ;Destroy routine
 
 alFlame:        dc.w MoveFlame                  ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 5                          ;Horizontal size
                 dc.b 5                          ;Size up
                 dc.b 3                          ;Size down
-                dc.w RemoveActor                ;Destroy routine
 
 alEMP:          dc.w MoveEMP                    ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 128                        ;Horizontal size
                 dc.b 128                        ;Size up
                 dc.b 128                        ;Size down
-                dc.w RemoveActor                ;Destroy routine
 
 alLaser:        dc.w MoveBullet                 ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 3                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
-                dc.w RemoveActor                ;Destroy routine
 
 alPlasma:       dc.w MoveBullet                 ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 6                          ;Horizontal size
                 dc.b 6                          ;Size up
                 dc.b 6                          ;Size down
-                dc.w RemoveActor                ;Destroy routine
 
 alLauncherGrenade:
                 dc.w MoveLauncherGrenade        ;Update routine
@@ -550,28 +541,24 @@ alLauncherGrenade:
                 dc.b 3                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
-                dc.w ExplodeGrenade             ;Destroy routine
 
 alGrenade:      dc.w MoveGrenade                ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 3                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
-                dc.w ExplodeGrenade             ;Destroy routine
 
 alRocket:       dc.w MoveRocket                 ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 2                          ;Size up
                 dc.b 2                          ;Size down
-                dc.w ExplodeGrenade             ;Destroy routine
 
 alMine:         dc.w MoveMine                   ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 0                          ;Size down
-                dc.w ExplodeGrenade             ;Destroy routine
 
 alWaterSplash:
 alExplosion:    dc.w MoveExplosion              ;Update routine

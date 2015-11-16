@@ -143,7 +143,7 @@ MoveBullet_NoCollision:
                 bmi MBlt_Remove
 
         ; Move actor in a straight line. If hit water, transform into a splash
-        ; If hit an obstacle, call the destruct routine
+        ; If hit an obstacle, remove
         ; Note: do not JSR into this, but jump at the end of bullet move routine
         ;
         ; Parameters: X actor index
@@ -162,7 +162,10 @@ MProj_ObstacleOrWater:
                 and #CI_WATER
                 bne MProj_HitWater
 MProj_HitObstacle:
-MProj_Destroy:  jmp DestroyActorNoSource        ;Destroy actor without specific damage source
+MProj_Remove:   lda actT,x                      ;Rocket is the exception: explode on obstacle
+                cmp #ACT_ROCKET
+                beq MRckt_Explode
+                jmp RemoveActor
 MProj_HitWater: lda actT,x
                 cmp #ACT_LASER
                 bcs MProj_LargeSplash
@@ -207,10 +210,8 @@ MoveRocket:     lda actTime,x
                 sta actFlash,y
 MRckt_NoSmoke:  sec
                 jsr CheckBulletCollisions
-                bcs ExplodeGrenade
-                dec actTime,x
-                bmi MRckt_Remove
-                jmp MoveProjectile
+                bcc MoveBullet_NoCollision
+MRckt_Explode:  bcs ExplodeGrenade
 
         ; Grenade launcher grenade update routine
         ;
@@ -387,7 +388,7 @@ CBC_HasCollision:
                 ldx actIndex
                 pla
                 pla
-                jmp MProj_Destroy
+                jmp RemoveActor
 CBC_Done:       clc
 CBC_ReportOnly: 
 MEMP_NoAnim:    rts
