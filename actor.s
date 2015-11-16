@@ -1061,7 +1061,7 @@ GCI_WithinBlock:ldy zpBitsLo
                 tay
                 lda charInfo,y                  ;Get charinfo
                 rts
-GCI_Outside:    lda #CI_OBSTACLE                ;Return obstacle outside zone left, right, above
+GCI_Outside:    lda #CI_OBSTACLE+$80            ;Return obstacle outside zone left & right & above
                 rts
 
 GetCharInfoOptimizedAfter1Above:

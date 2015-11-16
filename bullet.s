@@ -155,17 +155,19 @@ MoveProjectile: lda actSX,x
                 lda actSY,x
                 jsr MoveActorY
                 jsr GetCharInfo
+                tay
                 and #CI_WATER|CI_OBSTACLE
                 bne MProj_ObstacleOrWater
                 rts
 MProj_ObstacleOrWater:
                 and #CI_WATER
                 bne MProj_HitWater
-MProj_HitObstacle:
-MProj_Remove:   lda actT,x                      ;Rocket is the exception: explode on obstacle
+                tya                             ;If went outside zone, always remove
+                bmi MProj_Outside
+MProj_Remove:   lda actT,x
                 cmp #ACT_ROCKET
                 beq MRckt_Explode
-                jmp RemoveActor
+MProj_Outside:  jmp RemoveActor
 MProj_HitWater: lda actT,x
                 cmp #ACT_LASER
                 bcs MProj_LargeSplash
@@ -196,7 +198,6 @@ FSP_PosOK:      jmp NoInterpolation
         ; Returns: -
         ; Modifies: A,Y
 
-MRckt_Remove:   jmp RemoveActor
 MoveRocket:     lda actTime,x
                 lsr
                 bcc MRckt_NoSmoke
