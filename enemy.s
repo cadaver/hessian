@@ -341,7 +341,9 @@ MR_DeadGrounded:lda #$00
         ; Returns: -
         ; Modifies: A
 
-RatDeath:       jsr HumanDeath
+RatDeath:       jsr HD_Common
+                lda #SFX_ANIMALDEATH
+                jsr PlaySfx
                 lda #-28
                 sta actSY,x                     ;Adjust up speed smaller
 RD_SetFlyingFrame:
@@ -439,7 +441,12 @@ MEG_NoRoom:     jmp ExplodeActor
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8
 
-HumanDeath:     tya                             ;Check if has a damage source
+HumanDeath:     lda #SFX_HUMANDEATH
+                jsr PlaySfx
+                lda #FR_DIE
+                sta actF1,x
+                sta actF2,x
+HD_Common:      tya                             ;Check if has a damage source
                 bmi HD_NoDamageSource
                 lda actHp,y
                 sta temp8
@@ -460,12 +467,7 @@ HD_NoDamageSource:
                 lda #DEATH_YSPEED
                 sta actSY,x
                 jsr MH_ResetGrounded
-HD_NoYSpeed:    lda #SFX_DEATH
-                jsr PlaySfx
-                lda #FR_DIE
-                sta actF1,x
-                sta actF2,x
-                lda #DEATH_DISAPPEAR_DELAY
+HD_NoYSpeed:    lda #DEATH_DISAPPEAR_DELAY
                 sta actTime,x
                 jsr SetNotPersistent           ;Mark body nonpersistent in case goes off screen
                 lda #$00

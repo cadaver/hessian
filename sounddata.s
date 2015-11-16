@@ -27,8 +27,10 @@ SFX_PICKUP          = $19
 SFX_OBJECT          = $1a
 SFX_SPLASH          = $1b
 SFX_DAMAGE          = $1c
-SFX_DEATH           = $1d
-SFX_EXPLOSION       = $1e
+SFX_ANIMALDEATH     = $1d
+SFX_HUMANDEATH      = $1e
+SFX_EXPLOSION       = $1f
+SFX_NONE            = $ff
 
         ; Sound effect data
 
@@ -61,7 +63,8 @@ sfxTblLo:       dc.b <sfxFootstep
                 dc.b <sfxObject
                 dc.b <sfxSplash
                 dc.b <sfxDamage
-                dc.b <sfxDeath
+                dc.b <sfxAnimalDeath
+                dc.b <sfxHumanDeath
                 dc.b <sfxExplosion
 
 sfxTblHi:       dc.b >sfxFootstep
@@ -93,7 +96,8 @@ sfxTblHi:       dc.b >sfxFootstep
                 dc.b >sfxObject
                 dc.b >sfxSplash
                 dc.b >sfxDamage
-                dc.b >sfxDeath
+                dc.b >sfxAnimalDeath
+                dc.b >sfxHumanDeath
                 dc.b >sfxExplosion
 
 sfxFootstep:    include sfx/footstep.sfx
@@ -121,7 +125,8 @@ sfxMinigun:     include sfx/minigun.sfx
 sfxShotgun:     include sfx/shotgun.sfx
 sfxLaser:       include sfx/laser.sfx
 sfxPlasma:      include sfx/plasma.sfx
-sfxDeath:       include sfx/death.sfx
+sfxAnimalDeath: include sfx/animaldeath.sfx
+sfxHumanDeath:  include sfx/death.sfx
 sfxLauncher:    include sfx/launcher.sfx
 sfxSniperRifle: include sfx/sniperrifle.sfx
 sfxBazooka:     include sfx/bazooka.sfx

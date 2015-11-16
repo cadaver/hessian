@@ -21,6 +21,7 @@ DMG_BAZOOKA     = 56
 DMG_EMP         = 4                             ;4 damage for 8 frames = 32 total
 DMG_FIRE        = 2+NOMODIFY
 DMG_SMOKE       = 1+NOMODIFY
+DMG_ANIMALBITE  = 4
 
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
 DMGMOD_NOORGANIC = $80                          ;No organic damage
@@ -65,6 +66,8 @@ bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
                 dc.b -8,-7,-3,2,0               ;Launcher grenade
                 dc.b -8,-7,-3,2
 
+fromHipFrameTbl:dc.b FR_WALK+4,FR_WALK+2,FR_WALK
+
         ; Weapon data
 
 wpnTblLo:       dc.b <wdFists
@@ -85,6 +88,7 @@ wpnTblLo:       dc.b <wdFists
                 dc.b <wdExtinguisher
                 dc.b <wdGrenade
                 dc.b <wdMine
+                dc.b <wdAnimalBite
 
 wpnTblHi:       dc.b >wdFists
                 dc.b >wdKnife
@@ -104,6 +108,7 @@ wpnTblHi:       dc.b >wdFists
                 dc.b >wdExtinguisher
                 dc.b >wdGrenade
                 dc.b >wdMine
+                dc.b >wdAnimalBite
 
 wdFists:        dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
                 dc.b AIM_HORIZONTAL             ;First aim direction
@@ -409,4 +414,14 @@ wdMine:         dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b SPDTBL_GRENADE             ;Bullet speed table offset
                 dc.b SFX_MELEE                  ;Sound effect
 
-fromHipFrameTbl:dc.b FR_WALK+4,FR_WALK+2,FR_WALK
+wdAnimalBite:   dc.b WDB_NOWEAPONSPRITE|WDB_MELEE ;Weapon bits
+                dc.b AIM_HORIZONTAL             ;First aim direction
+                dc.b AIM_HORIZONTAL+1           ;First invalid aim direction
+                dc.b 5                          ;Attack delay
+                dc.b ACT_MELEEHIT               ;Bullet actor type
+                dc.b DMG_ANIMALBITE             ;Bullet damage
+                dc.b DMGMOD_NONONORGANIC        ;Damage modifier nonorganic/organic
+                dc.b 1                          ;Bullet time duration
+                dc.b 1                          ;Bullet speed in pixels
+                dc.b SPDTBL_NORMAL              ;Bullet speed table offset
+                dc.b SFX_NONE                   ;Sound effect

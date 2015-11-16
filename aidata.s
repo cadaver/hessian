@@ -37,4 +37,4 @@ spawnTypeTbl:   dc.b ACT_RAT                    ;0
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
 
-spawnWpnTbl:    dc.b ITEM_KNIFE                 ;0
+spawnWpnTbl:    dc.b ITEM_ANIMALBITE            ;0

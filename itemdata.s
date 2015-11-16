@@ -17,6 +17,7 @@ ITEM_BAZOOKA    = 15
 ITEM_EXTINGUISHER = 16
 ITEM_GRENADE    = 17
 ITEM_MINE       = 18
+ITEM_ANIMALBITE = 19 ;Not an actual item, but "weapon" used by animal enemies
 ITEM_MEDKIT     = 19
 ITEM_BATTERY    = 20
 ITEM_ARMOR      = 21
@@ -158,7 +159,8 @@ itemNPCMinDist: dc.b 0                          ;Fists (not used by NPCs)
                 dc.b 3                          ;Bazooka
                 dc.b 2                          ;Extinguisher (not an actual weapon, not used by NPCs)
                 dc.b 2                          ;Grenade
-                ;dc.b 2                          ;Mine (not used by NPCs)
+                dc.b 2                          ;Mine (not used by NPCs)
+                dc.b 0                          ;Animal bite
 
                 dc.b 3                          ;None weapon for mine AI
 itemNPCMaxDist: dc.b 1                          ;Fists (not used by NPCs)
@@ -178,10 +180,11 @@ itemNPCMaxDist: dc.b 1                          ;Fists (not used by NPCs)
                 dc.b 7                          ;Bazooka
                 dc.b 3                          ;Extinguisher (not an actual weapon, not used by NPCs)
                 dc.b 6                          ;Grenade
-                ;dc.b 2                          ;Mine (not used by NPCs)
+                dc.b 2                          ;Mine (not used by NPCs)
+                dc.b 1                          ;Animal bite
 
 itemNPCAttackLength:                            ;Note: stored as negative
-                ;dc.b -5                         ;Fists (not used by NPCs)
+                dc.b -5                         ;Fists (not used by NPCs)
                 dc.b -5                         ;Knife
                 dc.b -6                         ;Nightstick
                 dc.b -7                         ;Bat
@@ -198,10 +201,11 @@ itemNPCAttackLength:                            ;Note: stored as negative
                 dc.b -16                        ;Bazooka
                 dc.b -10                        ;Extinguisher (not an actual weapon, not used by NPCs)
                 dc.b -4                         ;Grenade
-                ;dc.b -4                         ;Mine (not used by NPCs)
+                dc.b -4                         ;Mine (not used by NPCs)
+                dc.b -5                         ;Animal bite
 
 itemNPCAttackThreshold:
-                ;dc.b $20                        ;Fists (not used by NPCs)
+                dc.b $20                        ;Fists (not used by NPCs)
                 dc.b $20                        ;Knife
                 dc.b $28                        ;Nightstick
                 dc.b $30                        ;Bat
@@ -218,4 +222,5 @@ itemNPCAttackThreshold:
                 dc.b $7f                        ;Bazooka
                 dc.b $7f                        ;Extinguisher (not an actual weapon, not used by NPCs)
                 dc.b $7f                        ;Grenade
-                ;dc.b $7f                        ;Mine (not used by NPCs)
+                dc.b $7f                        ;Mine (not used by NPCs)
+                dc.b $20                        ;Animal bite

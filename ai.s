@@ -493,7 +493,7 @@ PA_AggressionNotOver:
                 bne PA_CannotAttack
                 ldy actWpn,x
                 beq PA_NoWeapon
-                cmp itemNPCAttackThreshold-2,y  ;Enough aggression?
+                cmp itemNPCAttackThreshold-1,y  ;Enough aggression?
                 bcc PA_CannotAttack
                 lda temp1
                 sta actCtrl,x
@@ -506,7 +506,7 @@ PA_AggressionNotOver:
 PA_StopMovement:lda actMoveCtrl,x               ;NPC stops moving when attacking
                 and #JOY_DOWN|JOY_UP            ;(only retain ducking/climbing controls)
                 sta actMoveCtrl,x
-PA_NoStop:      lda itemNPCAttackLength-2,y     ;New attack: set both per-actor and global timers
+PA_NoStop:      lda itemNPCAttackLength-1,y     ;New attack: set both per-actor and global timers
                 sta attackTime
                 sec
 PA_CannotAttack:sta actTime,x

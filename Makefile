@@ -140,6 +140,9 @@ sfx/roll.sfx: sfx/roll.ins
 sfx/jump.sfx: sfx/jump.ins
 	ins2nt2 sfx/jump.ins sfx/jump.sfx
 
+sfx/animaldeath.sfx: sfx/animaldeath.ins
+	ins2nt2 sfx/animaldeath.ins sfx/animaldeath.sfx
+
 main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s enemy.s file.s init.s input.s item.s itemdata.s level.s \
 	leveldata.s macros.s main.s math.s memory.s panel.s paneldata.s physics.s player.s raster.s screen.s script.s \
 	sound.s sounddata.s sprite.s text.s weapon.s weapondata.s loader.prg bg/scorescr.chr bg/world.s sfx/pistol.sfx sfx/shotgun.sfx \
@@ -147,7 +150,7 @@ main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s enemy
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
 	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/heavymelee.sfx \
 	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/splash.sfx sfx/object.sfx sfx/footstep.sfx sfx/roll.sfx sfx/jump.sfx \
-	pics/covert.iff  pics/loadpic.iff loadermusic.bin
+	sfx/animaldeath.sfx pics/covert.iff pics/loadpic.iff loadermusic.bin
 	pic2chr pics/covert.iff covert.chr -b11 -m12 -n13 -c -s -x30 -y4
 	pic2chr pics/covert.iff covertscr.dat -b11 -m12 -n13 -x30 -y4 -t -c
 	gfxconv pics/loadpic.iff loadpic.dat -r -b0 -o -nc -ns

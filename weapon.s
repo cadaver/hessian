@@ -411,12 +411,9 @@ AH_PlayerBonusCommon:
                 sta actHp,y                     ;Set bullet damage
 AH_NoPlayerBonus:
 AH_NoAmmoDecrement:
-                lda actFlags,x                  ;Hack: animal bite, no sound
-                and #AF_GROUPBITS
-                cmp #GRP_ANIMALS
-                beq AH_NoSound
                 ldy #WD_SFX
                 lda (wpnLo),y
+                bmi AH_NoSound
                 jmp PlaySfx
 AH_InsideWall:  jsr RemoveActor
                 ldx actIndex
