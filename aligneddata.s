@@ -316,8 +316,8 @@ keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
         ; Sprite variables
 
-sortSprY:       ds.b MAX_SPR*2,0
 sortSprX:       ds.b MAX_SPR*2,0
+sortSprY:       ds.b MAX_SPR*2,0
 sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
 
@@ -326,7 +326,7 @@ healthBarPosTbl:dc.b 10,24
 timeMaxTbl:     dc.b 99,60,60,25
 attackTime:     dc.b 0
 
-        ; Levelactor data
+        ; Levelactor table (not saved completely, moved to savestate on demand)
 
 lvlActX:        ds.b MAX_LVLACT,0
 lvlActY:        ds.b MAX_LVLACT,0
@@ -335,7 +335,7 @@ lvlActT:        ds.b MAX_LVLACT,0
 lvlActWpn:      ds.b MAX_LVLACT,0
 lvlActOrg:      ds.b MAX_LVLACT,0
 
-        ; Level properties & objects (not saved)
+        ; Levelobject table (not saved)
 
 saveList:
 lvlObjX:        ds.b MAX_LVLOBJ,0
@@ -345,28 +345,6 @@ lvlObjDL:       ds.b MAX_LVLOBJ,0
 lvlObjDH:       ds.b MAX_LVLOBJ,0
 
         ; Actor variables
-
-actAITarget:    ds.b MAX_COMPLEXACT,0
-actF2:          ds.b MAX_COMPLEXACT,0
-actCtrl:        ds.b MAX_COMPLEXACT,0
-actMoveCtrl:    ds.b MAX_COMPLEXACT,0
-actPrevCtrl:    ds.b MAX_COMPLEXACT,0
-actFall:        ds.b MAX_COMPLEXACT,0
-actFallL:       ds.b MAX_COMPLEXACT,0
-actWpn:         ds.b MAX_COMPLEXACT,ITEM_NONE
-actWpnF:        ds.b MAX_COMPLEXACT,$ff
-actAttackD:     ds.b MAX_COMPLEXACT,0
-actAIMode:      ds.b MAX_COMPLEXACT,0
-actAIHelp:      ds.b MAX_COMPLEXACT,0
-actLine:        ds.b MAX_COMPLEXACT,0
-actLastNavStairs:
-                ds.b MAX_COMPLEXACT,0
-actLastNavLadder:
-                ds.b MAX_COMPLEXACT,0
-actGroundCharInfo:
-                ds.b MAX_COMPLEXACT,0
-actBulletDmgMod:ds.b MAX_BULLETS,0
-actLvlDataOrg:  ds.b MAX_PERSISTENTACT,0
 
 actXL:          ds.b MAX_ACT,0
 actXH:          ds.b MAX_ACT,0
@@ -390,11 +368,32 @@ actSizeU:       ds.b MAX_ACT,0
 actSizeD:       ds.b MAX_ACT,0
 actTime:        ds.b MAX_ACT,0
 actMB:          ds.b MAX_ACT,0
+actBulletDmgMod:ds.b MAX_BULLETS,0
+actLvlDataOrg:  ds.b MAX_PERSISTENTACT,0
+actF2:          ds.b MAX_COMPLEXACT,0
+actCtrl:        ds.b MAX_COMPLEXACT,0
+actMoveCtrl:    ds.b MAX_COMPLEXACT,0
+actPrevCtrl:    ds.b MAX_COMPLEXACT,0
+actFall:        ds.b MAX_COMPLEXACT,0
+actFallL:       ds.b MAX_COMPLEXACT,0
+actWpn:         ds.b MAX_COMPLEXACT,ITEM_NONE
+actWpnF:        ds.b MAX_COMPLEXACT,$ff
+actAttackD:     ds.b MAX_COMPLEXACT,0
+actAIMode:      ds.b MAX_COMPLEXACT,0
+actAIHelp:      ds.b MAX_COMPLEXACT,0
+actAITarget:    ds.b MAX_COMPLEXACT,0
+actLine:        ds.b MAX_COMPLEXACT,0
+actLastNavStairs:
+                ds.b MAX_COMPLEXACT,0
+actLastNavLadder:
+                ds.b MAX_COMPLEXACT,0
+actGroundCharInfo:
+                ds.b MAX_COMPLEXACT,0
 
-saveSlotChoice: dc.b 0
 shiftOffsetTbl: dc.b 6,6,6
                 dc.b 0,0,0
                 dc.b 6,6,6
+saveSlotChoice: dc.b 0
                 
         ; Chunk-file memory allocation variables
 

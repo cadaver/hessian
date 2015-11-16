@@ -136,7 +136,8 @@ LL_NoReveal:    jsr AnimateObjectActivation     ;Animate if necessary
                 tax
 LL_NextLevelObject:
                 inx
-                bpl LL_SetLevelObjectsActive
+                cpx #MAX_LVLOBJ
+                bcc LL_SetLevelObjectsActive
                 rts
 
         ; Find the zone at player's position. Also load the proper charset if not loaded
@@ -295,8 +296,8 @@ SLAS_NextActor: dex
 SLOS_ClearLoop: sta (actLo),y
                 dey
                 bpl SLOS_ClearLoop
-                sta temp1                       ;Persistent object index
                 tax
+                sta temp1                       ;Persistent object index
 SLOS_Loop:      jsr IsLevelObjectPersistent
                 beq SLOS_NextObject
                 lda lvlObjB,x                   ;Check if active
@@ -305,7 +306,8 @@ SLOS_Loop:      jsr IsLevelObjectPersistent
                 ora (actLo),y
                 sta (actLo),y
 SLOS_NextObject:inx
-                bpl SLOS_Loop
+                cpx #MAX_LVLOBJ
+                bcc SLOS_Loop
 ECS_HasCharSet: rts
 
         ; Find new level to load after entering a sidedoor
@@ -1051,12 +1053,11 @@ ULO_CONoRescan: stx ULO_COCmpX+1
                 sty ULO_COSubY+1
                 cmp #$ff
                 beq ULO_CODone
-                cmp #$80
-                bcc ULO_CODone
+                tay
+                bpl ULO_CODone
                 and #$7f
                 tax
-                clc
-                adc #LVLOBJSEARCH
+                adc #LVLOBJSEARCH               ;C=0 here
                 sta ULO_COEndCmp+1
 ULO_COLoop:     lda lvlObjX,x
 ULO_COCmpX:     cmp #$00
@@ -1186,7 +1187,8 @@ ULO_DestDoorLoop:
                 bcc ULO_EnterDoorDest           ;Found!
 ULO_DestDoorNext:
                 iny
-                bpl ULO_DestDoorLoop            ;If door search fails, enter a random door. Will probably
+                cpy #MAX_LVLOBJ
+                bcc ULO_DestDoorLoop            ;If door search fails, enter a random door. Will probably
                                                 ;show trashed graphics and/or kill the player character
 ULO_EnterDoorDest:
                 and #$7f

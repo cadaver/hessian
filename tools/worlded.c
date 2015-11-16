@@ -20,7 +20,7 @@
 #define NUMLVLACT 8192
 #define NUMLEVELS 64
 #define NUMCHARSETS 64
-#define NUMLVLOBJ_PER_LEVEL 128
+#define NUMLVLOBJ_PER_LEVEL 80
 #define NUMLVLACT_PER_LEVEL 80
 
 #define LEFT_BUTTON 1
@@ -4293,7 +4293,7 @@ void savealldata(void)
           unsigned char savelvlobjdl[NUMLVLOBJ_PER_LEVEL];
           unsigned char savelvlobjdh[NUMLVLOBJ_PER_LEVEL];
           int d = 0;
-          
+
           memset(savelvlobjx, 0, sizeof savelvlobjx);
           memset(savelvlobjy, 0, sizeof savelvlobjy);
           memset(savelvlobjb, 0, sizeof savelvlobjb);
