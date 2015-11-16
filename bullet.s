@@ -226,12 +226,19 @@ MoveLauncherGrenade:
                 bmi MGrn_HitWater
                 and #MB_HITWALL|MB_HITCEILING|MB_LANDED
                 bne ExplodeGrenade
-MGrn_Common:    sec
+MGrn_Common:    lda actT,x                      ;Thrown grenade will not collide after becoming
+                cmp #ACT_GRENADE                ;stationary
+                bne MGrn_CheckCollision
+                lda actSX,x
+                ora actSY,x
+                beq MGrn_NoCollision
+MGrn_CheckCollision:
+                sec
                 jsr CheckBulletCollisions
                 bcs ExplodeGrenade
+MGrn_NoCollision:
                 dec actTime,x
-                bmi ExplodeGrenade
-                rts
+                bpl MGrn_NoExplosion
 
         ; Explode grenade and do radius damage
         ;
@@ -269,7 +276,8 @@ TransformBullet:sta actT,x
                 lda #$00
                 sta actF1,x
                 sta actFd,x
-                rts
+MGrn_NoExplosion:
+               rts
 
         ; Grenade update routine
         ;
@@ -299,12 +307,12 @@ MGrn_NoBounce:  lda actMB,x
                 jsr Negate8Asr8
                 jmp MGrn_StoreNewXSpeed
 MGrn_NoHitWall: and #MB_HITCEILING              ;Halve X-speed when hit ceiling
-                beq MGrn_Common
+                beq MGrn_NoCeiling
                 lda actSX,x
                 jsr Asr8
 MGrn_StoreNewXSpeed:
                 sta actSX,x
-                jmp MGrn_Common
+MGrn_NoCeiling: jmp MGrn_Common
 
         ; Mine update routine
         ;
@@ -321,7 +329,7 @@ MoveMine:       lda #7
                 lda #SFX_PICKUP
                 jsr PlaySfx
                 jmp MoveGrenade
-                         
+
         ; EMP blast update routine
         ;
         ; Parameters: X actor index

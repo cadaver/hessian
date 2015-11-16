@@ -142,13 +142,12 @@ MWG_CheckCeiling:
                 lda temp4
                 jsr GetCharInfoOffset
                 and #CI_OBSTACLE
-                beq MWG_NoCeiling
+                beq MWG_NoLanding
                 lda #$00                        ;If hit ceiling, reset Y-speed
                 sta actSY,x
                 lda temp5
                 ora #MB_HITCEILING
                 bne MWG_StoreMB
-MWG_NoCeiling:  rts
 
 MWG_CheckLanding:
                 lda temp8                       ;Charinfo at actor pos
@@ -204,7 +203,7 @@ MWG_HitGround:  lda #$00
                 sta actYL,x                     ;Align actor to slope
                 lda temp5
                 ora #MB_GROUNDED|MB_LANDED
-                skip2
+                bne MWG_StoreMB
 MWG_NoLanding:  lda temp5
 MWG_StoreMB:    sta actMB,x
                 rts

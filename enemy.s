@@ -328,7 +328,6 @@ MoveRat:        lda actHp,x
                 jmp AttackGeneric
 MR_Dead:        jsr DeathFlickerAndRemove
                 jsr FallingMotionCommon
-                lda actMB,x
                 lsr
                 bcc RD_SetFlyingFrame
 MR_DeadGrounded:lda #$00
