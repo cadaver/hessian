@@ -34,9 +34,11 @@ ACT_CEILINGTURRET = 32
 ACT_FIRE        = 33
 ACT_SMOKECLOUD  = 34
 ACT_RAT         = 35
+ACT_SPIDER      = 36
 
 HP_PLAYER       = 56
 HP_RAT          = 4
+HP_SPIDER       = 6
 HP_FLOATINGMINE = 7
 HP_ROLLINGMINE  = 7
 HP_SMALLDROID   = 8
@@ -134,6 +136,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adFire
                 dc.b <adSmokeCloud
                 dc.b <adRat
+                dc.b <adSpider
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -170,6 +173,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adFire
                 dc.b >adSmokeCloud
                 dc.b >adRat
+                dc.b >adSpider
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -376,6 +380,13 @@ adRat:          dc.b ONESPRITE                  ;Number of sprites
                 dc.b 1,0,1,2,1,0,1,2,1,3,3,3,4,5
                 dc.b $80+1,$80+0,$80+1,$80+2,$80+1,$80+0,$80+1,$80+2,$80+1,$80+3,$80+3,$80+3,$80+4,$80+5
 
+adSpider:       dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_ANIMAL                   ;Spritefile number
+                dc.b 5                          ;Left frame add
+                dc.b 10                         ;Number of frames
+                dc.b 6,7,8,9,10
+                dc.b $80+6,$80+7,$80+8,$80+9,$80+10
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -413,6 +424,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alFire
                 dc.b <alSmokeCloud
                 dc.b <alRat
+                dc.b <alSpider
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -449,6 +461,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alFire
                 dc.b >alSmokeCloud
                 dc.b >alRat
+                dc.b >alSpider
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -793,7 +806,7 @@ alRat:          dc.w MoveRat                    ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 8                          ;Size up
-                dc.b 0                          ;Size down
+                dc.b 2                          ;Size down
                 dc.w RatDeath                   ;Destroy routine
                 dc.b HP_RAT                     ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
@@ -812,3 +825,26 @@ alRat:          dc.w MoveRat                    ;Update routine
                 dc.b 3                          ;Ground braking
                 dc.b -1                         ;Height in chars for headbump check (negative)
                 dc.b -4*8                       ;Jump initial speed (negative)
+
+alSpider:       dc.w MoveSpider                 ;Update routine
+                dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
+                dc.b 12                         ;Horizontal size
+                dc.b 10                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w SpiderDeath                ;Destroy routine
+                dc.b HP_SPIDER                  ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 20                         ;Score from kill
+                dc.b AIMODE_FREEMOVE            ;AI mode when spawned randomly
+                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b $00                        ;AI offense AND-value
+                dc.b $00                        ;AI defense probability
+                dc.b AB_NONE                    ;Attack directions
+                dc.b AMF_NOFALLDAMAGE|AMF_CUSTOMANIMATION ;Move flags
+                dc.b 2*8                        ;Max. movement speed
+                dc.b 8                          ;Ground movement acceleration
+                dc.b 0                          ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 8                          ;Long jump gravity acceleration
+                dc.b 8                          ;Ground braking
+                dc.b -2                         ;Height in chars for headbump check (negative)

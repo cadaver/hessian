@@ -3,8 +3,11 @@ ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 3
 TURRET_ANIMDELAY = 2
 
-FR_DEADANIMALAIR = 12
-FR_DEADANIMALGROUND = 13
+FR_DEADRATAIR = 12
+FR_DEADRATGROUND = 13
+
+FR_DEADSPIDERAIR = 3
+FR_DEADSPIDERGROUND = 4
 
         ; Flying enemy movement
         ;
@@ -321,8 +324,14 @@ MSC_NoSmokeDamage:
                 jmp RemoveActor
 
         ; Rat movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveRat:        lda actHp,x
+MoveRat:        lda #FR_DEADRATAIR
+                sta temp1
+                lda actHp,x
                 beq MR_Dead
                 jsr MoveGeneric
                 jmp AttackGeneric
@@ -332,7 +341,8 @@ MR_Dead:        jsr DeathFlickerAndRemove
                 bcc RD_SetFlyingFrame
 MR_DeadGrounded:lda #$00
                 sta actSX,x                     ;Instant braking
-                lda #FR_DEADANIMALGROUND
+                lda temp1
+                adc #$00                        ;C=1
                 bne RD_SetFrame
 
         ; Initiate rat death
@@ -341,15 +351,46 @@ MR_DeadGrounded:lda #$00
         ; Returns: -
         ; Modifies: A
 
-RatDeath:       jsr HD_Common
+RatDeath:       lda #FR_DEADRATAIR
+RD_Common:      sta temp1
+                jsr HD_Common
                 lda #SFX_ANIMALDEATH
                 jsr PlaySfx
                 lda #-28
                 sta actSY,x                     ;Adjust up speed smaller
 RD_SetFlyingFrame:
-                lda #FR_DEADANIMALAIR
+                lda temp1
 RD_SetFrame:    sta actF1,x
-                rts
+MS_NoDamage:    rts
+
+        ; Spider movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+        
+MoveSpider:     lda #FR_DEADSPIDERAIR
+                sta temp1
+                lda actHp,x
+                beq MR_Dead
+                jsr MoveGeneric
+                lda #2
+                ldy #2
+                jsr LoopingAnimation
+                lda actFd,x
+                lsr
+                bcs MS_NoDamage                 ;Touch damage only each third frame
+                lda #DMG_SPIDER
+                jmp CollideAndDamagePlayer
+
+        ; Initiate spider death
+        ;
+        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Returns: -
+        ; Modifies: A
+
+SpiderDeath:    lda #FR_DEADSPIDERAIR
+                bne RD_Common
 
         ; Generate 2 explosions at 8 pixel radius
         ;

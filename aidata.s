@@ -9,6 +9,7 @@ aiJumpTblLo:    dc.b <AI_DoNothing
                 dc.b <AI_Berzerk
                 dc.b <AI_Flyer
                 dc.b <AI_Animal
+                dc.b <AI_FreeMoveWithTurn
 
 aiJumpTblHi:    dc.b >AI_DoNothing
                 dc.b >AI_TurnTo
@@ -19,6 +20,7 @@ aiJumpTblHi:    dc.b >AI_DoNothing
                 dc.b >AI_Berzerk
                 dc.b >AI_Flyer
                 dc.b >AI_Animal
+                dc.b >AI_FreeMoveWithTurn
 
 flyerDirTbl:    dc.b JOY_LEFT|JOY_UP
                 dc.b JOY_LEFT|JOY_DOWN
@@ -33,7 +35,7 @@ spawnListAddTbl:dc.b $00                        ;0: entry 0
 
         ; Spawn list entries
 
-spawnTypeTbl:   dc.b ACT_RAT                    ;0
+spawnTypeTbl:   dc.b ACT_SPIDER                 ;0
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
 

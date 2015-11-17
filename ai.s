@@ -17,6 +17,7 @@ AIMODE_BERZERK      = 6
 AIMODE_FLYER        = 7
 AIMODE_TURRET       = 7
 AIMODE_ANIMAL       = 8
+AIMODE_FREEMOVE     = 9
 
 NOTARGET            = $ff
 
