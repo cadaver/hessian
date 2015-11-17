@@ -326,15 +326,6 @@ healthBarPosTbl:dc.b 10,24
 timeMaxTbl:     dc.b 99,60,60,25
 attackTime:     dc.b 0
 
-        ; Levelactor table (not saved completely, moved to savestate on demand)
-
-lvlActX:        ds.b MAX_LVLACT,0
-lvlActY:        ds.b MAX_LVLACT,0
-lvlActF:        ds.b MAX_LVLACT,0
-lvlActT:        ds.b MAX_LVLACT,0
-lvlActWpn:      ds.b MAX_LVLACT,0
-lvlActOrg:      ds.b MAX_LVLACT,0
-
         ; Levelobject table (not saved)
 
 saveList:
@@ -343,6 +334,15 @@ lvlObjY:        ds.b MAX_LVLOBJ,0
 lvlObjB:        ds.b MAX_LVLOBJ,0
 lvlObjDL:       ds.b MAX_LVLOBJ,0
 lvlObjDH:       ds.b MAX_LVLOBJ,0
+
+        ; Levelactor table (not saved completely, moved to savestate on demand)
+
+lvlActX:        ds.b MAX_LVLACT,0
+lvlActY:        ds.b MAX_LVLACT,0
+lvlActF:        ds.b MAX_LVLACT,0
+lvlActT:        ds.b MAX_LVLACT,0
+lvlActWpn:      ds.b MAX_LVLACT,0
+lvlActOrg:      ds.b MAX_LVLACT,0
 
         ; Actor variables
 
