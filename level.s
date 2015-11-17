@@ -691,23 +691,6 @@ AO_RevealNext:  dex                             ;to reveal the item as quickly a
                 bpl AO_RevealLoop
                 rts
 
-        ; Align actor to center of block and ground level, ground must be below
-        ;
-        ; Parameters: X:actor number
-        ; Returns: -
-        ; Modifies: A,Y
-
-AlignActorOnGround:
-                lda #$80
-                sta actXL,x
-                sta actYL,x
-AAOG_Loop:      jsr GetCharInfo
-                and #CI_GROUND
-                bne AAOG_Done
-                lda #8*8                        ;Will wrap the coordinates if ground not found
-                jsr MoveActorY                  ;If absolutely no ground at that X-position,
-                jmp AAOG_Loop                   ;loops forever
-
         ; Position actor to levelobject, coarsely only
         ;
         ; Parameters: X:actor number, Y levelobject number
@@ -715,6 +698,8 @@ AAOG_Loop:      jsr GetCharInfo
         ; Modifies: A
 
 SetActorAtObject:
+                lda #$80
+                sta actXL,x
                 lda lvlObjX,y
                 sta actXH,x
                 lda lvlObjY,y
@@ -1051,10 +1036,10 @@ ULO_COLastCheckY:
 ULO_CORescan:   lda #$80                        ;Start from beginning
 ULO_CONoRescan: stx ULO_COCmpX+1
                 sty ULO_COSubY+1
-                cmp #$ff
-                beq ULO_CODone
-                tay
+                tay                             ;Already have a valid object that is current?
                 bpl ULO_CODone
+                cmp #$ff                        ;Search given up in current location?
+                beq ULO_CODone
                 and #$7f
                 tax
                 adc #LVLOBJSEARCH               ;C=0 here
@@ -1106,7 +1091,7 @@ ULO_COUpdateMarker:
                 sta actT,x
                 ldy lvlObjNum
                 jsr SetActorAtObject
-                jsr AlignActorOnGround
+                inc actYH,x
 ULO_CODone:     ldy lvlObjNum
                 bmi ULO_Done
                 lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
@@ -1209,7 +1194,14 @@ ULO_DestDoorNum:ldy #$00
                 jsr MH_StandAnim
                 jsr MH_SetGrounded
                 jsr MH_ResetFall
-                jsr AlignActorOnGround
+                lda #$40
+                sta actYL,x
+ULO_FinePositionLoop:                           ;Fineposition player to ground at floor
+                lda #8*8
+                jsr MoveActorY
+                jsr GetCharInfo
+                and #CI_GROUND
+                beq ULO_FinePositionLoop
                 ldy #ZONEH_BG1
                 lda (zoneLo),y                  ;Check for save-disabled zone
                 ora ULO_AirToxinFlag+1          ;Also don't save if the zone is damaging
