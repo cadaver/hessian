@@ -34,8 +34,9 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
 	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak \
-	common.pak item.pak weapon.pak playert.pak playerb.pak playerta.pak playerba.pak flyer.pak groundbased.pak \
-	fire.pak animal.pak
+	sprcommon.pak spritem.pak sprweapon.pak sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
+	sprdroid.pak sprflyer.pak sprsmallwalker.pak sprsmalltank.pak sprmine.pak sprturret.pak sprfire.pak \
+	sprrat.pak sprspider.pak
 	c1541 < hessian.seq
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -428,35 +429,50 @@ level14.pak: bg/world14.map bg/world14.lvo bg/world14.lva
 	pchunk2 bg/world14.map level14_3.pak
 	filejoin level14_1.pak+level14_2.pak+level14_3.pak level14.pak
 
-common.pak: spr/common.spr
-	pchunk2 spr/common.spr common.pak
+sprcommon.pak: spr/common.spr
+	pchunk2 spr/common.spr sprcommon.pak
 
-item.pak: spr/item.spr
-	pchunk2 spr/item.spr item.pak
+spritem.pak: spr/item.spr
+	pchunk2 spr/item.spr spritem.pak
 
-weapon.pak: spr/weapon.spr
-	pchunk2 spr/weapon.spr weapon.pak
+sprweapon.pak: spr/weapon.spr
+	pchunk2 spr/weapon.spr sprweapon.pak
 
-playert.pak: spr/playert.spr
-	pchunk2 spr/playert.spr playert.pak
+sprplayert.pak: spr/playert.spr
+	pchunk2 spr/playert.spr sprplayert.pak
 
-playerb.pak: spr/playerb.spr
-	pchunk2 spr/playerb.spr playerb.pak
+sprplayerb.pak: spr/playerb.spr
+	pchunk2 spr/playerb.spr sprplayerb.pak
 
-playerta.pak: spr/playerta.spr
-	pchunk2 spr/playerta.spr playerta.pak
+sprplayerta.pak: spr/playerta.spr
+	pchunk2 spr/playerta.spr sprplayerta.pak
 
-playerba.pak: spr/playerba.spr
-	pchunk2 spr/playerba.spr playerba.pak
+sprplayerba.pak: spr/playerba.spr
+	pchunk2 spr/playerba.spr sprplayerba.pak
 
-flyer.pak: spr/flyer.spr
-	pchunk2 spr/flyer.spr flyer.pak
+sprdroid.pak: spr/droid.spr
+	pchunk2 spr/droid.spr sprdroid.pak
 
-groundbased.pak: spr/groundbased.spr
-	pchunk2 spr/groundbased.spr groundbased.pak
-	
-fire.pak: spr/fire.spr
-	pchunk2 spr/fire.spr fire.pak
-	
-animal.pak: spr/animal.spr
-	pchunk2 spr/animal.spr animal.pak
+sprflyer.pak: spr/flyer.spr
+	pchunk2 spr/flyer.spr sprflyer.pak
+
+sprmine.pak: spr/mine.spr
+	pchunk2 spr/mine.spr sprmine.pak
+
+sprturret.pak: spr/turret.spr
+	pchunk2 spr/turret.spr sprturret.pak
+
+sprsmallwalker.pak: spr/smallwalker.spr
+	pchunk2 spr/smallwalker.spr sprsmallwalker.pak
+
+sprsmalltank.pak: spr/smalltank.spr
+	pchunk2 spr/smalltank.spr sprsmalltank.pak
+
+sprfire.pak: spr/fire.spr
+	pchunk2 spr/fire.spr sprfire.pak
+
+sprrat.pak: spr/rat.spr
+	pchunk2 spr/rat.spr sprrat.pak
+
+sprspider.pak: spr/spider.spr
+	pchunk2 spr/spider.spr sprspider.pak

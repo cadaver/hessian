@@ -25,7 +25,7 @@ ACT_EXPLOSIONGENERATOR = 23
 ACT_SMALLDROID  = 24
 ACT_LARGEDROID  = 25
 ACT_LARGEDROIDSUPER = 26
-ACT_FLYINGCRAFT = 27
+ACT_FLYER       = 27
 ACT_SMALLWALKER = 28
 ACT_SMALLTANK   = 29
 ACT_FLOATINGMINE = 30
@@ -309,13 +309,13 @@ adSpeechBubble: dc.b ONESPRITE                  ;Number of sprites
                 dc.b 54
 
 adSmallDroid:   dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_FLYER                    ;Spritefile number
+                dc.b C_DROID                    ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
                 dc.b 0,1,2
 
 adLargeDroid:   dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_FLYER                    ;Spritefile number
+                dc.b C_DROID                    ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 3                          ;Number of frames
                 dc.b 3,4,5
@@ -324,42 +324,42 @@ adFlyingCraft:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_FLYER                    ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 5                          ;Number of frames
-                dc.b $80+6,$80+7,8,7,6
+                dc.b $80+0,$80+1,2,1,0
 
 adSmallWalker:  dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_GROUNDBASED              ;Spritefile number
+                dc.b C_SMALLWALKER              ;Spritefile number
                 dc.b 12                         ;Left frame add
                 dc.b 24                         ;Number of frames
                 dc.b 1,0,1,2,1,0,1,2,1,3,3,1
                 dc.b $80+1,$80+0,$80+1,$80+2,$80+1,$80+0,$80+1,$80+2,$80+1,$80+3,$80+3,$80+1
 
 adSmallTank:    dc.b HUMANOID                   ;Number of sprites
-                dc.b C_GROUNDBASED              ;Lower part spritefile number
-                dc.b 4                          ;Lower part base spritenumber
+                dc.b C_SMALLTANK                ;Lower part spritefile number
+                dc.b 0                          ;Lower part base spritenumber
                 dc.b 64                         ;Lower part base index into the frametable
                 dc.b 3                          ;Lower part left frame add
-                dc.b C_GROUNDBASED              ;Upper part spritefile number
-                dc.b 7                          ;Upper part base spritenumber
+                dc.b C_SMALLTANK                ;Upper part spritefile number
+                dc.b 3                          ;Upper part base spritenumber
                 dc.b 78                         ;Upper part base index into the frametable
                 dc.b 3                          ;Upper part left frame add
 
 adFloatingMine: dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_FLYER                    ;Spritefile number
+                dc.b C_MINE                     ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 4                          ;Number of frames
-                dc.b 9,10,11,10
+                dc.b 0,1,2,1
 
 adRollingMine:  dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_GROUNDBASED              ;Spritefile number
+                dc.b C_MINE                     ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 2                          ;Number of frames
-                dc.b 10,11
+                dc.b 3,4
 
 adCeilingTurret:dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_FLYER                    ;Spritefile number
+                dc.b C_TURRET                   ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 5                          ;Number of frames
-                dc.b 12,13,14,15,16
+                dc.b 0,1,2,3,4
 
 adFire:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_FIRE                     ;Spritefile number
@@ -374,18 +374,18 @@ adSmokeCloud:   dc.b ONESPRITE                  ;Number of sprites
                 dc.b 4,5,6,7
 
 adRat:          dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_ANIMAL                   ;Spritefile number
+                dc.b C_RAT                      ;Spritefile number
                 dc.b 14                         ;Left frame add
                 dc.b 28                         ;Number of frames
                 dc.b 1,0,1,2,1,0,1,2,1,3,3,3,4,5
                 dc.b $80+1,$80+0,$80+1,$80+2,$80+1,$80+0,$80+1,$80+2,$80+1,$80+3,$80+3,$80+3,$80+4,$80+5
 
 adSpider:       dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_ANIMAL                   ;Spritefile number
+                dc.b C_SPIDER                   ;Spritefile number
                 dc.b 5                          ;Left frame add
                 dc.b 10                         ;Number of frames
-                dc.b 6,7,8,9,10
-                dc.b $80+6,$80+7,$80+8,$80+9,$80+10
+                dc.b 0,1,2,3,4
+                dc.b $80+0,$80+1,$80+2,$80+3,$80+4
 
         ; Actor logic data
 
