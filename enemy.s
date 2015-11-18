@@ -9,6 +9,8 @@ FR_DEADRATGROUND = 13
 FR_DEADSPIDERAIR = 3
 FR_DEADSPIDERGROUND = 4
 
+FR_DEADFLY = 2
+
         ; Flying enemy movement
         ;
         ; Parameters: X actor index
@@ -243,7 +245,9 @@ AT_NoAnim:      rts
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveTurret:     lda actF2,x
+MoveTurret:     lda #4                              ;Forget current target if further away than 4 blocks
+                jsr ForgetTarget
+                lda actF2,x
                 ldy actFd,x                         ;Start from middle frame
                 bne MT_NoInit
                 inc actFd,x
@@ -377,7 +381,7 @@ MoveSpider:     lda #FR_DEADSPIDERAIR
                 lda #2
                 ldy #2
                 jsr LoopingAnimation
-                lda actFd,x
+MS_Damage:      lda actFd,x
                 lsr
                 bcs MS_NoDamage                 ;Touch damage only each third frame
                 lda #DMG_SPIDER
@@ -391,6 +395,50 @@ MoveSpider:     lda #FR_DEADSPIDERAIR
 
 SpiderDeath:    lda #FR_DEADSPIDERAIR
                 bne RD_Common
+
+        ; Fly movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveFly:        lda actHp,x
+                beq MF_Dead
+                dec actTime,x
+                bpl MF_NoNewControls
+                jsr Random
+                and #$03
+                tay
+                lda flyerDirTbl,y
+                sta actMoveCtrl,x
+                jsr Random
+                and #$1f
+                sta actTime,x
+MF_NoNewControls:
+                jsr MoveAccelerateFlyer
+                inc actFd,x
+                lda actFd,x
+                and #$01
+                sta actF1,x
+                jmp MS_Damage                   ;Use same damage code as spider
+
+MF_Dead:        lda #2
+                ldy #FR_DEADFLY+1
+                jmp OneShotAnimateAndRemove
+
+        ; Initiate fly death
+        ;
+        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Returns: -
+        ; Modifies: A
+
+FlyDeath:       lda #SFX_ANIMALDEATH
+                jsr PlaySfx
+                lda #FR_DEADFLY
+                sta actF1,x
+                lda #$00
+                sta actFd,x
+                jmp DropItem
 
         ; Generate 2 explosions at 8 pixel radius
         ;

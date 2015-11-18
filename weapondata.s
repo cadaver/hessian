@@ -23,6 +23,7 @@ DMG_FIRE        = 2+NOMODIFY
 DMG_SMOKE       = 1+NOMODIFY
 DMG_ANIMALBITE  = 4
 DMG_SPIDER      = 1+NOMODIFY
+DMG_FLY         = 1+NOMODIFY
 
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
 DMGMOD_NOORGANIC = $80                          ;No organic damage

@@ -37,6 +37,7 @@ FIRE
 SMOKECLOUD
 RAT
 SPIDER
+FLY
 end
 ;Item names
 ;----------

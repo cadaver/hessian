@@ -513,6 +513,28 @@ PA_NoStop:      lda itemNPCAttackLength-1,y     ;New attack: set both per-actor 
 PA_CannotAttack:sta actTime,x
                 rts
 
+        ; Forget target if far enough. Called by some enemy movement routines to
+        ; modify AI response. May cause GetActorDistance to be called redundantly so
+        ; should not be called in move routines that are already CPU-intensive
+        ;
+        ; Parameters: X actor index, A threshold block distance
+        ; Returns: Target reset if far enough
+        ; Modifies: A,Y,temp1
+
+ForgetTarget:   sta temp1
+                lda actTime,x                   ;If actTime is negative, attack is ongoing
+                bmi FT_NoTarget                 ;in which case don't disturb it
+                ldy actAITarget,x
+                bmi FT_NoTarget
+                jsr GetActorDistance
+                lda temp6
+                cmp temp1
+                bcs FT_Invalidate
+                lda temp8
+                cmp temp1
+                bcs FT_Invalidate
+                rts
+
         ; Validate existing AI target / find new target. If has target, find out
         ; the possible firing controls
         ;

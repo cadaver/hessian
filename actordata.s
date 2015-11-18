@@ -35,9 +35,11 @@ ACT_FIRE        = 33
 ACT_SMOKECLOUD  = 34
 ACT_RAT         = 35
 ACT_SPIDER      = 36
+ACT_FLY         = 37
 
 HP_PLAYER       = 56
 HP_RAT          = 4
+HP_FLY          = 4
 HP_SPIDER       = 6
 HP_FLOATINGMINE = 7
 HP_ROLLINGMINE  = 7
@@ -137,6 +139,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adSmokeCloud
                 dc.b <adRat
                 dc.b <adSpider
+                dc.b <adFly
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -174,6 +177,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adSmokeCloud
                 dc.b >adRat
                 dc.b >adSpider
+                dc.b >adFly
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -387,6 +391,12 @@ adSpider:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b 0,1,2,3,4
                 dc.b $80+0,$80+1,$80+2,$80+3,$80+4
 
+adFly:          dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_TURRET                   ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 4                          ;Number of frames
+                dc.b 5,6,7,8
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -425,6 +435,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alSmokeCloud
                 dc.b <alRat
                 dc.b <alSpider
+                dc.b <alFly
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -462,6 +473,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alSmokeCloud
                 dc.b >alRat
                 dc.b >alSpider
+                dc.b >alFly
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -848,3 +860,24 @@ alSpider:       dc.w MoveSpider                 ;Update routine
                 dc.b 8                          ;Long jump gravity acceleration
                 dc.b 8                          ;Ground braking
                 dc.b -2                         ;Height in chars for headbump check (negative)
+
+alFly:          dc.w MoveFly                    ;Update routine
+                dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
+                dc.b 10                         ;Horizontal size
+                dc.b 5                          ;Size up
+                dc.b 3                          ;Size down
+                dc.w FlyDeath                   ;Destroy routine
+                dc.b HP_FLY                     ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 15                         ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b $00                        ;AI offense AND-value
+                dc.b $00                        ;AI defense probability
+                dc.b AB_NONE                    ;Attack directions
+                dc.b 4*8                        ;Horiz max movement speed
+                dc.b 8                          ;Horiz acceleration
+                dc.b 2*8                        ;Vert max movement speed
+                dc.b 8                          ;Vert acceleration
+                dc.b 1                          ;Horiz obstacle check offset
+                dc.b 1                          ;Vert obstacle check offset

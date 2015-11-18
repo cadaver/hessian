@@ -60,6 +60,7 @@ MoveSmallSplash:ldy #2
 
 MoveExplosion:  ldy #4
                 lda #1
+OneShotAnimateAndRemove:                
                 jsr OneShotAnimation
                 bcs MMH_Remove
 MExpl_NoAnimation:
