@@ -828,7 +828,7 @@ alRat:          dc.w MoveRat                    ;Update routine
 
 alSpider:       dc.w MoveSpider                 ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
-                dc.b 12                         ;Horizontal size
+                dc.b 10                         ;Horizontal size
                 dc.b 10                         ;Size up
                 dc.b 0                          ;Size down
                 dc.w SpiderDeath                ;Destroy routine
