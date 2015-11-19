@@ -39,4 +39,4 @@ spawnTypeTbl:   dc.b ACT_FLYER                  ;0
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
 
-spawnWpnTbl:    dc.b ITEM_AUTORIFLE|SPAWN_AIR        ;0
+spawnWpnTbl:    dc.b ITEM_MINIGUN|SPAWN_AIR        ;0
