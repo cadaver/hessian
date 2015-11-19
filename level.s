@@ -48,7 +48,7 @@ LoadLevelError: jsr LFR_ErrorPrompt
         ; Modifies: A,X,Y,temp vars
 
 ChangeLevel:    cmp levelNum                    ;Check if level already loaded
-                beq CL_Done
+                beq SameLevel
                 pha
                 jsr SaveLevelState
                 pla

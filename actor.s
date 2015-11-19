@@ -484,22 +484,45 @@ BTL_Next:       dex
                 sta targetList,y
                 sty numTargets
 
-        ; Check AI navigation/attack hints for one actor at a time
+        ; Perform AI linecheck for one actor at a time + search for potential better target
 
-CN_Current:     ldx #ACTI_FIRSTNPC
-CN_Loop:        dex
-                bne CN_NotOver
+CL_Current:     ldx #ACTI_FIRSTNPC
+CL_Loop:        dex
+                bne CL_NotOver
                 ldx #ACTI_LASTNPC
-CN_NotOver:     lda actT,x
-                beq CN_Next
+CL_NotOver:     stx CL_Current+1
+                lda actT,x
+                beq CL_Done
                 ldy actAITarget,x
-                bpl CN_Found
-CN_Next:        cpx CN_Current+1                ;Wrap search without finding a valid actor?
-                bne CN_Loop
-                beq CN_Done
-CN_Found:       stx CN_Current+1
+                bmi CL_Done
+                ldy numTargets
+                jsr PickTargetSub               ;Check if another target is closer
+                cmp actAITarget,x
+                beq CL_NoBetterTarget
+                tay
+                lda actFlags,x                  ;Must not be in same group
+                eor actFlags,y
+                and #AF_GROUPBITS
+                beq CL_NoBetterTarget
+                sty temp1
+                ldy actAITarget,x
+                jsr GetActorDistanceCoarse
+                lda temp6
+                clc
+                adc temp8                       ;Distance to old target
+                sta temp2
+                ldy temp1
+                jsr GetActorDistanceCoarse
+                lda temp6
+                sec                             ;Bias against the new target
+                adc temp8
+                cmp temp2
+                bcs CL_NoBetterTarget
+                jsr FT_SetNewTarget             ;Set new target, reset linecheck
+CL_NoBetterTarget:
+                ldy actAITarget,x
                 jmp LineCheck
-CN_Done:        rts
+CL_Done:        rts
 
         ; Call update routines of all actors, then interpolate. If game is paused, only interpolate
         ;
@@ -1846,6 +1869,31 @@ GetActorXDistance:
                 sbc #$00
 GAD_XDistNegOK: eor #$ff
 GAD_XDistPos:   sta temp6
+                rts
+
+        ; Calculate coarse absolute distance to actor in blocks
+        ;
+        ; Parameters: X actor index, Y target actor index
+        ; Returns: temp6 abs X distance, temp8 abs Y distance
+        ; Modifies: A
+
+GetActorDistanceCoarse:
+                lda actYH,y
+                sec
+                sbc actYH,x
+                bpl GADC_YDistPos
+                clc
+                eor #$ff
+                adc #$01
+GADC_YDistPos:  sta temp8
+                lda actXH,y
+                sec
+                sbc actXH,x
+                bpl GADC_XDistPos
+                clc
+                eor #$ff
+                adc #$01
+GADC_XDistPos:  sta temp6
                 rts
 
         ; Find NPC actor from screen by type

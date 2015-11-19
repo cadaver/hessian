@@ -245,9 +245,7 @@ AT_NoAnim:      rts
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveTurret:     lda #4                              ;Forget current target if further away than 4 blocks
-                jsr ForgetTarget
-                lda actF2,x
+MoveTurret:     lda actF2,x
                 ldy actFd,x                         ;Start from middle frame
                 bne MT_NoInit
                 inc actFd,x
