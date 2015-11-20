@@ -38,6 +38,7 @@ SMOKECLOUD
 RAT
 SPIDER
 FLY
+BAT
 end
 ;Item names
 ;----------
