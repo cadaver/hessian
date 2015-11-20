@@ -446,17 +446,17 @@ BatDeath:       lda #SFX_ANIMALDEATH
 
 MoveBat:        lda actHp,x
                 beq MB_Dead
+                lda #2                          ;Wings flapping acceleration up
+                cmp actF1,x                     ;or gravity acceleration down,
+                bcc MB_Gravity                  ;depending on frame
                 lda actMoveCtrl,x
                 and #JOY_UP
-                beq MB_Gravity
-                lda actF1,x                     ;Wings flapping acceleration up
-                cmp #3                          ;or gravity acceleration down,
-                bcs MB_Gravity                  ;depending on frame
-                sec
-                lda #6
+                bne MB_StrongFlap
+                lda #1
+                skip2
+MB_StrongFlap:  lda #6
                 bne MB_Accel
-MB_Gravity:     clc
-                lda #2
+MB_Gravity:     lda #2
 MB_Accel:       ldy #2*8
                 jsr AccActorYNegOrPos
                 jmp MB_NoGravity
