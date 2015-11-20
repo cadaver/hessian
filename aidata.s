@@ -24,10 +24,10 @@ aiJumpTblHi:    dc.b >AI_DoNothing
                 dc.b >AI_FreeMoveWithTurn
                 dc.b >AI_FlyerIdle
 
-flyerDirTbl:    dc.b JOY_LEFT|JOY_UP
-                dc.b JOY_LEFT|JOY_DOWN
-                dc.b JOY_RIGHT|JOY_UP
+flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP
+                dc.b JOY_LEFT|JOY_UP
                 dc.b JOY_RIGHT|JOY_DOWN
+                dc.b JOY_LEFT|JOY_DOWN
 
         ; Spawn list entry selection tables
 

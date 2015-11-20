@@ -8,8 +8,9 @@ MB_INWATER      = 128
 
         ; Move actor and stop at obstacles
         ;
-        ; Parameters: X actor index, A Y offset position for obstacles,
-        ;             temp4 X offset position for obstacles, Y required charinfo (minus ground bit)
+        ; Parameters: X actor index, A Y offset position for obstacles (vertical),
+        ;             temp4 X offset position for obstacles (horizontal), Y required charinfo
+        ;             (minus ground bit)
         ; Returns: A charinfo
         ; Modifies: A,Y,temp vars
 
@@ -28,7 +29,7 @@ MoveFlyer:      sta temp5
                 inc temp4
 MF_NoNegate2:   lda actSX,x
 MF_NoNegate:    jsr MoveActorX
-                lda temp5
+                lda #$00
                 ldy temp4
                 jsr GetCharInfoXYOffset
                 and #CI_OBSTACLE|CI_WATER

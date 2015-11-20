@@ -60,7 +60,7 @@ plrDmgModifyTbl:dc.b 6,8,12
         ; Human Y-size reduce table based on animation
 
 humanSizeReduceTbl:
-                dc.b 1,2,1,0,1,2,1,0,1,2,2,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,12,12,12,12
+                dc.b 1,2,1,0,1,2,1,0,1,2,2,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,19,19,19,19
 
         ; Tank Y-size addition table (based on turret direction)
 
@@ -911,7 +911,7 @@ alBat:          dc.w MoveBat                    ;Update routine
                 dc.b AB_NONE                    ;Attack directions
                 dc.b 3*8+2                      ;Horiz max movement speed
                 dc.b 6                          ;Horiz acceleration
-                dc.b 2*8                        ;Vert max movement speed
+                dc.b 3*8                        ;Vert max movement speed
                 dc.b 3                          ;Vert acceleration
-                dc.b 1                          ;Horiz obstacle check offset
+                dc.b 0                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset

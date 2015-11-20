@@ -452,19 +452,14 @@ MoveBat:        lda actHp,x
                 lda actMoveCtrl,x
                 and #JOY_UP
                 bne MB_StrongFlap
-                lda #1
+                lda #2
                 skip2
-MB_StrongFlap:  lda #6
+MB_StrongFlap:  lda #7
                 bne MB_Accel
 MB_Gravity:     lda #2
 MB_Accel:       ldy #2*8
                 jsr AccActorYNegOrPos
-                jmp MB_NoGravity
-MB_NoAccel:     clc
-                lda #1
-                ldy #2*8
-                jsr AccActorY
-MB_NoGravity:   jsr MFE_NoVertAccel             ;Left/right acceleration & move
+                jsr MFE_NoVertAccel             ;Left/right acceleration & move
                 lda #2
                 ldy #FR_DEADBATGROUND-1
                 jsr LoopingAnimation

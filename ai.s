@@ -429,8 +429,12 @@ AI_FlyerIdle:   lda #AIH_AUTOTURNWALL           ;Turn automatically if hit horiz
 AI_FlyerIdleContinue:
                 jmp AI_ClearAttackControl       ;Continue existing dir, make sure fire isn't pressed
 AI_FlyerPickDir:jsr Random
-                and #$03
+                and #$02
                 tay
+                lda actD,x
+                bpl AI_FlyerPickDirRight
+                iny
+AI_FlyerPickDirRight:
                 lda flyerDirTbl,y
                 bpl AI_FlyerStoreDir
 

@@ -1623,7 +1623,7 @@ AS_CheckBackground:
                 tya
                 tax
 AS_BGRetry:     jsr GetCharInfo
-                and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN
+                and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN|CI_WATER
                 cmp temp3
                 beq AS_BGOK
                 tay                             ;If found emptiness and trying to match ground
@@ -1638,7 +1638,7 @@ AS_BGRetryWithinBlock:
                 adc #$04
                 sta zpBitsLo
                 jsr GCI_WithinBlock
-                and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN
+                and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN|CI_WATER
                 cmp temp3
                 beq AS_BGOK
                 bne AS_BGRetryWithinBlock

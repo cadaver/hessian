@@ -889,7 +889,7 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
 ULO_NoRecharge: lda actF1+ACTI_PLAYER           ;Check for player losing oxygen
                 cmp #FR_SWIM                    ;(must be swimming & head under water)
                 bcc ULO_RestoreOxygen
-                lda #-3
+                lda #-1
                 jsr GetCharInfoOffset
                 and #CI_WATER|CI_OBSTACLE
                 beq ULO_RestoreOxygen

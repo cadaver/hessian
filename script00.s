@@ -46,8 +46,8 @@ titleTexts      = chars+608+168*2
 ;START_Y         = $1700
 
 START_LEVEL     = $07                          ;First cave
-START_X         = $1e80
-START_Y         = $1c00
+START_X         = $5080
+START_Y         = $1f00
 
 ;START_LEVEL     = $08                          ;Lower labs
 ;START_X         = $3780
