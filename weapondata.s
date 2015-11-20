@@ -7,7 +7,7 @@ DMG_MINIGUN     = 6
 DMG_KNIFE       = 6
 DMG_NIGHTSTICK  = 6
 DMG_AUTORIFLE   = 6
-DMG_BAT         = 7
+DMG_BASEBALLBAT = 7
 DMG_PISTOL      = 8
 DMG_LASER       = 12
 DMG_SHOTGUN     = 14                            ;Reduced by 2 per animation frame
@@ -161,7 +161,7 @@ wdBat:          dc.b WDB_MELEE                  ;Weapon bits
                 dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 9                          ;Attack delay
                 dc.b ACT_LARGEMELEEHIT          ;Bullet actor type
-                dc.b DMG_BAT                    ;Bullet damage
+                dc.b DMG_BASEBALLBAT            ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 1                          ;Bullet time duration
                 dc.b 1                          ;Bullet speed in pixels

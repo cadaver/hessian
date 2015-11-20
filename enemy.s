@@ -11,6 +11,8 @@ FR_DEADSPIDERGROUND = 4
 
 FR_DEADFLY = 2
 
+FR_DEADBATGROUND = 6
+
         ; Flying enemy movement
         ;
         ; Parameters: X actor index
@@ -18,7 +20,20 @@ FR_DEADFLY = 2
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveAccelerateFlyer:
-                ldy #AL_XMOVESPEED
+                ldy #AL_YMOVESPEED
+                lda (actLo),y
+                sta temp4                       ;Vertical max. speed
+                lda actMoveCtrl,x
+                and #JOY_UP|JOY_DOWN
+                beq MFE_NoVertAccel
+                cmp #JOY_UP
+                beq MFE_AccelUp                 ;C=1 accelerate up (negative)
+                clc
+MFE_AccelUp:    iny
+                lda (actLo),y                   ;Vertical acceleration
+                ldy temp4
+                jsr AccActorYNegOrPos
+MFE_NoVertAccel:ldy #AL_XMOVESPEED
                 lda (actLo),y
                 sta temp4                       ;Horizontal max. speed
                 lda actMoveCtrl,x
@@ -34,20 +49,7 @@ MFE_TurnRight:  sta actD,x
                 ldy temp4
                 jsr AccActorXNegOrPos
 MFE_NoHorizAccel:
-                ldy #AL_YMOVESPEED
-                lda (actLo),y
-                sta temp4                       ;Vertical max. speed
-                lda actMoveCtrl,x
-                and #JOY_UP|JOY_DOWN
-                beq MFE_NoVertAccel
-                cmp #JOY_UP
-                beq MFE_AccelUp                 ;C=1 accelerate up (negative)
-                clc
-MFE_AccelUp:    iny
-                lda (actLo),y                   ;Vertical acceleration
-                ldy temp4
-                jsr AccActorYNegOrPos
-MFE_NoVertAccel:ldy #AL_XCHECKOFFSET            ;Horizontal obstacle check offset
+                ldy #AL_XCHECKOFFSET            ;Horizontal obstacle check offset
                 lda (actLo),y
                 sta temp4
                 iny
@@ -424,19 +426,65 @@ MF_Dead:        lda #2
                 ldy #FR_DEADFLY+1
                 jmp OneShotAnimateAndRemove
 
-        ; Initiate fly death
+        ; Initiate fly / bat death
         ;
         ; Parameters: X actor index,Y damage source actor or $ff if none
         ; Returns: -
         ; Modifies: A
 
-FlyDeath:       lda #SFX_ANIMALDEATH
-                jsr PlaySfx
-                lda #FR_DEADFLY
+FlyDeath:       lda #FR_DEADFLY
                 sta actF1,x
-                lda #$00
-                sta actFd,x
-                jmp DropItem
+BatDeath:       lda #SFX_ANIMALDEATH
+                jsr PlaySfx
+                jmp HD_NoYSpeed
+
+        ; Bat movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveBat:        lda actHp,x
+                beq MB_Dead
+                lda actMoveCtrl,x
+                and #JOY_UP
+                beq MB_Gravity
+                lda actF1,x                     ;Wings flapping acceleration up
+                cmp #3                          ;or gravity acceleration down,
+                bcs MB_Gravity                  ;depending on frame
+                sec
+                lda #6
+                bne MB_Accel
+MB_Gravity:     clc
+                lda #2
+MB_Accel:       ldy #2*8
+                jsr AccActorYNegOrPos
+                jmp MB_NoGravity
+MB_NoAccel:     clc
+                lda #1
+                ldy #2*8
+                jsr AccActorY
+MB_NoGravity:   jsr MFE_NoVertAccel             ;Left/right acceleration & move
+                lda #2
+                ldy #FR_DEADBATGROUND-1
+                jsr LoopingAnimation
+                ldy #ACTI_PLAYER
+                jsr GetActorDistance
+                lda temp5                       ;No damage after has flown past player
+                eor actD,x                      ;Otherwise use same damage code as spider
+                bmi MB_NoDamage
+                jmp MS_Damage
+
+MB_Dead:        jsr DeathFlickerAndRemove
+                jsr FallingMotionCommon
+                lsr
+                bcs MB_DeadGrounded
+                rts
+MB_DeadGrounded:lda #$00
+                sta actSX,x                     ;Instant braking
+                lda #FR_DEADBATGROUND
+                sta actF1,x
+MB_NoDamage:    rts
 
         ; Generate 2 explosions at 8 pixel radius
         ;
