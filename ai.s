@@ -19,6 +19,7 @@ AIMODE_TURRET       = 7
 AIMODE_ANIMAL       = 8
 AIMODE_FREEMOVE     = 9
 AIMODE_FLYERFREEMOVE = 10
+AIMODE_FISH         = 11
 
 NOTARGET            = $ff
 
@@ -392,7 +393,7 @@ AI_Flyer:       lda actTime,x                   ;Ongoing attack?
                 php
                 dec actYH,x
                 plp
-                bcc AI_FlyerIdle
+AI_FlyerCommon: bcc AI_FlyerIdle
                 cmp #JOY_FIRE
                 bcc AI_FlyerFollow
                 ldy actWpn,x                    ;If no weapon, always follow (mines)
@@ -437,6 +438,11 @@ AI_FlyerPickDir:jsr Random
 AI_FlyerPickDirRight:
                 lda flyerDirTbl,y
                 bpl AI_FlyerStoreDir
+
+        ; Fish AI
+
+AI_Fish:        jsr FindTargetAndAttackDir
+                jmp AI_FlyerCommon
 
         ; Accumulate aggression & attack to specified direction. Also handle
         ; defensive ducking if the actor can duck
@@ -536,7 +542,7 @@ FindTargetAndAttackDir:
                 beq FT_Invalidate               ;so only checking for health is enough
                 lda actLine,x                   ;Invalidate / pick new if no line of sight
                 bmi FT_TargetOK
-                bne FT_Invalidate
+                beq FT_NoTarget                 ;Line of sight not checked yet
 FT_Invalidate:  lda #NOTARGET
 FT_StoreTarget: sta actAITarget,x
 FT_NoTarget:    clc

@@ -37,8 +37,10 @@ ACT_RAT         = 35
 ACT_SPIDER      = 36
 ACT_FLY         = 37
 ACT_BAT         = 38
+ACT_FISH        = 39
 
 HP_PLAYER       = 56
+HP_FISH         = 0                             ;Fighting not possible underwater; cannot be damaged by accident
 HP_RAT          = 4
 HP_FLY          = 4
 HP_BAT          = 4
@@ -143,6 +145,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adSpider
                 dc.b <adFly
                 dc.b <adBat
+                dc.b <adFish
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -182,6 +185,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adSpider
                 dc.b >adFly
                 dc.b >adBat
+                dc.b >adFish
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -229,17 +233,13 @@ adRifleBullet:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b 5,6,7,$80+6,5
                 dc.b 5,$80+6,7,6,5
 
-adFlame:        dc.b ONESPRITE                  ;Number of sprites
+adFlame:        dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 4                          ;Number of frames
-                dc.b 23,24,25,26                ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 23                         ;Base spritenumber
 
-adEMP:          dc.b ONESPRITE                  ;Number of sprites
+adEMP:          dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 10                         ;Number of frames
-                dc.b 37,38,39,40                ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 37                         ;Base spritenumber
 
 adLaser:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -248,24 +248,18 @@ adLaser:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b 41,42,43,$80+42,41         ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 41,$80+42,43,42,41
 
-adPlasma:       dc.b ONESPRITE                  ;Number of sprites
+adPlasma:       dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 1                          ;Number of frames
-                dc.b 44                         ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 44                         ;Base spritenumber
 
 adLauncherGrenade:
-                dc.b ONESPRITE                  ;Number of sprites
+                dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 3                          ;Number of frames
-                dc.b 27,28,29                   ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 27                         ;Base spritenumber
 
-adGrenade:      dc.b ONESPRITE                  ;Number of sprites
+adGrenade:      dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 1                          ;Number of frames
-                dc.b 13                         ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 13                         ;Base spritenumber
 
 adRocket:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -274,59 +268,41 @@ adRocket:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b 30,31,32,33,34             ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 30,$80+31,$80+32,$80+33,34
 
-adMine:         dc.b ONESPRITE                  ;Number of sprites
+adMine:         dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 2                          ;Number of frames
-                dc.b 55,56                      ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 55                         ;Base spritenumber
 
-adExplosion:    dc.b ONESPRITE                  ;Number of sprites
+adExplosion:    dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 5                          ;Number of frames
-                dc.b 0,1,2,3,4                  ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 0                          ;Base spritenumber
 
-adSmokeTrail:   dc.b ONESPRITE                  ;Number of sprites
+adSmokeTrail:   dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 2                          ;Number of frames
-                dc.b 35,36                      ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 35                         ;Base spritenumber
 
-adWaterSplash:  dc.b ONESPRITE                  ;Number of sprites
+adWaterSplash:  dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 5                          ;Number of frames
-                dc.b 45,46,47,48,49             ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 45                         ;Base spritenumber
 
-adSmallSplash:  dc.b ONESPRITE                  ;Number of sprites
+adSmallSplash:  dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 3                          ;Number of frames
-                dc.b 50,51,52                   ;Frametable (first all frames of sprite1, then sprite2)
+                dc.b 50                         ;Base spritenumber
 
-adObjectMarker: dc.b ONESPRITE                  ;Number of sprites
+adObjectMarker: dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 1                          ;Number of frames
-                dc.b 53
+                dc.b 53                         ;Base spritenumber
 
-adSpeechBubble: dc.b ONESPRITE                  ;Number of sprites
+adSpeechBubble: dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 1                          ;Number of frames
-                dc.b 54
+                dc.b 54                         ;Base spritenumber
 
-adSmallDroid:   dc.b ONESPRITE                  ;Number of sprites
+adSmallDroid:   dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_DROID                    ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 3                          ;Number of frames
-                dc.b 0,1,2
+                dc.b 0                          ;Base spritenumber
 
-adLargeDroid:   dc.b ONESPRITE                  ;Number of sprites
+adLargeDroid:   dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_DROID                    ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 3                          ;Number of frames
-                dc.b 3,4,5
+                dc.b 3                          ;Base spritenumber
 
 adFlyingCraft:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_FLYER                    ;Spritefile number
@@ -336,10 +312,9 @@ adFlyingCraft:  dc.b ONESPRITE                  ;Number of sprites
 
 adSmallWalker:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_SMALLWALKER              ;Spritefile number
-                dc.b 12                         ;Left frame add
-                dc.b 24                         ;Number of frames
+                dc.b LEFTFRAME_FLIP             ;Left frame add
+                dc.b 12                         ;Number of frames
                 dc.b 1,0,1,2,1,0,1,2,1,3,3,1
-                dc.b $80+1,$80+0,$80+1,$80+2,$80+1,$80+0,$80+1,$80+2,$80+1,$80+3,$80+3,$80+1
 
 adSmallTank:    dc.b HUMANOID                   ;Number of sprites
                 dc.b C_SMALLTANK                ;Lower part spritefile number
@@ -357,56 +332,49 @@ adFloatingMine: dc.b ONESPRITE                  ;Number of sprites
                 dc.b 4                          ;Number of frames
                 dc.b 0,1,2,1
 
-adRollingMine:  dc.b ONESPRITE                  ;Number of sprites
+adRollingMine:  dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_MINE                     ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 2                          ;Number of frames
-                dc.b 3,4
+                dc.b 3                          ;Base spritenumber
 
-adCeilingTurret:dc.b ONESPRITE                  ;Number of sprites
+adCeilingTurret:dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_TURRET                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 5                          ;Number of frames
-                dc.b 0,1,2,3,4
+                dc.b 0                          ;Base spritenumber
 
-adFire:         dc.b ONESPRITE                  ;Number of sprites
+adFire:         dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_FIRE                     ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 4                          ;Number of frames
-                dc.b 0,1,2,3
+                dc.b 0                          ;Base spritenumber
 
-adSmokeCloud:   dc.b ONESPRITE                  ;Number of sprites
+adSmokeCloud:   dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_FIRE                     ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 4                          ;Number of frames
-                dc.b 4,5,6,7
+                dc.b 4                          ;Base spritenumber
 
 adRat:          dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_RAT                      ;Spritefile number
-                dc.b 14                         ;Left frame add
-                dc.b 28                         ;Number of frames
+                dc.b LEFTFRAME_FLIP             ;Left frame add
+                dc.b 14                         ;Number of frames
                 dc.b 1,0,1,2,1,0,1,2,1,3,3,3,4,5
-                dc.b $80+1,$80+0,$80+1,$80+2,$80+1,$80+0,$80+1,$80+2,$80+1,$80+3,$80+3,$80+3,$80+4,$80+5
 
 adSpider:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_SPIDER                   ;Spritefile number
-                dc.b 5                          ;Left frame add
-                dc.b 10                         ;Number of frames
+                dc.b LEFTFRAME_FLIP             ;Left frame add
+                dc.b 5                          ;Number of frames
                 dc.b 0,1,2,3,4
-                dc.b $80+0,$80+1,$80+2,$80+3,$80+4
 
-adFly:          dc.b ONESPRITE                  ;Number of sprites
+adFly:          dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_TURRET                   ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 4                          ;Number of frames
-                dc.b 5,6,7,8
+                dc.b 5                          ;Base spritenumber
 
 adBat:          dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_RAT                      ;Spritefile number
-                dc.b 7                          ;Left frame add
-                dc.b 14                         ;Number of frames
+                dc.b LEFTFRAME_FLIP             ;Left frame add
+                dc.b 7                          ;Number of frames
                 dc.b 6,7,8,9,8,7,10
-                dc.b $80+6,$80+7,$80+8,$80+9,$80+8,$80+7,$80+10
+
+adFish:         dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_SPIDER                   ;Spritefile number
+                dc.b LEFTFRAME_FLIP             ;Left frame add
+                dc.b 4                          ;Number of frames
+                dc.b 5,6
 
         ; Actor logic data
 
@@ -448,6 +416,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alSpider
                 dc.b <alFly
                 dc.b <alBat
+                dc.b <alFish
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -487,6 +456,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alSpider
                 dc.b >alFly
                 dc.b >alBat
+                dc.b >alFish
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -914,4 +884,25 @@ alBat:          dc.w MoveBat                    ;Update routine
                 dc.b 3*8                        ;Vert max movement speed
                 dc.b 3                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
+                dc.b 1                          ;Vert obstacle check offset
+
+alFish:         dc.w MoveFish                   ;Update routine
+                dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
+                dc.b 2                          ;Horizontal size
+                dc.b 1                          ;Size up
+                dc.b 3                          ;Size down
+                dc.w FishDeath                  ;Destroy routine
+                dc.b HP_BAT                     ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 0                          ;Score from kill
+                dc.b AIMODE_FISH                ;AI mode when spawned randomly
+                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b $1f                        ;AI offense AND-value
+                dc.b $00                        ;AI defense probability
+                dc.b AB_HORIZONTAL              ;Attack directions
+                dc.b 2*8-1                      ;Horiz max movement speed
+                dc.b 2                          ;Horiz acceleration
+                dc.b 6                          ;Vert max movement speed
+                dc.b 1                          ;Vert acceleration
+                dc.b 1                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset

@@ -11,6 +11,7 @@ aiJumpTblLo:    dc.b <AI_DoNothing
                 dc.b <AI_Animal
                 dc.b <AI_FreeMoveWithTurn
                 dc.b <AI_FlyerIdle
+                dc.b <AI_Fish
 
 aiJumpTblHi:    dc.b >AI_DoNothing
                 dc.b >AI_TurnTo
@@ -23,6 +24,7 @@ aiJumpTblHi:    dc.b >AI_DoNothing
                 dc.b >AI_Animal
                 dc.b >AI_FreeMoveWithTurn
                 dc.b >AI_FlyerIdle
+                dc.b >AI_Fish
 
 flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP
                 dc.b JOY_LEFT|JOY_UP

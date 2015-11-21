@@ -14,8 +14,8 @@ MB_INWATER      = 128
         ; Returns: A charinfo
         ; Modifies: A,Y,temp vars
 
-MoveFlyer:      sta temp5
-                sty temp6
+MoveFlyer:      sty temp6
+MF_HasCharInfo: sta temp5
                 lda actMB,x                     ;Clear other bits except water
                 and #MB_INWATER
                 sta actMB,x

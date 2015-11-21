@@ -20,6 +20,9 @@ FR_DEADBATGROUND = 6
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveAccelerateFlyer:
+                lda #$00
+MFE_CustomCharInfo:
+                sta temp6
                 ldy #AL_YMOVESPEED
                 lda (actLo),y
                 sta temp4                       ;Vertical max. speed
@@ -59,8 +62,7 @@ MFE_NoHorizAccel:
                 clc
                 eor #$ff
                 adc #$01
-MFE_NoNegate:   ldy #$00                        ;Require charinfo free of obstacles
-                jsr MoveFlyer
+MFE_NoNegate:   jsr MF_HasCharInfo
                 ldy actAIHelp,x                 ;Zero speed and reverse dir if requested
                 lda actMB,x
                 and #MB_HITWALL
@@ -459,10 +461,12 @@ MB_StrongFlap:  lda #7
 MB_Gravity:     lda #2
 MB_Accel:       ldy #2*8
                 jsr AccActorYNegOrPos
+                lda #$00
+                sta temp6
                 jsr MFE_NoVertAccel             ;Left/right acceleration & move
                 lda #2
                 ldy #FR_DEADBATGROUND-1
-                jsr LoopingAnimation
+MB_BatCommon:   jsr LoopingAnimation
                 ldy #ACTI_PLAYER
                 jsr GetActorDistance
                 lda temp5                       ;No damage after has flown past player
@@ -479,7 +483,20 @@ MB_DeadGrounded:lda #$00
                 sta actSX,x                     ;Instant braking
                 lda #FR_DEADBATGROUND
                 sta actF1,x
+FishDeath:
 MB_NoDamage:    rts
+
+        ; Fish movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveFish:       lda #CI_WATER
+                jsr MFE_CustomCharInfo
+                lda #2
+                ldy #1
+                bne MB_BatCommon
 
         ; Generate 2 explosions at 8 pixel radius
         ;

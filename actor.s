@@ -10,6 +10,9 @@ AD_LEFTFRADD    = 2
 AD_NUMFRAMES    = 3                             ;For incrementing framepointer. Only significant if multiple sprites
 AD_FRAMES       = 4
 
+ADD_SPRFILE     = 1
+ADD_BASEFRAME   = 2
+
 ADH_SPRFILE     = 1
 ADH_BASEFRAME   = 2
 ADH_BASEINDEX   = 3                             ;Index to a static 256-byte table for humanoid actor spriteframes
@@ -19,10 +22,11 @@ ADH_BASEFRAME2  = 6
 ADH_BASEINDEX2  = 7                             ;Index to a static 256-byte table for humanoid actor framenumbers
 ADH_LEFTFRADD2  = 8
 
-ONESPRITE       = $00
-TWOSPRITE       = $01
-THREESPRITE     = $02
-FOURSPRITE      = $03
+ONESPRITEDIRECT = $00
+ONESPRITE       = $01
+TWOSPRITE       = $02
+THREESPRITE     = $03
+FOURSPRITE      = $04
 HUMANOID        = $80
 
 COLOR_FLICKER   = $40
@@ -106,6 +110,8 @@ SPAWN_AIR       = $80
 SPAWN_AIRTOP    = $c0
 
 DMG_SFX_DELAY   = 2
+
+LEFTFRAME_FLIP  = $80
 
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
@@ -310,19 +316,21 @@ DA_HumanWpnF:   lda #$00
                 sty sprFileHi
 DA_NormalLast:  jmp GetAndStoreSprite
 
-DA_Normal:      sta temp5
+DA_Normal:      beq DA_Direct
+                sta temp5
                 lda actF1,x
                 ldy actD,x
                 bpl DA_NormalRight
                 ldy #AD_LEFTFRADD               ;Add left frame offset if necessary
                 adc (actLo),y
 DA_NormalRight: adc #AD_FRAMES
+                bmi DA_NormalFlipLeft
                 sta temp6                       ;Store framepointer
                 ldx sprIndex
 DA_NormalLoop:  tay
                 lda (actLo),y
                 dec temp5                       ;Decrement actor sprite count
-                bmi DA_NormalLast
+                beq DA_NormalLast
                 jsr GetAndStoreSprite
                 ldy #AD_NUMFRAMES
                 lda temp6                       ;Advance framepointer
@@ -332,6 +340,22 @@ DA_NormalLoop:  tay
                 bcc DA_NormalLoop
 DA_HumanNoWeapon:
                 rts
+
+DA_Direct:      ldy #ADD_BASEFRAME
+                lda actF1,x
+                adc (actLo),y
+                ldx sprIndex
+                bpl DA_NormalLast
+
+DA_NormalFlipLeft:
+                sbc #$80-1                      ;C=0
+                tay
+                lda (actLo),y
+                ora #$80
+                ldx sprIndex
+                bpl DA_NormalLast
+
+
 
         ; Set all actors to be added on screen. Used on level transitions
         ;
@@ -530,8 +554,20 @@ LineCheck:      lda actXH,x
                 lda #$05                        ;or vice versa to stop at narrow walls
                 adc #$00                        ;(significant in Bio-dome level)
                 sta LC_BlockPos+1
-                lda actAIMode,x
-                cmp #AIMODE_FLYER
+                lda actAIMode,x                 ;Special conditions for fish
+                cmp #AIMODE_FISH
+                bne LC_NotFish
+                lda actLine,x
+                bpl LC_FishCheckLine
+LC_FishHasLine: lda actMB,x                     ;When fish already has line of sight, can lose it only
+                and #MB_HITWALL|MB_HITWALLVERTICAL ;by colliding to walls
+                beq CL_Done
+                jmp LC_NoLine
+LC_FishCheckLine:
+                lda actYH,x
+                sta temp2
+                bcs LC_FishCheckLine2           ;C=1
+LC_NotFish:     cmp #AIMODE_FLYER
                 beq LC_NotHigher
                 lda actYL,x                     ;Check 1 block higher if own low Y-pos < $80
                 asl                             ;(except for flyer / ceiling turret AI)
@@ -540,6 +576,7 @@ LC_NotHigher:   lda actYH,x
                 sta temp2
                 lda actYL,y                     ;Check 1 block higher if target low Y-pos < $80
                 asl
+LC_FishCheckLine2:
                 lda actYH,y
                 sbc #$00
                 sta LC_CmpY+1
@@ -560,7 +597,7 @@ LC_CmpX:        cpy #$00
 LC_CmpY:        cpy #$00
                 bcc LC_MoveDown
                 bne LC_MoveUp
-                lda #LINE_YES
+LC_HasLine:     lda #LINE_YES
 LC_StoreLine:   sta actLine,x
                 rts
 LC_MoveRight:   iny
