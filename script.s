@@ -20,6 +20,13 @@ EP_MOVEROCK     = $010e
 EP_MOVEFIREBALL = $010f
 EP_MOVESTEAM    = $0110
 EP_MOVEORGANICWALKER = $0111
+EP_DESTROYFIRE  = $0112
+EP_RATDEATH     = $0113
+EP_SPIDERDEATH  = $0114
+EP_FLYDEATH     = $0115
+EP_BATDEATH     = $0116
+EP_DESTROYROCK  = $0117
+EP_ORGANICWALKERDEATH = $0118
 
 AT_ADD          = 1
 AT_REMOVE       = 2
@@ -90,12 +97,12 @@ ActorTrigger:   lda actFlags,x
                 and #AF_USETRIGGERS             ;First check: does the actor use triggers at all?
                 beq AT_Fail
 ActorTriggerNoFlagCheck:
-                sty ES_ParamA+1
+                sty ES_ParamY+1
                 ldy actT,x
                 jsr ATSearch
                 bcc AT_Fail
                 lda atMask,y
-AT_MaskCheck:   and ES_ParamA+1
+AT_MaskCheck:   and ES_ParamY+1
                 beq AT_Fail
                 stx ES_ParamX+1
                 lda atScriptEP,y
@@ -107,11 +114,11 @@ AT_Fail:        rts
 
         ; Execute a script
         ;
-        ; Parameters: A script entrypoint, X script file, ES_ParamA+1, ES_ParamX+1 (or Y in ExecScriptParam)
+        ; Parameters: A script entrypoint, X script file, ES_ParamX+1, ES_ParamY+1 (or Y in ExecScriptParam)
         ; Returns: -
         ; Modifies: A,X,Y,loader temp vars
 
-ExecScriptParam:sty ES_ParamA+1
+ExecScriptParam:sty ES_ParamY+1
 ExecScript:     pha
 ES_LoadedScriptFile:
                 cpx #$ff                        ;Check if same file already loaded
@@ -131,8 +138,8 @@ ES_SameFile:    pla
                 sta ES_ScriptJump+1
                 lda scriptCodeStart+1,x
                 sta ES_ScriptJump+2
-ES_ParamA:      lda #$00
 ES_ParamX:      ldx #$00
+ES_ParamY:      ldy #$00
 ES_ScriptJump:  jmp $1000
 
         ; Set/stop a continuous script

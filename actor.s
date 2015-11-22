@@ -1602,18 +1602,27 @@ DestroyActor:   sty temp8
                 tay
                 pla
                 jsr AddScore
-DA_NoScore:     ldy #AL_DESTROYROUTINE
+DA_NoScore:     ldy #AT_DESTROY                 ;Run the DESTROY trigger
+                jsr ActorTrigger
+                lda #$00                        ;Set hitpoints to zero. Some destroy routines like
+                sta actHp,x                     ;the dividing rock will reset HP to nonzero so do now
+                ldy #AL_DESTROYROUTINE          ;to not disturb that mechanism
                 lda (actLo),y
                 sta DA_Jump+1
                 iny
                 lda (actLo),y
-                sta DA_Jump+2
-                ldy #AT_DESTROY                 ;Run the DESTROY trigger
-                jsr ActorTrigger
+                bpl DA_NoScript
+                stx ES_ParamX+1
+                and #$7f
+                tax
+                lda DA_Jump+1
+                ldy temp8
+                jsr ExecScriptParam
+                clc
+                rts
+DA_NoScript:    sta DA_Jump+2
                 ldy temp8
 DA_Jump:        jsr $0000
-                lda #$00
-                sta actHp,x
                 clc
 DA_Done:        rts
 

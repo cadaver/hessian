@@ -2,7 +2,16 @@
                 include mainsym.s
 
         ; Script 1, loadable enemy movement routines + data
-        
+
+FR_DEADRATAIR = 12
+FR_DEADRATGROUND = 13
+FR_DEADSPIDERAIR = 3
+FR_DEADSPIDERGROUND = 4
+FR_DEADFLY = 2
+FR_DEADBATGROUND = 6
+FR_DEADWALKERAIR = 12
+FR_DEADWALKERGROUND = 13
+
                 org scriptCodeStart
 
                 dc.w MoveDroid
@@ -23,6 +32,13 @@
                 dc.w MoveFireball
                 dc.w MoveSteam
                 dc.w MoveOrganicWalker
+                dc.w DestroyFire
+                dc.w RatDeath
+                dc.w SpiderDeath
+                dc.w FlyDeath
+                dc.w BatDeath
+                dc.w DestroyRock
+                dc.w OrganicWalkerDeath
 
         ; Floating droid update routine
         ;
@@ -352,8 +368,15 @@ MoveFish:       lda #CI_WATER
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveRock:       lda actHp,x                     ;Check for destroy
-                beq DivideRock
+MoveRock:       lda actTime,x                   ;Randomize X-speed on first frame
+                bne MR_HasRandomSpeed
+                inc actTime,x
+                jsr Random
+                and #$0f
+                sec
+                sbc #$08
+                sta actSX,x
+MR_HasRandomSpeed:
                 ldy actF1,x                     ;Set size according to frame
                 lda rockSizeTbl,y
                 sta actSizeH,x
@@ -365,17 +388,9 @@ MoveRock:       lda actHp,x                     ;Check for destroy
                 beq MR_NoDamage
                 lda rockDamageTbl,y             ;Damage based on frame (size)
                 jsr CollideAndDamagePlayer
-                bcs DivideRock_NoSound          ;Damage sound already played
-MR_NoDamage:    lda actTime,x                   ;Randomize X-speed on first frame
-                bne MR_HasRandomSpeed
-                inc actTime,x
-                jsr Random
-                and #$0f
-                sec
-                sbc #$08
-                sta actSX,x
-MR_HasRandomSpeed:
-                lda #-1                         ;Ceiling check offset
+                bcc MR_NoDamage                 ;Damage sound already played
+                jmp DestroyActorNoSource        ;Destroy self on collision
+MR_NoDamage:    lda #-1                         ;Ceiling check offset
                 sta temp4
                 lda #GRENADE_ACCEL-1
                 ldy #GRENADE_MAX_YSPEED
@@ -391,9 +406,8 @@ MR_HasRandomSpeed:
                 sta actSX,x
                 plp
 MR_NoHitWall:   bcc MR_NoCollision
-DivideRock:     lda #SFX_DAMAGE
+DestroyRock:    lda #SFX_DAMAGE
                 jsr PlaySfx
-DivideRock_NoSound:
                 inc actF1,x
                 lda actF1,x
                 cmp #3
@@ -436,7 +450,7 @@ MR_RandomizeSmallerRock:
                 sta actSY,x
                 lda #$00                        ;Reset ground flag
                 sta actMB,x
-                lda #HP_ROCK
+                lda #HP_ROCK                    ;Reset hitpoints if was destroyed
                 sta actHp,x
                 rts
 
@@ -509,6 +523,65 @@ MoveOrganicWalker:
 MOW_Dead:       lda #FR_DEADWALKERGROUND
                 sta temp1
                 jmp MR_Dead
+
+        ; Fire destruction (transform into smoke)
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+DestroyFire:    lda #ACT_SMOKECLOUD
+                jmp TransformBullet
+
+        ; Rat death
+        ;
+        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Returns: -
+        ; Modifies: A
+
+RatDeath:       lda #FR_DEADRATAIR
+RD_Common:      pha
+                jsr HD_Common
+                lda #SFX_ANIMALDEATH
+                jsr PlaySfx
+                pla
+RD_SetFrameAndSpeed:
+                sta actF1,x
+                lda #-28
+                sta actSY,x
+                rts
+
+        ; Spider death
+        ;
+        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Returns: -
+        ; Modifies: A
+
+SpiderDeath:    lda #FR_DEADSPIDERAIR
+                bne RD_Common
+
+        ; Fly / bat death
+        ;
+        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Returns: -
+        ; Modifies: A
+
+FlyDeath:       lda #FR_DEADFLY
+                sta actF1,x
+BatDeath:       lda #SFX_ANIMALDEATH
+                jsr PlaySfx
+                jmp HD_Common
+
+        ; Organic walker death
+        ;
+        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Returns: -
+        ; Modifies: A
+
+OrganicWalkerDeath:
+                jsr HumanDeath
+                lda #FR_DEADWALKERAIR
+                bne RD_SetFrameAndSpeed
 
         ; Common flying enemy movement
         ;

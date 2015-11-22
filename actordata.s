@@ -807,7 +807,7 @@ alFire:         dc.w USESCRIPT|EP_MOVEFIRE      ;Update routine
                 dc.b 8                          ;Horizontal size
                 dc.b 20                         ;Size up
                 dc.b 1                          ;Size down
-                dc.w DoNothing                  ;Destroy routine (handled by move routine)
+                dc.w USESCRIPT|EP_DESTROYFIRE   ;Destroy routine
                 dc.b 0                          ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 100                        ;Score from kill
@@ -824,7 +824,7 @@ alRat:          dc.w USESCRIPT|EP_MOVERAT       ;Update routine
                 dc.b 8                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 2                          ;Size down
-                dc.w RatDeath                   ;Destroy routine
+                dc.w USESCRIPT|EP_RATDEATH      ;Destroy routine
                 dc.b HP_RAT                     ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 10                         ;Score from kill
@@ -848,7 +848,7 @@ alSpider:       dc.w USESCRIPT|EP_MOVESPIDER    ;Update routine
                 dc.b 10                         ;Horizontal size
                 dc.b 10                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w SpiderDeath                ;Destroy routine
+                dc.w USESCRIPT|EP_SPIDERDEATH   ;Destroy routine
                 dc.b HP_SPIDER                  ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 20                         ;Score from kill
@@ -871,7 +871,7 @@ alFly:          dc.w USESCRIPT|EP_MOVEFLY       ;Update routine
                 dc.b 10                         ;Horizontal size
                 dc.b 5                          ;Size up
                 dc.b 3                          ;Size down
-                dc.w FlyDeath                   ;Destroy routine
+                dc.w USESCRIPT|EP_FLYDEATH      ;Destroy routine
                 dc.b HP_FLY                     ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 15                         ;Score from kill
@@ -892,7 +892,7 @@ alBat:          dc.w USESCRIPT|EP_MOVEBAT       ;Update routine
                 dc.b 7                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 2                          ;Size down
-                dc.w BatDeath                   ;Destroy routine
+                dc.w USESCRIPT|EP_BATDEATH      ;Destroy routine
                 dc.b HP_BAT                     ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 15                         ;Score from kill
@@ -934,7 +934,7 @@ alRock:         dc.w USESCRIPT|EP_MOVEROCK      ;Update routine
                 dc.b 10                         ;Horizontal size
                 dc.b 20                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w DoNothing                  ;Destroy routine (destroy handled by move routine)
+                dc.w USESCRIPT|EP_DESTROYROCK   ;Destroy routin
                 dc.b HP_ROCK                    ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 10                         ;Score from kill
@@ -967,7 +967,7 @@ alOrganicWalker:dc.w USESCRIPT|EP_MOVEORGANICWALKER ;Update routine
                 dc.b 12                         ;Horizontal size
                 dc.b 21                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w OrganicWalkerDeath         ;Destroy routine
+                dc.w USESCRIPT|EP_ORGANICWALKERDEATH ;Destroy routine
                 dc.b HP_ORGANICWALKER           ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 55                         ;Score from kill

@@ -139,7 +139,7 @@ M               set M+1
 
         ; Go to either the title screen or save screen
 
-                lda ES_ParamA+1                 ;Script execution parameter
+                lda ES_ParamY+1                 ;Script execution parameter
                 beq TitleTexts
 
         ; Save game

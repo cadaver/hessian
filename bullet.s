@@ -269,7 +269,7 @@ EGrn_FullDamageBelow:
         ; Turn an actor into an explosion
         ;
         ; Parameters: X actor index
-        ; Returns: -
+        ; Returns: A=0
         ; Modifies: A
 
 ExplodeActor:   lda #SFX_EXPLOSION
@@ -277,11 +277,10 @@ ExplodeActor:   lda #SFX_EXPLOSION
                 lda #ACT_EXPLOSION
 TransformBullet:sta actT,x
                 lda #$00
-                sta actHp,x                     ;Make sure no HP
                 sta actF1,x
                 sta actFd,x
 MGrn_NoExplosion:
-               rts
+                rts
 
         ; Grenade update routine
         ;
