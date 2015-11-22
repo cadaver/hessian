@@ -39,8 +39,8 @@ spawnListAddTbl:dc.b $00                        ;0: entry 0
 
         ; Spawn list entries
 
-spawnTypeTbl:   dc.b ACT_ROCK                 ;0
+spawnTypeTbl:   dc.b ACT_FIREBALL               ;0
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
 
-spawnWpnTbl:    dc.b ITEM_NONE|SPAWN_AIRTOP        ;0
+spawnWpnTbl:    dc.b ITEM_NONE|SPAWN_AIRBOTTOM     ;0

@@ -190,6 +190,7 @@ MoveFloatingMine:
                 jsr LoopingAnimation
                 jsr MoveAccelerateFlyer
 MineCommon:     ldy actAITarget,x
+                bmi MC_NoCollision
                 lda #DMG_ENEMYMINE
                 jsr CollideAndDamageTarget
                 bcc MC_NoCollision
@@ -533,13 +534,39 @@ MoveRock:       ldy actF1,x                     ;Set size according to frame
                 sta actSizeU,x
                 lda actSY,x
                 bmi MR_NoDamage                 ;No damage if not falling
+                lda actHp+ACTI_PLAYER           ;No damage if player already dead
+                beq MR_NoDamage
                 lda rockDamageTbl,y             ;Damage based on frame (size)
                 jsr CollideAndDamagePlayer
-                bcs DivideRock
-MR_NoDamage:    jsr RockMotionCommon
-                bcc MR_NoCollision
+                bcs DivideRock_NoSound          ;Damage sound already played
+MR_NoDamage:    lda actTime,x                   ;Randomize X-speed on first frame
+                bne MR_HasRandomSpeed
+                inc actTime,x
+                jsr Random
+                and #$0f
+                sec
+                sbc #$08
+                sta actSX,x
+MR_HasRandomSpeed:
+                lda #-1                         ;Ceiling check offset
+                sta temp4
+                lda #GRENADE_ACCEL-1
+                ldy #GRENADE_MAX_YSPEED
+                jsr MoveWithGravity
+                lda actMB,x
+                lsr
+                and #MB_HITWALL/2
+                beq MR_NoHitWall
+                php
+                lda actSX,x
+                eor #$ff
+                adc #$00                        ;Assume C=0 (not grounded)
+                sta actSX,x
+                plp
+MR_NoHitWall:   bcc MR_NoCollision
 DivideRock:     lda #SFX_DAMAGE
                 jsr PlaySfx
+DivideRock_NoSound:
                 inc actF1,x
                 lda actF1,x
                 cmp #3
@@ -586,33 +613,41 @@ MR_RandomizeSmallerRock:
                 sta actHp,x
                 rts
 
-RockMotionCommon:
-                lda actTime,x                     ;Randomize X-speed on first frame
-                bne RMC_HasRandomSpeed
+        ; Fireball movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveFireball:   lda actTime,x                   ;Randomize X-speed on first frame
+                bne MFB_HasRandomSpeed          ;and set upward motion
                 inc actTime,x
                 jsr Random
                 and #$0f
                 sec
                 sbc #$08
                 sta actSX,x
-RMC_HasRandomSpeed:
-                lda #-1                         ;Ceiling check offset
-                sta temp4
-                lda #GRENADE_ACCEL-1
+                jsr Random
+                and #$0f
+                sec
+                sbc #6*8
+                sta actSY,x
+                lda #SFX_GRENADELAUNCHER
+                jsr PlaySfx
+MFB_HasRandomSpeed:
+                lda #DMG_FIREBALL
+                jsr CollideAndDamagePlayer
+                lda #1
+                ldy #3
+                jsr LoopingAnimation
+                lda #GRENADE_ACCEL-2
                 ldy #GRENADE_MAX_YSPEED
-                jsr MoveWithGravity
-                lda actMB,x
-                lsr
-                and #MB_HITWALL/2
-                beq RMC_NoHitWall
-                php
+                jsr AccActorY
                 lda actSX,x
-                eor #$ff
-                adc #$00                        ;Assume C=0 (not grounded)
-                sta actSX,x
-                plp
-RMC_NoHitWall:
-MoveFireball:   rts
+                jsr MoveActorX
+                lda actSY,x
+                jmp MoveActorY
+                rts
 
         ; Turn enemy into an explosion & drop item
         ;

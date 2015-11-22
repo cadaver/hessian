@@ -40,6 +40,8 @@ SPIDER
 FLY
 BAT
 FISH
+ROCK
+FIREBALL
 end
 ;Item names
 ;----------

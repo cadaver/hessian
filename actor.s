@@ -108,6 +108,7 @@ SPAWNINFRONT_PROBABILITY = $c0
 SPAWN_GROUND    = $00
 SPAWN_AIR       = $80
 SPAWN_AIRTOP    = $c0
+SPAWN_AIRBOTTOM = $e0
 
 DMG_SFX_DELAY   = 2
 
@@ -1373,7 +1374,7 @@ CAC_YPos:       lsr
                 bcc CAC_HasCollision
                 sbc actSizeD,y
                 bcc CAC_HasCollision
-CADT_NoTarget:  clc                             ;Too far apart in Y-dir
+                clc                             ;Too far apart in Y-dir
                 rts
 CAC_YNeg:       lsr
                 lda temp8
@@ -1423,8 +1424,6 @@ CollideAndDamagePlayer:
                 ldy #ACTI_PLAYER
 CollideAndDamageTarget:
                 sty tgtActIndex
-                lda actHp,y                     ;No collision if already dead
-                beq CADT_NoTarget
                 pha
                 jsr CheckActorCollision
                 pla
@@ -1576,14 +1575,19 @@ DA_Done:        rts
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-AS_InAir:       asl
-                lda #$00
+AS_InAir:       pha
+                lda #$00                        ;Charinfo bits = emptiness
                 sta temp3
-                bcs AS_InAirTop
+                pla
+                asl
+                bcs AS_InAirTopOrBottom
 AS_InAirSide:   lda #$80                        ;Middle of block
                 sta actYL,y
                 jmp AS_SideCommon
-AS_InAirTop:    jsr Random
+AS_InAirTopOrBottom:
+                asl
+                php
+                jsr Random
                 pha
                 asl
                 and #$c0
@@ -1593,13 +1597,19 @@ AS_InAirTop:    jsr Random
                 pla
                 and #$0f
                 cmp #$0a
-                bcc AS_InAirCoordOK
+                bcc AS_InAirTopCoordOK
                 sbc #$07
-AS_InAirCoordOK:sec
+AS_InAirTopCoordOK:sec
                 adc AA_LeftCheck+1
                 sta actXH,y
                 lda mapY
-                sta actYH,y
+                plp
+                bcc AS_InAirTop
+                lda #$f8
+                sta actYL,y
+                lda limitD                      ;Always spawn from bottom of zone (note: may result
+                sbc #$01                        ;in immediate removal if bottom is not in view)
+AS_InAirTop:    sta actYH,y
                 bpl AS_CheckBackground
 
 AS_Remove2:     tya
@@ -1662,7 +1672,7 @@ AS_CheckBackground:
                 tya
                 tax
 AS_BGRetry:     jsr GetCharInfo
-                and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN|CI_WATER
+                and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN
                 cmp temp3
                 beq AS_BGOK
                 tay                             ;If found emptiness and trying to match ground
@@ -1677,7 +1687,7 @@ AS_BGRetryWithinBlock:
                 adc #$04
                 sta zpBitsLo
                 jsr GCI_WithinBlock
-                and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN|CI_WATER
+                and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN
                 cmp temp3
                 beq AS_BGOK
                 bne AS_BGRetryWithinBlock

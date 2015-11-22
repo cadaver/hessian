@@ -945,8 +945,11 @@ alRock:         dc.w MoveRock                   ;Update routine
 
 alFireball:     dc.w MoveFireball               ;Update routine
                 dc.b GRP_ANIMALS                ;Actor flags
-                dc.b 8                          ;Horizontal size
-                dc.b 8                          ;Size up
-                dc.b 8                          ;Size down
+                dc.b 6                          ;Horizontal size
+                dc.b 6                          ;Size up
+                dc.b 6                          ;Size down
                 dc.w ExplodeEnemy               ;Destroy routine
                 dc.b 0                          ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 0                          ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
