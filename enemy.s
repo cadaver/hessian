@@ -649,6 +649,25 @@ MFB_HasRandomSpeed:
                 jmp MoveActorY
                 rts
 
+        ; Steam movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveSteam:      lda #COLOR_FLICKER
+                sta actFlash,x
+                inc actTime,x
+                bmi MS_Invisible
+                lda #1
+                ldy #2
+                jsr LoopingAnimation
+                lda #DMG_STEAM
+                jmp CollideAndDamagePlayer
+MS_Invisible:   lda #3
+                sta actF1,x
+                rts
+
         ; Turn enemy into an explosion & drop item
         ;
         ; Parameters: X actor index

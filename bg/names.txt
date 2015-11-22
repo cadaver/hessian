@@ -42,6 +42,7 @@ BAT
 FISH
 ROCK
 FIREBALL
+STEAM
 end
 ;Item names
 ;----------

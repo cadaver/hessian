@@ -155,6 +155,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adFish
                 dc.b <adRock
                 dc.b <adFireball
+                dc.b <adSteam
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -197,6 +198,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adFish
                 dc.b >adRock
                 dc.b >adFireball
+                dc.b >adSteam
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -397,6 +399,12 @@ adFireball:     dc.b ONESPRITE                  ;Number of sprites
                 dc.b 4                          ;Number of frames
                 dc.b 3,4,5,4
 
+adSteam:        dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_FIRE                     ;Spritefile number
+                dc.b LEFTFRAME_FLIP             ;Left frame add
+                dc.b 4                          ;Number of frames
+                dc.b 8,9,10,11
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -440,6 +448,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alFish
                 dc.b <alRock
                 dc.b <alFireball
+                dc.b <alSteam
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -482,6 +491,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alFish
                 dc.b >alRock
                 dc.b >alFireball
+                dc.b >alSteam
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -806,7 +816,7 @@ alCeilingTurret:dc.w MoveTurret                 ;Update routine
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
 
 alFire:         dc.w MoveFire                   ;Update routine
-                dc.b AF_INITONLYSIZE|AF_NOWEAPON ;Actor flags
+                dc.b GRP_ANIMALS|AF_INITONLYSIZE|AF_NOWEAPON ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 20                         ;Size up
                 dc.b 1                          ;Size down
@@ -817,7 +827,7 @@ alFire:         dc.w MoveFire                   ;Update routine
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alSmokeCloud:   dc.w MoveSmokeCloud             ;Update routine
-                dc.b AF_INITONLYSIZE            ;Actor flags
+                dc.b GRP_ANIMALS|AF_INITONLYSIZE ;Actor flags
                 dc.b 10                         ;Horizontal size
                 dc.b 6                          ;Size up
                 dc.b 0                          ;Size down
@@ -948,7 +958,18 @@ alFireball:     dc.w MoveFireball               ;Update routine
                 dc.b 6                          ;Horizontal size
                 dc.b 6                          ;Size up
                 dc.b 6                          ;Size down
-                dc.w ExplodeEnemy               ;Destroy routine
+                dc.w RemoveActor                ;Destroy routine
+                dc.b 0                          ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 0                          ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+
+alSteam:        dc.w MoveSteam                  ;Update routine
+                dc.b GRP_ANIMALS                ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 8                          ;Size up
+                dc.b 0                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
                 dc.b 0                          ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
