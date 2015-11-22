@@ -274,7 +274,6 @@ AH_SpawnRight:  lda #-3
                 and #CI_OBSTACLE
                 bne AH_CannotFire
 AH_GetBulletOffset:
-                jsr GetActorDisplayData
                 lda #$00
                 sta temp1
                 sta temp3

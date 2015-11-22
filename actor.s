@@ -148,18 +148,13 @@ DA_CacheAgeOK:  dex
                 sta DA_CheckCacheAge+1          ;Check next cache sprite on next frame
                 ldx #$00                        ;Reset amount of used sprites
                 stx sprIndex
-DA_Loop:        ldy actT,x
+DA_Loop:        lda actT,x
                 beq DA_ActorDone2
                 if SHOW_ACTOR_TIME > 0
                 lda #$02
                 sta $d020
                 endif
-                lda actDispTblHi-1,y            ;Zero display address = invisible
-                beq DA_ActorDone
-                sta actHi
-                lda actDispTblLo-1,y            ;Get actor display structure address
-                sta actLo
-DA_GetScreenPos:lda actYL,x                     ;Convert actor coordinates to screen
+                lda actYL,x                     ;Convert actor coordinates to screen
                 sta actPrevYL,x
                 sec
 DA_SprSubYL:    sbc #$00
@@ -222,6 +217,9 @@ DA_FillSpritesDone:
                 sta DA_LastSprIndex+1
                 rts
 
+DA_Invisible:   ldx sprIndex                    ;DrawActors expects sprIndex in X
+                rts                             ;even if no sprites were used
+
 DA_HitFlash:    inc actFlash,x
                 eor #$01
                 and #$01
@@ -244,8 +242,14 @@ DA_NoFlicker:   sta GASS_ColorOr+1
 DA_KeepSpriteColor:
                 sty GASS_ColorAnd+1
 DrawActorSub_NoColor:
-                ldy #AD_SPRFILE                 ;Get spritefile. Also called for invisible actors,
-                lda (actLo),y                   ;so the spritefile must be valid
+                ldy actT,x
+                lda actDispTblHi-1,y            ;Zero display address = invisible
+                beq DA_Invisible
+                sta actHi
+                lda actDispTblLo-1,y            ;Get actor display structure address
+                sta actLo
+                ldy #AD_SPRFILE                 ;Get spritefile
+                lda (actLo),y
                 cmp sprFileNum
                 beq DA_SameSprFile
                 sta sprFileNum                  ;Store spritefilenumber, needed in caching
@@ -1313,23 +1317,19 @@ GetActorLogicData:
 
 EnsureActorFiles:
                 stx actIndex
+                lda #MAX_SPR                    ;Fake draw the actor to ensure sprites
+                sta sprIndex
+                jsr DrawActorSub_NoColor
+                ldx actIndex
                 jsr GetActorLogicData
                 ldy #AL_UPDATEROUTINE+1
                 lda (actLo),y
-                bpl EAF_NoScript
+                bpl IA_HasLogic
                 and #$7f
                 tax
                 lda #$ff                        ;Load only, no entrypoint
                 jsr ExecScript
-EAF_NoScript:   ldx actIndex
-                jsr GetActorDisplayData
-                ldy #AD_SPRFILE                 ;Note: loads first part spritefile only (humanoids)
-                lda (actLo),y
-                tay
-                lda fileHi,y
-                bne EAF_HasSprite
-                jsr LoadSpriteFile
-EAF_HasSprite:
+                ldx actIndex
 
         ; Init actor: set initial health, flags & collision size
         ;
@@ -1338,7 +1338,7 @@ EAF_HasSprite:
         ; Modifies: A,Y,actLo-actHi
 
 InitActor:      jsr GetActorLogicData
-                ldy #AL_ACTORFLAGS
+IA_HasLogic:    ldy #AL_ACTORFLAGS
                 lda (actLo),y
                 sta actFlags,x
                 and #AF_INITONLYSIZE
