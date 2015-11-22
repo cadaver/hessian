@@ -358,8 +358,6 @@ DA_NormalFlipLeft:
                 ldx sprIndex
                 bpl DA_NormalLast
 
-
-
         ; Set all actors to be added on screen. Used on level transitions
         ;
         ; Parameters: -
@@ -682,6 +680,10 @@ UA_NoHealthBarFlash:
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex
+                lda actLogicTblLo-1,y
+                sta actLo
+                lda actLogicTblHi-1,y
+                sta actHi
                 lda actFlags,x                  ;Perform remove check?
                 asl
                 bmi UA_NoRemove
@@ -702,7 +704,6 @@ UA_NoRemove:    if SHOW_ACTOR_TIME > 0
                 lda #$0a
                 sta $d020
                 endif
-                jsr GetActorLogicData
                 cpx #MAX_COMPLEXACT             ;Run AI for NPCs
                 bcs UA_NoAI
                 ldy actAIMode,x
@@ -713,20 +714,19 @@ UA_NoRemove:    if SHOW_ACTOR_TIME > 0
                 lda actCtrl,x
                 sta actPrevCtrl,x
 UA_AIJump:      jsr $0000
-UA_NoAI:        ldy #AL_UPDATEROUTINE+1
+UA_NoAI:        ldy #AL_UPDATEROUTINE
+                lda (actLo),y
+                sta UA_Jump+1
+                iny
                 lda (actLo),y
                 bpl UA_NoScript
                 stx ES_ParamX+1
                 and #$7f
                 tax
-                dey
-                lda (actLo),y
+                lda UA_Jump+1
                 jsr ExecScript
                 jmp UA_Next
 UA_NoScript:    sta UA_Jump+2
-                dey
-                lda (actLo),y
-                sta UA_Jump+1
 UA_Jump:        jsr $0000
 UA_Next:        if SHOW_ACTOR_TIME > 0
                 lda #$00
@@ -1276,6 +1276,20 @@ GCIOXY_XNotNeg: plp
                 pla
                 jmp GCIO_Common
 
+        ; Get actor's display data address
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,actLo-actHi
+
+GetActorDisplayData:
+                ldy actT,x
+                lda actDispTblLo-1,y            ;Get actor display structure address
+                sta actLo
+                lda actDispTblHi-1,y
+                sta actHi
+                rts
+
         ; Get actor's logic data address
         ;
         ; Parameters: X actor index
@@ -1290,7 +1304,34 @@ GetActorLogicData:
                 sta actHi
                 rts
 
-        ; Init actor: set initial health, color override, group & collision size
+        ; Ensure that actor's needed files are preloaded. Called on adding / spawning
+        ; Falls through to InitActor
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,actLo-actHi,actIndex,loader temp regs
+
+EnsureActorFiles:
+                stx actIndex
+                jsr GetActorLogicData
+                ldy #AL_UPDATEROUTINE+1
+                lda (actLo),y
+                bpl EAF_NoScript
+                and #$7f
+                tax
+                lda #$ff                        ;Load only, no entrypoint
+                jsr ExecScript
+EAF_NoScript:   ldx actIndex
+                jsr GetActorDisplayData
+                ldy #AD_SPRFILE                 ;Note: loads first part spritefile only (humanoids)
+                lda (actLo),y
+                tay
+                lda fileHi,y
+                bne EAF_HasSprite
+                jsr LoadSpriteFile
+EAF_HasSprite:
+
+        ; Init actor: set initial health, flags & collision size
         ;
         ; Parameters: X actor index
         ; Returns: -
@@ -1706,7 +1747,7 @@ AS_BGOK:        lda actYH,x                     ;Do not spawn into a wall
                 jsr GetCharInfo1Above
                 and #CI_OBSTACLE
                 bne AS_Remove3
-AS_SpawnOK:     jsr InitActor
+AS_SpawnOK:     jsr EnsureActorFiles            ;Also calls InitActor
                 jsr SetNotPersistent
                 inc UA_SpawnCount+1
                 ldy #AL_SPAWNAIMODE
@@ -1770,7 +1811,7 @@ ALA_Common:     lda lvlActX,x
                 sta lvlActOrg,x
                 tya
                 tax
-                jsr InitActor
+                jsr EnsureActorFiles            ;Also calls InitActor
                 cpx #ACTI_FIRSTITEM
                 bcc ALA_NotItem
                 jsr GetCharInfo                 ;For items, check whether it's standing on a shelf/in a

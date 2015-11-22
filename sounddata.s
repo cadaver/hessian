@@ -126,8 +126,8 @@ sfxShotgun:     include sfx/shotgun.sfx
 sfxLaser:       include sfx/laser.sfx
 sfxPlasma:      include sfx/plasma.sfx
 sfxAnimalDeath: include sfx/animaldeath.sfx
-sfxHumanDeath:  include sfx/death.sfx
 sfxLauncher:    include sfx/launcher.sfx
+sfxHumanDeath:  include sfx/death.sfx
 sfxSniperRifle: include sfx/sniperrifle.sfx
 sfxBazooka:     include sfx/bazooka.sfx
 sfxEMP:         include sfx/emp.sfx

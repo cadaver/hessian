@@ -274,11 +274,7 @@ AH_SpawnRight:  lda #-3
                 and #CI_OBSTACLE
                 bne AH_CannotFire
 AH_GetBulletOffset:
-                ldy actT,x
-                lda actDispTblLo-1,y            ;Get actor display structure address
-                sta actLo
-                lda actDispTblHi-1,y
-                sta actHi
+                jsr GetActorDisplayData
                 lda #$00
                 sta temp1
                 sta temp3

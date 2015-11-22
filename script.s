@@ -101,6 +101,7 @@ AT_MaskCheck:   and ES_ParamA+1
                 ldx atScriptF,y
                 jsr ExecScript
                 ldx ES_ParamX+1
+ES_LoadOnly:
 AT_Fail:        rts
 
         ; Execute a script
@@ -110,8 +111,7 @@ AT_Fail:        rts
         ; Modifies: A,X,Y,loader temp vars
 
 ExecScriptParam:sty ES_ParamA+1
-ExecScript:     asl
-                pha
+ExecScript:     pha
 ES_LoadedScriptFile:
                 cpx #$ff                        ;Check if same file already loaded
                 beq ES_SameFile
@@ -123,6 +123,8 @@ ES_LoadedScriptFile:
                 ldx #>scriptCodeStart
                 jsr LoadFileRetry
 ES_SameFile:    pla
+                bmi ES_LoadOnly
+                asl
                 tax
                 lda scriptCodeStart,x
                 sta ES_ScriptJump+1
