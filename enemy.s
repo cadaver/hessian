@@ -13,6 +13,8 @@ FR_DEADFLY = 2
 
 FR_DEADBATGROUND = 6
 
+enemyCodeStart:
+
         ; Flying enemy movement
         ;
         ; Parameters: X actor index
@@ -341,9 +343,7 @@ MoveRat:        lda #FR_DEADRATAIR
                 beq MR_Dead
                 jsr MoveGeneric
                 jmp AttackGeneric
-MR_Dead:        jsr DeathFlickerAndRemove
-                jsr FallingMotionCommon
-                lsr
+MR_Dead:        jsr DeadAnimalMotion
                 bcc RD_SetFlyingFrame
 MR_DeadGrounded:lda #$00
                 sta actSX,x                     ;Instant braking
@@ -363,7 +363,7 @@ RD_Common:      sta temp1
                 lda #SFX_ANIMALDEATH
                 jsr PlaySfx
                 lda #-28
-                sta actSY,x                     ;Adjust up speed smaller
+                sta actSY,x
 RD_SetFlyingFrame:
                 lda temp1
 RD_SetFrame:    sta actF1,x
@@ -438,7 +438,7 @@ FlyDeath:       lda #FR_DEADFLY
                 sta actF1,x
 BatDeath:       lda #SFX_ANIMALDEATH
                 jsr PlaySfx
-                jmp HD_NoYSpeed
+                jmp HD_Common
 
         ; Bat movement
         ;
@@ -474,9 +474,7 @@ MB_BatCommon:   jsr LoopingAnimation
                 bmi MB_NoDamage
                 jmp MS_Damage
 
-MB_Dead:        jsr DeathFlickerAndRemove
-                jsr FallingMotionCommon
-                lsr
+MB_Dead:        jsr DeadAnimalMotion
                 bcs MB_DeadGrounded
                 rts
 MB_DeadGrounded:lda #$00
@@ -497,6 +495,126 @@ MoveFish:       lda #CI_WATER
                 lda #2
                 ldy #1
                 bne MB_BatCommon
+
+        ; Common dead animal falling motion
+        ;
+        ; Parameters: X actor index
+        ; Returns: C Grounded status
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+DeadAnimalMotion:
+                jsr DeathFlickerAndRemove
+                jsr FallingMotionCommon
+                bpl DAM_NoWater
+                pha
+                lda #WATER_XBRAKING
+                jsr BrakeActorX
+                lda #WATER_YBRAKING*2
+                jsr BrakeActorY
+                pla
+DAM_NoWater:    and #MB_HITWALL
+                beq DAM_NoWallHit
+                lda #$00
+                sta actSX,x
+DAM_NoWallHit:  lda actMB,x
+                lsr
+                rts
+
+        ; Rock movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveRock:       ldy actF1,x                     ;Set size according to frame
+                lda rockSizeTbl,y
+                sta actSizeH,x
+                asl
+                sta actSizeU,x
+                jsr RockMotionCommon
+                lda #DMG_ROCK
+                jsr CollideAndDamagePlayer
+                lda actSY,x
+                bmi MR_NoCollision
+                jsr GetCharInfo
+                and #CI_GROUND|CI_OBSTACLE
+                beq MR_NoCollision
+DivideRock:     lda #SFX_DAMAGE
+                jsr PlaySfx
+                inc actF1,x
+                lda actF1,x
+                cmp #3
+                bcs RemoveRock
+                lda #-2*8
+                jsr MR_RandomizeSmallerRock
+                lda #ACTI_FIRSTNPC
+                ldy #ACTI_LASTNPC
+                jsr GetFreeActor
+                bcc MR_NoSpawn
+                lda #ACT_ROCK
+                jsr SpawnActor
+                lda actF1,x
+                sta actF1,y
+                stx temp6
+                tya
+                tax
+                jsr InitActor
+                lda #$00
+                jsr MR_RandomizeSmallerRock
+                ldx temp6
+MR_NoCollision:
+MR_NoSpawn:     rts
+RemoveRock:     lda #-4*8
+                jsr MoveActorY
+                jsr NoInterpolation
+                lda #COLOR_FLICKER
+                sta actFlash,x
+                lda #ACT_SMOKETRAIL
+                jmp TransformBullet
+MR_RandomizeSmallerRock:
+                sta temp1
+                jsr Random
+                and #$0f
+                clc
+                adc temp1
+                sta actSX,x
+                lda #-4*8
+                sta actSY,x
+                lda #HP_ROCK
+                sta actHp,x
+                rts
+
+RockMotionCommon:
+                lda actSX,x
+                bne RMC_HasRandomSpeed
+                jsr Random
+                and #$0f
+                sec
+                sbc #$08
+                sta actSX,x
+RMC_HasRandomSpeed:
+                lda #GRENADE_ACCEL-1
+                ldy #8*8
+                jsr AccActorY
+                lda actSX,x
+                jsr MoveActorX
+                lda actSY,x
+                jmp MoveActorY
+
+MoveFireball:   rts
+
+        ; Turn enemy into an explosion & drop item
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy_Ofs8:
+                lda #-8*8
+                jsr MoveActorYNoInterpolation
+ExplodeEnemy:   lda #$00
+                jsr DropItem
+                jmp ExplodeActor
 
         ; Generate 2 explosions at 8 pixel radius
         ;
@@ -525,8 +643,9 @@ ExplodeEnemyMultiple:
                 sta actSY,x
                 lda #ACT_EXPLOSIONGENERATOR
                 jsr TransformBullet
-                lda #$00
-                jmp DropItem
+                jmp DropItem                    ;A=0 on return
+
+enemyCodeEnd:
 
         ; Explosion generator update routine
         ;
@@ -559,28 +678,15 @@ MoveExplosionGenerator:
                 dec actSX,x
                 bne MEG_NotLastExplosion
                 jmp RemoveActor
+MEG_NoRoom:     jmp ExplodeActor
 MEG_NotLastExplosion:
 MEG_NoNewExplosion:
                 rts
-
 MEG_GetOffset:  jsr Random
                 and temp1
                 sec
                 sbc temp2
                 rts
-
-        ; Turn enemy into an explosion & drop item
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy_Ofs8:
-                lda #-8*8
-                jsr MoveActorYNoInterpolation
-ExplodeEnemy:   lda #$00
-                jsr DropItem
-MEG_NoRoom:     jmp ExplodeActor
 
         ; Initiate humanoid enemy or player death
         ;
@@ -588,8 +694,22 @@ MEG_NoRoom:     jmp ExplodeActor
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8
 
-HumanDeath:     lda #SFX_HUMANDEATH
+HumanDeath:     sty temp8
+                lda #SFX_HUMANDEATH
                 jsr PlaySfx
+                lda actF1,x
+                cmp #FR_SWIM
+                bcc HD_NotSwimming
+                jsr GetCharInfo1Below           ;If space below, prefer to move
+                and #CI_OBSTACLE|CI_GROUND      ;as the dying frames have hotspot at bottom
+                bne HD_SetFrame
+                lda #8*8
+                jsr MoveActorY
+                jmp HD_SetFrame
+HD_NotSwimming: lda #DEATH_YSPEED
+                sta actSY,x
+                jsr MH_ResetGrounded
+HD_SetFrame:    ldy temp8
                 lda #FR_DIE
                 sta actF1,x
                 sta actF2,x
@@ -609,12 +729,7 @@ HD_GotDir:      asl                             ;Direction to carry
                 ldy #DEATH_MAX_XSPEED
                 jsr AccActorXNegOrPos
 HD_NoDamageSource:
-                lda actMB,x                     ;If in water, do not modify Y-speed
-                bmi HD_NoYSpeed
-                lda #DEATH_YSPEED
-                sta actSY,x
-                jsr MH_ResetGrounded
-HD_NoYSpeed:    lda #DEATH_DISAPPEAR_DELAY
+                lda #DEATH_DISAPPEAR_DELAY
                 sta actTime,x
                 jsr SetNotPersistent           ;Mark body nonpersistent in case goes off screen
                 lda #$00

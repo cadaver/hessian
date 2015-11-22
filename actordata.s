@@ -38,9 +38,10 @@ ACT_SPIDER      = 36
 ACT_FLY         = 37
 ACT_BAT         = 38
 ACT_FISH        = 39
+ACT_ROCK        = 40
+ACT_FIREBALL    = 41
 
 HP_PLAYER       = 56
-HP_FISH         = 0                             ;Fighting not possible underwater; cannot be damaged by accident
 HP_RAT          = 4
 HP_FLY          = 4
 HP_BAT          = 4
@@ -48,6 +49,7 @@ HP_SPIDER       = 6
 HP_FLOATINGMINE = 7
 HP_ROLLINGMINE  = 7
 HP_SMALLDROID   = 8
+HP_ROCK         = 10
 HP_FLYINGCRAFT  = 13
 HP_LARGEDROID   = 14
 HP_SMALLWALKER  = 16
@@ -67,6 +69,10 @@ humanSizeReduceTbl:
         ; Tank Y-size addition table (based on turret direction)
 
 tankSizeAddTbl: dc.b 0,6,8
+
+        ; Rock size table
+        
+rockSizeTbl:    dc.b 10,8,6
 
         ; Turret firing ctrl + frame table
 
@@ -146,6 +152,8 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adFly
                 dc.b <adBat
                 dc.b <adFish
+                dc.b <adRock
+                dc.b <adFireball
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -186,6 +194,8 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adFly
                 dc.b >adBat
                 dc.b >adFish
+                dc.b >adRock
+                dc.b >adFireball
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -376,6 +386,16 @@ adFish:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b 4                          ;Number of frames
                 dc.b 5,6
 
+adRock:         dc.b ONESPRITEDIRECT            ;Number of sprites
+                dc.b C_ROCK                     ;Spritefile number
+                dc.b 0                          ;Base spritenumber
+
+adFireball:     dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_ROCK                     ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 4                          ;Number of frames
+                dc.b 3,4,5,4
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -417,6 +437,8 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alFly
                 dc.b <alBat
                 dc.b <alFish
+                dc.b <alRock
+                dc.b <alFireball
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -457,6 +479,8 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alFly
                 dc.b >alBat
                 dc.b >alFish
+                dc.b >alRock
+                dc.b >alFireball
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -892,7 +916,7 @@ alFish:         dc.w MoveFish                   ;Update routine
                 dc.b 1                          ;Size up
                 dc.b 3                          ;Size down
                 dc.w FishDeath                  ;Destroy routine
-                dc.b HP_BAT                     ;Initial health
+                dc.b 0                          ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
                 dc.b AIMODE_FISH                ;AI mode when spawned randomly
@@ -906,3 +930,22 @@ alFish:         dc.w MoveFish                   ;Update routine
                 dc.b 1                          ;Vert acceleration
                 dc.b 1                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
+
+alRock:         dc.w MoveRock                   ;Update routine
+                dc.b GRP_ENEMIES                ;Actor flags
+                dc.b 10                         ;Horizontal size
+                dc.b 20                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w DivideRock                 ;Destroy routine
+                dc.b HP_ROCK                    ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 10                         ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+
+alFireball:     dc.w MoveFireball               ;Update routine
+                dc.b GRP_ENEMIES                ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 8                          ;Size up
+                dc.b 8                          ;Size down
+                dc.w ExplodeEnemy               ;Destroy routine
+                dc.b 0                          ;Initial health
