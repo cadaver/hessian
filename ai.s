@@ -236,6 +236,7 @@ AI_SniperPrepareAttack:
                 jsr PrepareAttack
                 bcc AI_Idle
 AI_DoNothing:
+DoNothing:
 AI_MoverDone:   rts
 
             ; Mover AI

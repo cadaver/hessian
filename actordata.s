@@ -25,7 +25,7 @@ ACT_EXPLOSIONGENERATOR = 23
 ACT_SMALLDROID  = 24
 ACT_LARGEDROID  = 25
 ACT_LARGEDROIDSUPER = 26
-ACT_FLYER       = 27
+ACT_FLYINGCRAFT = 27
 ACT_SMALLWALKER = 28
 ACT_SMALLTANK   = 29
 ACT_FLOATINGMINE = 30
@@ -65,32 +65,6 @@ plrDmgModifyTbl:dc.b 6,8,12
 
 humanSizeReduceTbl:
                 dc.b 1,2,1,0,1,2,1,0,1,2,2,1,6,12,1,0,1,0,1,0,0,0,18,18,18,18,18,18,19,19,19,19
-
-        ; Tank Y-size addition table (based on turret direction)
-
-tankSizeAddTbl: dc.b 0,6,8
-
-        ; Rock size & damage tablestable
-
-rockSizeTbl:    dc.b 9,7,5
-rockDamageTbl:  dc.b DMG_ROCK,DMG_ROCK/2,DMG_ROCK/3
-
-        ; Turret firing ctrl + frame table
-
-turretFrameTbl:
-tankTurretOfs:  dc.b JOY_LEFT|JOY_FIRE,0
-                dc.b JOY_RIGHT|JOY_FIRE,0
-                dc.b JOY_LEFT|JOY_UP|JOY_FIRE,1
-                dc.b JOY_RIGHT|JOY_UP|JOY_FIRE,1
-                dc.b JOY_UP|JOY_FIRE,2
-                dc.b 0
-ceilingTurretOfs:
-                dc.b JOY_RIGHT|JOY_FIRE,0
-                dc.b JOY_RIGHT|JOY_DOWN|JOY_FIRE,1
-                dc.b JOY_DOWN|JOY_FIRE,2
-                dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE,3
-                dc.b JOY_LEFT|JOY_FIRE,4
-                dc.b 0
 
         ; Human actor upper part framenumbers
 
@@ -623,7 +597,7 @@ alExplosionGenerator:
                 dc.w MoveExplosionGenerator     ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
-alSmallDroid:   dc.w MoveDroid                  ;Update routine
+alSmallDroid:   dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 6                          ;Horizontal size
                 dc.b 6                          ;Size up
@@ -644,7 +618,7 @@ alSmallDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
 
-alLargeDroid:   dc.w MoveDroid                  ;Update routine
+alLargeDroid:   dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 9                          ;Horizontal size
                 dc.b 8                          ;Size up
@@ -666,7 +640,7 @@ alLargeDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b 1                          ;Vert obstacle check offset
 
 alLargeDroidSuper:
-                dc.w MoveDroid                  ;Update routine
+                dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 9                          ;Horizontal size
                 dc.b 8                          ;Size up
@@ -687,12 +661,12 @@ alLargeDroidSuper:
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
 
-alFlyingCraft:  dc.w MoveFlyingCraft            ;Update routine
+alFlyingCraft:  dc.w USESCRIPT|EP_MOVEFLYINGCRAFT ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 11                         ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 7                          ;Size down
-                dc.w DestroyFlyingCraft         ;Destroy routine
+                dc.w DoNothing                  ;Destroy routine (destroy handled by move routine)
                 dc.b HP_FLYINGCRAFT             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 65                         ;Score from kill
@@ -708,7 +682,7 @@ alFlyingCraft:  dc.w MoveFlyingCraft            ;Update routine
                 dc.b 1                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
 
-alSmallWalker:  dc.w MoveWalker                 ;Update routine
+alSmallWalker:  dc.w USESCRIPT|EP_MOVEWALKER    ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 12                         ;Horizontal size
                 dc.b 21                         ;Size up
@@ -732,7 +706,7 @@ alSmallWalker:  dc.w MoveWalker                 ;Update routine
                 dc.b -3                         ;Height in chars for headbump check (negative)
                 dc.b -6*8                       ;Jump initial speed (negative)
 
-alSmallTank:    dc.w MoveTank                   ;Update routine
+alSmallTank:    dc.w USESCRIPT|EP_MOVETANK      ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 12                         ;Horizontal size
                 dc.b 22                         ;Size up
@@ -755,7 +729,7 @@ alSmallTank:    dc.w MoveTank                   ;Update routine
                 dc.b 4                          ;Ground braking
                 dc.b -3                         ;Height in chars for headbump check (negative)
 
-alFloatingMine: dc.w MoveFloatingMine           ;Update routine
+alFloatingMine: dc.w USESCRIPT|EP_MOVEFLOATINGMINE ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 6                          ;Horizontal size
                 dc.b 5                          ;Size up
@@ -776,7 +750,7 @@ alFloatingMine: dc.w MoveFloatingMine           ;Update routine
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
 
-alRollingMine:  dc.w MoveRollingMine            ;Update routine
+alRollingMine:  dc.w USESCRIPT|EP_MOVEROLLINGMINE ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 15                         ;Size up
@@ -800,7 +774,7 @@ alRollingMine:  dc.w MoveRollingMine            ;Update routine
                 dc.b -2                         ;Height in chars for headbump check (negative)
                 dc.b -5*8                       ;Jump initial speed (negative)
 
-alCeilingTurret:dc.w MoveTurret                 ;Update routine
+alCeilingTurret:dc.w USESCRIPT|EP_MOVETURRET    ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 6                          ;Horizontal size
                 dc.b 0                          ;Size up
@@ -815,24 +789,24 @@ alCeilingTurret:dc.w MoveTurret                 ;Update routine
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
 
-alFire:         dc.w MoveFire                   ;Update routine
+alFire:         dc.w USESCRIPT|EP_MOVEFIRE      ;Update routine
                 dc.b GRP_ANIMALS|AF_INITONLYSIZE|AF_NOWEAPON ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 20                         ;Size up
                 dc.b 1                          ;Size down
-                dc.w DestroyFire                ;Destroy routine
+                dc.w DoNothing                  ;Destroy routine (handled by move routine)
                 dc.b 0                          ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 100                        ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
-alSmokeCloud:   dc.w MoveSmokeCloud             ;Update routine
+alSmokeCloud:   dc.w USESCRIPT|EP_MOVESMOKECLOUD ;Update routine
                 dc.b GRP_ANIMALS|AF_INITONLYSIZE ;Actor flags
                 dc.b 10                         ;Horizontal size
                 dc.b 6                          ;Size up
                 dc.b 0                          ;Size down
 
-alRat:          dc.w MoveRat                    ;Update routine
+alRat:          dc.w USESCRIPT|EP_MOVERAT       ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 8                          ;Size up
@@ -856,7 +830,7 @@ alRat:          dc.w MoveRat                    ;Update routine
                 dc.b -1                         ;Height in chars for headbump check (negative)
                 dc.b -4*8                       ;Jump initial speed (negative)
 
-alSpider:       dc.w MoveSpider                 ;Update routine
+alSpider:       dc.w USESCRIPT|EP_MOVESPIDER    ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
                 dc.b 10                         ;Horizontal size
                 dc.b 10                         ;Size up
@@ -879,7 +853,7 @@ alSpider:       dc.w MoveSpider                 ;Update routine
                 dc.b 8                          ;Ground braking
                 dc.b -2                         ;Height in chars for headbump check (negative)
 
-alFly:          dc.w MoveFly                    ;Update routine
+alFly:          dc.w USESCRIPT|EP_MOVEFLY       ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
                 dc.b 10                         ;Horizontal size
                 dc.b 5                          ;Size up
@@ -900,7 +874,7 @@ alFly:          dc.w MoveFly                    ;Update routine
                 dc.b 1                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
 
-alBat:          dc.w MoveBat                    ;Update routine
+alBat:          dc.w USESCRIPT|EP_MOVEBAT       ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
                 dc.b 7                          ;Horizontal size
                 dc.b 8                          ;Size up
@@ -921,12 +895,12 @@ alBat:          dc.w MoveBat                    ;Update routine
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
 
-alFish:         dc.w MoveFish                   ;Update routine
+alFish:         dc.w USESCRIPT|EP_MOVEFISH      ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
                 dc.b 2                          ;Horizontal size
                 dc.b 1                          ;Size up
                 dc.b 3                          ;Size down
-                dc.w FishDeath                  ;Destroy routine
+                dc.w RemoveActor                ;Destroy routine
                 dc.b 0                          ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
@@ -942,18 +916,18 @@ alFish:         dc.w MoveFish                   ;Update routine
                 dc.b 1                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
 
-alRock:         dc.w MoveRock                   ;Update routine
+alRock:         dc.w USESCRIPT|EP_MOVEROCK      ;Update routine
                 dc.b GRP_ANIMALS                ;Actor flags
                 dc.b 10                         ;Horizontal size
                 dc.b 20                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w DivideRock                 ;Destroy routine
+                dc.w DoNothing                  ;Destroy routine (destroy handled by move routine)
                 dc.b HP_ROCK                    ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 10                         ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
-alFireball:     dc.w MoveFireball               ;Update routine
+alFireball:     dc.w USESCRIPT|EP_MOVEFIREBALL  ;Update routine
                 dc.b GRP_ANIMALS                ;Actor flags
                 dc.b 6                          ;Horizontal size
                 dc.b 6                          ;Size up
@@ -964,7 +938,7 @@ alFireball:     dc.w MoveFireball               ;Update routine
                 dc.w 0                          ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
-alSteam:        dc.w MoveSteam                  ;Update routine
+alSteam:        dc.w USESCRIPT|EP_MOVESTEAM     ;Update routine
                 dc.b GRP_ANIMALS                ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 8                          ;Size up

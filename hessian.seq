@@ -63,6 +63,7 @@ write music10.pak @8:48
 write music11.pak @8:49
 write music12.pak @8:4a
 write script00.pak @8:4b
+write script01.pak @8:4c
 write options.bin @8:70
 write savelist.bin @8:71
 write emptysave.bin @8:72

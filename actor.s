@@ -114,6 +114,8 @@ DMG_SFX_DELAY   = 2
 
 LEFTFRAME_FLIP  = $80
 
+USESCRIPT       = $8000
+
         ; Draw actors as sprites
         ; Accesses the sprite cache to load/unpack new sprites as necessary
         ;
@@ -680,10 +682,6 @@ UA_NoHealthBarFlash:
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex
-                lda actLogicTblLo-1,y           ;Get actor logic structure address
-                sta actLo
-                lda actLogicTblHi-1,y
-                sta actHi
                 lda actFlags,x                  ;Perform remove check?
                 asl
                 bmi UA_NoRemove
@@ -704,14 +702,9 @@ UA_NoRemove:    if SHOW_ACTOR_TIME > 0
                 lda #$0a
                 sta $d020
                 endif
-                ldy #AL_UPDATEROUTINE
-                lda (actLo),y
-                sta UA_Jump+1
-                iny
-                lda (actLo),y
-                sta UA_Jump+2
+                jsr GetActorLogicData
                 cpx #MAX_COMPLEXACT             ;Run AI for NPCs
-                bcs UA_Jump
+                bcs UA_NoAI
                 ldy actAIMode,x
                 lda aiJumpTblLo,y
                 sta UA_AIJump+1
@@ -720,12 +713,26 @@ UA_NoRemove:    if SHOW_ACTOR_TIME > 0
                 lda actCtrl,x
                 sta actPrevCtrl,x
 UA_AIJump:      jsr $0000
+UA_NoAI:        ldy #AL_UPDATEROUTINE+1
+                lda (actLo),y
+                bpl UA_NoScript
+                stx ES_ParamX+1
+                and #$7f
+                tax
+                dey
+                lda (actLo),y
+                jsr ExecScript
+                jmp UA_Next
+UA_NoScript:    sta UA_Jump+2
+                dey
+                lda (actLo),y
+                sta UA_Jump+1
 UA_Jump:        jsr $0000
-                if SHOW_ACTOR_TIME > 0
+UA_Next:        if SHOW_ACTOR_TIME > 0
                 lda #$00
                 sta $d020
                 endif
-UA_Next:        dex
+                dex
                 bpl UA_Loop
 
         ; Interpolate actors' movement each second frame
