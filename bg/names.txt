@@ -43,6 +43,7 @@ FISH
 ROCK
 FIREBALL
 STEAM
+ORGANICWALKER
 end
 ;Item names
 ;----------

@@ -22,6 +22,7 @@
                 dc.w MoveRock
                 dc.w MoveFireball
                 dc.w MoveSteam
+                dc.w MoveOrganicWalker
 
         ; Floating droid update routine
         ;
@@ -230,7 +231,7 @@ MSC_NoSmokeDamage:
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveRat:        lda #FR_DEADRATAIR
+MoveRat:        lda #FR_DEADRATGROUND
                 sta temp1
                 lda actHp,x
                 beq MR_Dead
@@ -238,12 +239,12 @@ MoveRat:        lda #FR_DEADRATAIR
                 jmp AttackGeneric
 MR_Dead:        jsr DeadAnimalMotion
                 bcs MR_DeadGrounded
-                jmp RD_SetFlyingFrame
+                rts
 MR_DeadGrounded:lda #$00
                 sta actSX,x                     ;Instant braking
                 lda temp1
-                adc #$00                        ;C=1
-                jmp RD_SetFrame
+                sta actF1,x
+                rts
 
         ; Spider movement
         ;
@@ -251,7 +252,7 @@ MR_DeadGrounded:lda #$00
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
         
-MoveSpider:     lda #FR_DEADSPIDERAIR
+MoveSpider:     lda #FR_DEADSPIDERGROUND
                 sta temp1
                 lda actHp,x
                 beq MR_Dead
@@ -301,6 +302,9 @@ MF_Dead:        lda #2
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
+MB_Dead:        lda #FR_DEADBATGROUND
+                sta temp1
+                jmp MR_Dead
 MoveBat:        lda actHp,x
                 beq MB_Dead
                 lda #2                          ;Wings flapping acceleration up
@@ -328,13 +332,6 @@ MB_BatCommon:   jsr LoopingAnimation
                 eor actD,x                      ;Otherwise use same damage code as spider
                 bmi MB_NoDamage
                 jmp MS_Damage
-MB_Dead:        jsr DeadAnimalMotion
-                bcs MB_DeadGrounded
-                rts
-MB_DeadGrounded:lda #$00
-                sta actSX,x                     ;Instant braking
-                lda #FR_DEADBATGROUND
-                sta actF1,x
 MB_NoDamage:    rts
 
         ; Fish movement
@@ -497,6 +494,21 @@ MoveSteam:      lda #COLOR_FLICKER
 MS_Invisible:   lda #3
                 sta actF1,x
                 rts
+
+        ; Organic walker movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveOrganicWalker:
+                lda actHp,x
+                beq MOW_Dead
+                jsr MoveGeneric
+                jmp AttackGeneric
+MOW_Dead:       lda #FR_DEADWALKERGROUND
+                sta temp1
+                jmp MR_Dead
 
         ; Common flying enemy movement
         ;

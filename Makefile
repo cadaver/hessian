@@ -36,7 +36,7 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak \
 	sprcommon.pak spritem.pak sprweapon.pak sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
 	sprdroid.pak sprflyer.pak sprsmallwalker.pak sprsmalltank.pak sprmine.pak sprturret.pak sprfire.pak \
-	sprrat.pak sprspider.pak sprrock.pak
+	sprrat.pak sprspider.pak sprrock.pak sprorganicwalker.pak
 	c1541 < hessian.seq
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -483,3 +483,6 @@ sprspider.pak: spr/spider.spr
 	
 sprrock.pak: spr/rock.spr
 	pchunk2 spr/rock.spr sprrock.pak
+	
+sprorganicwalker.pak: spr/organicwalker.spr
+	pchunk2 spr/organicwalker.spr sprorganicwalker.pak

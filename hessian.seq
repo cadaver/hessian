@@ -19,6 +19,7 @@ write sprfire.pak @8:0f
 write sprrat.pak @8:10
 write sprspider.pak @8:11
 write sprrock.pak @8:12
+write sprorganicwalker.pak @8:13
 write level00.pak @8:20
 write level01.pak @8:21
 write level02.pak @8:22

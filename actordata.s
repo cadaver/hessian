@@ -40,6 +40,8 @@ ACT_BAT         = 38
 ACT_FISH        = 39
 ACT_ROCK        = 40
 ACT_FIREBALL    = 41
+ACT_STEAM       = 42
+ACT_ORGANICWALKER = 43
 
 HP_PLAYER       = 56
 HP_RAT          = 4
@@ -50,6 +52,7 @@ HP_FLOATINGMINE = 7
 HP_ROLLINGMINE  = 7
 HP_SMALLDROID   = 8
 HP_ROCK         = 10
+HP_ORGANICWALKER = 12
 HP_FLYINGCRAFT  = 13
 HP_LARGEDROID   = 14
 HP_SMALLWALKER  = 16
@@ -130,6 +133,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adRock
                 dc.b <adFireball
                 dc.b <adSteam
+                dc.b <adOrganicWalker
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -173,6 +177,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adRock
                 dc.b >adFireball
                 dc.b >adSteam
+                dc.b >adSmallWalker
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -379,6 +384,12 @@ adSteam:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b 4                          ;Number of frames
                 dc.b 8,9,10,11
 
+adOrganicWalker:dc.b ONESPRITE                  ;Number of sprites
+                dc.b C_ORGANICWALKER            ;Spritefile number
+                dc.b LEFTFRAME_FLIP             ;Left frame add
+                dc.b 14                         ;Number of frames
+                dc.b 1,0,1,2,1,0,1,2,1,3,3,1,0,4
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -423,6 +434,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alRock
                 dc.b <alFireball
                 dc.b <alSteam
+                dc.b <alOrganicWalker
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -466,6 +478,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alRock
                 dc.b >alFireball
                 dc.b >alSteam
+                dc.b >alOrganicWalker
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -948,3 +961,27 @@ alSteam:        dc.w USESCRIPT|EP_MOVESTEAM     ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+                
+alOrganicWalker:dc.w USESCRIPT|EP_MOVEORGANICWALKER ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON|AF_ORGANIC ;Actor flags
+                dc.b 12                         ;Horizontal size
+                dc.b 21                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w OrganicWalkerDeath         ;Destroy routine
+                dc.b HP_ORGANICWALKER           ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 55                         ;Score from kill
+                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
+                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b $07                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL|AB_DIAGONALUP|AB_DIAGONALDOWN ;Attack directions
+                dc.b AMF_JUMP                   ;Move flags
+                dc.b 4*8-2                      ;Max. movement speed
+                dc.b 8                          ;Ground movement acceleration
+                dc.b 2                          ;In air movement acceleration
+                dc.b 6                          ;Gravity acceleration
+                dc.b 6                          ;Long jump gravity acceleration
+                dc.b 8                          ;Ground braking
+                dc.b -3                         ;Height in chars for headbump check (negative)
+                dc.b -6*8                       ;Jump initial speed (negative)

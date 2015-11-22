@@ -13,6 +13,9 @@ FR_DEADFLY = 2
 
 FR_DEADBATGROUND = 6
 
+FR_DEADWALKERAIR = 12
+FR_DEADWALKERGROUND = 13
+
         ; Fire destruction (transform into smoke)
         ;
         ; Parameters: X actor index
@@ -29,15 +32,15 @@ DestroyFire:    lda #ACT_SMOKECLOUD
         ; Modifies: A
 
 RatDeath:       lda #FR_DEADRATAIR
-RD_Common:      sta temp1
+RD_Common:      pha
                 jsr HD_Common
                 lda #SFX_ANIMALDEATH
                 jsr PlaySfx
+                pla
+RD_SetFrameAndSpeed:
+                sta actF1,x
                 lda #-28
                 sta actSY,x
-RD_SetFlyingFrame:
-                lda temp1
-RD_SetFrame:    sta actF1,x
                 rts
 
         ; Initiate spider death
@@ -60,6 +63,17 @@ FlyDeath:       lda #FR_DEADFLY
 BatDeath:       lda #SFX_ANIMALDEATH
                 jsr PlaySfx
                 jmp HD_Common
+
+        ; Initiate organic walker death
+        ;
+        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Returns: -
+        ; Modifies: A
+
+OrganicWalkerDeath:
+                jsr HumanDeath
+                lda #FR_DEADWALKERAIR
+                bne RD_SetFrameAndSpeed
 
         ; Turn enemy into an explosion & drop item
         ;

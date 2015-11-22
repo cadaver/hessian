@@ -18,6 +18,7 @@ C_FIRE          = 15
 C_RAT           = 16
 C_SPIDER        = 17
 C_ROCK          = 18
+C_ORGANICWALKER = 19
 C_FIRSTPURGEABLE = C_PLAYER_TOP
 
 F_LOGO          = $01
