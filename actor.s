@@ -1423,6 +1423,8 @@ CollideAndDamagePlayer:
                 ldy #ACTI_PLAYER
 CollideAndDamageTarget:
                 sty tgtActIndex
+                lda actHp,y                     ;No collision if already dead
+                beq CADT_NoTarget
                 pha
                 jsr CheckActorCollision
                 pla
@@ -1681,7 +1683,10 @@ AS_BGRetryWithinBlock:
                 bne AS_BGRetryWithinBlock
 AS_Remove3:     jmp RemoveActor
   
-AS_BGOK:        jsr GetCharInfo1Above           ;Do not spawn into a wall
+AS_BGOK:        lda actYH,x                     ;Do not spawn into a wall
+                cmp limitU                      ;but skip check if at the top row
+                beq AS_SpawnOK                  ;(would fail always)
+                jsr GetCharInfo1Above
                 and #CI_OBSTACLE
                 bne AS_Remove3
 AS_SpawnOK:     jsr InitActor

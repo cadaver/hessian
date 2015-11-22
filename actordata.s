@@ -70,9 +70,10 @@ humanSizeReduceTbl:
 
 tankSizeAddTbl: dc.b 0,6,8
 
-        ; Rock size table
-        
-rockSizeTbl:    dc.b 10,8,6
+        ; Rock size & damage tablestable
+
+rockSizeTbl:    dc.b 9,7,5
+rockDamageTbl:  dc.b DMG_ROCK,DMG_ROCK/2,DMG_ROCK/3
 
         ; Turret firing ctrl + frame table
 
@@ -932,7 +933,7 @@ alFish:         dc.w MoveFish                   ;Update routine
                 dc.b 1                          ;Vert obstacle check offset
 
 alRock:         dc.w MoveRock                   ;Update routine
-                dc.b GRP_ENEMIES                ;Actor flags
+                dc.b GRP_ANIMALS                ;Actor flags
                 dc.b 10                         ;Horizontal size
                 dc.b 20                         ;Size up
                 dc.b 0                          ;Size down
@@ -943,7 +944,7 @@ alRock:         dc.w MoveRock                   ;Update routine
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alFireball:     dc.w MoveFireball               ;Update routine
-                dc.b GRP_ENEMIES                ;Actor flags
+                dc.b GRP_ANIMALS                ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 8                          ;Size down

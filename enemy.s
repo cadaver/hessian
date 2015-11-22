@@ -531,14 +531,13 @@ MoveRock:       ldy actF1,x                     ;Set size according to frame
                 sta actSizeH,x
                 asl
                 sta actSizeU,x
-                jsr RockMotionCommon
-                lda #DMG_ROCK
-                jsr CollideAndDamagePlayer
                 lda actSY,x
-                bmi MR_NoCollision
-                jsr GetCharInfo
-                and #CI_GROUND|CI_OBSTACLE
-                beq MR_NoCollision
+                bmi MR_NoDamage                 ;No damage if not falling
+                lda rockDamageTbl,y             ;Damage based on frame (size)
+                jsr CollideAndDamagePlayer
+                bcs DivideRock
+MR_NoDamage:    jsr RockMotionCommon
+                bcc MR_NoCollision
 DivideRock:     lda #SFX_DAMAGE
                 jsr PlaySfx
                 inc actF1,x
@@ -559,6 +558,7 @@ DivideRock:     lda #SFX_DAMAGE
                 tya
                 tax
                 jsr InitActor
+                jsr SetNotPersistent
                 lda #$00
                 jsr MR_RandomizeSmallerRock
                 ldx temp6
@@ -580,27 +580,38 @@ MR_RandomizeSmallerRock:
                 sta actSX,x
                 lda #-4*8
                 sta actSY,x
+                lda #$00                        ;Reset ground flag
+                sta actMB,x
                 lda #HP_ROCK
                 sta actHp,x
                 rts
 
 RockMotionCommon:
-                lda actSX,x
+                lda actTime,x                     ;Randomize X-speed on first frame
                 bne RMC_HasRandomSpeed
+                inc actTime,x
                 jsr Random
                 and #$0f
                 sec
                 sbc #$08
                 sta actSX,x
 RMC_HasRandomSpeed:
+                lda #-1                         ;Ceiling check offset
+                sta temp4
                 lda #GRENADE_ACCEL-1
-                ldy #8*8
-                jsr AccActorY
+                ldy #GRENADE_MAX_YSPEED
+                jsr MoveWithGravity
+                lda actMB,x
+                lsr
+                and #MB_HITWALL/2
+                beq RMC_NoHitWall
+                php
                 lda actSX,x
-                jsr MoveActorX
-                lda actSY,x
-                jmp MoveActorY
-
+                eor #$ff
+                adc #$00                        ;Assume C=0 (not grounded)
+                sta actSX,x
+                plp
+RMC_NoHitWall:
 MoveFireball:   rts
 
         ; Turn enemy into an explosion & drop item
@@ -831,7 +842,7 @@ DI_CountOK:     sta actHp,y
                 bcc DI_NotImportant
                 ora #ORG_GLOBAL
 DI_NotImportant:sta actLvlDataOrg,x             ;Make item either persistent or temp persistent
-                ldx temp6
+                ldx temp6                       ;depending on importance
                 rts
 
         ; Flicker corpse, then remove. Will not return when removes the actor
