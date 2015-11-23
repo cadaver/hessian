@@ -21,6 +21,7 @@ write sprspider.pak @8:11
 write sprrock.pak @8:12
 write sprorganicwalker.pak @8:13
 write sprguard.pak @8:14
+write sprheavyguard.pak @8:15
 write level00.pak @8:20
 write level01.pak @8:21
 write level02.pak @8:22
