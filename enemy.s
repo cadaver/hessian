@@ -88,12 +88,11 @@ MEG_GetOffset:  jsr Random
 
         ; Initiate humanoid enemy or player death
         ;
-        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Parameters: X actor index,temp8 damage source actor or $ff if none
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8
 
-HumanDeath:     sty temp8
-                lda #SFX_HUMANDEATH
+HumanDeath:     lda #SFX_HUMANDEATH
                 jsr PlaySfx
                 lda actF1,x
                 cmp #FR_SWIM

@@ -13,7 +13,7 @@ DMG_LASER       = 12
 DMG_SHOTGUN     = 14                            ;Reduced by 2 per animation frame
 DMG_PLASMA      = 16
 DMG_SNIPERRIFLE = 20
-DMG_LAUNCHERGRENADE = 32
+DMG_LAUNCHERGRENADE = 40
 DMG_GRENADE     = 40
 DMG_ENEMYMINE   = 40
 DMG_MINE        = 56
@@ -365,7 +365,7 @@ wdBazooka:      dc.b WDB_BULLETDIRFRAME|WDB_NOSKILLBONUS|WDB_LOCKANIMATION ;Weap
                 dc.b ACT_ROCKET                 ;Bullet actor type
                 dc.b DMG_BAZOOKA                ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 25                         ;Bullet time duration
+                dc.b 28                         ;Bullet time duration
                 dc.b 10                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_BAZOOKA                ;Sound effect

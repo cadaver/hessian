@@ -535,7 +535,7 @@ DestroyFire:    lda #ACT_SMOKECLOUD
 
         ; Rat death
         ;
-        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A
 
@@ -553,7 +553,7 @@ RD_SetFrameAndSpeed:
 
         ; Spider death
         ;
-        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A
 
@@ -562,7 +562,7 @@ SpiderDeath:    lda #FR_DEADSPIDERAIR
 
         ; Fly / bat death
         ;
-        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A
 
@@ -574,7 +574,7 @@ BatDeath:       lda #SFX_ANIMALDEATH
 
         ; Organic walker death
         ;
-        ; Parameters: X actor index,Y damage source actor or $ff if none
+        ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A
 
