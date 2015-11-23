@@ -44,6 +44,7 @@ ROCK
 FIREBALL
 STEAM
 ORGANICWALKER
+GUARD
 end
 ;Item names
 ;----------

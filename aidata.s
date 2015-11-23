@@ -37,8 +37,8 @@ spawnListAddTbl:dc.b $00                        ;0: entry 0
 
         ; Spawn list entries
 
-spawnTypeTbl:   dc.b ACT_ORGANICWALKER          ;0
+spawnTypeTbl:   dc.b ACT_GUARD                  ;0
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
 
-spawnWpnTbl:    dc.b ITEM_FLAMETHROWER          ;0
+spawnWpnTbl:    dc.b ITEM_PISTOL                ;0
