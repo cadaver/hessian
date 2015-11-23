@@ -819,7 +819,7 @@ ULO_DoToxinDamage:
                 and #$7f                        ;There may be extra control data in the high bit
                 sta toxinDelay
 ULO_DoDrowningDamage:
-                ldy #$ff
+                ldy #NODAMAGESRC
                 lda #DMG_DROWNING
                 jmp DamageActor                 ;X must be 0
 

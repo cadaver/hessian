@@ -519,7 +519,7 @@ CheckCheat:     lda keyType
                 bcc CC_NoCheat
 CC_ActivateCheat:
                 lda DA_ResetRecharge+1          ;Disable player damage & battery drain
-                eor #healTimer^temp8
+                eor #healTimer^temp7
                 sta DA_ResetRecharge+1
                 lda DrainBatteryRound
                 eor #$69^$a9

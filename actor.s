@@ -710,28 +710,17 @@ UA_NoRemove:    if SHOW_ACTOR_TIME > 0
                 endif
                 cpx #MAX_COMPLEXACT             ;Run AI for NPCs
                 bcs UA_NoAI
-                ldy actAIMode,x
-                lda aiJumpTblLo,y
-                sta UA_AIJump+1
-                lda aiJumpTblHi,y
-                sta UA_AIJump+2
                 lda actCtrl,x
                 sta actPrevCtrl,x
+                ldy actAIMode,x
+                beq UA_NoAI
+                lda aiJumpTblLo-1,y
+                sta UA_AIJump+1
+                lda aiJumpTblHi-1,y
+                sta UA_AIJump+2
 UA_AIJump:      jsr $0000
-UA_NoAI:        ldy #AL_UPDATEROUTINE
-                lda (actLo),y
-                sta UA_Jump+1
-                iny
-                lda (actLo),y
-                bpl UA_NoScript
-                stx ES_ParamX+1
-                and #$7f
-                tax
-                lda UA_Jump+1
-                jsr ExecScript
-                jmp UA_Next
-UA_NoScript:    sta UA_Jump+2
-UA_Jump:        jsr $0000
+UA_NoAI:        ldy #AL_UPDATEROUTINE+1
+                jsr ActorCall
 UA_Next:        if SHOW_ACTOR_TIME > 0
                 lda #$00
                 sta $d020
@@ -1308,6 +1297,26 @@ GetActorLogicData:
                 sta actHi
                 rts
 
+        ; Perform call to either actor update or destroy routine
+        ;
+        ; Parameters: X actor number, Y offset in actor logic structure + 1, actLo/Hi actor logic structure
+        ; Returns: -
+        ; Modifies: A,Y,loader temp regs
+
+ActorCall:      lda (actLo),y
+                bmi AC_Script
+                sta AC_Jump+2
+                dey
+                lda (actLo),y
+                sta AC_Jump+1
+AC_Jump:        jmp $0000
+AC_Script:      stx ES_ParamX+1
+                and #$7f
+                tax
+                dey
+                lda (actLo),y
+                jmp ExecScript
+
         ; Ensure that actor's needed files are preloaded. Called on adding / spawning
         ; Falls through to InitActor
         ;
@@ -1437,10 +1446,10 @@ CAC_HasCollision:
 CAC_HasCollision2:
                 rts
 
-        ; Apply damage to self, and do not return if killed. To be called from move routines
+        ; Apply falling damage
         ;
-        ; Parameters: A damage amount, X actor index
-        ; Returns: C=1 if actor is alive, does not return if killed
+        ; Parameters: X actor index, Y fall distance
+        ; Returns: Does not return if killed
         ; Modifies: A,Y,temp7-temp8,possibly other temp registers
 
 ApplyFallDamage:tya
@@ -1451,9 +1460,17 @@ ApplyFallDamage:tya
                 asl
                 asl
                 ora #$80
+
+        ; Apply damage to self, and do not return if killed. To be called from move routines
+        ;
+        ; Parameters: X actor index, A damage amount
+        ; Returns: Does not return if killed
+        ; Modifies: A,Y,temp7-temp8,possibly other temp registers
+
 DamageSelf:     ldy #NODAMAGESRC
                 jsr DamageActor
-                bcs DS_Alive
+                lda actHp,x
+                bne DS_Alive
                 pla
                 pla
 NoFallDamage:
@@ -1484,7 +1501,7 @@ CollideAndDamageTarget:
         ; Modify damage based on whether target is organic/nonorganic, then apply
         ;
         ; Parameters: X & actIndex bullet actor Y & tgtActIndex target actor
-        ; Returns: A modified damage
+        ; Returns: -
         ; Modifies: A,X,Y,temp7,temp8,loader temp vars
 
 ApplyTargetDamage:
@@ -1513,11 +1530,11 @@ ATD_NoModify:   ldx tgtActIndex
         ; Damage actor, and destroy if health goes to zero
         ;
         ; Parameters: A damage amount (>= $80 skip modify), X actor index, Y damage source actor if applicable or >=$80 if none
-        ; Returns: C=1 if actor is alive, C=0 if killed
+        ; Returns: -
         ; Modifies: A,Y,temp7-temp8,zpSrcLo,possibly other temp registers
 
-DamageActor:    sty temp7
-                sta temp8
+DamageActor:    sta temp7
+                sty temp8
                 tay
                 bpl DA_UseModify                ;Unmodified damage (drowning, falling)
                 and #$7f                        ;will not involve player's armor
@@ -1530,7 +1547,7 @@ DA_UseModify:   txa
                 pha
                 lda #5                          ;Round the armor strength reduction to next 5
 DA_NextMultiplyOf5:
-                cmp temp8
+                cmp temp7
                 bcs DA_ReduceOK
                 adc #5
                 bcc DA_NextMultiplyOf5
@@ -1538,34 +1555,35 @@ DA_ReduceOK:    jsr DecreaseAmmo
                 lda #INVENTORY_TEXT_DURATION    ;Show decreased armor level in the status
                 sta armorMsgTime                ;panel center (same as oxygen meter)
                 pla
-                cmp temp8                       ;Can reduce damage fully, or partially?
+                cmp temp7                       ;Can reduce damage fully, or partially?
                 bcc DA_NotFullReduce
-                lda temp8
-DA_NotFullReduce:lsr                            ;Reduce max. half of the damage to health
+                lda temp7
+DA_NotFullReduce:
+                lsr                            ;Reduce max. half of the damage to health
                 eor #$ff
                 sec
-                adc temp8
-                sta temp8
+                adc temp7
+                sta temp7
 DA_NoPlayerArmor:
                 jsr GetActorLogicData
                 ldy #AL_DMGMODIFY
                 lda (actLo),y
                 tay
-                lda temp8
+                lda temp7
                 jsr ModifyDamage
-DA_SkipModify:  sta temp8
+DA_SkipModify:  sta temp7
                 txa
                 bne DA_NotPlayer
 DA_ResetRecharge:
                 if GODMODE_CHEAT = 0
                 stx healTimer                   ;If player hit, reset healing timer
                 else
-                stx temp8
+                stx temp7
                 endif
 DA_NotPlayer:   lda actHp,x                     ;First check that there is health
                 beq DA_Done                     ;(prevent destroy being called multiple times)
                 sec
-DA_Sub:         sbc temp8
+DA_Sub:         sbc temp7
                 bcs DA_NotDead
                 lda #$00
 DA_NotDead:     sta actHp,x
@@ -1578,17 +1596,18 @@ DA_NotDead:     sta actHp,x
                 lda #SFX_DAMAGE
                 jsr PlaySfx
 DA_SkipFlash:   plp
-                bne DA_Done
-                ldy temp7
+                beq DA_StoredY
+DA_Done:        rts
 
-        ; Call destroy routine of an actor and make sure the hitpoints are set to 0
+        ; Call destroy routine of an actor, give score if source was player bullet,
+        ; and make sure the hitpoints are set to 0
         ;
         ; Parameters: X actor index, Y damage source actor if applicable or >=$80 if none
-        ; Returns: C=0
+        ; Returns: -
         ; Modifies: A,Y,temp8,possibly other temp registers
 
 DestroyActor:   sty temp8
-                jsr GetActorLogicData           ;We may have the bullet's logic data pointer
+DA_StoredY:     jsr GetActorLogicData           ;We may have the bullet's logic data pointer
                 ldy temp8                       ;so get the damage target's pointer now
                 cpy #ACTI_FIRSTPLRBULLET
                 bcc DA_NoScore
@@ -1602,29 +1621,12 @@ DestroyActor:   sty temp8
                 tay
                 pla
                 jsr AddScore
-DA_NoScore:     ldy #AT_DESTROY                 ;Run the DESTROY trigger
-                jsr ActorTrigger
-                lda #$00                        ;Set hitpoints to zero. Some destroy routines like
+DA_NoScore:     lda #$00                        ;Set hitpoints to zero. Some destroy routines like
                 sta actHp,x                     ;the dividing rock will reset HP to nonzero so do now
-                ldy #AL_DESTROYROUTINE          ;to not disturb that mechanism
-                lda (actLo),y
-                sta DA_Jump+1
-                iny
-                lda (actLo),y
-                bpl DA_NoScript
-                stx ES_ParamX+1
-                and #$7f
-                tax
-                lda DA_Jump+1
-                ldy temp8
-                jsr ExecScriptParam
-                clc
-                rts
-DA_NoScript:    sta DA_Jump+2
-                ldy temp8
-DA_Jump:        jsr $0000
-                clc
-DA_Done:        rts
+                ldy #AL_DESTROYROUTINE+1        ;to not disturb that mechanism
+                jsr ActorCall
+                ldy #AT_DESTROY                 ;Run the DESTROY trigger routine
+                jmp ActorTrigger
 
         ; Attempt to spawn an actor to screen edges (left, right or top, depending on spawn type)
         ;

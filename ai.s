@@ -218,7 +218,7 @@ AI_TurnTo:      ldy actAITarget,x
 AI_TurnToTarget:lda temp5
                 sta actD,x                      ;Fall through
 
-        ; Idle AI
+        ; Idle AI (used as part of other routines)
 
 AI_Idle:        jsr AI_RandomReleaseDuck
                 jmp AI_StoreMoveCtrl
@@ -235,8 +235,6 @@ AI_Sniper:      lda actTime,x                   ;Ongoing attack?
 AI_SniperPrepareAttack:
                 jsr PrepareAttack
                 bcc AI_Idle
-AI_DoNothing:
-DoNothing:
 AI_MoverDone:   rts
 
             ; Mover AI
@@ -380,6 +378,7 @@ AI_ReleaseDuck: lda #$00
 AI_ReleaseDuckDone:
 AI_BerzerkDone:
 AI_FlyerDone:
+DoNothing:
                 rts
 
 AI_ContinueAttack2:

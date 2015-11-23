@@ -1,7 +1,6 @@
         ; AI jumptable
 
-aiJumpTblLo:    dc.b <AI_DoNothing
-                dc.b <AI_TurnTo
+aiJumpTblLo:    dc.b <AI_TurnTo
                 dc.b <AI_Follow
                 dc.b <AI_Sniper
                 dc.b <AI_Mover
@@ -13,8 +12,7 @@ aiJumpTblLo:    dc.b <AI_DoNothing
                 dc.b <AI_FlyerIdle
                 dc.b <AI_Fish
 
-aiJumpTblHi:    dc.b >AI_DoNothing
-                dc.b >AI_TurnTo
+aiJumpTblHi:    dc.b >AI_TurnTo
                 dc.b >AI_Follow
                 dc.b >AI_Sniper
                 dc.b >AI_Mover
