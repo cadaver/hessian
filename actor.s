@@ -82,7 +82,7 @@ AMF_DUCK        = $02
 AMF_CLIMB       = $04
 AMF_ROLL        = $08
 AMF_WALLFLIP    = $10
-AMF_NOFALLDAMAGE = $20
+AMF_FALLDAMAGE  = $20
 AMF_CUSTOMANIMATION = $80
 
 ADDACTOR_LEFT_LIMIT = 1
@@ -1453,12 +1453,13 @@ CAC_HasCollision2:
         ; Modifies: A,Y,temp7-temp8,possibly other temp registers
 
 ApplyFallDamage:tya
-                sec
+                cmp #DAMAGING_FALL_DISTANCE+1
+                bcc AFD_NoDamage
                 sbc #DAMAGING_FALL_DISTANCE
-                bcc NoFallDamage
-                beq NoFallDamage
                 asl
+                sta temp8
                 asl
+                adc temp8
                 ora #$80
 
         ; Apply damage to self, and do not return if killed. To be called from move routines
@@ -1473,7 +1474,7 @@ DamageSelf:     ldy #NODAMAGESRC
                 bne DS_Alive
                 pla
                 pla
-NoFallDamage:
+AFD_NoDamage:
 DS_Alive:
 ATD_Skip:
 CADP_NoCollision:

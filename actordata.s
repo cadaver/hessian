@@ -494,7 +494,7 @@ plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
                 dc.b $ff                        ;AI offense random AND-value
                 dc.b $ff                        ;AI defense probability
                 dc.b $ff                        ;Attack directions
-                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP ;Move flags
+                dc.b AMF_JUMP|AMF_DUCK|AMF_CLIMB|AMF_ROLL|AMF_WALLFLIP|AMF_FALLDAMAGE ;Move flags
                 dc.b 4*8                        ;Max. movement speed
 plrGroundAcc:   dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
 plrInAirAcc:    dc.b INITIAL_INAIRACC           ;In air movement acceleration
@@ -733,7 +733,7 @@ alSmallTank:    dc.w USESCRIPT|EP_MOVETANK      ;Update routine
                 dc.b $06                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALUP|AB_UP ;Attack directions
-                dc.b AMF_NOFALLDAMAGE|AMF_CUSTOMANIMATION ;Move flags
+                dc.b AMF_CUSTOMANIMATION ;Move flags
                 dc.b 3*8+4                      ;Max. movement speed
                 dc.b 4                          ;Ground movement acceleration
                 dc.b 0                          ;In air movement acceleration
@@ -777,7 +777,7 @@ alRollingMine:  dc.w USESCRIPT|EP_MOVEROLLINGMINE ;Update routine
                 dc.b $08                        ;AI offense AND-value
                 dc.b $05                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
-                dc.b AMF_JUMP|AMF_NOFALLDAMAGE|AMF_CUSTOMANIMATION ;Move flags
+                dc.b AMF_JUMP|AMF_CUSTOMANIMATION ;Move flags
                 dc.b 4*8-4                      ;Max. movement speed
                 dc.b 3                          ;Ground movement acceleration
                 dc.b 3                          ;In air movement acceleration
@@ -857,7 +857,7 @@ alSpider:       dc.w USESCRIPT|EP_MOVESPIDER    ;Update routine
                 dc.b $00                        ;AI offense AND-value
                 dc.b $00                        ;AI defense probability
                 dc.b AB_NONE                    ;Attack directions
-                dc.b AMF_NOFALLDAMAGE|AMF_CUSTOMANIMATION ;Move flags
+                dc.b AMF_CUSTOMANIMATION        ;Move flags
                 dc.b 2*8                        ;Max. movement speed
                 dc.b 8                          ;Ground movement acceleration
                 dc.b 0                          ;In air movement acceleration

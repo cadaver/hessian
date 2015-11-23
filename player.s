@@ -350,6 +350,7 @@ MH_AnimDone2:   jmp MH_AnimDone
 
 MH_InAir:       and #MB_STARTFALLING/2
                 beq MH_OkToFall
+                jsr MH_ResetFall                ;Make sure unapplied fall distance isn't carried over
                 lda actAIHelp,x                 ;Check AI reactions to falling off a ledge
                 bpl MH_NoDropDown
                 lda #3                          ;Allow drop down if ground reasonably close
@@ -368,9 +369,9 @@ MH_NoDropDown:  lda actAIHelp,x                 ;Check autoturn or stop
                 bcs MH_DoAutoStop
                 jmp MH_DoAutoTurn
 MH_DoAutoStop:  jmp MH_ResetMoveCtrl
-MH_OkToFall:    lda temp3                       ;AI's will never grab ladders, so if enemy has nofalldamage bit
-                and #AMF_NOFALLDAMAGE           ;can also skip the grabbing code
-                bne MH_JumpAnim
+MH_OkToFall:    lda temp3                       ;AI's will never grab ladders, so if enemy has no falldamage
+                and #AMF_FALLDAMAGE             ;can also skip the grabbing code
+                beq MH_JumpAnim
                 lda actSY,x
                 bmi MH_CheckGrab
 MH_IncFall:     asl
