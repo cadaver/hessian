@@ -35,8 +35,8 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
 	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak \
 	sprcommon.pak spritem.pak sprweapon.pak sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
-	sprdroid.pak sprflyer.pak sprsmallwalker.pak sprsmalltank.pak sprmine.pak sprturret.pak sprfire.pak \
-	sprrat.pak sprspider.pak sprrock.pak sprorganicwalker.pak sprguard.pak sprheavyguard.pak
+	sprsmallairrobot.pak sprsmallgroundrobot.pak sprfire.pak spranimals.pak sprbiodomeanimals.pak sprrock.pak \
+	sprguard.pak sprheavyguard.pak
 	c1541 < hessian.seq
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -454,38 +454,23 @@ sprplayerta.pak: spr/playerta.spr
 sprplayerba.pak: spr/playerba.spr
 	pchunk2 spr/playerba.spr sprplayerba.pak
 
-sprdroid.pak: spr/droid.spr
-	pchunk2 spr/droid.spr sprdroid.pak
+sprsmallairrobot.pak: spr/smallairrobot.spr
+	pchunk2 spr/smallairrobot.spr sprsmallairrobot.pak
 
-sprflyer.pak: spr/flyer.spr
-	pchunk2 spr/flyer.spr sprflyer.pak
-
-sprmine.pak: spr/mine.spr
-	pchunk2 spr/mine.spr sprmine.pak
-
-sprturret.pak: spr/turret.spr
-	pchunk2 spr/turret.spr sprturret.pak
-
-sprsmallwalker.pak: spr/smallwalker.spr
-	pchunk2 spr/smallwalker.spr sprsmallwalker.pak
-
-sprsmalltank.pak: spr/smalltank.spr
-	pchunk2 spr/smalltank.spr sprsmalltank.pak
+sprsmallgroundrobot.pak: spr/smallgroundrobot.spr
+	pchunk2 spr/smallgroundrobot.spr sprsmallgroundrobot.pak
 
 sprfire.pak: spr/fire.spr
 	pchunk2 spr/fire.spr sprfire.pak
 
-sprrat.pak: spr/rat.spr
-	pchunk2 spr/rat.spr sprrat.pak
+spranimals.pak: spr/animals.spr
+	pchunk2 spr/animals.spr spranimals.pak
 
-sprspider.pak: spr/spider.spr
-	pchunk2 spr/spider.spr sprspider.pak
-	
+sprbiodomeanimals.pak: spr/biodomeanimals.spr
+	pchunk2 spr/biodomeanimals.spr sprbiodomeanimals.pak
+
 sprrock.pak: spr/rock.spr
 	pchunk2 spr/rock.spr sprrock.pak
-	
-sprorganicwalker.pak: spr/organicwalker.spr
-	pchunk2 spr/organicwalker.spr sprorganicwalker.pak
 
 sprguard.pak: spr/guard.spr
 	pchunk2 spr/guard.spr sprguard.pak

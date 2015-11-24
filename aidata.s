@@ -38,10 +38,10 @@ spawnListAddTbl:dc.b $00                        ;0: entry 0
         ; Spawn list entries
 
 spawnTypeTbl:   dc.b ACT_GUARD                  ;0
-                dc.b ACT_LIGHTGUARD             ;1
+                dc.b ACT_HEAVYGUARD             ;1
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
                 dc.b NOPLOTBIT                  ;1
 
 spawnWpnTbl:    dc.b ITEM_SHOTGUN               ;0
-                dc.b ITEM_PISTOL                ;0
+                dc.b ITEM_AUTORIFLE             ;0
