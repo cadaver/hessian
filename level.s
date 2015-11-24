@@ -1078,16 +1078,12 @@ ULO_COFound:    stx lvlObjNum
                 tya
                 bmi ULO_CODone                  ;If active and not manually deactivable, do not show marker
 ULO_COShowMarker:
-                ldy #ACTI_FIRSTPLRBULLET
-                lda actT,y                      ;If marker already shown, remove it
-                cmp #ACT_OBJECTMARKER
-                beq ULO_COUpdateMarker
-                tya
-                jsr GetFreeActor
+                lda #ACTI_LASTPLRBULLET         ;Get free actor for object marker. May fail if all bullets
+                ldy #ACTI_LASTNPCBULLET         ;are full, in which case the object is not shown until
+                jsr GetFreeActor                ;player moves
                 bcc ULO_CODone
-ULO_COUpdateMarker:
-                stx MObjMarker_Cmp+1            ;Only 1 marker exists at a time, modify code directly
-                tya                             ;for the check whether to remove the marker
+                sty MObjMarker_Cmp+1
+                tya
                 tax
                 lda #ACT_OBJECTMARKER
                 sta actT,x

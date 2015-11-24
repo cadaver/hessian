@@ -25,7 +25,7 @@ MoveItem:       lda actMB,x                     ;Skip movement if grounded and s
                 sta actSY,x                     ;flag
                 lda #$00
                 sta actMB,x
-MoveItem_Done:  
+MoveItem_Done:
 FlashActor:     lda #$01
                 sta actFlash,x
                 rts
@@ -37,11 +37,13 @@ FlashActor:     lda #$01
         ; Modifies: A,Y
 
 MoveObjectMarker:
-MObjMarker_Cmp: lda #$00                        ;Check if levelobjectnumber has changed
-                cmp lvlObjNum                   ;and disappear in that case
-                beq MObjMarker_OK
+MObjMarker_Cmp: cpx #$00                        ;Remove old objectmarker
+                bne MObjMarker_Remove
+                lda lvlObjNum                   ;Remove if no object
+                bmi MObjMarker_Remove
+                jmp FlashActor
+MObjMarker_Remove:
                 jmp RemoveActor
-MObjMarker_OK:  jmp FlashActor
 
         ; Try picking up an item
         ;
