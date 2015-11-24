@@ -31,14 +31,17 @@ flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP
 
         ; Spawn list entry selection tables
 
-spawnListAndTbl:dc.b $00                        ;0: entry 0
+spawnListAndTbl:dc.b $01                        ;0: entry 0
 
 spawnListAddTbl:dc.b $00                        ;0: entry 0
 
         ; Spawn list entries
 
-spawnTypeTbl:   dc.b ACT_HEAVYGUARD             ;0
+spawnTypeTbl:   dc.b ACT_GUARD                  ;0
+                dc.b ACT_LIGHTGUARD             ;1
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
+                dc.b NOPLOTBIT                  ;1
 
-spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
+spawnWpnTbl:    dc.b ITEM_SHOTGUN               ;0
+                dc.b ITEM_PISTOL                ;0
