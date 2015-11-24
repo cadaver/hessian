@@ -700,6 +700,8 @@ AO_RevealNext:  dex                             ;to reveal the item as quickly a
 SetActorAtObject:
                 lda #$80
                 sta actXL,x
+                asl                             ;A=0
+                sta actYL,x
                 lda lvlObjX,y
                 sta actXH,x
                 lda lvlObjY,y
