@@ -1139,7 +1139,7 @@ alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $0f                        ;AI offense random AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -1163,9 +1163,9 @@ alCombatRobotFast:
                 dc.w ExplodeEnemy3_Ofs15        ;Destroy routine
                 dc.b HP_HEAVYGUARD              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 75                         ;Score from kill
+                dc.w 115                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $13                        ;AI offense random AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
