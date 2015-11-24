@@ -300,8 +300,7 @@ DestroyActorNoSource:
 MH_CanSwim:     lda actHp,x                     ;If already dead, do not start to swim
                 beq MH_NoStartSwim2
                 lda #-8*8                       ;Swimming frames have vertical hotspot at center,
-                jsr MoveActorY                  ;so move up now to compensate
-                jsr NoInterpolation
+                jsr MoveActorYNoInterpolation   ;so move up now to compensate
                 lda #FR_SWIM
                 jmp MH_AnimDone
 MH_NoStartSwim2:lda temp1

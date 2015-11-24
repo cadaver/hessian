@@ -3,6 +3,24 @@ ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 3
 TURRET_ANIMDELAY = 2
 
+        ; Generate 3 explosions at 15 pixel radius horizontally and 31 pixel radius
+        ; vertically
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy3_Ofs15:
+                lda #-15*8
+                jsr MoveActorYNoInterpolation
+                lda #3
+                sta actTime,x
+                lda #$3f
+                sta actSX,x
+                lda #$ff
+                sta actSY,x
+                jmp ExplodeEnemyMultipleCommon
+
         ; Turn enemy into an explosion & drop item
         ;
         ; Parameters: X actor index
@@ -38,9 +56,11 @@ ExplodeEnemy2_8:lda #2
         ; Modifies: A,Y,temp vars
 
 ExplodeEnemyMultiple:
-                sta actSX,x
+                sta actTime,x
                 tya
+                sta actSX,x
                 sta actSY,x
+ExplodeEnemyMultipleCommon:
                 lda #ACT_EXPLOSIONGENERATOR
                 jsr TransformBullet
                 jmp DropItem                    ;A=0 on return
@@ -61,29 +81,34 @@ MoveExplosionGenerator:
                 jsr GetFreeActor
                 bcc MEG_NoRoom                  ;If no room, simply explode self
                 jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
-                lda actSY,x
+                lda actSX,x
                 sta temp1
-                lsr
+                lda actSY,x
                 sta temp2
                 tya
                 tax
                 jsr ExplodeActor                ;Play explosion sound & init animation
+                lda temp1
                 jsr MEG_GetOffset
                 jsr MoveActorX
+                lda temp2
                 jsr MEG_GetOffset
                 jsr MoveActorY
                 ldx actIndex
-                dec actSX,x
+                dec actTime,x
                 bne MEG_NotLastExplosion
                 jmp RemoveActor
 MEG_NoRoom:     jmp ExplodeActor
 MEG_NotLastExplosion:
 MEG_NoNewExplosion:
                 rts
-MEG_GetOffset:  jsr Random
-                and temp1
+MEG_GetOffset:  sta temp3
+                lsr
+                sta temp4
+                jsr Random
+                and temp3
                 sec
-                sbc temp2
+                sbc temp4
                 rts
 
         ; Initiate humanoid enemy or player death
@@ -101,7 +126,7 @@ HumanDeath:     lda #SFX_HUMANDEATH
                 and #CI_OBSTACLE|CI_GROUND      ;as the dying frames have hotspot at bottom
                 bne HD_SetFrame
                 lda #8*8
-                jsr MoveActorY
+                jsr MoveActorYNoInterpolation
                 jmp HD_SetFrame
 HD_NotSwimming: lda #DEATH_YSPEED
                 sta actSY,x
@@ -236,7 +261,7 @@ DI_NotImportant:sta actLvlDataOrg,x             ;Make item either persistent or 
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,temp regs
-        
+
 DeathFlickerAndRemove:
                 dec actTime,x
                 bmi DFAR_Remove
