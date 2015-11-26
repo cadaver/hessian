@@ -312,103 +312,103 @@ adSpeechBubble: dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b 54                         ;Base spritenumber
 
 adSmallDroid:   dc.b ONESPRITEDIRECT            ;Number of sprites
-                dc.b C_SMALL_AIR_ROBOT          ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b 0                          ;Base spritenumber
 
 adLargeDroid:   dc.b ONESPRITEDIRECT            ;Number of sprites
-                dc.b C_SMALL_AIR_ROBOT          ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b 3                          ;Base spritenumber
 
 adFlyingCraft:  dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_SMALL_AIR_ROBOT          ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 5                          ;Number of frames
                 dc.b $80+6,$80+7,8,7,6
 
 adSmallWalker:  dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_SMALL_GROUND_ROBOT       ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 12                         ;Number of frames
-                dc.b 1,0,1,2,1,0,1,2,1,3,3,1
+                dc.b 15,14,15,16,15,14,15,16,15,17,17,15
 
 adSmallTank:    dc.b HUMANOID                   ;Number of sprites
-                dc.b C_SMALL_GROUND_ROBOT       ;Lower part spritefile number
-                dc.b 4                          ;Lower part base spritenumber
+                dc.b C_SMALLENEMIES             ;Lower part spritefile number
+                dc.b 18                         ;Lower part base spritenumber
                 dc.b 64                         ;Lower part base index into the frametable
                 dc.b 3                          ;Lower part left frame add
-                dc.b C_SMALL_GROUND_ROBOT       ;Upper part spritefile number
-                dc.b 7                          ;Upper part base spritenumber
+                dc.b C_SMALLENEMIES             ;Upper part spritefile number
+                dc.b 21                         ;Upper part base spritenumber
                 dc.b 78                         ;Upper part base index into the frametable
                 dc.b 3                          ;Upper part left frame add
 
 adFloatingMine: dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_SMALL_AIR_ROBOT          ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 4                          ;Number of frames
                 dc.b 9,10,11,10
 
 adRollingMine:  dc.b ONESPRITEDIRECT            ;Number of sprites
-                dc.b C_SMALL_AIR_ROBOT          ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b 12                         ;Base spritenumber
 
 adCeilingTurret:dc.b ONESPRITEDIRECT            ;Number of sprites
-                dc.b C_SMALL_GROUND_ROBOT       ;Spritefile number
-                dc.b 10                         ;Base spritenumber
+                dc.b C_SMALLENEMIES             ;Spritefile number
+                dc.b 24                         ;Base spritenumber
 
 adFire:         dc.b ONESPRITEDIRECT            ;Number of sprites
-                dc.b C_FIRE                     ;Spritefile number
-                dc.b 0                          ;Base spritenumber
+                dc.b C_SMALLENEMIES             ;Spritefile number
+                dc.b 29                         ;Base spritenumber
 
 adSmokeCloud:   dc.b ONESPRITEDIRECT            ;Number of sprites
-                dc.b C_FIRE                     ;Spritefile number
-                dc.b 4                          ;Base spritenumber
+                dc.b C_SMALLENEMIES             ;Spritefile number
+                dc.b 33                         ;Base spritenumber
 
 adRat:          dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_ANIMALS                  ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 14                         ;Number of frames
-                dc.b 1,0,1,2,1,0,1,2,1,3,3,3,4,5
+                dc.b 47,46,47,48,47,46,47,48,47,49,49,49,50,51
 
 adSpider:       dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_ANIMALS                  ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 5                          ;Number of frames
-                dc.b 11,12,13,14,15
+                dc.b 57,58,59,60,61
 
 adFly:          dc.b ONESPRITEDIRECT            ;Number of sprites
-                dc.b C_BIODOME_ANIMALS          ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b 5                          ;Base spritenumber
 
 adBat:          dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_ANIMALS                  ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 7                          ;Number of frames
-                dc.b 6,7,8,9,8,7,10
+                dc.b 52,53,54,55,56,57,58
 
 adFish:         dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_ANIMALS                  ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 4                          ;Number of frames
-                dc.b 16,17
+                dc.b 62,63
 
 adRock:         dc.b ONESPRITEDIRECT            ;Number of sprites
-                dc.b C_ROCK                     ;Spritefile number
-                dc.b 0                          ;Base spritenumber
+                dc.b C_SMALLENEMIES             ;Spritefile number
+                dc.b 40                         ;Base spritenumber
 
 adFireball:     dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_ROCK                     ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 4                          ;Number of frames
-                dc.b 3,4,5,4
+                dc.b 43,44,45,44
 
 adSteam:        dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_FIRE                     ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
-                dc.b 4                          ;Number of frames
-                dc.b 8,9,10,11
+                dc.b 3                          ;Number of frames
+                dc.b´37,38,39
 
 adOrganicWalker:dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_BIODOME_ANIMALS          ;Spritefile number
+                dc.b C_SMALLENEMIES             ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 14                         ;Number of frames
                 dc.b 1,0,1,2,1,0,1,2,1,3,3,1,0,4

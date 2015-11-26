@@ -122,6 +122,8 @@ ISpr_ResetChunkFiles:
                 jsr LoadSpriteFile
                 ldy #C_WEAPON
                 jsr LoadSpriteFile
+                ldy #C_SMALLENEMIES
+                jsr LoadSpriteFile
 
         ; Fade out loading music now
 

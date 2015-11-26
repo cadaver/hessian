@@ -35,8 +35,7 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
 	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak \
 	sprcommon.pak spritem.pak sprweapon.pak sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
-	sprsmallairrobot.pak sprsmallgroundrobot.pak sprfire.pak spranimals.pak sprbiodomeanimals.pak sprrock.pak \
-	sprguard.pak sprheavyguard.pak sprcombatrobot.pak sprlargewalker.pak
+	sprsmallenemies.pak sprbiodomeanimals.pak sprguard.pak sprheavyguard.pak sprcombatrobot.pak sprlargewalker.pak
 	c1541 < hessian.seq
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -454,23 +453,11 @@ sprplayerta.pak: spr/playerta.spr
 sprplayerba.pak: spr/playerba.spr
 	pchunk2 spr/playerba.spr sprplayerba.pak
 
-sprsmallairrobot.pak: spr/smallairrobot.spr
-	pchunk2 spr/smallairrobot.spr sprsmallairrobot.pak
-
-sprsmallgroundrobot.pak: spr/smallgroundrobot.spr
-	pchunk2 spr/smallgroundrobot.spr sprsmallgroundrobot.pak
-
-sprfire.pak: spr/fire.spr
-	pchunk2 spr/fire.spr sprfire.pak
-
-spranimals.pak: spr/animals.spr
-	pchunk2 spr/animals.spr spranimals.pak
+sprsmallenemies.pak: spr/smallenemies.spr
+	pchunk2 spr/smallenemies.spr sprsmallenemies.pak
 
 sprbiodomeanimals.pak: spr/biodomeanimals.spr
 	pchunk2 spr/biodomeanimals.spr sprbiodomeanimals.pak
-
-sprrock.pak: spr/rock.spr
-	pchunk2 spr/rock.spr sprrock.pak
 
 sprguard.pak: spr/guard.spr
 	pchunk2 spr/guard.spr sprguard.pak
