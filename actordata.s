@@ -47,6 +47,7 @@ ACT_HEAVYGUARD  = 45
 ACT_LIGHTGUARD  = 46
 ACT_COMBATROBOT = 47
 ACT_COMBATROBOTFAST = 48
+ACT_LARGEWALKER = 49
 
 HP_PLAYER       = 56
 HP_RAT          = 4
@@ -68,6 +69,7 @@ HP_SMALLTANK    = 20
 HP_LARGEDROIDSUPER = 20
 HP_HEAVYGUARD   = 20
 HP_CEILINGTURRET = 24
+HP_LARGEWALKER  = 56
 
         ; Difficulty mod for damage on player
 
@@ -148,6 +150,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adLightGuard
                 dc.b <adCombatRobot
                 dc.b <adCombatRobot
+                dc.b <adLargeWalker
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -197,6 +200,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adLightGuard
                 dc.b >adCombatRobot
                 dc.b >adCombatRobot
+                dc.b >adLargeWalker
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -449,6 +453,15 @@ adCombatRobot:  dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
+adLargeWalker:  dc.b FOURSPRITE                 ;Number of sprites
+                dc.b C_LARGEWALKER              ;Spritefile number
+                dc.b 9                          ;Left frame add
+                dc.b 18                         ;Number of frames
+                dc.b 1,0,0,1,1,2,2,1,1,$80+1,$80+0,$80+0,$80+1,$80+1,$80+2,$80+2,$80+1,$80+1
+                dc.b 4,3,3,4,4,5,5,4,4,$80+4,$80+3,$80+3,$80+4,$80+4,$80+5,$80+5,$80+4,$80+4
+                dc.b 6,6,6,6,6,6,6,6,6,$80+6,$80+6,$80+6,$80+6,$80+6,$80+6,$80+6,$80+6,$80+6
+                dc.b 8,7,7,8,8,9,9,8,8,$80+8,$80+7,$80+7,$80+8,$80+8,$80+9,$80+9,$80+8,$80+8
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -499,6 +512,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alLightGuard
                 dc.b <alCombatRobot
                 dc.b <alCombatRobotFast
+                dc.b <alLargeWalker
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -548,6 +562,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alLightGuard
                 dc.b >alCombatRobot
                 dc.b >alCombatRobotFast
+                dc.b >alLargeWalker
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -1179,3 +1194,26 @@ alCombatRobotFast:
                 dc.b -4                         ;Height in chars for headbump check (negative)
                 dc.b -INITIAL_JUMPSPEED-4       ;Jump initial speed (negative)
                 dc.b INITIAL_CLIMBSPEED+4       ;Climbing speed
+
+alLargeWalker:  dc.w USESCRIPT|EP_MOVEWALKER    ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
+                dc.b 24                         ;Horizontal size
+                dc.b 42                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w ExplodeEnemy5_Ofs20        ;Destroy routine
+                dc.b HP_LARGEWALKER             ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 175                        ;Score from kill
+                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b $3f                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL              ;Attack directions
+                dc.b 0                          ;Move flags
+                dc.b 2*8                        ;Max. movement speed
+                dc.b 8                          ;Ground movement acceleration
+                dc.b 2                          ;In air movement acceleration
+                dc.b 6                          ;Gravity acceleration
+                dc.b 6                          ;Long jump gravity acceleration
+                dc.b 8                          ;Ground braking
+                dc.b -5                         ;Height in chars for headbump check (negative)

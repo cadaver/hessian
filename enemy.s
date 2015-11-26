@@ -3,6 +3,24 @@ ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 3
 TURRET_ANIMDELAY = 2
 
+        ; Generate 5 explosions at max radius
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy5_Ofs20:
+                dec actYH,x
+                lda #12*8
+                jsr MoveActorYNoInterpolation
+                lda #5
+                sta actTime,x
+                lda #$ff
+                sta actSX,x
+                sta actSY,x
+                jmp ExplodeEnemyMultipleCommon
+
+
         ; Generate 3 explosions at 15 pixel radius horizontally and 31 pixel radius
         ; vertically
         ;
@@ -77,7 +95,7 @@ MoveExplosionGenerator:
                 lda #MULTIEXPLOSION_DELAY
                 sta actFd,x
                 lda #ACTI_FIRSTEFFECT
-                ldy #ACTI_LASTEFFECT
+                ldy #ACTI_LASTNPCBULLET
                 jsr GetFreeActor
                 bcc MEG_NoRoom                  ;If no room, simply explode self
                 jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
