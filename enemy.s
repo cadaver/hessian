@@ -3,7 +3,7 @@ ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 3
 TURRET_ANIMDELAY = 2
 
-        ; Generate 5 explosions at max radius
+        ; Generate 5 explosions at 15 pixel radius
         ;
         ; Parameters: X actor index
         ; Returns: -
@@ -21,7 +21,7 @@ ExplodeEnemy5_Ofs20:
                 jmp ExplodeEnemyMultipleCommon
 
 
-        ; Generate 3 explosions at 15 pixel radius horizontally and 31 pixel radius
+        ; Generate 3 explosions at 7 pixel radius horizontally and 31 pixel radius
         ; vertically
         ;
         ; Parameters: X actor index
@@ -94,7 +94,7 @@ MoveExplosionGenerator:
                 bpl MEG_NoNewExplosion
                 lda #MULTIEXPLOSION_DELAY
                 sta actFd,x
-                lda #ACTI_FIRSTEFFECT
+                lda #ACTI_FIRSTNPC              ;Use any free actors
                 ldy #ACTI_LASTNPCBULLET
                 jsr GetFreeActor
                 bcc MEG_NoRoom                  ;If no room, simply explode self
