@@ -2,6 +2,7 @@ IRQ1_LINE       = MIN_SPRY-12
 IRQ3_LINE       = SCROLLROWS*8+44
 IRQ4_LINE       = IRQ3_LINE+8
 IRQ5_LINE       = 143
+IRQ6_LINE       = 248
 
 PANEL_BG2       = $0b
 PANEL_BG3       = $0c
@@ -23,7 +24,7 @@ BlankScreen:    jsr WaitBottom
 BS_Common:      ldx #$00
                 stx Irq1_D015+1
                 stx Irq1_MaxSprY+1
-                stx Irq4_LevelUpdate+1          ;Disable level animation by default
+                stx Irq6_LevelUpdate+1          ;Disable level animation by default
                 rts
 
         ; Raster interrupt 3. Gamescreen / scorepanel split
@@ -298,19 +299,25 @@ Irq4:           jsr StartIrq
                 if SHOW_PLAYROUTINE_TIME > 0
                 dec $d020
                 endif
+Irq4_Irq6Jump:  lda #<Irq6
+                ldx #>Irq6
+                ldy #IRQ6_LINE
+                jmp SetNextIrq
+
+        ;Raster interrupt 6. Enable SCPU/C128 turbo if no loading, do levelupdate. On plain C64
+        ;jumps directly here from interrupt 4.
+
+Irq6:           jsr StartIrq
                 ldx fileOpen
-                bne Irq4_NoTurbo
+                bne Irq6_NoTurbo
                 inx
-Irq4_WaitTurbo: lda $d012                       ;Busy-wait for the last badline (required for C128)
-                cmp #240
-                bcc Irq4_WaitTurbo
-Irq4_EnableTurbo:
-                stx $d07b
+Irq6_EnableTurbo:
+                stx $d07b                       ;SCPU turbo mode & C128 2MHz mode enable
                 stx $d030
-Irq4_NoTurbo:
-Irq4_LevelUpdate:
+Irq6_NoTurbo:
+Irq6_LevelUpdate:
                 lda #$00                        ;Animate level background?
-                beq Irq4_NoLevelUpdate
+                beq Irq6_NoLevelUpdate
                 if SHOW_LEVELUPDATE_TIME > 0
                 inc $d020
                 endif
@@ -318,8 +325,8 @@ Irq4_LevelUpdate:
                 if SHOW_LEVELUPDATE_TIME > 0
                 dec $d020
                 endif
-Irq4_NoLevelUpdate:
-                lda #<Irq1
+Irq6_NoLevelUpdate:
+                lda #<Irq1                      ;Back to screen top interrupt
                 ldx #>Irq1
                 ldy #IRQ1_LINE
                 jmp SetNextIrq

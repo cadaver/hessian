@@ -731,7 +731,7 @@ UA_Next:        if SHOW_ACTOR_TIME > 0
         ; Interpolate actors' movement each second frame
 
 InterpolateActors:
-                stx Irq4_LevelUpdate+1          ;Enable/disable level char animation
+                stx Irq6_LevelUpdate+1          ;Enable/disable level char animation
                 lda scrollX
                 sec
 IA_PrevScrollX: sbc #$00

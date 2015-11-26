@@ -14,15 +14,18 @@ InitAll:        ldx #STACKSTART
                 bne IsPAL
                 lda #30                         ;Compensate game clock speed for NTSC
                 sta timeMaxTbl+3                ;(otherwise no compensation)
-IsPAL:          lda $d030
-                cmp #$ff                        ;Turbo mode wait needed only on C128
-                bne Is128
-                lda #$4c
-                sta Irq4_WaitTurbo
-                lda #<Irq4_EnableTurbo
-                sta Irq4_WaitTurbo+1
-                lda #>Irq4_EnableTurbo
-                sta Irq4_WaitTurbo+2
+IsPAL:          lda $d030                       ;Enable extra IRQ for turbo switching for C128 & SCPU
+                cmp #$ff                        ;(or rather, disable it on plain C64)
+                bne UseTurbo
+                lda $d0bc
+                bpl UseTurbo
+NoTurbo:        lda #$4c
+                sta Irq4_Irq6Jump
+                lda #<Irq6_LevelUpdate
+                sta Irq4_Irq6Jump+1
+                lda #>Irq6_LevelUpdate
+                sta Irq4_Irq6Jump+2
+UseTurbo:
 
         ; Initialize zeropage variables
 
