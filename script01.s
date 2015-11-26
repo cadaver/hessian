@@ -12,6 +12,8 @@ FR_DEADBATGROUND = 6
 FR_DEADWALKERAIR = 12
 FR_DEADWALKERGROUND = 13
 
+SCRAP_DURATION = 40
+
                 org scriptCodeStart
 
                 dc.w MoveDroid
@@ -44,7 +46,8 @@ FR_DEADWALKERGROUND = 13
                 dc.w ExplodeEnemy2_8_Ofs6
                 dc.w ExplodeEnemy2_8_Ofs10
                 dc.w ExplodeEnemy3_Ofs15
-                dc.w ExplodeEnemy4_Ofs20
+                dc.w ExplodeEnemy4_Ofs15
+                dc.w MoveScrapMetal
 
         ; Floating droid update routine
         ;
@@ -611,6 +614,36 @@ MLW_SpeedOK:    clc
                 sta actF1,x
                 jmp AttackGeneric
 
+        ; Scrap metal movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveScrapMetal: jsr DeathFlickerAndRemove
+                lda actSY,x                     ;Store original Y-speed for bounce
+                sta temp1
+                jsr FallingMotionCommon         ;Move & check collisions
+                lsr
+                and #MB_HITWALL/2
+                beq MSM_NoHitWall
+                php
+                lda actSX,x
+                jsr Negate8Asr8
+                sta actSX,x
+                plp
+MSM_NoHitWall:  bcc MSM_NoBounce
+                lda actSX,x
+                jsr Asr8
+                sta actSX,x
+                lda temp1
+                jsr Negate8Asr8
+                sta actSY,x
+                lda #$00                        ;Clear grounded flag
+                sta actMB,x
+MSM_NoBounce:   rts
+MSM_Remove:     jmp RemoveActor
+
         ; Generate 2 explosions at 8 pixel radius
         ;
         ; Parameters: X actor index
@@ -645,22 +678,50 @@ ExplodeEnemy3_Ofs15:
                 sta actSY,x
                 jmp ExplodeEnemyMultipleCommon
 
-        ; Generate 4 explosions at 32 pixel radius
+        ; Generate 4 explosions at 32 pixel radius and spawn pieces of scrap metal
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,temp vars
 
-ExplodeEnemy4_Ofs20:
-                dec actYH,x
-                lda #12*8
+ExplodeEnemy4_Ofs15:
+                lda #-15*8
                 jsr MoveActorYNoInterpolation
-                lda #5
+                lda #4
                 sta actTime,x
                 lda #$ff
                 sta actSX,x
                 sta actSY,x
-                jmp ExplodeEnemyMultipleCommon
+                jsr ExplodeEnemyMultipleCommon  ;Note: item is dropped first before
+                lda #3                          ;spawning scrap or explosions
+                sta temp8
+                jsr Random
+                sta temp7                       ;Initial shape
+EE_ScrapMetalLoop:
+                lda #ACTI_FIRSTNPC              ;Use any free actors
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc EE_ScrapMetalDone
+                lda #ACT_SCRAPMETAL
+                jsr SpawnActor
+                jsr Random
+                and #$1f                        ;Randomize upward + sideways speed
+                sbc #$30
+                sta actSY,y
+                jsr Random
+                and #$1f
+                sbc #$10
+                sta actSX,y
+                inc temp7
+                lda temp7
+                and #$03
+                sta actF1,y
+                lda #SCRAP_DURATION
+                sta actTime,y
+                dec temp8
+                bne EE_ScrapMetalLoop
+EE_ScrapMetalDone:
+                rts
 
         ; Common flying enemy movement
         ;

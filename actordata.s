@@ -48,6 +48,7 @@ ACT_LIGHTGUARD  = 46
 ACT_COMBATROBOT = 47
 ACT_COMBATROBOTFAST = 48
 ACT_LARGEWALKER = 49
+ACT_SCRAPMETAL  = 50
 
 HP_PLAYER       = 56
 HP_RAT          = 4
@@ -151,6 +152,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adCombatRobot
                 dc.b <adCombatRobot
                 dc.b <adLargeWalker
+                dc.b <adScrapMetal
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -201,6 +203,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adCombatRobot
                 dc.b >adCombatRobot
                 dc.b >adLargeWalker
+                dc.b >adScrapMetal
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -462,6 +465,10 @@ adLargeWalker:  dc.b FOURSPRITE                 ;Number of sprites
                 dc.b 6,6,6,6,$80+6,$80+6,$80+6,$80+6
                 dc.b 7,8,9,8,$80+7,$80+8,$80+9,$80+8
 
+adScrapMetal:   dc.b ONESPRITEDIRECT            ;Number of sprites
+                dc.b C_COMMON                   ;Spritefile number
+                dc.b 57                         ;Base spritenumber
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -513,6 +520,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alCombatRobot
                 dc.b <alCombatRobotFast
                 dc.b <alLargeWalker
+                dc.b <alScrapMetal
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -563,6 +571,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alCombatRobot
                 dc.b >alCombatRobotFast
                 dc.b >alLargeWalker
+                dc.b >alScrapMetal
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -1200,7 +1209,7 @@ alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
                 dc.b 24                         ;Horizontal size
                 dc.b 42                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE4_OFS20 ;Destroy routine
+                dc.w USESCRIPT|EP_EXPLODE4_OFS15 ;Destroy routine
                 dc.b HP_LARGEWALKER             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 175                        ;Score from kill
@@ -1217,3 +1226,6 @@ alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
                 dc.b 6                          ;Long jump gravity acceleration
                 dc.b 8                          ;Ground braking
                 dc.b -5                         ;Height in chars for headbump check (negative)
+
+alScrapMetal:   dc.w USESCRIPT|EP_MOVESCRAPMETAL ;Update routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
