@@ -130,5 +130,5 @@ sfxLauncher:    include sfx/launcher.sfx
 sfxHumanDeath:  include sfx/death.sfx
 sfxSniperRifle: include sfx/sniperrifle.sfx
 sfxBazooka:     include sfx/bazooka.sfx
-sfxEMP:         include sfx/emp.sfx
 sfxExplosion:   include sfx/explosion.sfx
+sfxEMP:         include sfx/emp.sfx
