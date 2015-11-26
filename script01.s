@@ -39,6 +39,7 @@ FR_DEADWALKERGROUND = 13
                 dc.w BatDeath
                 dc.w DestroyRock
                 dc.w OrganicWalkerDeath
+                dc.w MoveLargeWalker
 
         ; Floating droid update routine
         ;
@@ -582,6 +583,28 @@ OrganicWalkerDeath:
                 jsr HumanDeath
                 lda #FR_DEADWALKERAIR
                 bne RD_SetFrameAndSpeed
+
+        ; Large walker movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveLargeWalker:jsr MoveGeneric
+                lda actSX,x
+                bpl MLW_SpeedOK
+                eor #$ff
+                clc
+                adc #$01
+MLW_SpeedOK:    clc
+                adc actFd,x
+                sta actFd,x
+                rol
+                rol
+                rol
+                and #$03
+                sta actF1,x
+                jmp AttackGeneric
 
         ; Common flying enemy movement
         ;

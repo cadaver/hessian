@@ -57,17 +57,17 @@ titleTexts      = chars+608+168*2
 ;START_X         = $3780
 ;START_Y         = $4100
 
-START_LEVEL     = $0a                          ;Nether tunnel
-START_X         = $0080
-START_Y         = $5600
+;START_LEVEL     = $0a                          ;Nether tunnel
+;START_X         = $0080
+;START_Y         = $5600
 
 ;START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
 ;START_X         = $a580
 ;START_Y         = $7400
 
-;START_LEVEL     = $0b                          ;Next to Bio-Dome
-;START_X         = $4780
-;START_Y         = $1700
+START_LEVEL     = $0b                          ;Next to Bio-Dome
+START_X         = $4780
+START_Y         = $1700
 
 ;START_LEVEL      = $0d                          ;Server vault
 ;START_X          = $0180

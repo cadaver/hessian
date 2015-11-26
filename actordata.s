@@ -455,12 +455,12 @@ adCombatRobot:  dc.b HUMANOID                   ;Number of sprites
 
 adLargeWalker:  dc.b FOURSPRITE                 ;Number of sprites
                 dc.b C_LARGEWALKER              ;Spritefile number
-                dc.b 9                          ;Left frame add
-                dc.b 18                         ;Number of frames
-                dc.b 1,0,0,1,1,2,2,1,1,$80+1,$80+0,$80+0,$80+1,$80+1,$80+2,$80+2,$80+1,$80+1
-                dc.b 4,3,3,4,4,5,5,4,4,$80+4,$80+3,$80+3,$80+4,$80+4,$80+5,$80+5,$80+4,$80+4
-                dc.b 6,6,6,6,6,6,6,6,6,$80+6,$80+6,$80+6,$80+6,$80+6,$80+6,$80+6,$80+6,$80+6
-                dc.b 8,7,7,8,8,9,9,8,8,$80+8,$80+7,$80+7,$80+8,$80+8,$80+9,$80+9,$80+8,$80+8
+                dc.b 4                          ;Left frame add
+                dc.b 8                          ;Number of frames
+                dc.b 0,1,2,1,$80+0,$80+1,$80+2,$80+1
+                dc.b 3,4,5,4,$80+3,$80+4,$80+5,$80+4
+                dc.b 6,6,6,6,$80+6,$80+6,$80+6,$80+6
+                dc.b 7,8,9,8,$80+7,$80+8,$80+9,$80+8
 
         ; Actor logic data
 
@@ -1195,7 +1195,7 @@ alCombatRobotFast:
                 dc.b -INITIAL_JUMPSPEED-4       ;Jump initial speed (negative)
                 dc.b INITIAL_CLIMBSPEED+4       ;Climbing speed
 
-alLargeWalker:  dc.w USESCRIPT|EP_MOVEWALKER    ;Update routine
+alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 24                         ;Horizontal size
                 dc.b 42                         ;Size up
@@ -1209,7 +1209,7 @@ alLargeWalker:  dc.w USESCRIPT|EP_MOVEWALKER    ;Update routine
                 dc.b $3f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
-                dc.b 0                          ;Move flags
+                dc.b AMF_CUSTOMANIMATION        ;Move flags
                 dc.b 2*8                        ;Max. movement speed
                 dc.b 8                          ;Ground movement acceleration
                 dc.b 2                          ;In air movement acceleration
