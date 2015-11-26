@@ -40,6 +40,11 @@ FR_DEADWALKERGROUND = 13
                 dc.w DestroyRock
                 dc.w OrganicWalkerDeath
                 dc.w MoveLargeWalker
+                dc.w ExplodeEnemy2_8
+                dc.w ExplodeEnemy2_8_Ofs6
+                dc.w ExplodeEnemy2_8_Ofs10
+                dc.w ExplodeEnemy3_Ofs15
+                dc.w ExplodeEnemy4_Ofs20
 
         ; Floating droid update routine
         ;
@@ -605,6 +610,57 @@ MLW_SpeedOK:    clc
                 and #$03
                 sta actF1,x
                 jmp AttackGeneric
+
+        ; Generate 2 explosions at 8 pixel radius
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy2_8_Ofs6:
+                lda #6*8
+                skip2
+ExplodeEnemy2_8_Ofs10:
+                lda #-10*8
+                jsr MoveActorYNoInterpolation
+ExplodeEnemy2_8:lda #2
+                ldy #$3f
+                jmp ExplodeEnemyMultiple
+
+        ; Generate 3 explosions at 8 pixel radius horizontally and 32 pixel radius
+        ; vertically
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy3_Ofs15:
+                lda #-15*8
+                jsr MoveActorYNoInterpolation
+                lda #3
+                sta actTime,x
+                lda #$3f
+                sta actSX,x
+                lda #$ff
+                sta actSY,x
+                jmp ExplodeEnemyMultipleCommon
+
+        ; Generate 4 explosions at 32 pixel radius
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy4_Ofs20:
+                dec actYH,x
+                lda #12*8
+                jsr MoveActorYNoInterpolation
+                lda #5
+                sta actTime,x
+                lda #$ff
+                sta actSX,x
+                sta actSY,x
+                jmp ExplodeEnemyMultipleCommon
 
         ; Common flying enemy movement
         ;

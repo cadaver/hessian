@@ -3,42 +3,6 @@ ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 3
 TURRET_ANIMDELAY = 2
 
-        ; Generate 5 explosions at 15 pixel radius
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy5_Ofs20:
-                dec actYH,x
-                lda #12*8
-                jsr MoveActorYNoInterpolation
-                lda #5
-                sta actTime,x
-                lda #$ff
-                sta actSX,x
-                sta actSY,x
-                jmp ExplodeEnemyMultipleCommon
-
-
-        ; Generate 3 explosions at 7 pixel radius horizontally and 31 pixel radius
-        ; vertically
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy3_Ofs15:
-                lda #-15*8
-                jsr MoveActorYNoInterpolation
-                lda #3
-                sta actTime,x
-                lda #$3f
-                sta actSX,x
-                lda #$ff
-                sta actSY,x
-                jmp ExplodeEnemyMultipleCommon
-
         ; Turn enemy into an explosion & drop item
         ;
         ; Parameters: X actor index
@@ -51,21 +15,6 @@ ExplodeEnemy_Ofs8:
 ExplodeEnemy:   lda #$00
                 jsr DropItem
                 jmp ExplodeActor
-
-        ; Generate 2 explosions at 8 pixel radius
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy2_8_OfsD6:
-                lda #6*8
-                skip2
-ExplodeEnemy2_8_Ofs10:
-                lda #-10*8
-                jsr MoveActorYNoInterpolation
-ExplodeEnemy2_8:lda #2
-                ldy #$3f
 
         ; Turn enemy into a multiple explosion generator & drop item
         ;

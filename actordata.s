@@ -720,7 +720,7 @@ alLargeDroid:   dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
                 dc.b 9                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 8                          ;Size down
-                dc.w ExplodeEnemy2_8            ;Destroy routine
+                dc.w USESCRIPT|EP_EXPLODE2_8 ;Destroy routine
                 dc.b HP_LARGEDROID              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 50                         ;Score from kill
@@ -742,7 +742,7 @@ alLargeDroidSuper:
                 dc.b 9                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 8                          ;Size down
-                dc.w ExplodeEnemy2_8            ;Destroy routine
+                dc.w USESCRIPT|EP_EXPLODE2_8    ;Destroy routine
                 dc.b HP_LARGEDROIDSUPER         ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
@@ -784,7 +784,7 @@ alSmallWalker:  dc.w USESCRIPT|EP_MOVEWALKER    ;Update routine
                 dc.b 12                         ;Horizontal size
                 dc.b 21                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
+                dc.w USESCRIPT|EP_EXPLODE2_8_OFS10 ;Destroy routine
                 dc.b HP_SMALLWALKER             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 45                         ;Score from kill
@@ -808,7 +808,7 @@ alSmallTank:    dc.w USESCRIPT|EP_MOVETANK      ;Update routine
                 dc.b 12                         ;Horizontal size
                 dc.b 22                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
+                dc.w USESCRIPT|EP_EXPLODE2_8_OFS10 ;Destroy routine
                 dc.b HP_SMALLTANK               ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 60                         ;Score from kill
@@ -876,7 +876,7 @@ alCeilingTurret:dc.w USESCRIPT|EP_MOVETURRET    ;Update routine
                 dc.b 6                          ;Horizontal size
                 dc.b 0                          ;Size up
                 dc.b 12                         ;Size down
-                dc.w ExplodeEnemy2_8_OfsD6      ;Destroy routine
+                dc.w USESCRIPT|EP_EXPLODE2_8_OFS6 ;Destroy routine
                 dc.b HP_CEILINGTURRET           ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 150                        ;Score from kill
@@ -1149,7 +1149,7 @@ alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
                 dc.b 8                          ;Horizontal size
                 dc.b 36                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w ExplodeEnemy3_Ofs15        ;Destroy routine
+                dc.w USESCRIPT|EP_EXPLODE3_OFS15 ;Destroy routine
                 dc.b HP_HEAVYGUARD              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
@@ -1175,7 +1175,7 @@ alCombatRobotFast:
                 dc.b 8                          ;Horizontal size
                 dc.b 36                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w ExplodeEnemy3_Ofs15        ;Destroy routine
+                dc.w USESCRIPT|EP_EXPLODE3_OFS15 ;Destroy routine
                 dc.b HP_HEAVYGUARD              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 115                        ;Score from kill
@@ -1200,7 +1200,7 @@ alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
                 dc.b 24                         ;Horizontal size
                 dc.b 42                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w ExplodeEnemy5_Ofs20        ;Destroy routine
+                dc.w USESCRIPT|EP_EXPLODE4_OFS20 ;Destroy routine
                 dc.b HP_LARGEWALKER             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 175                        ;Score from kill
