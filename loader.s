@@ -1046,9 +1046,11 @@ SGB_LastByte:   pla
                 clc
 SO_Done:        rts
 SGB_EOF:        pha
-                sty loadTempReg2
+                tya
+                pha
                 jsr CloseKernalFile
-                ldy loadTempReg2
+                pla
+                tay
                 pla
                 and #$83
                 sta SGB_Closed+1

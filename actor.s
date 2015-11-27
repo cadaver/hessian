@@ -125,7 +125,7 @@ USESCRIPT       = $8000
 
 DrawActors:     lda scrollX                     ;Save this frame's finescrolling for InterpolateActors
                 sta IA_PrevScrollX+1
-                lda scrollY
+                lda SL_CSSScrollY+1
                 sta IA_PrevScrollY+1
                 ldx GASS_CurrentFrame+1
                 stx GASS_LastFrame+1
@@ -650,7 +650,9 @@ UA_Paused:      ldx #$00                        ;Stop scrolling & level animatio
                 stx scrollSY
                 jmp InterpolateActors
 
-UpdateActors:   lda menuMode
+UpdateActors:   lda #$00
+                sta shakeScreen
+                lda menuMode
                 cmp #MENU_PAUSE
                 bcs UA_Paused
                 inc UA_ItemFlashCounter+1
@@ -744,7 +746,7 @@ IA_ScrollXNeg:  cmp #$fc
                 bcs IA_ScrollXOk
                 adc #$08
 IA_ScrollXOk:   sta IA_ScrollXAdjust+1
-                lda scrollY
+                lda SL_CSSScrollY+1
                 sec
 IA_PrevScrollY: sbc #$00
                 bmi IA_ScrollYNeg

@@ -188,7 +188,13 @@ SL_XSpeedOk:    cpy #$01
                 bne SL_ScrAddOk
                 asl scrollCSY
 SL_ScrAddOk:
-SL_CalcSprSub:
+SL_CalcSprSub:  lda scrollY
+                clc
+                adc shakeScreen
+                cmp #$08
+                bcc SL_ShakeNotOver
+                lda #$07
+SL_ShakeNotOver:sta SL_CSSScrollY+1
 SL_CSSBlockX:   lda #$00
                 asl
                 asl
@@ -207,7 +213,7 @@ SL_CSSBlockY:   lda #$00
                 asl
                 asl
                 asl
-                ora scrollY
+SL_CSSScrollY:  ora #$00
                 asl
                 asl
                 asl
@@ -439,7 +445,7 @@ UF_ColorShiftLateCheck:
 UF_WaitDone:    lda scrollX                     ;Copy scrolling and screen number
                 eor #$17
                 sta Irq1_ScrollX+1
-                lda scrollY
+                lda SL_CSSScrollY+1
                 eor #$17
                 sta Irq1_ScrollY+1
                 ldx screen

@@ -612,6 +612,12 @@ MLW_SpeedOK:    clc
                 rol
                 and #$03
                 sta actF1,x
+                and #$01
+                bne MLW_NoShake                 ;Shake when transitioning to 0 or 2 frame
+                ldy actFallL,x
+                beq MLW_NoShake
+                inc shakeScreen
+MLW_NoShake:    sta actFallL,x
                 jmp AttackGeneric
 
         ; Scrap metal movement

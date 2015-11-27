@@ -45,7 +45,6 @@ STACKSTART      = $7f
                 varbase $02
 
                 var loadTempReg                 ;Loader variables
-                var loadTempReg2
                 var fileOpen
 
                 var zpLenLo                     ;Exomizer 2 depackroutine variables
@@ -84,6 +83,7 @@ STACKSTART      = $7f
                 var scrCounter
                 var scrAdd
                 var scrollWorkFlag
+                var shakeScreen
                 var blockX
                 var blockY
                 var mapX
