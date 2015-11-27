@@ -257,6 +257,7 @@ UpdateFrame:    if SHOW_SPRITESORT_TIME > 0
                 sta firstSortSpr
                 ldx #$ff                        ;Make sure the sort endmark is intact (may have been
                 stx sprY+MAX_SPR                ;overwritten if ran out of sprites)
+                stx PSfx_LastSfx+1              ;Reset last sound played
                 inx
                 stx temp6                       ;D010 bits for first IRQ
                 txa

@@ -119,32 +119,33 @@ PlaySfx:        stx zpSrcLo
                 ldx soundMode                   ;Check for sounds disabled
                 beq PSfx_Done
                 tay
-                lda sfxTblLo,y
-                sta zpBitsLo
-                ldx sfxTblHi,y
-PSfx_NextChn:   lda #0                          ;If not playing music, cycle all channels
-PSfx_MusicCheck:ldy PS_CurrentSong+1            ;else use first channel only
+PSfx_MusicCheck:lda PS_CurrentSong+1
                 bne PSfx_HasMusic
+PSfx_NextChn:   lda #0
                 clc
                 adc #7
                 cmp #21
                 bcc PSfx_ChnNotOver
 PSfx_HasMusic:  lda #0
 PSfx_ChnNotOver:sta PSfx_NextChn+1
-                tay
-                lda zpBitsLo
-                cmp ntChnSfxLo,y
-                txa
-                sbc ntChnSfxHi,y
-                bpl PSfx_Ok
-                lda ntChnSfx,y
-                bne PSfx_Done
-PSfx_Ok:        lda #$01
-                sta ntChnSfx,y
-                lda zpBitsLo
-                sta ntChnSfxLo,y
-                txa
-                sta ntChnSfxHi,y
+                tax
+                lda ntChnSfx,x                  ;If channel not empty, check priority
+                beq PSfx_Ok
+                lda sfxTblLo,y
+                cmp ntChnSfxLo,x
+                lda sfxTblHi,y
+                sbc ntChnSfxHi,x
+                bmi PSfx_Done
+PSfx_Ok:
+PSfx_LastSfx:   cpy #$ff                        ;If same sound played already this frame, do not multi-play
+                beq PSfx_Done
+                sty PSfx_LastSfx+1
+                lda #$01
+                sta ntChnSfx,x
+                lda sfxTblLo,y
+                sta ntChnSfxLo,x
+                lda sfxTblHi,y
+                sta ntChnSfxHi,x
 PSfx_Done:      ldx zpSrcLo
                 ldy zpSrcHi
                 rts

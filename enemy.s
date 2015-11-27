@@ -1,6 +1,6 @@
 HUMAN_ITEM_SPAWN_OFFSET = -15*8
 ITEM_SPAWN_YSPEED     = -3*8
-MULTIEXPLOSION_DELAY = 3
+MULTIEXPLOSION_DELAY = 2
 TURRET_ANIMDELAY = 2
 
         ; Turn enemy into an explosion & drop item
