@@ -693,10 +693,10 @@ ExplodeEnemy4_Ofs15:
                 sta actSX,x
                 sta actSY,x
                 jsr ExplodeEnemyMultipleCommon  ;Note: item is dropped first before
-                lda #3                          ;spawning scrap or explosions
-                sta temp8
+                lda #-2*8-8
+                sta temp7                       ;Initial base X-speed
                 jsr Random
-                sta temp7                       ;Initial shape
+                sta temp8                       ;Initial shape
 EE_ScrapMetalLoop:
                 lda #ACTI_FIRSTNPC              ;Use any free actors
                 ldy #ACTI_LASTNPCBULLET
@@ -705,20 +705,26 @@ EE_ScrapMetalLoop:
                 lda #ACT_SCRAPMETAL
                 jsr SpawnActor
                 jsr Random
-                and #$1f                        ;Randomize upward + sideways speed
-                sbc #$30
+                and #$0f                        ;Randomize upward + sideways speed
+                clc
+                adc #-7*8
                 sta actSY,y
                 jsr Random
-                and #$1f
-                sbc #$10
+                and #$0f
+                clc
+                adc temp7
                 sta actSX,y
-                inc temp7
-                lda temp7
+                inc temp8
+                lda temp8
                 and #$03
                 sta actF1,y
                 lda #SCRAP_DURATION
                 sta actTime,y
-                dec temp8
+                lda temp7
+                bpl EE_ScrapMetalDone
+                clc
+                adc #2*8
+                sta temp7
                 bne EE_ScrapMetalLoop
 EE_ScrapMetalDone:
                 rts
