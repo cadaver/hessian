@@ -54,8 +54,8 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w MoveScrapMetal
                 dc.w MoveRockTrap
                 dc.w DestroyCPU
-                dc.w MoveEyeStage1
-                dc.w MoveEyeStage2
+                dc.w MoveEyePhase1
+                dc.w MoveEyePhase2
                 dc.w DestroyEye
 
         ; Floating droid update routine
@@ -920,16 +920,23 @@ DCPU_Found:     jmp ActivateObject
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveEyeStage1:  ldy #ACTI_LASTNPC
+MoveEyePhase1:  ldy #ACTI_LASTNPC
 MEye_Search:    lda actT,y                      ;CPUs alive?
                 cmp #ACT_SUPERCPU
                 beq MEye_HasCPUs
                 dey
                 bne MEye_Search
-MEye_GotoPhase2:inc actT,x                      ;Move to visible eye phase
+MEye_GotoPhase2:inc actT,x                      ;Move to visible eye stage
                 jsr InitActor
                 lda #5                          ;Descend animation
                 sta actF1,x
+                lda #$00
+                ldy actXH+ACTI_PLAYER           ;If player is right from center, shoot to right first
+                cpy #$41
+                bcs MEye_FireRightFirst
+                lda #$04
+MEye_FireRightFirst:
+                sta actFallL,x
                 jmp InitActor
 
 MEye_DroidSpawnDelay:
@@ -978,7 +985,7 @@ MEye_Done:      rts
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveEyeStage2:  lda actHp,x
+MoveEyePhase2:  lda actHp,x
                 beq MEye_Destroy
                 lda actF1,x
                 cmp #5
@@ -1069,7 +1076,7 @@ DE_DestroyDroids:
                 lda actT,x
                 cmp #ACT_LARGEDROIDSUPER
                 bne DE_Skip
-                jsr ExplodeActor                ;Explode all droids at this point
+                jsr DestroyActorNoSource
 DE_Skip:        dex
                 bne DE_DestroyDroids
 DE_RestX:       ldx #$00
