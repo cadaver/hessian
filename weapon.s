@@ -423,6 +423,7 @@ AH_NoSound:     rts
 ModifyDamage:   cpy #NO_MODIFY                  ;Optimize the unmodified case
                 beq MD_Done
                 stx zpBitsLo
+                bmi MD_Subtract
                 ldx #zpSrcLo
                 jsr MulU
                 lda zpSrcLo
@@ -433,6 +434,13 @@ ModifyDamage:   cpy #NO_MODIFY                  ;Optimize the unmodified case
                 lsr zpSrcHi
                 ror
                 bne MD_NotZero
-                lda #$01                        ;Ensure at least 1 point damage
+MD_EnsureOne:   lda #$01                        ;Ensure at least 1 point damage
 MD_NotZero:     ldx zpBitsLo
 MD_Done:        rts
+MD_Subtract:    sty zpSrcLo
+                clc
+                adc zpSrcLo
+                bmi MD_EnsureOne
+                beq MD_EnsureOne
+                rts
+
