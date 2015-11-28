@@ -1082,9 +1082,6 @@ DE_Skip:        dex
 DE_RestX:       ldx #$00
                 rts
 
-MoveElectricity:rts
-
-
         ; Tank Y-size addition table (based on turret direction)
 
 tankSizeAddTbl: dc.b 0,6,8
