@@ -14,6 +14,10 @@ FR_DEADWALKERGROUND = 13
 
 SCRAP_DURATION = 40
 
+EYE_MOVE_TIME = 10
+EYE_FIRE_TIME = 8
+DROID_SPAWN_DELAY = 4*25
+
                 org scriptCodeStart
 
                 dc.w MoveDroid
@@ -49,6 +53,10 @@ SCRAP_DURATION = 40
                 dc.w ExplodeEnemy4_Ofs15
                 dc.w MoveScrapMetal
                 dc.w MoveRockTrap
+                dc.w DestroyCPU
+                dc.w MoveEyeStage1
+                dc.w MoveEyeStage2
+                dc.w DestroyEye
 
         ; Floating droid update routine
         ;
@@ -886,6 +894,190 @@ DAM_NoWallHit:  lda actMB,x
                 lsr
                 rts
 
+        ; CPU destroy
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+DestroyCPU:     jsr ExplodeActor
+                ldy #MAX_LVLOBJ-1
+DCPU_Search:    lda lvlObjX,y
+                cmp actXH,x
+                bne DCPU_SearchNext
+                lda lvlObjY,y
+                and #$7f
+                cmp actYH,x
+                beq DCPU_Found
+DCPU_SearchNext:dey
+                bpl DCPU_Search
+                rts
+DCPU_Found:     jmp ActivateObject
+
+        ; Eye (Construct) boss phase 1
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveEyeStage1:  ldy #ACTI_LASTNPC
+MEye_Search:    lda actT,y                      ;CPUs alive?
+                cmp #ACT_SUPERCPU
+                beq MEye_HasCPUs
+                dey
+                bne MEye_Search
+MEye_GotoPhase2:inc actT,x                      ;Move to visible eye phase
+                jsr InitActor
+                lda #5                          ;Descend animation
+                sta actF1,x
+                jmp InitActor
+
+MEye_DroidSpawnDelay:
+                dec actLastNavStairs,x
+                rts
+MEye_HasCPUs:
+MEye_SpawnDroid:lda actLastNavStairs,x
+                bne MEye_DroidSpawnDelay
+                lda numSpawned
+                cmp #2+1
+                bcs MEye_Done
+                lda #ACTI_FIRSTNPC              ;Use any free slots for droids,
+                ldy #ACTI_LASTNPC               ;meaning the battle becomes more insane
+                jsr GetFreeActor                ;as more CPUs are destroyed
+                bcc MEye_Done                   ;(up to 2)
+                tya
+                tax
+                jsr Random                      ;Randomize location from 4 possible
+                and #$03
+                tay
+                lda droidSpawnXH,y
+                sta actXH,x
+                lda #$80
+                sta actXL,x
+                lda droidSpawnYH,y
+                sta actYH,x
+                lda droidSpawnYL,y
+                sta actYL,x
+                lda droidSpawnCtrl,y
+                sta actMoveCtrl,x
+                lda #ACT_LARGEDROIDSUPER
+                sta actT,x
+                lda #AIMODE_FLYER
+                sta actAIMode,x
+                lda #ITEM_LASERRIFLE
+                sta actWpn,x
+                jsr InitActor
+                ldx actIndex
+                lda #DROID_SPAWN_DELAY
+                sta actLastNavStairs,x
+MEye_Done:      rts
+
+        ; Eye (Construct) boss phase 2
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveEyeStage2:  lda actHp,x
+                beq MEye_Destroy
+                lda actF1,x
+                cmp #5
+                bcc MEye_Turret
+                lda actFd,x
+                bne MEye_NoSound
+                lda #SFX_RELOADBAZOOKA
+                jsr PlaySfx
+MEye_NoSound:   ldy #14
+                lda #2
+                jsr OneShotAnimation
+                bcc MEye_SpawnDroid
+                lda #EYE_MOVE_TIME*2            ;Some delay before firing initially
+                sta actFall,X
+                lda #$00
+                sta actFd,x                     ;Needed for turret frame init
+MEye_Turret:    dec actFall,x                   ;Read firing controls from table with delay
+                bmi MEye_NextMove
+                lda actFall,x
+                cmp #EYE_FIRE_TIME
+                bcs MEye_Animate
+                lda #$00
+                beq MEye_StoreCtrl
+MEye_NextMove:  lda actFallL,x
+                inc actFallL,x
+                and #$07
+                tay
+                lda #EYE_MOVE_TIME
+                sta actFall,x
+                lda eyeCtrlTbl,y
+MEye_StoreCtrl: sta actCtrl,x
+MEye_Animate:   jsr MoveTurret
+                jmp MEye_SpawnDroid             ;Continue to spawn droids
+MEye_Destroy:   jsr Random
+                pha
+                and #$03
+                sta shakeScreen
+                pla
+                and #$7f
+                clc
+                adc actFall,x
+                sta actFall,x
+                bcc MEye_NoExplosion
+                lda #ACTI_FIRSTNPC              ;Use any free actors for explosions
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc MEye_NoExplosion
+                lda #$01
+                sta Irq1_Bg3+1
+                jsr Random
+                sta actXL,y
+                and #$07
+                clc
+                adc #$3d
+                sta actXH,y
+                jsr Random
+                sta actYL,y
+                and #$07
+                tax
+                lda explYTbl,x
+                sta actYH,y
+                tya
+                tax
+                jsr ExplodeActor                ;Play explosion sound & init animation
+                ldx actIndex
+                rts
+MEye_NoExplosion:
+                jsr SetZoneColors
+                inc actTime,x
+                bpl MEye_NoExplosionFinish
+                jmp ExplodeActor                ;Finally explode self
+MEye_NoExplosionFinish:
+                rts
+
+        ; Eye destroy routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+DestroyEye:     lda #COLOR_FLICKER
+                sta actFlash,x
+                lda #$00                        ;Final explosion counter
+                sta actTime,x
+                stx DE_RestX+1
+                ldx #ACTI_LASTNPC
+DE_DestroyDroids:
+                lda actT,x
+                cmp #ACT_LARGEDROIDSUPER
+                bne DE_Skip
+                jsr ExplodeActor                ;Explode all droids at this point
+DE_Skip:        dex
+                bne DE_DestroyDroids
+DE_RestX:       ldx #$00
+                rts
+
+MoveElectricity:rts
+
+
         ; Tank Y-size addition table (based on turret direction)
 
 tankSizeAddTbl: dc.b 0,6,8
@@ -914,6 +1106,28 @@ ceilingTurretOfs:
                 dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE,3
                 dc.b JOY_LEFT|JOY_FIRE,4
                 dc.b 0
+
+        ; Final server room droid spawn positions
+
+droidSpawnXH:   dc.b $3e,$43,$3e,$43
+droidSpawnYH:   dc.b $30,$30,$37,$37
+droidSpawnYL:   dc.b $00,$00,$ff,$ff
+droidSpawnCtrl: dc.b JOY_DOWN|JOY_RIGHT,JOY_DOWN|JOY_LEFT,JOY_UP|JOY_RIGHT,JOY_UP|JOY_LEFT
+
+        ; Eye firing pattern
+
+eyeCtrlTbl:     dc.b JOY_DOWN|JOY_FIRE
+                dc.b JOY_RIGHT|JOY_DOWN|JOY_FIRE
+                dc.b JOY_RIGHT|JOY_FIRE
+                dc.b JOY_RIGHT|JOY_DOWN|JOY_FIRE
+                dc.b JOY_DOWN|JOY_FIRE
+                dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE
+                dc.b JOY_LEFT|JOY_FIRE
+                dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE
+
+        ; Final explosion Y-positions
+
+explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
 
                 checkscriptend
 

@@ -44,6 +44,7 @@ WDB_FLICKERBULLET = 64
 WDB_FIREFROMHIP = 128
 
 NO_MODIFY       = 8
+SUB_MODIFY      = $80
 
 NOWEAPONFRAME   = $ff
 
@@ -422,10 +423,12 @@ AH_NoSound:     rts
 
 ModifyDamage:   cpy #NO_MODIFY                  ;Optimize the unmodified case
                 beq MD_Done
+                cpy #SUB_MODIFY
+                bcs MD_Subtract
                 stx zpBitsLo
-                bmi MD_Subtract
                 ldx #zpSrcLo
                 jsr MulU
+                ldx zpBitsLo
                 lda zpSrcLo
                 lsr zpSrcHi                     ;Divide by 8
                 ror
@@ -433,14 +436,12 @@ ModifyDamage:   cpy #NO_MODIFY                  ;Optimize the unmodified case
                 ror
                 lsr zpSrcHi
                 ror
-                bne MD_NotZero
+MD_Common:      bne MD_Done
 MD_EnsureOne:   lda #$01                        ;Ensure at least 1 point damage
-MD_NotZero:     ldx zpBitsLo
 MD_Done:        rts
 MD_Subtract:    sty zpSrcLo
                 clc
                 adc zpSrcLo
+                bpl MD_Common
                 bmi MD_EnsureOne
-                beq MD_EnsureOne
-                rts
 

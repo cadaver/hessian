@@ -500,7 +500,8 @@ BuildTargetList:ldx #ACTI_LASTNPC
 BTL_Loop:       lda actT,x
                 beq BTL_Next
                 lda actLvlDataOrg,x
-                bpl BTL_NotSpawned
+                cmp #ORG_NOTPERSISTENT
+                bne BTL_NotSpawned
                 inc numSpawned
 BTL_NotSpawned: lda actHp,x                     ;Actor must have nonzero health
                 beq BTL_Next

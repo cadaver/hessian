@@ -16,6 +16,7 @@ write sprguard.pak @8:0c
 write sprheavyguard.pak @8:0d
 write sprcombatrobot.pak @8:0e
 write sprlargewalker.pak @8:0f
+write sprserver.pak @8:10
 write level00.pak @8:20
 write level01.pak @8:21
 write level02.pak @8:22

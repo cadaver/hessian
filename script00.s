@@ -65,13 +65,17 @@ titleTexts      = chars+608+168*2
 ;START_X         = $a580
 ;START_Y         = $7400
 
-START_LEVEL     = $0b                          ;Next to Bio-Dome
-START_X         = $4780
-START_Y         = $1700
+;START_LEVEL     = $0b                          ;Next to Bio-Dome
+;START_X         = $4780
+;START_Y         = $1700
 
-;START_LEVEL      = $0d                          ;Server vault
-;START_X          = $0180
-;START_Y          = $2300
+START_LEVEL      = $0d                          ;Server vault
+START_X          = $0180
+START_Y          = $2300
+
+;START_LEVEL      = $0d                          ;Next to final server room
+;START_X          = $3a80
+;START_Y          = $3500
 
 ;START_LEVEL     = $0e                           ;Second cave
 ;START_X         = $1d80

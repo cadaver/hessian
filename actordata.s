@@ -50,6 +50,10 @@ ACT_COMBATROBOTFAST = 48
 ACT_LARGEWALKER = 49
 ACT_SCRAPMETAL  = 50
 ACT_ROCKTRAP    = 51
+ACT_CPU         = 52
+ACT_SUPERCPU    = 53
+ACT_EYEINVISIBLE = 54
+ACT_EYE         = 55
 
 HP_PLAYER       = 56
 HP_RAT          = 4
@@ -71,7 +75,10 @@ HP_SMALLTANK    = 20
 HP_LARGEDROIDSUPER = 20
 HP_HEAVYGUARD   = 20
 HP_CEILINGTURRET = 24
+HP_CPU          = 32
+HP_SUPERCPU     = 64
 HP_LARGEWALKER  = 56
+HP_EYE          = 128
 
         ; Difficulty mod for damage on player
 
@@ -104,6 +111,7 @@ adMeleeHit      = $0000                         ;Invisible
 adLargeMeleeHit = $0000
 adExplosionGenerator = $0000
 adRockTrap      = $0000
+adEyeInvisible  = $0000
 
 actDispTblLo:   dc.b <adPlayer
                 dc.b <adItem
@@ -156,6 +164,10 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adLargeWalker
                 dc.b <adScrapMetal
                 dc.b <adRockTrap
+                dc.b <adCpu
+                dc.b <adCpu
+                dc.b <adEyeInvisible
+                dc.b <adEye
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -208,6 +220,10 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adLargeWalker
                 dc.b >adScrapMetal
                 dc.b >adRockTrap
+                dc.b >adCpu
+                dc.b >adCpu
+                dc.b >adEyeInvisible
+                dc.b >adEye
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -473,6 +489,14 @@ adScrapMetal:   dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 57                         ;Base spritenumber
 
+adCpu:          dc.b ONESPRITEDIRECT            ;Number of sprites
+                dc.b C_SERVER                   ;Spritefile number
+                dc.b 0                          ;Base spritenumber
+
+adEye:          dc.b ONESPRITEDIRECT            ;Number of sprites
+                dc.b C_SERVER                   ;Spritefile number
+                dc.b 1                          ;Base spritenumber
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -526,6 +550,10 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alLargeWalker
                 dc.b <alScrapMetal
                 dc.b <alRockTrap
+                dc.b <alCpu
+                dc.b <alSuperCpu
+                dc.b <alEyeInvisible
+                dc.b <alEye
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -578,6 +606,10 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alLargeWalker
                 dc.b >alScrapMetal
                 dc.b >alRockTrap
+                dc.b >alCpu
+                dc.b >alSuperCpu
+                dc.b >alEyeInvisible
+                dc.b >alEye
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -753,7 +785,7 @@ alLargeDroid:   dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
 
 alLargeDroidSuper:
                 dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
-                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
+                dc.b GRP_ENEMIES|AF_NOWEAPON|AF_NOREMOVECHECK ;Actor flags
                 dc.b 9                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 8                          ;Size down
@@ -763,7 +795,7 @@ alLargeDroidSuper:
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
-                dc.b $05                        ;AI offense AND-value
+                dc.b $0f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
                 dc.b 4*8                        ;Horiz max movement speed
@@ -1243,3 +1275,42 @@ alRockTrap:     dc.w USESCRIPT|EP_MOVEROCKTRAP  ;Update routine
                 dc.b 0                          ;Size down
                 dc.w RemoveActor                ;Destroy routine
                 dc.b 0                          ;Initial health
+
+alCpu:          dc.w FlashActor_CheckDamageFlash ;Update routine
+                dc.b GRP_ENEMIES                ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 8                          ;Size up
+                dc.b 8                          ;Size down
+                dc.w USESCRIPT|EP_DESTROYCPU    ;Destroy routine
+                dc.b HP_CPU                     ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 200                        ;Score from kill
+
+alSuperCpu:     dc.w FlashActor_CheckDamageFlash ;Update routine
+                dc.b GRP_ENEMIES|AF_ORGANIC     ;Actor flags (hack: protect against easy victory with EMP)
+                dc.b 6                          ;Horizontal size
+                dc.b 5                          ;Size up
+                dc.b 5                          ;Size down
+                dc.w USESCRIPT|EP_DESTROYCPU    ;Destroy routine
+                dc.b HP_SUPERCPU                ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 250                        ;Score from kill
+
+alEyeInvisible: dc.w USESCRIPT|EP_MOVEEYESTAGE1 ;Update routine
+                dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_ORGANIC ;Actor flags
+                dc.b 0                          ;Horizontal size
+                dc.b 0                          ;Size up
+                dc.b 0                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
+                dc.b 0                          ;Initial health
+
+alEye:          dc.w USESCRIPT|EP_MOVEEYESTAGE2 ;Update routine
+                dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON ;Actor flags
+                dc.b 12                         ;Horizontal size
+                dc.b 0                          ;Size up
+                dc.b 10                         ;Size down
+                dc.w USESCRIPT|EP_DESTROYEYE    ;Destroy routine
+                dc.b HP_EYE                     ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 1000                       ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly

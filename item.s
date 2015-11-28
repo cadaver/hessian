@@ -29,6 +29,11 @@ MoveItem_Done:
 FlashActor:     lda #$01
                 sta actFlash,x
                 rts
+FlashActor_CheckDamageFlash:
+                lda actFlash,x
+                cmp #COLOR_ONETIMEFLASH
+                bne FlashActor
+                rts
 
         ; Object marker update routine
         ;
