@@ -842,6 +842,8 @@ MH_SetGrounded: lda actMB,x
                 ora #MB_GROUNDED
                 bne MH_SetMoveBits
 MH_ResetGrounded:
+                lda #$00                        ;Reset anything left to groundcharinfo
+                sta actGroundCharInfo,x         ;when jumping
                 lda actMB,x
                 and #$ff-MB_GROUNDED
 MH_SetMoveBits: sta actMB,x
