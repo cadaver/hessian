@@ -48,6 +48,7 @@ SCRAP_DURATION = 40
                 dc.w ExplodeEnemy3_Ofs15
                 dc.w ExplodeEnemy4_Ofs15
                 dc.w MoveScrapMetal
+                dc.w MoveRockTrap
 
         ; Floating droid update routine
         ;
@@ -391,14 +392,9 @@ MR_HasRandomSpeed:
                 sta actSizeH,x
                 asl
                 sta actSizeU,x
-                lda actSY,x
-                bmi MR_NoDamage                 ;No damage if not falling
-                lda actHp+ACTI_PLAYER           ;No damage if player already dead
+                lda rockDamageTbl,y
                 beq MR_NoDamage
-                lda rockDamageTbl,y             ;Damage based on frame (size)
                 jsr CollideAndDamagePlayer
-                bcc MR_NoDamage                 ;Damage sound already played
-                jmp DestroyActorNoSource        ;Destroy self on collision
 MR_NoDamage:    lda #-1                         ;Ceiling check offset
                 sta temp4
                 lda #GRENADE_ACCEL-1
@@ -647,8 +643,30 @@ MSM_NoHitWall:  bcc MSM_NoBounce
                 sta actSY,x
                 lda #$00                        ;Clear grounded flag
                 sta actMB,x
+MRT_NoTrigger:
 MSM_NoBounce:   rts
 MSM_Remove:     jmp RemoveActor
+
+        ; Rock trap movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveRockTrap:   lda actYH,x                     ;Trigger when player is below
+                cmp actYH+ACTI_PLAYER
+                bcs MRT_NoTrigger
+                lda actXH+ACTI_PLAYER
+                adc #$02                        ;C=0 (next sbc will subtract one too much)
+                sbc actXH,x
+                cmp #$03                        ;Trigger when X block distance is between -1 and +1
+                bcs MRT_NoTrigger
+                lda #4*8                        ;Start with immediate speed
+                sta actSY,x
+                lda #ACT_ROCK
+                sta actT,x
+                jsr SetNotPersistent            ;Disappear after triggering once
+                jmp InitActor
 
         ; Generate 2 explosions at 8 pixel radius
         ;
@@ -872,10 +890,13 @@ DAM_NoWallHit:  lda actMB,x
 
 tankSizeAddTbl: dc.b 0,6,8
 
-        ; Rock size & damage tablestable
+        ; Rock size table
 
 rockSizeTbl:    dc.b 9,7,5
-rockDamageTbl:  dc.b DMG_ROCK,DMG_ROCK/2,DMG_ROCK/3
+
+        ; Rock damage table
+        
+rockDamageTbl:  dc.b DMG_ROCK,DMG_ROCK-1,0
 
         ; Turret firing ctrl + frame table
 

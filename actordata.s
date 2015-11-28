@@ -49,6 +49,7 @@ ACT_COMBATROBOT = 47
 ACT_COMBATROBOTFAST = 48
 ACT_LARGEWALKER = 49
 ACT_SCRAPMETAL  = 50
+ACT_ROCKTRAP    = 51
 
 HP_PLAYER       = 56
 HP_RAT          = 4
@@ -102,6 +103,7 @@ humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5
 adMeleeHit      = $0000                         ;Invisible
 adLargeMeleeHit = $0000
 adExplosionGenerator = $0000
+adRockTrap      = $0000
 
 actDispTblLo:   dc.b <adPlayer
                 dc.b <adItem
@@ -153,6 +155,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adCombatRobot
                 dc.b <adLargeWalker
                 dc.b <adScrapMetal
+                dc.b <adRockTrap
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -204,6 +207,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adCombatRobot
                 dc.b >adLargeWalker
                 dc.b >adScrapMetal
+                dc.b >adRockTrap
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -521,6 +525,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alCombatRobotFast
                 dc.b <alLargeWalker
                 dc.b <alScrapMetal
+                dc.b <alRockTrap
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -572,6 +577,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alCombatRobotFast
                 dc.b >alLargeWalker
                 dc.b >alScrapMetal
+                dc.b >alRockTrap
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -1229,3 +1235,11 @@ alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
 
 alScrapMetal:   dc.w USESCRIPT|EP_MOVESCRAPMETAL ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
+
+alRockTrap:     dc.w USESCRIPT|EP_MOVEROCKTRAP  ;Update routine
+                dc.b GRP_ANIMALS                ;Actor flags
+                dc.b 0                          ;Horizontal size
+                dc.b 0                          ;Size up
+                dc.b 0                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
+                dc.b 0                          ;Initial health
