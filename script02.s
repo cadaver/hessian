@@ -10,8 +10,9 @@
 
 PHASE_RISE      = 0
 PHASE_WAIT      = 1
+PHASE_ATTACK    = 2
 
-JORMUNGANDR_YSIZE = 22
+JORMUNGANDR_YSIZE = 21
 JORMUNGANDR_XSIZE = 19
 JORMUNGANDR_OFFSETX = 20
 
@@ -31,7 +32,7 @@ MoveJormungandr:lda lvlObjB+$33
                 lda #MUSIC_NETHER+1
                 jsr PlaySong
                 ldx actIndex
-                lda #21                         ;Init Jormungandr vertical screen position
+                lda #22                         ;Init Jormungandr vertical screen position
                 sta screenPos
                 lda #$ff
                 sta lastScreenPos
@@ -40,7 +41,7 @@ MoveJormungandr:lda lvlObjB+$33
                 sta phase
 MJ_Done:
 MJ_WaitStart:   rts
-MJ_DoorClosed:  jsr Random                      ;Constantly shake the screen during the fight
+MJ_DoorClosed:  jsr Random                      ;Screen shake in all phases
                 and #$01
                 sta shakeScreen
                 ldy phase
@@ -127,15 +128,34 @@ MJ_NoDestOver:  dec zpLenLo
 MJ_RowsDone:    ldx actIndex
                 rts
 
-MJ_Rise:        lda #3
+MJ_Rise:        lda actFd,x
+                and #$03
+                eor #$03
+                sta shakeScreen
+                lda #3
                 jsr AnimationDelay
                 bcc MJ_RiseDone
                 dec screenPos
+                lda screenPos
+                cmp #1
                 bne MJ_RiseDone
-                inc phase
+                lda #$00
+                sta actFd,x
+                lda #PHASE_WAIT
+                sta phase
 MJ_RiseDone:    rts
 
-MJ_Wait:        rts
+MJ_Wait:        inc actFd,x
+                lda actFd,x
+                cmp #25
+                bcc MJ_WaitDone
+                lda #PHASE_ATTACK
+                sta phase
+MJ_WaitDone:    rts
+
+MJ_Attack:      lda #1
+                sta actF1,x
+                rts
 
         ; Jormungandr destroy routine
         ;
@@ -163,21 +183,22 @@ phase:          dc.b 0
 
 phaseJumpLo:    dc.b <MJ_Rise
                 dc.b <MJ_Wait
+                dc.b <MJ_Attack
 
 phaseJumpHi:    dc.b >MJ_Rise
                 dc.b >MJ_Wait
+                dc.b >MJ_Attack
 
         ; Frametable
 
-frameTblLo:     dc.b <frame0
-frameTblHi:     dc.b >frame0
-frameEyePosLo:  dc.b <287
-frameEyePosHi:  dc.b >287
+frameTblLo:     dc.b <frame0,<frame1
+frameTblHi:     dc.b >frame0,>frame1
+frameEyePosLo:  dc.b <247,<286
+frameEyePosHi:  dc.b >247,>286
 
         ; Char graphics
 
-frame0:         dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$d1,$d2,$00,$00,$00,$00,$00,$00,$00
+frame0:         dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$d1,$d2,$00,$00,$00,$00,$00,$00,$00
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$d3,$d4,$00,$00,$00,$00,$00,$00,$00,$00
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$4c,$4d,$4e,$00,$00,$00,$00,$00,$00,$00,$00
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$4f,$50,$51,$52,$5b,$5c,$5d,$5e,$67,$00,$00
@@ -198,5 +219,28 @@ frame0:         dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$cf,$fe,$fe,$fe,$fe,$bf,$c7
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$bb,$c1,$fe,$fe,$c2,$cc
+
+frame1:         dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$d1,$d2,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$d3,$d4,$00,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b $00,$00,$00,$00,$00,$00,$00,$4c,$4d,$4e,$00,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b $00,$00,$00,$00,$00,$00,$00,$4f,$50,$51,$52,$5b,$5c,$5d,$5e,$67,$00,$00,$00
+                dc.b $00,$00,$00,$00,$00,$00,$49,$53,$54,$55,$56,$5f,$60,$61,$62,$68,$69,$6a,$00
+                dc.b $00,$00,$00,$00,$00,$4a,$4b,$57,$58,$59,$5a,$63,$64,$65,$66,$00,$6b,$6c,$00
+                dc.b $00,$00,$00,$6d,$6e,$6f,$70,$7d,$7e,$7f,$fe,$87,$88,$89,$8a,$00,$00,$97,$00
+                dc.b $00,$6d,$a0,$71,$72,$73,$74,$80,$81,$82,$fe,$8b,$8c,$8d,$8e,$00,$98,$99,$00
+                dc.b $a1,$a2,$a3,$75,$76,$77,$78,$83,$84,$85,$86,$8f,$90,$91,$92,$9a,$9b,$9c,$00
+                dc.b $a4,$a5,$a6,$79,$7a,$7b,$7c,$fe,$fe,$fe,$fe,$93,$94,$95,$96,$9d,$9e,$9f,$00
+                dc.b $a7,$a8,$a9,$ab,$ac,$fe,$ad,$b6,$78,$b7,$b8,$bc,$bd,$be,$bf,$c7,$c8,$c9,$00
+                dc.b $00,$00,$aa,$ae,$af,$b0,$b1,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca,$cb,$00,$00
+                dc.b $00,$00,$00,$00,$b2,$b3,$6a,$00,$00,$00,$bb,$c1,$fe,$fe,$c2,$cc,$ff,$00,$00
+                dc.b $00,$00,$00,$00,$00,$b4,$b5,$00,$00,$00,$74,$c3,$fe,$c4,$c5,$c6,$ce,$9d,$6a
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$cf,$fe,$fe,$fe,$fe,$bf,$c7,$d0
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca,$cb
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$bb,$c1,$fe,$fe,$c2,$cc,$cd
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$74,$c3,$c4,$c5,$c6,$ce,$9d
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$cf,$fe,$fe,$fe,$fe,$bf,$c7
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca
+
                 checkscriptend
 
