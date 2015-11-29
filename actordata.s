@@ -1308,10 +1308,10 @@ alEyeInvisible: dc.w USESCRIPT|EP_MOVEEYESTAGE1 ;Update routine
                 dc.b 0                          ;Initial health
 
 alEye:          dc.w USESCRIPT|EP_MOVEEYESTAGE2 ;Update routine
-                dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON|AF_INITONLYSIZE ;Actor flags
+                dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON ;Actor flags
                 dc.b 12                         ;Horizontal size
                 dc.b 0                          ;Size up
-                dc.b 10                         ;Size down
+                dc.b 0                          ;Size down
                 dc.w USESCRIPT|EP_DESTROYEYE    ;Destroy routine
                 dc.b HP_EYE                     ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier

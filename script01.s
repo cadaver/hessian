@@ -57,7 +57,6 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w MoveEyePhase1
                 dc.w MoveEyePhase2
                 dc.w DestroyEye
-                dc.w EnterServerRoom
 
         ; Floating droid update routine
         ;
@@ -912,7 +911,19 @@ DCPU_Found:     jmp ActivateObject
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveEyePhase1:  ldy #ACTI_LASTNPC
+MoveEyePhase1:  lda lvlObjB+$1e                 ;Close door immediately once player moves or fires
+                bpl MEye_NoDoor
+                lda actXL+ACTI_PLAYER
+                bpl MEye_CloseDoor
+                cmp #$88
+                bcs MEye_CloseDoor
+                lda actF2+ACTI_PLAYER
+                cmp #FR_PREPARE
+                bcc MEye_NoDoor
+MEye_CloseDoor: ldy #$1e
+                jsr InactivateObject
+                ldx actIndex
+MEye_NoDoor:    ldy #ACTI_LASTNPC
 MEye_Search:    lda actT,y                      ;CPUs alive?
                 cmp #ACT_SUPERCPU
                 beq MEye_HasCPUs
@@ -963,7 +974,8 @@ MEye_SpawnDroid2:
                 sta actWpn,x
                 jsr InitActor
                 jsr SetNotPersistent
-                ldx actIndex
+                jsr NoInterpolation             ;If explosion is immediately reused on same frame,
+                ldx actIndex                    ;prevent artifacts
                 lda temp1
                 sta actLastNavStairs,x
 MEye_Done:      rts
@@ -977,17 +989,23 @@ MEye_DroidSpawnDelay:
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveEyePhase2:  lda actF1,x
+MoveEyePhase2:  lda actHp,x
+                beq MEye_Destroy
+                lda actF1,x
                 cmp #5
                 bcc MEye_Turret
-MEye_Descend:   lda actFd,x
+MEye_Descend:   sbc #4
+                sta actSizeD,x                  ;Set collision size based on frame,
+                lda #HP_EYE                     ;keep resetting health to full until fully descended
+                sta actHp,x
+                lda actFd,x
                 bne MEye_NoSound
                 lda #SFX_RELOADBAZOOKA
                 jsr PlaySfx
 MEye_NoSound:   ldy #14
                 lda #2
                 jsr OneShotAnimation
-                bcc MEye_SpawnDroidsFast
+                bcc MEye_Done
                 lda #$00
                 ldy actXH+ACTI_PLAYER           ;If player is right from center, shoot to right first
                 cpy #$41
@@ -999,11 +1017,7 @@ MEye_FireRightFirst:
                 sta actFall,X
                 lda #$00
                 sta actFd,x                     ;Needed for turret frame init
-                lda #HP_EYE                     ;Make boss damageable now
-                sta actHp,x
-MEye_Turret:    lda actHp,x
-                beq MEye_Destroy
-                dec actFall,x                   ;Read firing controls from table with delay
+MEye_Turret:    dec actFall,x                   ;Read firing controls from table with delay
                 bmi MEye_NextMove
                 lda actFall,x
                 cmp #EYE_FIRE_TIME
@@ -1062,18 +1076,6 @@ MEye_NoExplosion:
                 jmp ExplodeActor                ;Finally explode self
 MEye_NoExplosionFinish:
                 rts
-
-        ; Start server room boss fight
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: A,X,Y,temp vars
-
-EnterServerRoom:
-                ldy #$1e
-                jsr InactivateObject
-                lda #MUSIC_ASSAULT+1
-                jmp PlaySong
 
         ; Eye destroy routine
         ;
