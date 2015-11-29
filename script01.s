@@ -57,6 +57,7 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w MoveEyePhase1
                 dc.w MoveEyePhase2
                 dc.w DestroyEye
+                dc.w EnterServerRoom
 
         ; Floating droid update routine
         ;
@@ -1050,6 +1051,18 @@ MEye_NoExplosion:
                 jmp ExplodeActor                ;Finally explode self
 MEye_NoExplosionFinish:
                 rts
+
+        ; Start server room boss fight
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X,Y,temp vars
+
+EnterServerRoom:
+                ldy #$1e
+                jsr InactivateObject
+                lda #MUSIC_ASSAULT+1
+                jmp PlaySong
 
         ; Eye destroy routine
         ;

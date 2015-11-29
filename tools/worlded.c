@@ -1903,7 +1903,7 @@ void drawmap(void)
             printtext_color(textbuffer, 160,215,SPR_FONTS,COL_WHITE);
 
           // Requirement in high databit for everything but scripts
-          if ((lvlobjdh[o]&0x7f) && (lvlobjb[o] & 0x1c) != 0x10)
+          if ((lvlobjdh[o]&0x7f) && (lvlobjb[o] & 0x1c) != 0x14)
           {
             sprintf(textbuffer, "REQ:%02X", lvlobjdh[o]&0x7f);
             printtext_color(textbuffer, 0,205,SPR_FONTS,COL_WHITE);

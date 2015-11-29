@@ -519,7 +519,11 @@ OO_Inactive:    lda lvlObjY,y                   ;If animating, play sound always
                 beq OO_NoSound
 OO_PlaySound:   lda #SFX_OBJECT
                 jsr PlaySfx
-OO_NoSound:     lda lvlObjDH,y                  ;Check requirement item from object parameters if has them
+OO_NoSound:     lda lvlObjB,y
+                and #OBJ_TYPEBITS
+                cmp #OBJTYPE_SCRIPT
+                beq OO_RequirementOK            ;Script object doesn't have requirement
+                lda lvlObjDH,y                  ;Check requirement item from object parameters if has them
                 beq OO_RequirementOK
                 sta temp3
                 tay
