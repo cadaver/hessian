@@ -93,12 +93,12 @@ MFC_FrameOK1:   lsr
 MFC_FrameOK2:   sta actF1,x
                 cmp #2                          ;Cannot fire when no speed (middle frame)
                 bne MFC_CanAttack
+MFC_ContinueFall:
                 rts
 MFC_Fall:       jsr FallingMotionCommon
                 tay
                 beq MFC_ContinueFall
                 jmp ExplodeEnemy2_8             ;Drop item & explode at any collision
-MFC_ContinueFall:rts
 
         ; Walking robot update routine
         ;
@@ -120,12 +120,7 @@ MoveTank:       jsr MoveGeneric                   ;Use human movement for physic
                 lda #0
                 jsr AnimateTurret
                 jsr AttackGeneric
-                lda actSX,x                       ;Tracks animation from absolute speed
-                bpl MT_SpeedPos
-                clc
-                eor #$ff
-                adc #$01
-MT_SpeedPos:    clc
+                jsr GetAbsXSpeed
                 adc actFd,x
                 cmp #$30
                 bcc MT_NoWrap
@@ -144,6 +139,14 @@ MT_NoWrap:      sta actFd,x
                 sta actSizeU,x
 MC_NoCollision:
 MFM_NoExplosion:rts
+
+GetAbsXSpeed:   lda actSX,x                       ;Tracks animation from absolute speed
+                bpl GAXS_Pos
+                clc
+                eor #$ff
+                adc #$01
+GAXS_Pos:       clc
+                rts
 
         ; Floating mine update routine
         ;
@@ -403,22 +406,8 @@ MR_HasRandomSpeed:
                 lda rockDamageTbl,y
                 beq MR_NoDamage
                 jsr CollideAndDamagePlayer
-MR_NoDamage:    lda #-1                         ;Ceiling check offset
-                sta temp4
-                lda #GRENADE_ACCEL-1
-                ldy #GRENADE_MAX_YSPEED
-                jsr MoveWithGravity
-                lda actMB,x
-                lsr
-                and #MB_HITWALL/2
-                beq MR_NoHitWall
-                php
-                lda actSX,x
-                eor #$ff
-                adc #$00                        ;Assume C=0 (not grounded)
-                sta actSX,x
-                plp
-MR_NoHitWall:   bcc MR_NoCollision
+MR_NoDamage:    jsr BounceMotion
+                bcc MR_NoCollision
 DestroyRock:    lda #SFX_DAMAGE
                 jsr PlaySfx
                 inc actF1,x
@@ -603,12 +592,7 @@ OrganicWalkerDeath:
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveLargeWalker:jsr MoveGeneric
-                lda actSX,x
-                bpl MLW_SpeedOK
-                eor #$ff
-                clc
-                adc #$01
-MLW_SpeedOK:    clc
+                jsr GetAbsXSpeed
                 adc actFd,x
                 sta actFd,x
                 rol
@@ -617,7 +601,7 @@ MLW_SpeedOK:    clc
                 and #$03
                 sta actF1,x
                 and #$01
-                bne MLW_NoShake                 ;Shake when transitioning to 0 or 2 frame
+                bne MLW_NoShake                 ;Shake screen when transitioning to 0 or 2 frame
                 ldy actFallL,x
                 beq MLW_NoShake
                 inc shakeScreen
@@ -633,16 +617,8 @@ MLW_NoShake:    sta actFallL,x
 MoveScrapMetal: jsr DeathFlickerAndRemove
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
-                jsr FallingMotionCommon         ;Move & check collisions
-                lsr
-                and #MB_HITWALL/2
-                beq MSM_NoHitWall
-                php
-                lda actSX,x
-                jsr Negate8Asr8
-                sta actSX,x
-                plp
-MSM_NoHitWall:  bcc MSM_NoBounce
+                jsr BounceMotion
+                bcc MSM_NoBounce
                 lda actSX,x
                 jsr Asr8
                 sta actSX,x
@@ -669,8 +645,6 @@ MoveRockTrap:   lda actYH,x                     ;Trigger when player is below
                 sbc actXH,x
                 cmp #$03                        ;Trigger when X block distance is between -1 and +1
                 bcs MRT_NoTrigger
-                lda #4*8                        ;Start with immediate speed
-                sta actSY,x
                 lda #ACT_ROCK
                 sta actT,x
                 jsr SetNotPersistent            ;Disappear after triggering once
@@ -893,6 +867,23 @@ DAM_NoWater:    and #MB_HITWALL
 DAM_NoWallHit:  lda actMB,x
                 lsr
                 rts
+
+        ; Common bounce motion subroutine. Speed is halved on side wall collisions
+        ;
+        ; Parameters: X actor index
+        ; Returns: C grounded status
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+BounceMotion:   jsr FallingMotionCommon
+                lsr
+                and #MB_HITWALL/2
+                beq BM_NoHitWall
+                php
+                lda actSX,x
+                jsr Negate8Asr8
+                sta actSX,x
+                plp
+BM_NoHitWall:   rts
 
         ; CPU destroy
         ;
