@@ -11,7 +11,7 @@
 PHASE_RISE      = 0
 PHASE_WAIT      = 1
 
-JORMUNGANDR_YSIZE = 19
+JORMUNGANDR_YSIZE = 22
 JORMUNGANDR_XSIZE = 19
 JORMUNGANDR_OFFSETX = 20
 
@@ -31,7 +31,7 @@ MoveJormungandr:lda lvlObjB+$33
                 lda #MUSIC_NETHER+1
                 jsr PlaySong
                 ldx actIndex
-                lda #22                         ;Init Jormungandr vertical screen position
+                lda #21                         ;Init Jormungandr vertical screen position
                 sta screenPos
                 lda #$ff
                 sta lastScreenPos
@@ -55,21 +55,44 @@ MJ_Redraw:      lda screenPos
                 lda actF1,x
                 cmp lastFrame
                 beq MJ_Done
-MJ_NeedRedraw:  ldy actF1,x
+MJ_NeedRedraw:  lda MJ_OldEyePos+2
+                bpl MJ_NoOldEye
+                lda #$08                        ;Erase old eye color
+MJ_OldEyePos:   sta $1000
+MJ_NoOldEye:    ldy actF1,x
                 sty lastFrame
                 lda frameTblLo,y
                 sta zpSrcLo
                 lda frameTblHi,y
                 sta zpSrcHi
                 lda screenPos
-                lda #$00
                 sta lastScreenPos
                 ldy #40
                 ldx #<zpDestLo
                 jsr MulU
                 lda #JORMUNGANDR_OFFSETX
                 jsr Add8
+                ldy lastFrame
+                lda zpDestLo
+                clc
+                adc frameEyePosLo,y
+                sta MJ_EyePos+1
                 lda zpDestHi
+                adc frameEyePosHi,y
+                ora #>colors
+                sta MJ_EyePos+2                 ;Calculate & draw new eye color,
+                lda MJ_EyePos+1                 ;if it's not outside screen
+                cmp #<(colors+SCROLLROWS*40)
+                lda MJ_EyePos+2
+                sbc #>(colors+SCROLLROWS*40)
+                bpl MJ_NoNewEye
+                lda #$09
+MJ_EyePos:      sta $1000
+                lda MJ_EyePos+1
+                sta MJ_OldEyePos+1
+                lda MJ_EyePos+2
+                sta MJ_OldEyePos+2
+MJ_NoNewEye:    lda zpDestHi
                 ora #>screen2
                 sta zpDestHi
                 lda #JORMUNGANDR_YSIZE
@@ -78,7 +101,7 @@ MJ_RowLoop:     lda zpDestLo
                 cmp #<(screen2+SCROLLROWS*40)
                 lda zpDestHi
                 sbc #>(screen2+SCROLLROWS*40)
-                bcs MJ_RowsNotDone
+                bmi MJ_RowsNotDone
                 jmp MJ_RowsDone
 MJ_RowsNotDone: ldy #0
                 repeat JORMUNGANDR_XSIZE
@@ -104,7 +127,7 @@ MJ_NoDestOver:  dec zpLenLo
 MJ_RowsDone:    ldx actIndex
                 rts
 
-MJ_Rise:        lda #5
+MJ_Rise:        lda #3
                 jsr AnimationDelay
                 bcc MJ_RiseDone
                 dec screenPos
@@ -145,9 +168,11 @@ phaseJumpHi:    dc.b >MJ_Rise
                 dc.b >MJ_Wait
 
         ; Frametable
-        
+
 frameTblLo:     dc.b <frame0
 frameTblHi:     dc.b >frame0
+frameEyePosLo:  dc.b <287
+frameEyePosHi:  dc.b >287
 
         ; Char graphics
 
@@ -170,6 +195,8 @@ frame0:         dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca,$cb
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$bb,$c1,$fe,$fe,$c2,$cc,$cd
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$74,$c3,$c4,$c5,$c6,$ce,$9d
-
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$cf,$fe,$fe,$fe,$fe,$bf,$c7
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca
+                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$bb,$c1,$fe,$fe,$c2,$cc
                 checkscriptend
 
