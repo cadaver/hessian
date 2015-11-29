@@ -806,7 +806,6 @@ SaveActorSub:   lda lvlActX,x
                 sta saveLvlActOrg,y
                 iny
 ULO_IsPaused:
-ULO_PlayerDead:
 ULO_ToxinDelay:
                 rts
 
@@ -818,12 +817,15 @@ ULO_ToxinDelay:
         ; Modifies: A,X,Y,temp vars
 
 ULO_DoToxinDamage:
-                dec toxinDelay
+                and #$7f
+                cmp toxinDelay
+                bcc ULO_ResetToxinDelay         ;If transitioning to stronger toxin, reset delay
+                dec toxinDelay                  ;immediately
                 bpl ULO_ToxinDelay
+ULO_ResetToxinDelay:
+                tay
                 dey
-                tya
-                and #$7f                        ;There may be extra control data in the high bit
-                sta toxinDelay
+                sty toxinDelay
 ULO_DoDrowningDamage:
                 ldy #NODAMAGESRC
                 lda #DMG_DROWNING
@@ -868,7 +870,7 @@ ULO_AutoDeactOK:lda #$ff
 
 ULO_NoAutoDeact:ldx #ACTI_PLAYER
                 lda actHp+ACTI_PLAYER           ;Heal if not dead and not yet at full health
-                beq ULO_PlayerDead              ;full health
+                beq ULO_OxygenDone              ;full health
                 cmp #HP_PLAYER
                 bcs ULO_NoHealing
                 lda battery+1                   ;No healing if low battery
@@ -919,22 +921,9 @@ ULO_RestoreOne: inc oxygen
 ULO_DecreaseOxygen:
                 dec oxygen
 
-ULO_OxygenDone: ldy lvlWaterToxinDelay          ;Toxic water?
-                beq ULO_NoWaterDamage
-                bmi ULO_WaterDamageNotFiltered  ;Filter upgrade cancels damage?
-                lda upgrade
-                bmi ULO_NoWaterDamage           ;Note: filter upgrade must stay at bit 7
-ULO_WaterDamageNotFiltered:
-                lda actMB+ACTI_PLAYER
-                and #MB_INWATER
-                beq ULO_NoWaterDamage
-                jsr ULO_DoToxinDamage
-                jmp ULO_NoAirDamage             ;If already doing water damage, no air damage
-                                                ;(applies to the nether tunnel where water is lava
-                                                ;so it should take priority)
-ULO_NoWaterDamage:
+ULO_OxygenDone:
 ULO_AirToxinFlag:
-                lda #$00
+                lda #$00                        ;Flashing screen effect for toxic air (as in Fist II)
                 bpl ULO_NoAirDamage
                 ldy #ZONEH_BG1
                 lda UA_ItemFlashCounter+1
@@ -943,10 +932,21 @@ ULO_AirToxinFlag:
                 lda (zoneLo),y
 ULO_ToxinEffectColor:
                 sta Irq1_Bg1+1
-                ldy lvlAirToxinDelay
+                lda lvlAirToxinDelay
                 jsr ULO_DoToxinDamage
-
-ULO_NoAirDamage:lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
+ULO_NoAirDamage:lda lvlWaterToxinDelay          ;Toxic water?
+                beq ULO_NoWaterDamage
+                bmi ULO_WaterDamageNotFiltered  ;Filter upgrade cancels damage?
+                ldy upgrade
+                bmi ULO_NoWaterDamage           ;Note: filter upgrade must stay at bit 7
+ULO_WaterDamageNotFiltered:
+                ldy actMB+ACTI_PLAYER
+                bpl ULO_NoWaterDamage
+                jsr ULO_DoToxinDamage
+ULO_NoWaterDamage:
+                lda actHp+ACTI_PLAYER
+                beq ULO_PlayerDead
+                lda actYH+ACTI_PLAYER           ;Kill player actor if fallen outside level
                 cmp limitD                      ;or run out of battery
                 bcc ULO_NotOutside
                 bne ULO_Outside
@@ -956,7 +956,7 @@ ULO_NotOutside: lda battery
 ULO_Outside:    jsr DestroyActorNoSource
                 txa
                 sta actSY,x
-                rts
+ULO_PlayerDead: rts
 ULO_CheckPickupIndex:                           ;Check if player is colliding with an item
                 ldy #ACTI_FIRSTITEM             ;If was at an item last frame, continue search from that
 ULO_CheckPickupLoop:

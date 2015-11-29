@@ -1073,6 +1073,8 @@ MEye_NoExplosion:
                 jsr SetZoneColors
                 inc actTime,x
                 bpl MEye_NoExplosionFinish
+                lda #4*8
+                jsr MoveActorYNoInterpolation
                 jmp ExplodeActor                ;Finally explode self
 MEye_NoExplosionFinish:
                 rts
