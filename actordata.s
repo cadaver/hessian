@@ -1291,9 +1291,9 @@ alCpu:          dc.w FlashActor_CheckDamageFlash ;Update routine
 
 alSuperCpu:     dc.w FlashActor_CheckDamageFlash ;Update routine
                 dc.b GRP_ENEMIES|AF_ORGANIC     ;Actor flags (hack: protect against easy victory with EMP)
-                dc.b 6                          ;Horizontal size
-                dc.b 5                          ;Size up
-                dc.b 5                          ;Size down
+                dc.b 8                          ;Horizontal size
+                dc.b 8                          ;Size up
+                dc.b 8                          ;Size down
                 dc.w USESCRIPT|EP_DESTROYCPU    ;Destroy routine
                 dc.b HP_SUPERCPU                ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier
