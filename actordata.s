@@ -54,6 +54,7 @@ ACT_CPU         = 52
 ACT_SUPERCPU    = 53
 ACT_EYEINVISIBLE = 54
 ACT_EYE         = 55
+ACT_JORMUNGANDR = 56
 
 HP_PLAYER       = 56
 HP_RAT          = 4
@@ -79,9 +80,11 @@ HP_CPU          = 32
 HP_SUPERCPU     = 48
 HP_LARGEWALKER  = 64
 HP_EYE          = 128
+HP_JORMUNGANDR  = 160
 
 MOD_HEAVYROBOT  = -2
-MOD_BOSS        = -2
+MOD_CONSTRUCT   = -2
+MOD_JORMUNGANDR = 4
 
         ; Difficulty mod for damage on player
 
@@ -115,6 +118,7 @@ adLargeMeleeHit = $0000
 adExplosionGenerator = $0000
 adRockTrap      = $0000
 adEyeInvisible  = $0000
+adJormungandr   = $0000
 
 actDispTblLo:   dc.b <adPlayer
                 dc.b <adItem
@@ -171,6 +175,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adCpu
                 dc.b <adEyeInvisible
                 dc.b <adEye
+                dc.b <adJormungandr
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -227,6 +232,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adCpu
                 dc.b >adEyeInvisible
                 dc.b >adEye
+                dc.b >adJormungandr
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -557,6 +563,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alSuperCpu
                 dc.b <alEyeInvisible
                 dc.b <alEye
+                dc.b <alJormungandr
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -613,7 +620,8 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alSuperCpu
                 dc.b >alEyeInvisible
                 dc.b >alEye
-
+                dc.b >alJormungandr
+                
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
                 dc.b 8                          ;Horizontal size
@@ -1296,7 +1304,7 @@ alSuperCpu:     dc.w FlashActor_CheckDamageFlash ;Update routine
                 dc.b 8                          ;Size down
                 dc.w USESCRIPT|EP_DESTROYCPU    ;Destroy routine
                 dc.b HP_SUPERCPU                ;Initial health
-                dc.b MOD_BOSS                   ;Damage modifier
+                dc.b MOD_CONSTRUCT              ;Damage modifier
                 dc.w 250                        ;Score from kill
 
 alEyeInvisible: dc.w USESCRIPT|EP_MOVEEYESTAGE1 ;Update routine
@@ -1314,6 +1322,17 @@ alEye:          dc.w USESCRIPT|EP_MOVEEYESTAGE2 ;Update routine
                 dc.b 0                          ;Size down
                 dc.w USESCRIPT|EP_DESTROYEYE    ;Destroy routine
                 dc.b HP_EYE                     ;Initial health
-                dc.b MOD_BOSS                   ;Damage modifier
+                dc.b MOD_CONSTRUCT              ;Damage modifier
                 dc.w 1000                       ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+
+alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
+                dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON ;Actor flags
+                dc.b 0                          ;Horizontal size
+                dc.b 0                          ;Size up
+                dc.b 0                          ;Size down
+                dc.w USESCRIPT|EP_DESTROYJORMUNGANDR ;Destroy routine
+                dc.b HP_JORMUNGANDR             ;Initial health
+                dc.b MOD_JORMUNGANDR            ;Damage modifier
+                dc.w 2000                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
