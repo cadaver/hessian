@@ -76,9 +76,12 @@ HP_LARGEDROIDSUPER = 20
 HP_HEAVYGUARD   = 20
 HP_CEILINGTURRET = 24
 HP_CPU          = 32
-HP_SUPERCPU     = 64
-HP_LARGEWALKER  = 56
+HP_SUPERCPU     = 48
+HP_LARGEWALKER  = 64
 HP_EYE          = 128
+
+MOD_HEAVYROBOT  = -2
+MOD_BOSS        = -2
 
         ; Difficulty mod for damage on player
 
@@ -1249,7 +1252,7 @@ alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
                 dc.b 0                          ;Size down
                 dc.w USESCRIPT|EP_EXPLODE4_OFS15 ;Destroy routine
                 dc.b HP_LARGEWALKER             ;Initial health
-                dc.b NO_MODIFY                  ;Damage modifier
+                dc.b MOD_HEAVYROBOT             ;Damage modifier
                 dc.w 175                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
@@ -1293,7 +1296,7 @@ alSuperCpu:     dc.w FlashActor_CheckDamageFlash ;Update routine
                 dc.b 5                          ;Size down
                 dc.w USESCRIPT|EP_DESTROYCPU    ;Destroy routine
                 dc.b HP_SUPERCPU                ;Initial health
-                dc.b NO_MODIFY                  ;Damage modifier
+                dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 250                        ;Score from kill
 
 alEyeInvisible: dc.w USESCRIPT|EP_MOVEEYESTAGE1 ;Update routine
@@ -1305,12 +1308,12 @@ alEyeInvisible: dc.w USESCRIPT|EP_MOVEEYESTAGE1 ;Update routine
                 dc.b 0                          ;Initial health
 
 alEye:          dc.w USESCRIPT|EP_MOVEEYESTAGE2 ;Update routine
-                dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON ;Actor flags
+                dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON|AF_INITONLYSIZE ;Actor flags
                 dc.b 12                         ;Horizontal size
                 dc.b 0                          ;Size up
                 dc.b 10                         ;Size down
                 dc.w USESCRIPT|EP_DESTROYEYE    ;Destroy routine
                 dc.b HP_EYE                     ;Initial health
-                dc.b NO_MODIFY                  ;Damage modifier
+                dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 1000                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly

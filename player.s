@@ -30,7 +30,8 @@ INITIAL_CLIMBSPEED = 84
 INITIAL_HEALTIMER = 4
 
 UPGRADE_DAMAGE_MODIFY = 6
-UPGRADE_ATTACK_MODIFY = 12
+UPGRADE_FIREARM_MODIFY = 10
+UPGRADE_MELEE_MODIFY = 12
 UPGRADE_RELOADTIME_MODIFY = 6
 
 HEALTIMER_RESET = $c0
@@ -1031,7 +1032,7 @@ AU_NoMovement:  txa
                 lsr temp6                       ;Check strength
                 ldy #NO_MODIFY
                 bcc AU_NoStrength
-                ldy #UPGRADE_ATTACK_MODIFY
+                ldy #UPGRADE_MELEE_MODIFY
 AU_NoStrength:  sty AH_PlayerMeleeBonus+1
                 lda #INITIAL_MAX_WEAPONS
                 adc #$00                        ;Add one more weapon if have strength upgrade
@@ -1051,7 +1052,7 @@ AU_NoAmmoIncrease:
                 ldx #NO_MODIFY
                 ldy #NO_MODIFY
                 bcc AU_NoFirearms
-                ldx #UPGRADE_ATTACK_MODIFY
+                ldx #UPGRADE_FIREARM_MODIFY
                 ldy #UPGRADE_RELOADTIME_MODIFY
 AU_NoFirearms:  stx AH_PlayerFirearmBonus+1
                 sty AH_PlayerReloadTimeMod+1

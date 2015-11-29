@@ -903,7 +903,7 @@ DCPU_Search:    lda lvlObjX,y
                 beq DCPU_Found
 DCPU_SearchNext:dey
                 bpl DCPU_Search
-                rts
+MEye_WaitDroids:rts
 DCPU_Found:     jmp ActivateObject
 
         ; Eye (Construct) boss phase 1
@@ -918,24 +918,20 @@ MEye_Search:    lda actT,y                      ;CPUs alive?
                 beq MEye_HasCPUs
                 dey
                 bne MEye_Search
-MEye_GotoPhase2:inc actT,x                      ;Move to visible eye stage
+MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phase1 destroyed
+                cmp #2
+                bcs MEye_WaitDroids
+                inc actT,x                      ;Move to visible eye stage
                 jsr InitActor
                 lda #5                          ;Descend animation
                 sta actF1,x
-                lda #$00
-                ldy actXH+ACTI_PLAYER           ;If player is right from center, shoot to right first
-                cpy #$41
-                bcs MEye_FireRightFirst
-                lda #$04
-MEye_FireRightFirst:
-                sta actFallL,x
                 jmp InitActor
 
-MEye_DroidSpawnDelay:
-                dec actLastNavStairs,x
-                rts
 MEye_HasCPUs:
-MEye_SpawnDroid:lda actLastNavStairs,x
+MEye_SpawnDroid:lda #DROID_SPAWN_DELAY
+MEye_SpawnDroid2:
+                sta temp1
+                lda actLastNavStairs,x
                 bne MEye_DroidSpawnDelay
                 lda numSpawned
                 cmp #2+1
@@ -966,10 +962,14 @@ MEye_SpawnDroid:lda actLastNavStairs,x
                 lda #ITEM_LASERRIFLE
                 sta actWpn,x
                 jsr InitActor
+                jsr SetNotPersistent
                 ldx actIndex
-                lda #DROID_SPAWN_DELAY
+                lda temp1
                 sta actLastNavStairs,x
 MEye_Done:      rts
+MEye_DroidSpawnDelay:
+                dec actLastNavStairs,x
+                rts
 
         ; Eye (Construct) boss phase 2
         ;
@@ -977,24 +977,33 @@ MEye_Done:      rts
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveEyePhase2:  lda actHp,x
-                beq MEye_Destroy
-                lda actF1,x
+MoveEyePhase2:  lda actF1,x
                 cmp #5
                 bcc MEye_Turret
-                lda actFd,x
+MEye_Descend:   lda actFd,x
                 bne MEye_NoSound
                 lda #SFX_RELOADBAZOOKA
                 jsr PlaySfx
 MEye_NoSound:   ldy #14
                 lda #2
                 jsr OneShotAnimation
-                bcc MEye_SpawnDroid
+                bcc MEye_SpawnDroidsFast
+                lda #$00
+                ldy actXH+ACTI_PLAYER           ;If player is right from center, shoot to right first
+                cpy #$41
+                bcs MEye_FireRightFirst
+                lda #$04
+MEye_FireRightFirst:
+                sta actFallL,x
                 lda #EYE_MOVE_TIME*2            ;Some delay before firing initially
                 sta actFall,X
                 lda #$00
                 sta actFd,x                     ;Needed for turret frame init
-MEye_Turret:    dec actFall,x                   ;Read firing controls from table with delay
+                lda #HP_EYE                     ;Make boss damageable now
+                sta actHp,x
+MEye_Turret:    lda actHp,x
+                beq MEye_Destroy
+                dec actFall,x                   ;Read firing controls from table with delay
                 bmi MEye_NextMove
                 lda actFall,x
                 cmp #EYE_FIRE_TIME
@@ -1010,7 +1019,9 @@ MEye_NextMove:  lda actFallL,x
                 lda eyeCtrlTbl,y
 MEye_StoreCtrl: sta actCtrl,x
 MEye_Animate:   jsr MoveTurret
-                jmp MEye_SpawnDroid             ;Continue to spawn droids
+MEye_SpawnDroidsFast:
+                lda #DROID_SPAWN_DELAY-25
+                jmp MEye_SpawnDroid2            ;Continue to spawn droids
 MEye_Destroy:   jsr Random
                 pha
                 and #$03
