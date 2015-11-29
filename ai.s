@@ -113,8 +113,11 @@ AI_CantJump:    sta temp2
 AI_TargetNotJumping:
                 lda actGroundCharInfo,y         ;If target stands on nonnavigable chars,
                 sta temp1                       ;treat Y-distance as zero (turn to X-dir)
-                and #CI_NOPATH
-                beq AI_FollowTargetIsNavigable
+                and #CI_NOPATH                  ;when in actual follow mode
+                beq AI_FollowTargetIsNavigable  ;In combat modes this could result in
+                lda actAIMode,x                 ;enemies stopping, if they can't fire diagonally
+                cmp #AIMODE_FOLLOW
+                bne AI_FollowTargetIsNavigable
                 lda #$00
                 sta temp8
                 beq AI_FollowTurnToTarget
@@ -151,7 +154,7 @@ AI_FollowWalk:  lsr actLastNavLadder,x
                 lda temp6                       ;If no X & Y distance, idle
                 ora temp8
                 beq AI_Idle
-                lda actGroundCharInfo,x         ;Check climbing down
+AI_NoIdle:      lda actGroundCharInfo,x         ;Check climbing down
                 and #CI_CLIMB
                 beq AI_FollowNoClimbDown
                 lda actLastNavLadder,x          ;Do not climb if delay count from last climb still active
