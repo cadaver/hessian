@@ -299,7 +299,8 @@ GBO_ShiftLoop:  asl temp1                       ;Convert screen coords back to m
                 dey
                 bne GBO_ShiftLoop
                 sta temp3
-GBO_HasOffset:  ldx actIndex                    ;Check whether to use player or NPC bullet actor
+AttackCustomOffset:
+                ldx actIndex                    ;Check whether to use player or NPC bullet actor
                 beq AH_IsPlayer                 ;indices
                 lda #ACTI_FIRSTNPCBULLET
                 ldy #ACTI_LASTNPCBULLET

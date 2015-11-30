@@ -118,10 +118,10 @@ MJ_Attack:      lda #1
                 sta tgtActIndex
                 lda #8
                 sta AH_FireDir+1
-                jsr GBO_HasOffset
+                jsr AttackCustomOffset
                 ldy tgtActIndex
                 bmi MJ_FireDone
-                lda #-8*8
+                lda #-7*8-4
                 sta actSX,y
                 lda phaseTime
                 lsr
@@ -340,9 +340,8 @@ frameActorXH:   dc.b $f6,$f6                        ;Depends on Jormungandr's la
 
 hitColorTbl:    dc.b $01,$0e
 
-fireWaveTbl:    dc.b 24,21,18,15,12,9,6,3
-                dc.b 0,3,6,9,12,15,18,21
-                
+fireWaveTbl:    dc.b 3,6,9,12,15,18,21,24,21,18,15,12,9,6,3,0
+
         ; Char graphics
 
 frame0:         dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$d1,$d2,$00,$00,$00,$00,$00,$00,$00,$00
