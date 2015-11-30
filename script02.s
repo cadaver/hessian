@@ -106,9 +106,9 @@ MJ_Attack:      lda #1
                 ldy #WD_BITS
                 lda (wpnLo),y
                 sta wpnBits
-                lda #<(-$180)
+                lda #<(-$240)
                 sta temp1
-                lda #>(-$180)
+                lda #>(-$240)
                 sta temp2
                 lda #<($100)
                 sta temp3
@@ -121,7 +121,7 @@ MJ_Attack:      lda #1
                 jsr AttackCustomOffset
                 ldy tgtActIndex
                 bmi MJ_FireDone
-                lda #-7*8-4
+                lda #-63
                 sta actSX,y
                 lda phaseTime
                 lsr
@@ -335,8 +335,8 @@ frameEyePosLo:  dc.b <247,<286
 frameEyePosHi:  dc.b >247,>286
 frameActorYLOfs:dc.b $40,$80
 frameActorYHOfs:dc.b $73,$73                        ;Depends on Jormungandr's lair position on the game map
-frameActorXL:   dc.b $80,$40
-frameActorXH:   dc.b $f6,$f6                        ;Depends on Jormungandr's lair position on the game map
+frameActorXL:   dc.b $40,$00
+frameActorXH:   dc.b $f7,$f7                        ;Depends on Jormungandr's lair position on the game map
 
 hitColorTbl:    dc.b $01,$0e
 
