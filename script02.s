@@ -298,9 +298,9 @@ MJ_Redraw:      lda screenPos
                 lda frame
                 cmp lastFrame
                 bne MJ_NeedRedraw
-                lda lastScreenPos               ;
-                cmp #HEADLOWPOS
-                bcs MJ_NoRedraw
+                lda lastScreenPos               ;Do not redraw eye color if it's clipped to bottom
+                cmp #HEADLOWPOS                 ;(would cause glitch in blank char which is supposed to
+                bcs MJ_NoRedraw                 ;have black color)
                 ldy eyeColor
                 lda eyeColorTbl,y
                 jmp MJ_EraseEye

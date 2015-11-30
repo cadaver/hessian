@@ -913,10 +913,7 @@ MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phas
                 jmp InitActor
 
 MEye_HasCPUs:
-MEye_SpawnDroid:lda #DROID_SPAWN_DELAY
-MEye_SpawnDroid2:
-                sta temp1
-                lda actLastNavStairs,x
+MEye_SpawnDroid:lda actLastNavStairs,x
                 bne MEye_DroidSpawnDelay
                 lda numSpawned
                 cmp #2+1
@@ -950,7 +947,7 @@ MEye_SpawnDroid2:
                 jsr SetNotPersistent
                 jsr NoInterpolation             ;If explosion is immediately reused on same frame,
                 ldx actIndex                    ;prevent artifacts
-                lda temp1
+                lda #DROID_SPAWN_DELAY
                 sta actLastNavStairs,x
 MEye_Done:      rts
 MEye_DroidSpawnDelay:
@@ -1007,9 +1004,7 @@ MEye_NextMove:  lda actFallL,x
                 lda eyeCtrlTbl,y
 MEye_StoreCtrl: sta actCtrl,x
 MEye_Animate:   jsr MoveTurret
-MEye_SpawnDroidsFast:
-                lda #DROID_SPAWN_DELAY-25
-                jmp MEye_SpawnDroid2            ;Continue to spawn droids
+                jmp MEye_SpawnDroid             ;Continue to spawn droids
 MEye_Destroy:   jsr Random
                 pha
                 and #$03

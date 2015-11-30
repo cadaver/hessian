@@ -77,14 +77,13 @@ HP_LARGEDROIDSUPER = 20
 HP_HEAVYGUARD   = 20
 HP_CEILINGTURRET = 24
 HP_CPU          = 32
-HP_SUPERCPU     = 40
-HP_LARGEWALKER  = 48
-HP_EYE          = 128
+HP_LARGEWALKER  = 40
+HP_SUPERCPU     = 48
+HP_EYE          = 64
 HP_JORMUNGANDR  = 128
 
-MOD_HEAVYROBOT  = 7
-MOD_CONSTRUCT   = 6
-MOD_JORMUNGANDR = 3
+MOD_HEAVYROBOT  = 6
+MOD_BOSS        = 3
 
         ; Difficulty mod for damage on player
 
@@ -704,8 +703,8 @@ alLaser:        dc.w MoveBullet                 ;Update routine
 alPlasma:       dc.w MoveBullet                 ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 6                          ;Horizontal size
-                dc.b 6                          ;Size up
-                dc.b 6                          ;Size down
+                dc.b 5                          ;Size up
+                dc.b 5                          ;Size down
 
 alLauncherGrenade:
                 dc.w MoveLauncherGrenade        ;Update routine
@@ -1304,7 +1303,7 @@ alSuperCpu:     dc.w FlashActor_CheckDamageFlash ;Update routine
                 dc.b 8                          ;Size down
                 dc.w USESCRIPT|EP_DESTROYCPU    ;Destroy routine
                 dc.b HP_SUPERCPU                ;Initial health
-                dc.b MOD_CONSTRUCT              ;Damage modifier
+                dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 250                        ;Score from kill
 
 alEyeInvisible: dc.w USESCRIPT|EP_MOVEEYESTAGE1 ;Update routine
@@ -1322,7 +1321,7 @@ alEye:          dc.w USESCRIPT|EP_MOVEEYESTAGE2 ;Update routine
                 dc.b 0                          ;Size down
                 dc.w USESCRIPT|EP_DESTROYEYE    ;Destroy routine
                 dc.b HP_EYE                     ;Initial health
-                dc.b MOD_CONSTRUCT              ;Damage modifier
+                dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 1000                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
@@ -1330,9 +1329,9 @@ alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
                 dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON|AF_ORGANIC ;Actor flags
                 dc.b 56                         ;Horizontal size
                 dc.b 30                         ;Size up
-                dc.b 34                         ;Size down
+                dc.b 35                         ;Size down
                 dc.w DoNothing                  ;Destroy routine
                 dc.b 0                          ;Initial health
-                dc.b MOD_JORMUNGANDR            ;Damage modifier
+                dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 2000                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
