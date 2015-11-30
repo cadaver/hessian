@@ -1327,12 +1327,12 @@ alEye:          dc.w USESCRIPT|EP_MOVEEYESTAGE2 ;Update routine
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
-                dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON ;Actor flags
-                dc.b 0                          ;Horizontal size
-                dc.b 0                          ;Size up
-                dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_DESTROYJORMUNGANDR ;Destroy routine
-                dc.b HP_JORMUNGANDR             ;Initial health
+                dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON|AF_ORGANIC ;Actor flags
+                dc.b 40                         ;Horizontal size
+                dc.b 12                         ;Size up
+                dc.b 36                         ;Size down
+                dc.w DoNothing                  ;Destroy routine
+                dc.b 0                          ;Initial health
                 dc.b MOD_JORMUNGANDR            ;Damage modifier
                 dc.w 2000                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
