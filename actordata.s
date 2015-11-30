@@ -73,7 +73,6 @@ HP_LARGEDROID   = 14
 HP_SMALLWALKER  = 16
 HP_COMBATROBOT  = 18
 HP_SMALLTANK    = 20
-HP_LARGEDROIDSUPER = 20
 HP_HEAVYGUARD   = 20
 HP_CEILINGTURRET = 24
 HP_CPU          = 32
@@ -800,7 +799,7 @@ alLargeDroidSuper:
                 dc.b 8                          ;Size up
                 dc.b 8                          ;Size down
                 dc.w USESCRIPT|EP_EXPLODE2_8    ;Destroy routine
-                dc.b HP_LARGEDROIDSUPER         ;Initial health
+                dc.b HP_LARGEDROID              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
