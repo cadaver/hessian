@@ -886,18 +886,20 @@ DCPU_Found:     jmp ActivateObject
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveEyePhase1:  lda lvlObjB+$1e                 ;Close door immediately once player moves or fires
-                bpl MEye_NoDoor
+                bpl MEye_DoorDone
                 lda actXL+ACTI_PLAYER
                 bpl MEye_CloseDoor
                 cmp #$88
                 bcs MEye_CloseDoor
                 lda actF2+ACTI_PLAYER
                 cmp #FR_PREPARE
-                bcc MEye_NoDoor
+                bcc MEye_DoorDone
 MEye_CloseDoor: ldy #$1e
                 jsr InactivateObject
                 ldx actIndex
-MEye_NoDoor:    ldy #ACTI_LASTNPC
+MEye_DoorDone:  lda #DROID_SPAWN_DELAY
+                sta MEye_SpawnDelay+1
+                ldy #ACTI_LASTNPC
 MEye_Search:    lda actT,y                      ;CPUs alive?
                 cmp #ACT_SUPERCPU
                 beq MEye_HasCPUs
@@ -914,7 +916,7 @@ MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phas
 
 MEye_HasCPUs:
 MEye_SpawnDroid:lda actLastNavStairs,x
-                bne MEye_DroidSpawnDelay
+                bne MEye_DoSpawnDelay
                 lda numSpawned
                 cmp #2+1
                 bcs MEye_Done
@@ -947,10 +949,10 @@ MEye_SpawnDroid:lda actLastNavStairs,x
                 jsr SetNotPersistent
                 jsr NoInterpolation             ;If explosion is immediately reused on same frame,
                 ldx actIndex                    ;prevent artifacts
-                lda #DROID_SPAWN_DELAY
+MEye_SpawnDelay:lda #DROID_SPAWN_DELAY
                 sta actLastNavStairs,x
 MEye_Done:      rts
-MEye_DroidSpawnDelay:
+MEye_DoSpawnDelay:
                 dec actLastNavStairs,x
                 rts
 
@@ -960,7 +962,9 @@ MEye_DroidSpawnDelay:
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveEyePhase2:  lda actHp,x
+MoveEyePhase2:  lda #DROID_SPAWN_DELAY-25
+                sta MEye_SpawnDelay+1
+                lda actHp,x
                 beq MEye_Destroy
                 lda actF1,x
                 cmp #5
