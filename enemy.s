@@ -3,6 +3,30 @@ ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 2
 TURRET_ANIMDELAY = 2
 
+        ; Rolling mine update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveRollingMine:jsr MoveGeneric
+                lda actMB,x                         ;If not grounded and hitting wall,
+                cmp #MB_HITWALL                     ;climb up the wall
+                bne MRM_NoClimb
+                lda #10
+                ldy #4*8
+                jsr AccActorYNeg
+MRM_NoClimb:    inc actFd,x
+                lda actFd,x
+                and #$01
+                sta actF1,x
+MineCommon:     ldy actAITarget,x
+                bmi MC_NoCollision
+                lda #DMG_ENEMYMINE
+                jsr CollideAndDamageTarget
+                bcc MC_NoCollision
+                jmp DestroyActorNoSource
+
         ; Turn enemy into an explosion & drop item
         ;
         ; Parameters: X actor index
@@ -68,6 +92,7 @@ MoveExplosionGenerator:
 MEG_NoRoom:     jmp ExplodeActor
 MEG_NotLastExplosion:
 MEG_NoNewExplosion:
+MC_NoCollision:
                 rts
 MEG_GetOffset:  sta temp3
                 lsr

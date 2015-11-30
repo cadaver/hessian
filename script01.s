@@ -25,7 +25,6 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w MoveWalker
                 dc.w MoveTank
                 dc.w MoveFloatingMine
-                dc.w MoveRollingMine
                 dc.w MoveTurret
                 dc.w MoveFire
                 dc.w MoveSmokeCloud
@@ -137,7 +136,6 @@ MT_NoWrap:      sta actFd,x
                 clc
                 adc tankSizeAddTbl,y
                 sta actSizeU,x
-MC_NoCollision:
 MFM_NoExplosion:rts
 
 GetAbsXSpeed:   lda actSX,x                       ;Tracks animation from absolute speed
@@ -159,31 +157,7 @@ MoveFloatingMine:
                 ldy #$03
                 jsr LoopingAnimation
                 jsr MoveAccelerateFlyer
-MineCommon:     ldy actAITarget,x
-                bmi MC_NoCollision
-                lda #DMG_ENEMYMINE
-                jsr CollideAndDamageTarget
-                bcc MC_NoCollision
-                jmp DestroyActorNoSource
-
-        ; Rolling mine update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveRollingMine:jsr MoveGeneric
-                lda actMB,x                         ;If not grounded and hitting wall,
-                cmp #MB_HITWALL                     ;climb up the wall
-                bne MRM_NoClimb
-                lda #10
-                ldy #4*8
-                jsr AccActorYNeg
-MRM_NoClimb:    inc actFd,x
-                lda actFd,x
-                and #$01
-                sta actF1,x
-                bpl MineCommon
+                jmp MineCommon
 
         ; Ceiling turret update routine
         ;

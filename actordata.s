@@ -77,14 +77,14 @@ HP_LARGEDROIDSUPER = 20
 HP_HEAVYGUARD   = 20
 HP_CEILINGTURRET = 24
 HP_CPU          = 32
-HP_SUPERCPU     = 48
-HP_LARGEWALKER  = 64
+HP_SUPERCPU     = 40
+HP_LARGEWALKER  = 48
 HP_EYE          = 128
-HP_JORMUNGANDR  = 160
+HP_JORMUNGANDR  = 128
 
-MOD_HEAVYROBOT  = -2
-MOD_CONSTRUCT   = -2
-MOD_JORMUNGANDR = 4
+MOD_HEAVYROBOT  = 7
+MOD_CONSTRUCT   = 6
+MOD_JORMUNGANDR = 3
 
         ; Difficulty mod for damage on player
 
@@ -905,7 +905,7 @@ alFloatingMine: dc.w USESCRIPT|EP_MOVEFLOATINGMINE ;Update routine
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
 
-alRollingMine:  dc.w USESCRIPT|EP_MOVEROLLINGMINE ;Update routine
+alRollingMine:  dc.w MoveRollingMine            ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 15                         ;Size up
@@ -1328,9 +1328,9 @@ alEye:          dc.w USESCRIPT|EP_MOVEEYESTAGE2 ;Update routine
 
 alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
                 dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON|AF_ORGANIC ;Actor flags
-                dc.b 48                         ;Horizontal size
-                dc.b 28                         ;Size up
-                dc.b 36                         ;Size down
+                dc.b 56                         ;Horizontal size
+                dc.b 30                         ;Size up
+                dc.b 34                         ;Size down
                 dc.w DoNothing                  ;Destroy routine
                 dc.b 0                          ;Initial health
                 dc.b MOD_JORMUNGANDR            ;Damage modifier
