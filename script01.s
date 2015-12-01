@@ -915,15 +915,15 @@ MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phas
                 jmp InitActor
 
 MEye_HasCPUs:
-MEye_SpawnDroid:lda actLastNavStairs,x
-                bne MEye_DoSpawnDelay
-                lda numSpawned
+MEye_SpawnDroid:lda numSpawned
                 cmp #2+1
                 bcs MEye_Done
                 lda #ACTI_FIRSTNPC              ;Use any free slots for droids,
                 ldy #ACTI_LASTNPC               ;meaning the battle becomes more insane
                 jsr GetFreeActor                ;as more CPUs are destroyed
                 bcc MEye_Done                   ;(up to 2)
+                lda actTime,x
+                bne MEye_DoSpawnDelay
                 tya
                 tax
                 jsr Random                      ;Randomize location from 4 possible
@@ -950,10 +950,10 @@ MEye_SpawnDroid:lda actLastNavStairs,x
                 jsr NoInterpolation             ;If explosion is immediately reused on same frame,
                 ldx actIndex                    ;prevent artifacts
 MEye_SpawnDelay:lda #DROID_SPAWN_DELAY
-                sta actLastNavStairs,x
+                sta actTime,x
 MEye_Done:      rts
 MEye_DoSpawnDelay:
-                dec actLastNavStairs,x
+                dec actTime,x
                 rts
 
         ; Eye (Construct) boss phase 2
@@ -982,6 +982,7 @@ MEye_NoSound:   ldy #14
                 jsr OneShotAnimation
                 bcc MEye_Done
                 lda #$00
+                sta actTime,x
                 ldy actXH+ACTI_PLAYER           ;If player is right from center, shoot to right first
                 cpy #$41
                 bcs MEye_FireRightFirst

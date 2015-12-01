@@ -804,11 +804,11 @@ alLargeDroidSuper:
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
-                dc.b $0f                        ;AI offense AND-value
+                dc.b $0b                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
                 dc.b 4*8                        ;Horiz max movement speed
-                dc.b 3                          ;Horiz acceleration
+                dc.b 2                          ;Horiz acceleration
                 dc.b 2*8                        ;Vert max movement speed
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
