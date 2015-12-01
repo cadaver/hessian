@@ -24,7 +24,7 @@ ACT_SPEECHBUBBLE = 22
 ACT_EXPLOSIONGENERATOR = 23
 ACT_SMALLDROID  = 24
 ACT_LARGEDROID  = 25
-ACT_LARGEDROIDSUPER = 26
+ACT_LARGEDROIDSUPER = 26 ;Unused, overwrite later
 ACT_FLYINGCRAFT = 27
 ACT_SMALLWALKER = 28
 ACT_SMALLTANK   = 29
@@ -78,7 +78,7 @@ HP_CEILINGTURRET = 24
 HP_CPU          = 32
 HP_LARGEWALKER  = 40
 HP_SUPERCPU     = 48
-HP_EYE          = 64
+HP_EYE          = 72
 HP_JORMUNGANDR  = 128
 
 MOD_HEAVYROBOT  = 6
@@ -143,7 +143,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adExplosionGenerator
                 dc.b <adSmallDroid
                 dc.b <adLargeDroid
-                dc.b <adLargeDroid
+                dc.b <adLargeDroid  ;Unused, overwrite later
                 dc.b <adFlyingCraft
                 dc.b <adSmallWalker
                 dc.b <adSmallTank
@@ -200,7 +200,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adExplosionGenerator
                 dc.b >adSmallDroid
                 dc.b >adLargeDroid
-                dc.b >adLargeDroid
+                dc.b >adLargeDroid ;Unused, overwrite later
                 dc.b >adFlyingCraft
                 dc.b >adSmallWalker
                 dc.b >adSmallTank
@@ -531,7 +531,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alExplosionGenerator
                 dc.b <alSmallDroid
                 dc.b <alLargeDroid
-                dc.b <alLargeDroidSuper
+                dc.b <alLargeDroid ;Unused, overwrite later
                 dc.b <alFlyingCraft
                 dc.b <alSmallWalker
                 dc.b <alSmallTank
@@ -588,7 +588,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alExplosionGenerator
                 dc.b >alSmallDroid
                 dc.b >alLargeDroid
-                dc.b >alLargeDroidSuper
+                dc.b >alLargeDroid ;Unused, overwrite later
                 dc.b >alFlyingCraft
                 dc.b >alSmallWalker
                 dc.b >alSmallTank
@@ -772,28 +772,6 @@ alSmallDroid:   dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
                 dc.b 1                          ;Vert obstacle check offset
 
 alLargeDroid:   dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
-                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
-                dc.b 9                          ;Horizontal size
-                dc.b 8                          ;Size up
-                dc.b 8                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE2_8 ;Destroy routine
-                dc.b HP_LARGEDROID              ;Initial health
-                dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 50                         ;Score from kill
-                dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $05                        ;AI offense AND-value
-                dc.b $10                        ;AI defense probability
-                dc.b AB_ALL                     ;Attack directions
-                dc.b 3*8                        ;Horiz max movement speed
-                dc.b 2                          ;Horiz acceleration
-                dc.b 3*4                        ;Vert max movement speed
-                dc.b 1                          ;Vert acceleration
-                dc.b 0                          ;Horiz obstacle check offset
-                dc.b 1                          ;Vert obstacle check offset
-
-alLargeDroidSuper:
-                dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON|AF_NOREMOVECHECK ;Actor flags
                 dc.b 9                          ;Horizontal size
                 dc.b 8                          ;Size up
@@ -801,7 +779,7 @@ alLargeDroidSuper:
                 dc.w USESCRIPT|EP_EXPLODE2_8    ;Destroy routine
                 dc.b HP_LARGEDROID              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 75                         ;Score from kill
+                dc.w 50                        ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
                 dc.b $0b                        ;AI offense AND-value
