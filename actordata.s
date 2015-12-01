@@ -24,7 +24,7 @@ ACT_SPEECHBUBBLE = 22
 ACT_EXPLOSIONGENERATOR = 23
 ACT_SMALLDROID  = 24
 ACT_LARGEDROID  = 25
-ACT_LARGEDROIDSUPER = 26 ;Unused, overwrite later
+ACT_SPIDERWALKER = 26
 ACT_FLYINGCRAFT = 27
 ACT_SMALLWALKER = 28
 ACT_SMALLTANK   = 29
@@ -72,8 +72,9 @@ HP_GUARD        = 14
 HP_LARGEDROID   = 14
 HP_SMALLWALKER  = 16
 HP_COMBATROBOT  = 18
-HP_SMALLTANK    = 20
+HP_SPIDERWALKER = 20
 HP_HEAVYGUARD   = 20
+HP_SMALLTANK    = 24
 HP_CEILINGTURRET = 24
 HP_CPU          = 32
 HP_LARGEWALKER  = 40
@@ -143,7 +144,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adExplosionGenerator
                 dc.b <adSmallDroid
                 dc.b <adLargeDroid
-                dc.b <adLargeDroid  ;Unused, overwrite later
+                dc.b <adSpiderWalker
                 dc.b <adFlyingCraft
                 dc.b <adSmallWalker
                 dc.b <adSmallTank
@@ -200,7 +201,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adExplosionGenerator
                 dc.b >adSmallDroid
                 dc.b >adLargeDroid
-                dc.b >adLargeDroid ;Unused, overwrite later
+                dc.b >adSpiderWalker
                 dc.b >adFlyingCraft
                 dc.b >adSmallWalker
                 dc.b >adSmallTank
@@ -348,6 +349,16 @@ adSmallDroid:   dc.b ONESPRITEDIRECT            ;Number of sprites
 adLargeDroid:   dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_SMALLROBOTS              ;Spritefile number
                 dc.b 3                          ;Base spritenumber
+
+adSpiderWalker: dc.b HUMANOID                   ;Number of sprites
+                dc.b C_SMALLROBOTS              ;Lower part spritefile number
+                dc.b 29                         ;Lower part base spritenumber
+                dc.b 0                          ;Lower part base index into the frametable
+                dc.b 32                         ;Lower part left frame add
+                dc.b C_SMALLROBOTS              ;Upper part spritefile number
+                dc.b 21                         ;Upper part base spritenumber
+                dc.b 78                         ;Upper part base index into the frametable
+                dc.b 3                          ;Upper part left frame add
 
 adFlyingCraft:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_SMALLROBOTS              ;Spritefile number
@@ -531,7 +542,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alExplosionGenerator
                 dc.b <alSmallDroid
                 dc.b <alLargeDroid
-                dc.b <alLargeDroid ;Unused, overwrite later
+                dc.b <alSpiderWalker
                 dc.b <alFlyingCraft
                 dc.b <alSmallWalker
                 dc.b <alSmallTank
@@ -588,7 +599,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alExplosionGenerator
                 dc.b >alSmallDroid
                 dc.b >alLargeDroid
-                dc.b >alLargeDroid ;Unused, overwrite later
+                dc.b >alSpiderWalker
                 dc.b >alFlyingCraft
                 dc.b >alSmallWalker
                 dc.b >alSmallTank
@@ -791,6 +802,29 @@ alLargeDroid:   dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
+
+alSpiderWalker: dc.w USESCRIPT|EP_MOVESPIDERWALKER ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
+                dc.b 12                         ;Horizontal size
+                dc.b 33                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w USESCRIPT|EP_EXPLODE2_OFS15 ;Destroy routine
+                dc.b HP_SPIDERWALKER            ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 55                         ;Score from kill
+                dc.b AIMODE_MOVER               ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b $07                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL|AB_DIAGONALUP|AB_UP ;Attack directions
+                dc.b AMF_CUSTOMANIMATION        ;Move flags
+                dc.b 2*8+4                      ;Max. movement speed
+                dc.b 8                          ;Ground movement acceleration
+                dc.b 0                          ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 8                          ;Long jump gravity acceleration
+                dc.b 8                          ;Ground braking
+                dc.b -4                         ;Height in chars for headbump check (negative)
 
 alFlyingCraft:  dc.w USESCRIPT|EP_MOVEFLYINGCRAFT ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
