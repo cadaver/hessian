@@ -35,7 +35,8 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
 	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak \
 	sprcommon.pak spritem.pak sprweapon.pak sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
-	sprsmallrobots.pak sprhazards.pak spranimals.pak sprguard.pak sprheavyguard.pak sprcombatrobot.pak sprlargewalker.pak \
+	sprsmallrobots.pak sprhazards.pak spranimals.pak sprmediumrobots.pak sprguard.pak sprheavyguard.pak \
+	sprcombatrobot.pak sprlargewalker.pak \
 	sprserver.pak
 	c1541 < hessian.seq
 
@@ -466,6 +467,9 @@ sprhazards.pak: spr/hazards.spr
 
 spranimals.pak: spr/animals.spr
 	pchunk2 spr/animals.spr spranimals.pak
+
+sprmediumrobots.pak: spr/mediumrobots.spr
+	pchunk2 spr/mediumrobots.spr sprmediumrobots.pak
 
 sprguard.pak: spr/guard.spr
 	pchunk2 spr/guard.spr sprguard.pak

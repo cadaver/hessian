@@ -118,7 +118,7 @@ MoveWalker:     jsr MoveGeneric
 
 MoveTank:       jsr MoveGeneric                   ;Use human movement for physics
                 ldy #tankTurretOfs-turretFrameTbl
-                lda #0
+                lda #1
                 jsr AnimateTurret
                 jsr AttackGeneric
                 jsr GetAbsXSpeed
@@ -955,7 +955,7 @@ MSW_WalkAnimSpeedPos:
                 and #$03
 MSW_AnimDone:   sta actF1,x
 MSW_AnimDone2:  ldy #tankTurretOfs-turretFrameTbl
-                lda #0
+                lda #1
                 jsr AnimateTurret
                 jmp AttackGeneric
 
@@ -1143,11 +1143,13 @@ rockDamageTbl:  dc.b DMG_ROCK,DMG_ROCK-1,0
         ; Turret firing ctrl + frame table
 
 turretFrameTbl:
-tankTurretOfs:  dc.b JOY_LEFT|JOY_FIRE,0
-                dc.b JOY_RIGHT|JOY_FIRE,0
-                dc.b JOY_LEFT|JOY_UP|JOY_FIRE,1
-                dc.b JOY_RIGHT|JOY_UP|JOY_FIRE,1
-                dc.b JOY_UP|JOY_FIRE,2
+tankTurretOfs:  dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE,0
+                dc.b JOY_RIGHT|JOY_DOWN|JOY_FIRE,0
+                dc.b JOY_LEFT|JOY_FIRE,1
+                dc.b JOY_RIGHT|JOY_FIRE,1
+                dc.b JOY_LEFT|JOY_UP|JOY_FIRE,2
+                dc.b JOY_RIGHT|JOY_UP|JOY_FIRE,2
+                dc.b JOY_UP|JOY_FIRE,3
                 dc.b 0
 ceilingTurretOfs:
                 dc.b JOY_RIGHT|JOY_FIRE,0

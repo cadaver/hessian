@@ -99,8 +99,8 @@ humanSizeReduceTbl:
 humanUpperFrTbl:dc.b 1,0,0,1,1,2,2,1,1,2,1,0,0,0,15,13,12,13,14,3,10,11,16,17,18,19,20,21,22,23,24,23,3,4,5,6,7,8,9
                 dc.b $80+1,$80+0,$80+0,$80+1,$80+1,$80+2,$80+2,$80+1,$80+1,$80+2,$80+1,$80+0,$80+0,$80+0,15,13,12,13,14,$80+3,$80+10,$80+11,$80+16,$80+17,$80+18,$80+19,$80+20,$80+21,$80+22,$80+23,$80+24,$80+23,$80+3,$80+4,$80+5,$80+6,$80+7,$80+8,$80+9
         ; Tank turret
-                dc.b 0,1,2
-                dc.b $80+0,$80+1,$80+2
+                dc.b 0,1,2,3
+                dc.b $80+0,$80+1,$80+2,$80+3
 
         ; Human actor lower part framenumbers
 
@@ -351,14 +351,14 @@ adLargeDroid:   dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b 3                          ;Base spritenumber
 
 adSpiderWalker: dc.b HUMANOID                   ;Number of sprites
-                dc.b C_SMALLROBOTS              ;Lower part spritefile number
-                dc.b 29                         ;Lower part base spritenumber
+                dc.b C_MEDIUMROBOTS             ;Lower part spritefile number
+                dc.b 11                         ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
-                dc.b C_SMALLROBOTS              ;Upper part spritefile number
-                dc.b 21                         ;Upper part base spritenumber
+                dc.b C_MEDIUMROBOTS             ;Upper part spritefile number
+                dc.b 7                          ;Upper part base spritenumber
                 dc.b 78                         ;Upper part base index into the frametable
-                dc.b 3                          ;Upper part left frame add
+                dc.b 4                          ;Upper part left frame add
 
 adFlyingCraft:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_SMALLROBOTS              ;Spritefile number
@@ -367,20 +367,20 @@ adFlyingCraft:  dc.b ONESPRITE                  ;Number of sprites
                 dc.b $80+6,$80+7,8,7,6
 
 adSmallWalker:  dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_SMALLROBOTS              ;Spritefile number
+                dc.b C_MEDIUMROBOTS             ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 12                         ;Number of frames
-                dc.b 15,14,15,16,15,14,15,16,15,17,17,15
+                dc.b 1,0,1,2,1,0,1,2,1,3,3,1
 
 adSmallTank:    dc.b HUMANOID                   ;Number of sprites
-                dc.b C_SMALLROBOTS              ;Lower part spritefile number
-                dc.b 18                         ;Lower part base spritenumber
+                dc.b C_MEDIUMROBOTS             ;Lower part spritefile number
+                dc.b 4                          ;Lower part base spritenumber
                 dc.b 64                         ;Lower part base index into the frametable
                 dc.b 3                          ;Lower part left frame add
-                dc.b C_SMALLROBOTS              ;Upper part spritefile number
-                dc.b 21                         ;Upper part base spritenumber
+                dc.b C_MEDIUMROBOTS             ;Upper part spritefile number
+                dc.b 7                          ;Upper part base spritenumber
                 dc.b 78                         ;Upper part base index into the frametable
-                dc.b 3                          ;Upper part left frame add
+                dc.b 4                          ;Upper part left frame add
 
 adFloatingMine: dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_SMALLROBOTS              ;Spritefile number
@@ -394,7 +394,7 @@ adRollingMine:  dc.b ONESPRITEDIRECT            ;Number of sprites
 
 adCeilingTurret:dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_SMALLROBOTS              ;Spritefile number
-                dc.b 24                         ;Base spritenumber
+                dc.b 14                         ;Base spritenumber
 
 adFire:         dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_HAZARDS                  ;Spritefile number
@@ -816,7 +816,7 @@ alSpiderWalker: dc.w USESCRIPT|EP_MOVESPIDERWALKER ;Update routine
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
-                dc.b AB_HORIZONTAL|AB_DIAGONALUP|AB_UP ;Attack directions
+                dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DIAGONALUP|AB_UP ;Attack directions
                 dc.b AMF_CUSTOMANIMATION        ;Move flags
                 dc.b 2*8+4                      ;Max. movement speed
                 dc.b 8                          ;Ground movement acceleration

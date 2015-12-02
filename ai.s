@@ -593,9 +593,9 @@ GAD_NoAttackDir2:
 GAD_HasAttackDir:
                 sec
                 rts
-GAD_Horizontal: lda temp1                       ;Check valid attack direction
-                and #AB_HORIZONTAL
-                beq GAD_NoAttackDir2
+GAD_Horizontal: ;lda temp1                       ;Check valid attack direction
+                ;and #AB_HORIZONTAL             ;(horizontal is actually always valid)
+                ;beq GAD_NoAttackDir2
                 lda #$00
 GAD_DiagonalCommon:
                 ldy temp5
