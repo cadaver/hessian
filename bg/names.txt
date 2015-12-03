@@ -57,6 +57,7 @@ SUPERCPU
 EYEINVISIBLE
 EYE
 JORMUNGANDR
+LARGETANK
 end
 ;Item names
 ;----------

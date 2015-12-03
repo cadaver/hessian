@@ -58,6 +58,7 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w DestroyEye
                 dc.w MoveSpiderWalker
                 dc.w ExplodeEnemy2_Ofs15
+                dc.w MoveLargeTank
 
         ; Floating droid update routine
         ;
@@ -959,7 +960,6 @@ MSW_AnimDone2:  ldy #tankTurretOfs-turretFrameTbl
                 jsr AnimateTurret
                 jmp AttackGeneric
 
-
         ; Generate 2 explosions at 8 pixel radius horizontally and 15 pixel radius
         ; vertically
         ;
@@ -977,6 +977,35 @@ ExplodeEnemy2_Ofs15:
                 lda #$7f
                 sta actSY,x
                 jmp ExplodeEnemyMultipleCommon
+
+        ; Large tank update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveLargeTank:  jsr MoveGeneric                   ;Use human movement for physics
+                jsr AttackGeneric
+                lda actSX,x                       ;Then overwrite animation
+                beq MLT_NoCenterFrame
+                eor actD,x                        ;If direction & speed don't agree, show the
+                bmi MLT_CenterFrame               ;center frame (turning)
+MLT_NoCenterFrame:
+                jsr GetAbsXSpeed
+                clc
+                adc actFd,x
+                cmp #$30
+                bcc MLT_NoWrap
+                sbc #$30
+MLT_NoWrap:     sta actFd,x
+                lsr
+                lsr
+                lsr
+                lsr
+                skip2
+MLT_CenterFrame:lda #3
+                sta actF1,x
+                rts
 
         ; Common flying enemy movement
         ;

@@ -55,6 +55,7 @@ ACT_SUPERCPU    = 53
 ACT_EYEINVISIBLE = 54
 ACT_EYE         = 55
 ACT_JORMUNGANDR = 56
+ACT_LARGETANK   = 57
 
 HP_PLAYER       = 56
 HP_RAT          = 4
@@ -78,6 +79,7 @@ HP_SMALLTANK    = 24
 HP_CEILINGTURRET = 24
 HP_CPU          = 32
 HP_LARGEWALKER  = 40
+HP_LARGETANK    = 56
 HP_SUPERCPU     = 48
 HP_EYE          = 72
 HP_JORMUNGANDR  = 128
@@ -175,6 +177,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adEyeInvisible
                 dc.b <adEye
                 dc.b <adJormungandr
+                dc.b <adLargeTank
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -232,6 +235,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adEyeInvisible
                 dc.b >adEye
                 dc.b >adJormungandr
+                dc.b >adLargeTank
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -515,6 +519,15 @@ adEye:          dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_SERVER                   ;Spritefile number
                 dc.b 1                          ;Base spritenumber
 
+adLargeTank:    dc.b FOURSPRITE                 ;Number of sprites
+                dc.b C_LARGETANK                ;Spritefile number
+                dc.b 4                          ;Left frame add
+                dc.b 8                          ;Number of frames
+                dc.b 0,1,2,8,$80+0,$80+1,$80+2,$80+8
+                dc.b 3,4,5,9,$80+3,$80+4,$80+5,$80+9
+                dc.b 6,6,6,10,$80+6,$80+6,$80+6,$80+10
+                dc.b 7,7,7,11,$80+7,$80+7,$80+7,$80+11
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -573,6 +586,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alEyeInvisible
                 dc.b <alEye
                 dc.b <alJormungandr
+                dc.b <alLargeTank
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -630,7 +644,8 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alEyeInvisible
                 dc.b >alEye
                 dc.b >alJormungandr
-                
+                dc.b >alLargeTank
+
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
                 dc.b 8                          ;Horizontal size
@@ -1346,3 +1361,26 @@ alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
                 dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 2000                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+
+alLargeTank:    dc.w USESCRIPT|EP_MOVELARGETANK ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
+                dc.b 24                         ;Horizontal size
+                dc.b 38                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w USESCRIPT|EP_EXPLODE4_OFS15 ;Destroy routine
+                dc.b HP_LARGETANK               ;Initial health
+                dc.b MOD_HEAVYROBOT             ;Damage modifier
+                dc.w 200                        ;Score from kill
+                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b $07                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL              ;Attack directions
+                dc.b AMF_CUSTOMANIMATION ;Move flags
+                dc.b 3*8                        ;Max. movement speed
+                dc.b 3                          ;Ground movement acceleration
+                dc.b 0                          ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 8                          ;Long jump gravity acceleration
+                dc.b 3                          ;Ground braking
+                dc.b -5                         ;Height in chars for headbump check (negative)
