@@ -4169,11 +4169,13 @@ void savealldata(void)
       handle = open(ib2, O_RDWR|O_BINARY|O_TRUNC|O_CREAT, S_IREAD|S_IWRITE);
       if (handle != -1)
       {
-        write(handle, &lvlobjx[0], NUMLVLOBJ*2);
-        write(handle, &lvlobjy[0], NUMLVLOBJ*2);
-        write(handle, &lvlobjb[0], NUMLVLOBJ);
-        write(handle, &lvlobjdl[0], NUMLVLOBJ);
-        write(handle, &lvlobjdh[0], NUMLVLOBJ);
+        int emptyobjs = 0;
+        for (c = 0; c < NUMLVLOBJ; ++c) if (!lvlobjx[c] && !lvlobjy[c]) emptyobjs++;
+        for (c = 0; c < NUMLVLOBJ; ++c) if (lvlobjx[c] || lvlobjy[c]) writele16(handle, lvlobjx[c]); for (c = 0; c < emptyobjs; ++c) writele16(handle, 0);
+        for (c = 0; c < NUMLVLOBJ; ++c) if (lvlobjx[c] || lvlobjy[c]) writele16(handle, lvlobjy[c]); for (c = 0; c < emptyobjs; ++c) writele16(handle, 0);
+        for (c = 0; c < NUMLVLOBJ; ++c) if (lvlobjx[c] || lvlobjy[c]) write8(handle, lvlobjb[c]); for (c = 0; c < emptyobjs; ++c) write8(handle, 0);
+        for (c = 0; c < NUMLVLOBJ; ++c) if (lvlobjx[c] || lvlobjy[c]) write8(handle, lvlobjdl[c]); for (c = 0; c < emptyobjs; ++c) write8(handle, 0);
+        for (c = 0; c < NUMLVLOBJ; ++c) if (lvlobjx[c] || lvlobjy[c]) write8(handle, lvlobjdh[c]); for (c = 0; c < emptyobjs; ++c) write8(handle, 0);
         close(handle);
       }
 
