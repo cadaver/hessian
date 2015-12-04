@@ -1067,7 +1067,7 @@ AU_NoArmor:     ldx difficulty                  ;Finally modify with difficulty 
                 lsr temp6                       ;Check healing speed
                 lda #INITIAL_HEALTIMER-1        ;Healing code has C=1 while adding, so subtract 1 here
                 bcc AU_NoHealing
-                lda #INITIAL_HEALTIMER+2-1
+                lda #INITIAL_HEALTIMER+3-1
 AU_NoHealing:   sta ULO_HealingRate+1
                 lsr temp6                       ;Check battery drain reduce
                 lda #$18                        ;CLC
