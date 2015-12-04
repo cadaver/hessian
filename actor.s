@@ -71,9 +71,8 @@ GRP_ENEMIES     = $01
 GRP_ANIMALS     = $02
 
 AF_GROUPBITS    = $03
-AF_INITONLYSIZE = $08
-AF_ORGANIC      = $10
-AF_USETRIGGERS  = $20
+AF_INITONLYSIZE = $10
+AF_ORGANIC      = $20
 AF_NOREMOVECHECK = $40
 AF_NOWEAPON     = $80
 
@@ -1628,9 +1627,7 @@ DA_StoredY:     jsr GetActorLogicData           ;We may have the bullet's logic 
 DA_NoScore:     lda #$00                        ;Set hitpoints to zero. Some destroy routines like
                 sta actHp,x                     ;the dividing rock will reset HP to nonzero so do now
                 ldy #AL_DESTROYROUTINE+1        ;to not disturb that mechanism
-                jsr ActorCall
-                ldy #AT_DESTROY                 ;Run the DESTROY trigger routine
-                jmp ActorTrigger
+                jmp ActorCall
 
         ; Attempt to spawn an actor to screen edges (left, right or top, depending on spawn type)
         ;
@@ -1842,9 +1839,8 @@ ALA_NotItem:    ldy #AL_MOVEFLAGS               ;If the actor can climb and has 
                 and #CI_GROUND|CI_CLIMB
                 cmp #CI_CLIMB
                 bne ALA_NoInitClimb
-                jsr MH_InitClimb
-ALA_NoInitClimb:ldy #AT_ADD                     ;Run the ADD trigger routine
-                jmp ActorTrigger
+                jmp MH_InitClimb
+ALA_NoInitClimb:
 ALA_Fail:       rts
 ALA_Cancel:     jmp AS_Remove2
 ALA_IsItem:     lda #ACTI_FIRSTITEM
@@ -1926,8 +1922,6 @@ RA_StoreNPC:    sta lvlActT,y
                 and #$80
                 ora actWpn,x
 RA_StoreCommon: sta lvlActWpn,y
-                ldy #AT_REMOVE                  ;Run the REMOVE trigger routine
-                jsr ActorTrigger
 
         ; Remove actor without returning to leveldata
         ;

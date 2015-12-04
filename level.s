@@ -1000,32 +1000,9 @@ ULO_SkipItemName:
                 jsr TryPickup
 ULO_CheckContinuousScript:
                 ldx scriptF                     ;Check for continuous script execution
-                bmi ULO_CheckNearTrigger
+                bmi ULO_CheckObject
                 lda scriptEP
                 jsr ExecScript
-ULO_CheckNearTrigger:
-                ldx #ACTI_LASTNPC
-                lda actFlags,x
-                and #AF_USETRIGGERS
-                beq ULO_CNTNext
-                ldy #ACTI_PLAYER
-                jsr GetActorDistance
-                lda temp6
-                cmp #MAX_NEARTRIGGER_XDIST
-                bcs ULO_CNTNext
-                lda temp8
-                cmp #MAX_NEARTRIGGER_YDIST
-                bcs ULO_CNTNext
-                lda actMB+ACTI_PLAYER           ;If neartrigger would be OK to execute, but player
-                lsr                             ;is jumping, skip (neartrigger often triggers
-                bcc ULO_CheckObject             ;a conversation, would look stupid if hanging in midair)
-                ldy #AT_NEAR
-                jsr ActorTriggerNoFlagCheck
-ULO_CNTNext:    dex
-                bne ULO_CNTNotOver
-                ldx #ACTI_LASTNPC
-ULO_CNTNotOver: stx ULO_CheckNearTrigger+1
-
 ULO_CheckObject:ldy actYH+ACTI_PLAYER           ;Rescan objects whenever player block position changes
                 ldx actYL+ACTI_PLAYER           ;If player stands on the upper half of a block
                 cpx #$81                        ;check 1 block above

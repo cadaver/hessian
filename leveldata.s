@@ -25,10 +25,6 @@ score:          ds.b 3,0
 battery:        ds.b 2,0
 oxygen:         dc.b 0
 plotBits:       ds.b MAX_PLOTBITS/8,0
-atType:         ds.b MAX_ACTORTRIGGERS+1,0
-atScriptF:      ds.b MAX_ACTORTRIGGERS,0
-atScriptEP:     ds.b MAX_ACTORTRIGGERS,0
-atMask:         ds.b MAX_ACTORTRIGGERS,0
 playerStateZeroEnd:
 invMag:         ds.b ITEM_LAST_MAG-ITEM_FIRST_MAG+1,0
 invCount:       ds.b ITEM_LAST-ITEM_FIRST+1,0

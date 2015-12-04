@@ -50,83 +50,6 @@ AT_NEAR         = 8
 
 SPEECHBUBBLEOFFSET = -40*8
 
-        ; Set or modify trigger for an actor type
-        ;
-        ; Parameters: A Script entrypoint, X script file, Y actor type, temp1 trigger mask
-        ; Returns: -
-        ; Modifies: A,X,Y,zpSrcLo
-
-SetActorTrigger:pha
-                jsr ATSearch                    ;Either search for existing or create new
-                pla
-                sta atScriptEP,y
-                txa
-                sta atScriptF,y
-                lda zpSrcLo
-                sta atType,y
-                lda temp1
-                sta atMask,y
-                rts
-
-        ; Remove trigger from an actor type
-        ;
-        ; Parameters: Y actor type
-        ; Returns: -
-        ; Modifies: A,Y,zpSrcLo
-
-RemoveActorTrigger:
-                jsr ATSearch
-                bcc RAT_NotFound
-RAT_Loop:       lda atType+1,y
-                sta atType,y
-                lda atScriptEP+1,y
-                sta atScriptEP,y
-                lda atScriptF+1,y
-                sta atScriptF,y
-                lda atMask+1,y
-                sta atMask,y
-                iny
-                cpy #MAX_ACTORTRIGGERS
-                bcc RAT_Loop
-RAT_NotFound:   rts
-
-ATSearch:       sty zpSrcLo
-                ldy #$00
-ATSearch_Loop:  lda atType,y
-                beq ATSearch_NotFound
-ATSearch_Cmp:   cmp zpSrcLo
-                beq ATSearch_Found              ;C=1 if found existing
-                iny
-                bne ATSearch_Loop
-ATSearch_NotFound:
-                clc
-ATSearch_Found: rts
-
-        ; Run an actor trigger routine
-        ;
-        ; Parameters: Y trigger type (mask bit), X actor number
-        ; Returns: -
-        ; Modifies: A,Y,loader temp vars
-
-ActorTrigger:   lda actFlags,x
-                and #AF_USETRIGGERS             ;First check: does the actor use triggers at all?
-                beq AT_Fail
-ActorTriggerNoFlagCheck:
-                sty ES_ParamY+1
-                ldy actT,x
-                jsr ATSearch
-                bcc AT_Fail
-                lda atMask,y
-AT_MaskCheck:   and ES_ParamY+1
-                beq AT_Fail
-                stx ES_ParamX+1
-                lda atScriptEP,y
-                ldx atScriptF,y
-                jsr ExecScript
-                ldx ES_ParamX+1
-ES_LoadOnly:
-AT_Fail:        rts
-
         ; Execute a script
         ;
         ; Parameters: A script entrypoint, X script file, ES_ParamX+1, ES_ParamY+1 (or Y in ExecScriptParam)
@@ -166,7 +89,7 @@ ES_ScriptJump:  jmp $1000
 StopScript:     ldx #$ff
 SetScript:      stx scriptF
                 sta scriptEP
-                rts
+ES_LoadOnly:    rts
 
         ; NPC speak a line
         ;
