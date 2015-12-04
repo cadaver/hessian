@@ -430,21 +430,11 @@ IP_InitLevelData:
                 bne IP_InitLevelData
                 ldx #ITEM_LAST-ITEM_FIRST+1     ;$ff=item not carried
 IP_InitInventory:
-                if ALLITEMS_CHEAT>0
-                cpx #ITEM_FIRST_IMPORTANT
-                bcs IP_InitCount1
-                lda itemDefaultMaxCount-1,x
-                skip2
-IP_InitCount1:  lda #$02
-                endif
                 sta invCount-1,x
                 dex
                 bne IP_InitInventory
                 lda #ITEM_FISTS
                 sta itemIndex
-                if ALLITEMS_CHEAT>0
-                lda #ITEM_LAST
-                endif
                 sta lastItemIndex
                 lda #ITEM_FISTS
                 ldx #1
@@ -486,6 +476,24 @@ IP_InitCount1:  lda #$02
                 sta oxygen
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
+                if ALLITEMS_CHEAT>0
+                ldy #ITEM_LAST
+                sty lastItemIndex
+IP_GiveAllItems:
+                lda #1
+                cpy #ITEM_FIRST_IMPORTANT
+                bcs IP_GiveAllNoCount
+                lda itemMaxCount-1,y
+IP_GiveAllNoCount:
+                sta invCount-1,y
+                jsr GetMagazineSize
+                bcc IP_GiveAllNoMag
+                lda #$00
+                sta invMag-ITEM_FIRST_MAG,y
+IP_GiveAllNoMag:
+                dey
+                bne IP_GiveAllItems
+                endif
                 jsr FindPlayerZone              ;Need to get starting level's charset so that save is named properly
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
                 jmp CenterPlayer
