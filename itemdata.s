@@ -114,7 +114,7 @@ itemDefaultPickup:
                 dc.b 7                          ;Laser rifle
                 dc.b 5                          ;Plasma gun
                 dc.b 4                          ;EMP generator
-                dc.b 2                          ;Grenade launcher
+                dc.b 3                          ;Grenade launcher
                 dc.b 2                          ;Bazooka
                 dc.b 100                        ;Extinguisher
                 dc.b 2                          ;Grenade

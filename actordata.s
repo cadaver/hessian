@@ -81,7 +81,7 @@ HP_CPU          = 32
 HP_LARGEWALKER  = 40
 HP_LARGETANK    = 56
 HP_SUPERCPU     = 48
-HP_EYE          = 72
+HP_EYE          = 80
 HP_JORMUNGANDR  = 128
 
 MOD_HEAVYROBOT  = 7
