@@ -994,10 +994,11 @@ MLT_NoCenterFrame:
                 jsr GetAbsXSpeed
                 clc
                 adc actFd,x
-                cmp #$30
+                cmp #$60
                 bcc MLT_NoWrap
-                sbc #$30
+                sbc #$60
 MLT_NoWrap:     sta actFd,x
+                lsr
                 lsr
                 lsr
                 lsr
@@ -1159,7 +1160,7 @@ BM_NoHitWall:   rts
 
         ; Tank Y-size addition table (based on turret direction)
 
-tankSizeAddTbl: dc.b 0,6,8
+tankSizeAddTbl: dc.b 2,0,6,8
 
         ; Rock size table
 

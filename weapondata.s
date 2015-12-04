@@ -18,7 +18,7 @@ DMG_GRENADE     = 40
 DMG_ENEMYMINE   = 40
 DMG_MINE        = 56
 DMG_BAZOOKA     = 56
-DMG_EMP         = 4                             ;4 damage for 8 frames = 32 total
+DMG_EMP         = 4+NOMODIFY                    ;4 damage for 8 frames = 32 total
 DMG_FIRE        = 2+NOMODIFY
 DMG_SMOKE       = 1+NOMODIFY
 DMG_ANIMALBITE  = 4

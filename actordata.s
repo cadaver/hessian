@@ -84,7 +84,7 @@ HP_SUPERCPU     = 48
 HP_EYE          = 72
 HP_JORMUNGANDR  = 128
 
-MOD_HEAVYROBOT  = 6
+MOD_HEAVYROBOT  = 7
 MOD_BOSS        = 3
 
         ; Difficulty mod for damage on player
@@ -523,8 +523,8 @@ adLargeTank:    dc.b FOURSPRITE                 ;Number of sprites
                 dc.b C_LARGETANK                ;Spritefile number
                 dc.b 4                          ;Left frame add
                 dc.b 8                          ;Number of frames
-                dc.b 0,1,2,8,$80+0,$80+1,$80+2,$80+8
-                dc.b 3,4,5,9,$80+3,$80+4,$80+5,$80+9
+                dc.b 2,1,0,8,$80+0,$80+2,$80+1,$80+8
+                dc.b 5,4,3,9,$80+3,$80+5,$80+4,$80+9
                 dc.b 6,6,6,10,$80+6,$80+6,$80+6,$80+10
                 dc.b 7,7,7,11,$80+7,$80+7,$80+7,$80+11
 
