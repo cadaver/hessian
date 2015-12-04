@@ -433,7 +433,7 @@ IP_InitInventory:
                 if ALLITEMS_CHEAT>0
                 cpx #ITEM_FIRST_IMPORTANT
                 bcs IP_InitCount1
-                lda itemDefaultPickup-1,x
+                lda itemDefaultMaxCount-1,x
                 skip2
 IP_InitCount1:  lda #$02
                 endif
