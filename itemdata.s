@@ -83,14 +83,14 @@ itemDefaultMaxCount:
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
-                dc.b 50                         ;Pistol
-                dc.b 32                         ;Shotgun
-                dc.b 90                         ;Auto rifle
-                dc.b 15                         ;Sniper rifle
+                dc.b 60                         ;Pistol
+                dc.b 40                         ;Shotgun
+                dc.b 120                        ;Auto rifle
+                dc.b 20                         ;Sniper rifle
                 dc.b 100                        ;Minigun
-                dc.b 90                         ;Flamethrower
-                dc.b 45                         ;Laser rifle
-                dc.b 30                         ;Plasma gun
+                dc.b 120                        ;Flamethrower
+                dc.b 60                         ;Laser rifle
+                dc.b 40                         ;Plasma gun
                 dc.b 8                          ;EMP generator
                 dc.b 6                          ;Grenade launcher
                 dc.b 4                          ;Bazooka
@@ -191,13 +191,13 @@ itemNPCAttackLength:                            ;Note: stored as negative
                 dc.b -6                         ;Pistol
                 dc.b -9                         ;Shotgun
                 dc.b -7                         ;Auto rifle (2 shots)
-                dc.b -12                        ;Sniper rifle
+                dc.b -10                        ;Sniper rifle
                 dc.b -7                         ;Minigun (3 shots)
                 dc.b -7                         ;Flamethrower (3 shots)
                 dc.b -6                         ;Laser rifle
                 dc.b -7                         ;Plasma gun
                 dc.b -7                         ;EMP generator (not used by NPCs)
-                dc.b -5                         ;Grenade launcher
+                dc.b -10                        ;Grenade launcher
                 dc.b -10                        ;Bazooka
                 dc.b -10                        ;Extinguisher (not an actual weapon, not used by NPCs)
                 dc.b -4                         ;Grenade

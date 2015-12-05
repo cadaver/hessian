@@ -1625,8 +1625,10 @@ DA_StoredY:     jsr GetActorLogicData           ;We may have the bullet's logic 
                 pla
                 jsr AddScore
 DA_NoScore:     lda #$00                        ;Set hitpoints to zero. Some destroy routines like
-                sta actHp,x                     ;the dividing rock will reset HP to nonzero so do now
-                ldy #AL_DESTROYROUTINE+1        ;to not disturb that mechanism
+                sta actHp,x                     ;the dividing rock will reset HP to nonzero so do this first
+                sta actAIMode,x                 ;Cancel any ongoing AI
+                jsr SetNotPersistent            ;Make sure actor does not persist after destroy
+                ldy #AL_DESTROYROUTINE+1
                 jmp ActorCall
 
         ; Attempt to spawn an actor to screen edges (left, right or top, depending on spawn type)

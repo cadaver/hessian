@@ -57,6 +57,7 @@ ACT_EYE         = 55
 ACT_JORMUNGANDR = 56
 ACT_LARGETANK   = 57
 ACT_HIGHWALKER  = 58
+ACT_EXPLOSIONGENERATORRISING = 59
 
 HP_PLAYER       = 56
 HP_RAT          = 4
@@ -181,6 +182,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adJormungandr
                 dc.b <adLargeTank
                 dc.b <adHighWalker
+                dc.b <adExplosionGenerator
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -240,6 +242,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adJormungandr
                 dc.b >adLargeTank
                 dc.b >adHighWalker
+                dc.b >adExplosionGenerator
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -298,9 +301,10 @@ adEMP:          dc.b ONESPRITEDIRECT            ;Number of sprites
 adLaser:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
                 dc.b 0                          ;Left frame add
-                dc.b 10                         ;Number of frames
+                dc.b 12                         ;Number of frames
                 dc.b 41,42,43,$80+42,41         ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 41,$80+42,43,42,41
+                dc.b 61,$80+61
 
 adPlasma:       dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -600,6 +604,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alJormungandr
                 dc.b <alLargeTank
                 dc.b <alHighWalker
+                dc.b <alExplosionGeneratorRising
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -659,6 +664,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alJormungandr
                 dc.b >alLargeTank
                 dc.b >alHighWalker
+                dc.b >alExplosionGeneratorRising
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -790,7 +796,7 @@ alExplosionGenerator:
                 dc.w MoveExplosionGenerator     ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
-alSmallDroid:   dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
+alSmallDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 6                          ;Horizontal size
                 dc.b 6                          ;Size up
@@ -811,15 +817,15 @@ alSmallDroid:   dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
 
-alLargeDroid:   dc.w USESCRIPT|EP_MOVEDROID     ;Update routine
+alLargeDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON|AF_NOREMOVECHECK ;Actor flags
                 dc.b 9                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 8                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE2_8    ;Destroy routine
+                dc.w ExplodeEnemy2_8            ;Destroy routine
                 dc.b HP_LARGEDROID              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 50                        ;Score from kill
+                dc.w 50                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
                 dc.b $0b                        ;AI offense AND-value
@@ -1269,29 +1275,6 @@ alCombatRobotFast:
                 dc.b -INITIAL_JUMPSPEED-4       ;Jump initial speed (negative)
                 dc.b INITIAL_CLIMBSPEED+4       ;Climbing speed
 
-alSpiderWalker: dc.w USESCRIPT|EP_MOVESPIDERWALKER ;Update routine
-                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
-                dc.b 12                         ;Horizontal size
-                dc.b 33                         ;Size up
-                dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE2_OFS15 ;Destroy routine
-                dc.b HP_SPIDERWALKER            ;Initial health
-                dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 55                         ;Score from kill
-                dc.b AIMODE_MOVER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $07                        ;AI offense AND-value
-                dc.b $10                        ;AI defense probability
-                dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DIAGONALUP|AB_UP ;Attack directions
-                dc.b AMF_CUSTOMANIMATION        ;Move flags
-                dc.b 2*8+4                      ;Max. movement speed
-                dc.b 8                          ;Ground movement acceleration
-                dc.b 0                          ;In air movement acceleration
-                dc.b 8                          ;Gravity acceleration
-                dc.b 8                          ;Long jump gravity acceleration
-                dc.b 8                          ;Ground braking
-                dc.b -4                         ;Height in chars for headbump check (negative)
-
 alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 24                         ;Horizontal size
@@ -1331,7 +1314,7 @@ alCpu:          dc.w FlashActor_CheckDamageFlash ;Update routine
                 dc.b 8                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 8                          ;Size down
-                dc.w USESCRIPT|EP_DESTROYCPU    ;Destroy routine
+                dc.w DestroyCPU                 ;Destroy routine
                 dc.b HP_CPU                     ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 200                        ;Score from kill
@@ -1341,7 +1324,7 @@ alSuperCpu:     dc.w FlashActor_CheckDamageFlash ;Update routine
                 dc.b 8                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 8                          ;Size down
-                dc.w USESCRIPT|EP_DESTROYCPU    ;Destroy routine
+                dc.w DestroyCPU                 ;Destroy routine
                 dc.b HP_SUPERCPU                ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 250                        ;Score from kill
@@ -1376,6 +1359,29 @@ alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
                 dc.w 2000                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
+alSpiderWalker: dc.w USESCRIPT|EP_MOVESPIDERWALKER ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
+                dc.b 12                         ;Horizontal size
+                dc.b 33                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w USESCRIPT|EP_EXPLODE2_OFS15 ;Destroy routine
+                dc.b HP_SPIDERWALKER            ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 55                         ;Score from kill
+                dc.b AIMODE_MOVER               ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b $07                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DIAGONALUP|AB_UP ;Attack directions
+                dc.b AMF_CUSTOMANIMATION        ;Move flags
+                dc.b 2*8+4                      ;Max. movement speed
+                dc.b 8                          ;Ground movement acceleration
+                dc.b 0                          ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 8                          ;Long jump gravity acceleration
+                dc.b 8                          ;Ground braking
+                dc.b -4                         ;Height in chars for headbump check (negative)
+                
 alLargeTank:    dc.w USESCRIPT|EP_MOVELARGETANK ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 24                         ;Horizontal size
@@ -1404,13 +1410,13 @@ alHighWalker:   dc.w USESCRIPT|EP_MOVEHIGHWALKER ;Update routine
                 dc.b 12                         ;Horizontal size
                 dc.b 59                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE3_OFS32 ;Destroy routine
+                dc.w USESCRIPT|EP_EXPLODE4_RISING ;Destroy routine
                 dc.b HP_HIGHWALKER              ;Initial health
                 dc.b MOD_HEAVYROBOT             ;Damage modifier
                 dc.w 150                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $07                        ;AI offense AND-value
+                dc.b $0f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
                 dc.b AMF_CUSTOMANIMATION        ;Move flags
@@ -1421,3 +1427,7 @@ alHighWalker:   dc.w USESCRIPT|EP_MOVEHIGHWALKER ;Update routine
                 dc.b 6                          ;Long jump gravity acceleration
                 dc.b 4                          ;Ground braking
                 dc.b -7                         ;Height in chars for headbump check (negative)
+
+alExplosionGeneratorRising:
+                dc.w USESCRIPT|EP_MOVEEXPLOSIONGENERATORRISING ;Update routine
+                dc.b AF_INITONLYSIZE            ;Actor flags

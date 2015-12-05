@@ -1,7 +1,92 @@
 HUMAN_ITEM_SPAWN_OFFSET = -15*8
 ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 2
-TURRET_ANIMDELAY = 2
+
+        ; Common flying enemy movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveAccelerateFlyer:
+                lda #$00
+MFE_CustomCharInfo:
+                sta temp6
+                ldy #AL_YMOVESPEED
+                lda (actLo),y
+                sta temp4                       ;Vertical max. speed
+                lda actMoveCtrl,x
+                and #JOY_UP|JOY_DOWN
+                beq MFE_NoVertAccel
+                cmp #JOY_UP
+                beq MFE_AccelUp                 ;C=1 accelerate up (negative)
+                clc
+MFE_AccelUp:    iny
+                lda (actLo),y                   ;Vertical acceleration
+                ldy temp4
+                jsr AccActorYNegOrPos
+MFE_NoVertAccel:ldy #AL_XMOVESPEED
+                lda (actLo),y
+                sta temp4                       ;Horizontal max. speed
+                lda actMoveCtrl,x
+                and #JOY_LEFT|JOY_RIGHT
+                beq MFE_NoHorizAccel
+                and #JOY_LEFT
+                beq MFE_TurnRight
+                lda #$80
+MFE_TurnRight:  sta actD,x
+                asl                             ;Direction to carry
+                iny
+                lda (actLo),y                   ;Horizontal acceleration
+                ldy temp4
+                jsr AccActorXNegOrPos
+MFE_NoHorizAccel:
+                ldy #AL_XCHECKOFFSET            ;Horizontal obstacle check offset
+                lda (actLo),y
+                sta temp4
+                iny
+                lda (actLo),y                   ;Vertical obstacle check offset
+                ldy actSY,x                     ;Reverse if going up
+                bpl MFE_NoNegate
+                clc
+                eor #$ff
+                adc #$01
+MFE_NoNegate:   jsr MF_HasCharInfo
+                ldy actAIHelp,x                 ;Zero speed and reverse dir if requested
+                lda actMB,x
+                and #MB_HITWALL
+                beq MFE_NoHorizWall
+                lda #$00
+                sta actSX,x
+                tya
+                beq MFE_NoHorizTurn
+                lda #JOY_LEFT|JOY_RIGHT
+                jsr MFE_Reverse
+MFE_NoHorizTurn:
+MFE_NoHorizWall:lda actMB,x
+                and #MB_HITWALLVERTICAL
+                beq MFE_NoVertWall
+                lda #$00
+                sta actSY,x
+                tya
+                beq MFE_NoVertTurn
+                lda #JOY_UP|JOY_DOWN
+MFE_Reverse:    eor actMoveCtrl,x
+                sta actMoveCtrl,x
+MFE_NoVertTurn:
+MFE_NoVertWall: rts
+
+        ; Floating droid update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveDroid:      lda #$02
+                tay
+                jsr LoopingAnimation
+                jsr MoveAccelerateFlyer
+                jmp AttackGeneric
 
         ; Rolling mine update routine
         ;
@@ -27,6 +112,26 @@ MineCommon:     ldy actAITarget,x
                 bcc MC_NoCollision
                 jmp DestroyActorNoSource
 
+        ; CPU destroy (activate object at explosion)
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+DestroyCPU:     jsr ExplodeActor
+                ldy #MAX_LVLOBJ-1
+DCPU_Search:    lda lvlObjX,y
+                cmp actXH,x
+                bne DCPU_SearchNext
+                lda lvlObjY,y
+                and #$7f
+                cmp actYH,x
+                beq DCPU_Found
+DCPU_SearchNext:dey
+                bpl DCPU_Search
+MC_NoCollision: rts
+DCPU_Found:     jmp ActivateObject
+
         ; Turn enemy into an explosion & drop item
         ;
         ; Parameters: X actor index
@@ -36,9 +141,11 @@ MineCommon:     ldy actAITarget,x
 ExplodeEnemy_Ofs8:
                 lda #-8*8
                 jsr MoveActorYNoInterpolation
-ExplodeEnemy:   lda #$00
-                jsr DropItem
+ExplodeEnemy:   jsr DropItem
                 jmp ExplodeActor
+
+ExplodeEnemy2_8:lda #2
+                ldy #$3f
 
         ; Turn enemy into a multiple explosion generator & drop item
         ;
@@ -52,9 +159,9 @@ ExplodeEnemyMultiple:
                 sta actSX,x
                 sta actSY,x
 ExplodeEnemyMultipleCommon:
+                jsr DropItem
                 lda #ACT_EXPLOSIONGENERATOR
-                jsr TransformBullet
-                jmp DropItem                    ;A=0 on return
+                jmp TransformBullet
 
         ; Explosion generator update routine
         ;
@@ -92,7 +199,6 @@ MoveExplosionGenerator:
 MEG_NoRoom:     jmp ExplodeActor
 MEG_NotLastExplosion:
 MEG_NoNewExplosion:
-MC_NoCollision:
                 rts
 MEG_GetOffset:  sta temp3
                 lsr
@@ -145,19 +251,19 @@ HD_GotDir:      asl                             ;Direction to carry
 HD_NoDamageSource:
                 lda #DEATH_DISAPPEAR_DELAY
                 sta actTime,x
-                jsr SetNotPersistent           ;Mark body nonpersistent in case goes off screen
                 lda #$00
                 sta actFd,x
-                sta actAIMode,x                ;Reset any ongoing AI
                 lda #HUMAN_ITEM_SPAWN_OFFSET
+                skip2
 
         ; Drop item from dead enemy
         ;
-        ; Parameters: A Vertical offset X actor index
+        ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8
 
-DropItem:       sta temp4
+DropItem:       lda #$00
+                sta temp4
                 lda #$03                        ;Retry counter
                 sta temp7
                 ldy #AL_SIZEHORIZ               ;If enemy is going to drop parts, make their
@@ -221,10 +327,10 @@ DI_HasCapacity: lda #ACTI_FIRSTITEM
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
                 bcc DI_NoItem
+                stx temp6
                 lda #ACT_ITEM
                 jsr SpawnActor
                 lda temp5
-                stx temp6
                 tax
                 sta actF1,y
                 lda #1
@@ -245,7 +351,7 @@ DI_CountOK:     sta actHp,y
                 bcc DI_NotImportant
                 ora #ORG_GLOBAL
 DI_NotImportant:sta actLvlDataOrg,x             ;Make item either persistent or temp persistent
-                ldx temp6                       ;depending on importance
+DI_RestX:       ldx temp6                       ;depending on importance
                 rts
 
         ; Flicker corpse, then remove. Will not return when removes the actor

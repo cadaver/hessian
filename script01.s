@@ -1,7 +1,7 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 1, loadable enemy movement routines + data
+        ; Script 1, loadable enemy movement routines + data, and common objects (rechargers)
 
 FR_DEADRATAIR = 12
 FR_DEADRATGROUND = 13
@@ -14,13 +14,10 @@ FR_DEADWALKERGROUND = 13
 
 SCRAP_DURATION = 40
 
-EYE_MOVE_TIME = 10
-EYE_FIRE_TIME = 8
-DROID_SPAWN_DELAY = 4*25
+TURRET_ANIMDELAY = 2
 
                 org scriptCodeStart
 
-                dc.w MoveDroid
                 dc.w MoveFlyingCraft
                 dc.w MoveWalker
                 dc.w MoveTank
@@ -45,34 +42,18 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w DestroyRock
                 dc.w OrganicWalkerDeath
                 dc.w MoveLargeWalker
-                dc.w ExplodeEnemy2_8
                 dc.w ExplodeEnemy2_8_Ofs6
                 dc.w ExplodeEnemy2_8_Ofs10
                 dc.w ExplodeEnemy3_Ofs15
                 dc.w ExplodeEnemy4_Ofs15
                 dc.w MoveScrapMetal
                 dc.w MoveRockTrap
-                dc.w DestroyCPU
-                dc.w MoveEyePhase1
-                dc.w MoveEyePhase2
-                dc.w DestroyEye
                 dc.w MoveSpiderWalker
                 dc.w ExplodeEnemy2_Ofs15
                 dc.w MoveLargeTank
                 dc.w MoveHighWalker
-                dc.w ExplodeEnemy3_Ofs32
-
-        ; Floating droid update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveDroid:      lda #$02
-                tay
-                jsr LoopingAnimation
-                jsr MoveAccelerateFlyer
-MFC_CanAttack:  jmp AttackGeneric
+                dc.w ExplodeEnemy4_Rising
+                dc.w MoveExplosionGeneratorRising
 
         ; Flying craft update routine
         ;
@@ -103,6 +84,7 @@ MFC_Fall:       jsr FallingMotionCommon
                 tay
                 beq MFC_ContinueFall
                 jmp ExplodeEnemy2_8             ;Drop item & explode at any collision
+MFC_CanAttack:  jmp AttackGeneric
 
         ; Walking robot update routine
         ;
@@ -641,9 +623,7 @@ ExplodeEnemy2_8_Ofs6:
 ExplodeEnemy2_8_Ofs10:
                 lda #-10*8
                 jsr MoveActorYNoInterpolation
-ExplodeEnemy2_8:lda #2
-                ldy #$3f
-                jmp ExplodeEnemyMultiple
+                jmp ExplodeEnemy2_8
 
         ; Generate 3 explosions at 8 pixel radius horizontally and 32 pixel radius
         ; vertically
@@ -714,222 +694,6 @@ EE_ScrapMetalLoop:
 EE_ScrapMetalDone:
                 rts
 
-        ; CPU destroy
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-DestroyCPU:     jsr ExplodeActor
-                ldy #MAX_LVLOBJ-1
-DCPU_Search:    lda lvlObjX,y
-                cmp actXH,x
-                bne DCPU_SearchNext
-                lda lvlObjY,y
-                and #$7f
-                cmp actYH,x
-                beq DCPU_Found
-DCPU_SearchNext:dey
-                bpl DCPU_Search
-MEye_WaitDroids:rts
-DCPU_Found:     jmp ActivateObject
-
-        ; Eye (Construct) boss phase 1
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveEyePhase1:  lda lvlObjB+$1e                 ;Close door immediately once player moves or fires
-                bpl MEye_DoorDone
-                lda actXL+ACTI_PLAYER
-                bpl MEye_CloseDoor
-                cmp #$88
-                bcs MEye_CloseDoor
-                lda actF2+ACTI_PLAYER
-                cmp #FR_PREPARE
-                bcc MEye_DoorDone
-MEye_CloseDoor: ldy #$1e
-                jsr InactivateObject
-                ldx actIndex
-MEye_DoorDone:  lda #DROID_SPAWN_DELAY
-                sta MEye_SpawnDelay+1
-                ldy #ACTI_LASTNPC
-MEye_Search:    lda actT,y                      ;CPUs alive?
-                cmp #ACT_SUPERCPU
-                beq MEye_HasCPUs
-                dey
-                bne MEye_Search
-MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phase1 destroyed
-                cmp #2
-                bcs MEye_WaitDroids
-                inc actT,x                      ;Move to visible eye stage
-                jsr InitActor
-                lda #5                          ;Descend animation
-                sta actF1,x
-                jmp InitActor
-
-MEye_HasCPUs:
-MEye_SpawnDroid:lda numSpawned
-                cmp #2+1
-                bcs MEye_Done
-                lda #ACTI_FIRSTNPC              ;Use any free slots for droids,
-                ldy #ACTI_LASTNPC               ;meaning the battle becomes more insane
-                jsr GetFreeActor                ;as more CPUs are destroyed
-                bcc MEye_Done                   ;(up to 2)
-                lda actTime,x
-                bne MEye_DoSpawnDelay
-                tya
-                tax
-                jsr Random                      ;Randomize location from 4 possible
-                and #$03
-                tay
-                lda droidSpawnXH,y
-                sta actXH,x
-                lda #$80
-                sta actXL,x
-                lda droidSpawnYH,y
-                sta actYH,x
-                lda droidSpawnYL,y
-                sta actYL,x
-                lda droidSpawnCtrl,y
-                sta actMoveCtrl,x
-                lda #ACT_LARGEDROID
-                sta actT,x
-                lda #AIMODE_FLYER
-                sta actAIMode,x
-                lda #ITEM_LASERRIFLE
-                sta actWpn,x
-                jsr InitActor
-                jsr SetNotPersistent
-                jsr NoInterpolation             ;If explosion is immediately reused on same frame,
-                ldx actIndex                    ;prevent artifacts
-MEye_SpawnDelay:lda #DROID_SPAWN_DELAY
-                sta actTime,x
-MEye_Done:      rts
-MEye_DoSpawnDelay:
-                dec actTime,x
-                rts
-
-        ; Eye (Construct) boss phase 2
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveEyePhase2:  lda #DROID_SPAWN_DELAY-25
-                sta MEye_SpawnDelay+1
-                lda actHp,x
-                beq MEye_Destroy
-                lda actF1,x
-                cmp #5
-                bcc MEye_Turret
-MEye_Descend:   sbc #4
-                sta actSizeD,x                  ;Set collision size based on frame,
-                lda #HP_EYE                     ;keep resetting health to full until fully descended
-                sta actHp,x
-                lda actFd,x
-                bne MEye_NoSound
-                lda #SFX_RELOADBAZOOKA
-                jsr PlaySfx
-MEye_NoSound:   ldy #14
-                lda #2
-                jsr OneShotAnimation
-                bcc MEye_Done
-                lda #$00
-                sta actTime,x
-                ldy actXH+ACTI_PLAYER           ;If player is right from center, shoot to right first
-                cpy #$41
-                bcs MEye_FireRightFirst
-                lda #$04
-MEye_FireRightFirst:
-                sta actFallL,x
-                lda #EYE_MOVE_TIME*2            ;Some delay before firing initially
-                sta actFall,X
-                lda #$00
-                sta actFd,x                     ;Needed for turret frame init
-MEye_Turret:    dec actFall,x                   ;Read firing controls from table with delay
-                bmi MEye_NextMove
-                lda actFall,x
-                cmp #EYE_FIRE_TIME
-                bcs MEye_Animate
-                lda #$00
-                beq MEye_StoreCtrl
-MEye_NextMove:  lda actFallL,x
-                inc actFallL,x
-                and #$07
-                tay
-                lda #EYE_MOVE_TIME
-                sta actFall,x
-                lda eyeCtrlTbl,y
-MEye_StoreCtrl: sta actCtrl,x
-MEye_Animate:   jsr MoveTurret
-                jmp MEye_SpawnDroid             ;Continue to spawn droids
-MEye_Destroy:   jsr Random
-                pha
-                and #$03
-                sta shakeScreen
-                pla
-                and #$7f
-                clc
-                adc actFall,x
-                sta actFall,x
-                bcc MEye_NoExplosion
-                lda #ACTI_FIRSTNPC              ;Use any free actors for explosions
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
-                bcc MEye_NoExplosion
-                lda #$01
-                sta Irq1_Bg3+1
-                jsr Random
-                sta actXL,y
-                and #$07
-                clc
-                adc #$3d
-                sta actXH,y
-                jsr Random
-                sta actYL,y
-                and #$07
-                tax
-                lda explYTbl,x
-                sta actYH,y
-                tya
-                tax
-                jsr ExplodeActor                ;Play explosion sound & init animation
-                ldx actIndex
-                rts
-MEye_NoExplosion:
-                jsr SetZoneColors
-                inc actTime,x
-                bpl MEye_NoExplosionFinish
-                lda #4*8
-                jsr MoveActorYNoInterpolation
-                jmp ExplodeActor                ;Finally explode self
-MEye_NoExplosionFinish:
-                rts
-
-        ; Eye destroy routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-DestroyEye:     lda #COLOR_FLICKER
-                sta actFlash,x
-                lda #$00                        ;Final explosion counter
-                sta actTime,x
-                stx DE_RestX+1
-                ldx #ACTI_LASTNPC
-DE_DestroyDroids:
-                lda actT,x
-                cmp #ACT_LARGEDROID
-                bne DE_Skip
-                jsr DestroyActorNoSource
-DE_Skip:        dex
-                bne DE_DestroyDroids
-DE_RestX:       ldx #$00
-                rts
-
         ; Spiderwalker update routine
         ;
         ; Parameters: X actor index
@@ -971,7 +735,7 @@ MSW_AnimDone2:  ldy #tankTurretOfs-turretFrameTbl
 ExplodeEnemy2_Ofs15:
                 lda #-15*8
                 jsr MoveActorYNoInterpolation
-                lda #3
+                lda #2
                 sta actTime,x
                 lda #$3f
                 sta actSX,x
@@ -1016,110 +780,66 @@ MLT_CenterFrame:lda #3
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveHighWalker: jsr MoveGeneric
-                jsr AttackGeneric
                 lda actSX,x
                 beq MHW_NoSpeed
-                lda #$01
-MHW_NoSpeed:    clc
-                adc actFd,x
-                sta actFd,x
+                inc actFd,x
+MHW_NoSpeed:    lda actFd,x
                 lsr
                 lsr
                 and #$03
                 sta actF1,x
-                jmp AttackGeneric
+                lda #$ff
+                sta tgtActIndex
+                jsr AttackGeneric
+                ldy tgtActIndex                 ;Did attack?
+                bmi MHW_NoAttack
+                lda actT,y
+                cmp #ACT_LASER
+                bne MHW_NoLaser
+                lda actSX,y                     ;Use a special 22.5 degree angle frame
+                asl
+                lda #10
+                adc #$00
+                sta actF1,y
+MHW_NoLaser:    lda actSY,y                     ;Set 22.5 angle downward speed for bullet
+                bne MHW_SpeedYOK
+                lda actSX,y
+                bpl MHW_SpeedXPos
+                clc
+                eor #$ff
+                adc #$01
+MHW_SpeedXPos:  lsr
+                sta actSY,y
+MHW_SpeedYOK:
+MHW_NoAttack:   rts
 
-        ; Generate 3 explosions at 8 pixel radius horizontally and 31 pixel radius
+        ; Generate 4 explosions at 15 pixel radius horizontally, rising
         ; vertically
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,temp vars
 
-ExplodeEnemy3_Ofs32:
-                dec actYH,x
-                jsr NoInterpolation
+ExplodeEnemy4_Rising:
+                lda #-12*8
+                jsr MoveActorYNoInterpolation
                 lda #4
-                sta actTime,x
-                lda #$3f
-                sta actSX,x
-                lda #$ff
-                sta actSY,x
-                jmp ExplodeEnemyMultipleCommon
+                ldy #$7f
+                jsr ExplodeEnemyMultiple
+                lda #ACT_EXPLOSIONGENERATORRISING
+                sta actT,x
+                rts
 
-        ; Common flying enemy movement
+        ; Rising explosion generator
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveAccelerateFlyer:
-                lda #$00
-MFE_CustomCharInfo:
-                sta temp6
-                ldy #AL_YMOVESPEED
-                lda (actLo),y
-                sta temp4                       ;Vertical max. speed
-                lda actMoveCtrl,x
-                and #JOY_UP|JOY_DOWN
-                beq MFE_NoVertAccel
-                cmp #JOY_UP
-                beq MFE_AccelUp                 ;C=1 accelerate up (negative)
-                clc
-MFE_AccelUp:    iny
-                lda (actLo),y                   ;Vertical acceleration
-                ldy temp4
-                jsr AccActorYNegOrPos
-MFE_NoVertAccel:ldy #AL_XMOVESPEED
-                lda (actLo),y
-                sta temp4                       ;Horizontal max. speed
-                lda actMoveCtrl,x
-                and #JOY_LEFT|JOY_RIGHT
-                beq MFE_NoHorizAccel
-                and #JOY_LEFT
-                beq MFE_TurnRight
-                lda #$80
-MFE_TurnRight:  sta actD,x
-                asl                             ;Direction to carry
-                iny
-                lda (actLo),y                   ;Horizontal acceleration
-                ldy temp4
-                jsr AccActorXNegOrPos
-MFE_NoHorizAccel:
-                ldy #AL_XCHECKOFFSET            ;Horizontal obstacle check offset
-                lda (actLo),y
-                sta temp4
-                iny
-                lda (actLo),y                   ;Vertical obstacle check offset
-                ldy actSY,x                     ;Reverse if going up
-                bpl MFE_NoNegate
-                clc
-                eor #$ff
-                adc #$01
-MFE_NoNegate:   jsr MF_HasCharInfo
-                ldy actAIHelp,x                 ;Zero speed and reverse dir if requested
-                lda actMB,x
-                and #MB_HITWALL
-                beq MFE_NoHorizWall
-                lda #$00
-                sta actSX,x
-                tya
-                beq MFE_NoHorizTurn
-                lda #JOY_LEFT|JOY_RIGHT
-                jsr MFE_Reverse
-MFE_NoHorizTurn:
-MFE_NoHorizWall:lda actMB,x
-                and #MB_HITWALLVERTICAL
-                beq MFE_NoVertWall
-                lda #$00
-                sta actSY,x
-                tya
-                beq MFE_NoVertTurn
-                lda #JOY_UP|JOY_DOWN
-MFE_Reverse:    eor actMoveCtrl,x
-                sta actMoveCtrl,x
-MFE_NoVertTurn:
-MFE_NoVertWall: rts
+MoveExplosionGeneratorRising:
+                jsr MoveExplosionGenerator
+                lda #-4*8
+                jmp MoveActorY
 
         ; Turret animation routine
         ;
@@ -1228,27 +948,4 @@ ceilingTurretOfs:
                 dc.b JOY_LEFT|JOY_FIRE,4
                 dc.b 0
 
-        ; Final server room droid spawn positions
-
-droidSpawnXH:   dc.b $3e,$43,$3e,$43
-droidSpawnYH:   dc.b $30,$30,$37,$37
-droidSpawnYL:   dc.b $00,$00,$ff,$ff
-droidSpawnCtrl: dc.b JOY_DOWN|JOY_RIGHT,JOY_DOWN|JOY_LEFT,JOY_UP|JOY_RIGHT,JOY_UP|JOY_LEFT
-
-        ; Eye firing pattern
-
-eyeCtrlTbl:     dc.b JOY_DOWN|JOY_FIRE
-                dc.b JOY_RIGHT|JOY_DOWN|JOY_FIRE
-                dc.b JOY_RIGHT|JOY_FIRE
-                dc.b JOY_RIGHT|JOY_DOWN|JOY_FIRE
-                dc.b JOY_DOWN|JOY_FIRE
-                dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE
-                dc.b JOY_LEFT|JOY_FIRE
-                dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE
-
-        ; Final explosion Y-positions
-
-explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
-
                 checkscriptend
-
