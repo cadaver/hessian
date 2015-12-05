@@ -59,6 +59,8 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w MoveSpiderWalker
                 dc.w ExplodeEnemy2_Ofs15
                 dc.w MoveLargeTank
+                dc.w MoveHighWalker
+                dc.w ExplodeEnemy3_Ofs32
 
         ; Floating droid update routine
         ;
@@ -412,8 +414,7 @@ DestroyRock:    lda #SFX_DAMAGE
 MR_NoCollision:
 MR_NoSpawn:     rts
 RemoveRock:     lda #-4*8
-                jsr MoveActorY
-                jsr NoInterpolation
+                jsr MoveActorYNoInterpolation
                 lda #COLOR_FLICKER
                 sta actFlash,x
                 lda #ACT_SMOKETRAIL
@@ -1007,6 +1008,44 @@ MLT_NoWrap:     sta actFd,x
 MLT_CenterFrame:lda #3
                 sta actF1,x
                 rts
+
+        ; High walker movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveHighWalker: jsr MoveGeneric
+                jsr AttackGeneric
+                lda actSX,x
+                beq MHW_NoSpeed
+                lda #$01
+MHW_NoSpeed:    clc
+                adc actFd,x
+                sta actFd,x
+                lsr
+                lsr
+                and #$03
+                sta actF1,x
+                jmp AttackGeneric
+
+        ; Generate 3 explosions at 8 pixel radius horizontally and 31 pixel radius
+        ; vertically
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy3_Ofs32:
+                dec actYH,x
+                jsr NoInterpolation
+                lda #4
+                sta actTime,x
+                lda #$3f
+                sta actSX,x
+                lda #$ff
+                sta actSY,x
+                jmp ExplodeEnemyMultipleCommon
 
         ; Common flying enemy movement
         ;

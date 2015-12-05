@@ -197,8 +197,8 @@ itemNPCAttackLength:                            ;Note: stored as negative
                 dc.b -6                         ;Laser rifle
                 dc.b -7                         ;Plasma gun
                 dc.b -7                         ;EMP generator (not used by NPCs)
-                dc.b -12                        ;Grenade launcher
-                dc.b -16                        ;Bazooka
+                dc.b -5                         ;Grenade launcher
+                dc.b -10                        ;Bazooka
                 dc.b -10                        ;Extinguisher (not an actual weapon, not used by NPCs)
                 dc.b -4                         ;Grenade
                 dc.b -4                         ;Mine (not used by NPCs)
