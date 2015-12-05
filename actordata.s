@@ -58,6 +58,7 @@ ACT_JORMUNGANDR = 56
 ACT_LARGETANK   = 57
 ACT_HIGHWALKER  = 58
 ACT_EXPLOSIONGENERATORRISING = 59
+ACT_SECURITYCHIEF = 60
 
 HP_PLAYER       = 56
 HP_RAT          = 4
@@ -84,6 +85,7 @@ HP_HIGHWALKER   = 36
 HP_LARGEWALKER  = 40
 HP_LARGETANK    = 56
 HP_SUPERCPU     = 48
+HP_SECURITYCHIEF = 64
 HP_EYE          = 80
 HP_JORMUNGANDR  = 128
 
@@ -183,6 +185,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adLargeTank
                 dc.b <adHighWalker
                 dc.b <adExplosionGenerator
+                dc.b <adSecurityChief
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -243,6 +246,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adLargeTank
                 dc.b >adHighWalker
                 dc.b >adExplosionGenerator
+                dc.b >adSecurityChief
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -544,6 +548,16 @@ adHighWalker:   dc.b THREESPRITE                ;Number of sprites
                 dc.b 2,3,4,5,$80+2,$80+3,$80+4,$80+5
                 dc.b 0,0,1,1,$80+0,$80+0,$80+1,$80+1
 
+adSecurityChief:dc.b HUMANOID                   ;Number of sprites
+                dc.b C_HEAVYGUARD               ;Lower part spritefile number
+                dc.b 15                         ;Lower part base spritenumber
+                dc.b 0                          ;Lower part base index into the frametable
+                dc.b 32                         ;Lower part left frame add
+                dc.b C_SECURITYCHIEF            ;Upper part spritefile number
+                dc.b 0                          ;Upper part base spritenumber
+                dc.b 0                          ;Upper part base index into the frametable
+                dc.b 39                         ;Upper part left frame add
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -605,6 +619,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alLargeTank
                 dc.b <alHighWalker
                 dc.b <alExplosionGeneratorRising
+                dc.b <alSecurityChief
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -665,6 +680,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alLargeTank
                 dc.b >alHighWalker
                 dc.b >alExplosionGeneratorRising
+                dc.b >alSecurityChief
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -1431,3 +1447,27 @@ alHighWalker:   dc.w USESCRIPT|EP_MOVEHIGHWALKER ;Update routine
 alExplosionGeneratorRising:
                 dc.w USESCRIPT|EP_MOVEEXPLOSIONGENERATORRISING ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
+
+alSecurityChief:dc.w USESCRIPT|EP_MOVESECURITYCHIEF ;Update routine
+                dc.b GRP_ENEMIES|AF_ORGANIC|AF_NOREMOVECHECK ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 35                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w USESCRIPT|EP_DESTROYSECURITYCHIEF ;Destroy routine
+                dc.b HP_SECURITYCHIEF           ;Initial health
+                dc.b MOD_BOSS                   ;Damage modifier
+                dc.w 1500                       ;Score from kill
+                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
+                dc.b ITEM_VAULTPASS             ;Itemdrop table index or item override
+                dc.b $17                        ;AI offense random AND-value
+                dc.b $20                        ;AI defense probability
+                dc.b AB_ALL                     ;Attack directions
+                dc.b AMF_DUCK|AMF_JUMP          ;Move flags
+                dc.b 4*8+4                      ;Max. movement speed
+                dc.b INITIAL_GROUNDACC-2        ;Ground movement acceleration
+                dc.b INITIAL_INAIRACC           ;In air movement acceleration
+                dc.b 6                          ;Gravity acceleration
+                dc.b 6                          ;Long jump gravity acceleration
+                dc.b INITIAL_GROUNDBRAKE        ;Ground braking
+                dc.b -4                         ;Height in chars for headbump check (negative)
+                dc.b -INITIAL_JUMPSPEED-2       ;Jump initial speed (negative)

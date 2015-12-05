@@ -20,6 +20,7 @@ write sprlargewalker.pak @8:10
 write sprlargetank.pak @8:11
 write sprhighwalker.pak @8:12
 write sprserver.pak @8:13
+write sprsecuritychief.pak @8:14
 write level00.pak @8:20
 write level01.pak @8:21
 write level02.pak @8:22

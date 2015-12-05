@@ -65,9 +65,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $a580
 ;START_Y         = $7400
 
-START_LEVEL     = $0a                          ;Jormungandr
-START_X         = $ed80
-START_Y         = $7600
+;START_LEVEL     = $0a                          ;Jormungandr
+;START_X         = $ed80
+;START_Y         = $7600
 
 ;START_LEVEL     = $0b                          ;Next to Bio-Dome
 ;START_X         = $4780
@@ -84,6 +84,10 @@ START_Y         = $7600
 ;START_LEVEL     = $0e                           ;Second cave
 ;START_X         = $1d80
 ;START_Y         = $1d00
+
+START_LEVEL     = $0c                           ;Before security chief
+START_X         = $1980
+START_Y         = $1300
 
                 org scriptCodeStart
 

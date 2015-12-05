@@ -291,7 +291,7 @@ DI_Retry:       ldy #AL_DROPITEMINDEX
 DI_ItemNumber:  tay
                 beq DI_NoItem
                 sta temp5                       ;Item type to drop
-                lda #$00
+                lda #$00                        ;X-speed
                 sta temp8                       ;Capacity counter
                 ldy #ACTI_FIRSTITEM             ;Count capacity on both ground and inventory, do not spawn
 DI_CountGroundItems:                            ;if player can't pick up
@@ -323,7 +323,10 @@ DI_NotInInventory:
 DI_Exceeded:    dec temp7
                 bne DI_Retry                    ;If player has no capacity, retry to drop something else
 DI_NoItem:      rts                             ;(e.g. batteries or medkits)
-DI_HasCapacity: lda #ACTI_FIRSTITEM
+DI_HasCapacity: lda #$00
+DI_SpawnItemWithSpeed:
+                sta temp8
+                lda #ACTI_FIRSTITEM
                 ldy #ACTI_LASTITEM
                 jsr GetFreeActor
                 bcc DI_NoItem
@@ -343,6 +346,8 @@ DI_CountOK:     sta actHp,y
                 tya
                 tax
                 jsr InitActor
+                lda temp8
+                sta actSX,x
                 lda temp4
                 jsr MoveActorY
                 lda temp5
@@ -351,7 +356,7 @@ DI_CountOK:     sta actHp,y
                 bcc DI_NotImportant
                 ora #ORG_GLOBAL
 DI_NotImportant:sta actLvlDataOrg,x             ;Make item either persistent or temp persistent
-DI_RestX:       ldx temp6                       ;depending on importance
+                ldx temp6                       ;depending on importance
                 rts
 
         ; Flicker corpse, then remove. Will not return when removes the actor

@@ -36,7 +36,7 @@ FIRST_INGAME_SONG   = MUSIC_MYSTERY
         ;
         ; Parameters: A song number, $00-$03 in first file, $04-$07 in second etc.
         ; Returns: -
-        ; Modifies: A,X,Y,temp vars
+        ; Modifies: A,X,Y,loader temp vars
 
 RestartSong:    lda #$00
 PlaySong:       sta RestartSong+1

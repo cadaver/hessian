@@ -12,6 +12,8 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w MoveEyePhase1
                 dc.w MoveEyePhase2
                 dc.w DestroyEye
+                dc.w MoveSecurityChief
+                dc.w DestroySecurityChief
 
         ; Eye (Construct) boss phase 1
         ;
@@ -211,6 +213,51 @@ DE_Skip:        dex
                 bne DE_DestroyDroids
 DE_RestX:       ldx #$00
                 rts
+
+        ; Security chief move routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveSecurityChief:
+                lda actHp,x
+                beq MSC_Dead
+                cmp #HP_SECURITYCHIEF/2         ;Switch to grenade launcher at half health
+                bcs MSC_NoWeaponChange
+                lda actTime,x
+                bmi MSC_NoWeaponChange
+                lda actAttackD,x
+                bne MSC_NoWeaponChange
+                lda #ITEM_GRENADELAUNCHER
+                sta actWpn,x
+MSC_NoWeaponChange:
+                lda #MUSIC_THRONE+1             ;If alive, play the bossfight music
+                jsr PlaySong
+                ldx actIndex
+MSC_Dead:       jmp MoveAndAttackHuman
+
+        ; Security chief destroy routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+DestroySecurityChief:
+                stx temp6
+                lda #MUSIC_THRONE               ;Back to regular song
+                jsr PlaySong
+                ldx temp6
+                jsr HumanDeath
+                lda #ITEM_MINIGUN
+                sta temp5
+                lda #-2*8                       ;Drop also both weapons in addition
+                jsr DI_SpawnItemWithSpeed       ;to the keycard
+                sta temp3
+                lda #ITEM_GRENADELAUNCHER
+                sta temp5
+                lda #2*8
+                jmp DI_SpawnItemWithSpeed
 
         ; Final server room droid spawn positions
 
