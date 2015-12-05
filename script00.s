@@ -49,13 +49,17 @@ titleTexts      = chars+608+168*2
 ;START_X         = $0180
 ;START_Y         = $1700
 
+;START_LEVEL     = $06                          ;Upper labs, next to recharger
+;START_X         = $4b80
+;START_Y         = $1300
+
 ;START_LEVEL     = $07                          ;First cave
 ;START_X         = $5080
 ;START_Y         = $1f00
 
-;START_LEVEL     = $08                          ;Lower labs
-;START_X         = $3780
-;START_Y         = $4100
+START_LEVEL     = $08                          ;Lower labs
+START_X         = $3780
+START_Y         = $4100
 
 ;START_LEVEL     = $0a                          ;Nether tunnel
 ;START_X         = $0080
@@ -85,9 +89,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $1d80
 ;START_Y         = $1d00
 
-START_LEVEL     = $0c                           ;Before security chief
-START_X         = $1980
-START_Y         = $1300
+;START_LEVEL     = $0c                           ;Before security chief
+;START_X         = $1980
+;START_Y         = $1300
 
                 org scriptCodeStart
 

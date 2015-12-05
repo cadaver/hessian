@@ -54,6 +54,9 @@ TURRET_ANIMDELAY = 2
                 dc.w MoveHighWalker
                 dc.w ExplodeEnemy4_Rising
                 dc.w MoveExplosionGeneratorRising
+                dc.w UseHealthRecharger
+                dc.w UseBatteryRecharger
+                dc.w RechargerEffect
 
         ; Flying craft update routine
         ;
@@ -915,7 +918,73 @@ BounceMotion:   jsr FallingMotionCommon
                 jsr Negate8Asr8
                 sta actSX,x
                 plp
+UHR_Full:
+UBR_Full:
 BM_NoHitWall:   rts
+
+        ; Health recharger script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+UseHealthRecharger:
+                lda actHp+ACTI_PLAYER
+                cmp #HP_PLAYER
+                bcs UHR_Full
+                lda #HP_PLAYER
+                sta actHp+ACTI_PLAYER
+                lda #<txtHealthRecharger
+                ldx #>txtHealthRecharger
+Recharger_Common:
+                ldy #REQUIREMENT_TEXT_DURATION
+                jsr PrintPanelText
+                lda #SFX_EMP
+                jsr PlaySfx
+                lda #$00
+                sta rechargerColor
+                lda #<EP_RECHARGEREFFECT
+                ldx #>EP_RECHARGEREFFECT
+                jmp SetScript
+
+        ; Battery recharger script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+UseBatteryRecharger:
+                lda battery+1
+                cmp #MAX_BATTERY
+                bcs UBR_Full
+                lda #$00
+                sta battery
+                lda #MAX_BATTERY
+                sta battery+1
+                lda #<txtBatteryRecharger
+                ldx #>txtBatteryRecharger
+                bne Recharger_Common
+                
+        ; Recharger color effect
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RechargerEffect:
+                lda rechargerColor
+                inc rechargerColor
+                cmp #$04
+                bcs RE_End
+                and #$01
+                bne RE_Restore
+                lda Irq1_Bg3+1
+                sta Irq1_Bg1+1
+                lda #$01
+                sta Irq1_Bg3+1
+                rts
+RE_Restore:     jmp SetZoneColors
+RE_End:         jmp StopScript
 
         ; Tank Y-size addition table (based on turret direction)
 
@@ -926,7 +995,7 @@ tankSizeAddTbl: dc.b 2,0,6,8
 rockSizeTbl:    dc.b 9,7,5
 
         ; Rock damage table
-        
+
 rockDamageTbl:  dc.b DMG_ROCK,DMG_ROCK-1,0
 
         ; Turret firing ctrl + frame table
@@ -947,5 +1016,16 @@ ceilingTurretOfs:
                 dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE,3
                 dc.b JOY_LEFT|JOY_FIRE,4
                 dc.b 0
+
+        ; Variables
+
+rechargerColor: dc.b 0
+
+        ; Messages
+
+txtHealthRecharger:
+                dc.b "HEALTH RESTORED",0
+txtBatteryRecharger:
+                dc.b "BATTERY RECHARGED",0
 
                 checkscriptend
