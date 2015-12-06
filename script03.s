@@ -280,7 +280,22 @@ MoveRotorDrone: lda actHp,x
                 lda actCtrl,x                   ;Convert horizontal firing to diagonal down
                 ora #JOY_DOWN
                 sta actCtrl,x
-MRD_NotFiring:  jsr MoveAccelerateFlyer
+MRD_NotFiring:  lda actYH,x                     ;Prevent going outside zone
+                cmp limitU
+                bcs MRD_NoLimitU
+                lda actMoveCtrl,x
+                and #$ff-JOY_UP
+                ora #JOY_DOWN
+                sta actMoveCtrl,x
+                bne MRD_ControlsOK
+MRD_NoLimitU:   adc #$00
+                cmp limitD
+                bne MRD_ControlsOK
+                lda actMoveCtrl,x
+                and #$ff-JOY_DOWN
+                ora #JOY_UP
+                sta actMoveCtrl,x
+MRD_ControlsOK: jsr MoveAccelerateFlyer
                 lda #$00
                 ldy actSX,x
                 bmi MRD_SpeedNeg

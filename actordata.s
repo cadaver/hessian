@@ -1489,8 +1489,8 @@ alSecurityChief:dc.w USESCRIPT|EP_MOVESECURITYCHIEF ;Update routine
 alRotorDrone:   dc.w USESCRIPT|EP_MOVEROTORDRONE ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON|AF_NOREMOVECHECK ;Actor flags
                 dc.b 20                         ;Horizontal size
-                dc.b 7                          ;Size up
-                dc.b 4                          ;Size down
+                dc.b 8                          ;Size up
+                dc.b 5                          ;Size down
                 dc.w USESCRIPT|EP_DESTROYROTORDRONE ;Destroy routine (destroy handled by move routine)
                 dc.b HP_ROTORDRONE              ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier

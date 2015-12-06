@@ -956,6 +956,7 @@ ULO_NotOutside: lda battery
                 bne ULO_CheckPickupIndex
 ULO_Outside:    jsr DestroyActorNoSource
                 txa
+                sta actSX,x                     ;Zero speed to prevent unnecessary scrolling
                 sta actSY,x
 ULO_PlayerDead: rts
 ULO_CheckPickupIndex:                           ;Check if player is colliding with an item
