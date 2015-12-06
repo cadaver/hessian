@@ -16,6 +16,9 @@ SCRAP_DURATION = 40
 
 TURRET_ANIMDELAY = 2
 
+RECYCLER_ITEM_FIRST = ITEM_PISTOL
+RECYCLER_ITEM_LAST = ITEM_BATTERY
+
                 org scriptCodeStart
 
                 dc.w MoveFlyingCraft
@@ -57,6 +60,8 @@ TURRET_ANIMDELAY = 2
                 dc.w UseHealthRecharger
                 dc.w UseBatteryRecharger
                 dc.w RechargerEffect
+                dc.w RecyclingStation
+                dc.w RecyclingStationLoop
 
         ; Flying craft update routine
         ;
@@ -964,8 +969,8 @@ UseBatteryRecharger:
                 lda #<txtBatteryRecharger
                 ldx #>txtBatteryRecharger
                 bne Recharger_Common
-                
-        ; Recharger color effect
+
+        ; Recharger color effect script routine
         ;
         ; Parameters: -
         ; Returns: -
@@ -985,6 +990,162 @@ RechargerEffect:
                 rts
 RE_Restore:     jmp SetZoneColors
 RE_End:         jmp StopScript
+
+        ; Recycling station script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RecyclingStation:
+                lda itemIndex
+                sta RSL_RestoreItem+1
+                ldy #ITEM_PARTS
+                jsr FindItem
+                bcc RS_NoParts
+                sty itemIndex
+                jsr SetPanelRedrawItemAmmo      ;Display parts left during interaction
+                ldy #RECYCLER_ITEM_FIRST-1
+                jsr RS_GotoNextItem
+                sty recyclerItem
+                jsr RS_Redraw
+                lda #FR_ENTER                   ;Hack to get player into the standing frame
+                sta actF1+ACTI_PLAYER
+                sta actF2+ACTI_PLAYER
+                ldx #ACTI_PLAYER
+                jsr AttackHuman                 ;Set correct weapon frame
+                lda #<EP_RECYCLINGSTATIONLOOP
+                ldx #>EP_RECYCLINGSTATIONLOOP
+                jsr SetScript
+                ldx #MENU_INTERACTION
+                jmp SetMenuMode
+RS_NoParts:     lda #<txtNoParts
+                ldx #>txtNoParts
+                ldy #REQUIREMENT_TEXT_DURATION
+                jmp PrintPanelText
+
+        ; Recycling station interaction loop
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RecyclingStationLoop:
+                lda joystick
+                and #JOY_DOWN
+                bne RSL_Exit
+                lda keyPress
+                bpl RSL_Exit
+                jsr MenuControl                 ;Check for selecting items
+                ldy recyclerItem
+                lsr
+                bcs RSL_MoveLeft
+                lsr
+                bcs RSL_MoveRight
+                jsr GetFireClick
+                bcs RSL_Buy
+RSL_MoveFail:   rts
+RSL_MoveLeft:   jsr RS_GotoPrevItem
+                bcc RSL_MoveFail
+RSL_MoveCommon: sty recyclerItem
+                lda #SFX_SELECT
+                jsr PlaySfx
+                jmp RS_Redraw
+RSL_MoveRight:  jsr RS_GotoNextItem
+                bcc RSL_MoveFail
+                bcs RSL_MoveCommon
+RSL_Buy:        rts
+RSL_Exit:       jsr StopScript
+RSL_RestoreItem:ldy #$00
+                sty itemIndex
+                ldx #MENU_NONE
+                jsr SetMenuMode
+                jsr SetPanelRedrawItemAmmo
+                jmp SetPanelRedrawScore
+
+        ; Redraw current item in recycler
+
+RS_Redraw:      jsr ClearPanelText
+                inc textLeftMargin
+                lda recyclerItem
+                jsr GetItemName
+                jsr PrintPanelTextIndefinite
+                dec textLeftMargin
+                ldx #27
+                lda #"+"
+                jsr PrintPanelChar
+                ldy recyclerItem
+                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                jsr RS_ConvertAndPrint
+                lda #$20
+                ldy recyclerItem
+                pha
+                jsr RS_GotoPrevItem
+                pla
+                bcc RS_NoLeftArrow
+                lda #60
+RS_NoLeftArrow: ldx #9
+                jsr PrintPanelChar
+                lda #$20
+                ldy recyclerItem
+                pha
+                jsr RS_GotoNextItem
+                pla
+                bcc RS_NoRightArrow
+                lda #62
+RS_NoRightArrow:ldx #30
+                jsr PrintPanelChar
+                ldx #1
+                ldy #$00
+RS_PrintCost:   lda txtCost,y
+                beq RS_PrintCostDone
+                jsr PrintPanelChar
+                iny
+                bne RS_PrintCost
+RS_PrintCostDone:
+                ldy recyclerItem
+                lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
+RS_ConvertAndPrint:
+                jsr ConvertToBCD8
+                jmp PrintBCDDigitsLSB
+
+        ; Go to next item that can receive ammo from recycler
+        ; Return C=1 if valid (index in Y)
+
+RS_GotoNextItem:
+                iny
+                cpy #RECYCLER_ITEM_LAST+1
+                bcs RS_GotoNextFail
+                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y ;Check that can receive ammo
+                beq RS_GotoNextItem
+                lda invCount-1,y
+                cmp #NO_ITEM_COUNT
+                bcc RS_GotoNextFound
+                cpy #ITEM_FIRST_CONSUMABLE      ;Consumables can always be selected
+                bcs RS_GotoNextFound
+                bcc RS_GotoNextItem
+RS_GotoPrevFound:
+RS_GotoNextFound:
+                sec
+                rts
+RS_GotoPrevFail:
+RS_GotoNextFail:clc
+                rts
+
+        ; Go to previous item that can receive ammo from recycler
+        ; Return C=1 if valid (index in Y)
+
+RS_GotoPrevItem:dey
+                cpy #RECYCLER_ITEM_FIRST
+                bcc RS_GotoPrevFail
+                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y ;Check that can receive ammo
+                beq RS_GotoPrevItem
+                lda invCount-1,y
+                cmp #NO_ITEM_COUNT
+                bcc RS_GotoPrevFound
+                cpy #ITEM_FIRST_CONSUMABLE
+                bcs RS_GotoPrevFound
+                bcc RS_GotoPrevItem
 
         ; Tank Y-size addition table (based on turret direction)
 
@@ -1017,9 +1178,48 @@ ceilingTurretOfs:
                 dc.b JOY_LEFT|JOY_FIRE,4
                 dc.b 0
 
+        ; Recycler tables
+
+recyclerCountTbl:
+                dc.b 10                         ;Pistol
+                dc.b 8                          ;Shotgun
+                dc.b 30                         ;Auto rifle
+                dc.b 5                          ;Sniper rifle
+                dc.b 50                         ;Minigun
+                dc.b 30                         ;Flamethrower
+                dc.b 15                         ;Laser rifle
+                dc.b 10                         ;Plasma gun
+                dc.b 2                          ;EMP generator
+                dc.b 1                          ;Grenade launcher
+                dc.b 1                          ;Bazooka
+                dc.b 0                          ;Extinguisher
+                dc.b 1                          ;Grenade
+                dc.b 1                          ;Mine
+                dc.b 1                          ;Medikit
+                dc.b 1                          ;Battery
+
+recyclerCostTbl:
+                dc.b 15                         ;Pistol
+                dc.b 25                         ;Shotgun
+                dc.b 40                         ;Auto rifle
+                dc.b 25                         ;Sniper rifle
+                dc.b 75                         ;Minigun
+                dc.b 35                         ;Flamethrower
+                dc.b 45                         ;Laser rifle
+                dc.b 40                         ;Plasma gun
+                dc.b 50                         ;EMP generator
+                dc.b 40                         ;Grenade launcher
+                dc.b 60                         ;Bazooka
+                dc.b 0                          ;Extinguisher
+                dc.b 40                         ;Grenade
+                dc.b 50                         ;Mine
+                dc.b 75                         ;Medikit
+                dc.b 75                         ;Battery
+
         ; Variables
 
 rechargerColor: dc.b 0
+recyclerItem:   dc.b 0
 
         ; Messages
 
@@ -1027,5 +1227,7 @@ txtHealthRecharger:
                 dc.b "HEALTH RESTORED",0
 txtBatteryRecharger:
                 dc.b "BATTERY RECHARGED",0
+txtNoParts:     dc.b "NO PARTS TO RECYCLE",0
+txtCost:        dc.b "COST ",0
 
                 checkscriptend

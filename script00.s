@@ -57,9 +57,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $5080
 ;START_Y         = $1f00
 
-START_LEVEL     = $08                          ;Lower labs
-START_X         = $3780
-START_Y         = $4100
+;START_LEVEL     = $08                          ;Lower labs
+;START_X         = $3780
+;START_Y         = $4100
 
 ;START_LEVEL     = $0a                          ;Nether tunnel
 ;START_X         = $0080
@@ -77,9 +77,9 @@ START_Y         = $4100
 ;START_X         = $4780
 ;START_Y         = $1700
 
-;START_LEVEL      = $0d                          ;Server vault
-;START_X          = $0180
-;START_Y          = $2300
+START_LEVEL      = $0d                          ;Server vault
+START_X          = $0180
+START_Y          = $2300
 
 ;START_LEVEL      = $0d                          ;Next to final server room
 ;START_X          = $3a80
@@ -89,7 +89,7 @@ START_Y         = $4100
 ;START_X         = $1d80
 ;START_Y         = $1d00
 
-;START_LEVEL     = $0c                           ;Before security chief
+;START_LEVEL     = $0c                           ;Security chief
 ;START_X         = $1980
 ;START_Y         = $1300
 

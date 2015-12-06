@@ -15,6 +15,7 @@ MENU_NONE       = 0
 MENU_INVENTORY  = 1
 MENU_PAUSE      = 2
 MENU_DIALOGUE   = 3
+MENU_INTERACTION = 4
 
 HEALTHBAR_LENGTH = 7
 HEALTHBAR_COLOR = $0d
@@ -232,6 +233,8 @@ UP_Consumable:  tya
 UP_IsConsumable:lda #42
                 jsr PrintPanelChar
 UP_IsArmor:     lda invCount-1,y
+                cmp #NO_ITEM_COUNT              ;In case of the recycler station we may be displaying
+                adc #$00                        ;a nonexisting item (count=$ff). Turn that to 0
                 jsr ConvertToBCD8
                 jsr Print3BCDDigits
                 plp
@@ -527,6 +530,7 @@ UM_Dialogue:    ldx #MENU_NONE
                 bcc UM_DNoFire
                 lda #$01
                 sta textTime
+UM_Interaction:
 UM_DNoFire:     rts
 
         ; Pause menu
@@ -595,19 +599,18 @@ UM_RedrawCommon:
                 dec textLeftMargin
 UM_DrawSelectionArrows:
                 ldy itemIndex
-                lda #1
-                sta colors+PANELROW*40+9
-                sta colors+PANELROW*40+30
                 lda #$20
                 cpy #ITEM_FISTS
                 beq UM_NoLeftArrow
                 lda #60
-UM_NoLeftArrow: sta panelScreen+PANELROW*40+9
+UM_NoLeftArrow: ldx #9
+                jsr PrintPanelChar
                 lda #$20
                 cpy lastItemIndex
                 beq UM_NoRightArrow
                 lda #62
-UM_NoRightArrow:sta panelScreen+PANELROW*40+30
+UM_NoRightArrow:ldx #30
+                jsr PrintPanelChar
                 jmp SetPanelRedrawItemAmmo      ;Redraw item & ammo next time panel is updated
 
         ; Pause menu
@@ -640,6 +643,7 @@ UM_PauseMenuSpace:
                 sta panelScreen+PANELROW*40,x
                 dey
                 bpl UM_PauseMenuArrowLoop
+UM_RedrawInteraction:
 UM_RedrawDialogue:
                 rts
 

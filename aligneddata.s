@@ -121,7 +121,7 @@ colorJumpTblLo: dc.b <SW_ShiftColorsUp
                 dc.b <SW_ShiftColorsDown
                 dc.b <SW_ShiftColorsDown
 
-d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,PANEL_D018,GAMESCR1_D018+1
+d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,TEXTSCR_D018,GAMESCR1_D018+1
 
                 org nextSliceTbl+$c0+21
                 dc.b $c0+22,$c0+23,$c0+42

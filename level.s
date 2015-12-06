@@ -832,11 +832,15 @@ ULO_DoDrowningDamage:
                 jmp DamageActor                 ;X must be 0
 
 UpdateLevelObjects:
-                ldx #$03
                 lda menuMode                    ;Increase time in ingame & dialogue, but not in pause
                 cmp #MENU_PAUSE
                 beq ULO_NoTime
                 php
+                ldx scriptF                     ;Check for continuous script execution
+                bmi ULO_NoScript
+                lda scriptEP
+                jsr ExecScript
+ULO_NoScript:   ldx #$03
                 sec
 ULO_IncreaseTime:
                 lda time,x                      ;time+3 = frames
@@ -972,9 +976,9 @@ ULO_CPNoItemNoWrap:
                 cpy ULO_CheckPickupIndex+1
                 bne ULO_CheckPickupLoop
                 lda displayedItemName           ;If no items, clear existing item name
-                beq ULO_CheckContinuousScript   ;text
+                beq ULO_CheckObject             ;text
                 jsr ClearPanelText
-                bcs ULO_CheckContinuousScript   ;C=1 when returning
+                bcs ULO_CheckObject             ;C=1 when returning
 ULO_HasItem:    sty ULO_CheckPickupIndex+1
                 lda textTime                    ;Make sure to not overwrite other game
                 bne ULO_SkipItemName            ;messages
@@ -990,19 +994,14 @@ ULO_HasItem:    sty ULO_CheckPickupIndex+1
 ULO_SkipItemName:
                 lda actCtrl+ACTI_PLAYER
                 cmp #JOY_DOWN
-                bne ULO_CheckContinuousScript
+                bne ULO_CheckObject
                 lda actFd+ACTI_PLAYER           ;If ducking, try picking up the item
-                beq ULO_CheckContinuousScript
+                beq ULO_CheckObject
                 lda actF1+ACTI_PLAYER
                 cmp #FR_DUCK
-                bne ULO_CheckContinuousScript
+                bne ULO_CheckObject
                 ldy ULO_CheckPickupIndex+1
                 jsr TryPickup
-ULO_CheckContinuousScript:
-                ldx scriptF                     ;Check for continuous script execution
-                bmi ULO_CheckObject
-                lda scriptEP
-                jsr ExecScript
 ULO_CheckObject:ldy actYH+ACTI_PLAYER           ;Rescan objects whenever player block position changes
                 ldx actYL+ACTI_PLAYER           ;If player stands on the upper half of a block
                 cpx #$81                        ;check 1 block above
@@ -1010,10 +1009,8 @@ ULO_CheckObject:ldy actYH+ACTI_PLAYER           ;Rescan objects whenever player 
                 dey
 ULO_CONotAtTop: ldx actXH+ACTI_PLAYER
                 lda lvlObjNum
-ULO_COLastCheckX:
                 cpx ULO_COCmpX+1
                 bne ULO_CORescan
-ULO_COLastCheckY:
                 cpy ULO_COSubY+1
                 beq ULO_CONoRescan
 ULO_CORescan:   lda #$80                        ;Start from beginning
