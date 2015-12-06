@@ -992,10 +992,8 @@ ULO_SkipItemName:
                 lda actCtrl+ACTI_PLAYER
                 cmp #JOY_DOWN
                 bne ULO_CheckObject
-                lda actFd+ACTI_PLAYER           ;If ducking, try picking up the item
-                beq ULO_CheckObject
                 lda actF1+ACTI_PLAYER
-                cmp #FR_DUCK
+                cmp #FR_DUCK+1
                 bne ULO_CheckObject
                 ldy ULO_CheckPickupIndex+1
                 jsr TryPickup

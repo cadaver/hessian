@@ -75,6 +75,7 @@ MovePlayer:     ldy #$00
                 ldy actF1+ACTI_PLAYER
                 cpy #FR_DUCK+1
                 bne MP_NoDuckFirePrevent
+                lda actCtrl,x
                 cmp #JOY_DOWN                   ;Prevent fire+down immediately after ducking
                 bne MP_NoDuckFirePrevent        ;(need to release down direction first)
                 lda joystick
