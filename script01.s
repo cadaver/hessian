@@ -281,8 +281,12 @@ MS_NoDamage:    rts
 
 MoveFly:        lda actHp,x
                 beq MF_Dead
+                lda actMB,x
+                and #MB_HITWALL|MB_HITWALLVERTICAL
+                bne MF_SetNewControls
                 dec actTime,x
                 bpl MF_NoNewControls
+MF_SetNewControls:
                 jsr Random
                 and #$03
                 tay
