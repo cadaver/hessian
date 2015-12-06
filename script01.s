@@ -583,8 +583,7 @@ MLW_NoShake:    sta actFallL,x
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveScrapMetal: jsr DeathFlickerAndRemove
-                lda actSY,x                     ;Store original Y-speed for bounce
+MoveScrapMetal: lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
                 jsr BounceMotion
                 bcc MSM_NoBounce
@@ -596,9 +595,7 @@ MoveScrapMetal: jsr DeathFlickerAndRemove
                 sta actSY,x
                 lda #$00                        ;Clear grounded flag
                 sta actMB,x
-MRT_NoTrigger:
-MSM_NoBounce:   rts
-MSM_Remove:     jmp RemoveActor
+MSM_NoBounce:   jmp DeathFlickerAndRemove
 
         ; Rock trap movement
         ;
@@ -618,6 +615,7 @@ MoveRockTrap:   lda actYH,x                     ;Trigger when player is below
                 sta actT,x
                 jsr SetNotPersistent            ;Disappear after triggering once
                 jmp InitActor
+MRT_NoTrigger:  rts
 
         ; Generate 2 explosions at 8 pixel radius
         ;

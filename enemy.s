@@ -197,9 +197,6 @@ MoveExplosionGenerator:
                 bne MEG_NotLastExplosion
                 jmp RemoveActor
 MEG_NoRoom:     jmp ExplodeActor
-MEG_NotLastExplosion:
-MEG_NoNewExplosion:
-                rts
 MEG_GetOffset:  sta temp3
                 lsr
                 sta temp4
@@ -207,6 +204,8 @@ MEG_GetOffset:  sta temp3
                 and temp3
                 sec
                 sbc temp4
+MEG_NotLastExplosion:
+MEG_NoNewExplosion:
                 rts
 
         ; Initiate humanoid enemy or player death
@@ -368,7 +367,7 @@ DI_NotImportant:sta actLvlDataOrg,x             ;Make item either persistent or 
                 ldx temp6                       ;depending on importance
                 rts
 
-        ; Flicker corpse, then remove. Will not return when removes the actor
+        ; Flicker corpse, then remove.
         ;
         ; Parameters: X actor index
         ; Returns: -
@@ -383,6 +382,4 @@ DeathFlickerAndRemove:
                 lda #COLOR_FLICKER
                 sta actFlash,x
 DFAR_Done:      rts
-DFAR_Remove:    pla
-                pla
-                jmp RemoveActor
+DFAR_Remove:    jmp RemoveActor
