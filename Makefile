@@ -37,7 +37,7 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	sprcommon.pak spritem.pak sprweapon.pak sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
 	sprsmallrobots.pak sprhazards.pak spranimals.pak sprmediumrobots.pak sprguard.pak sprheavyguard.pak \
 	sprcombatrobot.pak sprlargewalker.pak sprlargetank.pak sprhighwalker.pak \
-	sprserver.pak sprsecuritychief.pak
+	sprserver.pak sprsecuritychief.pak sprrotordrone.pak
 	c1541 < hessian.seq
 
 hessian.d81: hessian.d64 hessiand81.seq
@@ -498,3 +498,6 @@ sprserver.pak: spr/server.spr
 
 sprsecuritychief.pak: spr/securitychief.spr
 	pchunk2 spr/securitychief.spr sprsecuritychief.pak
+
+sprrotordrone.pak: spr/rotordrone.spr
+	pchunk2 spr/rotordrone.spr sprrotordrone.pak

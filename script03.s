@@ -14,6 +14,8 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w DestroyEye
                 dc.w MoveSecurityChief
                 dc.w DestroySecurityChief
+                dc.w MoveRotorDrone
+                dc.w DestroyRotorDrone
 
         ; Eye (Construct) boss phase 1
         ;
@@ -258,6 +260,79 @@ DestroySecurityChief:
                 sta temp5
                 lda #2*8
                 jmp DI_SpawnItemWithSpeed
+
+        ; Rotor drone boss move routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveRotorDrone: lda actHp,x
+                beq MRD_Fall
+                lda #MUSIC_MAINTENANCE+1        ;If alive, play the bossfight music
+                jsr PlaySong
+                ldx actIndex
+                lda #-1                         ;Stay higher than normal flyers
+                sta actFall,x
+                lda actCtrl,x
+                and #JOY_FIRE
+                beq MRD_NotFiring
+                lda actCtrl,x                   ;Convert horizontal firing to diagonal down
+                ora #JOY_DOWN
+                sta actCtrl,x
+MRD_NotFiring:  jsr MoveAccelerateFlyer
+                lda #$00
+                ldy actSX,x
+                bmi MRD_SpeedNeg
+MRD_SpeedPos:   cpy #1*8
+                bcc MRD_FrameOK
+                lda #$08
+                bne MRD_FrameOK
+MRD_SpeedNeg:   cpy #-1*8+1
+                bcs MRD_FrameOK
+                lda #$04
+MRD_FrameOK:    sta temp1
+                inc actFd,x
+                lda actFd,x
+                and #$01
+                ora temp1
+                sta adRotorDroneFrames
+                ora #$02
+                sta adRotorDroneFrames+1
+                jmp AttackGeneric
+MRD_Fall:       jsr FallingMotionCommon
+                tay
+                beq MRD_ContinueFall
+                lda #MUSIC_MAINTENANCE          ;Back to the normal music
+                jsr PlaySong
+                ldx actIndex
+                jmp ExplodeEnemy2_8             ;Drop item & explode at any collision
+MRD_ContinueFall:
+                jsr Random                      ;Spawn explosions randomly while falling
+                cmp #$30
+                bcs MRD_NoExplosion
+                lda #ACTI_FIRSTNPC              ;Use any free actors
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc MRD_NoExplosion
+                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
+                tya
+                tax
+                jsr ExplodeActor
+                ldx actIndex
+MRD_NoExplosion:
+                rts
+
+        ; Rotor drone boss destroy routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+DestroyRotorDrone:
+                lda #-2*8                       ;Give upward speed so that the fall lasts longer
+                sta actSY,x
+                rts
 
         ; Final server room droid spawn positions
 

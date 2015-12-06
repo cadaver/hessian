@@ -406,7 +406,11 @@ AI_FlyerCommon: bcc AI_FlyerIdle
                 sta temp1
                 jsr PA_NoDucking
                 bcs AI_FlyerDone
-AI_FlyerFollow: lda #$00                        ;Determine acceleration direction toward target
+AI_FlyerFollow: lda temp7
+                clc
+                adc actFall,x                   ;Y-targeting offset
+                sta temp7
+                lda #$00                        ;Determine acceleration direction toward target
                 sta actAIHelp,x
                 ldy temp5
                 bmi AI_FlyerLeft
@@ -594,7 +598,7 @@ GAD_HasAttackDir:
                 sec
                 rts
 GAD_Horizontal: ;lda temp1                       ;Check valid attack direction
-                ;and #AB_HORIZONTAL             ;(horizontal is actually always valid)
+                ;and #AB_HORIZONTAL             ;(horizontal dir always valid)
                 ;beq GAD_NoAttackDir2
                 lda #$00
 GAD_DiagonalCommon:

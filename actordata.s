@@ -59,6 +59,7 @@ ACT_LARGETANK   = 57
 ACT_HIGHWALKER  = 58
 ACT_EXPLOSIONGENERATORRISING = 59
 ACT_SECURITYCHIEF = 60
+ACT_ROTORDRONE  = 61
 
 HP_PLAYER       = 56
 HP_RAT          = 4
@@ -83,8 +84,9 @@ HP_CEILINGTURRET = 24
 HP_CPU          = 32
 HP_HIGHWALKER   = 36
 HP_LARGEWALKER  = 40
-HP_LARGETANK    = 56
 HP_SUPERCPU     = 48
+HP_ROTORDRONE   = 48
+HP_LARGETANK    = 56
 HP_SECURITYCHIEF = 64
 HP_EYE          = 80
 HP_JORMUNGANDR  = 128
@@ -186,6 +188,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adHighWalker
                 dc.b <adExplosionGenerator
                 dc.b <adSecurityChief
+                dc.b <adRotorDrone
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -247,6 +250,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adHighWalker
                 dc.b >adExplosionGenerator
                 dc.b >adSecurityChief
+                dc.b >adRotorDrone
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -558,6 +562,14 @@ adSecurityChief:dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
+adRotorDrone:   dc.b TWOSPRITE                  ;Number of sprites
+                dc.b C_ROTORDRONE               ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 1                          ;Number of frames
+adRotorDroneFrames:
+                dc.b 0
+                dc.b 2
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -620,6 +632,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alHighWalker
                 dc.b <alExplosionGeneratorRising
                 dc.b <alSecurityChief
+                dc.b <alRotorDrone
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -681,6 +694,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alHighWalker
                 dc.b >alExplosionGeneratorRising
                 dc.b >alSecurityChief
+                dc.b >alRotorDrone
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -1397,7 +1411,7 @@ alSpiderWalker: dc.w USESCRIPT|EP_MOVESPIDERWALKER ;Update routine
                 dc.b 8                          ;Long jump gravity acceleration
                 dc.b 8                          ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
-                
+
 alLargeTank:    dc.w USESCRIPT|EP_MOVELARGETANK ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 24                         ;Horizontal size
@@ -1471,3 +1485,24 @@ alSecurityChief:dc.w USESCRIPT|EP_MOVESECURITYCHIEF ;Update routine
                 dc.b INITIAL_GROUNDBRAKE        ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
                 dc.b -INITIAL_JUMPSPEED-2       ;Jump initial speed (negative)
+
+alRotorDrone:   dc.w USESCRIPT|EP_MOVEROTORDRONE ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON|AF_NOREMOVECHECK ;Actor flags
+                dc.b 20                         ;Horizontal size
+                dc.b 7                          ;Size up
+                dc.b 4                          ;Size down
+                dc.w USESCRIPT|EP_DESTROYROTORDRONE ;Destroy routine (destroy handled by move routine)
+                dc.b HP_ROTORDRONE              ;Initial health
+                dc.b MOD_BOSS                   ;Damage modifier
+                dc.w 1000                       ;Score from kill
+                dc.b AIMODE_FLYER               ;AI mode when spawned randomly
+                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b $1f                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
+                dc.b 3*8                        ;Horiz max movement speed
+                dc.b 1                          ;Horiz acceleration
+                dc.b 1*8                        ;Vert max movement speed
+                dc.b 1                          ;Vert acceleration
+                dc.b 2                          ;Horiz obstacle check offset
+                dc.b 2                          ;Vert obstacle check offset
