@@ -454,6 +454,9 @@ IP_InitInventory:
                 lda #ITEM_ARMOR
                 ldx #100
                 jsr AddItem
+                lda #ITEM_PARTS
+                ldx #50
+                jsr AddItem
                 endif
                 jsr StopScript                  ;Stop any continuous script
                 lda #START_LEVEL

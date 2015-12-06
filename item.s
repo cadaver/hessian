@@ -81,7 +81,7 @@ TP_PrintItemName:
                 lda temp2
                 jsr GetItemName
                 jsr ContinuePanelText
-                lda #SFX_PICKUP
+PlayPickupSound:lda #SFX_PICKUP
                 jmp PlaySfx
 
         ; Get name of item

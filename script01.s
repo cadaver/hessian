@@ -981,8 +981,8 @@ RechargerEffect:
                 inc rechargerColor
                 cmp #$04
                 bcs RE_End
-                and #$01
-                bne RE_Restore
+                lsr
+                bcs RE_Restore
                 lda Irq1_Bg3+1
                 sta Irq1_Bg1+1
                 lda #$01
@@ -1003,7 +1003,8 @@ RecyclingStation:
                 ldy #ITEM_PARTS
                 jsr FindItem
                 bcc RS_NoParts
-                sty itemIndex
+                lda #$00                        ;Init alternating parts/item display
+                sta recyclerDisplay
                 jsr SetPanelRedrawItemAmmo      ;Display parts left during interaction
                 ldy #RECYCLER_ITEM_FIRST-1
                 jsr RS_GotoNextItem
@@ -1031,7 +1032,18 @@ RS_NoParts:     lda #<txtNoParts
         ; Modifies: various
 
 RecyclingStationLoop:
-                lda joystick
+                inc recyclerDisplay
+                ldy #ITEM_PARTS
+                lda recyclerDisplay
+                asl
+                asl
+                bpl RSL_ShowParts
+                ldy recyclerItem
+RSL_ShowParts:  cpy itemIndex
+                beq RSL_SameItem
+                sty itemIndex
+                jsr SetPanelRedrawItemAmmo
+RSL_SameItem:   lda joystick
                 and #JOY_DOWN
                 bne RSL_Exit
                 lda keyPress
@@ -1054,7 +1066,27 @@ RSL_MoveCommon: sty recyclerItem
 RSL_MoveRight:  jsr RS_GotoNextItem
                 bcc RSL_MoveFail
                 bcs RSL_MoveCommon
-RSL_Buy:        rts
+RSL_Buy:        lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
+                sta temp1
+                lda invCount+ITEM_PARTS-1
+                cmp #NO_ITEM_COUNT
+                beq RSL_BuyFail
+                cmp temp1
+                bcc RSL_BuyFail
+                tya
+                ldx recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                jsr AddItem
+                bcc RSL_BuyFail
+                ldy #ITEM_PARTS
+                lda temp1
+                jsr DecreaseAmmo
+                lda recyclerItem
+                sta itemIndex
+                lda #$20                        ;Show the bought item
+                sta recyclerDisplay
+                jmp PlayPickupSound
+RSL_BuyFail:    lda #SFX_DAMAGE
+                jmp PlaySfx
 RSL_Exit:       jsr StopScript
 RSL_RestoreItem:ldy #$00
                 sty itemIndex
@@ -1183,9 +1215,9 @@ ceilingTurretOfs:
 recyclerCountTbl:
                 dc.b 10                         ;Pistol
                 dc.b 8                          ;Shotgun
-                dc.b 30                         ;Auto rifle
+                dc.b 15                         ;Auto rifle
                 dc.b 5                          ;Sniper rifle
-                dc.b 50                         ;Minigun
+                dc.b 25                         ;Minigun
                 dc.b 30                         ;Flamethrower
                 dc.b 15                         ;Laser rifle
                 dc.b 10                         ;Plasma gun
@@ -1200,26 +1232,27 @@ recyclerCountTbl:
 
 recyclerCostTbl:
                 dc.b 15                         ;Pistol
-                dc.b 25                         ;Shotgun
-                dc.b 40                         ;Auto rifle
-                dc.b 25                         ;Sniper rifle
-                dc.b 75                         ;Minigun
+                dc.b 20                         ;Shotgun
+                dc.b 25                         ;Auto rifle
+                dc.b 30                         ;Sniper rifle
+                dc.b 35                         ;Minigun
                 dc.b 35                         ;Flamethrower
-                dc.b 45                         ;Laser rifle
-                dc.b 40                         ;Plasma gun
+                dc.b 40                         ;Laser rifle
+                dc.b 45                         ;Plasma gun
                 dc.b 50                         ;EMP generator
-                dc.b 40                         ;Grenade launcher
+                dc.b 50                         ;Grenade launcher
                 dc.b 60                         ;Bazooka
                 dc.b 0                          ;Extinguisher
                 dc.b 40                         ;Grenade
-                dc.b 50                         ;Mine
-                dc.b 75                         ;Medikit
-                dc.b 75                         ;Battery
+                dc.b 75                         ;Mine
+                dc.b 50                         ;Medikit
+                dc.b 50                         ;Battery
 
         ; Variables
 
 rechargerColor: dc.b 0
 recyclerItem:   dc.b 0
+recyclerDisplay:dc.b 0
 
         ; Messages
 

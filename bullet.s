@@ -328,10 +328,14 @@ MoveMine:       lda #7
                 jsr LoopingAnimation
                 lda actF1,x
                 ora actFd,x
-                bne MoveGrenade
+                bne MM_NoSound
                 lda #SFX_PICKUP
                 jsr PlaySfx
-                jmp MoveGrenade
+MM_NoSound:     lda actMB,x
+                lsr
+                beq MM_InAir
+                jmp MGrn_CheckCollision
+MM_InAir:       jmp FallingMotionCommon
 
         ; EMP blast update routine
         ;
