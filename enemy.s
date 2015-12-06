@@ -215,7 +215,16 @@ MEG_GetOffset:  sta temp3
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8
 
-HumanDeath:     lda #SFX_HUMANDEATH
+HumanDeath:     txa
+                bne HD_NotPlayer                ;Reset dialogue / interaction menu modes
+                jsr StopScript                  ;if died during them
+                lda menuMode
+                cmp #MENU_DIALOGUE
+                bcc HD_NotInMenu
+                ldx #MENU_NONE
+                jsr SetMenuMode
+HD_NotInMenu:   ldx #ACTI_PLAYER
+HD_NotPlayer:   lda #SFX_HUMANDEATH
                 jsr PlaySfx
                 lda actF1,x
                 cmp #FR_SWIM

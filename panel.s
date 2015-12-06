@@ -1,5 +1,5 @@
 PANEL_TEXT_SIZE = 22
-MENU_DELAY      = 18
+MENU_DELAY      = 16
 MENU_PAUSEDELAY = 36
 MENU_MOVEDELAY  = 3
 
@@ -13,9 +13,9 @@ REDRAW_SCORE    = $04
 
 MENU_NONE       = 0
 MENU_INVENTORY  = 1
-MENU_PAUSE      = 2
-MENU_DIALOGUE   = 3
-MENU_INTERACTION = 4
+MENU_DIALOGUE   = 2
+MENU_INTERACTION = 3
+MENU_PAUSE      = 4
 
 HEALTHBAR_LENGTH = 7
 HEALTHBAR_COLOR = $0d
@@ -282,7 +282,8 @@ UP_TextDone:    rts
         ; Returns: -
         ; Modifies: A,X
 
-UM_RedrawNone:
+UM_RedrawNone:  lda #REDRAW_SCORE
+                jsr SetPanelRedraw
 ClearPanelText: ldx #$00
                 ldy #$00
                 beq PrintPanelText

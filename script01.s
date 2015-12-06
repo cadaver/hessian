@@ -1084,16 +1084,18 @@ RSL_Buy:        lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
                 sta itemIndex
                 lda #$20                        ;Show the bought item
                 sta recyclerDisplay
-                jmp PlayPickupSound
+                lda #SFX_EMP
+                skip2
 RSL_BuyFail:    lda #SFX_DAMAGE
                 jmp PlaySfx
 RSL_Exit:       jsr StopScript
 RSL_RestoreItem:ldy #$00
                 sty itemIndex
+                jsr SetPanelRedrawItemAmmo
                 ldx #MENU_NONE
                 jsr SetMenuMode
-                jsr SetPanelRedrawItemAmmo
-                jmp SetPanelRedrawScore
+                ldy lvlObjNum
+                jmp InactivateObject            ;Allow to reenter immediately
 
         ; Redraw current item in recycler
 
@@ -1231,20 +1233,20 @@ recyclerCountTbl:
                 dc.b 1                          ;Battery
 
 recyclerCostTbl:
-                dc.b 15                         ;Pistol
-                dc.b 20                         ;Shotgun
-                dc.b 25                         ;Auto rifle
-                dc.b 30                         ;Sniper rifle
-                dc.b 35                         ;Minigun
-                dc.b 35                         ;Flamethrower
-                dc.b 40                         ;Laser rifle
-                dc.b 45                         ;Plasma gun
-                dc.b 50                         ;EMP generator
-                dc.b 50                         ;Grenade launcher
-                dc.b 60                         ;Bazooka
+                dc.b 10                         ;Pistol
+                dc.b 15                         ;Shotgun
+                dc.b 20                         ;Auto rifle
+                dc.b 25                         ;Sniper rifle
+                dc.b 30                         ;Minigun
+                dc.b 30                         ;Flamethrower
+                dc.b 35                         ;Laser rifle
+                dc.b 40                         ;Plasma gun
+                dc.b 35                         ;EMP generator
+                dc.b 40                         ;Grenade launcher
+                dc.b 50                         ;Bazooka
                 dc.b 0                          ;Extinguisher
-                dc.b 40                         ;Grenade
-                dc.b 75                         ;Mine
+                dc.b 35                         ;Grenade
+                dc.b 50                         ;Mine
                 dc.b 50                         ;Medikit
                 dc.b 50                         ;Battery
 

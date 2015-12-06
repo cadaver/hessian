@@ -125,6 +125,9 @@ SL_ActT:        lda #$00
                 lda #ACT_SPEECHBUBBLE
                 jsr SpawnWithOffset
 SL_NoSpeechBubble:
+                lda #$00                        ;Reset controls during conversation
+                sta actCtrl+ACTI_PLAYER
+                sta actMoveCtrl+ACTI_PLAYER
                 ldx #MENU_DIALOGUE
                 jmp SetMenuMode
 

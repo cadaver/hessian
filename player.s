@@ -70,7 +70,7 @@ UPG_TOXINFILTER = 128
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MovePlayer:     ldy #$00
-                cpy menuMode                    ;When in inventory, no new controls
+                cpy menuMode                    ;When in inventory / dialogue / interaction, no new controls
                 bne MP_Scroll
                 ldy actF1+ACTI_PLAYER
                 cpy #FR_DUCK+1

@@ -805,7 +805,7 @@ SaveActorSub:   lda lvlActX,x
                 lda lvlActOrg,x
                 sta saveLvlActOrg,y
                 iny
-ULO_IsPaused:
+ULO_Paused:
 ULO_ToxinDelay:
                 rts
 
@@ -832,15 +832,10 @@ ULO_DoDrowningDamage:
                 jmp DamageActor                 ;X must be 0
 
 UpdateLevelObjects:
-                lda menuMode                    ;Increase time in ingame & dialogue, but not in pause
+                lda menuMode
                 cmp #MENU_PAUSE
-                beq ULO_NoTime
-                php
-                ldx scriptF                     ;Check for continuous script execution
-                bmi ULO_NoScript
-                lda scriptEP
-                jsr ExecScript
-ULO_NoScript:   ldx #$03
+                bcs ULO_Paused
+                ldx #$03                        ;Increment game clock
                 sec
 ULO_IncreaseTime:
                 lda time,x                      ;time+3 = frames
@@ -851,13 +846,15 @@ ULO_IncreaseTime:
 ULO_TimeNotOver:sta time,x
                 dex
                 bpl ULO_IncreaseTime
-                plp
-ULO_NoTime:     bcs ULO_IsPaused
-                lda attackTime                  ;Decrement global attack timer if necessary
+ULO_NoTime:     lda attackTime                  ;Decrement global attack timer if necessary
                 bpl ULO_NoGlobalAttack
                 inc attackTime
 ULO_NoGlobalAttack:
-                ldy autoDeactObjNum
+                ldx scriptF                     ;Check for continuous script execution
+                bmi ULO_NoScript
+                lda scriptEP
+                jsr ExecScript
+ULO_NoScript:   ldy autoDeactObjNum             ;Check object auto-deactivation
                 bmi ULO_NoAutoDeact
                 dec autoDeactObjCounter
                 bne ULO_NoAutoDeact
