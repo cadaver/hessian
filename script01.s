@@ -1095,7 +1095,9 @@ RSL_RestoreItem:ldy #$00
                 ldx #MENU_NONE
                 jsr SetMenuMode
                 ldy lvlObjNum
+                bmi RSL_NoObject                ;It's possible the player slid away from the station
                 jmp InactivateObject            ;Allow to reenter immediately
+RSL_NoObject:   rts
 
         ; Redraw current item in recycler
 
