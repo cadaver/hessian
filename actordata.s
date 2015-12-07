@@ -84,8 +84,8 @@ HP_CEILINGTURRET = 24
 HP_CPU          = 32
 HP_HIGHWALKER   = 36
 HP_LARGEWALKER  = 40
+HP_ROTORDRONE   = 40
 HP_SUPERCPU     = 48
-HP_ROTORDRONE   = 48
 HP_LARGETANK    = 56
 HP_SECURITYCHIEF = 64
 HP_EYE          = 80
@@ -1502,7 +1502,7 @@ alRotorDrone:   dc.w USESCRIPT|EP_MOVEROTORDRONE ;Update routine
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
                 dc.b 3*8                        ;Horiz max movement speed
                 dc.b 1                          ;Horiz acceleration
-                dc.b 1*8                        ;Vert max movement speed
+                dc.b 1*8+2                      ;Vert max movement speed
                 dc.b 1                          ;Vert acceleration
                 dc.b 2                          ;Horiz obstacle check offset
                 dc.b 2                          ;Vert obstacle check offset
