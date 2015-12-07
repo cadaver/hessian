@@ -993,8 +993,10 @@ ULO_SkipItemName:
                 lda actCtrl+ACTI_PLAYER
                 cmp #JOY_DOWN
                 bne ULO_CheckObject
+                lda actFd+ACTI_PLAYER           ;Only check pickup once when ducking
+                beq ULO_CheckObject
                 lda actF1+ACTI_PLAYER
-                cmp #FR_DUCK+1
+                cmp #FR_DUCK
                 bne ULO_CheckObject
                 ldy ULO_CheckPickupIndex+1
                 jsr TryPickup

@@ -17,7 +17,7 @@ SCRAP_DURATION = 40
 TURRET_ANIMDELAY = 2
 
 RECYCLER_ITEM_FIRST = ITEM_PISTOL
-RECYCLER_ITEM_LAST = ITEM_BATTERY
+RECYCLER_ITEM_LAST = ITEM_ARMOR
 
                 org scriptCodeStart
 
@@ -1109,12 +1109,31 @@ RS_Redraw:      jsr ClearPanelText
                 jsr GetItemName
                 jsr PrintPanelTextIndefinite
                 dec textLeftMargin
-                ldx #27
-                lda #"+"
-                jsr PrintPanelChar
                 ldy recyclerItem
                 lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
-                jsr RS_ConvertAndPrint
+                sta temp1
+                jsr ConvertToBCD8
+                ldx #27
+                jsr Print3BCDDigits
+                ldx #26
+                lda temp1
+                cmp #100
+                bcs RS_3Digits
+                inx
+                cmp #10
+                bcs RS_2Digits
+                lda #$20
+                inx
+RS_2Digits:
+RS_3Digits:     stx temp2
+                ldx #26
+                lda #$20
+RS_SpaceLoop:   cpx temp2
+                beq RS_SpaceDone
+                jsr PrintPanelChar
+                bne RS_SpaceLoop
+RS_SpaceDone:   lda #"+"
+                jsr PrintPanelChar
                 lda #$20
                 ldy recyclerItem
                 pha
@@ -1143,7 +1162,6 @@ RS_PrintCost:   lda txtCost,y
 RS_PrintCostDone:
                 ldy recyclerItem
                 lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
-RS_ConvertAndPrint:
                 jsr ConvertToBCD8
                 jmp PrintBCDDigitsLSB
 
@@ -1235,6 +1253,7 @@ recyclerCountTbl:
                 dc.b 1                          ;Mine
                 dc.b 1                          ;Medikit
                 dc.b 1                          ;Battery
+                dc.b 100                        ;Armor
 
 recyclerCostTbl:
                 dc.b 10                         ;Pistol
@@ -1250,9 +1269,10 @@ recyclerCostTbl:
                 dc.b 50                         ;Bazooka
                 dc.b 0                          ;Extinguisher
                 dc.b 35                         ;Grenade
-                dc.b 50                         ;Mine
+                dc.b 45                         ;Mine
                 dc.b 50                         ;Medikit
                 dc.b 50                         ;Battery
+                dc.b 75                         ;Armor
 
         ; Variables
 
