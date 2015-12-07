@@ -1111,12 +1111,12 @@ RS_Redraw:      jsr ClearPanelText
                 dec textLeftMargin
                 ldy recyclerItem
                 lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
-                sta temp1
+                pha
                 jsr ConvertToBCD8
                 ldx #27
                 jsr Print3BCDDigits
                 ldx #26
-                lda temp1
+                pla
                 cmp #100
                 bcs RS_3Digits
                 inx
