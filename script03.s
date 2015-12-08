@@ -320,7 +320,10 @@ MRD_FrameOK:    sta temp1
                 ora #$02
                 sta adRotorDroneFrames+1
                 jmp AttackGeneric
-MRD_Fall:       jsr FallingMotionCommon
+MRD_Fall:       jsr Random
+                and #$01
+                sta shakeScreen
+                jsr FallingMotionCommon
                 tay
                 beq MRD_ContinueFall
                 lda #MUSIC_MAINTENANCE          ;Back to the normal music
