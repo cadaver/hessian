@@ -411,8 +411,6 @@ MLS_NoDyingExplosion:
 MLS_Alive:      lda #MUSIC_CAVES+1
                 jsr PlaySong
                 ldx actIndex
-                lda #DMG_LARGESPIDER
-                jsr CollideAndDamagePlayer
 MLS_Decision:   lda actXH,x                     ;Move forward when about to hit the left wall
                 cmp #$3d
                 bne MLS_RandomMove
@@ -452,7 +450,6 @@ MLS_Move:       jsr MoveGeneric
 MLS_NotOverNeg: cmp #$60
                 bcc MLS_NotOverPos
                 sbc #$60
-                bcs MLS_NotOverNeg
 MLS_NotOverPos: sta actFd,x
                 lsr
                 lsr
@@ -506,7 +503,8 @@ MLS_Attack:     lda #ACTI_FIRSTNPCBULLET
                 adc #-3*8
                 sta actSY,x
                 ldx actIndex
-MLS_NoAttack:   rts
+MLS_NoAttack:   lda #DMG_LARGESPIDER
+                jmp CollideAndDamagePlayer
 
 MLS_Explode:    lda #MUSIC_CAVES
                 jsr PlaySong
