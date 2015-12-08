@@ -552,14 +552,21 @@ MA_NoPlayerCollision:
                 lda #1
                 ldy #3
                 jmp LoopingAnimation
-MA_StartSplash: jsr NoInterpolation
-MA_StartPlayerSplash:
+MA_StartSplash: lda #ACT_WATERSPLASH
+                jsr TransformBullet
+MA_SplashCommon:jsr NoInterpolation
                 lda #13
                 sta actFlash,x
                 lda #SFX_SPLASH
-                jsr PlaySfx
-                lda #ACT_WATERSPLASH
-                jmp TransformBullet
+                jmp PlaySfx
+MA_StartPlayerSplash:
+                lda #ACT_EXPLOSION
+                jsr TransformBullet
+                lda #-4*8
+                jsr MoveActorY
+                lda #2
+                sta actF1,x
+                bne MA_SplashCommon
 
         ; Spider chunk movement
         ;
