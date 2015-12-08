@@ -387,33 +387,34 @@ MLS_Alive:      lda #MUSIC_CAVES+1
                 ldx actIndex
                 lda #DMG_LARGESPIDER
                 jsr CollideAndDamagePlayer
-MLS_Decision:   lda actXH,x                     ;Retreat when close to player
-                cmp #$3d                        ;or move forward when about to hit wall
-                bne MLS_NoWall2
+MLS_Decision:   lda actXH,x                     ;Move forward when about to hit the left wall
+                cmp #$3d
+                bne MLS_RandomMove
                 lda #JOY_RIGHT
-                bne MLS_StoreMove
-MLS_NoWall2:    cmp actXH+ACTI_PLAYER
-                bcc MLS_RandomMove
-                lda #JOY_LEFT
-                bne MLS_StoreMove
+                bne MLS_ForcedMoveImmediate
 MLS_RandomMove: dec actTime,x                   ;Otherwise move randomly back & forth & attack
                 bpl MLS_Move
-                lda actAttackD+ACTI_PLAYER      ;If player is attacking now, attack also
+                lda actXH,x                     ;If player is behind, decide to go left
+                cmp actXH+ACTI_PLAYER
+                bcc MLS_NotBehind
+                lda #$00
+                beq MLS_ForcedMove
+MLS_NotBehind:  lda actAttackD+ACTI_PLAYER      ;If player is attacking now, attack also
                 beq MLS_NoForcedAttack
                 lda #$03
-                bne MLS_ForcedAttack
+                bne MLS_ForcedMove
 MLS_NoForcedAttack:
                 jsr Random
                 and #$03
-MLS_ForcedAttack:
-                tay
+MLS_ForcedMove: tay
                 jsr Random
                 and spiderDelayAndTbl,y
                 clc
                 adc #$10
                 sta actTime,x
                 lda spiderMoveTbl,y
-MLS_StoreMove:  sta actMoveCtrl,x
+MLS_ForcedMoveImmediate:
+                sta actMoveCtrl,x
 MLS_Move:       jsr MoveGeneric
                 lda actSX,x
                 jsr Asr8
@@ -425,6 +426,7 @@ MLS_Move:       jsr MoveGeneric
 MLS_NotOverNeg: cmp #$60
                 bcc MLS_NotOverPos
                 sbc #$60
+                bcs MLS_NotOverNeg
 MLS_NotOverPos: sta actFd,x
                 lsr
                 lsr
