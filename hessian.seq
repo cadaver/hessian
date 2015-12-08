@@ -22,6 +22,7 @@ write sprhighwalker.pak @8:12
 write sprserver.pak @8:13
 write sprsecuritychief.pak @8:14
 write sprrotordrone.pak @8:15
+write sprlargespider.pak @8:16
 write level00.pak @8:20
 write level01.pak @8:21
 write level02.pak @8:22

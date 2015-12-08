@@ -148,8 +148,8 @@ GAXS_Pos:       rts
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveFloatingMine:
-                lda #$03
-                ldy #$03
+                lda #3
+                ldy #3
                 jsr LoopingAnimation
                 jsr MoveAccelerateFlyer
                 jmp MineCommon
@@ -401,7 +401,6 @@ DestroyRock:    lda #SFX_DAMAGE
                 tya
                 tax
                 jsr InitActor
-                jsr SetNotPersistent
                 lda #$00
                 jsr MR_RandomizeSmallerRock
                 ldx temp6
@@ -663,11 +662,8 @@ ExplodeEnemy4_Ofs15:
                 lda #-15*8
                 jsr MoveActorYNoInterpolation
                 lda #4
-                sta actTime,x
-                lda #$ff
-                sta actSX,x
-                sta actSY,x
-                jsr ExplodeEnemyMultipleCommon  ;Note: item is dropped first before
+                ldy #$ff
+                jsr ExplodeEnemyMultiple
                 lda #-2*8-8
                 sta temp7                       ;Initial base X-speed
                 jsr Random
@@ -1046,7 +1042,7 @@ RSL_ShowParts:  cpy itemIndex
                 sty itemIndex
                 jsr SetPanelRedrawItemAmmo
 RSL_SameItem:   lda joystick
-                and #JOY_DOWN
+                and #JOY_DOWN|JOY_UP
                 bne RSL_Exit
                 lda keyPress
                 bpl RSL_Exit
@@ -1058,6 +1054,7 @@ RSL_SameItem:   lda joystick
                 bcs RSL_MoveRight
                 jsr GetFireClick
                 bcs RSL_Buy
+RSL_NoObject:
 RSL_MoveFail:   rts
 RSL_MoveLeft:   jsr RS_GotoPrevItem
                 bcc RSL_MoveFail
@@ -1099,7 +1096,6 @@ RSL_RestoreItem:ldy #$00
                 ldy lvlObjNum
                 bmi RSL_NoObject                ;It's possible the player slid away from the station
                 jmp InactivateObject            ;Allow to reenter immediately
-RSL_NoObject:   rts
 
         ; Redraw current item in recycler
 

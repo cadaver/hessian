@@ -27,6 +27,7 @@ ONESPRITE       = $01
 TWOSPRITE       = $02
 THREESPRITE     = $03
 FOURSPRITE      = $04
+SIXSPRITE       = $06
 HUMANOID        = $80
 
 COLOR_FLICKER   = $40
@@ -1762,7 +1763,6 @@ AS_BGOK:        lda actYH,x                     ;Do not spawn into a wall
                 and #CI_OBSTACLE
                 bne AS_Remove3
 AS_SpawnOK:     jsr EnsureActorFiles            ;Also calls InitActor
-                jsr SetNotPersistent
                 inc UA_SpawnCount+1
                 ldy #AL_SPAWNAIMODE
                 lda (actLo),y                   ;Set default AI mode for actor type
@@ -1959,8 +1959,13 @@ GFA_Found:      lda #$00                        ;Reset most actor variables
                 sta actFlash,y
                 sta actMB,y
                 sta actTime,y
+                cpy #MAX_PERSISTENTACT
+                bcs GFA_NotComplex
+                lda #ORG_NOTPERSISTENT          ;By default new actors are not persistent
+                sta actLvlDataOrg,y
                 cpy #MAX_COMPLEXACT
                 bcs GFA_NotComplex
+                lda #$00
                 sta actF2,y
                 sta actCtrl,y
                 sta actMoveCtrl,y

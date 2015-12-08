@@ -962,8 +962,9 @@ ULO_PlayerDead: rts
 ULO_CheckPickupIndex:                           ;Check if player is colliding with an item
                 ldy #ACTI_FIRSTITEM             ;If was at an item last frame, continue search from that
 ULO_CheckPickupLoop:
-                lda actT,y
-                beq ULO_CPNoItem
+                lda actT,y                      ;There may be other actors such as explosions in
+                cmp #ACT_ITEM                   ;item indices during bossfights, so make sure
+                bne ULO_CPNoItem
                 jsr CheckActorCollision
                 bcs ULO_HasItem
 ULO_CPNoItem:   iny

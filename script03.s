@@ -7,6 +7,8 @@ EYE_MOVE_TIME = 10
 EYE_FIRE_TIME = 8
 DROID_SPAWN_DELAY = 4*25
 
+CHUNK_DURATION = 40
+
                 org scriptCodeStart
 
                 dc.w MoveEyePhase1
@@ -16,6 +18,10 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w DestroySecurityChief
                 dc.w MoveRotorDrone
                 dc.w DestroyRotorDrone
+                dc.w MoveLargeSpider
+                dc.w OpenWall
+                dc.w MoveAcid
+                dc.w MoveChunk
 
         ; Eye (Construct) boss phase 1
         ;
@@ -84,7 +90,6 @@ MEye_SpawnDroid:lda numSpawned
                 lda #ITEM_LASERRIFLE
                 sta actWpn,x
                 jsr InitActor
-                jsr SetNotPersistent
                 jsr NoInterpolation             ;If explosion is immediately reused on same frame,
                 ldx actIndex                    ;prevent artifacts
 MEye_SpawnDelay:lda #DROID_SPAWN_DELAY
@@ -349,6 +354,250 @@ DestroyRotorDrone:
                 sta actSY,x
                 rts
 
+        ; Large spider boss move routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveLargeSpider:lda actHp,x
+                bne MLS_Alive
+MLS_Dying:      lda actXH,x                     ;Reached the wall?
+                cmp #$3d
+                bne MLS_DyingNoWall
+                lda actXL,x
+                cmp #$60
+                bcs MLS_DyingNoWall
+                jmp MLS_Explode
+MLS_DyingNoWall:lda #<EP_OPENWALL               ;Wall open script runs until spider no longer exists, then activates the wall object
+                ldx #>EP_OPENWALL
+                jsr SetScript
+                ldx actIndex
+                inc actTime,x
+                lda actTime,x
+                and #$01
+                beq MLS_NoFlash
+                lda #$0c
+MLS_NoFlash:    sta actFlash,x
+                lda #JOY_LEFT
+                sta actMoveCtrl,x
+                bne MLS_Move
+MLS_Alive:      lda #MUSIC_CAVES+1
+                jsr PlaySong
+                ldx actIndex
+                lda #DMG_LARGESPIDER
+                jsr CollideAndDamagePlayer
+                lda actXH,x                     ;Retreat when close to player
+                cmp #$3d                        ;or move forward when about to hit wall
+                bne MLS_NoWall2
+                lda #JOY_RIGHT
+                bne MLS_StoreMove
+MLS_NoWall2:    cmp actXH+ACTI_PLAYER
+                bcc MLS_RandomMove
+                lda #JOY_LEFT
+                bne MLS_StoreMove
+MLS_RandomMove: dec actTime,x                   ;Otherwise move randomly back & forth & attack
+                bpl MLS_Move
+                jsr Random
+                and #$07
+                tay
+                jsr Random
+                and spiderDelayAndTbl,y
+                clc
+                adc #$10
+                sta actTime,x
+                lda spiderMoveTbl,y
+MLS_StoreMove:  sta actMoveCtrl,x
+MLS_Move:       jsr MoveGeneric
+                lda actSX,x
+                jsr Asr8
+                clc
+                adc actFd,x
+                bpl MLS_NotOverNeg
+                clc
+                adc #$60
+MLS_NotOverNeg: cmp #$60
+                bcc MLS_NotOverPos
+                sbc #$60
+MLS_NotOverPos: sta actFd,x
+                lsr
+                lsr
+                lsr
+                lsr
+                lsr
+                sta actF1,x
+                lda actMoveCtrl,x               ;About to launch acid?
+                cmp #JOY_FIRE
+                bne MLS_NoAttack
+                lda #2
+                sta actF1,x
+                lda #$40                        ;Reset walking animation after attack
+                sta actFd,x
+                lda actTime,x
+                cmp #8
+                bcs MLS_NoAttack
+                cmp #4
+                bcc MLS_NoAttack
+                php
+                inc actF1,x
+                plp
+                bne MLS_NoAttack
+MLS_Attack:     lda #ACTI_FIRSTNPCBULLET
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc MLS_NoAttack
+                lda #SFX_SHOTGUN
+                jsr PlaySfx
+                lda #<28*8
+                sta temp1
+                lda #>28*8
+                sta temp2
+                lda #<(-12*8)
+                sta temp3
+                lda #>(-12*8)
+                sta temp4
+                lda #ACT_ACID
+                jsr SpawnWithOffset
+                tya
+                tax
+                jsr InitActor
+                lda #7*8
+                sta actSX,x
+                lda actXH,x
+                sec
+                sbc actXH+ACTI_PLAYER           ;Player is on the right -> negative
+                asl
+                asl
+                adc #-3*8
+                sta actSY,x
+                ldx actIndex
+MLS_NoAttack:   rts
+MLS_Explode:    lda #MUSIC_CAVES
+                jsr PlaySong
+                ldx actIndex
+                lda #-15*8
+                jsr MoveActorYNoInterpolation
+                lda #6
+                ldy #$ff
+                jsr ExplodeEnemyMultiple
+                lda #-2*8-8
+                sta temp7                       ;Initial base X-speed
+                lda #0
+                sta temp8                       ;Initial shape
+MLS_ChunkLoop:  lda #ACTI_FIRSTNPC              ;Use any free actors
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc MLS_ChunkDone
+                lda #ACT_SPIDERCHUNK
+                jsr SpawnActor
+                jsr Random
+                and #$0f                        ;Randomize upward + sideways speed
+                clc
+                adc #-7*8
+                sta actSY,y
+                jsr Random
+                and #$0f
+                clc
+                adc temp7
+                sta actSX,y
+                lda temp8
+                sta actF1,y
+                inc temp8
+                lda #CHUNK_DURATION
+                sta actTime,y
+                lda temp7
+                bpl MLS_ChunkDone
+                clc
+                adc #2*8
+                sta temp7
+                bne MLS_ChunkLoop
+MLS_ChunkDone:   rts
+
+        ; Script routine for opening the wall after spider death
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+OpenWall:       lda #ACT_LARGESPIDER            ;Run either when the spider has exploded, or player exits the zone
+                jsr FindActor
+                bcs OW_HasSpider
+                ldy #7
+                jsr ActivateObject
+                jmp StopScript
+MA_NotDone:
+OW_HasSpider:   rts
+
+        ; Acid move routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveAcid:       lda actF1,x
+                cmp #4
+                bcs MA_AnimateSplash
+                lda actHp+ACTI_PLAYER
+                beq MA_NoPlayerCollision
+                lda #DMG_ACID
+                jsr CollideAndDamagePlayer
+                bcs MA_StartSplash
+MA_NoPlayerCollision:
+                jsr FallingMotionCommon
+                tay                             ;Any collision -> splash
+                bne MA_StartSplash
+                lda #1
+                ldy #3
+                jmp LoopingAnimation
+MA_StartSplash: jsr NoInterpolation
+                lda #4
+                sta actF1,x
+                lda #SFX_SPLASH
+                jmp PlaySfx
+MA_AnimateSplash:
+                ldy #8
+                lda #1
+                jsr OneShotAnimation
+                bcc MA_NotDone
+                jmp RemoveActor
+
+        ; Spider chunk movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveChunk:      lda actSY,x                     ;Store original Y-speed for bounce
+                sta temp1
+                jsr BounceMotion
+                bcc MC_NoBounce
+                lda actSX,x
+                jsr Asr8
+                sta actSX,x
+                lda temp1
+                jsr Negate8Asr8
+                sta actSY,x
+                lda #$00                        ;Clear grounded flag
+                sta actMB,x
+MC_NoBounce:    jmp DeathFlickerAndRemove
+
+        ; Common bounce motion subroutine. Speed is halved on side wall collisions
+        ;
+        ; Parameters: X actor index
+        ; Returns: C grounded status
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+BounceMotion:   jsr FallingMotionCommon
+                lsr
+                and #MB_HITWALL/2
+                beq BM_NoHitWall
+                php
+                lda actSX,x
+                jsr Negate8Asr8
+                sta actSX,x
+                plp
+BM_NoHitWall:   rts
+
         ; Final server room droid spawn positions
 
 droidSpawnXH:   dc.b $3e,$43,$3e,$43
@@ -372,6 +621,15 @@ eyeFrameTbl:    dc.b 2,1,0,1,2,3,4,3
         ; Final explosion Y-positions
 
 explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
+
+        ; Large spider move table
+        
+spiderMoveTbl:  ds.b 3,JOY_LEFT
+                ds.b 2,JOY_RIGHT
+                ds.b 3,JOY_FIRE
+spiderDelayAndTbl:
+                ds.b 5,$1f
+                dc.b 3,$0f
 
                 checkscriptend
 

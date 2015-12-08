@@ -215,7 +215,6 @@ MJ_SpawnMines:  lda actAttackD,x
                 tya
                 tax
                 jsr InitActor
-                jsr SetNotPersistent
                 lda #-12*8
                 sta actSY,x
                 lda #-8*8

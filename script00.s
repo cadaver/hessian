@@ -37,9 +37,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $5180
 ;START_Y         = $1b00
 
-START_LEVEL     = $04                          ;Service tunnels bridge
-START_X         = $5480
-START_Y         = $3000
+;START_LEVEL     = $04                          ;Service tunnels bridge
+;START_X         = $5480
+;START_Y         = $3000
 
 ;START_LEVEL      = $05                         ;Security center
 ;START_X          = $0b80
@@ -56,6 +56,10 @@ START_Y         = $3000
 ;START_LEVEL     = $07                          ;First cave
 ;START_X         = $5080
 ;START_Y         = $1f00
+
+START_LEVEL     = $07                          ;Large spider's lair
+START_X         = $4f80
+START_Y         = $3b00
 
 ;START_LEVEL     = $08                          ;Lower labs
 ;START_X         = $3780

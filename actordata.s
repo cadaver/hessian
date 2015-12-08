@@ -60,6 +60,9 @@ ACT_HIGHWALKER  = 58
 ACT_EXPLOSIONGENERATORRISING = 59
 ACT_SECURITYCHIEF = 60
 ACT_ROTORDRONE  = 61
+ACT_LARGESPIDER = 62
+ACT_ACID        = 63
+ACT_SPIDERCHUNK = 64
 
 HP_PLAYER       = 56
 HP_RAT          = 4
@@ -88,6 +91,7 @@ HP_ROTORDRONE   = 40
 HP_SUPERCPU     = 48
 HP_LARGETANK    = 56
 HP_SECURITYCHIEF = 64
+HP_LARGESPIDER  = 72
 HP_EYE          = 80
 HP_JORMUNGANDR  = 128
 
@@ -189,6 +193,9 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adExplosionGenerator
                 dc.b <adSecurityChief
                 dc.b <adRotorDrone
+                dc.b <adLargeSpider
+                dc.b <adAcid
+                dc.b <adSpiderChunk
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -251,6 +258,9 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adExplosionGenerator
                 dc.b >adSecurityChief
                 dc.b >adRotorDrone
+                dc.b >adLargeSpider
+                dc.b >adAcid
+                dc.b >adSpiderChunk
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -570,6 +580,25 @@ adRotorDroneFrames:
                 dc.b 0
                 dc.b 2
 
+adLargeSpider:  dc.b SIXSPRITE                  ;Number of sprites
+                dc.b C_LARGESPIDER              ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 4                          ;Number of frames
+                dc.b 10,13,16,16
+                dc.b 9,12,15,15
+                dc.b 0,3,6,6
+                dc.b 1,4,7,7
+                dc.b 2,5,8,8
+                dc.b 11,14,17,18
+
+adAcid:         dc.b ONESPRITEDIRECT            ;Number of sprites
+                dc.b C_LARGESPIDER              ;Spritefile number
+                dc.b 19                         ;Base spritenumber
+
+adSpiderChunk:  dc.b ONESPRITEDIRECT            ;Number of sprites
+                dc.b C_LARGESPIDER              ;Spritefile number
+                dc.b 28                         ;Base spritenumber
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -633,6 +662,9 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alExplosionGeneratorRising
                 dc.b <alSecurityChief
                 dc.b <alRotorDrone
+                dc.b <alLargeSpider
+                dc.b <alAcid
+                dc.b <alSpiderChunk
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -695,6 +727,9 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alExplosionGeneratorRising
                 dc.b >alSecurityChief
                 dc.b >alRotorDrone
+                dc.b >alLargeSpider
+                dc.b >alAcid
+                dc.b >alSpiderChunk
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -1491,7 +1526,7 @@ alRotorDrone:   dc.w USESCRIPT|EP_MOVEROTORDRONE ;Update routine
                 dc.b 20                         ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 5                          ;Size down
-                dc.w USESCRIPT|EP_DESTROYROTORDRONE ;Destroy routine (destroy handled by move routine)
+                dc.w USESCRIPT|EP_DESTROYROTORDRONE ;Destroy routine
                 dc.b HP_ROTORDRONE              ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 1000                       ;Score from kill
@@ -1506,3 +1541,35 @@ alRotorDrone:   dc.w USESCRIPT|EP_MOVEROTORDRONE ;Update routine
                 dc.b 1                          ;Vert acceleration
                 dc.b 2                          ;Horiz obstacle check offset
                 dc.b 2                          ;Vert obstacle check offset
+
+alLargeSpider:  dc.w USESCRIPT|EP_MOVELARGESPIDER ;Update routine
+                dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC|AF_NOREMOVECHECK    ;Actor flags
+                dc.b 28                         ;Horizontal size
+                dc.b 26                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w DoNothing                  ;Destroy routine
+                dc.b HP_LARGESPIDER             ;Initial health
+                dc.b MOD_BOSS                   ;Damage modifier
+                dc.w 1250                       ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b $00                        ;AI offense AND-value
+                dc.b $00                        ;AI defense probability
+                dc.b AB_NONE                    ;Attack directions
+                dc.b AMF_CUSTOMANIMATION        ;Move flags
+                dc.b 2*8                        ;Max. movement speed
+                dc.b 8                          ;Ground movement acceleration
+                dc.b 0                          ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 8                          ;Long jump gravity acceleration
+                dc.b 8                          ;Ground braking
+                dc.b -4                         ;Height in chars for headbump check (negative)
+
+alAcid:         dc.w USESCRIPT|EP_MOVEACID      ;Update routine
+                dc.b AF_INITONLYSIZE|AF_NOREMOVECHECK ;Actor flags
+                dc.b 4                          ;Horizontal size
+                dc.b 3                          ;Size up
+                dc.b 3                          ;Size down
+
+alSpiderChunk:  dc.w USESCRIPT|EP_MOVECHUNK     ;Update routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
