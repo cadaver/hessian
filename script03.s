@@ -369,19 +369,42 @@ MLS_Dying:      lda actXH,x                     ;Reached the wall?
                 cmp #$60
                 bcs MLS_DyingNoWall
                 jmp MLS_Explode
-MLS_DyingNoWall:lda #<EP_OPENWALL               ;Wall open script runs until spider no longer exists, then activates the wall object
+MLS_DyingNoWall:lda #<EP_OPENWALL               ;Wall script runs until spider no longer exists, then activates the wall object
                 ldx #>EP_OPENWALL
                 jsr SetScript
                 ldx actIndex
                 inc actTime,x
                 lda actTime,x
                 and #$01
-                beq MLS_NoFlash
+                beq MLS_DyingNoFlash
                 lda #$0c
-MLS_NoFlash:    sta actFlash,x
+MLS_DyingNoFlash:
+                sta actFlash,x
+                jsr Random
+                pha
+                and #$01
+                sta shakeScreen
+                pla                             ;Spawn explosions randomly while retreating
+                cmp #$20
+                bcs MLS_NoDyingExplosion
+                lda #ACTI_FIRSTNPC              ;Use any free actors
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc MLS_NoDyingExplosion
+                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
+                tya
+                tax
+                jsr ExplodeActor
+                jsr Random
+                jsr MoveActorX
+                dec actYH,x
+                jsr Random
+                sta actYL,x
+                ldx actIndex
+MLS_NoDyingExplosion:
                 lda #JOY_LEFT
-                sta actMoveCtrl,x
-                bne MLS_Move
+                bne MLS_ForcedMoveImmediate
+
 MLS_Alive:      lda #MUSIC_CAVES+1
                 jsr PlaySong
                 ldx actIndex
@@ -450,6 +473,7 @@ MLS_NotOverPos: sta actFd,x
                 inc actF1,x
                 plp
                 bne MLS_NoAttack
+
 MLS_Attack:     lda #ACTI_FIRSTNPCBULLET
                 ldy #ACTI_LASTNPCBULLET
                 jsr GetFreeActor
@@ -480,6 +504,7 @@ MLS_Attack:     lda #ACTI_FIRSTNPCBULLET
                 sta actSY,x
                 ldx actIndex
 MLS_NoAttack:   rts
+
 MLS_Explode:    lda #MUSIC_CAVES
                 jsr PlaySong
                 ldx actIndex
@@ -519,7 +544,7 @@ MLS_ChunkLoop:  lda #ACTI_FIRSTNPC              ;Use any free actors
                 adc #2*8
                 sta temp7
                 bne MLS_ChunkLoop
-MLS_ChunkDone:   rts
+MLS_ChunkDone:  rts
 
         ; Script routine for opening the wall after spider death
         ;
