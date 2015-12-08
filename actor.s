@@ -27,7 +27,7 @@ ONESPRITE       = $01
 TWOSPRITE       = $02
 THREESPRITE     = $03
 FOURSPRITE      = $04
-SIXSPRITE       = $06
+FIVESPRITE      = $05
 HUMANOID        = $80
 
 COLOR_FLICKER   = $40

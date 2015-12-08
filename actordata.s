@@ -580,24 +580,23 @@ adRotorDroneFrames:
                 dc.b 0
                 dc.b 2
 
-adLargeSpider:  dc.b SIXSPRITE                  ;Number of sprites
+adLargeSpider:  dc.b FIVESPRITE                 ;Number of sprites
                 dc.b C_LARGESPIDER              ;Spritefile number
                 dc.b 0                          ;Left frame add
                 dc.b 4                          ;Number of frames
-                dc.b 10,13,16,16
-                dc.b 9,12,15,15
-                dc.b 0,3,6,6
-                dc.b 1,4,7,7
-                dc.b 2,5,8,8
-                dc.b 11,14,17,18
+                dc.b 7,10,13,13
+                dc.b 6,9,12,12
+                dc.b 0,2,4,4
+                dc.b 1,3,5,5
+                dc.b 8,11,14,15
 
 adAcid:         dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_LARGESPIDER              ;Spritefile number
-                dc.b 19                         ;Base spritenumber
+                dc.b 16                         ;Base spritenumber
 
 adSpiderChunk:  dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_LARGESPIDER              ;Spritefile number
-                dc.b 23                         ;Base spritenumber
+                dc.b 20                         ;Base spritenumber
 
         ; Actor logic data
 
