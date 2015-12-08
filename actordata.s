@@ -597,7 +597,7 @@ adAcid:         dc.b ONESPRITEDIRECT            ;Number of sprites
 
 adSpiderChunk:  dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_LARGESPIDER              ;Spritefile number
-                dc.b 28                         ;Base spritenumber
+                dc.b 23                         ;Base spritenumber
 
         ; Actor logic data
 
@@ -1568,8 +1568,8 @@ alLargeSpider:  dc.w USESCRIPT|EP_MOVELARGESPIDER ;Update routine
 alAcid:         dc.w USESCRIPT|EP_MOVEACID      ;Update routine
                 dc.b AF_INITONLYSIZE|AF_NOREMOVECHECK ;Actor flags
                 dc.b 4                          ;Horizontal size
-                dc.b 3                          ;Size up
-                dc.b 3                          ;Size down
+                dc.b 7                          ;Size up
+                dc.b 0                          ;Size down
 
 alSpiderChunk:  dc.w USESCRIPT|EP_MOVECHUNK     ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags

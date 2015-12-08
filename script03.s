@@ -387,7 +387,7 @@ MLS_Alive:      lda #MUSIC_CAVES+1
                 ldx actIndex
                 lda #DMG_LARGESPIDER
                 jsr CollideAndDamagePlayer
-                lda actXH,x                     ;Retreat when close to player
+MLS_Decision:   lda actXH,x                     ;Retreat when close to player
                 cmp #$3d                        ;or move forward when about to hit wall
                 bne MLS_NoWall2
                 lda #JOY_RIGHT
@@ -398,8 +398,14 @@ MLS_NoWall2:    cmp actXH+ACTI_PLAYER
                 bne MLS_StoreMove
 MLS_RandomMove: dec actTime,x                   ;Otherwise move randomly back & forth & attack
                 bpl MLS_Move
+                lda actAttackD+ACTI_PLAYER      ;If player is attacking now, attack also
+                beq MLS_NoForcedAttack
+                lda #$03
+                bne MLS_ForcedAttack
+MLS_NoForcedAttack:
                 jsr Random
-                and #$07
+                and #$03
+MLS_ForcedAttack:
                 tay
                 jsr Random
                 and spiderDelayAndTbl,y
@@ -452,9 +458,9 @@ MLS_Attack:     lda #ACTI_FIRSTNPCBULLET
                 sta temp1
                 lda #>28*8
                 sta temp2
-                lda #<(-12*8)
+                lda #<(-9*8)
                 sta temp3
-                lda #>(-12*8)
+                lda #>(-9*8)
                 sta temp4
                 lda #ACT_ACID
                 jsr SpawnWithOffset
@@ -534,32 +540,26 @@ OW_HasSpider:   rts
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveAcid:       lda actF1,x
-                cmp #4
-                bcs MA_AnimateSplash
+MoveAcid:       jsr FallingMotionCommon
+                tay                             ;Any collision -> splash
+                bne MA_StartSplash
                 lda actHp+ACTI_PLAYER
                 beq MA_NoPlayerCollision
                 lda #DMG_ACID
                 jsr CollideAndDamagePlayer
-                bcs MA_StartSplash
+                bcs MA_StartPlayerSplash
 MA_NoPlayerCollision:
-                jsr FallingMotionCommon
-                tay                             ;Any collision -> splash
-                bne MA_StartSplash
                 lda #1
                 ldy #3
                 jmp LoopingAnimation
 MA_StartSplash: jsr NoInterpolation
-                lda #4
-                sta actF1,x
+MA_StartPlayerSplash:
+                lda #13
+                sta actFlash,x
                 lda #SFX_SPLASH
-                jmp PlaySfx
-MA_AnimateSplash:
-                ldy #8
-                lda #1
-                jsr OneShotAnimation
-                bcc MA_NotDone
-                jmp RemoveActor
+                jsr PlaySfx
+                lda #ACT_WATERSPLASH
+                jmp TransformBullet
 
         ; Spider chunk movement
         ;
@@ -624,12 +624,10 @@ explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
 
         ; Large spider move table
         
-spiderMoveTbl:  ds.b 3,JOY_LEFT
-                ds.b 2,JOY_RIGHT
-                ds.b 3,JOY_FIRE
+spiderMoveTbl:  dc.b JOY_LEFT,JOY_LEFT,JOY_RIGHT,JOY_FIRE
 spiderDelayAndTbl:
-                ds.b 5,$1f
-                dc.b 3,$0f
+                dc.b $1f,$0f,$1f,$0f
+
 
                 checkscriptend
 
