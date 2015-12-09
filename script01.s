@@ -1037,12 +1037,13 @@ RecyclingStationLoop:
                 asl
                 bpl RSL_ShowParts
                 ldy recyclerItem
-RSL_ShowParts:  cpy itemIndex
-                beq RSL_SameItem
-                sty itemIndex
+RSL_ShowParts:  sty itemIndex
                 jsr SetPanelRedrawItemAmmo
+                jsr UP_RedrawItemAmmoScore      ;Forcibly redraw item/ammo
+                ldy #ITEM_PARTS                 ;Actually keep the parts item selected,
+                sty itemIndex                   ;so that there's no weapon reloading
 RSL_SameItem:   lda joystick
-                and #JOY_DOWN|JOY_UP
+                and #JOY_DOWN
                 bne RSL_Exit
                 lda keyPress
                 bpl RSL_Exit
@@ -1118,14 +1119,13 @@ RS_Redraw:      jsr ClearPanelText
                 inx
                 cmp #10
                 bcs RS_2Digits
-                lda #$20
                 inx
 RS_2Digits:
 RS_3Digits:     stx temp2
                 ldx #26
-                lda #$20
 RS_SpaceLoop:   cpx temp2
                 beq RS_SpaceDone
+                lda #$20
                 jsr PrintPanelChar
                 bne RS_SpaceLoop
 RS_SpaceDone:   lda #"+"

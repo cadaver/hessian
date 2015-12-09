@@ -144,6 +144,7 @@ UP_SkipHealth:  if SHOW_BATTERY > 0
                 lda battery
                 jsr PrintHexByte
                 endif
+UP_RedrawItemAmmoScore:
                 lsr panelUpdateFlags
                 bcc UP_SkipWeapon
                 ldx #$02
