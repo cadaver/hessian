@@ -1139,7 +1139,7 @@ alBat:          dc.w USESCRIPT|EP_MOVEBAT       ;Update routine
 alFish:         dc.w USESCRIPT|EP_MOVEFISH      ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
                 dc.b 2                          ;Horizontal size
-                dc.b 1                          ;Size up
+                dc.b 2                          ;Size up
                 dc.b 3                          ;Size down
                 dc.w RemoveActor                ;Destroy routine
                 dc.b 0                          ;Initial health
