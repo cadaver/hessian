@@ -4,12 +4,10 @@
                 include kernal.s
                 include loadsym.s
 
-        ; SYS instruction if autostart not used
-
                 org $032a
 
-                dc.b $0b,$08                    ;Getin vector (BASIC next line address)
-                dc.w AutoStart                  ;Clall vector + BASIC line number
+                dc.b $0b,$08                    ;GETIN vector or BASIC next line address
+                dc.w AutoStart                  ;CLALL vector or BASIC line number
                 dc.b $9e,$32,$30,$36,$31        ;Sys instruction
                 dc.b $00,$00,$00
 
