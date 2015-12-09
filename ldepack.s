@@ -4,15 +4,7 @@
                 include memory.s
                 include loadsym.s
 
-                org $0800
-                
-                lda #$02                        ;Close the file loaded from
-                jsr Close
-                jmp Depacker
-
-packedData:     dc.b >mainCodeStart
-                dc.b <mainCodeStart
-                incbin loader.pak
+                org loaderInitEnd
 
 ; -------------------------------------------------------------------
 ; This source code is altered and is not the original version found on
@@ -53,8 +45,6 @@ packedData:     dc.b >mainCodeStart
 Depacker:
   ldx #3
   ldy #0
-  sty $d011
-  sty $d020
 init_zp:
   jsr getbyte
   sta zpBitBuf-1,x
@@ -224,11 +214,9 @@ bits_done:
   rts
 
 getbyte:
-  lda packedData
-  inc getbyte+1
-  bne getbyte_done
-  inc getbyte+2
-getbyte_done:
+  stx loadTempReg
+  jsr ChrIn
+  ldx loadTempReg
   rts
 
 tablBit:        dc.b 2,4,4                      ;Exomizer static tables
@@ -237,3 +225,7 @@ tablOff:        dc.b 48,32,16
 tablBi          = *
 tablLo          = * + 52
 tablHi          = * + 104
+
+                dc.b >mainCodeStart             ;This will be read next from the file
+                dc.b <mainCodeStart
+                incbin loader.pak

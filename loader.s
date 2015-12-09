@@ -451,7 +451,11 @@ loaderCodeEnd:                                  ;Resident code ends here!
 
         ; Loader initialization
 
-InitLoader:     sei
+InitLoader:     lda #$02                        ;Close the file loaded from
+                jsr Close
+                lda #$0b
+                sta $d011                       ;Blank screen
+                sei
                 ldx #$00
                 stx $d07f                       ;Disable SCPU hardware regs
                 stx $d07a                       ;SCPU to slow mode
@@ -1196,3 +1200,5 @@ ilLedAdrHi:     dc.b $1c,$40,$40,$05
 
 iflMWString:    dc.b MW_LENGTH,>drvStart, <drvStart,"W-M"
 iflMEString:    dc.b >DrvMain,<DrvMain, "E-M"
+
+loaderInitEnd:

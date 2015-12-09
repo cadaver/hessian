@@ -13,4 +13,5 @@ fastLoadMode
 ntscFlag
 fileNumber
 loaderCodeEnd
+loaderInitEnd
 MULTISIDE

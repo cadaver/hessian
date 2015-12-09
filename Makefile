@@ -43,7 +43,7 @@ hessian.d64: boot.prg loader.prg main.pak options.bin emptysave.bin savelist.bin
 hessian.d81: hessian.d64 hessiand81.seq
 	c1541 < hessiand81.seq
 
-boot.prg: boot.s kernal.s memory.s
+boot.prg: boot.s kernal.s memory.s loadsym.s
 	dasm boot.s -oboot.prg
 
 loader.prg: kernal.s loader.s loadsym.txt ldepack.s macros.s memory.s
