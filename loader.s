@@ -444,7 +444,7 @@ NMI:            rti
 
 tablBit:        dc.b 2,4,4                      ;Exomizer static tables
 tablOff:        dc.b 48,32,16
-fileNumber:     dc.b $00                        ;Initial filenumber for the concatenated intro + main part
+fileNumber:     dc.b $01                        ;Initial filenumber for the concatenated intro + main part
 fastLoadMode:   dc.b LOAD_KERNAL
 
 loaderCodeEnd:                                  ;Resident code ends here!
@@ -452,13 +452,10 @@ loaderCodeEnd:                                  ;Resident code ends here!
         ; Loader initialization
 
 InitLoader:     sei
-                jsr WaitBottom
                 ldx #$00
                 stx $d07f                       ;Disable SCPU hardware regs
                 stx $d07a                       ;SCPU to slow mode
                 stx $d030                       ;C128 back to 1MHz mode
-                stx $d020
-                stx $d011
                 stx messages                    ;Disable KERNAL messages
                 stx fileOpen                    ;Clear fileopen indicator
                 stx palFlag
@@ -495,11 +492,7 @@ IL_IsNtsc:      lda #$7f                        ;Disable & acknowledge IRQ sourc
                 lda #%00011001                  ;Run Timer A in one-shot mode
                 sta $dd0e
 
-                ldx #25                         ;Wait 1/2 seconds before checking safe mode
-IL_StartDelay:  jsr WaitBottom                  ;keypress (fire or space)
-                dex
-                bpl IL_StartDelay
-                lda $dc00
+                lda $dc00                       ;Check for safe mode loader
                 and #$10
                 beq IL_SafeMode
                 lda $dc01

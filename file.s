@@ -24,8 +24,8 @@ C_ROTORDRONE    = 21
 C_LARGESPIDER   = 22
 C_FIRSTPURGEABLE = C_PLAYER_TOP
 
-F_LOGO          = $01
-F_SPRITE        = $02
+F_LOGO          = $02
+F_SPRITE        = $03
 F_LEVEL         = $20
 F_CHARSET       = $2f
 F_MUSIC         = $3e

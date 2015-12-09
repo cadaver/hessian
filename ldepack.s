@@ -1,24 +1,17 @@
         ; Loader depacker
 
+                include kernal.s
                 include memory.s
                 include loadsym.s
 
-                org $0801
-
-line1:          dc.w line2
-                dc.w 0
-                dc.b $8f," SPACE OR FIRE FOR SAFEMODE LOADER",0
-
-line2:          dc.w line3
-                dc.w 1
-                dc.b $9e," "
-                dc.b Depacker / 1000 + $30
-                dc.b (Depacker / 100) % 10 + $30
-                dc.b (Depacker / 10) % 10 + $30
-                dc.b Depacker % 10 + $30
-                dc.b 0
-
-line3:          dc.b 0,0
+                org $0800
+                
+                lda #$02                        ;Close the file loaded from
+                jsr Close
+                lda #$00                        ;Blank screen
+                sta $d011
+                sta $d020
+                jmp Depacker
 
 packedData:     dc.b >mainCodeStart
                 dc.b <mainCodeStart
