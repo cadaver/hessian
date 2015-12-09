@@ -8,9 +8,6 @@
                 
                 lda #$02                        ;Close the file loaded from
                 jsr Close
-                lda #$00                        ;Blank screen
-                sta $d011
-                sta $d020
                 jmp Depacker
 
 packedData:     dc.b >mainCodeStart
@@ -56,6 +53,8 @@ packedData:     dc.b >mainCodeStart
 Depacker:
   ldx #3
   ldy #0
+  sty $d011
+  sty $d020
 init_zp:
   jsr getbyte
   sta zpBitBuf-1,x
