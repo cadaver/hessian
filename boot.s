@@ -33,28 +33,31 @@ BootStart:
                 stx $d020
                 stx $d021
                 txa
+                ldy #$04
 ClearScreen:    sta $d800,x
-                sta $d900,x
-                sta $da00,x
-                sta $db00,x
                 inx
+                bne ClearScreen
+                inc ClearScreen+2
+                dey
                 bne ClearScreen
                 lda #$02
                 ldx #<loaderFileName
-                ldy #>loaderFileName
+                ;ldy #>loaderFileName
+                iny
                 jsr SetNam
                 ldx $ba                         ;Use last used device
-                ldy #$00                        ;A is still $02 (file number)
+                ;ldy #$00                        ;A is still $02 (file number)
+                dey
                 jsr SetLFS
                 jsr Open
                 ldx #$02                        ;Open file $02 for input
                 jsr ChkIn
-                ldy #38
+                ldy #37
 ShowMessage:    lda #$0f
-                sta colors+1*40,y
+                sta colors+1*40-1,y
                 lda message-1,y
                 and #$3f
-                sta $0400+1*40,y
+                sta $0400+1*40-1,y
                 dey
                 bne ShowMessage
 LoadExomizer:   jsr ChrIn                       ;Load Exomizer as unpacked data
@@ -68,7 +71,7 @@ LoadExomizer:   jsr ChrIn                       ;Load Exomizer as unpacked data
                 jmp loaderCodeEnd               ;Jump to InitLoader
 
 loaderFileName: dc.b "00"
-message:        dc.b "HOLD SPACE/FIRE TO DISABLE FAST LOADER"
+message:        dc.b "HOLD SPACE/FIRE TO DISABLE FASTLOADER"
 
                 rend
 BootEnd:
