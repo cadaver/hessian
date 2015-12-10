@@ -301,7 +301,7 @@ ilFastLoadStart:
         ; Returns: -
         ; Modifies: A,X,Y
 
-FastOpenFile:       jmp FastOpen
+                jmp FastOpen
 
         ; Save file
         ;
@@ -309,7 +309,7 @@ FastOpenFile:       jmp FastOpen
         ; Returns: -
         ; Modifies: A,X,Y
 
-SaveFile:       jmp FastSave
+                jmp FastSave
 
         ; Read a byte from an opened file
         ;
