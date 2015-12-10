@@ -72,24 +72,24 @@ fastLoadMode:   dc.b LOAD_KERNAL
                 org loaderCodeEnd
 
         ; Loader initialization
+        ; Assumption: $01 has value $35, interrupts are off
 
-InitLoader:     lda #$02                        ;Close the file loaded from
-                jsr Close
+InitLoader:     inc $01                         ;Kernal back on (the initial GetByte routine switches it off)
+                lda #$02
+                jsr Close                       ;Close the file loaded from
                 lda #$0b
                 sta $d011                       ;Blank screen
-                sei
-                ldx #$00
+                ldx #ilFastLoadEnd-ilFastLoadStart
+IL_CopyFastLoad:lda ilFastLoadStart-1,x         ;Copy fastload file routines
+                sta OpenFile-1,x
+                dex
+                bne IL_CopyFastLoad
                 stx $d07f                       ;Disable SCPU hardware regs
                 stx $d07a                       ;SCPU to slow mode
                 stx $d030                       ;C128 back to 1MHz mode
                 stx messages                    ;Disable KERNAL messages
                 stx fileOpen                    ;Clear fileopen indicator
                 stx palFlag
-                ldx #ilFastLoadEnd-ilFastLoadStart
-IL_CopyFastLoad:lda ilFastLoadStart-1,x         ;Copy fastload file routines
-                sta OpenFile-1,x
-                dex
-                bne IL_CopyFastLoad
 IL_DetectNtsc1: lda $d012                       ;Detect PAL/NTSC
 IL_DetectNtsc2: cmp $d012
                 beq IL_DetectNtsc2
@@ -122,7 +122,7 @@ IL_IsNtsc:      lda #$7f                        ;Disable & acknowledge IRQ sourc
                 stx $dd05
                 lda #%00011001                  ;Run Timer A in one-shot mode
                 sta $dd0e
-
+IL_CheckSafeMode:
                 lda $dc00                       ;Check for safe mode loader
                 and #$10
                 beq IL_SafeMode
@@ -288,337 +288,6 @@ UDC_SendME:     lda iflMEString-1,x             ;Send M-E command (backwards)
                 bne UDC_SendME
                 jsr UnLsn
 UDC_Quit:       rts
-
-        ; Diskdrive code
-
-driveCode:
-                rorg drvStart
-
-DrvMain:        lda #IRQ_SPEED                  ;Speed up the controller a bit
-                sta $1c07                       ;(1541 only)
-DrvMain_Not1541:
-                ldx #$00
-                txa
-DrvResetCache:  sta drvFileTrk,x                ;Clear dir cache
-                inx
-                bpl DrvResetCache
-DrvLoop:        cli
-                jsr DrvGetByte                  ;Get command (load/save)
-                beq DrvLoad
-                jmp DrvSave
-DrvLoad:        sei
-                jsr DrvGetByte                  ;Get filenumber
-                jsr DrvFindFile
-                bcc DrvFound
-DrvFileNotFound:ldx #$02                        ;Return code $02 = File not found
-DrvEndMark:     stx drvBuf+2                    ;Send endmark, return code in X
-                lda #$00
-                sta drvBuf
-                sta drvBuf+1
-                beq DrvSendBlk
-
-DrvFound:
-DrvSectorLoop:  jsr DrvReadSector               ;Read the data sector
-                bcs DrvEndMark                  ;Quit if cannot read
-DrvSendBlk:     ldy #$00
-                ldx #$02
-DrvSendLoop:    lda drvBuf,y
-                lsr
-                lsr
-                lsr
-                lsr
-DrvSerialAcc1:  stx $1800                       ;Set DATA=low for first byte, high for
-                tax                             ;subsequent bytes
-                lda drvSendTbl,x
-                pha
-                lda drvBuf,y
-                and #$0f
-                tax
-                lda #$04
-DrvSerialAcc2:  bit $1800                       ;Wait for CLK=low
-                beq DrvSerialAcc2
-                lda drvSendTbl,x
-DrvSerialAcc3:  sta $1800
-
-        ; 2MHz send timing code from ULoad3 by MagerValp
-
-Drv2MHzSend:    jsr DrvDelay18
-                nop
-                asl
-                and #$0f
-Drv2MHzSerialAcc4:
-                sta $1800
-                cmp ($00,x)
-                nop
-                pla
-Drv2MHzSerialAcc5:
-                sta $1800
-                cmp ($00,x)
-                nop
-                asl
-                and #$0f
-Drv2MHzSerialAcc6:
-                sta $1800
-                ldx #$00
-                iny
-                bne DrvSendLoop
-                jsr DrvDelay12
-Drv2MHzSerialAcc7:
-                stx $1800                       ;Finish send: DATA & CLK both high
-
-DrvSendDone:    lda drvBuf+1                    ;Follow the T/S chain
-                ldx drvBuf
-                bne DrvSectorLoop
-                tay                             ;If 2 first bytes are both 0,
-                bne DrvEndMark                  ;endmark has been sent and can
-                jmp DrvLoop                     ;return to main loop
-
-DrvGetSaveByte:
-DrvSaveCountLo: lda #$00
-                tay
-DrvSaveCountHi: ora #$00
-                beq DrvNoMoreBytes
-                dec DrvSaveCountLo+1
-                tya
-                bne DrvGetByte
-                dec DrvSaveCountHi+1
-DrvGetByte:     ldy #$08                        ;Filenumber bit counter
-DrvGetBitLoop:
-DrvSerialAcc8:  lda $1800
-                bpl DrvNoQuit                   ;Quit if ATN is low
-                pla
-                pla
-DrvExitJump:    jmp InitializeDrive             ;1541 = exit through Initialize
-                                                ;Others = exit through RTS
-DrvNoQuit:      and #$05                        ;Wait for CLK or DATA going low
-                beq DrvGetBitLoop
-                lsr                             ;Read the data bit
-                lda #$02                        ;Pull the other line low to acknowledge
-                bcc DrvGetZero
-                lda #$08
-DrvGetZero:     ror drvReceiveBuf               ;Store the data bit
-DrvSerialAcc9:  sta $1800
-DrvGetWait:
-DrvSerialAcc10: lda $1800                       ;Wait for either line going high
-                and #$05
-                cmp #$05
-                beq DrvGetWait
-                lda #$00
-DrvSerialAcc11: sta $1800                       ;Set CLK & DATA high
-                dey
-                bne DrvGetBitLoop               ;Loop until all bits have been received
-                lda drvReceiveBuf
-DrvFindFileOK:  clc
-                rts
-DrvFindFileError:
-DrvNoMoreBytes: sec
-                rts
-
-                if DrvSerialAcc11 - DrvMain > $ff
-                    err
-                endif
-
-DrvFindFile:    sta DrvCheckForFile+1
-                jsr DrvCheckForFile             ;Already cached?
-                bne DrvFindFileOK
-DrvDirTrk:      ldx $1000
-DrvDirSct:      lda $1000                       ;Read disk directory
-DrvDirLoop:     jsr DrvReadSector               ;Read sector
-                bcs DrvFindFileError            ;If failed, abort caching
-                ldy #$02
-DrvNextFile:    lda drvBuf,y                    ;File type must be PRG
-                and #$83
-                cmp #$82
-                bne DrvSkipFile
-                lda drvBuf+5,y                  ;Must be two-letter filename
-                cmp #$a0
-                bne DrvSkipFile
-                lda drvBuf+3,y                  ;Convert filename (assumed to be hexadecimal)
-                jsr DrvDecodeLetter             ;into an index number for the cache
-                asl
-                asl
-                asl
-                asl
-                sta DrvIndexOr+1
-                lda drvBuf+4,y
-                jsr DrvDecodeLetter
-DrvIndexOr:     ora #$00
-                tax
-                lda drvBuf+1,y
-                sta drvFileTrk,x
-                lda drvBuf+2,y
-                sta drvFileSct,x
-DrvSkipFile:    tya
-                clc
-                adc #$20
-                tay
-                bcc DrvNextFile
-                jsr DrvCheckForFile             ;Found on this directory track?
-                bne DrvFindFileOK
-                lda drvBuf+1                    ;Go to next directory block, until no
-                ldx drvBuf                      ;more directory blocks
-                beq DrvFindFileError
-                bne DrvDirLoop
-
-DrvDecodeLetter:sec
-                sbc #$30
-                cmp #$10
-                bcc DrvDecodeLetterDone
-                sbc #$07
-DrvDecodeLetterDone:
-                rts
-
-DrvCheckForFile:ldy #$00
-                lda drvFileSct,y
-                ldx drvFileTrk,y
-                rts
-
-DrvSave:        jsr DrvGetByte                  ;Get filenumber
-                pha
-                jsr DrvGetByte                  ;Get amount of bytes to expect
-                sta DrvSaveCountLo+1
-                jsr DrvGetByte
-                sta DrvSaveCountHi+1
-                pla
-                tay
-                ldx drvFileTrk,y
-                bne DrvSaveFound                ;If file not found, just receive the bytes
-                beq DrvSaveFinish
-DrvSaveFound:   lda drvFileSct,y
-DrvSaveSectorLoop:
-                jsr DrvReadSector               ;First read the sector for T/S chain
-                bcs DrvSaveFinish               ;If reading fails, abort
-                ldx #$02
-DrvSaveByteLoop:jsr DrvGetSaveByte              ;Then get bytes from C64 and write
-                bcs DrvSaveSector               ;If last byte, save the last sector
-                sta drvBuf,x
-                inx
-                bne DrvSaveByteLoop
-DrvSaveSector:  ldy #$90
-                jsr DrvDoJob
-                lda drvBuf+1                    ;Follow the T/S chain
-                ldx drvBuf
-                bne DrvSaveSectorLoop
-DrvSaveFinish:  jsr DrvGetSaveByte              ;Make sure all bytes are received
-                bcc DrvSaveFinish
-                jmp DrvLoop
-
-DrvReadSector:
-DrvReadTrk:     stx $1000
-DrvReadSct:     sta $1000
-                ldy #$80
-DrvDoJob:       sty DrvRetry+1
-                jsr DrvLed
-                ldy #RETRIES                    ;Retry counter
-DrvRetry:       lda #$80
-                ldx #$01
-DrvExecJsr:     jsr Drv1541Exec                 ;Exec buffer 1 job
-                cmp #$02                        ;Error?
-                bcc DrvSuccess
-DrvSkipId:      dey                             ;Decrease retry counter
-                bne DrvRetry
-DrvFailure:     ldx #$01                        ;Return code $01 - Read error
-DrvSuccess:     sei                             ;Make sure interrupts now disabled
-DrvLed:         lda #$08
-DrvLedAcc0:     eor $1c00
-DrvLedAcc1:     sta $1c00
-                rts
-
-Drv1541Exec:    sta $01                         ;Set command for execution
-                cli                             ;Allow interrupts to execute command
-Drv1541ExecWait:
-                lda $01                         ;Wait until command finishes
-                bmi Drv1541ExecWait
-                rts
-
-DrvFdExec:      jsr $ff54                       ;FD2000 fix By Ninja
-                lda $03
-                rts
-
-DrvDelay18:     cmp ($00,x)
-DrvDelay12:     rts
-
-drvSendTbl:     dc.b $0f,$07,$0d,$05
-                dc.b $0b,$03,$09,$01
-                dc.b $0e,$06,$0c,$04
-                dc.b $0a,$02,$08,$00
-
-drv1541DirSct  = drvSendTbl+7                   ;Byte $01
-drv1581DirSct  = drvSendTbl+5                   ;Byte $03
-
-drv1541DirTrk:  dc.b 18
-
-drvCommand:     dc.b 0
-drvReceiveBuf:  dc.b 0
-
-drvEnd:
-                if drvEnd > $0700
-                    err
-                endif
-
-                rend
-
-        ;Drive detection drivecode
-        
-ilDriveCode:
-                rorg drvStart
-
-                asl drvReturn                   ;Modify first returnvalue to prove
-                                                ;we've executed something :)
-                lda $fea0                       ;Recognize drive family
-                ldx #3                          ;(from Dreamload)
-DrvFLoop:       cmp drvFamily-1,x
-                beq DrvFFound
-                dex                             ;If unrecognized, assume 1541
-                bne DrvFLoop
-                beq DrvIdFound
-DrvFFound:      lda drvIdLoclo-1,x
-                sta DrvIdLda+1
-                lda drvIdLochi-1,x
-                sta DrvIdLda+2
-DrvIdLda:       lda $fea4                       ;Recognize drive type
-                ldx #3                          ;3 = CMD HD
-DrvIdLoop:      cmp drvIdbyte-1,x               ;2 = CMD FD
-                beq DrvIdFound                  ;1 = 1581
-                dex                             ;0 = 1541
-                bne DrvIdLoop
-DrvIdFound:     stx drvReturn2
-                rts
-
-drvFamily:      dc.b $43,$0d,$ff
-drvIdLoclo:     dc.b $a4,$c6,$e9
-drvIdLochi:     dc.b $fe,$e5,$a6
-drvIdbyte:      dc.b "8","F","H"
-
-drvReturn:      dc.b $55
-drvReturn2:     dc.b $00
-
-                rend
-
-ilDriveCodeEnd:
-
-        ; 1MHz transfer drivecode
-
-il1MHzStart:
-                rorg Drv2MHzSend
-
-Drv1MHzSend:    asl
-                and #$0f
-                sta $1800
-                pla
-                sta $1800
-                asl
-                and #$0f
-                sta $1800
-                ldx #$00
-                iny
-                bne DrvSendLoop
-                nop
-                stx $1800                       ;Finish send: DATA & CLK both high
-                beq DrvSendDone
-
-                rend
-il1MHzEnd:
 
         ; Fast fileopen / getbyte / save routines
 
@@ -907,17 +576,352 @@ fileName:       dc.b "  "
 
 SlowLoadEnd:
 
-                if SlowLoadEnd > FastLoadEnd
-                err
-                endif
-
                 rend
 
 ilSlowLoadEnd:
 
+                if ilFastLoadEnd - ilFastLoadStart > $ff
+                err
+                endif
+
                 if ilSlowLoadEnd - ilSlowLoadStart > $ff
                 err
                 endif
+
+                if SlowLoadEnd > FastLoadEnd
+                err
+                endif
+
+        ; 1MHz transfer drivecode
+
+il1MHzStart:
+                rorg Drv2MHzSend
+
+Drv1MHzSend:    asl
+                and #$0f
+                sta $1800
+                pla
+                sta $1800
+                asl
+                and #$0f
+                sta $1800
+                ldx #$00
+                iny
+                bne DrvSendLoop
+                nop
+                stx $1800                       ;Finish send: DATA & CLK both high
+                beq DrvSendDone
+
+                rend
+il1MHzEnd:
+
+        ; Diskdrive code
+
+driveCode:
+                rorg drvStart
+
+DrvMain:        lda #IRQ_SPEED                  ;Speed up the controller a bit
+                sta $1c07                       ;(1541 only)
+DrvMain_Not1541:
+                ldx #$00
+                txa
+DrvResetCache:  sta drvFileTrk,x                ;Clear dir cache
+                inx
+                bpl DrvResetCache
+DrvLoop:        cli
+                jsr DrvGetByte                  ;Get command (load/save)
+                beq DrvLoad
+                jmp DrvSave
+DrvLoad:        sei
+                jsr DrvGetByte                  ;Get filenumber
+                jsr DrvFindFile
+                bcc DrvFound
+DrvFileNotFound:ldx #$02                        ;Return code $02 = File not found
+DrvEndMark:     stx drvBuf+2                    ;Send endmark, return code in X
+                lda #$00
+                sta drvBuf
+                sta drvBuf+1
+                beq DrvSendBlk
+
+DrvFound:
+DrvSectorLoop:  jsr DrvReadSector               ;Read the data sector
+                bcs DrvEndMark                  ;Quit if cannot read
+DrvSendBlk:     ldy #$00
+                ldx #$02
+DrvSendLoop:    lda drvBuf,y
+                lsr
+                lsr
+                lsr
+                lsr
+DrvSerialAcc1:  stx $1800                       ;Set DATA=low for first byte, high for
+                tax                             ;subsequent bytes
+                lda drvSendTbl,x
+                pha
+                lda drvBuf,y
+                and #$0f
+                tax
+                lda #$04
+DrvSerialAcc2:  bit $1800                       ;Wait for CLK=low
+                beq DrvSerialAcc2
+                lda drvSendTbl,x
+DrvSerialAcc3:  sta $1800
+
+        ; 2MHz send timing code from ULoad3 by MagerValp
+
+Drv2MHzSend:    jsr DrvDelay18
+                nop
+                asl
+                and #$0f
+Drv2MHzSerialAcc4:
+                sta $1800
+                cmp ($00,x)
+                nop
+                pla
+Drv2MHzSerialAcc5:
+                sta $1800
+                cmp ($00,x)
+                nop
+                asl
+                and #$0f
+Drv2MHzSerialAcc6:
+                sta $1800
+                ldx #$00
+                iny
+                bne DrvSendLoop
+                jsr DrvDelay12
+Drv2MHzSerialAcc7:
+                stx $1800                       ;Finish send: DATA & CLK both high
+
+DrvSendDone:    lda drvBuf+1                    ;Follow the T/S chain
+                ldx drvBuf
+                bne DrvSectorLoop
+                tay                             ;If 2 first bytes are both 0,
+                bne DrvEndMark                  ;endmark has been sent and can
+                jmp DrvLoop                     ;return to main loop
+
+DrvGetSaveByte:
+DrvSaveCountLo: lda #$00
+                tay
+DrvSaveCountHi: ora #$00
+                beq DrvNoMoreBytes
+                dec DrvSaveCountLo+1
+                tya
+                bne DrvGetByte
+                dec DrvSaveCountHi+1
+DrvGetByte:     ldy #$08                        ;Filenumber bit counter
+DrvGetBitLoop:
+DrvSerialAcc8:  lda $1800
+                bpl DrvNoQuit                   ;Quit if ATN is low
+                pla
+                pla
+DrvExitJump:    jmp InitializeDrive             ;1541 = exit through Initialize
+                                                ;Others = exit through RTS
+DrvNoQuit:      and #$05                        ;Wait for CLK or DATA going low
+                beq DrvGetBitLoop
+                lsr                             ;Read the data bit
+                lda #$02                        ;Pull the other line low to acknowledge
+                bcc DrvGetZero
+                lda #$08
+DrvGetZero:     ror drvReceiveBuf               ;Store the data bit
+DrvSerialAcc9:  sta $1800
+DrvGetWait:
+DrvSerialAcc10: lda $1800                       ;Wait for either line going high
+                and #$05
+                cmp #$05
+                beq DrvGetWait
+                lda #$00
+DrvSerialAcc11: sta $1800                       ;Set CLK & DATA high
+                dey
+                bne DrvGetBitLoop               ;Loop until all bits have been received
+                lda drvReceiveBuf
+DrvFindFileOK:  clc
+                rts
+DrvFindFileError:
+DrvNoMoreBytes: sec
+                rts
+
+                if DrvSerialAcc11 - DrvMain > $ff
+                    err
+                endif
+
+DrvFindFile:    sta DrvCheckForFile+1
+                jsr DrvCheckForFile             ;Already cached?
+                bne DrvFindFileOK
+DrvDirTrk:      ldx $1000
+DrvDirSct:      lda $1000                       ;Read disk directory
+DrvDirLoop:     jsr DrvReadSector               ;Read sector
+                bcs DrvFindFileError            ;If failed, abort caching
+                ldy #$02
+DrvNextFile:    lda drvBuf,y                    ;File type must be PRG
+                and #$83
+                cmp #$82
+                bne DrvSkipFile
+                lda drvBuf+5,y                  ;Must be two-letter filename
+                cmp #$a0
+                bne DrvSkipFile
+                lda drvBuf+3,y                  ;Convert filename (assumed to be hexadecimal)
+                jsr DrvDecodeLetter             ;into an index number for the cache
+                asl
+                asl
+                asl
+                asl
+                sta DrvIndexOr+1
+                lda drvBuf+4,y
+                jsr DrvDecodeLetter
+DrvIndexOr:     ora #$00
+                tax
+                lda drvBuf+1,y
+                sta drvFileTrk,x
+                lda drvBuf+2,y
+                sta drvFileSct,x
+DrvSkipFile:    tya
+                clc
+                adc #$20
+                tay
+                bcc DrvNextFile
+                jsr DrvCheckForFile             ;Found on this directory track?
+                bne DrvFindFileOK
+                lda drvBuf+1                    ;Go to next directory block, until no
+                ldx drvBuf                      ;more directory blocks
+                beq DrvFindFileError
+                bne DrvDirLoop
+
+DrvDecodeLetter:sec
+                sbc #$30
+                cmp #$10
+                bcc DrvDecodeLetterDone
+                sbc #$07
+DrvDecodeLetterDone:
+                rts
+
+DrvCheckForFile:ldy #$00
+                lda drvFileSct,y
+                ldx drvFileTrk,y
+                rts
+
+DrvSave:        jsr DrvGetByte                  ;Get filenumber
+                pha
+                jsr DrvGetByte                  ;Get amount of bytes to expect
+                sta DrvSaveCountLo+1
+                jsr DrvGetByte
+                sta DrvSaveCountHi+1
+                pla
+                tay
+                ldx drvFileTrk,y
+                bne DrvSaveFound                ;If file not found, just receive the bytes
+                beq DrvSaveFinish
+DrvSaveFound:   lda drvFileSct,y
+DrvSaveSectorLoop:
+                jsr DrvReadSector               ;First read the sector for T/S chain
+                bcs DrvSaveFinish               ;If reading fails, abort
+                ldx #$02
+DrvSaveByteLoop:jsr DrvGetSaveByte              ;Then get bytes from C64 and write
+                bcs DrvSaveSector               ;If last byte, save the last sector
+                sta drvBuf,x
+                inx
+                bne DrvSaveByteLoop
+DrvSaveSector:  ldy #$90
+                jsr DrvDoJob
+                lda drvBuf+1                    ;Follow the T/S chain
+                ldx drvBuf
+                bne DrvSaveSectorLoop
+DrvSaveFinish:  jsr DrvGetSaveByte              ;Make sure all bytes are received
+                bcc DrvSaveFinish
+                jmp DrvLoop
+
+DrvReadSector:
+DrvReadTrk:     stx $1000
+DrvReadSct:     sta $1000
+                ldy #$80
+DrvDoJob:       sty DrvRetry+1
+                jsr DrvLed
+                ldy #RETRIES                    ;Retry counter
+DrvRetry:       lda #$80
+                ldx #$01
+DrvExecJsr:     jsr Drv1541Exec                 ;Exec buffer 1 job
+                cmp #$02                        ;Error?
+                bcc DrvSuccess
+DrvSkipId:      dey                             ;Decrease retry counter
+                bne DrvRetry
+DrvFailure:     ldx #$01                        ;Return code $01 - Read error
+DrvSuccess:     sei                             ;Make sure interrupts now disabled
+DrvLed:         lda #$08
+DrvLedAcc0:     eor $1c00
+DrvLedAcc1:     sta $1c00
+                rts
+
+Drv1541Exec:    sta $01                         ;Set command for execution
+                cli                             ;Allow interrupts to execute command
+Drv1541ExecWait:
+                lda $01                         ;Wait until command finishes
+                bmi Drv1541ExecWait
+                rts
+
+DrvFdExec:      jsr $ff54                       ;FD2000 fix By Ninja
+                lda $03
+                rts
+
+DrvDelay18:     cmp ($00,x)
+DrvDelay12:     rts
+
+drvSendTbl:     dc.b $0f,$07,$0d,$05
+                dc.b $0b,$03,$09,$01
+                dc.b $0e,$06,$0c,$04
+                dc.b $0a,$02,$08,$00
+
+drv1541DirSct  = drvSendTbl+7                   ;Byte $01
+drv1581DirSct  = drvSendTbl+5                   ;Byte $03
+
+drv1541DirTrk:  dc.b 18
+
+drvCommand:     dc.b 0
+drvReceiveBuf:  dc.b 0
+
+drvEnd:
+                if drvEnd > $0700
+                    err
+                endif
+
+                rend
+
+        ;Drive detection drivecode
+
+ilDriveCode:
+                rorg drvStart
+
+                asl drvReturn                   ;Modify first returnvalue to prove
+                                                ;we've executed something :)
+                lda $fea0                       ;Recognize drive family
+                ldx #3                          ;(from Dreamload)
+DrvFLoop:       cmp drvFamily-1,x
+                beq DrvFFound
+                dex                             ;If unrecognized, assume 1541
+                bne DrvFLoop
+                beq DrvIdFound
+DrvFFound:      lda drvIdLoclo-1,x
+                sta DrvIdLda+1
+                lda drvIdLochi-1,x
+                sta DrvIdLda+2
+DrvIdLda:       lda $fea4                       ;Recognize drive type
+                ldx #3                          ;3 = CMD HD
+DrvIdLoop:      cmp drvIdbyte-1,x               ;2 = CMD FD
+                beq DrvIdFound                  ;1 = 1581
+                dex                             ;0 = 1541
+                bne DrvIdLoop
+DrvIdFound:     stx drvReturn2
+                rts
+
+drvFamily:      dc.b $43,$0d,$ff
+drvIdLoclo:     dc.b $a4,$c6,$e9
+drvIdLochi:     dc.b $fe,$e5,$a6
+drvIdbyte:      dc.b "8","F","H"
+
+drvReturn:      dc.b $55
+drvReturn2:     dc.b $00
+
+                rend
+
+ilDriveCodeEnd:
 
 ilMRString:     dc.b 2,>drvReturn,<drvReturn,"R-M"
 

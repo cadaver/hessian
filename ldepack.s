@@ -247,13 +247,16 @@ tablOff:        dc.b 48,32,16
 ; end of decruncher
 ; -------------------------------------------------------------------
 
-OpenFile:       rts
-                dc.b 0,0
-SaveFile:       rts
-                dc.b 0,0
-GetByte:        lda #$36
+OpenFile:       sei
+                lda #$35
                 sta $01
-                cli
+                rts
+
+SaveFile        = OpenFile+3
+
+                org OpenFile+6
+
+GetByte:        inc $01
                 jsr ChrIn
                 sei
                 dec $01

@@ -13,16 +13,33 @@
 
                 rorg $080d
 
-BasicStart:     ldx #AutoStartEnd-AutoStart
-Copy:           lda BasicEnd-1,x
-                sta AutoStart-1,x
-                dex
-                bne Copy
-                jmp AutoStart
+BasicStart:     lda #<(BootStart-AutoStart+BasicEnd-1)
+                sta BasicEnd+3
+                lda #>(BootStart-AutoStart+BasicEnd-1)
+                sta BasicEnd+4
 BasicEnd:
                 rend
 
-AutoStart:      lda #$02
+AutoStart:      ldx #BootEnd-BootStart
+CopyBoot:       lda BootStart-1,x
+                dc.b $9d,$ff,$00                ;stx $00ff,x
+                dex
+                bne CopyBoot
+                jmp $0100
+
+BootStart:
+                rorg $0100
+
+                stx $d020
+                stx $d021
+                txa
+ClearScreen:    sta $d800,x
+                sta $d900,x
+                sta $da00,x
+                sta $db00,x
+                inx
+                bne ClearScreen
+                lda #$02
                 ldx #<loaderFileName
                 ldy #>loaderFileName
                 jsr SetNam
@@ -32,48 +49,26 @@ AutoStart:      lda #$02
                 jsr Open
                 ldx #$02                        ;Open file $02 for input
                 jsr ChkIn
-                ldy #$00
-                sty $d020
-                sty $d021
-                lda #$20
-ClearScreen:    sta $2000,y                     ;Use another screen as $400 is trashed during load
-                sta $2100,y
-                sta $2200,y
-                sta $2300,y
-                iny
-                bne ClearScreen
-                lda #$84
-                sta $d018
-                ldx #38
+                ldy #38
 ShowMessage:    lda #$0f
-                sta colors+12*40,x
-                lda message-1,x
+                sta colors+1*40,y
+                lda message-1,y
                 and #$3f
-                sta $2000+12*40,x
-                dex
+                sta $0400+1*40,y
+                dey
                 bne ShowMessage
-MessageDone:    ldx #LoadExomizerEnd-LoadExomizer-1
-CopyToStack:    lda LoadExomizer,x              ;This code will be overwritten by loader, so copy elsewhere
-                sta $0100,x
-                dex
-                bpl CopyToStack
-                jmp $100
+LoadExomizer:   jsr ChrIn                       ;Load Exomizer as unpacked data
+                sta exomizerCodeStart,y
+                iny
+                cpy #packedLoaderStart-exomizerCodeStart
+                bne LoadExomizer
+                lda #<loaderCodeStart
+                ldx #>loaderCodeStart
+                jsr LoadFile                    ;Load rest of loader code with Exomizer
+                jmp loaderCodeEnd               ;Jump to InitLoader
 
 loaderFileName: dc.b "00"
 message:        dc.b "HOLD SPACE/FIRE TO DISABLE FAST LOADER"
 
-LoadExomizer:   ldy #$00
-LoadExomizerLoop:
-                jsr ChrIn
-                sta exomizerCodeStart,y
-                iny
-                cpy #packedLoaderStart-exomizerCodeStart ;Load Exomizer
-                bne LoadExomizerLoop
-                lda #<loaderCodeStart
-                ldx #>loaderCodeStart
-                jsr LoadFile                    ;Load rest of code with Exomizer
-                inc $01                         ;Kernal back on
-                jmp loaderCodeEnd               ;Jump to InitLoader
-LoadExomizerEnd:
-
-AutoStartEnd:
+                rend
+BootEnd:
