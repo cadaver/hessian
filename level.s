@@ -808,7 +808,7 @@ SaveActorSub:   lda lvlActX,x
 ULO_Paused:
 ULO_ToxinDelay:
                 rts
-
+  
         ; Update level objects. Handle operation, auto-deactivation and actually entering doors.
         ; Also check for picking up items, player health regeneration and incrementing game clock
         ;
@@ -836,17 +836,16 @@ UpdateLevelObjects:
                 cmp #MENU_PAUSE
                 bcs ULO_Paused
                 ldx #$03                        ;Increment game clock
-                sec
 ULO_IncreaseTime:
-                lda time,x                      ;time+3 = frames
-                adc #$00                        ;time = hours
+                inc time,x                      ;time+3 = frames
+                lda time,x                      ;time = hours
                 cmp timeMaxTbl,x
-                bcc ULO_TimeNotOver
+                bcc ULO_TimeDone
                 lda #$00
-ULO_TimeNotOver:sta time,x
+                sta time,x
                 dex
                 bpl ULO_IncreaseTime
-ULO_NoTime:     lda attackTime                  ;Decrement global attack timer if necessary
+ULO_TimeDone:   lda attackTime                  ;Decrement global attack timer if necessary
                 bpl ULO_NoGlobalAttack
                 inc attackTime
 ULO_NoGlobalAttack:
@@ -871,7 +870,7 @@ ULO_AutoDeactOK:lda #$ff
 
 ULO_NoAutoDeact:ldx #ACTI_PLAYER
                 lda actHp+ACTI_PLAYER           ;Heal if not dead and not yet at full health
-                beq ULO_OxygenDone              ;full health
+                beq ULO_OxygenDone
                 cmp #HP_PLAYER
                 bcs ULO_NoHealing
                 lda battery+1                   ;No healing if low battery
@@ -964,7 +963,7 @@ ULO_CheckPickupIndex:                           ;Check if player is colliding wi
 ULO_CheckPickupLoop:
                 lda actT,y                      ;There may be other actors such as explosions in
                 cmp #ACT_ITEM                   ;item indices during bossfights, so make sure
-                bne ULO_CPNoItem
+                bne ULO_CPNoItem                ;it's actually an item
                 jsr CheckActorCollision
                 bcs ULO_HasItem
 ULO_CPNoItem:   iny
@@ -1002,23 +1001,23 @@ ULO_SkipItemName:
                 ldy ULO_CheckPickupIndex+1
                 jsr TryPickup
 ULO_CheckObject:ldy actYH+ACTI_PLAYER           ;Rescan objects whenever player block position changes
-                ldx actYL+ACTI_PLAYER           ;If player stands on the upper half of a block
-                cpx #$81                        ;check 1 block above
+                lda actYL+ACTI_PLAYER           ;If player stands on the upper half of a block
+                cmp #$81                        ;check 1 block above
                 bcs ULO_CONotAtTop
                 dey
-ULO_CONotAtTop: ldx actXH+ACTI_PLAYER
-                lda lvlObjNum
+ULO_CONotAtTop: lda lvlObjNum
+                ldx actXH+ACTI_PLAYER
                 cpx ULO_COCmpX+1
                 bne ULO_CORescan
                 cpy ULO_COSubY+1
                 beq ULO_CONoRescan
 ULO_CORescan:   lda #$80                        ;Start from beginning
-ULO_CONoRescan: stx ULO_COCmpX+1
+ULO_CONoRescan: cmp #$ff                        ;Search given up in current location?
+                beq ULO_CODone
+                stx ULO_COCmpX+1
                 sty ULO_COSubY+1
                 tay                             ;Already have a valid object that is current?
                 bpl ULO_CODone
-                cmp #$ff                        ;Search given up in current location?
-                beq ULO_CODone
                 and #$7f
                 tax
                 adc #LVLOBJSEARCH               ;C=0 here
@@ -1320,7 +1319,6 @@ CP_NotInWater:  ora #MB_GROUNDED                ;checkpoint restore
 StartMainLoop:  ldx #STACKSTART
                 txs
 MainLoop:       jsr ScrollLogic
-                endif
                 jsr DrawActors
                 jsr AddActors
                 jsr FinishFrame
