@@ -274,6 +274,7 @@ EGrn_FullDamageBelow:
 
 ExplodeActor:   lda #SFX_EXPLOSION
                 jsr PlaySfx
+ExplodeActorQuiet:
                 lda #ACT_EXPLOSION
 TransformBullet:sta actT,x
                 lda #$00

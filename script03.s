@@ -22,6 +22,7 @@ CHUNK_DURATION = 40
                 dc.w OpenWall
                 dc.w MoveAcid
                 dc.w MoveChunk
+                dc.w ExplodeAcid
 
         ; Eye (Construct) boss phase 1
         ;
@@ -413,17 +414,22 @@ MLS_Alive:      lda #MUSIC_CAVES+1
                 ldx actIndex
 MLS_Decision:   lda actXH,x                     ;Move forward when about to hit the left wall
                 cmp #$3d
-                bne MLS_RandomMove
+                bne MLS_NotAtWall
                 lda #JOY_RIGHT
                 bne MLS_ForcedMoveImmediate
-MLS_RandomMove: dec actTime,x                   ;Otherwise move randomly back & forth & attack
+MLS_NotAtWall:  ldy #ACTI_PLAYER
+                jsr GetActorDistance            ;Get X-distance to player
+                lda temp6
+                bne MLS_NotTooClose             ;If too close, retreat
+                lda actD,x
+                asl
+                lda #JOY_LEFT
+                bcc MLS_ForcedMoveImmediate
+                asl
+                bne MLS_ForcedMoveImmediate
+MLS_NotTooClose:dec actTime,x
                 bpl MLS_Move
-                lda actXH,x                     ;If player is behind, decide to go left
-                cmp actXH+ACTI_PLAYER
-                bcc MLS_NotBehind
-                lda #$00
-                beq MLS_ForcedMove
-MLS_NotBehind:  lda actAttackD+ACTI_PLAYER      ;If player is attacking now, attack also
+                lda actAttackD+ACTI_PLAYER      ;If player is attacking now, always attack
                 beq MLS_NoForcedAttack
                 lda #$03
                 bne MLS_ForcedMove
@@ -440,6 +446,11 @@ MLS_ForcedMove: tay
 MLS_ForcedMoveImmediate:
                 sta actMoveCtrl,x
 MLS_Move:       jsr MoveGeneric
+                lda actXL+ACTI_PLAYER
+                cmp actXL,x
+                lda actXH+ACTI_PLAYER           ;Override direction: always face player
+                sbc actXH,x
+                sta actD,x
                 lda actSX,x
                 jsr Asr8
                 clc
@@ -474,37 +485,55 @@ MLS_NotOverPos: sta actFd,x
                 plp
                 bne MLS_NoAttack
 
-MLS_Attack:     lda #ACTI_FIRSTNPCBULLET
-                ldy #ACTI_LASTNPCBULLET
+MLS_Attack:     lda #ACTI_FIRSTNPC
+                ldy #ACTI_LASTNPC
                 jsr GetFreeActor
                 bcc MLS_NoAttack
                 lda #SFX_SHOTGUN
                 jsr PlaySfx
-                lda #<28*8
-                sta temp1
-                lda #>28*8
-                sta temp2
                 lda #<(-9*8)
                 sta temp3
                 lda #>(-9*8)
                 sta temp4
+                lda actD,x
+                bmi MLS_AttackLeft
+MLS_AttackRight:lda #<28*8
+                sta temp1
+                lda #>28*8
+                sta temp2
                 lda #ACT_ACID
                 jsr SpawnWithOffset
                 tya
                 tax
                 jsr InitActor
-                lda #7*8
+                lda #6*8+4
                 sta actSX,x
                 lda actXH,x
                 sec
                 sbc actXH+ACTI_PLAYER           ;Player is on the right -> negative
+MLS_AttackCommon:
                 asl
                 asl
-                adc #-3*8
+                adc #-3*8-2
                 sta actSY,x
                 ldx actIndex
-MLS_NoAttack:   lda #DMG_LARGESPIDER
-                jmp CollideAndDamagePlayer
+MLS_NoAttack:   rts
+
+MLS_AttackLeft: lda #<(-28*8)
+                sta temp1
+                lda #>(-28*8)
+                sta temp2
+                lda #ACT_ACID
+                jsr SpawnWithOffset
+                tya
+                tax
+                jsr InitActor
+                lda #-6*8-4
+                sta actSX,x
+                lda actXH+ACTI_PLAYER
+                sec
+                sbc actXH,x                    ;Player is on the left -> negative
+                jmp MLS_AttackCommon
 
 MLS_Explode:    lda #MUSIC_CAVES
                 jsr PlaySong
@@ -587,6 +616,7 @@ MA_SplashCommon:jsr NoInterpolation
                 sta actFlash,x
                 lda #SFX_SPLASH
                 jmp PlaySfx
+ExplodeAcid:
 MA_StartPlayerSplash:
                 lda #ACT_EXPLOSION
                 jsr TransformBullet
@@ -659,9 +689,9 @@ explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
 
         ; Large spider move table
         
-spiderMoveTbl:  dc.b JOY_LEFT,JOY_LEFT,JOY_RIGHT,JOY_FIRE
+spiderMoveTbl:  dc.b JOY_LEFT,JOY_RIGHT,JOY_FIRE,JOY_FIRE
 spiderDelayAndTbl:
-                dc.b $1f,$0f,$1f,$0f
+                dc.b $1f,$1f,$07,$07
 
 
                 checkscriptend

@@ -65,6 +65,7 @@ ACT_ACID        = 63
 ACT_SPIDERCHUNK = 64
 
 HP_PLAYER       = 56
+HP_ACID         = 1
 HP_RAT          = 4
 HP_FLY          = 4
 HP_BAT          = 4
@@ -582,13 +583,13 @@ adRotorDroneFrames:
 
 adLargeSpider:  dc.b FIVESPRITE                 ;Number of sprites
                 dc.b C_LARGESPIDER              ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 4                          ;Number of frames
-                dc.b 7,10,13,13
-                dc.b 6,9,12,12
-                dc.b 0,2,4,4
-                dc.b 1,3,5,5
-                dc.b 8,11,14,15
+                dc.b 4                          ;Left frame add
+                dc.b 8                          ;Number of frames
+                dc.b 7,10,13,13,$80+10,$80+7,$80+13,$80+13
+                dc.b 6,9,12,12,$80+9,$80+6,$80+12,$80+12
+                dc.b 0,2,4,4,$80+2,$80+0,$80+4,$80+4
+                dc.b 1,3,5,5,$80+3,$80+1,$80+5,$80+5
+                dc.b 8,11,14,15,$80+11,$80+8,$80+14,$80+15
 
 adAcid:         dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_LARGESPIDER              ;Spritefile number
@@ -1565,10 +1566,14 @@ alLargeSpider:  dc.w USESCRIPT|EP_MOVELARGESPIDER ;Update routine
                 dc.b -4                         ;Height in chars for headbump check (negative)
 
 alAcid:         dc.w USESCRIPT|EP_MOVEACID      ;Update routine
-                dc.b AF_INITONLYSIZE|AF_NOREMOVECHECK ;Actor flags
+                dc.b GRP_ANIMALS|AF_ORGANIC|AF_NOREMOVECHECK|AF_NOWEAPON ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 7                          ;Size up
                 dc.b 0                          ;Size down
+                dc.w USESCRIPT|EP_EXPLODEACID   ;Destroy routine
+                dc.b HP_ACID                    ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 5                          ;Score from kill
 
 alSpiderChunk:  dc.w USESCRIPT|EP_MOVECHUNK     ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
