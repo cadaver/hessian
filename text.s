@@ -126,7 +126,4 @@ txtPause:       dc.b " RESUME RETRY SAVE&END",0
 
         ; System messages
 
-                if MULTISIDE > 0
-txtFlipDisk:    dc.b "FLIP DISK & PRESS FIRE",0
-                endif
 txtDiskError:   dc.b "IO ERROR FIRE TO RETRY",0

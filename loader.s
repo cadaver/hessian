@@ -3,7 +3,6 @@
                 include memory.s
                 include kernal.s
 
-MULTISIDE       = 0             ;Multi-diskside support
 RETRIES         = 5             ;Retries when reading a sector
 
 IRQ_SPEED       = $20           ;$1c07 (head movement speed)
@@ -671,27 +670,19 @@ driveCode:
 DrvMain:        lda #IRQ_SPEED                  ;Speed up the controller a bit
                 sta $1c07                       ;(1541 only)
 DrvMain_Not1541:
-                if MULTISIDE = 0
-                jsr DrvCacheDir                 ;If no multiside support, cache once
-                endif                           ;in the beginning
-DrvLoop:
-                if MULTISIDE > 0
-DrvDirCached:   lda #$00                        ;Cache directory if necessary
-                bne DrvCacheValid
-                jsr DrvCacheDir
-                endif
-DrvCacheValid:  cli
+                ldx #$00
+                txa
+DrvResetCache:  sta drvFileTrk,x                ;Clear dir cache
+                inx
+                bpl DrvResetCache
+DrvLoop:        cli
                 jsr DrvGetByte                  ;Get command (load/save)
                 beq DrvLoad
                 jmp DrvSave
 DrvLoad:        sei
                 jsr DrvGetByte                  ;Get filenumber
-                tay
-                ldx drvFileTrk,y
-                bne DrvFound
-                if MULTISIDE > 0
-                stx DrvDirCached+1              ;If file not found, reset caching
-                endif
+                jsr DrvFindFile
+                bcc DrvFound
 DrvFileNotFound:ldx #$02                        ;Return code $02 = File not found
 DrvEndMark:     stx drvBuf+2                    ;Send endmark, return code in X
                 lda #$00
@@ -699,13 +690,9 @@ DrvEndMark:     stx drvBuf+2                    ;Send endmark, return code in X
                 sta drvBuf+1
                 beq DrvSendBlk
 
-DrvFound:       lda drvFileSct,y                ;File found, get starting T&S
+DrvFound:
 DrvSectorLoop:  jsr DrvReadSector               ;Read the data sector
                 bcs DrvEndMark                  ;Quit if cannot read
-                if MULTISIDE > 0
-                lda DrvDirCached+1              ;If disk ID changed and dir cache invalidated,
-                beq DrvFileNotFound             ;treat as file not found error
-                endif
 DrvSendBlk:     ldy #$00
                 ldx #$02
 DrvSendLoop:    lda drvBuf,y
@@ -768,7 +755,6 @@ DrvSaveCountHi: ora #$00
                 tya
                 bne DrvGetByte
                 dec DrvSaveCountHi+1
-
 DrvGetByte:     ldy #$08                        ;Filenumber bit counter
 DrvGetBitLoop:
 DrvSerialAcc8:  lda $1800
@@ -795,14 +781,69 @@ DrvSerialAcc11: sta $1800                       ;Set CLK & DATA high
                 dey
                 bne DrvGetBitLoop               ;Loop until all bits have been received
                 lda drvReceiveBuf
-                clc
+DrvFindFileOK:  clc
+                rts
+DrvFindFileError:
+DrvNoMoreBytes: sec
                 rts
 
                 if DrvSerialAcc11 - DrvMain > $ff
                     err
                 endif
 
-DrvNoMoreBytes: sec
+DrvFindFile:    sta DrvCheckForFile+1
+                jsr DrvCheckForFile             ;Already cached?
+                bne DrvFindFileOK
+DrvDirTrk:      ldx $1000
+DrvDirSct:      lda $1000                       ;Read disk directory
+DrvDirLoop:     jsr DrvReadSector               ;Read sector
+                bcs DrvFindFileError            ;If failed, abort caching
+                ldy #$02
+DrvNextFile:    lda drvBuf,y                    ;File type must be PRG
+                and #$83
+                cmp #$82
+                bne DrvSkipFile
+                lda drvBuf+5,y                  ;Must be two-letter filename
+                cmp #$a0
+                bne DrvSkipFile
+                lda drvBuf+3,y                  ;Convert filename (assumed to be hexadecimal)
+                jsr DrvDecodeLetter             ;into an index number for the cache
+                asl
+                asl
+                asl
+                asl
+                sta DrvIndexOr+1
+                lda drvBuf+4,y
+                jsr DrvDecodeLetter
+DrvIndexOr:     ora #$00
+                tax
+                lda drvBuf+1,y
+                sta drvFileTrk,x
+                lda drvBuf+2,y
+                sta drvFileSct,x
+DrvSkipFile:    tya
+                clc
+                adc #$20
+                tay
+                bcc DrvNextFile
+                jsr DrvCheckForFile             ;Found on this directory track?
+                bne DrvFindFileOK
+                lda drvBuf+1                    ;Go to next directory block, until no
+                ldx drvBuf                      ;more directory blocks
+                beq DrvFindFileError
+                bne DrvDirLoop
+
+DrvDecodeLetter:sec
+                sbc #$30
+                cmp #$10
+                bcc DrvDecodeLetterDone
+                sbc #$07
+DrvDecodeLetterDone:
+                rts
+
+DrvCheckForFile:ldy #$00
+                lda drvFileSct,y
+                ldx drvFileTrk,y
                 rts
 
 DrvSave:        jsr DrvGetByte                  ;Get filenumber
@@ -815,9 +856,6 @@ DrvSave:        jsr DrvGetByte                  ;Get filenumber
                 tay
                 ldx drvFileTrk,y
                 bne DrvSaveFound                ;If file not found, just receive the bytes
-                if MULTISIDE > 0
-                stx DrvDirCached+1              ;TODO: should report error to C64
-                endif
                 beq DrvSaveFinish
 DrvSaveFound:   lda drvFileSct,y
 DrvSaveSectorLoop:
@@ -864,19 +902,6 @@ Drv1541Exec:    sta $01                         ;Set command for execution
 Drv1541ExecWait:
                 lda $01                         ;Wait until command finishes
                 bmi Drv1541ExecWait
-                if MULTISIDE > 0
-                pha                             ;Save returncode
-                ldx #$02
-DrvCheckId:     lda drvId-1,x                   ;Check for disk ID change
-                cmp drvIdDrv0-1,x               ;(1541 only)
-                beq DrvIdOk
-                sta drvIdDrv0-1,x
-                lda #$00                        ;If changed, force recache of dir
-                sta DrvDirCached+1
-DrvIdOk:        dex
-                bne DrvCheckId
-                pla
-                endif
                 rts
 
 DrvFdExec:      jsr $ff54                       ;FD2000 fix By Ninja
@@ -885,59 +910,6 @@ DrvFdExec:      jsr $ff54                       ;FD2000 fix By Ninja
 
 DrvDelay18:     cmp ($00,x)
 DrvDelay12:     rts
-
-DrvCacheDir:    tax                             ;A=0 here
-DrvClearCache:  sta drvFileTrk,x                ;Clear tracknumbers first
-                inx
-                bpl DrvClearCache
-DrvDirTrk:      ldx $1000
-DrvDirSct:      lda $1000                       ;Read disk directory
-DrvDirLoop:     jsr DrvReadSector               ;Read sector
-                bcs DrvDirCacheDone             ;If failed, abort caching
-                ldy #$02
-DrvNextFile:    lda drvBuf,y                    ;File type must be PRG
-                and #$83
-                cmp #$82
-                bne DrvSkipFile
-                lda drvBuf+5,y                  ;Must be two-letter filename
-                cmp #$a0
-                bne DrvSkipFile
-                lda drvBuf+3,y                  ;Convert filename (assumed to be hexadecimal)
-                jsr DrvDecodeLetter             ;into an index number for the cache
-                asl
-                asl
-                asl
-                asl
-                sta DrvIndexOr+1
-                lda drvBuf+4,y
-                jsr DrvDecodeLetter
-DrvIndexOr:     ora #$00
-                tax
-                lda drvBuf+1,y
-                sta drvFileTrk,x
-                lda drvBuf+2,y
-                sta drvFileSct,x
-DrvSkipFile:    tya
-                clc
-                adc #$20
-                tay
-                bcc DrvNextFile
-                lda drvBuf+1                    ;Go to next directory block, until no
-                ldx drvBuf                      ;more directory blocks
-                bne DrvDirLoop
-DrvDirCacheDone:
-                if MULTISIDE > 0
-                inc DrvDirCached+1
-                endif
-                rts
-
-DrvDecodeLetter:sec
-                sbc #$30
-                cmp #$10
-                bcc DrvDecodeLetterDone
-                sbc #$07
-DrvDecodeLetterDone:
-                rts
 
 drvSendTbl:     dc.b $0f,$07,$0d,$05
                 dc.b $0b,$03,$09,$01

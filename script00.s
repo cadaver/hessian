@@ -925,12 +925,13 @@ optionsMenuChoice:
                 
 optionsModified: dc.b 0
 
-difficultyTxtLo:dc.b <txtEasy, <txtMedium, <txtHard
-difficultyTxtHi:dc.b >txtEasy, >txtMedium, >txtHard
+difficultyTxtLo:dc.b <txtCasual, <txtEasy, <txtMedium, <txtHard
+difficultyTxtHi:dc.b >txtCasual, >txtEasy, >txtMedium, >txtHard
 
-txtEasy:        dc.b "CASUAL",0
+txtCasual:      dc.b "CASUAL",0
+txtEasy:        dc.b "EASY  ",0
 txtMedium:      dc.b "MEDIUM",0
-txtHard:        dc.b "EXPERT",0
+txtHard:        dc.b "HARD  ",0
 txtOn:          dc.b "ON ",0
 txtOff:         dc.b "OFF",0
 txtLoadSlot:    dc.b "LOAD GAME FROM",0
@@ -958,7 +959,7 @@ logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
 
 textFadeTbl:    dc.b $00,$06,$03,$01
 
-optionMaxValue: dc.b 2,1,1
+optionMaxValue: dc.b 3,1,1
 
 cheatString:    dc.b KEY_K, KEY_V, KEY_L, KEY_T
 cheatIndex:     dc.b 0

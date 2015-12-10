@@ -48,9 +48,9 @@ InitZP:         sta joystick,x
                 sta freeMemHi
 
         ; Load options file
-        
-                lda #F_OPTIONS
-                jsr MakeFileName_Direct
+
+                lda #F_OPTIONS                  ;This is the last file and will cache all
+                jsr MakeFileName_Direct         ;directory entries
                 jsr OpenFile
                 ldy #$00
 LoadOptions:    jsr GetByte

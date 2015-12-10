@@ -14,4 +14,3 @@ ntscFlag
 fileNumber
 loaderCodeEnd
 loaderInitEnd
-MULTISIDE

@@ -27,7 +27,7 @@ clean:
 	-rm e?
 	-rm f?
 
-hessian.d64: boot.prg loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak \
+hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak script01.pak script02.pak script03.pak \
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
@@ -43,14 +43,12 @@ hessian.d64: boot.prg loader.prg main.pak options.bin emptysave.bin savelist.bin
 hessian.d81: hessian.d64 hessiand81.seq
 	c1541 < hessiand81.seq
 
-boot.prg: boot.s kernal.s memory.s loadsym.s
-	dasm boot.s -oboot.prg
-
-loader.prg: kernal.s loader.s loadsym.txt ldepack.s macros.s memory.s
+loader.prg: kernal.s loader.s loadsym.txt ldepack.s boot.s macros.s memory.s
 	dasm loader.s -oloader.bin -sloader.tbl -f3
 	symbols loader.tbl loadsym.s loadsym.txt
 	pack2 loader.bin loader.pak
 	dasm ldepack.s -oloader.prg -f3
+	dasm boot.s -oboot.prg
 
 sfx/pistol.sfx: sfx/pistol.ins
 	ins2nt2 sfx/pistol.ins sfx/pistol.sfx

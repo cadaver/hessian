@@ -24,15 +24,17 @@ C_ROTORDRONE    = 21
 C_LARGESPIDER   = 22
 C_FIRSTPURGEABLE = C_PLAYER_TOP
 
+F_LOADER        = $00
+F_MAIN          = $01
 F_LOGO          = $02
 F_SPRITE        = $03
 F_LEVEL         = $20
 F_CHARSET       = $2f
 F_MUSIC         = $3e
 F_SCRIPT        = $4b
-F_OPTIONS       = $70
-F_SAVELIST      = $71
-F_SAVE          = $72
+F_SAVE          = $70
+F_SAVELIST      = $75
+F_OPTIONS       = $76
 
         ; Create a number-based file name
         ;
@@ -64,18 +66,8 @@ LoadFileRetry:  sta LFR_AddressLo+1
                 jmp PostLoad
 
 LFR_ErrorPrompt:
-                if MULTISIDE > 0
-                cmp #$02
-                beq LFR_FlipDisk
-LFR_DiskError:  lda #<txtDiskError
-                ldx #>txtDiskError
-                bne LFR_MessageCommon
-LFR_FlipDisk:   lda #<txtFlipDisk
-                ldx #>txtFlipDisk
-                else
                 lda #<txtDiskError
                 ldx #>txtDiskError
-                endif
 LFR_MessageCommon:
                 jsr PrintPanelTextIndefinite
 LFR_WaitFire:   jsr GetControls
