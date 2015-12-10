@@ -2,7 +2,7 @@
 
                 include memory.s
                 include kernal.s
-                include loadsym.s
+                include ldepacksym.s
 
                 org $032a
 
@@ -13,11 +13,12 @@
 
                 rorg $080d
 
-BasicStart:     ldx #AutoStartEnd-loaderFileName-1
-Copy:           lda BasicEnd+loaderFileName-AutoStart,x ;Just need to relocate data, not code
-                sta loaderFileName,x
+BasicStart:     ldx #AutoStartEnd-AutoStart
+Copy:           lda BasicEnd-1,x
+                sta AutoStart-1,x
                 dex
-                bpl Copy
+                bne Copy
+                jmp AutoStart
 BasicEnd:
                 rend
 
@@ -43,23 +44,36 @@ ClearScreen:    sta $2000,y                     ;Use another screen as $400 is t
                 bne ClearScreen
                 lda #$84
                 sta $d018
-                ldy #38
+                ldx #38
 ShowMessage:    lda #$0f
-                sta colors+12*40,y
-                lda message-1,y
+                sta colors+12*40,x
+                lda message-1,x
                 and #$3f
-                sta $2000+12*40,y
-                dey
+                sta $2000+12*40,x
+                dex
                 bne ShowMessage
-MessageDone:
-LoadLoop:       jsr ChrIn
-                sta loaderInitEnd,y
-                iny
-                cpy #214                        ;Load 214 bytes (loader depacker)
-                bne LoadLoop
-                jmp loaderInitEnd
+MessageDone:    ldx #LoadExomizerEnd-LoadExomizer-1
+CopyToStack:    lda LoadExomizer,x              ;This code will be overwritten by loader, so copy elsewhere
+                sta $0100,x
+                dex
+                bpl CopyToStack
+                jmp $100
 
 loaderFileName: dc.b "00"
 message:        dc.b "HOLD SPACE/FIRE TO DISABLE FAST LOADER"
+
+LoadExomizer:   ldy #$00
+LoadExomizerLoop:
+                jsr ChrIn
+                sta exomizerCodeStart,y
+                iny
+                cpy #packedLoaderStart-exomizerCodeStart ;Load Exomizer
+                bne LoadExomizerLoop
+                lda #<loaderCodeStart
+                ldx #>loaderCodeStart
+                jsr LoadFile                    ;Load rest of code with Exomizer
+                inc $01                         ;Kernal back on
+                jmp loaderCodeEnd               ;Jump to InitLoader
+LoadExomizerEnd:
 
 AutoStartEnd:

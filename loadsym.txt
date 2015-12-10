@@ -4,7 +4,6 @@ CloseFile
 LoadFile
 SaveFile
 Change01
-InitLoader
 WaitBottom
 SilenceSID
 FL_MinSprY
@@ -12,5 +11,3 @@ FL_MaxSprY
 fastLoadMode
 ntscFlag
 fileNumber
-loaderCodeEnd
-loaderInitEnd

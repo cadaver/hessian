@@ -2,9 +2,12 @@
 
                 include kernal.s
                 include memory.s
-                include loadsym.s
 
-                org loaderInitEnd
+                org exomizerCodeStart
+
+tablBi          = depackBuffer
+tablLo          = depackBuffer + 52
+tablHi          = depackBuffer + 104
 
 ; -------------------------------------------------------------------
 ; This source code is altered and is not the original version found on
@@ -41,22 +44,76 @@
 ;   specific prior written permission.
 
 ; -------------------------------------------------------------------
-
-Depacker:
-  ldx #3
-  ldy #0
-init_zp:
-  jsr getbyte
-  sta zpBitBuf-1,x
+; get bits (29 bytes)
+;
+; args:
+;   x = number of bits to get
+; returns:
+;   a = #bits_lo
+;   x = #0
+;   c = 0
+;   z = 1
+;   zpBitsHi = #bits_hi
+; notes:
+;   y is untouched
+; -------------------------------------------------------------------
+get_bits:
+  lda #$00
+  sta zpBitsHi
+  cpx #$01
+  bcc bits_done
+bits_next:
+  lsr zpBitBuf
+  bne bits_ok
+  pha
+  stx loadTempReg
+  jsr GetByte
+  ldx loadTempReg
+  bcs loaderror3
+  sec
+  ror
+  sta zpBitBuf
+  pla
+bits_ok:
+  rol
+  rol zpBitsHi
   dex
-  bne init_zp
+  bne bits_next
+bits_done:
+  rts
+
+loaderror3:
+  pla
+  pla
+  pla
+loaderror:
+  rts
+
+        ; Load file packed with Exomizer 2 forward mode
+        ;
+        ; Parameters: A,X load address, fileNumber
+        ; Returns: C=0 if loaded OK, or C=1 and error code in A (see GetByte)
+        ; Modifies: A,X,Y
+
+LoadFile:       sta zpDestLo
+                stx zpDestHi
+                jsr OpenFile
+
+; -------------------------------------------------------------------
+; init zeropage, x and y regs.
+;
+init_zp:
+  jsr GetByte
+  ;bcs loaderror  ;Error will be caught later
+  sta zpBitBuf
+  ldy #0
 
 ; -------------------------------------------------------------------
 ; calculate tables
 ; x and y must be #0 when entering
 ;
 nextone:
-  inx
+  ldx #1
   tya
   and #$0f
   beq shortcut    ; start with new sequence
@@ -86,23 +143,29 @@ shortcut:
   iny
   cpy #52
   bne nextone
+
+begin:
   ldy #$ff
 
 ; -------------------------------------------------------------------
 ; decruncher entry point, needs calculated tables
 ;
 getgamma:
-  iny
-begin:
-  inx
-  jsr bits_next
+  lsr zpBitBuf
+  bne norefill
+  jsr GetByte
+  bcs loaderror
+  sec
   ror
+  sta zpBitBuf
+norefill:
+  iny
   bcc getgamma
-  tya
   bne sequence
 
 literal:
-  jsr getbyte
+  jsr GetByte
+  ;bcs loaderror ;Error will be caught later
   sta (zpDestLo),y
   inc zpDestLo
   bne begin
@@ -112,7 +175,7 @@ inchi:
 
 sequence:
   cpy #$11
-  beq ready   ; gamma = 17   : end of file
+  beq eof   ; gamma = 17   : end of file
 
 ; -------------------------------------------------------------------
 ; calculate length of sequence (zp_len)
@@ -167,65 +230,35 @@ copy_next:
   cpy zpLenLo
   bne copy_next
   tya
-  ldy #$00
   clc
   adc zpDestLo
   sta zpDestLo
   bcc begin
   bcs inchi
 
-ready:
-  jmp InitLoader
-
-; -------------------------------------------------------------------
-; get bits (29 bytes)
-;
-; args:
-;   x = number of bits to get
-; returns:
-;   a = #bits_lo
-;   x = #0
-;   c = 0
-;   z = 1
-;   zpBitsHi = #bits_hi
-; notes:
-;   y is untouched
-; -------------------------------------------------------------------
-get_bits:
-  lda #$00
-  sta zpBitsHi
-  cpx #$01
-  bcc bits_done
-bits_next:
-  lsr zpBitBuf
-  bne bits_ok
-  pha
-  jsr getbyte
-  sec
-  ror
-  sta zpBitBuf
-  pla
-bits_ok:
-  rol
-  rol zpBitsHi
-  dex
-  bne bits_next
-bits_done:
-  rts
-
-getbyte:
-  stx loadTempReg
-  jsr ChrIn
-  ldx loadTempReg
+eof:
+  clc
   rts
 
 tablBit:        dc.b 2,4,4                      ;Exomizer static tables
 tablOff:        dc.b 48,32,16
 
-tablBi          = *
-tablLo          = * + 52
-tablHi          = * + 104
+; -------------------------------------------------------------------
+; end of decruncher
+; -------------------------------------------------------------------
 
-                dc.b >mainCodeStart             ;This will be read next from the file
-                dc.b <mainCodeStart
+OpenFile:       rts
+                dc.b 0,0
+SaveFile:       rts
+                dc.b 0,0
+GetByte:        lda #$36
+                sta $01
+                cli
+                jsr ChrIn
+                sei
+                dec $01
+                clc
+                rts
+
+packedLoaderStart:
                 incbin loader.pak

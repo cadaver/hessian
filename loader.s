@@ -2,6 +2,7 @@
 
                 include memory.s
                 include kernal.s
+                include ldepacksym.s
 
 RETRIES         = 5             ;Retries when reading a sector
 
@@ -26,383 +27,7 @@ drvBuf          = $0400         ;Sector data buffer
 drvStart        = $0500
 InitializeDrive = $d005         ;1541 only
 
-                org mainCodeStart
-
-; -------------------------------------------------------------------
-; This source code is altered and is not the original version found on
-; the Exomizer homepage.
-; It contains modifications made by Krill/Plush to depack a packed file
-; crunched forward and to work with his loader.
-;
-; Modified for Hessian (optimizations, max. sequence 255 bytes) by
-; Lasse Oorni
-; -------------------------------------------------------------------
-;
-; Copyright (c) 2002 - 2005 Magnus Lind.
-;
-; This software is provided 'as-is', without any express or implied warranty.
-; In no event will the authors be held liable for any damages arising from
-; the use of this software.
-;
-; Permission is granted to anyone to use this software for any purpose,
-; including commercial applications, and to alter it and redistribute it
-; freely, subject to the following restrictions:
-;
-;   1. The origin of this software must not be misrepresented; you must not
-;   claim that you wrote the original software. If you use this software in a
-;   product, an acknowledgment in the product documentation would be
-;   appreciated but is not required.
-;
-;   2. Altered source versions must be plainly marked as such, and must not
-;   be misrepresented as being the original software.
-;
-;   3. This notice may not be removed or altered from any distribution.
-;
-;   4. The names of this software and/or it's copyright holders may not be
-;   used to endorse or promote products derived from this software without
-;   specific prior written permission.
-
-; -------------------------------------------------------------------
-; get bits (29 bytes)
-;
-; args:
-;   x = number of bits to get
-; returns:
-;   a = #bits_lo
-;   x = #0
-;   c = 0
-;   z = 1
-;   zpBitsHi = #bits_hi
-; notes:
-;   y is untouched
-; -------------------------------------------------------------------
-get_bits:
-  lda #$00
-  sta zpBitsHi
-  cpx #$01
-  bcc bits_done
-bits_next:
-  lsr zpBitBuf
-  bne bits_ok
-  pha
-  stx loadTempReg
-  jsr GetByte
-  ldx loadTempReg
-  bcs LF_Error3
-  sec
-  ror
-  sta zpBitBuf
-  pla
-bits_ok:
-  rol
-  rol zpBitsHi
-  dex
-  bne bits_next
-bits_done:
-  rts
-
-LF_Error3:
-  pla
-  pla
-  pla
-LF_Error:
-  rts
-
-        ; Load file packed with Exomizer 2 forward mode
-        ;
-        ; Parameters: A,X load address, fileNumber
-        ; Returns: C=0 if loaded OK, or C=1 and error code in A (see GetByte)
-        ; Modifies: A,X,Y
-
-LoadFile:       sta zpDestLo
-                stx zpDestHi
-                jsr OpenFile
-
-; -------------------------------------------------------------------
-; init zeropage, x and y regs.
-;
-init_zp:
-  jsr GetByte
-  ;bcs LF_Error  ;Error will be caught later
-  sta zpBitBuf
-  ldy #0
-
-; -------------------------------------------------------------------
-; calculate tables
-; x and y must be #0 when entering
-;
-nextone:
-  ldx #1
-  tya
-  and #$0f
-  beq shortcut    ; start with new sequence
-
-  txa          ; this clears reg a
-  lsr          ; and sets the carry flag
-  ldx tablBi-1,y
-rolle:
-  rol
-  rol zpBitsHi
-  dex
-  bpl rolle    ; c = 0 after this (rol zpBitsHi)
-
-  adc tablLo-1,y
-  tax
-
-  lda zpBitsHi
-  adc tablHi-1,y
-shortcut:
-  sta tablHi,y
-  txa
-  sta tablLo,y
-
-  ldx #4
-  jsr get_bits    ; clears x-reg.
-  sta tablBi,y
-  iny
-  cpy #52
-  bne nextone
-
-begin:
-  ldy #$ff
-
-; -------------------------------------------------------------------
-; decruncher entry point, needs calculated tables
-;
-getgamma:
-  lsr zpBitBuf
-  bne norefill
-  jsr GetByte
-  bcs LF_Error
-  sec
-  ror
-  sta zpBitBuf
-norefill:
-  iny
-  bcc getgamma
-  bne sequence
-
-literal:
-  jsr GetByte
-  ;bcs LF_Error ;Error will be caught later
-  sta (zpDestLo),y
-  inc zpDestLo
-  bne begin
-inchi:
-  inc zpDestHi
-  bne begin
-
-sequence:
-  cpy #$11
-  beq LF_Success   ; gamma = 17   : end of file
-
-; -------------------------------------------------------------------
-; calculate length of sequence (zp_len)
-;
-  ldx tablBi-1,y
-  jsr get_bits
-  adc tablLo-1,y  ; we have now calculated zpLenLo
-  sta zpLenLo
-; -------------------------------------------------------------------
-; here we decide what offset table to use
-; x is 0 here
-;
-  ldy zpLenLo
-  cpy #$04
-  bcc size123
-nots123:
-  ldy #$03
-size123:
-  ldx tablBit-1,y
-  jsr get_bits
-  adc tablOff-1,y  ; c = 0 after this.
-  tay      ; 1 <= y <= 52 here
-
-; -------------------------------------------------------------------
-; calulate absolute offset (zp_src)
-;
-  ldx tablBi,y
-  jsr get_bits
-  adc tablLo,y
-  bcc skipcarry
-  inc zpBitsHi
-skipcarry:
-  sec
-  eor #$ff
-  adc zpDestLo
-  sta zpSrcLo
-  lda zpDestHi
-  sbc zpBitsHi
-  sbc tablHi,y
-  sta zpSrcHi
-
-; -------------------------------------------------------------------
-; main copy loop
-; y = length lo
-;
-copy_start:
-  ldy #$00
-copy_next:
-  lda (zpSrcLo),y
-  sta (zpDestLo),y
-  iny
-  cpy zpLenLo
-  bne copy_next
-  tya
-  clc
-  adc zpDestLo
-  sta zpDestLo
-  bcc begin
-  bcs inchi
-
-; -------------------------------------------------------------------
-; end of decruncher
-; -------------------------------------------------------------------
-
-        ; Open file
-        ;
-        ; Parameters: fileNumber
-        ; Returns: -
-        ; Modifies: A,X,Y
-
-OpenFile:       jmp FastOpen
-
-        ; Save file
-        ;
-        ; Parameters: A,X startaddress, zpBitsLo amount of bytes, fileNumber
-        ; Returns: -
-        ; Modifies: A,X,Y
-
-SaveFile:       jmp FastSave
-
-        ; Read a byte from an opened file
-        ;
-        ; Parameters: -
-        ; Returns: if C=0, byte in A. If C=1, EOF/errorcode in A:
-        ; $00 - EOF (no error)
-        ; $01 - Read error
-        ; $02 - File not found
-        ; $80 - Device not present
-        ; Modifies: A,X
-
-GetByte:        ldx fileOpen
-                beq GB_Closed
-                lda loadBuffer,x
-GB_FastCmp:     cpx #$00
-                bcs GB_FastRefill
-                inc fileOpen
-FO_Done:        rts
-GB_FastRefill:  pha
-                jsr FL_FillBuffer
-                pla
-LF_Success:     clc                             ;Note: there is clc rts in the same location
-                rts                             ;also in the slowload routines
-GB_Closed:      lda loadBuffer+2
-                sec
-                rts
-
-FastOpen:       ldx fileOpen                    ;A file already open? If so, do nothing
-                bne FO_Done                     ;(allows chaining of files)
-                inc fileOpen                    ;Set initial fileopen value to make sure IRQs don't enable turbo after this point
-                stx $d07a                       ;SCPU to slow mode
-                stx $d030                       ;C128 to 1Mhz mode
-                txa                             ;Command 0 = load
-                jsr FL_SendCommand
-FL_FillBuffer:  ldx #$00
-FL_FillBufferWait:
-                bit $dd00                       ;Wait for 1541 to signal data ready by
-                bmi FL_FillBufferWait           ;setting DATA low
-FL_FillBufferLoop:
-FL_SpriteWait:  lda $d012                       ;Check for sprite Y-coordinate range
-FL_MaxSprY:     cmp #$00                        ;(max & min values are filled in the
-                bcs FL_NoSprites                ;raster interrupt)
-FL_MinSprY:     cmp #$00
-                bcs FL_SpriteWait
-FL_NoSprites:   sei
-FL_WaitBadLine: lda $d011
-                clc
-                sbc $d012
-                and #$07
-                beq FL_WaitBadLine
-                lda $dd00
-                ora #$10
-                sta $dd00                       ;Set CLK low
-FL_Delay:       bit $00                         ;Delay for synchronized transfer
-                nop
-                and #$03
-                sta FL_Eor+1
-                sta $dd00                       ;Set CLK high
-                lda $dd00
-                lsr
-                lsr
-                eor $dd00
-                lsr
-                lsr
-                eor $dd00
-                lsr
-                lsr
-FL_Eor:         eor #$00
-                eor $dd00
-                cli
-                sta loadBuffer,x
-                inx
-                bne FL_FillBufferLoop
-FL_Common:      dex                             ;X=$ff (end cmp for full buffer)
-                lda loadBuffer
-                bne FL_FullBuffer
-                ldx loadBuffer+1                ;File ended if T&S both zeroes
-                beq FL_LoadEnd
-FL_FullBuffer:  stx GB_FastCmp+1
-                ldx #$02
-FL_LoadEnd:     stx fileOpen                    ;Set buffer read position / fileopen indicator
-                rts
-
-FL_SendCommand: jsr FL_SendByte
-FL_FileNumber:  lda fileNumber
-FL_SendByte:    sta loadTempReg
-                ldx #$08                        ;Bit counter
-FL_SendLoop:    lsr loadTempReg                 ;Send one bit
-                lda #$10
-                ora $dd00
-                bcc FL_ZeroBit
-                eor #$30
-FL_ZeroBit:     sta $dd00
-                lda #$c0                        ;Wait for CLK & DATA low (diskdrive answers)
-FL_SendAck:     bit $dd00
-                bne FL_SendAck
-                lda #$ff-$30                    ;Set DATA and CLK high
-                and $dd00
-                sta $dd00
-FL_SendWait:    bit $dd00                       ;Wait for both DATA & CLK to go high
-                bpl FL_SendWait
-                bvc FL_SendWait
-                dex
-                bne FL_SendLoop
-                rts
-
-FastSave:       sta zpSrcLo
-                stx zpSrcHi
-                lda #$01                        ;Command 1 = save
-                jsr FL_SendCommand
-                lda zpBitsLo
-                jsr FL_SendByte
-                lda zpBitsHi
-                jsr FL_SendByte
-                ldy #$00
-                lda zpBitsLo
-                beq FS_PreDecrement
-FS_Loop:        lda (zpSrcLo),y
-                jsr FL_SendByte
-                iny
-                bne FS_NotOver
-                inc zpSrcHi
-FS_NotOver:     dec zpBitsLo
-                bne FS_Loop
-FS_PreDecrement:dec zpBitsHi
-                bpl FS_Loop
-                rts
-
-FastLoadEnd:
+                org loaderCodeStart
 
         ; Loading initialization related subroutines, also used by mainpart
 
@@ -441,12 +66,10 @@ NMI:            rti
 
         ; Loader runtime data
 
-tablBit:        dc.b 2,4,4                      ;Exomizer static tables
-tablOff:        dc.b 48,32,16
 fileNumber:     dc.b $01                        ;Initial filenumber for the concatenated intro + main part
 fastLoadMode:   dc.b LOAD_KERNAL
 
-loaderCodeEnd:                                  ;Resident code ends here!
+                org loaderCodeEnd
 
         ; Loader initialization
 
@@ -462,6 +85,11 @@ InitLoader:     lda #$02                        ;Close the file loaded from
                 stx messages                    ;Disable KERNAL messages
                 stx fileOpen                    ;Clear fileopen indicator
                 stx palFlag
+                ldx #ilFastLoadEnd-ilFastLoadStart
+IL_CopyFastLoad:lda ilFastLoadStart-1,x         ;Copy fastload file routines
+                sta OpenFile-1,x
+                dex
+                bne IL_CopyFastLoad
 IL_DetectNtsc1: lda $d012                       ;Detect PAL/NTSC
 IL_DetectNtsc2: cmp $d012
                 beq IL_DetectNtsc2
@@ -549,7 +177,7 @@ IL_DDSendMR:    lda ilMRString,x                ;Send M-R command (backwards)
 IL_NoSerial:    inc fastLoadMode                ;Serial bus not used: switch to
                                                 ;"fake" IRQ-loading mode
 IL_NoFastLoad:  ldx #ilSlowLoadEnd-ilSlowLoadStart
-IL_CopySlowLoad:lda ilSlowLoadStart-1,x         ;Copy slowload routines
+IL_CopySlowLoad:lda ilSlowLoadStart-1,x         ;Copy slowload file routines
                 sta OpenFile-1,x
                 dex
                 bne IL_CopySlowLoad
@@ -608,12 +236,11 @@ IL_1MHzCopy:    lda il1MHzStart,y
                 sta Drv1MHzSend-drvStart+driveCode,y
                 dey
                 bpl IL_1MHzCopy
-IL_StartFastLoad: 
+IL_StartFastLoad:
                 lda #(drvEnd-drvStart+MW_LENGTH-1)/MW_LENGTH
                 ldx #<driveCode
                 ldy #>driveCode
                 jsr UploadDriveCode             ;Then start fastloader
-
 IL_Done:        lda #$35                        ;Loader needs Kernal off to use the buffers
                 sta $01                         ;under ROM
                 lda #<introStart                ;Load the intro
@@ -992,6 +619,161 @@ Drv1MHzSend:    asl
 
                 rend
 il1MHzEnd:
+
+        ; Fast fileopen / getbyte / save routines
+
+ilFastLoadStart:
+
+                rorg OpenFile
+
+        ; Open file
+        ;
+        ; Parameters: fileNumber
+        ; Returns: -
+        ; Modifies: A,X,Y
+
+FastOpenFile:       jmp FastOpen
+
+        ; Save file
+        ;
+        ; Parameters: A,X startaddress, zpBitsLo amount of bytes, fileNumber
+        ; Returns: -
+        ; Modifies: A,X,Y
+
+SaveFile:       jmp FastSave
+
+        ; Read a byte from an opened file
+        ;
+        ; Parameters: -
+        ; Returns: if C=0, byte in A. If C=1, EOF/errorcode in A:
+        ; $00 - EOF (no error)
+        ; $01 - Read error
+        ; $02 - File not found
+        ; $80 - Device not present
+        ; Modifies: A,X
+
+GetByte:        ldx fileOpen
+                beq GB_Closed
+                lda loadBuffer,x
+GB_FastCmp:     cpx #$00
+                bcs GB_FastRefill
+                inc fileOpen
+FO_Done:        rts
+GB_FastRefill:  pha
+                jsr FL_FillBuffer
+                pla
+                clc
+                rts
+GB_Closed:      lda loadBuffer+2
+                sec
+                rts
+
+FastOpen:       ldx fileOpen                    ;A file already open? If so, do nothing
+                bne FO_Done                     ;(allows chaining of files)
+                inc fileOpen                    ;Set initial fileopen value to make sure IRQs don't enable turbo after this point
+                stx $d07a                       ;SCPU to slow mode
+                stx $d030                       ;C128 to 1Mhz mode
+                txa                             ;Command 0 = load
+                jsr FL_SendCommand
+FL_FillBuffer:  ldx #$00
+FL_FillBufferWait:
+                bit $dd00                       ;Wait for 1541 to signal data ready by
+                bmi FL_FillBufferWait           ;setting DATA low
+FL_FillBufferLoop:
+FL_SpriteWait:  lda $d012                       ;Check for sprite Y-coordinate range
+FL_MaxSprY:     cmp #$00                        ;(max & min values are filled in the
+                bcs FL_NoSprites                ;raster interrupt)
+FL_MinSprY:     cmp #$00
+                bcs FL_SpriteWait
+FL_NoSprites:   sei
+FL_WaitBadLine: lda $d011
+                clc
+                sbc $d012
+                and #$07
+                beq FL_WaitBadLine
+                lda $dd00
+                ora #$10
+                sta $dd00                       ;Set CLK low
+FL_Delay:       bit $00                         ;Delay for synchronized transfer
+                nop
+                and #$03
+                sta FL_Eor+1
+                sta $dd00                       ;Set CLK high
+                lda $dd00
+                lsr
+                lsr
+                eor $dd00
+                lsr
+                lsr
+                eor $dd00
+                lsr
+                lsr
+FL_Eor:         eor #$00
+                eor $dd00
+                cli
+                sta loadBuffer,x
+                inx
+                bne FL_FillBufferLoop
+FL_Common:      dex                             ;X=$ff (end cmp for full buffer)
+                lda loadBuffer
+                bne FL_FullBuffer
+                ldx loadBuffer+1                ;File ended if T&S both zeroes
+                beq FL_LoadEnd
+FL_FullBuffer:  stx GB_FastCmp+1
+                ldx #$02
+FL_LoadEnd:     stx fileOpen                    ;Set buffer read position / fileopen indicator
+                rts
+
+FL_SendCommand: jsr FL_SendByte
+FL_FileNumber:  lda fileNumber
+FL_SendByte:    sta loadTempReg
+                ldx #$08                        ;Bit counter
+FL_SendLoop:    lsr loadTempReg                 ;Send one bit
+                lda #$10
+                ora $dd00
+                bcc FL_ZeroBit
+                eor #$30
+FL_ZeroBit:     sta $dd00
+                lda #$c0                        ;Wait for CLK & DATA low (diskdrive answers)
+FL_SendAck:     bit $dd00
+                bne FL_SendAck
+                lda #$ff-$30                    ;Set DATA and CLK high
+                and $dd00
+                sta $dd00
+FL_SendWait:    bit $dd00                       ;Wait for both DATA & CLK to go high
+                bpl FL_SendWait
+                bvc FL_SendWait
+                dex
+                bne FL_SendLoop
+                rts
+
+FastSave:       sta zpSrcLo
+                stx zpSrcHi
+                lda #$01                        ;Command 1 = save
+                jsr FL_SendCommand
+                lda zpBitsLo
+                jsr FL_SendByte
+                lda zpBitsHi
+                jsr FL_SendByte
+                ldy #$00
+                lda zpBitsLo
+                beq FS_PreDecrement
+FS_Loop:        lda (zpSrcLo),y
+                jsr FL_SendByte
+                iny
+                bne FS_NotOver
+                inc zpSrcHi
+FS_NotOver:     dec zpBitsLo
+                bne FS_Loop
+FS_PreDecrement:dec zpBitsHi
+                bpl FS_Loop
+                rts
+
+FastLoadEnd:
+
+                rend
+
+ilFastLoadEnd:
 
         ; Slow fileopen / getbyte / save routines
 

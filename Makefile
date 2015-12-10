@@ -43,11 +43,13 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 hessian.d81: hessian.d64 hessiand81.seq
 	c1541 < hessiand81.seq
 
-loader.prg: kernal.s loader.s loadsym.txt ldepack.s boot.s macros.s memory.s
+loader.prg: kernal.s loader.s loadsym.txt ldepacksym.txt ldepack.s boot.s macros.s memory.s
+	dasm ldepack.s -oloader.prg -sldepack.tbl -f3
+	symbols ldepack.tbl ldepacksym.s ldepacksym.txt
 	dasm loader.s -oloader.bin -sloader.tbl -f3
 	symbols loader.tbl loadsym.s loadsym.txt
 	pack2 loader.bin loader.pak
-	dasm ldepack.s -oloader.prg -f3
+	dasm ldepack.s -oloader.prg -sldepack.tbl -f3
 	dasm boot.s -oboot.prg
 
 sfx/pistol.sfx: sfx/pistol.ins

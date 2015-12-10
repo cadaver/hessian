@@ -191,7 +191,9 @@ sprAct          = $0200+MAX_SPR*2
 cacheSprAge     = $02a7
 targetList      = $02a7+MAX_CACHESPRITES
 
-mainCodeStart   = $0334
+exomizerCodeStart = $0334
+loaderCodeStart = $0500
+loaderCodeEnd   = $0534
 
 videoBank       = $c000
 spriteCache     = $d000
