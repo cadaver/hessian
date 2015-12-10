@@ -664,7 +664,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alRotorDrone
                 dc.b <alLargeSpider
                 dc.b <alAcid
-                dc.b <alSpiderChunk
+                dc.b <alScrapMetal
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -729,7 +729,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alRotorDrone
                 dc.b >alLargeSpider
                 dc.b >alAcid
-                dc.b >alSpiderChunk
+                dc.b >alScrapMetal
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -929,7 +929,7 @@ alSmallWalker:  dc.w USESCRIPT|EP_MOVEWALKER    ;Update routine
                 dc.b 12                         ;Horizontal size
                 dc.b 21                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE2_8_OFS10 ;Destroy routine
+                dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
                 dc.b HP_SMALLWALKER             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 45                         ;Score from kill
@@ -953,7 +953,7 @@ alSmallTank:    dc.w USESCRIPT|EP_MOVETANK      ;Update routine
                 dc.b 12                         ;Horizontal size
                 dc.b 22                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE2_8_OFS10 ;Destroy routine
+                dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
                 dc.b HP_SMALLTANK               ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 60                         ;Score from kill
@@ -1021,7 +1021,7 @@ alCeilingTurret:dc.w USESCRIPT|EP_MOVETURRET    ;Update routine
                 dc.b 6                          ;Horizontal size
                 dc.b 0                          ;Size up
                 dc.b 12                         ;Size down
-                dc.w USESCRIPT|EP_EXPLODE2_8_OFS6 ;Destroy routine
+                dc.w ExplodeEnemy2_8_Ofs6       ;Destroy routine
                 dc.b HP_CEILINGTURRET           ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 150                        ;Score from kill
@@ -1294,7 +1294,7 @@ alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
                 dc.b 8                          ;Horizontal size
                 dc.b 36                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE3_OFS15 ;Destroy routine
+                dc.w ExplodeEnemy3_Ofs15        ;Destroy routine
                 dc.b HP_HEAVYGUARD              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
@@ -1320,7 +1320,7 @@ alCombatRobotFast:
                 dc.b 8                          ;Horizontal size
                 dc.b 36                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE3_OFS15 ;Destroy routine
+                dc.w ExplodeEnemy3_Ofs15        ;Destroy routine
                 dc.b HP_HEAVYGUARD              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 115                        ;Score from kill
@@ -1345,7 +1345,7 @@ alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
                 dc.b 24                         ;Horizontal size
                 dc.b 42                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE4_OFS15 ;Destroy routine
+                dc.w ExplodeEnemy4_Ofs15        ;Destroy routine
                 dc.b HP_LARGEWALKER             ;Initial health
                 dc.b MOD_HEAVYROBOT             ;Damage modifier
                 dc.w 175                        ;Score from kill
@@ -1363,7 +1363,7 @@ alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
                 dc.b 8                          ;Ground braking
                 dc.b -5                         ;Height in chars for headbump check (negative)
 
-alScrapMetal:   dc.w USESCRIPT|EP_MOVESCRAPMETAL ;Update routine
+alScrapMetal:   dc.w MoveScrapMetal             ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
 alRockTrap:     dc.w USESCRIPT|EP_MOVEROCKTRAP  ;Update routine
@@ -1429,7 +1429,7 @@ alSpiderWalker: dc.w USESCRIPT|EP_MOVESPIDERWALKER ;Update routine
                 dc.b 12                         ;Horizontal size
                 dc.b 33                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE2_OFS15 ;Destroy routine
+                dc.w ExplodeEnemy2_Ofs15        ;Destroy routine
                 dc.b HP_SPIDERWALKER            ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 55                         ;Score from kill
@@ -1452,7 +1452,7 @@ alLargeTank:    dc.w USESCRIPT|EP_MOVELARGETANK ;Update routine
                 dc.b 24                         ;Horizontal size
                 dc.b 38                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE4_OFS15 ;Destroy routine
+                dc.w ExplodeEnemy4_Ofs15        ;Destroy routine
                 dc.b HP_LARGETANK               ;Initial health
                 dc.b MOD_HEAVYROBOT             ;Damage modifier
                 dc.w 200                        ;Score from kill
@@ -1475,7 +1475,7 @@ alHighWalker:   dc.w USESCRIPT|EP_MOVEHIGHWALKER ;Update routine
                 dc.b 12                         ;Horizontal size
                 dc.b 59                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODE4_RISING ;Destroy routine
+                dc.w ExplodeEnemy4_Rising       ;Destroy routine
                 dc.b HP_HIGHWALKER              ;Initial health
                 dc.b MOD_HEAVYROBOT             ;Damage modifier
                 dc.w 150                        ;Score from kill
@@ -1494,7 +1494,7 @@ alHighWalker:   dc.w USESCRIPT|EP_MOVEHIGHWALKER ;Update routine
                 dc.b -7                         ;Height in chars for headbump check (negative)
 
 alExplosionGeneratorRising:
-                dc.w USESCRIPT|EP_MOVEEXPLOSIONGENERATORRISING ;Update routine
+                dc.w MoveExplosionGeneratorRising ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
 
 alSecurityChief:dc.w USESCRIPT|EP_MOVESECURITYCHIEF ;Update routine
@@ -1570,6 +1570,3 @@ alAcid:         dc.w USESCRIPT|EP_MOVEACID      ;Update routine
                 dc.b 4                          ;Horizontal size
                 dc.b 7                          ;Size up
                 dc.b 0                          ;Size down
-
-alSpiderChunk:  dc.w USESCRIPT|EP_MOVECHUNK     ;Update routine
-                dc.b AF_INITONLYSIZE            ;Actor flags

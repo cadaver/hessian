@@ -30,11 +30,9 @@ CopyBoot:       lda BootStart-1,x
 BootStart:
                 rorg $0100
 
-                stx $d020
-                stx $d021
-                txa
                 ldy #$04
-ClearScreen:    sta $d800,x
+                lda #$20
+ClearScreen:    sta $2000,x
                 inx
                 bne ClearScreen
                 inc ClearScreen+2
@@ -52,14 +50,18 @@ ClearScreen:    sta $d800,x
                 jsr Open
                 ldx #$02                        ;Open file $02 for input
                 jsr ChkIn
-                ldy #37
+                ldy #31
 ShowMessage:    lda #$0f
-                sta colors+1*40-1,y
+                sta colors+12*40+3,y
                 lda message-1,y
                 and #$3f
-                sta $0400+1*40-1,y
+                sta $2000+12*40+3,y
                 dey
                 bne ShowMessage
+                sty $d020
+                sty $d021
+                lda #$84
+                sta $d018
 LoadExomizer:   jsr ChrIn                       ;Load Exomizer as unpacked data
                 sta exomizerCodeStart,y
                 iny
@@ -71,7 +73,7 @@ LoadExomizer:   jsr ChrIn                       ;Load Exomizer as unpacked data
                 jmp loaderCodeEnd               ;Jump to InitLoader
 
 loaderFileName: dc.b "00"
-message:        dc.b "HOLD SPACE/FIRE TO DISABLE FASTLOADER"
+message:        dc.b "HOLD SPACE/FIRE FOR NO FASTLOAD"
 
                 rend
 BootEnd:

@@ -289,34 +289,20 @@ MGrn_NoExplosion:
         ; Returns: -
         ; Modifies: A,Y
 
-MGrn_HitWater:  jmp RemoveActor                 ;MoveWithGravity already created splash, just remove
 MoveGrenade:    lda #$00                        ;Grenade never stays grounded
                 sta actMB,x
                 lda actSY,x                     ;Store original Y-speed for bounce
                 sta temp1
-                jsr FallingMotionCommon
-                lsr
+                jsr BounceMotion
                 bcc MGrn_NoBounce
-                lda temp1                       ;Bounce: negate and halve velocity
+                lda temp1                       ;Bounce from ground: negate and halve Y-velocity
                 jsr Negate8Asr8
                 sta actSY,x
                 lda #GRENADE_BRAKE              ;Brake X-speed with each bounce
                 jsr BrakeActorX
 MGrn_NoBounce:  lda actMB,x
-                bmi MGrn_HitWater
-                and #MB_HITWALL|MB_HITCEILING
-                cmp #MB_HITWALL
-                bne MGrn_NoHitWall
-                lda actSX,x
-                jsr Negate8Asr8
-                jmp MGrn_StoreNewXSpeed
-MGrn_NoHitWall: and #MB_HITCEILING              ;Halve X-speed when hit ceiling
-                beq MGrn_NoCeiling
-                lda actSX,x
-                jsr Asr8
-MGrn_StoreNewXSpeed:
-                sta actSX,x
-MGrn_NoCeiling: jmp MGrn_Common
+                bpl MGrn_Common
+MGrn_HitWater:  jmp RemoveActor                 ;MoveWithGravity already created splash, just remove
 
         ; Mine update routine
         ;
@@ -419,3 +405,20 @@ RD_Loop:        lda actHp,y                     ;Skip if bystander or already de
 RD_Next:        dey
                 bpl RD_Loop
                 rts
+
+        ; Common bounce motion subroutine. Speed is halved & negated on side wall collisions
+        ;
+        ; Parameters: X actor index
+        ; Returns: C grounded status
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+BounceMotion:   jsr FallingMotionCommon
+                lsr
+                and #(MB_HITWALL)/2
+                beq BM_NoHitWall
+                php
+                lda actSX,x
+                jsr Negate8Asr8
+                sta actSX,x
+                plp
+BM_NoHitWall:   rts

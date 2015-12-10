@@ -12,8 +12,6 @@ FR_DEADBATGROUND = 6
 FR_DEADWALKERAIR = 12
 FR_DEADWALKERGROUND = 13
 
-SCRAP_DURATION = 40
-
 TURRET_ANIMDELAY = 2
 
 RECYCLER_ITEM_FIRST = ITEM_PISTOL
@@ -45,18 +43,10 @@ RECYCLER_ITEM_LAST = ITEM_ARMOR
                 dc.w DestroyRock
                 dc.w OrganicWalkerDeath
                 dc.w MoveLargeWalker
-                dc.w ExplodeEnemy2_8_Ofs6
-                dc.w ExplodeEnemy2_8_Ofs10
-                dc.w ExplodeEnemy3_Ofs15
-                dc.w ExplodeEnemy4_Ofs15
-                dc.w MoveScrapMetal
                 dc.w MoveRockTrap
                 dc.w MoveSpiderWalker
-                dc.w ExplodeEnemy2_Ofs15
                 dc.w MoveLargeTank
                 dc.w MoveHighWalker
-                dc.w ExplodeEnemy4_Rising
-                dc.w MoveExplosionGeneratorRising
                 dc.w UseHealthRecharger
                 dc.w UseBatteryRecharger
                 dc.w RechargerEffect
@@ -580,26 +570,6 @@ MoveLargeWalker:jsr MoveGeneric
 MLW_NoShake:    sta actFallL,x
                 jmp AttackGeneric
 
-        ; Scrap metal movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveScrapMetal: lda actSY,x                     ;Store original Y-speed for bounce
-                sta temp1
-                jsr BounceMotion
-                bcc MSM_NoBounce
-                lda actSX,x
-                jsr Asr8
-                sta actSX,x
-                lda temp1
-                jsr Negate8Asr8
-                sta actSY,x
-                lda #$00                        ;Clear grounded flag
-                sta actMB,x
-MSM_NoBounce:   jmp DeathFlickerAndRemove
-
         ; Rock trap movement
         ;
         ; Parameters: X actor index
@@ -619,86 +589,6 @@ MoveRockTrap:   lda actYH,x                     ;Trigger when player is below
                 jsr SetNotPersistent            ;Disappear after triggering once
                 jmp InitActor
 MRT_NoTrigger:  rts
-
-        ; Generate 2 explosions at 8 pixel radius
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy2_8_Ofs6:
-                lda #6*8
-                skip2
-ExplodeEnemy2_8_Ofs10:
-                lda #-10*8
-                jsr MoveActorYNoInterpolation
-                jmp ExplodeEnemy2_8
-
-        ; Generate 3 explosions at 8 pixel radius horizontally and 32 pixel radius
-        ; vertically
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy3_Ofs15:
-                lda #-15*8
-                jsr MoveActorYNoInterpolation
-                lda #3
-                sta actTime,x
-                lda #$3f
-                sta actSX,x
-                lda #$ff
-                sta actSY,x
-                jmp ExplodeEnemyMultipleCommon
-
-        ; Generate 4 explosions at 32 pixel radius and spawn pieces of scrap metal
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy4_Ofs15:
-                lda #-15*8
-                jsr MoveActorYNoInterpolation
-                lda #4
-                ldy #$ff
-                jsr ExplodeEnemyMultiple
-                lda #-2*8-8
-                sta temp7                       ;Initial base X-speed
-                jsr Random
-                sta temp8                       ;Initial shape
-EE_ScrapMetalLoop:
-                lda #ACTI_FIRSTNPC              ;Use any free actors
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
-                bcc EE_ScrapMetalDone
-                lda #ACT_SCRAPMETAL
-                jsr SpawnActor
-                jsr Random
-                and #$0f                        ;Randomize upward + sideways speed
-                clc
-                adc #-7*8
-                sta actSY,y
-                jsr Random
-                and #$0f
-                clc
-                adc temp7
-                sta actSX,y
-                inc temp8
-                lda temp8
-                and #$03
-                sta actF1,y
-                lda #SCRAP_DURATION
-                sta actTime,y
-                lda temp7
-                bpl EE_ScrapMetalDone
-                clc
-                adc #2*8
-                sta temp7
-                bne EE_ScrapMetalLoop
-EE_ScrapMetalDone:
-                rts
 
         ; Spiderwalker update routine
         ;
@@ -730,24 +620,6 @@ MSW_AnimDone2:  ldy #tankTurretOfs-turretFrameTbl
                 lda #1
                 jsr AnimateTurret
                 jmp AttackGeneric
-
-        ; Generate 2 explosions at 8 pixel radius horizontally and 15 pixel radius
-        ; vertically
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy2_Ofs15:
-                lda #-15*8
-                jsr MoveActorYNoInterpolation
-                lda #2
-                sta actTime,x
-                lda #$3f
-                sta actSX,x
-                lda #$7f
-                sta actSY,x
-                jmp ExplodeEnemyMultipleCommon
 
         ; Large tank update routine
         ;
@@ -819,34 +691,6 @@ MHW_SpeedXPos:  lsr
 MHW_SpeedYOK:
 MHW_NoAttack:   rts
 
-        ; Generate 4 explosions at 15 pixel radius horizontally, rising
-        ; vertically
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy4_Rising:
-                lda #-12*8
-                jsr MoveActorYNoInterpolation
-                lda #4
-                ldy #$7f
-                jsr ExplodeEnemyMultiple
-                lda #ACT_EXPLOSIONGENERATORRISING
-                sta actT,x
-                rts
-
-        ; Rising explosion generator
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveExplosionGeneratorRising:
-                jsr MoveExplosionGenerator
-                lda #-4*8
-                jmp MoveActorY
-
         ; Turret animation routine
         ;
         ; Parameters: X actor index, A default frame, Y turret frame table start index
@@ -904,26 +748,9 @@ DAM_NoWater:    and #MB_HITWALL
                 sta actSX,x
 DAM_NoWallHit:  lda actMB,x
                 lsr
-                rts
-
-        ; Common bounce motion subroutine. Speed is halved on side wall collisions
-        ;
-        ; Parameters: X actor index
-        ; Returns: C grounded status
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-BounceMotion:   jsr FallingMotionCommon
-                lsr
-                and #MB_HITWALL/2
-                beq BM_NoHitWall
-                php
-                lda actSX,x
-                jsr Negate8Asr8
-                sta actSX,x
-                plp
 UHR_Full:
 UBR_Full:
-BM_NoHitWall:   rts
+                rts
 
         ; Health recharger script routine
         ;

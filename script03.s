@@ -21,7 +21,6 @@ CHUNK_DURATION = 40
                 dc.w MoveLargeSpider
                 dc.w OpenWall
                 dc.w MoveAcid
-                dc.w MoveChunk
 
         ; Eye (Construct) boss phase 1
         ;
@@ -623,43 +622,6 @@ MA_StartPlayerSplash:
                 lda #2
                 sta actF1,x
                 bne MA_SplashCommon
-
-        ; Spider chunk movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveChunk:      lda actSY,x                     ;Store original Y-speed for bounce
-                sta temp1
-                jsr BounceMotion
-                bcc MC_NoBounce
-                lda actSX,x
-                jsr Asr8
-                sta actSX,x
-                lda temp1
-                jsr Negate8Asr8
-                sta actSY,x
-                lda #$00                        ;Clear grounded flag
-                sta actMB,x
-MC_NoBounce:    jmp DeathFlickerAndRemove
-
-        ; Common bounce motion subroutine. Speed is halved on side wall collisions
-        ;
-        ; Parameters: X actor index
-        ; Returns: C grounded status
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-BounceMotion:   jsr FallingMotionCommon
-                lsr
-                and #MB_HITWALL/2
-                beq BM_NoHitWall
-                php
-                lda actSX,x
-                jsr Negate8Asr8
-                sta actSX,x
-                plp
-BM_NoHitWall:   rts
 
         ; Final server room droid spawn positions
 

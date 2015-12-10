@@ -1,6 +1,7 @@
 HUMAN_ITEM_SPAWN_OFFSET = -15*8
 ITEM_SPAWN_YSPEED     = -3*8
 MULTIEXPLOSION_DELAY = 2
+SCRAP_DURATION = 40
 
         ; Common flying enemy movement
         ;
@@ -144,6 +145,18 @@ ExplodeEnemy_Ofs8:
 ExplodeEnemy:   jsr DropItem
                 jmp ExplodeActor
 
+        ; Generate 2 explosions at 8 pixel radius
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy2_8_Ofs6:
+                lda #6*8
+                skip2
+ExplodeEnemy2_8_Ofs10:
+                lda #-10*8
+                jsr MoveActorYNoInterpolation
 ExplodeEnemy2_8:lda #2
                 ldy #$3f
 
@@ -156,12 +169,120 @@ ExplodeEnemy2_8:lda #2
 ExplodeEnemyMultiple:
                 sta actTime,x
                 tya
+ExplodeEnemyMultiple_CustomRadius:
                 sta actSX,x
+                tya
                 sta actSY,x
-ExplodeEnemyMultipleCommon:
                 jsr DropItem
                 lda #ACT_EXPLOSIONGENERATOR
                 jmp TransformBullet
+
+        ; Generate 2 explosions at 8 pixel radius horizontally and 15 pixel radius
+        ; vertically
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy2_Ofs15:
+                lda #-15*8
+                jsr MoveActorYNoInterpolation
+                lda #2
+                sta actTime,x
+                lda #$3f
+                ldy #$7f
+                bne ExplodeEnemyMultiple_CustomRadius
+
+        ; Generate 3 explosions at 8 pixel radius horizontally and 32 pixel radius
+        ; vertically
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy3_Ofs15:
+                lda #-15*8
+                jsr MoveActorYNoInterpolation
+                lda #3
+                sta actTime,x
+                lda #$3f
+                ldy #$ff
+                bne ExplodeEnemyMultiple_CustomRadius
+
+        ; Generate 4 explosions at 32 pixel radius and spawn 3 pieces of scrap metal
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy4_Ofs15:
+                lda #-15*8
+                jsr MoveActorYNoInterpolation
+                lda #4
+                ldy #$ff
+                jsr ExplodeEnemyMultiple
+                lda #-2*8-8
+                sta temp7                       ;Initial base X-speed
+                jsr Random
+                sta temp8                       ;Initial shape
+EE_ScrapMetalLoop:
+                lda #ACTI_FIRSTNPC              ;Use any free actors
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc EE_ScrapMetalDone
+                lda #ACT_SCRAPMETAL
+                jsr SpawnActor
+                jsr Random
+                and #$0f                        ;Randomize upward + sideways speed
+                clc
+                adc #-7*8
+                sta actSY,y
+                jsr Random
+                and #$0f
+                clc
+                adc temp7
+                sta actSX,y
+                inc temp8
+                lda temp8
+                and #$03
+                sta actF1,y
+                lda #SCRAP_DURATION
+                sta actTime,y
+                lda temp7
+                bpl EE_ScrapMetalDone
+                clc
+                adc #2*8
+                sta temp7
+                bne EE_ScrapMetalLoop
+EE_ScrapMetalDone:
+                rts
+
+        ; Generate 4 explosions at 15 pixel radius horizontally, rising
+        ; vertically
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy4_Rising:
+                lda #-8*8
+                jsr MoveActorYNoInterpolation
+                lda #4
+                ldy #$7f
+                jsr ExplodeEnemyMultiple
+                lda #ACT_EXPLOSIONGENERATORRISING
+                sta actT,x
+                rts
+
+        ; Rising explosion generator
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveExplosionGeneratorRising:
+                lda #-4*8
+                jsr MoveActorY
 
         ; Explosion generator update routine
         ;
@@ -207,6 +328,43 @@ MEG_GetOffset:  sta temp3
 MEG_NotLastExplosion:
 MEG_NoNewExplosion:
                 rts
+
+        ; Scrap metal movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveScrapMetal: lda actSY,x                     ;Store original Y-speed for bounce
+                sta temp1
+                jsr BounceMotion
+                bcc MSM_NoBounce
+                lda actSX,x
+                jsr Asr8
+                sta actSX,x
+                lda temp1
+                jsr Negate8Asr8
+                sta actSY,x
+                lda #$00                        ;Clear grounded flag
+                sta actMB,x
+MSM_NoBounce:
+
+        ; Flicker corpse, then remove.
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp regs
+
+DeathFlickerAndRemove:
+                dec actTime,x
+                bmi DFAR_Remove
+                lda actTime,x                   ;Flicker and eventually remove the corpse
+                cmp #DEATH_FLICKER_DELAY
+                bcs DFAR_Done
+                lda #COLOR_FLICKER
+                sta actFlash,x
+DFAR_Done:      rts
+DFAR_Remove:    jmp RemoveActor
 
         ; Initiate humanoid enemy or player death
         ;
@@ -366,20 +524,3 @@ DI_CountOK:     sta actHp,y
 DI_NotImportant:sta actLvlDataOrg,x             ;Make item either persistent or temp persistent
                 ldx temp6                       ;depending on importance
                 rts
-
-        ; Flicker corpse, then remove.
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp regs
-
-DeathFlickerAndRemove:
-                dec actTime,x
-                bmi DFAR_Remove
-                lda actTime,x                   ;Flicker and eventually remove the corpse
-                cmp #DEATH_FLICKER_DELAY
-                bcs DFAR_Done
-                lda #COLOR_FLICKER
-                sta actFlash,x
-DFAR_Done:      rts
-DFAR_Remove:    jmp RemoveActor
