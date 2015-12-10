@@ -1566,14 +1566,10 @@ alLargeSpider:  dc.w USESCRIPT|EP_MOVELARGESPIDER ;Update routine
                 dc.b -4                         ;Height in chars for headbump check (negative)
 
 alAcid:         dc.w USESCRIPT|EP_MOVEACID      ;Update routine
-                dc.b GRP_ANIMALS|AF_ORGANIC|AF_NOREMOVECHECK|AF_NOWEAPON ;Actor flags
+                dc.b AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
                 dc.b 4                          ;Horizontal size
                 dc.b 7                          ;Size up
                 dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODEACID   ;Destroy routine
-                dc.b HP_ACID                    ;Initial health
-                dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 5                          ;Score from kill
 
 alSpiderChunk:  dc.w USESCRIPT|EP_MOVECHUNK     ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags

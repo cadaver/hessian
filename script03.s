@@ -22,7 +22,6 @@ CHUNK_DURATION = 40
                 dc.w OpenWall
                 dc.w MoveAcid
                 dc.w MoveChunk
-                dc.w ExplodeAcid
 
         ; Eye (Construct) boss phase 1
         ;
@@ -485,8 +484,8 @@ MLS_NotOverPos: sta actFd,x
                 plp
                 bne MLS_NoAttack
 
-MLS_Attack:     lda #ACTI_FIRSTNPC
-                ldy #ACTI_LASTNPC
+MLS_Attack:     lda #ACTI_FIRSTNPCBULLET
+                ldy #ACTI_LASTNPCBULLET
                 jsr GetFreeActor
                 bcc MLS_NoAttack
                 lda #SFX_SHOTGUN
@@ -616,7 +615,6 @@ MA_SplashCommon:jsr NoInterpolation
                 sta actFlash,x
                 lda #SFX_SPLASH
                 jmp PlaySfx
-ExplodeAcid:
 MA_StartPlayerSplash:
                 lda #ACT_EXPLOSION
                 jsr TransformBullet

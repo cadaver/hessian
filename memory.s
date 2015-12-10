@@ -199,7 +199,6 @@ videoBank       = $c000
 spriteCache     = $d000
 fileAreaEnd     = spriteCache
 colors          = $d800
-vColBuf         = colors+24*40
 textChars       = $e000
 emptySprite     = $e300
 panelScreen     = $e000
