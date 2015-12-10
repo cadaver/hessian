@@ -643,7 +643,21 @@ SW_ShiftColorsUpBottomInx:
 SW_ShiftColorsUpBottomCpx:
                 cpx #$00
                 bne SW_ShiftColorsUpBottomLoop
-                jsr SW_DrawColorsReconstruct
+                ldy #12                         ;Reconstruct the colors that are lost at
+SW_DrawColorsRLoop:                             ;the scroll split
+                ldx screen1+SCROLLSPLIT*40+40,y
+                lda charColors,x
+                sta colors+SCROLLSPLIT*40+40,y
+SW_DrawColorsRLdx2:
+                ldx screen1+SCROLLSPLIT*40+40+13,y
+                lda charColors,x
+                sta colors+SCROLLSPLIT*40+40+13,y
+SW_DrawColorsRLdx3:
+                ldx screen1+SCROLLSPLIT*40+40+26,y
+                lda charColors,x
+                sta colors+SCROLLSPLIT*40+40+26,y
+                dey
+                bpl SW_DrawColorsRLoop
                 ldx temp1
                 ldy colorSideTbl-3,x
 SW_DrawColorsHorizBottom:
@@ -797,24 +811,6 @@ N               set 0
                 sta colors+N*40,y
 N               set N+1
                 repend
-                rts
-
-SW_DrawColorsReconstruct:
-                ldy #12                         ;Reconstruct the colors that are lost at
-SW_DrawColorsRLoop:                             ;the scroll split
-                ldx screen1+SCROLLSPLIT*40+40,y
-                lda charColors,x
-                sta colors+SCROLLSPLIT*40+40,y
-SW_DrawColorsRLdx2:
-                ldx screen1+SCROLLSPLIT*40+40+13,y
-                lda charColors,x
-                sta colors+SCROLLSPLIT*40+40+13,y
-SW_DrawColorsRLdx3:
-                ldx screen1+SCROLLSPLIT*40+40+26,y
-                lda charColors,x
-                sta colors+SCROLLSPLIT*40+40+26,y
-                dey
-                bpl SW_DrawColorsRLoop
                 rts
 
 SW_DrawColorsUp:ldy #12
