@@ -421,7 +421,7 @@ MLS_NotAtWall:  ldy #ACTI_PLAYER
                 jsr GetActorDistance            ;Get X-distance to player
                 lda temp6
                 bne MLS_NotTooClose             ;If too close, retreat
-                lda actD,x
+                lda actD+ACTI_PLAYER
                 asl
                 lda #JOY_LEFT
                 bcc MLS_ForcedMoveImmediate
