@@ -254,8 +254,8 @@ UP_MeleeWeaponLoop:
                 dex
                 bpl UP_MeleeWeaponLoop
 UP_SkipAmmo:    lsr panelUpdateFlags
-                bcc UP_SkipScore
                 if SHOW_FREE_MEMORY == 0 && SHOW_BATTERY == 0
+                bcc UP_SkipScore
                 lda score
                 ldx score+1
                 ldy score+2
