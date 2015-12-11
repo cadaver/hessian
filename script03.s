@@ -423,6 +423,8 @@ MLS_ForcedMoveImmediate:
 MLS_NotAtWall:  cmp #$3e                        ;Do not perform retreat when almost at the wall
                 beq MLS_NotTooClose             ;(too easy to exploit)
                 ldy #ACTI_PLAYER
+                lda actHp,y                     ;If already dead, no need
+                beq MLS_NotTooClose
                 jsr GetActorDistance            ;Get X-distance to player
                 lda temp6
                 bne MLS_NotTooClose             ;If too close, retreat
@@ -601,15 +603,15 @@ OW_HasSpider:   rts
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveAcid:       jsr FallingMotionCommon
-                tay                             ;Any collision -> splash
-                bne MA_StartSplash
-                lda actHp+ACTI_PLAYER
+MoveAcid:       lda actHp+ACTI_PLAYER
                 beq MA_NoPlayerCollision
                 lda #DMG_ACID
                 jsr CollideAndDamagePlayer
                 bcs MA_StartPlayerSplash
 MA_NoPlayerCollision:
+                jsr FallingMotionCommon
+                tay                             ;Any collision -> splash
+                bne MA_StartSplash
                 lda #1
                 ldy #3
                 jmp LoopingAnimation
