@@ -414,8 +414,15 @@ MLS_Decision:   lda actXH,x                     ;Move forward when about to hit 
                 cmp #$3d
                 bne MLS_NotAtWall
                 lda #JOY_RIGHT
-                bne MLS_ForcedMoveImmediate
-MLS_NotAtWall:  ldy #ACTI_PLAYER
+MLS_ForcedMoveImmediate:
+                pha
+                lda #$00                        ;After forced move, make next random decision
+                sta actTime,x                   ;immediately
+                pla
+                bne MLS_StoreMove
+MLS_NotAtWall:  cmp #$3e                        ;Do not perform retreat when almost at the wall
+                beq MLS_NotTooClose             ;(too easy to exploit)
+                ldy #ACTI_PLAYER
                 jsr GetActorDistance            ;Get X-distance to player
                 lda temp6
                 bne MLS_NotTooClose             ;If too close, retreat
@@ -428,7 +435,7 @@ MLS_NotAtWall:  ldy #ACTI_PLAYER
 MLS_NotTooClose:dec actTime,x
                 bpl MLS_Move
                 lda actAttackD+ACTI_PLAYER      ;If player is attacking now, always attack
-                beq MLS_NoForcedAttack
+                beq MLS_NoForcedAttack          ;as the next decision
                 lda #$03
                 bne MLS_ForcedMove
 MLS_NoForcedAttack:
@@ -441,8 +448,7 @@ MLS_ForcedMove: tay
                 adc #$10
                 sta actTime,x
                 lda spiderMoveTbl,y
-MLS_ForcedMoveImmediate:
-                sta actMoveCtrl,x
+MLS_StoreMove:  sta actMoveCtrl,x
 MLS_Move:       jsr MoveGeneric
                 lda actXL+ACTI_PLAYER
                 cmp actXL,x
@@ -652,7 +658,6 @@ explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
 spiderMoveTbl:  dc.b JOY_LEFT,JOY_RIGHT,JOY_FIRE,JOY_FIRE
 spiderDelayAndTbl:
                 dc.b $1f,$1f,$07,$07
-
 
                 checkscriptend
 
