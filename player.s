@@ -496,7 +496,16 @@ MH_JumpNoPlayer:jsr MH_ResetGrounded
                 lda #FR_JUMP
                 jmp MH_AnimDone
 MH_NoNewJump:   lda temp2
-                and #JOY_DOWN
+                ldy actF1,x                     ;If in enter stance,
+                cpy #FR_ENTER                   ;hold it as long as joy up/down held
+                bne MH_NoEnterFrame
+                and #JOY_DOWN|JOY_UP
+                bne MH_KeepEnterFrame
+                jmp MH_StandAnim
+MH_KeepEnterFrame:
+                tya
+                jmp MH_AnimDone
+MH_NoEnterFrame:and #JOY_DOWN
                 beq MH_NoDuck
 MH_NewDuckOrRoll:
                 lda temp3
@@ -549,14 +558,8 @@ MH_DuckAnim:    lda #$01
                 jsr OneShotAnimation
                 lda actF1,x
                 bpl MH_AnimDone
-MH_NoDuck:      lda actF1,x                     ;If door enter/operate object animation,
-                cmp #FR_ENTER                   ;hold it as long as joystick is held up
-                bne MH_NoEnterAnim
-                lda temp2
-                cmp #JOY_UP
-                bne MH_StandAnim
-                beq MH_AnimDone3
-MH_NoEnterAnim: cmp #FR_DUCK
+MH_NoDuck:      lda actF1,x
+                cmp #FR_DUCK
                 bcc MH_StandOrWalk
 MH_DuckStandUpAnim:
                 lda #$01

@@ -1044,9 +1044,6 @@ ULO_CODone:     ldy lvlObjNum
 ULO_HasObject:  lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
                 cmp #FR_ENTER                   ;operate/entry delay has elapsed
                 bne ULO_NoEnter
-                lda actMoveCtrl+ACTI_PLAYER
-                cmp #JOY_UP
-                bne ULO_NoEnter
                 lda actFd+ACTI_PLAYER
                 cmp #OPERATEDELAY
                 bne ULO_NoOperate
