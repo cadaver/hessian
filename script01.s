@@ -904,8 +904,8 @@ RSL_Buy:        lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
                 ldy #ITEM_PARTS
                 lda temp1
                 jsr DecreaseAmmo
-                lda recyclerItem
-                sta itemIndex
+                lda #$00                        ;Do not redraw parts count now,
+                sta panelUpdateFlags            ;rather redraw manually
                 lda #$20                        ;Show the bought item
                 sta recyclerDisplay
                 lda #SFX_EMP
