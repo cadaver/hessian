@@ -57,9 +57,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $5080
 ;START_Y         = $1f00
 
-START_LEVEL     = $07                          ;Large spider's lair
-START_X         = $4f80
-START_Y         = $3b00
+;START_LEVEL     = $07                          ;Large spider's lair
+;START_X         = $4f80
+;START_Y         = $3b00
 
 ;START_LEVEL     = $08                          ;Lower labs
 ;START_X         = $3780
@@ -73,9 +73,9 @@ START_Y         = $3b00
 ;START_X         = $a580
 ;START_Y         = $7400
 
-;START_LEVEL     = $0a                          ;Jormungandr
-;START_X         = $ed80
-;START_Y         = $7600
+START_LEVEL     = $0a                          ;Jormungandr
+START_X         = $ed80
+START_Y         = $7600
 
 ;START_LEVEL     = $0b                          ;Next to Bio-Dome
 ;START_X         = $4780

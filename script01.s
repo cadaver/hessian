@@ -52,6 +52,8 @@ RECYCLER_ITEM_LAST = ITEM_ARMOR
                 dc.w RechargerEffect
                 dc.w RecyclingStation
                 dc.w RecyclingStationLoop
+                dc.w Elevator
+                dc.w ElevatorLoop
 
         ; Flying craft update routine
         ;
@@ -1026,6 +1028,64 @@ RS_GotoPrevItem:dey
                 bcs RS_GotoPrevFound
                 bcc RS_GotoPrevItem
 
+        ; Enter elevator script
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+Elevator:       ldx #3
+                lda levelNum
+E_FindLoop:     cmp elevatorSrcLevel,x
+                beq E_Found
+                dex
+                bpl E_FindLoop
+E_Found:        lda elevatorPlotBit,x
+                jsr GetPlotBit
+                bne E_HasAccess
+E_NoAccess:     lda #<txtElevatorLocked
+                ldx #>txtElevatorLocked
+                ldy #REQUIREMENT_TEXT_DURATION
+                jmp PrintPanelText
+E_HasAccess:    stx elevatorIndex
+                lda #$00
+                sta elevatorTime
+                lda #<EP_ELEVATORLOOP
+                ldx #>EP_ELEVATORLOOP
+                jsr SetScript
+                ldy lvlObjNum
+                iny
+                tya
+E_EnterDoor:    jmp ULO_EnterDoorDest
+
+        ; Enter elevator loop
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+ElevatorLoop:   ldx elevatorIndex
+                lda elevatorTime
+                bne EL_NotFirstFrame
+                sta charInfo-1                  ;Reset elevator speed
+EL_NotFirstFrame:
+                lda charInfo-1                  ;Accelerate until full speed
+                cmp elevatorSpeed,x
+                beq EL_HasFullSpeed
+                clc
+                adc elevatorAcc,x
+                sta charInfo-1
+EL_HasFullSpeed:inc elevatorTime
+                bmi EL_Exit
+                rts
+EL_Exit:        jsr StopScript
+                ldx elevatorIndex
+                lda elevatorDestLevel,x
+                jsr ChangeLevel
+                ldx elevatorIndex
+                lda elevatorDestObject,x
+                bpl E_EnterDoor
+
         ; Tank Y-size addition table (based on turret direction)
 
 tankSizeAddTbl: dc.b 2,0,6,8
@@ -1097,11 +1157,28 @@ recyclerCostTbl:
                 dc.b 50                         ;Battery
                 dc.b 75                         ;Armor
 
+        ; Elevator tables
+        
+elevatorSrcLevel:
+                dc.b $06,$08,$0a,$0b
+elevatorDestLevel:
+                dc.b $08,$06,$0b,$0a
+elevatorDestObject:
+                dc.b $43,$3f,$0f,$39
+elevatorPlotBit:
+                dc.b PLOT_ELEVATOR1,PLOT_ELEVATOR1,PLOT_ELEVATOR2,PLOT_ELEVATOR2
+elevatorSpeed:
+                dc.b 32,-32,-64,64
+elevatorAcc:    
+                dc.b 2,-2,-4,4
+
         ; Variables
 
 rechargerColor: dc.b 0
 recyclerItem:   dc.b 0
 recyclerDisplay:dc.b 0
+elevatorIndex:  dc.b 0
+elevatorTime:   dc.b 0
 
         ; Messages
 
@@ -1111,5 +1188,7 @@ txtBatteryRecharger:
                 dc.b "BATTERY RECHARGED",0
 txtNoParts:     dc.b "NO PARTS TO RECYCLE",0
 txtCost:        dc.b "COST ",0
+txtElevatorLocked:
+                dc.b "ELEVATOR LOCKED OUT",0
 
                 checkscriptend

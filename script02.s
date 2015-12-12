@@ -270,8 +270,10 @@ MJ_Destroy:     jsr Random
                 ldx actIndex
                 rts
 MJ_NoExplosion: jmp SetZoneColors
-MJ_DestroyDone: ldy #$33
+MJ_DestroyDone: ldy #$33                        ;Exit door opens
                 jsr ActivateObject
+                lda #PLOT_ELEVATOR2             ;Elevator usable now
+                jsr SetPlotBit
                 lda #MUSIC_NETHER
                 jsr PlaySong
                 ldx actIndex

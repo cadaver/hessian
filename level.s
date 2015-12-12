@@ -41,7 +41,6 @@ LoadLevelError: jsr LFR_ErrorPrompt
                 jmp LoadLevelRetry
 
         ; Change current level and remove leveldata-actors back into statebits
-        ; Note: actors must have been removed from screen, or else they will go permanently missing!
         ;
         ; Parameters: A Level number
         ; Returns: -
@@ -1156,7 +1155,12 @@ ULO_EnterDoorDest:
                 jsr BlankScreen                 ;X=0 on return
 ULO_DestDoorNum:ldy #$00
                 jsr SetActorAtObject
+                lda lvlObjB,Y                   ;If destination has a script (elevators)
+                and #OBJ_TYPEBITS               ;do not activate
+                cmp #OBJTYPE_SCRIPT
+                beq ULO_SkipDestDoorActivation
                 jsr ActivateObject              ;Activate the door that was entered
+ULO_SkipDestDoorActivation:
                 jsr FindPlayerZone              ;After entering door, face player toward zone center
                 jsr GetZoneCenterX
                 lda actXH+ACTI_PLAYER
