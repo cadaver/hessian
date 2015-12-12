@@ -35,6 +35,10 @@ playerStateEnd:
                     err
                 endif
 
+        ; Not saved variables
+
+codeEntry:      ds.b 3,0
+
         ; In-memory checkpoint save
 
 saveStateStart:

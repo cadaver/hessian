@@ -54,6 +54,8 @@ RECYCLER_ITEM_LAST = ITEM_ARMOR
                 dc.w RecyclingStationLoop
                 dc.w Elevator
                 dc.w ElevatorLoop
+                dc.w EnterCode
+                dc.w EnterCodeLoop
 
         ; Flying craft update routine
         ;
@@ -839,6 +841,7 @@ RecyclingStation:
                 jsr RS_Redraw
                 lda #<EP_RECYCLINGSTATIONLOOP
                 ldx #>EP_RECYCLINGSTATIONLOOP
+SetScriptAndInteraction:
                 jsr SetScript
                 ldx #MENU_INTERACTION
                 jmp SetMenuMode
@@ -866,11 +869,8 @@ RSL_ShowParts:  sty itemIndex
                 jsr UP_RedrawItemAmmoScore      ;Forcibly redraw item/ammo
                 ldy #ITEM_PARTS                 ;Actually keep the parts item selected,
                 sty itemIndex                   ;so that there's no weapon reloading
-RSL_SameItem:   lda joystick
-                and #JOY_DOWN
+RSL_SameItem:   jsr CheckForExit
                 bne RSL_Exit
-                lda keyPress
-                bpl RSL_Exit
                 jsr MenuControl                 ;Check for selecting items
                 ldy recyclerItem
                 lsr
@@ -912,15 +912,20 @@ RSL_Buy:        lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
                 skip2
 RSL_BuyFail:    lda #SFX_DAMAGE
                 jmp PlaySfx
-RSL_Exit:       jsr StopScript
+RSL_Exit:
 RSL_RestoreItem:ldy #$00
                 sty itemIndex
                 jsr SetPanelRedrawItemAmmo
+RSL_ExitCommon: jsr StopScript
                 ldx #MENU_NONE
-                jsr SetMenuMode
-                ldy lvlObjNum
-                bmi RSL_NoObject                ;It's possible the player slid away from the station
-                jmp InactivateObject            ;Allow to reenter immediately
+                jmp SetMenuMode
+
+CheckForExit:   lda joystick
+                and #JOY_DOWN
+                bne CFE_Exit
+                lda keyPress
+                eor #$ff
+CFE_Exit:       rts
 
         ; Redraw current item in recycler
 
@@ -1081,6 +1086,49 @@ EL_Exit:        jsr StopScript
                 lda elevatorDestObject,x
                 bpl E_EnterDoor
 
+        ; Enter keypad code script
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+EnterCode:      ldx #2
+                lda #$ff
+EC_Reset:       sta codeEntry,x
+                dex
+                bpl EC_Reset
+                lda #<EP_ENTERCODELOOP
+                ldx #>EP_ENTERCODELOOP
+                jmp SetScriptAndInteraction
+
+        ; Enter keypad code interaction loop
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+EnterCodeLoop:  lda lvlObjNum                   ;Abort if slid off the object
+                bmi ECL_Finish
+                lda #<txtEnterCode
+                ldx #>txtEnterCode
+                jsr PrintPanelTextIndefinite
+                ldy #$00
+                ldx #20
+ECL_Redraw:     lda codeEntry,y
+                bmi ECL_EmptyDigit
+                ora #$30
+                skip2
+ECL_EmptyDigit: lda #"-"
+                jsr PrintPanelChar
+                inx
+                iny
+                cpy #3
+                bcc ECL_Redraw
+                jsr CheckForExit
+                bne ECL_Finish
+                rts
+ECL_Finish:     jmp RSL_ExitCommon
+
         ; Tank Y-size addition table (based on turret direction)
 
 tankSizeAddTbl: dc.b 2,0,6,8
@@ -1185,5 +1233,6 @@ txtNoParts:     dc.b "NO PARTS TO RECYCLE",0
 txtCost:        dc.b "COST ",0
 txtElevatorLocked:
                 dc.b "ELEVATOR LOCKDOWN",0
+txtEnterCode:   dc.b "ENTER CODE",0
 
                 checkscriptend

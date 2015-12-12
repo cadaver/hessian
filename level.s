@@ -1044,6 +1044,9 @@ ULO_CODone:     ldy lvlObjNum
 ULO_HasObject:  lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
                 cmp #FR_ENTER                   ;operate/entry delay has elapsed
                 bne ULO_NoEnter
+                lda actMoveCtrl+ACTI_PLAYER
+                cmp #JOY_UP
+                bne ULO_NoEnter
                 lda actFd+ACTI_PLAYER
                 cmp #OPERATEDELAY
                 bne ULO_NoOperate
@@ -1060,6 +1063,7 @@ OO_NoSound:     lda lvlObjB,y
                 cmp #OBJTYPE_SCRIPT
                 beq OO_RequirementOK            ;Script object doesn't have requirement
                 lda lvlObjDH,y                  ;Check requirement item from object parameters if has them
+                bmi OO_RequirementCode
                 beq OO_RequirementOK
                 sta temp3
                 tay
@@ -1075,6 +1079,10 @@ OO_NoSound:     lda lvlObjB,y
 OO_RequirementOK:
                 ldy lvlObjNum
                 jmp ToggleObject
+OO_RequirementCode:
+                lda #<EP_ENTERCODE
+                ldx #>EP_ENTERCODE
+                jmp ExecScript
 ULO_NoOperate:  lda lvlObjB,y
                 and #OBJ_TYPEBITS+OBJ_ACTIVE
                 cmp #OBJTYPE_DOOR+OBJ_ACTIVE

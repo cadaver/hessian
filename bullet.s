@@ -414,11 +414,11 @@ RD_Next:        dey
 
 BounceMotion:   jsr FallingMotionCommon
                 lsr
-                and #(MB_HITWALL)/2
-                beq BM_NoHitWall
+                and #MB_HITWALL/2
+                beq BM_NoCollisions
                 php
                 lda actSX,x
                 jsr Negate8Asr8
                 sta actSX,x
                 plp
-BM_NoHitWall:   rts
+BM_NoCollisions:rts
