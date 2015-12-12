@@ -32,6 +32,7 @@ OBJTYPE_REVEAL  = $10
 OBJTYPE_SCRIPT  = $14
 OBJTYPE_CHAIN   = $18
 
+OPERATEDELAY    = 1
 DOORENTRYDELAY  = 6
 AUTODEACTDELAY  = 12
 
@@ -485,72 +486,44 @@ FindZoneNum:    sta zoneNum
                 sta limitD
 OO_Done:        rts
 
-        ; Operate a level object
+        ; Operate a level object. Sets the operate stance and delay counter,
+        ; but actions are performed later in UpdateLevelObjects
         ;
         ; Parameters: Y object number (should also be in lvlObjNum)
-        ; Returns: C=1 if object was operated successfully (should not jump), C=0 if not
-        ; Modifies: A,X,Y,temp vars
+        ; Returns: C=1 if object is operable, C=0 if not
+        ; Modifies: A,Y
 
 OperateObject:  lda actF1+ACTI_PLAYER           ;Already in enter/operate stance?
                 cmp #FR_ENTER
-                beq OO_ContinueOperate
+                beq OO_Continue
                 lda actPrevCtrl+ACTI_PLAYER     ;If joystick already held up, do not operate again
                 and #JOY_UP                     ;(eg. after entering a door)
-                clc
-                bne OO_Done
+                bne OO_Fail
                 lda lvlObjB,y                   ;Must either be manually activated object,
-                and #$ff-OBJ_SIZE
-                cmp #OBJTYPE_DOOR+OBJ_ACTIVE    ;or a door opened from elsewhere
-                beq OO_EnterNoOperate
+                and #$ff-OBJ_SIZE               ;or a door opened from elsewhere
+                cmp #OBJTYPE_DOOR+OBJ_ACTIVE
+                beq OO_BeginOperate
                 and #OBJ_MODEBITS
                 cmp #OBJMODE_MANUAL
-                bcc OO_Done
+                bcc OO_Fail
                 lda lvlObjB,y
-                bpl OO_Inactive
+                bpl OO_BeginOperate
 OO_Active:      and #OBJ_MODEBITS               ;Object was active, inactivate if possible
                 cmp #OBJMODE_MANUALAD
-                bcc OO_EnterNoOperate
-OO_Inactive:    lda lvlObjY,y                   ;If animating, play sound always
-                bmi OO_PlaySound
-                lda lvlObjB,y                   ;Otherwise check that isn't a door that is always open
-                and #OBJ_TYPEBITS               ;(keycard slots and other non-animating objects should
-                cmp #OBJTYPE_DOOR               ;play a sound)
-                beq OO_NoSound
-OO_PlaySound:   lda #SFX_OBJECT
-                jsr PlaySfx
-OO_NoSound:     lda lvlObjB,y
-                and #OBJ_TYPEBITS
-                cmp #OBJTYPE_SCRIPT
-                beq OO_RequirementOK            ;Script object doesn't have requirement
-                lda lvlObjDH,y                  ;Check requirement item from object parameters if has them
-                beq OO_RequirementOK
-                sta temp3
-                tay
-                jsr FindItem
-                bcs OO_RequirementOK
-                lda #<txtRequired
-                ldx #>txtRequired
-                ldy #REQUIREMENT_TEXT_DURATION
-                jsr PrintPanelText
-                lda temp3
-                jsr GetItemName
-                jsr ContinuePanelText
-                jmp OO_EnterNoOperate           ;Turn to object but do not actually operate
-OO_RequirementOK:
-                ldy lvlObjNum
-                jsr ToggleObject                ;Note: animating the object here (before UpdateFrame)
-OO_EnterNoOperate:                              ;may theoretically induce an UpdateBlock bug if colorscroll
-                lda #FR_ENTER                   ;is happening on the same frame. However, in practice it seems
-                sta actF1+ACTI_PLAYER           ;the bug will not occur, as the scrolling is never in that phase
-                sta actF2+ACTI_PLAYER           ;on the actor logic update frame
+                bne OO_Fail
+OO_BeginOperate:
+                lda #FR_ENTER
+                sta actF1+ACTI_PLAYER
+                sta actF2+ACTI_PLAYER
                 lda #$00
-                sta actFd+ACTI_PLAYER           ;Reset door entry delay
+                sta actFd+ACTI_PLAYER           ;Reset operate/door entry delay
                 beq OO_Success
-OO_ContinueOperate:
-                lda actFd+ACTI_PLAYER
+OO_Continue:    lda actFd+ACTI_PLAYER
                 bmi OO_Success
-                inc actFd+ACTI_PLAYER           ;Increment door entry delay, up to 128
+                inc actFd+ACTI_PLAYER           ;Increment operate/door entry delay, up to 128
 OO_Success:     sec
+                rts
+OO_Fail:        clc
 IO_Done:        rts
 
         ; Toggle a level object
@@ -1066,18 +1039,50 @@ ULO_COShowMarker:
                 jsr SetActorAtObject
                 inc actYH,x
 ULO_CODone:     ldy lvlObjNum
-                bmi ULO_Done
-                lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
-                cmp #FR_ENTER                   ;entry delay has elapsed
-                bne ULO_NoDoor
-                lda lvlObjB,y
+                bpl ULO_HasObject
+                rts
+ULO_HasObject:  lda actF1+ACTI_PLAYER           ;Check if player is standing at a door and
+                cmp #FR_ENTER                   ;operate/entry delay has elapsed
+                bne ULO_NoEnter
+                lda actFd+ACTI_PLAYER
+                cmp #OPERATEDELAY
+                bne ULO_NoOperate
+                lda lvlObjY,y                   ;If animating, play sound always
+                bmi OO_PlaySound
+                lda lvlObjB,y                   ;Otherwise check that isn't a door that is always open
+                and #OBJ_TYPEBITS               ;(keycard slots and other non-animating objects should
+                cmp #OBJTYPE_DOOR               ;play a sound)
+                beq OO_NoSound
+OO_PlaySound:   lda #SFX_OBJECT
+                jsr PlaySfx
+OO_NoSound:     lda lvlObjB,y
+                and #OBJ_TYPEBITS
+                cmp #OBJTYPE_SCRIPT
+                beq OO_RequirementOK            ;Script object doesn't have requirement
+                lda lvlObjDH,y                  ;Check requirement item from object parameters if has them
+                beq OO_RequirementOK
+                sta temp3
+                tay
+                jsr FindItem
+                bcs OO_RequirementOK
+                lda #<txtRequired
+                ldx #>txtRequired
+                ldy #REQUIREMENT_TEXT_DURATION
+                jsr PrintPanelText
+                lda temp3
+                jsr GetItemName
+                jmp ContinuePanelText
+OO_RequirementOK:
+                ldy lvlObjNum
+                jmp ToggleObject
+ULO_NoOperate:  lda lvlObjB,y
                 and #OBJ_TYPEBITS+OBJ_ACTIVE
                 cmp #OBJTYPE_DOOR+OBJ_ACTIVE
-                bne ULO_NoDoor
+                bne ULO_NoEnter
                 ldx actFd+ACTI_PLAYER
                 cpx #DOORENTRYDELAY
                 bcs ULO_EnterDoor
-ULO_NoDoor:     lda lvlObjB,y                   ;Check for triggered activation
+ULO_NoEnter:    lda lvlObjB,y                   ;If not a door / not operating, check for triggered activation
                 tax
                 and #OBJ_MODEBITS+OBJ_ACTIVE
                 cmp #OBJMODE_TRIG
@@ -1090,7 +1095,7 @@ ULO_TriggerNoSound:
                 jmp ActivateObject
 ULO_NoTrigger:  txa
                 and #OBJ_TYPEBITS               ;Check for entering a side door
-                bne ULO_Done
+                bne ULO_NoSideDoor
                 jsr GetZoneCenterX
                 lda actXH+ACTI_PLAYER
                 ldx actXL+ACTI_PLAYER
@@ -1099,7 +1104,7 @@ ULO_NoTrigger:  txa
                 bcc ULO_LeftSide
                 inx
 ULO_LeftSide:   beq ULO_EnterSideDoor
-ULO_Done:       rts
+ULO_NoSideDoor: rts
 
 ULO_EnterSideDoor:
                 bcc ULO_EnterSideDoorLeft       ;Find the destination zone either left or right

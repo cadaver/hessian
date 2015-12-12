@@ -463,7 +463,6 @@ MH_NoAutoTurn:  lda actCtrl,x                   ;When holding fire can not initi
                 ldy lvlObjNum
                 bmi MH_NoOperate
                 jsr OperateObject
-                ldx #ACTI_PLAYER
                 bcc MH_NoNewJump
                 rts                             ;If operated successfully, do nothing else
 MH_NoOperate:   lda temp3

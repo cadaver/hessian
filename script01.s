@@ -837,11 +837,6 @@ RecyclingStation:
                 jsr RS_GotoNextItem
                 sty recyclerItem
                 jsr RS_Redraw
-                lda #FR_ENTER                   ;Hack to get player into the standing frame
-                sta actF1+ACTI_PLAYER
-                sta actF2+ACTI_PLAYER
-                ldx #ACTI_PLAYER
-                jsr AttackHuman                 ;Set correct weapon frame
                 lda #<EP_RECYCLINGSTATIONLOOP
                 ldx #>EP_RECYCLINGSTATIONLOOP
                 jsr SetScript
@@ -1189,6 +1184,6 @@ txtBatteryRecharger:
 txtNoParts:     dc.b "NO PARTS TO RECYCLE",0
 txtCost:        dc.b "COST ",0
 txtElevatorLocked:
-                dc.b "ELEVATOR LOCKED OUT",0
+                dc.b "ELEVATOR LOCKDOWN",0
 
                 checkscriptend
