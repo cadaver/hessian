@@ -98,7 +98,7 @@ ORG_LEVELNUM    = $3f
 DEFAULT_PICKUP  = $ff
 
 LVLOBJSEARCH    = 32
-LVLACTSEARCH    = 32
+LVLACTSEARCH    = 24
 
 NODAMAGESRC     = $80
 NOPLOTBIT       = $80
@@ -452,7 +452,7 @@ AA_EndCmp:      cpx #LVLACTSEARCH
                 bcc AA_IndexNotOver
                 ldx #$00
                 clc
-AA_IndexNotOver:stx AA_Start+1
+AA_IndexNotOver:stx AA_Start+1                  ;Store search start & endpositions for next frame
                 txa
                 adc #LVLACTSEARCH
                 sta AA_EndCmp+1
