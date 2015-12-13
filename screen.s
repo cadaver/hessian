@@ -661,27 +661,39 @@ SW_DrawColorsRLdx3:
                 ldx temp1
                 ldy colorSideTbl-3,x
 SW_DrawColorsHorizBottom:
-                bmi SW_DrawColorsHorizBottomSkip
-SW_DrawColorsHorizBottom_NoCheck:
+                bmi SW_DCHB_Skip
+                clc
                 lda screen
-                bne SW_DrawColorsHorizBottom_Screen2
-N               set SCROLLSPLIT
-                repeat SCROLLROWS-SCROLLSPLIT
-                ldx screen1+N*40,y
+                bne SW_DCHB2
+SW_DCHB1:       ldx screen1+SCROLLSPLIT*40,y
                 lda charColors,x
-                sta colors+N*40,y
-N               set N+1
-                repend
-SW_DrawColorsHorizBottomSkip:
-                rts
-SW_DrawColorsHorizBottom_Screen2:
-N               set SCROLLSPLIT
-                repeat SCROLLROWS-SCROLLSPLIT
-                ldx screen2+N*40,y
+                sta colors+SCROLLSPLIT*40,y
+SW_DCHB1_Loop:  ldx screen1+SCROLLSPLIT*40+40,y
                 lda charColors,x
-                sta colors+N*40,y
-N               set N+1
-                repend
+                sta colors+SCROLLSPLIT*40+40,y
+                ldx screen1+SCROLLSPLIT*40+6*40,y
+                lda charColors,x
+                sta colors+SCROLLSPLIT*40+6*40,y
+                tya
+                adc #40
+                tay
+                cpy #5*40
+                bcc SW_DCHB1_Loop
+SW_DCHB_Skip:   rts
+SW_DCHB2:       ldx screen2+SCROLLSPLIT*40,y
+                lda charColors,x
+                sta colors+SCROLLSPLIT*40,y
+SW_DCHB2_Loop:  ldx screen2+SCROLLSPLIT*40+40,y
+                lda charColors,x
+                sta colors+SCROLLSPLIT*40+40,y
+                ldx screen2+SCROLLSPLIT*40+6*40,y
+                lda charColors,x
+                sta colors+SCROLLSPLIT*40+6*40,y
+                tya
+                adc #40
+                tay
+                cpy #5*40
+                bcc SW_DCHB2_Loop
                 rts
 
 SW_ShiftColorsHoriz:
@@ -790,27 +802,39 @@ SW_ShiftColorsDownBottomCpx:
                 jmp SW_DrawColorsDown
 
 SW_DrawColorsHorizTop:
-                bmi SW_DrawColorsHorizTopSkip
-SW_DrawColorsHorizTop_NoCheck:
+                bmi SW_DCHT_Skip
+                clc
                 lda screen
-                bne SW_DrawColorsHorizTop_Screen2
-N               set 0
-                repeat SCROLLSPLIT
-                ldx screen1+N*40,y
+                bne SW_DCHT2
+SW_DCHT1:       ldx screen1,y
                 lda charColors,x
-                sta colors+N*40,y
-N               set N+1
-                repend
-SW_DrawColorsHorizTopSkip:
-                rts
-SW_DrawColorsHorizTop_Screen2:
-N               set 0
-                repeat SCROLLSPLIT
-                ldx screen2+N*40,y
+                sta colors,y
+SW_DCHT1_Loop:  ldx screen1+40,y
                 lda charColors,x
-                sta colors+N*40,y
-N               set N+1
-                repend
+                sta colors+40,y
+                ldx screen1+6*40,y
+                lda charColors,x
+                sta colors+6*40,y
+                tya
+                adc #40
+                tay
+                cpy #5*40
+                bcc SW_DCHT1_Loop
+SW_DCHT_Skip:   rts
+SW_DCHT2:       ldx screen2,y
+                lda charColors,x
+                sta colors,y
+SW_DCHT2_Loop:  ldx screen2+40,y
+                lda charColors,x
+                sta colors+40,y
+                ldx screen2+6*40,y
+                lda charColors,x
+                sta colors+6*40,y
+                tya
+                adc #40
+                tay
+                cpy #5*40
+                bcc SW_DCHT2_Loop
                 rts
 
 SW_DrawColorsUp:ldy #12
@@ -991,8 +1015,11 @@ RS_Loop:        sta temp6
                 sty temp7
                 jsr SWDL_Common
                 ldy temp7
-                jsr SW_DrawColorsHorizTop_Screen2
-                jsr SW_DrawColorsHorizBottom_Screen2
+                clc
+                jsr SW_DCHT2
+                ldy temp7
+                clc
+                jsr SW_DCHB2
                 lda temp6
                 ldx temp1
                 inx
@@ -1000,7 +1027,8 @@ RS_Loop:        sta temp6
                 bcc RS_NotOver
                 ldx #$00
                 adc #$00
-RS_NotOver:     iny
+RS_NotOver:     ldy temp7
+                iny
                 cpy #39
                 bcc RS_Loop
                 jsr SL_SwapScreen               ;SWDL_Common draws to the hidden screen, swap now
