@@ -898,7 +898,7 @@ ULO_AirToxinFlag:
                 lda #$00                        ;Flashing screen effect for toxic air (as in Fist II)
                 bpl ULO_NoAirDamage
                 ldy #ZONEH_BG1
-                lda UA_ItemFlashCounter+1
+                lda AA_ItemFlashCounter+1
                 and #$01
                 beq ULO_ToxinEffectColor
                 lda (zoneLo),y

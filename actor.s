@@ -386,6 +386,36 @@ AddActors:      lda menuMode
                 cmp #MENU_PAUSE
                 bcs AA_Paused
 
+        ; Flash actors such as items, and H & B letters if health/battery low
+
+F                inc AA_ItemFlashCounter+1
+AA_ItemFlashCounter:                            ;Get color override for items + object marker
+                lda #$00
+                lsr
+                lsr
+                and #$03
+                tax
+                lda itemFlashTbl,x
+                sta FlashActor+1
+                and #$07
+                tax
+                lda panelScreen+PANELROW*40+9
+                cmp #"H"
+                bne AA_NoHealthBarFlash
+                txa
+                ldy actHp+ACTI_PLAYER           ;Flash the H & C letters if health or battery low
+                cpy #LOW_HEALTH+1
+                bcc AA_FlashHealth
+                lda #$01
+AA_FlashHealth: sta colors+PANELROW*40+9
+                txa
+                ldy battery+1
+                cpy #LOW_BATTERY+1
+                bcc AA_FlashBattery
+                lda #$01
+AA_FlashBattery:sta colors+PANELROW*40+23
+AA_NoHealthBarFlash:
+
         ; Get screen border map coordinates for adding/removing actors
 
 GetActorBorders:lda mapX                        ;Calculate borders for add/removechecks
@@ -646,43 +676,18 @@ LC_NoLine:      lda #LINE_NO
         ; Returns: -
         ; Modifies: A,X,Y,temp vars,actor temp vars
 
-UA_Paused:      ldx #$00                        ;Stop scrolling & level animation when paused
-                stx scrollSX                    ;and only interpolate
+UA_Paused:      stx scrollSX                    ;Stop scrolling when paused & only interpolate
                 stx scrollSY
                 jmp InterpolateActors
 
-UpdateActors:   lda #$00
-                sta shakeScreen
+UA_Remove:      jsr RemoveLevelActor
+                beq UA_Next
+
+UpdateActors:   ldx #$00
+                stx shakeScreen
                 lda menuMode
                 cmp #MENU_PAUSE
                 bcs UA_Paused
-                inc UA_ItemFlashCounter+1
-UA_ItemFlashCounter:                            ;Get color override for items + object marker
-                lda #$00
-                lsr
-                lsr
-                and #$03
-                tax
-                lda itemFlashTbl,x
-                sta FlashActor+1
-                and #$07
-                tax
-                lda panelScreen+PANELROW*40+9
-                cmp #"H"
-                bne UA_NoHealthBarFlash
-                txa
-                ldy actHp+ACTI_PLAYER           ;Flash the H & C letters if health or battery low
-                cpy #LOW_HEALTH+1
-                bcc UA_FlashHealth
-                lda #$01
-UA_FlashHealth: sta colors+PANELROW*40+9
-                txa
-                ldy battery+1
-                cpy #LOW_BATTERY+1
-                bcc UA_FlashBattery
-                lda #$01
-UA_FlashBattery:sta colors+PANELROW*40+23
-UA_NoHealthBarFlash:
                 ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
                 beq UA_Next
@@ -693,21 +698,20 @@ UA_NotZero:     stx actIndex
                 sta actHi
                 lda actFlags,x                  ;Perform remove check?
                 asl
-                bmi UA_NoRemove
+                bmi UA_NoRemoveCheck
                 lda actXH,x
 UA_RALeftCheck: cmp #$00
                 bcc UA_Remove
 UA_RARightCheck:cmp #$00
                 bcs UA_Remove
-                lda actYH,x
-                cmp mapY
+                lda actYH,x                     ;Note: use mapY as the top remove border, as the zone
+                cmp mapY                        ;may not be a full screen tall
                 bcc UA_Remove
 UA_RABottomCheck:
                 cmp #$00
-                bcc UA_NoRemove
-UA_Remove:      jsr RemoveLevelActor
-                beq UA_Next                     ;A=0 on return
-UA_NoRemove:    if SHOW_ACTOR_TIME > 0
+                bcs UA_Remove
+UA_NoRemoveCheck:
+                if SHOW_ACTOR_TIME > 0
                 lda #$0a
                 sta $d020
                 endif
