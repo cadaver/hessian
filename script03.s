@@ -616,7 +616,7 @@ MA_NoPlayerCollision:
                 ldy #3
                 jmp LoopingAnimation
 MA_StartSplash: lda #ACT_WATERSPLASH
-                jsr TransformBullet
+                jsr TransformActor
 MA_SplashCommon:jsr NoInterpolation
                 lda #13
                 sta actFlash,x
@@ -624,7 +624,7 @@ MA_SplashCommon:jsr NoInterpolation
                 jmp PlaySfx
 MA_StartPlayerSplash:
                 lda #ACT_EXPLOSION
-                jsr TransformBullet
+                jsr TransformActor
                 lda #-4*8
                 jsr MoveActorY
                 lda #2

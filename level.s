@@ -1073,6 +1073,7 @@ OO_NoSound:     lda lvlObjB,y
                 lda temp3
                 jsr GetItemName
                 jmp ContinuePanelText
+VerifyCodeEntry:                                ;TODO: actually check the code
 OO_RequirementOK:
                 ldy lvlObjNum
                 jmp ToggleObject

@@ -108,7 +108,6 @@ STACKSTART      = $7f
                 var textTime
                 var textDelay
                 var textLeftMargin
-                var textRightMargin
                 var panelUpdateFlags
 
                 var menuMode                    ;Menu system variables

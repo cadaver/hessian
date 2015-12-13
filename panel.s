@@ -20,6 +20,8 @@ MENU_PAUSE      = 4
 HEALTHBAR_LENGTH = 7
 HEALTHBAR_COLOR = $0d
 
+TEXTRIGHTMARGIN = 31
+
         ; Subroutine to animate & draw a health bar
         ;
         ; Parameters: A value to display, X healthbar index (0 = health, 1 = battery)
@@ -343,7 +345,7 @@ UP_ScanWordLoop:lda (textLo),y
 UP_ScanWordDone2:
                 inc zpSrcLo
 UP_ScanWordDone:ldy zpSrcHi
-                lda textRightMargin
+                lda #TEXTRIGHTMARGIN
                 cmp zpSrcLo
                 bcs UP_WordCmp
 UP_EndLine:     stx zpBitsLo
@@ -351,12 +353,12 @@ UP_EndLine:     stx zpBitsLo
                 ldx #textLo
                 jsr Add8
                 ldx zpBitsLo
-                cpx textRightMargin
+                cpx #TEXTRIGHTMARGIN
                 bcs UP_PrintTextDone
 UP_ClearEndOfLine:
 UP_ClearLoop:   lda #$20
                 jsr PrintPanelChar
-                cpx textRightMargin
+                cpx #TEXTRIGHTMARGIN
                 bcc UP_ClearLoop
 UP_PrintTextDone:
                 rts
@@ -370,13 +372,13 @@ UP_SpaceLoop:   lda (textLo),y
                 bmi UP_TextJump
                 cmp #$20
                 bne UP_SpaceLoopDone
-                cpx textRightMargin
+                cpx #TEXTRIGHTMARGIN
                 bcs UP_SpaceSkip
                 jsr PrintPanelChar
 UP_SpaceSkip:   iny
                 bne UP_SpaceLoop
 UP_SpaceLoopDone:
-                cpx textRightMargin
+                cpx #TEXTRIGHTMARGIN
                 bcc UP_PrintTextLoop
                 bcs UP_EndLine
 UP_TextJump:    pha

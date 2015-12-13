@@ -271,8 +271,7 @@ ExplodeEnemy4_Rising:
                 ldy #$7f
                 jsr ExplodeEnemyMultiple
                 lda #ACT_EXPLOSIONGENERATORRISING
-                sta actT,x
-                rts
+                jmp TransformActor
 
         ; Rising explosion generator
         ;
@@ -335,19 +334,7 @@ MEG_NoNewExplosion:
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveScrapMetal: lda actSY,x                     ;Store original Y-speed for bounce
-                sta temp1
-                jsr BounceMotion
-                bcc MSM_NoBounce
-                lda actSX,x
-                jsr Asr8
-                sta actSX,x
-                lda temp1
-                jsr Negate8Asr8
-                sta actSY,x
-                lda #$00                        ;Clear grounded flag
-                sta actMB,x
-MSM_NoBounce:
+MoveScrapMetal: jsr BounceMotion
 
         ; Flicker corpse, then remove.
         ;

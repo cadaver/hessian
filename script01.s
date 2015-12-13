@@ -86,7 +86,6 @@ MFC_Fall:       jsr FallingMotionCommon
                 tay
                 beq MFC_ContinueFall
                 jmp ExplodeEnemy2_8             ;Drop item & explode at any collision
-MFC_CanAttack:  jmp AttackGeneric
 
         ; Walking robot update routine
         ;
@@ -95,7 +94,7 @@ MFC_CanAttack:  jmp AttackGeneric
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MoveWalker:     jsr MoveGeneric
-                jmp AttackGeneric
+MFC_CanAttack:  jmp AttackGeneric
 
         ; Tank update routine
         ;
@@ -405,7 +404,7 @@ RemoveRock:     lda #-4*8
                 lda #COLOR_FLICKER
                 sta actFlash,x
                 lda #ACT_SMOKETRAIL
-                jmp TransformBullet
+                jmp TransformActor
 MR_RandomizeSmallerRock:
                 sta temp1
                 jsr Random
@@ -498,7 +497,7 @@ MOW_Dead:       lda #FR_DEADWALKERGROUND
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 DestroyFire:    lda #ACT_SMOKECLOUD
-                jmp TransformBullet
+                jmp TransformActor
 
         ; Rat death
         ;
@@ -826,6 +825,8 @@ RE_End:         jmp StopScript
         ; Returns: -
         ; Modifies: various
 
+recyclerItem    = menuCounter
+
 RecyclingStation:
                 lda itemIndex
                 sta RSL_RestoreItem+1
@@ -834,17 +835,13 @@ RecyclingStation:
                 bcc RS_NoParts
                 lda #$00                        ;Init alternating parts/item display
                 sta recyclerDisplay
-                jsr SetPanelRedrawItemAmmo      ;Display parts left during interaction
+                lda #<EP_RECYCLINGSTATIONLOOP
+                ldx #>EP_RECYCLINGSTATIONLOOP
+                jsr SetScriptAndInteraction
                 ldy #RECYCLER_ITEM_FIRST-1
                 jsr RS_GotoNextItem
                 sty recyclerItem
-                jsr RS_Redraw
-                lda #<EP_RECYCLINGSTATIONLOOP
-                ldx #>EP_RECYCLINGSTATIONLOOP
-SetScriptAndInteraction:
-                jsr SetScript
-                ldx #MENU_INTERACTION
-                jmp SetMenuMode
+                jmp RS_Redraw
 RS_NoParts:     lda #<txtNoParts
                 ldx #>txtNoParts
                 ldy #REQUIREMENT_TEXT_DURATION
@@ -929,8 +926,7 @@ CFE_Exit:       rts
 
         ; Redraw current item in recycler
 
-RS_Redraw:      jsr ClearPanelText
-                inc textLeftMargin
+RS_Redraw:      inc textLeftMargin
                 lda recyclerItem
                 jsr GetItemName
                 jsr PrintPanelTextIndefinite
@@ -958,18 +954,14 @@ RS_SpaceLoop:   cpx temp2
                 jsr PrintPanelChar
                 bne RS_SpaceLoop
 RS_SpaceDone:   lda #"+"
-                jsr PrintPanelChar
-                lda #$20
-                ldy recyclerItem
+                jsr RS_RedrawSub
                 pha
                 jsr RS_GotoPrevItem
                 pla
                 bcc RS_NoLeftArrow
                 lda #60
 RS_NoLeftArrow: ldx #9
-                jsr PrintPanelChar
-                lda #$20
-                ldy recyclerItem
+                jsr RS_RedrawSub
                 pha
                 jsr RS_GotoNextItem
                 pla
@@ -990,21 +982,20 @@ RS_PrintCostDone:
                 jsr ConvertToBCD8
                 jmp PrintBCDDigitsLSB
 
-        ; Go to next item that can receive ammo from recycler
+RS_RedrawSub:   jsr PrintPanelChar
+                lda #$20
+                ldy recyclerItem
+                rts
+
+        ; Go to next/prev item that can receive ammo from recycler
         ; Return C=1 if valid (index in Y)
 
 RS_GotoNextItem:
                 iny
                 cpy #RECYCLER_ITEM_LAST+1
                 bcs RS_GotoNextFail
-                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y ;Check that can receive ammo
+                jsr RS_GotoCommon
                 beq RS_GotoNextItem
-                lda invCount-1,y
-                cmp #NO_ITEM_COUNT
-                bcc RS_GotoNextFound
-                cpy #ITEM_FIRST_CONSUMABLE      ;Consumables can always be selected
-                bcs RS_GotoNextFound
-                bcc RS_GotoNextItem
 RS_GotoPrevFound:
 RS_GotoNextFound:
                 sec
@@ -1013,20 +1004,23 @@ RS_GotoPrevFail:
 RS_GotoNextFail:clc
                 rts
 
-        ; Go to previous item that can receive ammo from recycler
-        ; Return C=1 if valid (index in Y)
-
 RS_GotoPrevItem:dey
                 cpy #RECYCLER_ITEM_FIRST
                 bcc RS_GotoPrevFail
-                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y ;Check that can receive ammo
+                jsr RS_GotoCommon
                 beq RS_GotoPrevItem
-                lda invCount-1,y
-                cmp #NO_ITEM_COUNT
-                bcc RS_GotoPrevFound
-                cpy #ITEM_FIRST_CONSUMABLE
-                bcs RS_GotoPrevFound
-                bcc RS_GotoPrevItem
+                bne RS_GotoPrevFound
+
+RS_GotoCommon:  lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y ;Check that can receive ammo
+                beq RS_GotoCommonDone
+                lda #NO_ITEM_COUNT-1            ;Is it a weapon that exists in inventory?
+                cmp invCount-1,y
+                bcs RS_GotoCommonDone
+                cpy #ITEM_FIRST_CONSUMABLE      ;Consumables can always be selected
+                bcs RS_GotoCommonDone
+                lda #$00                        ;Need to check next
+RS_GotoCommonDone:
+                rts
 
         ; Enter elevator script
         ;
@@ -1092,14 +1086,19 @@ EL_Exit:        jsr StopScript
         ; Returns: -
         ; Modifies: various
 
-EnterCode:      ldx #2
-                lda #$ff
+numberIndex     = menuCounter
+
+EnterCode:      lda #0
+                ldx #2
 EC_Reset:       sta codeEntry,x
                 dex
                 bpl EC_Reset
                 lda #<EP_ENTERCODELOOP
                 ldx #>EP_ENTERCODELOOP
-                jmp SetScriptAndInteraction
+SetScriptAndInteraction:
+                jsr SetScript
+                ldx #MENU_INTERACTION
+                jmp SetMenuMode
 
         ; Enter keypad code interaction loop
         ;
@@ -1114,8 +1113,10 @@ EnterCodeLoop:  lda lvlObjNum                   ;Abort if slid off the object
                 jsr PrintPanelTextIndefinite
                 ldy #$00
                 ldx #20
-ECL_Redraw:     lda codeEntry,y
-                bmi ECL_EmptyDigit
+ECL_Redraw:     cpy numberIndex
+                beq ECL_HasDigit
+                bcs ECL_EmptyDigit
+ECL_HasDigit:   lda codeEntry,y
                 ora #$30
                 skip2
 ECL_EmptyDigit: lda #"-"
@@ -1126,7 +1127,35 @@ ECL_EmptyDigit: lda #"-"
                 bcc ECL_Redraw
                 jsr CheckForExit
                 bne ECL_Finish
-                rts
+                jsr MenuControl
+                ldx numberIndex
+                lsr
+                bcs ECL_MoveLeft
+                lsr
+                bcs ECL_MoveRight
+                jsr GetFireClick
+                bcs ECL_Next
+ECL_Done:       rts
+ECL_MoveLeft:   lda #$fe                        ;C=1
+                skip2
+ECL_MoveRight:  lda #$00                        ;C=1
+                adc codeEntry,x
+                bmi ECL_OverNeg
+                cmp #10
+                bcc ECL_NotOver
+                lda #0
+                skip2
+ECL_OverNeg:    lda #9
+ECL_NotOver:    sta codeEntry,x
+                lda #SFX_SELECT
+                jmp PlaySfx
+ECL_Next:       lda #SFX_OBJECT
+                jsr PlaySfx
+                inx
+                stx numberIndex
+                cpx #3
+                bcc ECL_Done
+                jsr VerifyCodeEntry             ;Opens the door if right code
 ECL_Finish:     jmp RSL_ExitCommon
 
         ; Tank Y-size addition table (based on turret direction)
@@ -1210,17 +1239,14 @@ elevatorDestObject:
                 dc.b $43,$3f,$0f,$39
 elevatorPlotBit:
                 dc.b PLOT_ELEVATOR1,PLOT_ELEVATOR1,PLOT_ELEVATOR2,PLOT_ELEVATOR2
-elevatorSpeed:
-                dc.b 32,-32,-64,64
-elevatorAcc:    
-                dc.b 2,-2,-4,4
+elevatorSpeed:  dc.b 32,-32,-64,64
+elevatorAcc:    dc.b 2,-2,-4,4
 
         ; Variables
 
-rechargerColor: dc.b 0
-recyclerItem:   dc.b 0
-recyclerDisplay:dc.b 0
+rechargerColor:
 elevatorIndex:  dc.b 0
+recyclerDisplay:
 elevatorTime:   dc.b 0
 
         ; Messages
@@ -1232,7 +1258,7 @@ txtBatteryRecharger:
 txtNoParts:     dc.b "NO PARTS TO RECYCLE",0
 txtCost:        dc.b "COST ",0
 txtElevatorLocked:
-                dc.b "ELEVATOR LOCKDOWN",0
+                dc.b "ELEVATOR OFFLINE",0
 txtEnterCode:   dc.b "ENTER CODE",0
 
                 checkscriptend

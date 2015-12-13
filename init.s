@@ -68,8 +68,6 @@ LoadOptionsDone:
 
                 lda #9
                 sta textLeftMargin
-                lda #31
-                sta textRightMargin
                 lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE
                 sta panelUpdateFlags
 

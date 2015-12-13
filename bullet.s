@@ -1,7 +1,6 @@
 GRENADE_DMG_RADIUS = 24
 GRENADE_MAX_YSPEED = 6*8
 GRENADE_ACCEL   = 4
-GRENADE_BRAKE   = 8
 
 EXTINGUISH_ADD = 5
 EXTINGUISH_THRESHOLD = 45
@@ -60,7 +59,7 @@ MoveSmallSplash:ldy #2
 
 MoveExplosion:  ldy #4
                 lda #1
-OneShotAnimateAndRemove:                
+OneShotAnimateAndRemove:
                 jsr OneShotAnimation
                 bcs MMH_Remove
 MExpl_NoAnimation:
@@ -276,6 +275,7 @@ ExplodeActor:   lda #SFX_EXPLOSION
                 jsr PlaySfx
 ExplodeActorQuiet:
                 lda #ACT_EXPLOSION
+TransformActor:
 TransformBullet:sta actT,x
                 lda #$00
                 sta actF1,x
@@ -289,18 +289,8 @@ MGrn_NoExplosion:
         ; Returns: -
         ; Modifies: A,Y
 
-MoveGrenade:    lda #$00                        ;Grenade never stays grounded
-                sta actMB,x
-                lda actSY,x                     ;Store original Y-speed for bounce
-                sta temp1
-                jsr BounceMotion
-                bcc MGrn_NoBounce
-                lda temp1                       ;Bounce from ground: negate and halve Y-velocity
-                jsr Negate8Asr8
-                sta actSY,x
-                lda #GRENADE_BRAKE              ;Brake X-speed with each bounce
-                jsr BrakeActorX
-MGrn_NoBounce:  lda actMB,x
+MoveGrenade:    jsr BounceMotion
+                lda actMB,x
                 bpl MGrn_Common
 MGrn_HitWater:  jmp RemoveActor                 ;MoveWithGravity already created splash, just remove
 
@@ -406,19 +396,34 @@ RD_Next:        dey
                 bpl RD_Loop
                 rts
 
-        ; Common bounce motion subroutine. Speed is halved & negated on side wall collisions
+        ; Common bounce motion. Speed is halved & negated on side wall collisions,
+        ; and halved on ground collisions
         ;
         ; Parameters: X actor index
-        ; Returns: C grounded status
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
+        ; Returns: C=1 hit ground
+        ; Modifies: A,Y,temp1-temp8
 
-BounceMotion:   jsr FallingMotionCommon
-                lsr
-                and #MB_HITWALL/2
-                beq BM_NoCollisions
-                php
+BounceMotion:   lda actSY,x                     ;Store original speed for bounce
+                sta temp1
+                lda #$00                        ;Never stay grounded
+                sta actMB,x
+                jsr FallingMotionCommon
+                pha
+                and #MB_HITWALL
+                beq BM_NoWallCollision
                 lda actSX,x
                 jsr Negate8Asr8
                 sta actSX,x
+BM_NoWallCollision:
+                pla
+                lsr
+                bcc BM_NotGrounded
+                php
+                lda actSX,x
+                jsr Asr8
+                sta actSX,x
+                lda temp1
+                jsr Negate8Asr8
+                sta actSY,x
                 plp
-BM_NoCollisions:rts
+BM_NotGrounded: rts
