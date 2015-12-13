@@ -933,27 +933,18 @@ RS_Redraw:      inc textLeftMargin
                 dec textLeftMargin
                 ldy recyclerItem
                 lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
-                pha
                 jsr ConvertToBCD8
                 ldx #27
                 jsr Print3BCDDigits
-                ldx #26
-                pla
-                cmp #100
-                bcs RS_3Digits
-                inx
-                cmp #10
-                bcs RS_2Digits
-                inx
-RS_2Digits:
-RS_3Digits:     stx temp2
-                ldx #26
-RS_SpaceLoop:   cpx temp2
-                beq RS_SpaceDone
-                lda #$20
+                ldx #27
+RS_ZeroLoop:    lda panelScreen+PANELROW*40,x
+                cmp #$30
+                bne RS_NonZeroFound
+                lda #" "
                 jsr PrintPanelChar
-                bne RS_SpaceLoop
-RS_SpaceDone:   lda #"+"
+                bne RS_ZeroLoop
+RS_NonZeroFound:dex
+                lda #"+"
                 jsr RS_RedrawSub
                 pha
                 jsr RS_GotoPrevItem
