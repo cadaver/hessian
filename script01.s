@@ -828,8 +828,6 @@ RE_End:         jmp StopScript
 recyclerItem    = menuCounter
 
 RecyclingStation:
-                lda itemIndex
-                sta RSL_RestoreItem+1
                 ldy #ITEM_PARTS
                 jsr FindItem
                 bcc RS_NoParts
@@ -855,6 +853,8 @@ RS_NoParts:     lda #<txtNoParts
 
 RecyclingStationLoop:
                 inc recyclerDisplay
+                ldy itemIndex
+                sty RSL_RestoreItem+1
                 ldy #ITEM_PARTS
                 lda recyclerDisplay
                 asl
@@ -864,9 +864,9 @@ RecyclingStationLoop:
 RSL_ShowParts:  sty itemIndex
                 jsr SetPanelRedrawItemAmmo
                 jsr UP_RedrawItemAmmoScore      ;Forcibly redraw item/ammo
-                ldy #ITEM_PARTS                 ;Actually keep the parts item selected,
-                sty itemIndex                   ;so that there's no weapon reloading
-RSL_SameItem:   jsr CheckForExit
+RSL_RestoreItem:ldy #$00
+                sty itemIndex
+                jsr CheckForExit
                 bne RSL_Exit
                 jsr MenuControl                 ;Check for selecting items
                 ldy recyclerItem
@@ -909,10 +909,7 @@ RSL_Buy:        lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
                 skip2
 RSL_BuyFail:    lda #SFX_DAMAGE
                 jmp PlaySfx
-RSL_Exit:
-RSL_RestoreItem:ldy #$00
-                sty itemIndex
-                jsr SetPanelRedrawItemAmmo
+RSL_Exit:       jsr SetPanelRedrawItemAmmo
 RSL_ExitCommon: jsr StopScript
                 ldx #MENU_NONE
                 jmp SetMenuMode
