@@ -67,12 +67,9 @@ CU_AlreadyConfigured:
                 lda #<txtAlreadyConfigured
                 ldx #>txtAlreadyConfigured
                 jmp IU_TextCommon
-                
+
 ConfigureUpgrade:
                 jsr FindUpgradeIndex
-                adc #$00
-                sta CU_CheckSameUpgrade+1
-                ldx upgradeIndex
                 lda upgrade
                 and upgradeBitTbl,x
                 bne CU_AlreadyInstalled
@@ -116,19 +113,19 @@ CU_CopyTextChars:
                 sta actLo
                 lda upgradeDataStart+1,x
                 sta actHi
-CU_CheckSameUpgrade:
-                ldx #$00
-                bne CU_Same
+                lda upgradeIndex
+                cmp upgradePuzzleIndex
+                beq CU_Same
+                sta upgradePuzzleIndex
                 ldy #UD_PUZZLE
+                ldx #$00
 CU_CopyPuzzle:  lda (actLo),y                   ;Reset puzzle if entering a different
                 sta puzzleState,x               ;upgrade than before (or if script was
                 iny                             ;reloaded in the meanwhile)
                 inx
                 cpx #BOARD_SIZEX*BOARD_SIZEY
                 bcc CU_CopyPuzzle
-                lda #$00
-CU_Same:        jsr WaitBottom
-                lda #4
+CU_Same:        lda #4
                 sta temp1
                 lda #7
                 sta temp2
@@ -717,15 +714,12 @@ FUI_Loop:       lda upgradeLvlTbl,x
 FUI_Next:       dex
                 bpl FUI_Loop
                 inx                             ;Should not happen
-FUI_Found:      cpx upgradeIndex
+FUI_Found:      cpx upgradeIndex                ;Same upgrade?
                 beq FUI_Same
                 stx upgradeIndex
                 lda #$00
-                sta upgradeOK
-                clc
-                rts
-FUI_Same:       sec
-                rts
+                sta upgradeOK                   ;Reset configure status
+FUI_Same:       rts
 
         ; Clear whole screen
         
@@ -799,7 +793,7 @@ upgradeLvlTbl:  dc.b 6,6,5,8,8,8,12
 upgradeObjTbl:  dc.b $54,$56,$25,$59,$55,$47,$15
 upgradeBitTbl:  dc.b 1,2,4,8,16,32,64
 arrowPosTbl:    dc.b 0,11,0
-tileColorTbl:   dc.b $0a,$0f,$0f,$0f,$0f,$0f,$0f,$09
+tileColorTbl:   dc.b $0a,$0f,$0f,$0f,$0f,$0f,$0f,$0f
 
 tileNextTbl:    dc.b $00,$02,$01,$04,$05,$06,$03,$08,$09,$0a,$07
 tileConnTbl:    dc.b CONN_NONE
@@ -845,6 +839,8 @@ boardConnAndTbl:dc.b CONN_DOWN|CONN_RIGHT|CONN_DOWNRIGHT
                 ds.b BOARD_SIZEX-2,CONN_UP|CONN_RIGHT|CONN_LEFT|CONN_UPRIGHT|CONN_UPLEFT
                 dc.b CONN_UP|CONN_LEFT|CONN_UPLEFT
 
+upgradePuzzleIndex:
+                dc.b $ff
 upgradeIndex:   dc.b $ff
 upgradeOK:      dc.b 0
 totalConnections:dc.b 0
