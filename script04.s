@@ -155,7 +155,12 @@ CU_ChoiceRedrawSilent:
 CU_ChoiceLoop:
                 jsr GetControls
                 jsr FinishFrame
-                jsr GetFireClick
+                lda keyPress
+                bmi CU_NoKey
+                lda #1
+                sta menuCounter
+                bne CU_DoChoice
+CU_NoKey:       jsr GetFireClick
                 bcs CU_DoChoice
                 jsr MenuControl
                 lsr
