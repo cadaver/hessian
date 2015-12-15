@@ -1,11 +1,6 @@
                 include memory.s
 
-                org chars+$400
-
-                incbin bg/upgrade.chr
-
-                org chars+$600
-
+                org chars
                 dc.w upgrade1
                 dc.w upgrade2
                 dc.w upgrade3
@@ -13,6 +8,21 @@
                 dc.w upgrade5
                 dc.w upgrade6
                 dc.w upgrade7
+
+                org chars+$40
+                incbin spr/sight.spr
+
+                org chars+$80
+
+humanShape:     dc.b 32,174,32,0
+                dc.b 175,176,177,0
+                dc.b 178,179,180,0
+                dc.b 181,182,183,0
+                dc.b 184,185,186,0
+                dc.b 187,188,189,0,0
+
+                org chars+$400
+                incbin bg/upgrade.chr
 
 upgrade1:       dc.w nameMovement
                 dc.b %00110000
@@ -38,14 +48,14 @@ upgrade2:       dc.w nameStrength
 
 upgrade3:       dc.w nameFirearms
                 dc.b %00000101
+                dc.b $00,$00,$89,$00,$00,$89,$00,$00,$00,$00,$00,$00
+                dc.b $00,$00,$89,$00,$00,$89,$00,$00,$00,$00,$00,$00
+                dc.b $f7,$87,$02,$87,$87,$02,$00,$00,$00,$00,$00,$00
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$01,$02,$03,$04,$05,$06,$00,$00,$00
-                dc.b $00,$00,$00,$07,$08,$09,$0a,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b $f7,$87,$02,$87,$87,$02,$00,$00,$00,$00,$00,$00
+                dc.b $00,$00,$89,$00,$00,$89,$00,$00,$00,$00,$00,$00
+                dc.b $00,$00,$89,$00,$00,$89,$00,$00,$00,$00,$00,$00
 
 upgrade4:       dc.w nameArmor
                 dc.b %00111111
@@ -105,11 +115,11 @@ descStrength:   dc.b "IMPROVED UNARMED OR MELEE",0
                 dc.b "AT THE COST OF EXTRA BATTERY",0
                 dc.b "DRAIN",0,0
 
-nameFirearms:   dc.b "MOTORICS COPROCESSOR",0
+nameFirearms:   dc.b "MOTOR SKILL COPROCESSOR",0
                      ;0123456789012345678901234567
 descFirearms:   dc.b "IMPROVED FIREARMS PRECISION",0
                 dc.b "(BETTER STOPPING POWER) AND",0
-                dc.b "REDUCED RELOADING TIME",0,0
+                dc.b "REDUCED RELOAD TIMES",0,0
 
 nameArmor:      dc.b "SUBDERMAL ARMOR",0
                      ;0123456789012345678901234567

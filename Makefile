@@ -187,7 +187,7 @@ logo.pak: pics/logo.iff logo.s
 	dasm logo.s -ologo.bin -f3
 	pack2 logo.bin logo.pak
 	
-upgrade.pak: bg/upgrade.chr upgrade.s
+upgrade.pak: spr/sight.spr bg/upgrade.chr upgrade.s
 	dasm upgrade.s -oupgrade.bin -f3
 	pack2 upgrade.bin upgrade.pak
 

@@ -59,6 +59,8 @@ EP_MOVEACID     = $0309
 EP_MOVECHUNK    = $030a
 
 EP_CONFIGUREUPGRADE = $0400
+EP_INSTALLUPGRADE = $0401
+EP_INSTALLEFFECT = $0402
 
 PLOT_ELEVATOR1  = $00                       ;Upper <-> lower lab
 PLOT_ELEVATOR2  = $01                       ;Jormungandr <-> Bio-Dome
