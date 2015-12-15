@@ -10,6 +10,7 @@ humanShape      = chars+$80
 posX            = wpnLo
 posY            = wpnHi
 sightColor      = wpnBits
+fireExitDelay   = frameLo
 
 UD_NAME         = 0
 UD_BITS         = 2
@@ -57,7 +58,11 @@ CONN_UPLEFT     = 128
                 dc.w InstallUpgrade
                 dc.w InstallEffect
 
-        ; Configure script
+        ; Configure station script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
 
 CU_AlreadyInstalled:
                 lda #<txtAlreadyInstalled
@@ -245,9 +250,11 @@ CU_Victory:     lda #SFX_POWERUP
                 lda #<txtVictory
                 ldx #>txtVictory
                 jsr PrintTextWhite
-                ldy #100
-CU_VictoryDelay:jsr WaitBottom
-                dey
+                lda #100
+                sta fireExitDelay
+CU_VictoryDelay:jsr PositionSight
+                jsr FinishFrame
+                dec fireExitDelay
                 bne CU_VictoryDelay
                 beq CU_DoExit
 
@@ -262,6 +269,7 @@ CU_DoConfigure: jsr BlankScreen
                 lda #$00
                 sta sightColor
                 sta menuMoveDelay
+                sta fireExitDelay
 CU_ConfigureLoop:
                 jsr PositionSight
                 jsr FinishFrame
@@ -273,7 +281,17 @@ CU_ConfigureLoop:
                 bpl CU_DoExit
                 jsr GetFireClick
                 bcs CU_Action
-                ldy #MOVESPEED
+                lda joystick                                    ;Exit also by holding button down long
+                cmp #JOY_FIRE
+                bne CU_NoFireExit
+                inc fireExitDelay
+                lda fireExitDelay
+                cmp #100
+                bcs CU_DoExit
+                bcc CU_FireExitDone
+CU_NoFireExit:  lda #$00
+                sta fireExitDelay
+CU_FireExitDone:ldy #MOVESPEED
                 lda menuMoveDelay
                 beq CU_MoveOK
                 ldy #MOVESPEEDFAST                             ;Continuous move is faster
@@ -338,64 +356,6 @@ CU_DoMove:      sty menuMoveDelay
                 lda #SFX_SELECT
                 jsr PlaySfx
                 rts
-
-        ; Install script
-
-InstallUpgrade:
-                jsr FindUpgradeIndex
-                lda upgrade
-                and upgradeBitTbl,x
-                beq IU_NotInstalled
-                jmp CU_AlreadyInstalled
-IU_NotInstalled:lda upgradeOK
-                beq IU_NotConfigured
-                lda upgrade
-                ora upgradeBitTbl,x
-                sta upgrade
-                jsr ApplyUpgrades
-                lda #$00
-                sta installColor
-                lda #<EP_INSTALLEFFECT
-                ldx #>EP_INSTALLEFFECT
-                jsr SetScript
-                ldx #MENU_INTERACTION           ;Make player stand in place until effect done
-                jmp SetMenuMode
-
-IU_NotConfigured:
-                lda #<txtNotConfigured
-                ldx #>txtNotConfigured
-IU_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
-                jmp PrintPanelText
-
-        ; Install color effect script routine
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-InstallEffect:  lda installColor
-                and #$07
-                bne IE_NoSound
-IE_BeginSound:  lda #SFX_EMP
-                jsr PlaySfx
-IE_NoSound:     lda installColor
-                inc installColor
-                cmp #50
-                bcs IE_End
-                lsr
-                bcs IE_Restore
-                lda #$01
-                sta Irq1_Bg1+1
-                sta Irq1_Bg2+1
-                sta Irq1_Bg3+1
-                rts
-IE_Restore:     jmp SetZoneColors
-IE_End:         jsr StopScript
-                ldx #MENU_NONE
-                jsr SetMenuMode
-                lda #<txtInstallDone
-                ldx #>txtInstallDone
-                jmp IU_TextCommon
 
         ; Evaluate connections
 
@@ -698,29 +658,6 @@ Highlight2:     sta colors+8*40,x
                 sta colors+9*40,x
                 rts
 
-        ; Find which upgrade, based on level & object number
-
-FindUpgradeIndex:
-                ldx #6
-FUI_Loop:       lda upgradeLvlTbl,x
-                cmp levelNum
-                bne FUI_Next
-                ldy upgradeObjTbl,x
-                cpy lvlObjNum
-                beq FUI_Found
-                iny
-                cpy lvlObjNum                   ;The install machine is configurator+1
-                beq FUI_Found
-FUI_Next:       dex
-                bpl FUI_Loop
-                inx                             ;Should not happen
-FUI_Found:      cpx upgradeIndex                ;Same upgrade?
-                beq FUI_Same
-                stx upgradeIndex
-                lda #$00
-                sta upgradeOK                   ;Reset configure status
-FUI_Same:       rts
-
         ; Clear whole screen
         
 ClearScreen:    ldx #$00
@@ -788,6 +725,94 @@ GetRowAddress:  lda #40
                 ora #>colors
                 sta zpBitsHi
                 rts
+
+        ; Install station script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+InstallUpgrade:
+                jsr FindUpgradeIndex
+                lda upgrade
+                and upgradeBitTbl,x
+                beq IU_NotInstalled
+                jmp CU_AlreadyInstalled
+IU_NotInstalled:lda upgradeOK
+                beq IU_NotConfigured
+                lda upgrade
+                ora upgradeBitTbl,x
+                sta upgrade
+                jsr ApplyUpgrades
+                lda #$00
+                sta installColor
+                lda #<EP_INSTALLEFFECT
+                ldx #>EP_INSTALLEFFECT
+                jsr SetScript
+                ldx #MENU_INTERACTION           ;Make player stand in place until effect done
+                jmp SetMenuMode
+
+IU_NotConfigured:
+                lda #<txtNotConfigured
+                ldx #>txtNotConfigured
+IU_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
+                jmp PrintPanelText
+
+        ; Install color effect script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+InstallEffect:  lda installColor
+                and #$07
+                bne IE_NoSound
+IE_BeginSound:  lda #SFX_EMP
+                jsr PlaySfx
+IE_NoSound:     lda installColor
+                inc installColor
+                cmp #50
+                bcs IE_End
+                lsr
+                bcs IE_Restore
+                lda #$01
+                sta Irq1_Bg1+1
+                sta Irq1_Bg2+1
+                sta Irq1_Bg3+1
+                rts
+IE_Restore:     jmp SetZoneColors
+IE_End:         jsr StopScript
+                ldx #MENU_NONE
+                jsr SetMenuMode
+                lda #<500
+                ldy #>500
+                jsr AddScore
+                lda #<txtInstallDone
+                ldx #>txtInstallDone
+                jmp IU_TextCommon
+
+        ; Find which upgrade, based on level & object number
+
+FindUpgradeIndex:
+                ldx #6
+FUI_Loop:       lda upgradeLvlTbl,x
+                cmp levelNum
+                bne FUI_Next
+                ldy upgradeObjTbl,x
+                cpy lvlObjNum
+                beq FUI_Found
+                iny
+                cpy lvlObjNum                   ;The install machine is configurator+1
+                beq FUI_Found
+FUI_Next:       dex
+                bpl FUI_Loop
+                inx                             ;Should not happen
+FUI_Found:      cpx upgradeIndex                ;Same upgrade?
+                beq FUI_Same
+                stx upgradeIndex
+                lda #$00
+                sta upgradeOK                   ;Reset configure status
+FUI_Same:       rts
 
 upgradeLvlTbl:  dc.b 6,6,5,8,8,8,12
 upgradeObjTbl:  dc.b $54,$56,$25,$59,$55,$47,$15
