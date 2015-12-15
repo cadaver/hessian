@@ -2,6 +2,7 @@ SCRIPT_TITLE    = 0
 SCRIPT_ENEMIES  = 1
 SCRIPT_JORMUNGANDR = 2
 SCRIPT_BOSSES   = 3
+SCRIPT_UPGRADE  = 4
 
 EP_TITLE        = $0000
 
@@ -56,6 +57,8 @@ EP_MOVELARGESPIDER = $0307
 EP_OPENWALL     = $0308
 EP_MOVEACID     = $0309
 EP_MOVECHUNK    = $030a
+
+EP_CONFIGUREUPGRADE = $0400
 
 PLOT_ELEVATOR1  = $00                       ;Upper <-> lower lab
 PLOT_ELEVATOR2  = $01                       ;Jormungandr <-> Bio-Dome

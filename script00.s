@@ -45,6 +45,10 @@ titleTexts      = chars+608+168*2
 ;START_X          = $0b80
 ;START_Y          = $0f00
 
+START_LEVEL      = $05                         ;First upgrade lab
+START_X          = $1280
+START_Y          = $0a00
+
 ;START_LEVEL     = $06                          ;Upper labs
 ;START_X         = $0180
 ;START_Y         = $1700
@@ -81,9 +85,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $4780
 ;START_Y         = $1700
 
-START_LEVEL      = $0d                         ;Server vault
-START_X          = $0180
-START_Y          = $2300
+;START_LEVEL      = $0d                         ;Server vault
+;START_X          = $0180
+;START_Y          = $2300
 
 ;START_LEVEL      = $0d                         ;Next to final server room
 ;START_X          = $3a80

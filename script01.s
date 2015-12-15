@@ -1135,10 +1135,9 @@ ECL_MoveRight:  lda #$00                        ;C=1
                 skip2
 ECL_OverNeg:    lda #9
 ECL_NotOver:    sta codeEntry,x
-                lda #SFX_SELECT
+ECL_Sound:      lda #SFX_SELECT
                 jmp PlaySfx
-ECL_Next:       lda #SFX_OBJECT
-                jsr PlaySfx
+ECL_Next:       jsr ECL_Sound
                 inx
                 stx numberIndex
                 cpx #3

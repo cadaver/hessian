@@ -26,12 +26,13 @@ C_FIRSTPURGEABLE = C_PLAYER_TOP
 
 F_LOADER        = $00
 F_MAIN          = $01
-F_LOGO          = $02
-F_SPRITE        = $03
+F_SPRITE        = $02
 F_LEVEL         = $20
 F_CHARSET       = $2f
 F_MUSIC         = $3e
 F_SCRIPT        = $4b
+F_LOGO          = $60
+F_UPGRADE       = $61
 F_SAVE          = $70
 F_SAVELIST      = $75
 F_OPTIONS       = $76

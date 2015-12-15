@@ -45,7 +45,9 @@ MoveObjectMarker:
 MObjMarker_Cmp: cpx #$00                        ;Remove old objectmarker
                 bne MObjMarker_Remove
                 lda lvlObjNum                   ;Remove if no object
-                bmi MObjMarker_Remove
+MObjMarker_ObjCmp:
+                cmp #$00
+                bne MObjMarker_Remove
                 jmp FlashActor
 MObjMarker_Remove:
                 jmp RemoveActor

@@ -1030,14 +1030,15 @@ ULO_COShowMarker:
                 ldy #ACTI_LASTNPCBULLET         ;are full, in which case the object is not shown until
                 jsr GetFreeActor                ;player moves
                 bcc ULO_CODone
-                sty MObjMarker_Cmp+1
                 tya
                 tax
                 lda #ACT_OBJECTMARKER
                 sta actT,x
                 ldy lvlObjNum
+                sty MObjMarker_ObjCmp+1
                 jsr SetActorAtObject
                 inc actYH,x
+                stx MObjMarker_Cmp+1
 ULO_CODone:     ldy lvlObjNum
                 bpl ULO_HasObject
                 rts
@@ -1047,15 +1048,7 @@ ULO_HasObject:  lda actF1+ACTI_PLAYER           ;Check if player is standing at 
                 lda actFd+ACTI_PLAYER
                 cmp #OPERATEDELAY
                 bne ULO_NoOperate
-                lda lvlObjY,y                   ;If animating, play sound always
-                bmi OO_PlaySound
-                lda lvlObjB,y                   ;Otherwise check that isn't a door that is always open
-                and #OBJ_TYPEBITS               ;(keycard slots and other non-animating objects should
-                cmp #OBJTYPE_DOOR               ;play a sound)
-                beq OO_NoSound
-OO_PlaySound:   lda #SFX_OBJECT
-                jsr PlaySfx
-OO_NoSound:     lda lvlObjB,y
+                lda lvlObjB,y
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_SCRIPT
                 beq OO_RequirementOK            ;Script object doesn't have requirement
@@ -1076,7 +1069,15 @@ OO_NoSound:     lda lvlObjB,y
 VerifyCodeEntry:                                ;TODO: actually check the code
 OO_RequirementOK:
                 ldy lvlObjNum
-                jmp ToggleObject
+                lda lvlObjY,y                   ;If animating, play sound always
+                bmi OO_PlaySound
+                lda lvlObjB,y                   ;Otherwise check that isn't a door that is always open
+                and #OBJ_TYPEBITS               ;(keycard slots and other non-animating objects should
+                cmp #OBJTYPE_DOOR               ;play a sound)
+                beq OO_NoSound
+OO_PlaySound:   lda #SFX_OBJECT
+                jsr PlaySfx
+OO_NoSound:     jmp ToggleObject
 OO_RequirementCode:
                 lda #<EP_ENTERCODE
                 ldx #>EP_ENTERCODE

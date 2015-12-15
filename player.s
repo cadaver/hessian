@@ -487,9 +487,8 @@ MH_StartJump:   ldy #AL_JUMPSPEED
                 sta actSY,x
                 txa
                 bne MH_JumpNoPlayer
-                lda #UPG_MOVEMENT
                 ldy #DRAIN_JUMP
-                jsr DrainBatteryDouble
+                jsr DrainBatteryDoubleMovement
                 lda #SFX_JUMP
                 jsr PlayMovementSound
 MH_JumpNoPlayer:jsr MH_ResetGrounded
@@ -525,9 +524,8 @@ MH_StartRoll:   lda #$00
                 sta actFd,x
                 txa
                 bne MH_RollNoPlayer
-                lda #UPG_MOVEMENT
                 ldy #DRAIN_ROLL
-                jsr DrainBatteryDouble
+                jsr DrainBatteryDoubleMovement
                 lda #SFX_ROLL
                 jsr PlayMovementSound
 MH_RollNoPlayer:lda #FR_ROLL
@@ -599,9 +597,8 @@ MH_NoWalkAnimWrap:
                 cmp #$02
                 bne MH_NoWalkFootstep
                 jsr PlayFootstep
-                lda #UPG_MOVEMENT
                 ldy #DRAIN_WALK
-                jsr DrainBatteryDouble          ;Drain battery at each footstep
+                jsr DrainBatteryDoubleMovement ;Drain battery at each footstep
 MH_NoWalkFootstep:
                 pla
 MH_AnimDone:    sta actF1,x
@@ -731,9 +728,8 @@ MH_ClimbAnimDown:
                 bne MH_ClimbNotPlayer
                 bcc MH_ClimbNoSound
                 jsr PlayFootstep
-                lda #UPG_MOVEMENT
                 ldy #DRAIN_CLIMB
-                jsr DrainBatteryDouble
+                jsr DrainBatteryDoubleMovement
 MH_ClimbNoSound:
 MH_ClimbNotPlayer:
                 jmp NoInterpolation
@@ -836,9 +832,8 @@ MH_NotSwimmingUp:
                 adc #$00
                 cmp #FR_SWIM+4
                 bcc MH_SwimAnimDone
-                lda #UPG_MOVEMENT
                 ldy #DRAIN_SWIM
-                jsr DrainBatteryDouble          ;Drain battery when the animation wraps
+                jsr DrainBatteryDoubleMovement  ;Drain battery when the animation wraps
                 lda #FR_SWIM                    ;Assumes only the player will swim
 MH_SwimAnimDone:jmp MH_AnimDone
 
@@ -912,6 +907,8 @@ PMS_DoPlay:     jmp PlaySfx
         ; Returns: -
         ; Modifies: A
 
+DrainBatteryDoubleMovement:
+                lda #UPG_MOVEMENT
 DrainBatteryDouble:
                 and upgrade
                 cmp #$01
