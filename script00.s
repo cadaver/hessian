@@ -131,8 +131,9 @@ TitleScreen:    jsr BlankScreen
                 sta screen                      ;Set split screen mode
                 lda #$0f
                 sta scrollX
+                lda #$04
+                sta SL_CSSScrollY+1
                 ldx #$00
-                stx scrollY
 ClearScreenLoop:lda #$20
                 sta screen1,x
                 sta screen1+$100,x

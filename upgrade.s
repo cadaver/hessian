@@ -40,8 +40,8 @@ upgrade3:       dc.w nameFirearms
                 dc.b %00000101
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b $00,$00,$00,$01,$02,$03,$04,$05,$06,$00,$00,$00
+                dc.b $00,$00,$00,$07,$08,$09,$0a,$00,$00,$00,$00,$00
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
                 dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
@@ -105,7 +105,7 @@ descStrength:   dc.b "IMPROVED UNARMED OR MELEE",0
                 dc.b "AT THE COST OF EXTRA BATTERY",0
                 dc.b "DRAIN",0,0
 
-nameFirearms:   dc.b "FINE MOTOR COPROCESSOR",0
+nameFirearms:   dc.b "MOTORICS COPROCESSOR",0
                      ;0123456789012345678901234567
 descFirearms:   dc.b "IMPROVED FIREARMS PRECISION",0
                 dc.b "(BETTER STOPPING POWER) AND",0

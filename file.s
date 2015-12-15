@@ -67,6 +67,8 @@ LoadFileRetry:  sta LFR_AddressLo+1
                 jmp PostLoad
 
 LFR_ErrorPrompt:
+                jsr GetByte                     ;Drain the file if it was a packed stream error
+                bcc LFR_ErrorPrompt
                 lda #<txtDiskError
                 ldx #>txtDiskError
 LFR_MessageCommon:

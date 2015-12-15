@@ -30,7 +30,6 @@ BOARD_SIZEY     = 8
 ConfigureUpgrade:
                 jsr BlankScreen
                 stx sprIndex                    ;X=0 on return
-                jsr SetMenuMode                 ;Clear all panel text
                 jsr DA_FillSprites              ;Remove game sprites
                 ldx #$ff
                 stx ECS_LoadedCharSet+1         ;Mark game charset destroyed
@@ -56,9 +55,9 @@ CU_CopyTextChars:
                 bne CU_CopyTextChars
                 lda #$0f
                 sta scrollX
-                ldx #$00
-                stx screen
-                stx scrollY
+                lda #$00
+                sta screen
+                sta SL_CSSScrollY+1
                 jsr ClearScreen
                 jsr FindUpgradeIndex
                 php
@@ -82,7 +81,7 @@ CU_CopyPuzzle:  lda (actLo),y                   ;Reset puzzle if entering a diff
 CU_Same:        jsr WaitBottom
                 lda #4
                 sta temp1
-                lda #8
+                lda #7
                 sta temp2
                 lda #$0d
                 sta temp3
@@ -95,30 +94,30 @@ CU_Same:        jsr WaitBottom
                 lda #$09
                 lsr temp1                       ;Highlight parts of the human shape
                 bcc HS_NoHead                   ;according to bits
-                sta colors+8*40+5
+                sta colors+7*40+5
 HS_NoHead:      lsr temp1
                 bcc HS_NoTorso
+                sta colors+8*40+5
                 sta colors+9*40+5
                 sta colors+10*40+5
-                sta colors+11*40+5
 HS_NoTorso:     lsr temp1
                 bcc HS_NoRArm
+                sta colors+8*40+4
                 sta colors+9*40+4
-                sta colors+10*40+4
 HS_NoRArm:      lsr temp1
                 bcc HS_NoLArm
+                sta colors+8*40+6
                 sta colors+9*40+6
-                sta colors+10*40+6
 HS_NoLArm:      lsr temp1
                 bcc HS_NoRLeg
+                sta colors+10*40+4
                 sta colors+11*40+4
                 sta colors+12*40+4
-                sta colors+13*40+4
 HS_NoRLeg:      lsr temp1
                 bcc HS_NoLLeg
+                sta colors+10*40+6
                 sta colors+11*40+6
                 sta colors+12*40+6
-                sta colors+13*40+6
 HS_NoLLeg:      ldy #UD_NAME
                 lda (actLo),y
                 sta zpSrcLo
@@ -127,17 +126,17 @@ HS_NoLLeg:      ldy #UD_NAME
                 sta zpSrcHi
                 lda #8
                 sta temp1
-                lda #7
+                lda #6
                 sta temp2
                 lda #$01
                 sta temp3
                 jsr PT_HasAddress               ;Print upgrade name
-                lda #9
+                lda #8
                 sta temp2
                 jsr PMR_HasAddress              ;Print description
                 lda #8
                 sta temp1
-                lda #14
+                lda #13
                 sta temp2
                 lda #<txtConfigureExit
                 ldx #>txtConfigureExit
@@ -149,11 +148,12 @@ CU_ChoiceRedrawSilent:
                 ldx menuCounter
                 ldy arrowPosTbl,x
                 lda #62
-                sta screen1+14*40+8,y
+                sta screen1+13*40+8,y
                 ldy arrowPosTbl+1,x
                 lda #32
-                sta screen1+14*40+8,y
-CU_ChoiceLoop:  jsr GetControls
+                sta screen1+13*40+8,y
+CU_ChoiceLoop:
+                jsr GetControls
                 jsr FinishFrame
                 jsr GetFireClick
                 bcs CU_DoChoice
@@ -179,7 +179,18 @@ CU_DoExit:      ldy lvlObjNum                   ;Allow immediate re-entry
                 jsr InactivateObject
                 jsr FindPlayerZone              ;Reload level charset
                 jmp CenterPlayer
-CU_DoConfigure: jsr ClearScreen
+
+        ; Configuration puzzle
+
+CU_DoConfigure: jsr BlankScreen
+                jsr ClearScreen
+                jsr RefreshBoard
+CU_ConfigureLoop:
+                jsr GetControls
+                jsr FinishFrame
+                jsr GetFireClick
+                bcc CU_ConfigureLoop
+                jmp CU_DoExit
 
         ; Install script
 
@@ -190,16 +201,134 @@ InstallUpgrade:
                 bne IU_AlreadyInstalled
                 lda upgradeOK
                 beq IU_NotConfigured
-                rts
 IU_AlreadyInstalled:
-                lda #<txtAlreadyInstalled
-                ldx #>txtAlreadyInstalled
-                bne IU_TextCommon
+                rts
 IU_NotConfigured:
                 lda #<txtNotConfigured
                 ldx #>txtNotConfigured
 IU_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
                 jmp PrintPanelText
+
+        ; Refresh whole puzzle display
+
+RefreshBoard:   lda #1
+                sta temp3
+                lda #9
+                sta temp1
+                lda #0
+                sta temp2
+                lda #<txtPuzzleTitle
+                ldx #>txtPuzzleTitle
+                jsr PrintText
+                lda #0
+                sta temp1
+                sta temp2
+RB_Loop:        jsr RedrawTile
+                inc temp1
+                lda temp1
+                cmp #BOARD_SIZEX
+                bcc RB_Loop
+                lda #0
+                sta temp1
+                inc temp2
+                lda temp2
+                cmp #BOARD_SIZEY
+                bcc RB_Loop
+                ldx #8
+RB_BottomRow:   lda #172
+                cpx #8+BOARD_SIZEX*2
+                php
+                adc #$00
+                sta screen1+18*40,x
+                lda #$08
+                sta colors+18*40,x
+                plp
+                bcs RB_BottomRowDone
+                inx
+                bne RB_BottomRow
+RB_BottomRowDone:
+                lda #>screen1
+                sta RB_RightColumnSta+2
+                lda #>colors
+                sta RB_RightColumnSta2+2
+                ldy #80+8+BOARD_SIZEX*2
+                ldx #BOARD_SIZEY*2
+RB_RightColumn: lda #130
+RB_RightColumnSta:
+                sta screen1,y
+                lda #$08
+RB_RightColumnSta2:
+                sta colors,y
+                tya
+                clc
+                adc #40
+                tay
+                bcc RB_RightColumnNotOver
+                inc RB_RightColumnSta+2
+                inc RB_RightColumnSta2+2
+RB_RightColumnNotOver:
+                dex
+                bne RB_RightColumn
+                rts
+
+RedrawTile:     lda #80
+                ldy temp2
+                iny
+                ldx #zpDestLo
+                jsr MulU
+                lda temp1
+                asl
+                adc #8
+                jsr Add8
+                lda zpDestLo
+                sta zpBitsLo
+                lda zpDestHi
+                pha
+                ora #>screen1
+                sta zpDestHi
+                pla
+                ora #>colors
+                sta zpBitsHi
+                lda temp2
+                ldy #12
+                ldx #zpSrcLo
+                jsr MulU
+                lda temp1
+                jsr Add8
+                ldx zpSrcLo
+                lda puzzleState,x
+                pha
+                and #$0f
+                asl
+                asl
+                ora #$80
+                ldy #0
+                sta (zpDestLo),y
+                adc #$01
+                iny
+                sta (zpDestLo),y
+                adc #$01
+                ldy #40
+                sta (zpDestLo),y
+                adc #$01
+                iny
+                sta (zpDestLo),y
+                pla
+                lsr
+                lsr
+                lsr
+                lsr
+                tax
+                lda tileColorTbl,x
+                ldy #0
+                sta (zpBitsLo),y
+                iny
+                sta (zpBitsLo),y
+                ldy #40
+                sta (zpBitsLo),y
+                iny
+                sta (zpBitsLo),y
+                rts
 
         ; Find which upgrade, based on level & object number
 
@@ -309,15 +438,15 @@ humanShape:     dc.b 32,174,32,0
                 dc.b 184,185,186,0
                 dc.b 187,188,189,0,0
 
+tileColorTbl:   dc.b $09
+
 txtConfigureExit: dc.b " CONFIGURE  EXIT",0
-txtPuzzleTitle: dc.b "CONFIGURE IMPLANT/HOST INTERFACE",0
+txtPuzzleTitle: dc.b "IMPLANT/HOST INTERFACE",0
 txtCompatibility:dc.b "COMPATIBILITY",0
 txtInstallTrauma:dc.b "INSTALL TRAUMA",0
 
 txtNotConfigured:
-                dc.b "NEED CONFIGURATION",0
-txtAlreadyInstalled:
-                dc.b "ALREADY INSTALLED",0
+                dc.b "ERROR: IMPLANT NOT CONFIGURED",0
 txtInstallDone: dc.b "INSTALL SUCCESSFUL",0
 
 traumaTxtTbl:   dc.w traumaLvl0,traumaLvl1,traumaLvl2,traumaLvl3,traumaLvl4
