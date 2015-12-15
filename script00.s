@@ -500,7 +500,6 @@ IP_GiveAllItems:
                 cpy #ITEM_FIRST_IMPORTANT
                 bcs IP_GiveAllNoCount
                 lda itemMaxCount-1,y
-                lsr
 IP_GiveAllNoCount:
                 sta invCount-1,y
                 jsr GetMagazineSize
