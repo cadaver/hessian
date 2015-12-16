@@ -3,7 +3,7 @@
 
         ; Script 4, install upgrades
 
-EDIT_PUZZLE = 0
+EDIT_PUZZLE     = 0
 
 upgradeCharsStart = chars
 upgradeDataStart = chars
@@ -150,8 +150,8 @@ CU_Same:        lda #4
                 sta colors+7*40+5
 HS_NoHead:      lsr temp1
                 bcc HS_NoTorso
-                ldx #1*40+5
-                jsr Highlight3
+                ldx #5
+                jsr Highlight2
 HS_NoTorso:     lsr temp1
                 bcc HS_NoRArm
                 ldx #4
@@ -290,8 +290,11 @@ CU_ConfigureLoop:
                 lda keyPress
                 bpl CU_DoExit
                 else
-                jsr GetTileIndex
-                lda keyType
+                lda menuMoveDelay
+                beq CU_EditOK
+                bne CU_NoEdit
+CU_EditOK:      jsr GetTileIndex
+                lda keyPress
                 cmp #KEY_X
                 bne CU_NotNext
                 inc puzzleState,x
@@ -299,7 +302,9 @@ CU_ConfigureLoop:
 CU_NotNext:     cmp #KEY_Z
                 bne CU_NoEdit
                 dec puzzleState,x
-CU_EditRedraw:  jsr RedrawBoard2
+CU_EditRedraw:  lda #6
+                sta menuMoveDelay
+                jsr RedrawBoard2
 CU_NoEdit:
                 endif
                 jsr GetFireClick
@@ -395,7 +400,7 @@ Evaluate:       lda #$00
                 ldx #BOARD_SIZEX*BOARD_SIZEY-1
 Evaluate_Reset: lda puzzleState,x
                 beq Evaluate_SkipReset
-                bmi Evaluate_SkipReset          ;Skip empty & power sources
+                bmi Evaluate_SkipReset          ;Skip empty & initial power sources
                 lda puzzleState,x
                 and #$8f
                 sta puzzleState,x
@@ -485,17 +490,19 @@ ApplyPowerSub:  sty temp7
                 lda tileConnTbl,y
                 and temp7                       ;Check receiving connection
                 beq APS_Fail
+                lda temp1
+                cpy #$0c
+                bcc APS_NoPowerSource           ;Power sources always get max power
+                lda #$70
+APS_NoPowerSource:
+                sta temp6
                 lda temp3
-                and #$70
-                cmp temp1
-                bcs APS_Fail                    ;No-op if already has higher power level
+                and #$f0
+                cmp temp6
+                bcs APS_Fail                    ;Skip if already same or higher level
                 lda temp3
                 and #$8f
-                ora temp1
-                cpy #$0c
-                bcc APS_NoPowerSource
-                ora #$70                        ;Set power to max if power source
-APS_NoPowerSource:
+                ora temp6
                 inc temp8                       ;Mark change
                 sec
                 rts
@@ -846,8 +853,8 @@ FUI_Found:      cpx upgradeIndex                ;Same upgrade?
                 sta upgradeOK                   ;Reset configure status
 FUI_Same:       rts
 
-upgradeLvlTbl:  dc.b 6,6,5,8,8,8,12
-upgradeObjTbl:  dc.b $54,$56,$25,$59,$55,$47,$15
+upgradeLvlTbl:  dc.b 6,8,5,8,6,8,12
+upgradeObjTbl:  dc.b $56,$59,$25,$55,$54,$47,$15
 upgradeBitTbl:  dc.b 1,2,4,8,16,32,64
 arrowPosTbl:    dc.b 0,11,0
 tileColorTbl:   dc.b $08,$0b,$0f,$0f,$0f,$0f,$0f,$09

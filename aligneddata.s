@@ -323,7 +323,7 @@ sortSprC:       ds.b MAX_SPR*2,0
 
 d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 healthBarPosTbl:dc.b 10,24
-timeMaxTbl:     dc.b 99,60,60,25
+timeMaxTbl:     dc.b 99,60,60,50
 attackTime:     dc.b 0
 
         ; Levelobject table (not saved)

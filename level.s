@@ -782,7 +782,7 @@ ULO_ToxinDelay:
                 rts
   
         ; Update level objects. Handle operation, auto-deactivation and actually entering doors.
-        ; Also check for picking up items, player health regeneration and incrementing game clock
+        ; Also check for picking up items & player health regeneration and toxin damage
         ;
         ; Parameters: -
         ; Returns: -
@@ -807,17 +807,7 @@ UpdateLevelObjects:
                 lda menuMode
                 cmp #MENU_PAUSE
                 bcs ULO_Paused
-                ldx #$03                        ;Increment game clock
-ULO_IncreaseTime:
-                inc time,x                      ;time+3 = frames
-                lda time,x                      ;time = hours
-                cmp timeMaxTbl,x
-                bcc ULO_TimeDone
-                lda #$00
-                sta time,x
-                dex
-                bpl ULO_IncreaseTime
-ULO_TimeDone:   lda attackTime                  ;Decrement global attack timer if necessary
+                lda attackTime                  ;Decrement global attack timer if necessary
                 bpl ULO_NoGlobalAttack
                 inc attackTime
 ULO_NoGlobalAttack:

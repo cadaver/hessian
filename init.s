@@ -12,7 +12,7 @@ InitAll:        ldx #STACKSTART
                 txs
                 lda palFlag
                 bne IsPAL
-                lda #30                         ;Compensate game clock speed for NTSC
+                lda #60                         ;Compensate game clock speed for NTSC
                 sta timeMaxTbl+3                ;(otherwise no compensation)
 IsPAL:          lda $d030                       ;Enable extra IRQ for turbo switching for C128 & SCPU
                 cmp #$ff                        ;(or rather, disable it on plain C64)

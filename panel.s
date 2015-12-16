@@ -77,7 +77,7 @@ DHB_Sub:        sta panelScreen+PANELROW*40,y
                 iny
                 rts
 
-        ; Finish frame. Update frame and update score panel
+        ; Finish frame. Update frame and score panel
         ;
         ; Parameters: -
         ; Returns: -
@@ -92,6 +92,20 @@ FinishFrame:    jsr UpdateFrame
         ; Modifies: A,X,Y,loader temp vars,temp vars
 
 UpdatePanel:    lda menuMode                    ;Update health bars only when no text/menu
+                pha
+                cmp #MENU_PAUSE                 ;Increment game clock, except when paused
+                beq UP_SkipTime
+                ldx #$03
+UP_IncreaseTime:
+                inc time,x                      ;time+3 = frames
+                lda time,x                      ;time = hours
+                cmp timeMaxTbl,x
+                bcc UP_SkipTime
+                lda #$00
+                sta time,x
+                dex
+                bpl UP_IncreaseTime
+UP_SkipTime:    pla
                 ora textTime
                 ora displayedItemName
                 bne UP_SkipHealth
