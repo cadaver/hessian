@@ -3,18 +3,23 @@
 
         ; Script 4, install upgrades
 
+EDIT_PUZZLE = 0
+
 upgradeCharsStart = chars
 upgradeDataStart = chars
-humanShape      = chars+$80
 
 posX            = wpnLo
 posY            = wpnHi
 sightColor      = wpnBits
-fireExitDelay   = frameLo
+totalOutputs    = frameLo
+poweredOutputs  = frameHi
+fireExitDelay   = menuCounter
+installColor    = menuCounter
 
 UD_NAME         = 0
-UD_BITS         = 2
-UD_PUZZLE       = 3
+UD_DESC         = 2
+UD_BITS         = 4
+UD_PUZZLE       = 5
 
 PART_HEAD       = 1
 PART_TORSO      = 2
@@ -32,13 +37,10 @@ MOVESPEEDFAST   = 5
 
 CONN_NONE       = 0
 CONN_UP         = 1
-CONN_UPRIGHT    = 2
-CONN_RIGHT      = 4
-CONN_DOWNRIGHT  = 8
-CONN_DOWN       = 16
-CONN_DOWNLEFT   = 32
-CONN_LEFT       = 64
-CONN_UPLEFT     = 128
+CONN_RIGHT      = 2
+CONN_DOWN       = 4
+CONN_LEFT       = 8
+CONN_ALL        = 15
 
                 mac ApplyPower
                 subroutine APStart
@@ -187,7 +189,12 @@ HS_NoLLeg:      lda #6
                 jsr PrintText                   ;Print upgrade name
                 lda #9
                 sta temp2
-                jsr PMR_HasAddress              ;Print description
+                ldy #UD_DESC+1
+                lda (actLo),y
+                tax
+                dey
+                lda (actLo),y
+                jsr PrintMultipleRows           ;Print description
                 lda #12
                 sta temp1
                 lda #14
@@ -240,6 +247,7 @@ CU_DoExit:      ldy lvlObjNum                   ;Allow immediate re-entry
 
         ; Configuration puzzle
 
+                if EDIT_PUZZLE=0
 CU_Victory:     lda #SFX_POWERUP
                 sta upgradeOK
                 jsr PlaySfx
@@ -252,11 +260,11 @@ CU_Victory:     lda #SFX_POWERUP
                 jsr PrintTextWhite
                 lda #100
                 sta fireExitDelay
-CU_VictoryDelay:jsr PositionSight
-                jsr FinishFrame
+CU_VictoryDelay:jsr CU_Frame
                 dec fireExitDelay
                 bne CU_VictoryDelay
                 beq CU_DoExit
+                endif
 
 CU_DoConfigure: jsr BlankScreen
                 jsr ClearScreen
@@ -271,14 +279,29 @@ CU_DoConfigure: jsr BlankScreen
                 sta menuMoveDelay
                 sta fireExitDelay
 CU_ConfigureLoop:
-                jsr PositionSight
-                jsr FinishFrame
-                lda poweredConnections
-                cmp totalConnections
+                jsr CU_Frame
+                if EDIT_PUZZLE=0
+                lda poweredOutputs
+                cmp totalOutputs
                 beq CU_Victory
+                endif
                 jsr GetControls
+                if EDIT_PUZZLE=0
                 lda keyPress
                 bpl CU_DoExit
+                else
+                jsr GetTileIndex
+                lda keyType
+                cmp #KEY_X
+                bne CU_NotNext
+                inc puzzleState,x
+                jmp CU_EditRedraw
+CU_NotNext:     cmp #KEY_Z
+                bne CU_NoEdit
+                dec puzzleState,x
+CU_EditRedraw:  jsr RedrawBoard2
+CU_NoEdit:
+                endif
                 jsr GetFireClick
                 bcs CU_Action
                 lda joystick                                    ;Exit also by holding button down long
@@ -326,22 +349,18 @@ CU_NoMoveLeft:  lsr temp1
                 jsr CU_DoMove
                 inc posX
 CU_NoMoveRight: jmp CU_ConfigureLoop
-CU_Action:      lda posX
-                sta temp1
-                lda posY
-                sta temp2
-                jsr GetTileIndex
+CU_Action:      jsr GetTileIndex
                 lda puzzleState,x
-                beq CU_NotMovable
-                bmi CU_NotMovable
                 pha
                 and #$f0
-                sta CU_TileOr+1                 ;Retain color/state bit
+                sta CU_TileOr+1                 ;Retain power/state bits
                 pla
                 and #$0f
                 tay
                 lda tileNextTbl,y
 CU_TileOr:      ora #$00
+                cmp puzzleState,x
+                beq CU_NotMovable
                 sta puzzleState,x
                 lda #SFX_OBJECT
                 jsr PlaySfx
@@ -357,14 +376,26 @@ CU_DoMove:      sty menuMoveDelay
                 jsr PlaySfx
                 rts
 
+CU_Frame:       jsr PositionSight
+                jsr FinishFrame
+                lda errored
+                beq CU_FrameNotErrored
+                jsr Random
+                and #$03
+CU_FrameNotErrored:
+                tay
+                lda errorColorTbl,y
+                sta Irq1_Bg2+1
+                rts
+
         ; Evaluate connections
 
-Evaluate:       ldx #BOARD_SIZEX*BOARD_SIZEY-1
+Evaluate:       lda #$00
+                sta errored
+                ldx #BOARD_SIZEX*BOARD_SIZEY-1
 Evaluate_Reset: lda puzzleState,x
                 beq Evaluate_SkipReset
-                and #$70
-                cmp #$70                        ;Keep only power sources
-                beq Evaluate_SkipReset
+                bmi Evaluate_SkipReset          ;Skip empty & power sources
                 lda puzzleState,x
                 and #$8f
                 sta puzzleState,x
@@ -391,34 +422,43 @@ Evaluate_Backward:
                 lda temp8
                 bne Evaluate_Again
 Evaluate_Done:  lda #$00
-                sta totalConnections
-                sta poweredConnections
+                sta totalOutputs
+                sta poweredOutputs
                 ldx #BOARD_SIZEX*BOARD_SIZEY-1
 Evaluate_Count: lda boardConnAndTbl,x           ;Count only at borders
-                cmp #$ff
+                cmp #CONN_ALL
                 beq Evaluate_CountNext
                 lda puzzleState,x
+                and #$0f
                 beq Evaluate_CountNext
+                cmp #$0c
+                bcs Evaluate_CountNext          ;Disregard power sources and tissue
+                inc totalOutputs
+                lda puzzleState,x
                 and #$70
-                cmp #$70
-                beq Evaluate_CountNext          ;Disregard power sources
-                inc totalConnections
-                cmp #$10
-                bcc Evaluate_CountNext
-                inc poweredConnections
+                beq Evaluate_CountNext
+                inc poweredOutputs
 Evaluate_CountNext:
                 dex
                 bpl Evaluate_Count
+                lda errored
+                beq Evaluate_NoError
+                lda #$00
+                sta poweredOutputs
+Evaluate_NoError:
 ET_Done:        rts
 
 EvaluateTile:   lda puzzleState,x
-                and #$70
-                beq ET_Done                     ;No power to spread, early exit
-                lda #$10
-                sta temp1
-                lda puzzleState,x
+                beq ET_Done                     ;Emptiness, early exit
+                pha
                 and #$0f
                 tay
+                pla
+                and #$70
+                beq ET_Done                     ;No power to spread
+                sec
+                sbc #$10
+                sta temp1
                 lda tileConnTbl,y
                 and boardConnAndTbl,x
                 sta temp2                       ;Connections of tile
@@ -426,32 +466,22 @@ EvaluateTile:   lda puzzleState,x
                 bcc ET_NotUp
                 ApplyPower -BOARD_SIZEX,CONN_DOWN
 ET_NotUp:       lsr temp2
-                bcc ET_NotUpRight
-                ApplyPower -BOARD_SIZEX+1,CONN_DOWNLEFT
-ET_NotUpRight:  lsr temp2
                 bcc ET_NotRight
                 ApplyPower 1,CONN_LEFT
 ET_NotRight:    lsr temp2
-                bcc ET_NotDownRight
-                ApplyPower BOARD_SIZEX+1,CONN_UPLEFT
-ET_NotDownRight:lsr temp2
                 bcc ET_NotDown
                 ApplyPower BOARD_SIZEX,CONN_UP
 ET_NotDown:     lsr temp2
-                bcc ET_NotDownLeft
-                ApplyPower BOARD_SIZEX-1,CONN_UPRIGHT
-ET_NotDownLeft: lsr temp2
                 bcc ET_NotLeft
                 ApplyPower -1,CONN_RIGHT
-ET_NotLeft:     lsr temp2
-                bcc ET_NotUpLeft
-                ApplyPower -BOARD_SIZEX-1,CONN_DOWNRIGHT
-ET_NotUpLeft:   rts
+ET_NotLeft:     rts
 
 ApplyPowerSub:  sty temp7
                 sta temp3
                 and #$0f
                 tay
+                cpy #$0f                        ;Forbidden tile (tissue)?
+                beq APS_Error
                 lda tileConnTbl,y
                 and temp7                       ;Check receiving connection
                 beq APS_Fail
@@ -462,9 +492,14 @@ ApplyPowerSub:  sty temp7
                 lda temp3
                 and #$8f
                 ora temp1
+                cpy #$0c
+                bcc APS_NoPowerSource
+                ora #$70                        ;Set power to max if power source
+APS_NoPowerSource:
                 inc temp8                       ;Mark change
                 sec
                 rts
+APS_Error:      inc errored
 APS_Fail:       clc
                 rts
 
@@ -477,33 +512,32 @@ RedrawBoard:    lda #9
                 lda #<txtPuzzleTitle
                 ldx #>txtPuzzleTitle
                 jsr PrintTextWhite
-                lda #3
+                lda #5
                 sta temp1
                 lda #19
                 sta temp2
-                lda #<txtConnections
-                ldx #>txtConnections
+                lda #<txtOutputs
+                ldx #>txtOutputs
                 jsr PrintTextWhite
                 ldx #8
-RB_BottomRow:   lda #172
-                cpx #8+BOARD_SIZEX*2
-                php
-                adc #$00
+RB_BottomRow:   lda #129
                 sta screen1+18*40,x
                 lda #$08
                 sta colors+18*40,x
-                plp
-                bcs RB_BottomRowDone
                 inx
-                bne RB_BottomRow
-RB_BottomRowDone:
+                cpx #8+BOARD_SIZEX*2
+                bcc RB_BottomRow
+                lda #192
+                sta screen1+18*40,x
+                lda #$08
+                sta colors+18*40,x
                 lda #>screen1
                 sta RB_RightColumnSta+2
                 lda #>colors
                 sta RB_RightColumnSta2+2
                 ldy #80+8+BOARD_SIZEX*2
                 ldx #BOARD_SIZEY*2
-RB_RightColumn: lda #130
+RB_RightColumn: lda #160
 RB_RightColumnSta:
                 sta screen1,y
                 lda #$08
@@ -537,7 +571,6 @@ RB_ColumnLoop:  sty temp3
                 pha
                 and #$0f
                 asl
-                asl
                 ora #$80
                 sta temp4
                 pla
@@ -554,24 +587,24 @@ RB_ColumnLoop:  sty temp3
                 sta (zpDestLo),y
                 lda temp5
                 sta (zpBitsLo),y
-                inc temp4
                 iny
                 lda temp4
+                ora #$01
                 sta (zpDestLo),y
                 lda temp5
                 sta (zpBitsLo),y
-                inc temp4
                 tya
                 clc
                 adc #39
                 tay
                 lda temp4
+                ora #$20
                 sta (zpDestLo),y
                 lda temp5
                 sta (zpBitsLo),y
-                inc temp4
                 iny
                 lda temp4
+                ora #$21
                 sta (zpDestLo),y
                 lda temp5
                 sta (zpBitsLo),y
@@ -591,10 +624,10 @@ RB_ColumnLoop:  sty temp3
                 inc zpBitsHi
 RB_RowNotOver:  dec temp2
                 bne RB_RowLoop
-                lda poweredConnections
+                lda poweredOutputs
                 ldx #0
                 jsr RB_PrintBCD
-                lda totalConnections
+                lda totalOutputs
                 ldx #3
 RB_PrintBCD:    jsr ConvertToBCD8
                 lda temp6
@@ -604,18 +637,18 @@ RB_PrintBCD:    jsr ConvertToBCD8
                 lsr
                 lsr
                 ora #$30
-                sta screen1+19*40+15,x
+                sta screen1+19*40+13,x
                 pla
                 and #$0f
                 ora #$30
-                sta screen1+19*40+16,x
+                sta screen1+19*40+14,x
                 rts
 
-GetTileIndex:   lda temp2
+GetTileIndex:   lda posY
                 ldy #12
                 ldx #zpSrcLo
                 jsr MulU
-                lda temp1
+                lda posX
                 jsr Add8
                 ldx zpSrcLo
                 rts
@@ -675,7 +708,6 @@ ClearScreenLoop:lda #$20
 PrintMultipleRows:
                 sta zpSrcLo
                 stx zpSrcHi
-PMR_HasAddress:
 PMR_Loop:       ldy #$00
                 lda (zpSrcLo),y
                 beq PMR_End
@@ -818,27 +850,34 @@ upgradeLvlTbl:  dc.b 6,6,5,8,8,8,12
 upgradeObjTbl:  dc.b $54,$56,$25,$59,$55,$47,$15
 upgradeBitTbl:  dc.b 1,2,4,8,16,32,64
 arrowPosTbl:    dc.b 0,11,0
-tileColorTbl:   dc.b $0a,$0f,$0f,$0f,$0f,$0f,$0f,$0f
+tileColorTbl:   dc.b $08,$0b,$0f,$0f,$0f,$0f,$0f,$09
 
-tileNextTbl:    dc.b $00,$02,$01,$04,$05,$06,$03,$08,$09,$0a,$07
+tileNextTbl:    dc.b $00,$01,$02,$03,$05,$06,$07,$04,$09,$0a,$0b,$08,$0d,$0c,$0e,$0f
+
 tileConnTbl:    dc.b CONN_NONE
-                dc.b CONN_UP|CONN_RIGHT|CONN_DOWN|CONN_LEFT
-                dc.b CONN_UPRIGHT|CONN_DOWNRIGHT|CONN_DOWNLEFT|CONN_UPLEFT
-                dc.b CONN_UP|CONN_DOWNRIGHT|CONN_DOWNLEFT
-                dc.b CONN_RIGHT|CONN_DOWNLEFT|CONN_UPLEFT
-                dc.b CONN_DOWN|CONN_UPLEFT|CONN_UPRIGHT
-                dc.b CONN_LEFT|CONN_UPRIGHT|CONN_UPLEFT
-                dc.b CONN_RIGHT|CONN_LEFT
-                dc.b CONN_DOWNRIGHT|CONN_UPLEFT
                 dc.b CONN_UP|CONN_DOWN
-                dc.b CONN_UPRIGHT|CONN_DOWNLEFT
+                dc.b CONN_LEFT|CONN_RIGHT
+                dc.b CONN_ALL
+                dc.b CONN_LEFT|CONN_UP
+                dc.b CONN_RIGHT|CONN_UP
+                dc.b CONN_RIGHT|CONN_DOWN
+                dc.b CONN_LEFT|CONN_DOWN
+                dc.b CONN_LEFT|CONN_RIGHT|CONN_UP
+                dc.b CONN_UP|CONN_DOWN|CONN_RIGHT
+                dc.b CONN_LEFT|CONN_RIGHT|CONN_DOWN
+                dc.b CONN_UP|CONN_DOWN|CONN_LEFT
+                dc.b CONN_UP|CONN_DOWN
+                dc.b CONN_LEFT|CONN_RIGHT
+                dc.b CONN_ALL
+                dc.b CONN_ALL
 
 sightColorTbl:  dc.b $01,$07,$0f,$0a,$08,$0a,$0f,$07
+errorColorTbl:  dc.b $0b,$09,$02,$0a
 
 txtStation:     dc.b "IMPLANT INSTALLATION STATION",0
 txtConfigureExit: dc.b " CONFIGURE  EXIT",0
 txtPuzzleTitle: dc.b "IMPLANT/HOST INTERFACE",0
-txtConnections: dc.b "CONNECTIONS   /    ANY KEY TO EXIT",0
+txtOutputs:     dc.b "OUTPUTS   /    ANY KEY TO EXIT",0
 txtVictory:     dc.b "CONFIGURATION SUCCESSFUL",0
 
 txtNotConfigured:
@@ -850,26 +889,31 @@ txtAlreadyConfigured:
 txtAlreadyInstalled:
                 dc.b "ALREADY INSTALLED",0
 
+humanShape:     dc.b 32,193,32,0
+                dc.b 194,195,196,0
+                dc.b 197,198,199,0
+                dc.b 200,201,202,0
+                dc.b 203,204,205,0
+                dc.b 206,207,208,0,0
+
 puzzleState:    ds.b BOARD_SIZEX*BOARD_SIZEY,0
 
-boardConnAndTbl:dc.b CONN_DOWN|CONN_RIGHT|CONN_DOWNRIGHT
-                ds.b BOARD_SIZEX-2,CONN_DOWN|CONN_RIGHT|CONN_LEFT|CONN_DOWNRIGHT|CONN_DOWNLEFT
-                dc.b CONN_DOWN|CONN_LEFT|CONN_DOWNLEFT
+boardConnAndTbl:dc.b CONN_DOWN|CONN_RIGHT
+                ds.b BOARD_SIZEX-2,CONN_DOWN|CONN_RIGHT|CONN_LEFT
+                dc.b CONN_DOWN|CONN_LEFT
                 repeat BOARD_SIZEY-2
-                dc.b CONN_UP|CONN_DOWN|CONN_RIGHT|CONN_UPRIGHT|CONN_DOWNRIGHT
-                ds.b BOARD_SIZEX-2,$ff
-                dc.b CONN_UP|CONN_DOWN|CONN_LEFT|CONN_UPLEFT|CONN_DOWNLEFT
+                dc.b CONN_UP|CONN_DOWN|CONN_RIGHT
+                ds.b BOARD_SIZEX-2,CONN_ALL
+                dc.b CONN_UP|CONN_DOWN|CONN_LEFT
                 repend
-                dc.b CONN_UP|CONN_RIGHT|CONN_UPRIGHT
-                ds.b BOARD_SIZEX-2,CONN_UP|CONN_RIGHT|CONN_LEFT|CONN_UPRIGHT|CONN_UPLEFT
-                dc.b CONN_UP|CONN_LEFT|CONN_UPLEFT
+                dc.b CONN_UP|CONN_RIGHT
+                ds.b BOARD_SIZEX-2,CONN_UP|CONN_RIGHT|CONN_LEFT
+                dc.b CONN_UP|CONN_LEFT
 
 upgradePuzzleIndex:
                 dc.b $ff
 upgradeIndex:   dc.b $ff
 upgradeOK:      dc.b 0
-totalConnections:dc.b 0
-poweredConnections: dc.b 0
-installColor:   dc.b 0
+errored:        dc.b 0
 
                 checkscriptend
