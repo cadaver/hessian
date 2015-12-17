@@ -42,12 +42,10 @@ MEye_CloseDoor: ldy #$1e
                 ldx actIndex
 MEye_DoorDone:  lda #DROID_SPAWN_DELAY
                 sta MEye_SpawnDelay+1
-                ldy #ACTI_LASTNPC
-MEye_Search:    lda actT,y                      ;CPUs alive?
-                cmp #ACT_SUPERCPU
-                beq MEye_HasCPUs
-                dey
-                bne MEye_Search
+                lda #ACT_SUPERCPU               ;Wait until all CPUs destroyed
+                jsr FindActor
+                ldx actIndex
+                bcs MEye_HasCPUs
 MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phase1 destroyed
                 cmp #2
                 bcs MEye_WaitDroids
@@ -57,10 +55,9 @@ MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phas
                 sta actF1,x
                 jmp InitActor
 
-MEye_HasCPUs:
-MEye_SpawnDroid:lda numSpawned
-                cmp #2+1
-                bcs MEye_Done
+MEye_HasCPUs:   lda #1
+MEye_SpawnDroid:cmp numSpawned
+                bcc MEye_Done
                 lda #ACTI_FIRSTNPC              ;Use any free slots for droids,
                 ldy #ACTI_LASTNPC               ;meaning the battle becomes more insane
                 jsr GetFreeActor                ;as more CPUs are destroyed
@@ -154,7 +151,8 @@ MEye_NextMove:  lda actFallL,x
                 lda eyeCtrlTbl,y
 MEye_StoreCtrl: sta actCtrl,x
 MEye_Animate:   jsr AttackGeneric
-                jmp MEye_SpawnDroid             ;Continue to spawn droids
+                lda #2
+                jmp MEye_SpawnDroid             ;Continue to spawn droids, now 2 at a time
 MEye_Destroy:   jsr Random
                 pha
                 and #$03
