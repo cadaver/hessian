@@ -517,6 +517,7 @@ OO_BeginOperate:
                 sta actF2+ACTI_PLAYER
                 lda #$00
                 sta actFd+ACTI_PLAYER           ;Reset operate/door entry delay
+                sta actSX+ACTI_PLAYER           ;Reset speed to prevent sliding especially after script load finishes
                 beq OO_Success
 OO_Continue:    lda actFd+ACTI_PLAYER
                 bmi OO_Success

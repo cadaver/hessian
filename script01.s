@@ -1094,9 +1094,7 @@ SetScriptAndInteraction:
         ; Returns: -
         ; Modifies: various
 
-EnterCodeLoop:  lda lvlObjNum                   ;Abort if slid off the object
-                bmi ECL_Finish
-                lda #<txtEnterCode
+EnterCodeLoop:  lda #<txtEnterCode
                 ldx #>txtEnterCode
                 jsr PrintPanelTextIndefinite
                 ldy #$00
