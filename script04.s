@@ -896,7 +896,7 @@ txtAlreadyConfigured:
 txtAlreadyInstalled:
                 dc.b "ALREADY INSTALLED",0
 
-humanShape:     dc.b 32,193,32,0
+humanShape:     dc.b 128,193,128,0
                 dc.b 194,195,196,0
                 dc.b 197,198,199,0
                 dc.b 200,201,202,0

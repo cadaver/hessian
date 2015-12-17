@@ -118,7 +118,7 @@ descMovement:   dc.b "ENHANCED MANEUVERABILITY,",0
                 dc.b "HIGH JUMPS AND FAST CLIMBING",0
                 dc.b "AT THE COST OF EXTRA BATTERY",0
                 dc.b "DRAIN",0,0
-
+                
                      ;0123456789012345678901234567
 descStrength:   dc.b "IMPROVED UNARMED OR MELEE",0
                 dc.b "STRENGTH AND LOAD CAPACITY",0

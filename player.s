@@ -1005,7 +1005,7 @@ ApplyUpgrades:  lda upgrade
                 inx
 AU_NoBottomArmor:
                 lda temp6
-                and #UPG_ARMOR|UPG_STRENGTH     ;Either strength or armor upgrade turns upper part armored
+                and #UPG_STRENGTH     ;Strength upgrade turns upper part armored
                 beq AU_NoTopArmor
                 iny
 AU_NoTopArmor:  stx adPlayerBottomSprFile
