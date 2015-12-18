@@ -28,8 +28,8 @@ PART_LARM       = 8
 PART_RLEG       = 16
 PART_LLEG       = 32
 
-BOARD_SIZEX     = 12
-BOARD_SIZEY     = 8
+BOARD_SIZEX     = 13
+BOARD_SIZEY     = 7
 
 SIGHTFRAME      = $a1
 MOVESPEED       = 7
@@ -46,7 +46,6 @@ CONN_ALL        = 15
                 subroutine APStart
                 ldy #{2}
                 lda puzzleState+{1},x
-                beq .1                          ;Early exit if empty
                 jsr ApplyPowerSub
                 bcc .1
                 sta puzzleState+{1},x
@@ -251,7 +250,7 @@ CU_DoExit:      ldy lvlObjNum                   ;Allow immediate re-entry
 CU_Victory:     lda #SFX_POWERUP
                 sta upgradeOK
                 jsr PlaySfx
-                lda #0
+                lda #1
                 sta temp2
                 lda #8
                 sta temp1
@@ -430,16 +429,17 @@ Evaluate_Done:  lda #$00
                 sta totalOutputs
                 sta poweredOutputs
                 ldx #BOARD_SIZEX*BOARD_SIZEY-1
-Evaluate_Count: lda boardConnAndTbl,x           ;Count only at borders
-                cmp #CONN_ALL
-                beq Evaluate_CountNext
-                lda puzzleState,x
+Evaluate_Count: lda puzzleState,x               ;Disregard power sources
                 and #$0f
+                cmp #$0f
                 beq Evaluate_CountNext
-                cmp #$0c
-                bcs Evaluate_CountNext          ;Disregard power sources and tissue
+                tay
+                lda boardConnAndTbl,x           ;Check for wire leading out of the board
+                eor #CONN_ALL
+                and tileConnTbl,y
+                beq Evaluate_CountNext
                 inc totalOutputs
-                lda puzzleState,x
+                lda puzzleState,x               ;Powered?
                 and #$70
                 beq Evaluate_CountNext
                 inc poweredOutputs
@@ -455,6 +455,7 @@ ET_Done:        rts
 
 EvaluateTile:   lda puzzleState,x
                 beq ET_Done                     ;Emptiness, early exit
+                sta temp4
                 pha
                 and #$0f
                 tay
@@ -485,14 +486,13 @@ ApplyPowerSub:  sty temp7
                 sta temp3
                 and #$0f
                 tay
-                cpy #$0f                        ;Forbidden tile (tissue)?
-                beq APS_Error
-                lda tileConnTbl,y
+                lda tileConnTbl,y               ;If emptiness, possibly errored
+                beq APS_CheckError
                 and temp7                       ;Check receiving connection
                 beq APS_Fail
                 lda temp1
-                cpy #$0c
-                bcc APS_NoPowerSource           ;Power sources always get max power
+                cpy #$0f
+                bne APS_NoPowerSource           ;Power sources always get max power
                 lda #$70
 APS_NoPowerSource:
                 sta temp6
@@ -506,7 +506,11 @@ APS_NoPowerSource:
                 inc temp8                       ;Mark change
                 sec
                 rts
-APS_Error:      inc errored
+APS_CheckError: lda temp4                       ;Power leaking to emptiness: error
+                and #$0f
+                cmp #$0f                        ;(ok for power sources)
+                beq APS_Fail
+                inc errored
 APS_Fail:       clc
                 rts
 
@@ -514,35 +518,35 @@ APS_Fail:       clc
 
 RedrawBoard:    lda #9
                 sta temp1
-                lda #0
+                lda #1
                 sta temp2
                 lda #<txtPuzzleTitle
                 ldx #>txtPuzzleTitle
                 jsr PrintTextWhite
-                lda #5
+                lda #6
                 sta temp1
-                lda #19
+                lda #18
                 sta temp2
                 lda #<txtOutputs
                 ldx #>txtOutputs
                 jsr PrintTextWhite
-                ldx #8
+                ldx #7
 RB_BottomRow:   lda #129
-                sta screen1+18*40,x
+                sta screen1+17*40,x
                 lda #$08
-                sta colors+18*40,x
+                sta colors+17*40,x
                 inx
-                cpx #8+BOARD_SIZEX*2
+                cpx #7+BOARD_SIZEX*2
                 bcc RB_BottomRow
                 lda #192
-                sta screen1+18*40,x
+                sta screen1+17*40,x
                 lda #$08
-                sta colors+18*40,x
+                sta colors+17*40,x
                 lda #>screen1
                 sta RB_RightColumnSta+2
                 lda #>colors
                 sta RB_RightColumnSta2+2
-                ldy #80+8+BOARD_SIZEX*2
+                ldy #120+7+BOARD_SIZEX*2
                 ldx #BOARD_SIZEY*2
 RB_RightColumn: lda #160
 RB_RightColumnSta:
@@ -560,12 +564,12 @@ RB_RightColumnSta2:
 RB_RightColumnNotOver:
                 dex
                 bne RB_RightColumn
-RedrawBoard2:   lda #<(screen1+2*40+8)
+RedrawBoard2:   lda #<(screen1+3*40+7)
                 sta zpDestLo
                 sta zpBitsLo
-                lda #>(screen1+2*40+8)
+                lda #>(screen1+3*40+7)
                 sta zpDestHi
-                lda #>(colors+2*40+8)
+                lda #>(colors+3*40+7)
                 sta zpBitsHi
                 ldx #$00
                 lda #BOARD_SIZEY
@@ -644,15 +648,15 @@ RB_PrintBCD:    jsr ConvertToBCD8
                 lsr
                 lsr
                 ora #$30
-                sta screen1+19*40+13,x
+                sta screen1+18*40+14,x
                 pla
                 and #$0f
                 ora #$30
-                sta screen1+19*40+14,x
+                sta screen1+18*40+15,x
                 rts
 
 GetTileIndex:   lda posY
-                ldy #12
+                ldy #BOARD_SIZEX
                 ldx #zpSrcLo
                 jsr MulU
                 lda posX
@@ -666,7 +670,7 @@ PositionSight:  lda posX
                 ldy #16
                 ldx #<temp1
                 jsr MulU
-                lda #22+8*8
+                lda #22+7*8
                 jsr Add8
                 lda temp1
                 sta sprXL
@@ -675,7 +679,7 @@ PositionSight:  lda posX
                 lda posY
                 ldy #16
                 jsr MulU
-                lda #53+2*8
+                lda #53+3*8
                 jsr Add8
                 lda temp1
                 sta sprY
@@ -859,23 +863,23 @@ upgradeBitTbl:  dc.b 1,2,4,8,16,32,64
 arrowPosTbl:    dc.b 0,11,0
 tileColorTbl:   dc.b $08,$0b,$0f,$0f,$0f,$0f,$0f,$09
 
-tileNextTbl:    dc.b $00,$01,$02,$03,$05,$06,$07,$04,$09,$0a,$0b,$08,$0d,$0c,$0e,$0f
+tileNextTbl:    dc.b $00,$01,$02,$03,$04,$05,$06,$07,$08,$0a,$09,$0c,$0d,$0e,$0b,$0f
 
 tileConnTbl:    dc.b CONN_NONE
                 dc.b CONN_UP|CONN_DOWN
                 dc.b CONN_LEFT|CONN_RIGHT
-                dc.b CONN_ALL
                 dc.b CONN_LEFT|CONN_UP
                 dc.b CONN_RIGHT|CONN_UP
                 dc.b CONN_RIGHT|CONN_DOWN
                 dc.b CONN_LEFT|CONN_DOWN
-                dc.b CONN_LEFT|CONN_RIGHT|CONN_UP
-                dc.b CONN_UP|CONN_DOWN|CONN_RIGHT
-                dc.b CONN_LEFT|CONN_RIGHT|CONN_DOWN
-                dc.b CONN_UP|CONN_DOWN|CONN_LEFT
+                dc.b CONN_ALL
+                dc.b CONN_NONE
                 dc.b CONN_UP|CONN_DOWN
                 dc.b CONN_LEFT|CONN_RIGHT
-                dc.b CONN_ALL
+                dc.b CONN_UP|CONN_DOWN|CONN_RIGHT
+                dc.b CONN_LEFT|CONN_RIGHT|CONN_DOWN
+                dc.b CONN_LEFT|CONN_UP|CONN_DOWN
+                dc.b CONN_UP|CONN_LEFT|CONN_RIGHT
                 dc.b CONN_ALL
 
 sightColorTbl:  dc.b $01,$07,$0f,$0a,$08,$0a,$0f,$07
@@ -884,7 +888,7 @@ errorColorTbl:  dc.b $0b,$09,$02,$0a
 txtStation:     dc.b "IMPLANT INSTALLATION STATION",0
 txtConfigureExit: dc.b " CONFIGURE  EXIT",0
 txtPuzzleTitle: dc.b "IMPLANT/HOST INTERFACE",0
-txtOutputs:     dc.b "OUTPUTS   /    ANY KEY TO EXIT",0
+txtOutputs:     dc.b "OUTPUTS   /    ANY KEY EXITS",0
 txtVictory:     dc.b "CONFIGURATION SUCCESSFUL",0
 
 txtNotConfigured:

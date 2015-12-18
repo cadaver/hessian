@@ -29,89 +29,99 @@ nameRecharge:   dc.b "BIOELECTRIC RECHARGER",0
                 org chars+$400
                 incbin bg/upgrade.chr
 
+PS              = $ff
+AM              = $0f
+bl              = $00
+VE              = $01
+HO              = $02
+BR              = $03
+BL              = $04
+TL              = $05
+TR              = $06
+CR              = $07
+SV              = $09
+SH              = $0a
+SR              = $0b
+SD              = $0c
+SL              = $0d
+SU              = $0e
+
 upgrade1:       dc.w nameMovement
                 dc.w descMovement
                 dc.b %00110000
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
 
 upgrade2:       dc.w nameStrength
                 dc.w descStrength
                 dc.b %00001100
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
 
 upgrade3:       dc.w nameFirearms
                 dc.w descFirearms
                 dc.b %00000101
-                dc.b $00,$00,$01,$00,$00,$00,$00,$00,$00,$00,$01,$00
-                dc.b $fc,$02,$08,$02,$02,$02,$02,$02,$02,$02,$08,$02
-                dc.b $00,$00,$06,$02,$0c,$07,$0f,$06,$0c,$02,$07,$00
-                dc.b $00,$00,$01,$00,$0f,$04,$02,$05,$0f,$00,$01,$00
-                dc.b $00,$00,$01,$00,$0f,$07,$02,$06,$0f,$00,$01,$00
-                dc.b $00,$00,$05,$02,$0c,$04,$0f,$05,$0c,$02,$04,$00
-                dc.b $fc,$02,$0a,$02,$02,$02,$02,$02,$02,$02,$0a,$02
-                dc.b $00,$00,$01,$00,$00,$00,$00,$00,$00,$00,$01,$00
+                dc.b bl,bl,bl,bl,bl,bl,VE,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,TL,HO,AM,HO,SU,HO,HO,HO,TR,bl,bl
+                dc.b bl,bl,VE,bl,bl,bl,VE,bl,bl,bl,SL,HO,HO
+                dc.b PS,HO,SR,bl,bl,bl,SR,HO,AM,HO,SR,bl,bl
+                dc.b bl,bl,VE,bl,bl,bl,VE,bl,bl,bl,SL,HO,HO
+                dc.b bl,bl,BL,HO,AM,HO,SD,HO,HO,HO,BR,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,VE,bl,bl,bl,bl,bl,bl
 
 upgrade4:       dc.w nameArmor
                 dc.w descArmor
                 dc.b %00111111
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
 
 upgrade5:       dc.w nameHealing
                 dc.w descHealing
                 dc.b %00000010
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
 
 upgrade6:       dc.w nameDrain
                 dc.w descDrain
                 dc.b %00000010
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
 
 upgrade7:       dc.w nameRecharge
                 dc.w descRecharge
                 dc.b %00111100
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
 
                      ;0123456789012345678901234567
 descMovement:   dc.b "ENHANCED MANEUVERABILITY,",0
