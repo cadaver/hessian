@@ -93,6 +93,10 @@ ConfigureUpgrade:
                 jsr LoadFileRetry
                 ldx #$00
                 stx Irq1_Bg1+1
+                stx screen
+                stx SL_CSSScrollY+1
+                lda #$0f
+                sta scrollX
                 lda #$0b
                 sta Irq1_Bg2+1
                 lda #$0c
@@ -106,12 +110,7 @@ CU_CopyTextChars:
                 sta chars+$300,x
                 inx
                 bne CU_CopyTextChars
-                lda #$0f
-                sta scrollX
-                lda #$00
-                sta screen
-                sta SL_CSSScrollY+1
-                jsr ClearScreen
+CU_Again:       jsr ClearScreen
                 lda upgradeIndex
                 asl
                 tax
@@ -214,11 +213,25 @@ CU_ChoiceRedrawSilent:
                 sta screen1+14*40+12,y
 CU_ChoiceLoop:  jsr FinishFrame
                 jsr GetControls
+                if EDIT_PUZZLE=0
                 lda keyPress
                 bmi CU_NoKey
                 lda #1
                 sta menuCounter
                 bne CU_DoChoice
+                else
+                lda keyType
+                cmp #KEY_Z
+                bne CU_NotPrevUpgrade
+                dec upgradeIndex
+                jmp CU_Again
+CU_NotPrevUpgrade:
+                cmp #KEY_X
+                bne CU_NotNextUpgrade
+                inc upgradeIndex
+                jmp CU_Again
+CU_NotNextUpgrade:
+                endif
 CU_NoKey:       jsr GetFireClick
                 bcs CU_DoChoice
                 jsr MenuControl
@@ -429,10 +442,10 @@ Evaluate_Done:  lda #$00
                 sta totalOutputs
                 sta poweredOutputs
                 ldx #BOARD_SIZEX*BOARD_SIZEY-1
-Evaluate_Count: lda puzzleState,x               ;Disregard power sources
+Evaluate_Count: lda puzzleState,x               ;Disregard power sources and anything movable
                 and #$0f
-                cmp #$0f
-                beq Evaluate_CountNext
+                cmp #$09
+                bcs Evaluate_CountNext
                 tay
                 lda boardConnAndTbl,x           ;Check for wire leading out of the board
                 eor #CONN_ALL
@@ -455,10 +468,10 @@ ET_Done:        rts
 
 EvaluateTile:   lda puzzleState,x
                 beq ET_Done                     ;Emptiness, early exit
-                sta temp4
                 pha
                 and #$0f
                 tay
+                sty temp4
                 pla
                 and #$70
                 beq ET_Done                     ;No power to spread
@@ -486,10 +499,9 @@ ApplyPowerSub:  sty temp7
                 sta temp3
                 and #$0f
                 tay
-                lda tileConnTbl,y               ;If emptiness, possibly errored
-                beq APS_CheckError
+                lda tileConnTbl,y
                 and temp7                       ;Check receiving connection
-                beq APS_Fail
+                beq APS_CheckError
                 lda temp1
                 cpy #$0f
                 bne APS_NoPowerSource           ;Power sources always get max power
@@ -506,9 +518,10 @@ APS_NoPowerSource:
                 inc temp8                       ;Mark change
                 sec
                 rts
-APS_CheckError: lda temp4                       ;Power leaking to emptiness: error
-                and #$0f
-                cmp #$0f                        ;(ok for power sources)
+APS_CheckError: cpy #$09                        ;Blocked: error if leading to emptiness,
+                bcs APS_Fail                    ;but OK for power sources
+                lda temp4
+                cmp #$0f
                 beq APS_Fail
                 inc errored
 APS_Fail:       clc

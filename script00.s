@@ -46,8 +46,8 @@ titleTexts      = chars+608+168*2
 ;START_Y          = $0f00
 
 START_LEVEL      = $05                         ;First upgrade lab
-START_X          = $1280
-START_Y          = $0a00
+START_X          = $0d80
+START_Y          = $0600
 
 ;START_LEVEL     = $06                          ;Upper labs
 ;START_X         = $0180

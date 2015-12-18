@@ -93,13 +93,13 @@ upgrade4:       dc.w nameArmor
 upgrade5:       dc.w nameHealing
                 dc.w descHealing
                 dc.b %00000010
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,TL,SL,HO,HO,TR,TL,HO,HO,HO,TR,bl
+                dc.b PS,HO,SR,VE,bl,bl,VE,VE,SL,AM,SR,VE,bl
+                dc.b bl,bl,BL,SL,HO,TR,VE,VE,SR,SH,SL,VE,bl
+                dc.b bl,bl,bl,VE,bl,AM,CR,SR,SL,SU,SR,CR,HO
+                dc.b bl,bl,TL,SL,HO,BR,VE,VE,SR,SH,SL,VE,bl
+                dc.b PS,HO,SR,VE,bl,bl,VE,VE,SL,AM,SR,VE,bl
+                dc.b bl,bl,BL,SL,HO,HO,BR,BL,HO,HO,HO,BR,bl
 
 upgrade6:       dc.w nameDrain
                 dc.w descDrain
