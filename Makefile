@@ -33,7 +33,7 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
-	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak \
+	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak level15.pak \
 	sprcommon.pak spritem.pak sprweapon.pak sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
 	sprsmallrobots.pak sprhazards.pak spranimals.pak sprmediumrobots.pak sprguard.pak sprheavyguard.pak \
 	sprcombatrobot.pak sprlargewalker.pak sprlargetank.pak sprhighwalker.pak \
@@ -452,6 +452,12 @@ level14.pak: bg/world14.map bg/world14.lvo bg/world14.lva
 	pack2 bg/world14.lva level14_2.pak
 	pchunk2 bg/world14.map level14_3.pak
 	filejoin level14_1.pak+level14_2.pak+level14_3.pak level14.pak
+
+level15.pak: bg/world15.map bg/world15.lvo bg/world15.lva
+	pack2 bg/world15.lvo level15_1.pak
+	pack2 bg/world15.lva level15_2.pak
+	pchunk2 bg/world15.map level15_3.pak
+	filejoin level15_1.pak+level15_2.pak+level15_3.pak level15.pak
 
 sprcommon.pak: spr/common.spr
 	pchunk2 spr/common.spr sprcommon.pak

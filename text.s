@@ -31,6 +31,7 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtLv2SecurityPass
                 dc.b <txtSuitePass
                 dc.b <txtServerVaultPass
+                dc.b <txtOldTunnelsPass
                 dc.b <txtBiometricId
 
 itemNameHi:     dc.b >txtFists
@@ -64,6 +65,7 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtLv2SecurityPass
                 dc.b >txtSuitePass
                 dc.b >txtServerVaultPass
+                dc.b >txtOldTunnelsPass
                 dc.b >txtBiometricId
 
 txtFists:       dc.b "FISTS",0
@@ -113,6 +115,8 @@ txtLv2SecurityPass:dc.b "LV2 "
 txtSuitePass:dc.b "THRONE SUITE"
                 textjump txtPass
 txtServerVaultPass:dc.b "SERVER VAULT"
+                textjump txtPass
+txtOldTunnelsPass:dc.b "OLD TUNNELS"
                 textjump txtPass
 txtBiometricId: dc.b "BIOMETRIC ID",0
 

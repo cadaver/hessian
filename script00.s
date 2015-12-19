@@ -45,9 +45,9 @@ titleTexts      = chars+608+168*2
 ;START_X          = $0b80
 ;START_Y          = $0f00
 
-START_LEVEL      = $05                         ;First upgrade lab
-START_X          = $0d80
-START_Y          = $0600
+;START_LEVEL      = $05                         ;First upgrade lab
+;START_X          = $0d80
+;START_Y          = $0600
 
 ;START_LEVEL     = $06                          ;Upper labs
 ;START_X         = $0180
@@ -69,9 +69,9 @@ START_Y          = $0600
 ;START_X         = $3780
 ;START_Y         = $4100
 
-;START_LEVEL     = $0a                          ;Nether tunnel
-;START_X         = $0080
-;START_Y         = $5600
+START_LEVEL     = $0a                          ;Nether tunnel
+START_X         = $0080
+START_Y         = $5600
 
 ;START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
 ;START_X         = $a580
