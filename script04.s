@@ -747,12 +747,21 @@ PrintTextWhite: ldy #$01
 PrintText:      sta zpSrcLo
                 stx zpSrcHi
 PT_HasAddress:  ldy temp2
-                jsr GetRowAddress
+                ldy temp2
+                lda #40
+                ldx #zpDestLo
+                jsr MulU
                 lda temp1
                 jsr Add8
-                ldx #zpBitsLo
-                lda temp1
-                jsr Add8
+                lda zpDestLo
+                sta zpBitsLo
+                lda zpDestHi
+                pha
+                ora #>screen1
+                sta zpDestHi
+                pla
+                ora #>colors
+                sta zpBitsHi
                 ldy #$00
 PT_Loop:        lda (zpSrcLo),y
                 beq PT_Done
@@ -765,22 +774,6 @@ PT_Done:        iny
                 tya
                 ldx #zpSrcLo
                 jmp Add8
-
-        ; Get address of text row Y
-
-GetRowAddress:  lda #40
-                ldx #zpDestLo
-                jsr MulU
-                lda zpDestLo
-                sta zpBitsLo
-                lda zpDestHi
-                pha
-                ora #>screen1
-                sta zpDestHi
-                pla
-                ora #>colors
-                sta zpBitsHi
-                rts
 
         ; Install station script routine
         ;

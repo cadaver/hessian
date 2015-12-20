@@ -1,7 +1,7 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 1, loadable enemy movement routines + data, and common objects (rechargers)
+        ; Script 1, loadable enemy movement routines + data, and common objects
 
 FR_DEADRATAIR = 12
 FR_DEADRATGROUND = 13
@@ -16,6 +16,8 @@ TURRET_ANIMDELAY = 2
 
 RECYCLER_ITEM_FIRST = ITEM_PISTOL
 RECYCLER_ITEM_LAST = ITEM_ARMOR
+
+MAX_RECYCLER_ITEMS = 10
 
                 org scriptCodeStart
 
@@ -51,9 +53,8 @@ RECYCLER_ITEM_LAST = ITEM_ARMOR
                 dc.w UseBatteryRecharger
                 dc.w RechargerEffect
                 dc.w RecyclingStation
-                dc.w RecyclingStationLoop
-                dc.w Elevator
                 dc.w ElevatorLoop
+                dc.w Elevator
                 dc.w EnterCode
                 dc.w EnterCodeLoop
 
@@ -828,187 +829,123 @@ RE_End:         jmp StopScript
 recyclerItem    = menuCounter
 
 RecyclingStation:
-                ldy #ITEM_PARTS
-                jsr FindItem
-                bcc RS_NoParts
-                lda #$00                        ;Init alternating parts/item display
-                sta recyclerDisplay
-                lda #<EP_RECYCLINGSTATIONLOOP
-                ldx #>EP_RECYCLINGSTATIONLOOP
-                jsr SetScriptAndInteraction
-                ldy #RECYCLER_ITEM_FIRST-1
-                jsr RS_GotoNextItem
-                sty recyclerItem
-                jmp RS_Redraw
-RS_NoParts:     lda #<txtNoParts
-                ldx #>txtNoParts
-                ldy #REQUIREMENT_TEXT_DURATION
-                jmp PrintPanelText
-
-        ; Recycling station interaction loop
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-RecyclingStationLoop:
-                inc recyclerDisplay
                 ldy itemIndex
-                sty RSL_RestoreItem+1
-                ldy #ITEM_PARTS
-                lda recyclerDisplay
-                asl
-                asl
-                bpl RSL_ShowParts
-                ldy recyclerItem
-RSL_ShowParts:  sty itemIndex
-                jsr SetPanelRedrawItemAmmo
-                jsr UP_RedrawItemAmmoScore      ;Forcibly redraw item/ammo
-RSL_RestoreItem:ldy #$00
-                sty itemIndex
-                jsr CheckForExit
-                bne RSL_Exit
-                jsr MenuControl                 ;Check for selecting items
-                ldy recyclerItem
-                lsr
-                bcs RSL_MoveLeft
-                lsr
-                bcs RSL_MoveRight
-                jsr GetFireClick
-                bcs RSL_Buy
-RSL_NoObject:
-RSL_MoveFail:   rts
-RSL_MoveLeft:   jsr RS_GotoPrevItem
-                bcc RSL_MoveFail
-RSL_MoveCommon: sty recyclerItem
-                lda #SFX_SELECT
-                jsr PlaySfx
-                jmp RS_Redraw
-RSL_MoveRight:  jsr RS_GotoNextItem
-                bcc RSL_MoveFail
-                bcs RSL_MoveCommon
-RSL_Buy:        lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
-                sta temp1
-                lda invCount+ITEM_PARTS-1
-                cmp #NO_ITEM_COUNT
-                beq RSL_BuyFail
-                cmp temp1
-                bcc RSL_BuyFail
+                sty RS_RestoreItem+1
+                ldy #RECYCLER_ITEM_FIRST
+                ldx #$00
+RS_FindItems:   cpy #ITEM_FIRST_CONSUMABLE
+                bcs RS_ItemOK
+                jsr FindItem                    ;For weapons, check that is currently held in inventory
+                bcc RS_NextItem                 ;(recycler only "sells" ammo, not weapons)
+RS_ItemOK:      lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                beq RS_NextItem
                 tya
-                ldx recyclerCountTbl-RECYCLER_ITEM_FIRST,y
-                jsr AddItem
-                bcc RSL_BuyFail
-                ldy #ITEM_PARTS
-                lda temp1
-                jsr DecreaseAmmo
-                lda #$00                        ;Do not redraw parts count now,
-                sta panelUpdateFlags            ;rather redraw manually
-                lda #$20                        ;Show the bought item
-                sta recyclerDisplay
-                lda #SFX_EMP
-                skip2
-RSL_BuyFail:    lda #SFX_DAMAGE
-                jmp PlaySfx
-RSL_Exit:       jsr SetPanelRedrawItemAmmo
-RSL_ExitCommon: jsr StopScript
-                ldx #MENU_NONE
-                jmp SetMenuMode
-
-CheckForExit:   lda joystick
-                and #JOY_DOWN
-                bne CFE_Exit
-                lda keyPress
-                eor #$ff
-CFE_Exit:       rts
-
-        ; Redraw current item in recycler
-
-RS_Redraw:      inc textLeftMargin
-                lda recyclerItem
-                jsr GetItemName
-                jsr PrintPanelTextIndefinite
-                dec textLeftMargin
-                ldy recyclerItem
-                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
-                jsr ConvertToBCD8
-                ldx #27
-                jsr Print3BCDDigits
-                ldx #27
-RS_ZeroLoop:    lda panelScreen+PANELROW*40,x
-                cmp #$30
-                bne RS_NonZeroFound
-                lda #" "
-                jsr PrintPanelChar
-                bne RS_ZeroLoop
-RS_NonZeroFound:dex
-                lda #"+"
-                jsr RS_RedrawSub
-                pha
-                jsr RS_GotoPrevItem
-                pla
-                bcc RS_NoLeftArrow
-                lda #60
-RS_NoLeftArrow: ldx #9
-                jsr RS_RedrawSub
-                pha
-                jsr RS_GotoNextItem
-                pla
-                bcc RS_NoRightArrow
-                lda #62
-RS_NoRightArrow:ldx #30
-                jsr PrintPanelChar
-                ldx #1
-                ldy #$00
-RS_PrintCost:   lda txtCost,y
-                beq RS_PrintCostDone
-                jsr PrintPanelChar
-                iny
-                bne RS_PrintCost
-RS_PrintCostDone:
-                ldy recyclerItem
-                lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
-                jsr ConvertToBCD8
-                jmp PrintBCDDigitsLSB
-
-RS_RedrawSub:   jsr PrintPanelChar
-                lda #$20
-                ldy recyclerItem
-                rts
-
-        ; Go to next/prev item that can receive ammo from recycler
-        ; Return C=1 if valid (index in Y)
-
-RS_GotoNextItem:
-                iny
+                sta recyclerItemList,x
+                inx                             ;If using "all items" cheat, the list could be exceeded
+                cpx #MAX_RECYCLER_ITEMS         ;Simply cut it in this case
+                bcs RS_ListDone
+RS_NextItem:    iny
                 cpy #RECYCLER_ITEM_LAST+1
-                bcs RS_GotoNextFail
-                jsr RS_GotoCommon
-                beq RS_GotoNextItem
-RS_GotoPrevFound:
-RS_GotoNextFound:
+                bcc RS_FindItems
+RS_ListDone:    lda #$ff
+                sta recyclerItemList,x          ;Write endmark
+                jsr BlankScreen
+                lda #$02
+                sta screen                      ;Set text screen mode
+                lda #$0f
+                sta scrollX
+                ldx #$00
+                stx SL_CSSScrollY+1
+                stx Irq1_Bg1+1
+RS_ClearScreenLoop:lda #$20
+                sta screen1,x
+                sta screen1+$100,x
+                sta screen1+$200,x
+                sta screen1+SCROLLROWS*40-$100,x
+                inx
+                bne RS_ClearScreenLoop
+                lda #9
+                sta temp1
+                lda #4
+                sta temp2
+                lda #<txtRecycler
+                ldx #>txtRecycler
+                jsr PrintText
+                lda #0
+                sta temp3
+                ;lda #9
+                ;sta temp1
+                lda #6
+                sta temp2
+RS_PrintItemsLoop:
+                ldx temp3
+                lda recyclerItemList,x
+                bmi RS_PrintExit
+                jsr GetItemName
+                jsr PrintText
+                inc temp2
+                inc temp3
+                bne RS_PrintItemsLoop
+RS_PrintExit:   lda #<txtExit
+                ldx #>txtExit
+                jsr PrintText
+RS_ControlLoop: jsr FinishFrame
+                jsr GetControls
+                jsr GetFireClick
+                bcs RS_Exit
+                lda keyPress
+                bmi RS_ControlLoop
+
+RS_Exit:
+RS_RestoreItem: ldy #$00
+                sty itemIndex
+                jsr SetPanelRedrawItemAmmo
+                ldy lvlObjNum                   ;Allow immediate re-entry
+                jsr InactivateObject
+                jmp CenterPlayer
+
+        ; Print null-terminated text, with textjump support for item names
+
+PrintText:      sta zpSrcLo
+                stx zpSrcHi
+                ldy temp2
+                lda #40
+                ldx #zpDestLo
+                jsr MulU
+                lda temp1
+                jsr Add8
+                lda zpDestLo
+                sta zpBitsLo
+                lda zpDestHi
+                pha
+                ora #>screen1
+                sta zpDestHi
+                pla
+                ora #>colors
+                sta zpBitsHi
+                ldy #$00
+PT_Loop:        lda (zpSrcLo),y
+                bmi PT_Jump
+                beq PT_Done
+                sta (zpDestLo),y
+                lda #$01
+                sta (zpBitsLo),y
+                iny
+                bne PT_Loop
+PT_Done:        rts
+PT_Jump:        sty PT_Sub+1
+                pha
+                iny
+                lda (zpSrcLo),y
+                dey
                 sec
-                rts
-RS_GotoPrevFail:
-RS_GotoNextFail:clc
-                rts
-
-RS_GotoPrevItem:dey
-                cpy #RECYCLER_ITEM_FIRST
-                bcc RS_GotoPrevFail
-                jsr RS_GotoCommon
-                beq RS_GotoPrevItem
-                bne RS_GotoPrevFound
-
-RS_GotoCommon:  lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y ;Check that can receive ammo
-                beq RS_GotoCommonDone
-                lda #NO_ITEM_COUNT-1            ;Is it a weapon that exists in inventory?
-                cmp invCount-1,y
-                bcs RS_GotoCommonDone
-                cpy #ITEM_FIRST_CONSUMABLE      ;Consumables can always be selected
-                bcs RS_GotoCommonDone
-                lda #$00                        ;Need to check next
-RS_GotoCommonDone:
-                rts
+PT_Sub:         sbc #$00
+                sta zpSrcLo
+                pla
+                and #$7f
+                sbc #$00
+                sta zpSrcHi
+                bpl PT_Loop
 
         ; Enter elevator script
         ;
@@ -1111,8 +1048,11 @@ ECL_EmptyDigit: lda #"-"
                 iny
                 cpy #3
                 bcc ECL_Redraw
-                jsr CheckForExit
+CheckForExit:   lda joystick
+                and #JOY_DOWN
                 bne ECL_Finish
+                lda keyPress
+                bpl ECL_Finish
                 jsr MenuControl
                 ldx numberIndex
                 lsr
@@ -1141,7 +1081,9 @@ ECL_Next:       jsr ECL_Sound
                 cpx #3
                 bcc ECL_Done
                 jsr VerifyCodeEntry             ;Opens the door if right code
-ECL_Finish:     jmp RSL_ExitCommon
+ECL_Finish:     jsr StopScript
+                ldx #MENU_NONE
+                jmp SetMenuMode
 
         ; Tank Y-size addition table (based on turret direction)
 
@@ -1214,6 +1156,9 @@ recyclerCostTbl:
                 dc.b 50                         ;Battery
                 dc.b 75                         ;Armor
 
+recyclerItemList:
+                ds.b MAX_RECYCLER_ITEMS+1,0
+
         ; Elevator tables
         
 elevatorSrcLevel:
@@ -1229,9 +1174,8 @@ elevatorAcc:    dc.b 2,-2,-4,4
 
         ; Variables
 
-rechargerColor:
 elevatorIndex:  dc.b 0
-recyclerDisplay:
+rechargerColor:
 elevatorTime:   dc.b 0
 
         ; Messages
@@ -1240,10 +1184,10 @@ txtHealthRecharger:
                 dc.b "HEALTH RESTORED",0
 txtBatteryRecharger:
                 dc.b "BATTERY RECHARGED",0
-txtNoParts:     dc.b "NO PARTS TO RECYCLE",0
-txtCost:        dc.b "COST ",0
 txtElevatorLocked:
                 dc.b "ELEVATOR OFFLINE",0
 txtEnterCode:   dc.b "ENTER CODE",0
+txtRecycler:    dc.b "PART RECYCLING STATION",0
+txtExit:        dc.b "EXIT",0
 
                 checkscriptend
