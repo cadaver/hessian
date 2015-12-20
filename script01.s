@@ -14,11 +14,6 @@ FR_DEADWALKERGROUND = 13
 
 TURRET_ANIMDELAY = 2
 
-RECYCLER_ITEM_FIRST = ITEM_PISTOL
-RECYCLER_ITEM_LAST = ITEM_ARMOR
-
-MAX_RECYCLER_ITEMS = 10
-
                 org scriptCodeStart
 
                 dc.w MoveFlyingCraft
@@ -52,11 +47,14 @@ MAX_RECYCLER_ITEMS = 10
                 dc.w UseHealthRecharger
                 dc.w UseBatteryRecharger
                 dc.w RechargerEffect
-                dc.w RecyclingStation
-                dc.w ElevatorLoop
-                dc.w Elevator
                 dc.w EnterCode
                 dc.w EnterCodeLoop
+                dc.w Elevator
+                dc.w ElevatorLoop
+                dc.w ExplodeEnemy2_Ofs15
+                dc.w ExplodeEnemy4_Ofs15
+                dc.w ExplodeEnemy4_Rising
+                dc.w MoveExplosionGeneratorRising
 
         ; Flying craft update routine
         ;
@@ -820,133 +818,6 @@ RechargerEffect:
 RE_Restore:     jmp SetZoneColors
 RE_End:         jmp StopScript
 
-        ; Recycling station script routine
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-recyclerItem    = menuCounter
-
-RecyclingStation:
-                ldy itemIndex
-                sty RS_RestoreItem+1
-                ldy #RECYCLER_ITEM_FIRST
-                ldx #$00
-RS_FindItems:   cpy #ITEM_FIRST_CONSUMABLE
-                bcs RS_ItemOK
-                jsr FindItem                    ;For weapons, check that is currently held in inventory
-                bcc RS_NextItem                 ;(recycler only "sells" ammo, not weapons)
-RS_ItemOK:      lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
-                beq RS_NextItem
-                tya
-                sta recyclerItemList,x
-                inx                             ;If using "all items" cheat, the list could be exceeded
-                cpx #MAX_RECYCLER_ITEMS         ;Simply cut it in this case
-                bcs RS_ListDone
-RS_NextItem:    iny
-                cpy #RECYCLER_ITEM_LAST+1
-                bcc RS_FindItems
-RS_ListDone:    lda #$ff
-                sta recyclerItemList,x          ;Write endmark
-                jsr BlankScreen
-                lda #$02
-                sta screen                      ;Set text screen mode
-                lda #$0f
-                sta scrollX
-                ldx #$00
-                stx SL_CSSScrollY+1
-                stx Irq1_Bg1+1
-RS_ClearScreenLoop:lda #$20
-                sta screen1,x
-                sta screen1+$100,x
-                sta screen1+$200,x
-                sta screen1+SCROLLROWS*40-$100,x
-                inx
-                bne RS_ClearScreenLoop
-                lda #9
-                sta temp1
-                lda #4
-                sta temp2
-                lda #<txtRecycler
-                ldx #>txtRecycler
-                jsr PrintText
-                lda #0
-                sta temp3
-                ;lda #9
-                ;sta temp1
-                lda #6
-                sta temp2
-RS_PrintItemsLoop:
-                ldx temp3
-                lda recyclerItemList,x
-                bmi RS_PrintExit
-                jsr GetItemName
-                jsr PrintText
-                inc temp2
-                inc temp3
-                bne RS_PrintItemsLoop
-RS_PrintExit:   lda #<txtExit
-                ldx #>txtExit
-                jsr PrintText
-RS_ControlLoop: jsr FinishFrame
-                jsr GetControls
-                jsr GetFireClick
-                bcs RS_Exit
-                lda keyPress
-                bmi RS_ControlLoop
-
-RS_Exit:
-RS_RestoreItem: ldy #$00
-                sty itemIndex
-                jsr SetPanelRedrawItemAmmo
-                ldy lvlObjNum                   ;Allow immediate re-entry
-                jsr InactivateObject
-                jmp CenterPlayer
-
-        ; Print null-terminated text, with textjump support for item names
-
-PrintText:      sta zpSrcLo
-                stx zpSrcHi
-                ldy temp2
-                lda #40
-                ldx #zpDestLo
-                jsr MulU
-                lda temp1
-                jsr Add8
-                lda zpDestLo
-                sta zpBitsLo
-                lda zpDestHi
-                pha
-                ora #>screen1
-                sta zpDestHi
-                pla
-                ora #>colors
-                sta zpBitsHi
-                ldy #$00
-PT_Loop:        lda (zpSrcLo),y
-                bmi PT_Jump
-                beq PT_Done
-                sta (zpDestLo),y
-                lda #$01
-                sta (zpBitsLo),y
-                iny
-                bne PT_Loop
-PT_Done:        rts
-PT_Jump:        sty PT_Sub+1
-                pha
-                iny
-                lda (zpSrcLo),y
-                dey
-                sec
-PT_Sub:         sbc #$00
-                sta zpSrcLo
-                pla
-                and #$7f
-                sbc #$00
-                sta zpSrcHi
-                bpl PT_Loop
-
         ; Enter elevator script
         ;
         ; Parameters: -
@@ -1085,6 +956,97 @@ ECL_Finish:     jsr StopScript
                 ldx #MENU_NONE
                 jmp SetMenuMode
 
+        ; Generate 2 explosions at 8 pixel radius horizontally and 15 pixel radius
+        ; vertically
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy2_Ofs15:
+                lda #-15*8
+                jsr MoveActorYNoInterpolation
+                lda #2
+                sta actTime,x
+                lda #$3f
+                ldy #$7f
+                jmp ExplodeEnemyMultiple_CustomRadius
+
+        ; Generate 4 explosions at 32 pixel radius and spawn 3 pieces of scrap metal
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy4_Ofs15:
+                lda #-15*8
+                jsr MoveActorYNoInterpolation
+                lda #4
+                ldy #$ff
+                jsr ExplodeEnemyMultiple
+                lda #-2*8-8
+                sta temp7                       ;Initial base X-speed
+                jsr Random
+                sta temp8                       ;Initial shape
+EE_ScrapMetalLoop:
+                lda #ACTI_FIRSTNPC              ;Use any free actors
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc EE_ScrapMetalDone
+                lda #ACT_SCRAPMETAL
+                jsr SpawnActor
+                jsr Random
+                and #$0f                        ;Randomize upward + sideways speed
+                clc
+                adc #-7*8
+                sta actSY,y
+                jsr Random
+                and #$0f
+                clc
+                adc temp7
+                sta actSX,y
+                inc temp8
+                lda temp8
+                and #$03
+                sta actF1,y
+                lda #SCRAP_DURATION
+                sta actTime,y
+                lda temp7
+                bpl EE_ScrapMetalDone
+                clc
+                adc #2*8
+                sta temp7
+                bne EE_ScrapMetalLoop
+EE_ScrapMetalDone:
+                rts
+
+        ; Generate 4 explosions at 15 pixel radius horizontally, rising
+        ; vertically
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp vars
+
+ExplodeEnemy4_Rising:
+                lda #-8*8
+                jsr MoveActorYNoInterpolation
+                lda #4
+                ldy #$7f
+                jsr ExplodeEnemyMultiple
+                lda #ACT_EXPLOSIONGENERATORRISING
+                jmp TransformActor
+
+        ; Rising explosion generator
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveExplosionGeneratorRising:
+                lda #-4*8
+                jsr MoveActorY
+                jmp MoveExplosionGenerator
+
         ; Tank Y-size addition table (based on turret direction)
 
 tankSizeAddTbl: dc.b 2,0,6,8
@@ -1116,49 +1078,6 @@ ceilingTurretOfs:
                 dc.b JOY_LEFT|JOY_FIRE,4
                 dc.b 0
 
-        ; Recycler tables
-
-recyclerCountTbl:
-                dc.b 10                         ;Pistol
-                dc.b 8                          ;Shotgun
-                dc.b 15                         ;Auto rifle
-                dc.b 5                          ;Sniper rifle
-                dc.b 25                         ;Minigun
-                dc.b 30                         ;Flamethrower
-                dc.b 15                         ;Laser rifle
-                dc.b 10                         ;Plasma gun
-                dc.b 2                          ;EMP generator
-                dc.b 1                          ;Grenade launcher
-                dc.b 1                          ;Bazooka
-                dc.b 0                          ;Extinguisher
-                dc.b 1                          ;Grenade
-                dc.b 1                          ;Mine
-                dc.b 1                          ;Medikit
-                dc.b 1                          ;Battery
-                dc.b 100                        ;Armor
-
-recyclerCostTbl:
-                dc.b 10                         ;Pistol
-                dc.b 15                         ;Shotgun
-                dc.b 20                         ;Auto rifle
-                dc.b 25                         ;Sniper rifle
-                dc.b 30                         ;Minigun
-                dc.b 30                         ;Flamethrower
-                dc.b 35                         ;Laser rifle
-                dc.b 40                         ;Plasma gun
-                dc.b 35                         ;EMP generator
-                dc.b 40                         ;Grenade launcher
-                dc.b 50                         ;Bazooka
-                dc.b 0                          ;Extinguisher
-                dc.b 35                         ;Grenade
-                dc.b 45                         ;Mine
-                dc.b 50                         ;Medikit
-                dc.b 50                         ;Battery
-                dc.b 75                         ;Armor
-
-recyclerItemList:
-                ds.b MAX_RECYCLER_ITEMS+1,0
-
         ; Elevator tables
         
 elevatorSrcLevel:
@@ -1187,7 +1106,5 @@ txtBatteryRecharger:
 txtElevatorLocked:
                 dc.b "ELEVATOR OFFLINE",0
 txtEnterCode:   dc.b "ENTER CODE",0
-txtRecycler:    dc.b "PART RECYCLING STATION",0
-txtExit:        dc.b "EXIT",0
 
                 checkscriptend

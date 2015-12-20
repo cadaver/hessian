@@ -1,13 +1,17 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 3, Construct + other boss fights
+        ; Script 3, Construct + other boss fights, recycling station
 
 EYE_MOVE_TIME = 10
 EYE_FIRE_TIME = 8
 DROID_SPAWN_DELAY = 4*25
 
 CHUNK_DURATION = 40
+
+RECYCLER_ITEM_FIRST = ITEM_PISTOL
+RECYCLER_ITEM_LAST = ITEM_ARMOR
+MAX_RECYCLER_ITEMS = 10
 
                 org scriptCodeStart
 
@@ -21,6 +25,7 @@ CHUNK_DURATION = 40
                 dc.w MoveLargeSpider
                 dc.w OpenWall
                 dc.w MoveAcid
+                dc.w RecyclingStation
 
         ; Eye (Construct) boss phase 1
         ;
@@ -629,6 +634,188 @@ MA_StartPlayerSplash:
                 sta actF1,x
                 bne MA_SplashCommon
 
+        ; Recycling station script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+recyclerSelection = menuCounter
+recyclerItem    = wpnLo
+originalItem    = wpnHi
+
+RecyclingStation:
+                ldy itemIndex
+                sty originalItem
+                ldy #RECYCLER_ITEM_FIRST
+                ldx #$00
+RS_FindItems:   cpy #ITEM_FIRST_CONSUMABLE
+                bcs RS_ItemOK
+                jsr FindItem                    ;For weapons, check that is currently held in inventory
+                bcc RS_NextItem                 ;(recycler only "sells" ammo, not weapons)
+RS_ItemOK:      lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                beq RS_NextItem
+                tya
+                sta recyclerItemList,x
+                inx                             ;If using "all items" cheat, the list could be exceeded
+                cpx #MAX_RECYCLER_ITEMS         ;Simply cut it in this case
+                bcs RS_ListDone
+RS_NextItem:    iny
+                cpy #RECYCLER_ITEM_LAST+1
+                bcc RS_FindItems
+RS_ListDone:    lda #$ff
+                sta recyclerItemList,x          ;Write endmark
+                jsr BlankScreen
+                lda #$02
+                sta screen                      ;Set text screen mode
+                lda #$0f
+                sta scrollX
+                ldx #$00
+                stx recyclerSelection
+                stx SL_CSSScrollY+1
+                stx Irq1_Bg1+1
+RS_ClearScreenLoop:lda #$20
+                sta screen1,x
+                sta screen1+$100,x
+                sta screen1+$200,x
+                sta screen1+SCROLLROWS*40-$100,x
+                inx
+                bne RS_ClearScreenLoop
+                lda #9
+                sta temp1
+                lda #3
+                sta temp2
+                lda #<txtRecycler
+                ldx #>txtRecycler
+                jsr PrintText
+                lda #0
+                sta temp3
+                lda #5
+                sta temp2
+RS_PrintItemsLoop:
+                ldx temp3
+                lda recyclerItemList,x
+                bmi RS_PrintExit
+                jsr GetItemName
+                jsr PrintText
+                inc temp2
+                inc temp3
+                bne RS_PrintItemsLoop
+RS_PrintExit:   lda #<txtExit
+                ldx #>txtExit
+                jsr PrintText
+                lda #17
+                sta temp2
+                lda #<txtParts
+                ldx #>txtParts
+                jsr PrintText
+                lda #23
+                sta temp1
+                lda #<txtCost
+                ldx #>txtCost
+                jsr PrintText
+RS_Redraw:      lda #15
+                sta temp1
+                lda #17
+                sta temp2
+                lda invCount+ITEM_PARTS-1
+                cmp #NO_ITEM_COUNT
+                adc #$00
+                jsr Print3Digits
+                lda #28
+                sta temp1
+                lda #$00
+                ldx recyclerSelection
+                ldy recyclerItemList,x
+                sty recyclerItem
+                bmi RS_ZeroCost
+                sty itemIndex
+                jsr SetPanelRedrawItemAmmo
+                lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
+RS_ZeroCost:    jsr Print3Digits
+
+RS_ControlLoop:
+                jsr FinishFrame
+                jsr GetControls
+                jsr GetFireClick
+                bcs RS_Exit
+                lda keyPress
+                bmi RS_ControlLoop
+
+RS_Exit:        ldy originalItem
+                sty itemIndex
+                jsr SetPanelRedrawItemAmmo
+                ldy lvlObjNum                   ;Allow immediate re-entry
+                jsr InactivateObject
+                jmp CenterPlayer
+
+        ; Print 8-bit number in A
+
+Print3Digits:   jsr ConvertToBCD8
+                ldx #$00
+                lda temp7
+                jsr StoreDigit
+                lda temp6
+                pha
+                lsr
+                lsr
+                lsr
+                lsr
+                jsr StoreDigit
+                pla
+                jsr StoreDigit
+                lda #<txtDigits
+                ldx #>txtDigits
+
+        ; Print null-terminated text, with textjump support for item names
+
+PrintText:      sta zpSrcLo
+                stx zpSrcHi
+                ldy temp2
+                lda #40
+                ldx #zpDestLo
+                jsr MulU
+                lda temp1
+                jsr Add8
+                lda zpDestLo
+                sta zpBitsLo
+                lda zpDestHi
+                pha
+                ora #>screen1
+                sta zpDestHi
+                pla
+                ora #>colors
+                sta zpBitsHi
+                ldy #$00
+PT_Loop:        lda (zpSrcLo),y
+                bmi PT_Jump
+                beq PT_Done
+                sta (zpDestLo),y
+                lda #$01
+                sta (zpBitsLo),y
+                iny
+                bne PT_Loop
+PT_Done:        rts
+PT_Jump:        sty PT_Sub+1
+                pha
+                iny
+                lda (zpSrcLo),y
+                dey
+                sec
+PT_Sub:         sbc #$00
+                sta zpSrcLo
+                pla
+                and #$7f
+                sbc #$00
+                sta zpSrcHi
+                bpl PT_Loop
+
+StoreDigit:     and #$0f
+                ora #$30
+                sta txtDigits,x
+                inx
+                rts
+
         ; Final server room droid spawn positions
 
 droidSpawnXH:   dc.b $3e,$43,$3e,$43
@@ -658,6 +845,54 @@ explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
 spiderMoveTbl:  dc.b JOY_LEFT,JOY_RIGHT,JOY_FIRE,JOY_FIRE
 spiderDelayAndTbl:
                 dc.b $1f,$1f,$07,$07
+
+        ; Recycler tables
+
+recyclerCountTbl:
+                dc.b 10                         ;Pistol
+                dc.b 8                          ;Shotgun
+                dc.b 15                         ;Auto rifle
+                dc.b 5                          ;Sniper rifle
+                dc.b 25                         ;Minigun
+                dc.b 30                         ;Flamethrower
+                dc.b 15                         ;Laser rifle
+                dc.b 10                         ;Plasma gun
+                dc.b 2                          ;EMP generator
+                dc.b 1                          ;Grenade launcher
+                dc.b 1                          ;Bazooka
+                dc.b 0                          ;Extinguisher
+                dc.b 1                          ;Grenade
+                dc.b 1                          ;Mine
+                dc.b 1                          ;Medikit
+                dc.b 1                          ;Battery
+                dc.b 100                        ;Armor
+
+recyclerCostTbl:
+                dc.b 10                         ;Pistol
+                dc.b 15                         ;Shotgun
+                dc.b 20                         ;Auto rifle
+                dc.b 25                         ;Sniper rifle
+                dc.b 30                         ;Minigun
+                dc.b 30                         ;Flamethrower
+                dc.b 35                         ;Laser rifle
+                dc.b 40                         ;Plasma gun
+                dc.b 35                         ;EMP generator
+                dc.b 40                         ;Grenade launcher
+                dc.b 50                         ;Bazooka
+                dc.b 0                          ;Extinguisher
+                dc.b 35                         ;Grenade
+                dc.b 45                         ;Mine
+                dc.b 50                         ;Medikit
+                dc.b 50                         ;Battery
+                dc.b 75                         ;Armor
+
+recyclerItemList:
+                ds.b MAX_RECYCLER_ITEMS+1,0
+
+txtRecycler:    dc.b "PART RECYCLING STATION",0
+txtExit:        dc.b "EXIT",0
+txtCost:        dc.b "COST",0
+txtDigits:      dc.b "000",0
 
                 checkscriptend
 
