@@ -1230,6 +1230,7 @@ RCP_ClearActorsLoop:
                 sta lvlActT+MAX_SAVEACT,x
                 dex
                 bpl RCP_ClearActorsLoop
+                stx ES_LoadedScriptFile+1       ;Reload current script to make sure variables get reset
                 sec                             ;Need to load leveldata actors again
                 jsr CreatePlayerActor
                 jsr FindPlayerZone
