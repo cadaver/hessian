@@ -649,6 +649,7 @@ RecyclingStation:
                 sty originalItem
                 ldy #RECYCLER_ITEM_FIRST
                 ldx #$00
+                stx reload                      ;Cancel any reloading so that ammo can be shown
 RS_FindItems:   cpy #ITEM_FIRST_CONSUMABLE
                 bcs RS_ItemOK
                 jsr FindItem                    ;For weapons, check that is currently held in inventory
@@ -679,6 +680,11 @@ RS_ClearScreenLoop:lda #$20
                 sta screen1+$100,x
                 sta screen1+$200,x
                 sta screen1+SCROLLROWS*40-$100,x
+                lda #$01
+                sta colors,x
+                sta colors+$100,x
+                sta colors+$200,x
+                sta colors+SCROLLROWS*40-$100,x
                 inx
                 bne RS_ClearScreenLoop
                 lda #9
@@ -777,22 +783,14 @@ PrintText:      sta zpSrcLo
                 jsr MulU
                 lda temp1
                 jsr Add8
-                lda zpDestLo
-                sta zpBitsLo
                 lda zpDestHi
-                pha
                 ora #>screen1
                 sta zpDestHi
-                pla
-                ora #>colors
-                sta zpBitsHi
                 ldy #$00
 PT_Loop:        lda (zpSrcLo),y
                 bmi PT_Jump
                 beq PT_Done
                 sta (zpDestLo),y
-                lda #$01
-                sta (zpBitsLo),y
                 iny
                 bne PT_Loop
 PT_Done:        rts
