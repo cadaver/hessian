@@ -10,8 +10,9 @@ DROID_SPAWN_DELAY = 4*25
 CHUNK_DURATION = 40
 
 RECYCLER_ITEM_FIRST = ITEM_PISTOL
-RECYCLER_ITEM_LAST = ITEM_ARMOR
-MAX_RECYCLER_ITEMS = 10
+RECYCLER_ITEM_LAST = ITEM_BATTERY
+MAX_RECYCLER_ITEMS = 9
+RECYCLER_MOVEDELAY = 8
 
                 org scriptCodeStart
 
@@ -641,15 +642,15 @@ MA_StartPlayerSplash:
         ; Modifies: various
 
 recyclerSelection = menuCounter
-recyclerItem    = wpnLo
+recyclerListLength = wpnLo
 originalItem    = wpnHi
+currentIndex    = wpnBits
 
 RecyclingStation:
                 ldy itemIndex
                 sty originalItem
                 ldy #RECYCLER_ITEM_FIRST
                 ldx #$00
-                stx reload                      ;Cancel any reloading so that ammo can be shown
 RS_FindItems:   cpy #ITEM_FIRST_CONSUMABLE
                 bcs RS_ItemOK
                 jsr FindItem                    ;For weapons, check that is currently held in inventory
@@ -666,6 +667,8 @@ RS_NextItem:    iny
                 bcc RS_FindItems
 RS_ListDone:    lda #$ff
                 sta recyclerItemList,x          ;Write endmark
+                sta menuMoveDelay               ;Disable controls until joystick centered
+                stx recyclerListLength
                 jsr BlankScreen
                 lda #$02
                 sta screen                      ;Set text screen mode
@@ -695,22 +698,47 @@ RS_ClearScreenLoop:lda #$20
                 ldx #>txtRecycler
                 jsr PrintText
                 lda #0
-                sta temp3
+                sta currentIndex
                 lda #5
                 sta temp2
 RS_PrintItemsLoop:
-                ldx temp3
+                lda #10
+                sta temp1
+                ldx currentIndex
                 lda recyclerItemList,x
                 bmi RS_PrintExit
                 jsr GetItemName
                 jsr PrintText
+                lda #26
+                sta temp1
+                ldx currentIndex
+                ldy recyclerItemList,x
+                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                jsr ConvertDigits
+                ldx #0
+RS_FindNonZero: lda txtDigits,x
+                cmp #$30
+                bne RS_FindNonZeroFound
+                lda #$20
+                sta txtDigits,x
+                sta txtDigits-1,x
+                inx
+                bne RS_FindNonZero
+RS_FindNonZeroFound:
+                lda #"+"
+                sta txtDigits-1,x
+                lda #<txtCount
+                ldx #>txtCount
+                jsr PrintText
                 inc temp2
-                inc temp3
+                inc currentIndex
                 bne RS_PrintItemsLoop
 RS_PrintExit:   lda #<txtExit
                 ldx #>txtExit
                 jsr PrintText
-                lda #17
+                lda #9
+                sta temp1
+                lda #16
                 sta temp2
                 lda #<txtParts
                 ldx #>txtParts
@@ -720,56 +748,87 @@ RS_PrintExit:   lda #<txtExit
                 lda #<txtCost
                 ldx #>txtCost
                 jsr PrintText
-RS_Redraw:      lda #15
+RS_Redraw:      lda #$20
+RS_ArrowLastPos:sta screen1
+                lda #8
                 sta temp1
-                lda #17
+                lda recyclerSelection
+                clc
+                adc #5
+                sta temp2
+                lda #<txtArrow
+                ldx #>txtArrow
+                jsr PrintText
+                lda zpDestLo
+                sta RS_ArrowLastPos+1
+                lda zpDestHi
+                sta RS_ArrowLastPos+2
+                lda #15
+                sta temp1
+                lda #16
                 sta temp2
                 lda invCount+ITEM_PARTS-1
                 cmp #NO_ITEM_COUNT
                 adc #$00
+                sta RS_NumParts+1
                 jsr Print3Digits
                 lda #28
                 sta temp1
                 lda #$00
+                sta reload                      ;Cancel any reloading so that ammo can be shown
                 ldx recyclerSelection
                 ldy recyclerItemList,x
-                sty recyclerItem
                 bmi RS_ZeroCost
                 sty itemIndex
                 jsr SetPanelRedrawItemAmmo
                 lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
 RS_ZeroCost:    jsr Print3Digits
-
-RS_ControlLoop:
-                jsr FinishFrame
+RS_ControlLoop: jsr FinishFrame
                 jsr GetControls
+                lda recyclerSelection
+                ldx recyclerListLength
+                jsr RS_Control
+                sta recyclerSelection
+                bcs RS_Redraw
                 jsr GetFireClick
-                bcs RS_Exit
+                bcs RS_Action
                 lda keyPress
                 bmi RS_ControlLoop
-
 RS_Exit:        ldy originalItem
                 sty itemIndex
                 jsr SetPanelRedrawItemAmmo
                 ldy lvlObjNum                   ;Allow immediate re-entry
                 jsr InactivateObject
                 jmp CenterPlayer
+RS_Action:      lda recyclerSelection
+                cmp recyclerListLength
+                bne RS_Buy
+                lda #SFX_SELECT
+                jsr PlaySfx
+                jmp RS_Exit
+RS_Buy:         ldy itemIndex
+RS_NumParts:    lda #$00
+                cmp recyclerCostTbl-RECYCLER_ITEM_FIRST,y
+                bcc RS_BuyFail
+                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                tax
+                tya
+                jsr AddItem
+                bcc RS_BuyFail
+                ldy itemIndex
+                lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
+                ldy #ITEM_PARTS
+                jsr DecreaseAmmo
+                lda #SFX_EMP
+                jsr PlaySfx
+                jmp RS_Redraw
+RS_BuyFail:     lda #SFX_DAMAGE
+                jsr PlaySfx
+                jmp RS_ControlLoop
 
         ; Print 8-bit number in A
 
-Print3Digits:   jsr ConvertToBCD8
-                ldx #$00
-                lda temp7
-                jsr StoreDigit
-                lda temp6
-                pha
-                lsr
-                lsr
-                lsr
-                lsr
-                jsr StoreDigit
-                pla
-                jsr StoreDigit
+Print3Digits:   jsr ConvertDigits
                 lda #<txtDigits
                 ldx #>txtDigits
 
@@ -808,11 +867,70 @@ PT_Sub:         sbc #$00
                 sta zpSrcHi
                 bpl PT_Loop
 
+        ; Convert 3 digits to a printable string
+
+ConvertDigits:  jsr ConvertToBCD8
+                ldx #$00
+                lda temp7
+                jsr StoreDigit
+                lda temp6
+                pha
+                lsr
+                lsr
+                lsr
+                lsr
+                jsr StoreDigit
+                pla
 StoreDigit:     and #$0f
                 ora #$30
                 sta txtDigits,x
                 inx
                 rts
+
+        ; Recycler menu control
+
+RS_Control:     tay
+                stx temp6
+                ldx menuMoveDelay
+                beq RSC_NoDelay
+                bpl RSC_Decrement
+RSC_InitialDelay:ldx joystick
+                bne RSC_ContinueDelay
+                stx menuMoveDelay
+RSC_ContinueDelay:
+                rts
+RSC_Decrement:  dec menuMoveDelay
+                rts
+RSC_NoDelay:    lda joystick
+                lsr
+                bcc RSC_NotUp
+                dey
+                bpl RSC_HasMove
+                ldy temp6
+RSC_HasMove:    lda #SFX_SELECT
+                jsr PlaySfx
+                ldx #RECYCLER_MOVEDELAY
+                lda joystick
+                cmp prevJoy
+                bne RSC_NormalDelay
+                dex
+                dex
+                dex
+RSC_NormalDelay:stx menuMoveDelay
+                sec
+                tya
+                rts
+RSC_NoMove:     clc
+                tya
+                rts
+RSC_NotUp:      lsr
+                bcc RSC_NoMove
+                iny
+                cpy temp6
+                bcc RSC_HasMove
+                beq RSC_HasMove
+                ldy #$00
+                beq RSC_HasMove
 
         ; Final server room droid spawn positions
 
@@ -839,7 +957,7 @@ eyeFrameTbl:    dc.b 2,1,0,1,2,3,4,3
 explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
 
         ; Large spider move table
-        
+
 spiderMoveTbl:  dc.b JOY_LEFT,JOY_RIGHT,JOY_FIRE,JOY_FIRE
 spiderDelayAndTbl:
                 dc.b $1f,$1f,$07,$07
@@ -863,7 +981,6 @@ recyclerCountTbl:
                 dc.b 1                          ;Mine
                 dc.b 1                          ;Medikit
                 dc.b 1                          ;Battery
-                dc.b 100                        ;Armor
 
 recyclerCostTbl:
                 dc.b 10                         ;Pistol
@@ -882,7 +999,6 @@ recyclerCostTbl:
                 dc.b 45                         ;Mine
                 dc.b 50                         ;Medikit
                 dc.b 50                         ;Battery
-                dc.b 75                         ;Armor
 
 recyclerItemList:
                 ds.b MAX_RECYCLER_ITEMS+1,0
@@ -890,7 +1006,9 @@ recyclerItemList:
 txtRecycler:    dc.b "PART RECYCLING STATION",0
 txtExit:        dc.b "EXIT",0
 txtCost:        dc.b "COST",0
+txtCount:       dc.b " "
 txtDigits:      dc.b "000",0
+txtArrow:       dc.b 62,0
 
                 checkscriptend
 

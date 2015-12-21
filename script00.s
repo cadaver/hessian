@@ -457,9 +457,9 @@ IP_InitInventory:
                 jsr AddItem
                 if STARTITEM_CHEAT>0
                 lda #ITEM_PISTOL
-                ldx #20
+                ldx #30
                 jsr AddItem
-                lda #ITEM_ARMOR
+                lda #ITEM_PARTS
                 ldx #100
                 jsr AddItem
                 endif
@@ -755,7 +755,7 @@ TPD_NotOver:    lda titlePageDelayHi
 TPD_Done:       rts
 
         ; Print page
-        
+
 PrintPage:      ldy #TEXTSTARTROW
                 sty temp2
                 jsr PrintTextCenter
@@ -788,7 +788,7 @@ FOT_Wait:       lda textFade
                 jmp FOT_Wait
 
         ; Clear text rows
-        
+
 ClearText:      lda #$20
                 ldx #39
 ClearTextLoop:
@@ -926,7 +926,7 @@ titlePageDelayHi:
 mainMenuChoice: dc.b 0
 optionsMenuChoice:
                 dc.b 0
-                
+
 optionsModified: dc.b 0
 
 difficultyTxtLo:dc.b <txtCasual, <txtEasy, <txtMedium, <txtHard
@@ -986,6 +986,7 @@ levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
                 dc.b 12+$80,levelThroneSuite-levelNames
                 dc.b 13+$80,levelServerVault-levelNames
                 dc.b 14+$80,levelUnderground-levelNames
+                dc.b 15+$80,levelOldTunnels-levelNames
 
 levelNames:
 levelWarehouses:dc.b "WAREHOUSE",0
@@ -1001,5 +1002,6 @@ levelNetherTunnel:dc.b "NETHER TUNNEL",0
 levelBioDome:   dc.b "BIO-DOME",0
 levelThroneSuite:dc.b "THRONE SUITE",0
 levelServerVault:dc.b "SERVER VAULT",0
+levelOldTunnels: dc.b "OLD TUNNELS",0
 
                 checkscriptend
