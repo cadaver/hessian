@@ -1057,7 +1057,6 @@ ULO_HasObject:  lda actF1+ACTI_PLAYER           ;Check if player is standing at 
                 lda temp3
                 jsr GetItemName
                 jmp ContinuePanelText
-VerifyCodeEntry:                                ;TODO: actually check the code
 OO_RequirementOK:
                 ldy lvlObjNum
                 lda lvlObjY,y                   ;If animating, play sound always

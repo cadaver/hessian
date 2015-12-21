@@ -951,7 +951,7 @@ ECL_Next:       jsr ECL_Sound
                 stx numberIndex
                 cpx #3
                 bcc ECL_Done
-                jsr VerifyCodeEntry             ;Opens the door if right code
+                jsr OO_RequirementOK            ;Open the door. TODO: actually verify code
 ECL_Finish:     jsr StopScript
                 ldx #MENU_NONE
                 jmp SetMenuMode

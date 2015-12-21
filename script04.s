@@ -824,9 +824,8 @@ IE_NoSound:     lda installColor
                 bcs IE_End
                 lsr
                 bcs IE_Restore
-                lda Irq1_Bg3+1
-                sta Irq1_Bg2+1
                 lda #$01
+                ;sta Irq1_Bg2+1
                 sta Irq1_Bg3+1
                 rts
 IE_Restore:     jmp SetZoneColors
