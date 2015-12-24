@@ -82,13 +82,13 @@ upgrade3:       dc.w nameFirearms
 upgrade4:       dc.w nameArmor
                 dc.w descArmor
                 dc.b %00111111
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,TL,HO,BR,bl,VE,bl,VE,bl,BL,HO,TR
+                dc.b PS,HO,SR,HO,SV,HO,SD,HO,SD,HO,SV,HO,AM
+                dc.b bl,bl,VE,TL,HO,HO,SL,AM,SR,HO,HO,TR,VE
+                dc.b bl,AM,SR,CR,HO,HO,SL,bl,SR,HO,HO,CR,SL
+                dc.b bl,bl,VE,BL,HO,HO,SL,AM,SR,HO,HO,BR,VE
+                dc.b PS,HO,SR,HO,SV,HO,SU,HO,SU,HO,SV,HO,AM
+                dc.b bl,bl,BL,HO,TR,bl,VE,bl,VE,bl,TL,HO,BR
 
 upgrade5:       dc.w nameHealing
                 dc.w descHealing
@@ -104,24 +104,24 @@ upgrade5:       dc.w nameHealing
 upgrade6:       dc.w nameDrain
                 dc.w descDrain
                 dc.b %00000010
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,TL,CR,TR,TL,CR,TR,TL,CR,TR,TL,CR,TR
+                dc.b bl,VE,AM,VE,VE,SV,VE,VE,SV,VE,VE,AM,VE
+                dc.b bl,VE,bl,VE,VE,bl,VE,VE,bl,VE,VE,bl,VE
+                dc.b PS,SR,bl,SL,SR,AM,SL,SR,AM,SL,SR,bl,SL
+                dc.b bl,VE,bl,VE,VE,bl,VE,VE,bl,VE,VE,bl,VE
+                dc.b bl,VE,AM,VE,VE,SV,VE,VE,SV,VE,VE,AM,VE
+                dc.b bl,BL,CR,BR,BL,CR,BR,BL,CR,BR,BL,CR,BR
 
 upgrade7:       dc.w nameRecharge
                 dc.w descRecharge
                 dc.b %00111100
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,VE,VE,VE,VE,VE,VE,VE,VE,VE,bl,bl
+                dc.b PS,SV,SD,SU,SD,SU,SD,SU,SD,SU,SD,SV,HO
+                dc.b bl,bl,SL,SD,SR,SD,SU,SL,SL,SD,SR,bl,bl
+                dc.b PS,SV,SR,SL,AM,SL,SR,SD,AM,SR,SL,SV,HO
+                dc.b bl,bl,SL,SR,SR,SR,SD,SR,SU,SL,SR,bl,bl
+                dc.b PS,SV,SU,SD,SU,SD,SU,SD,SU,SD,SU,SV,HO
+                dc.b bl,bl,VE,VE,VE,VE,VE,VE,VE,VE,VE,bl,bl
 
                      ;0123456789012345678901234567
 descMovement:   dc.b "ENHANCED MANEUVERABILITY,",0
