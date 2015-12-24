@@ -60,13 +60,13 @@ upgrade1:       dc.w nameMovement
 upgrade2:       dc.w nameStrength
                 dc.w descStrength
                 dc.b %00001100
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,bl,VE,bl,bl,bl,VE,bl,bl,bl,bl
+                dc.b bl,bl,TL,HO,SD,HO,SR,HO,SD,HO,TR,bl,bl
+                dc.b bl,bl,VE,bl,VE,bl,VE,bl,VE,bl,VE,bl,bl
+                dc.b PS,HO,SR,HO,SV,HO,AM,HO,SV,HO,SL,HO,HO
+                dc.b bl,bl,VE,bl,VE,bl,VE,bl,VE,bl,VE,bl,bl
+                dc.b bl,bl,BL,HO,SU,HO,SL,HO,SU,HO,BR,bl,bl
+                dc.b bl,bl,bl,bl,VE,bl,bl,bl,VE,bl,bl,bl,bl
 
 upgrade3:       dc.w nameFirearms
                 dc.w descFirearms
