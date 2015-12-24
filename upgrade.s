@@ -49,13 +49,13 @@ SU              = $0e
 upgrade1:       dc.w nameMovement
                 dc.w descMovement
                 dc.b %00110000
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
-                dc.b bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl,bl
+                dc.b bl,bl,bl,VE,bl,bl,bl,bl,bl,VE,bl,bl,bl
+                dc.b bl,bl,TL,SU,HO,TR,bl,TL,HO,SU,TR,bl,bl
+                dc.b PS,SV,BR,VE,bl,SL,bl,VE,bl,AM,SU,HO,HO
+                dc.b bl,bl,bl,AM,HO,SL,AM,SR,HO,HO,SL,bl,bl
+                dc.b PS,SV,TR,VE,bl,SL,bl,VE,bl,AM,SD,HO,HO
+                dc.b bl,bl,BL,SD,HO,BR,bl,BL,HO,SD,BR,bl,bl
+                dc.b bl,bl,bl,VE,bl,bl,bl,bl,bl,VE,bl,bl,bl
 
 upgrade2:       dc.w nameStrength
                 dc.w descStrength
