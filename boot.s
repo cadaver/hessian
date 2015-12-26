@@ -50,12 +50,12 @@ ClearScreen:    sta $2000,x
                 jsr Open
                 ldx #$02                        ;Open file $02 for input
                 jsr ChkIn
-                ldy #31
+                ldy #36
 ShowMessage:    lda #$0f
-                sta colors+12*40+3,y
+                sta colors+12*40+1,y
                 lda message-1,y
                 and #$3f
-                sta $2000+12*40+3,y
+                sta $2000+12*40+1,y
                 dey
                 bne ShowMessage
                 sty $d020
@@ -73,7 +73,7 @@ LoadExomizer:   jsr ChrIn                       ;Load Exomizer as unpacked data
                 jmp loaderCodeEnd               ;Jump to InitLoader
 
 loaderFileName: dc.b "00"
-message:        dc.b "HOLD SPACE/FIRE FOR NO FASTLOAD"
+message:        dc.b "HOLD SPACE/FIRE FOR SAFE MODE LOADER"
 
                 rend
 BootEnd:

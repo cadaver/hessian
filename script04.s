@@ -898,7 +898,7 @@ txtVictory:     dc.b "CONFIGURATION SUCCESSFUL",0
 
 txtNotConfigured:
                 dc.b "ERROR: NOT CONFIGURED",0
-txtInstallDone: dc.b "INSTALL SUCCESSFUL",0
+txtInstallDone: dc.b "INSTALL COMPLETE",0
 
 txtAlreadyConfigured:
                 dc.b "READY TO INSTALL",0

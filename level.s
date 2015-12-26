@@ -1050,6 +1050,8 @@ ULO_HasObject:  lda actF1+ACTI_PLAYER           ;Check if player is standing at 
                 tay
                 jsr FindItem
                 bcs OO_RequirementOK
+                lda #SFX_OBJECT
+                jsr PlaySfx
                 lda #<txtRequired
                 ldx #>txtRequired
                 ldy #REQUIREMENT_TEXT_DURATION

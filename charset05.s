@@ -73,4 +73,4 @@ eorValue2Tbl:   dc.b %10010101,%01010101,%01010110
                 org charsetLoadProperties
                 dc.b 0                          ;Water splash color override
                 dc.b 0                          ;Water toxicity delay counter ($80=not affected by filter)
-                dc.b 0                          ;Air toxicity delay counter
+                dc.b 20                         ;Air toxicity delay counter
