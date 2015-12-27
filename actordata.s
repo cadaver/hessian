@@ -1295,7 +1295,7 @@ alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
                 dc.b 8                          ;Horizontal size
                 dc.b 36                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w ExplodeEnemy3_Ofs15        ;Destroy routine
+                dc.w ExplodeEnemy3_Ofs24        ;Destroy routine
                 dc.b HP_COMBATROBOT             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
@@ -1321,7 +1321,7 @@ alCombatRobotFast:
                 dc.b 8                          ;Horizontal size
                 dc.b 36                         ;Size up
                 dc.b 0                          ;Size down
-                dc.w ExplodeEnemy3_Ofs15        ;Destroy routine
+                dc.w ExplodeEnemy3_Ofs24        ;Destroy routine
                 dc.b HP_COMBATROBOT             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 115                        ;Score from kill

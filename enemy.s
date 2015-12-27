@@ -184,8 +184,9 @@ ExplodeEnemyMultiple_CustomRadius:
         ; Returns: -
         ; Modifies: A,Y,temp vars
 
-ExplodeEnemy3_Ofs15:
-                lda #-15*8
+ExplodeEnemy3_Ofs24:
+                dec actYH,x
+                lda #8*8
                 jsr MoveActorYNoInterpolation
                 lda #3
                 sta actTime,x
