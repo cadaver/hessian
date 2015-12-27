@@ -31,14 +31,36 @@ flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP
 
         ; Spawn list entry selection tables
 
-spawnListAndTbl:dc.b $00                        ;0: entry 0
+spawnListAndTbl:dc.b $01                        ;0: entries 0-1 (first courtyard)
+                dc.b $03                        ;1: entries 1-4 (entrance)
+                dc.b $01                        ;2: entires 5-6 (tunnel beneath courtyard)
 
-spawnListAddTbl:dc.b $00                        ;0: entry 0
+spawnListAddTbl:dc.b $00                        ;0: entries 0-1 (first courtyard)
+                dc.b $01                        ;1: entries 1-4 (entrance)
+                dc.b $05                        ;2: entries 5-6 (tunnel beneath courtyard)
 
         ; Spawn list entries
 
 spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
+                dc.b ACT_SMALLDROID             ;1
+                dc.b ACT_COMBATROBOT            ;2
+                dc.b ACT_COMBATROBOT            ;3
+                dc.b ACT_COMBATROBOT            ;4
+                dc.b ACT_SMALLTANK              ;6
+                dc.b ACT_SMALLDROID             ;5
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
+                dc.b NOPLOTBIT                  ;1
+                dc.b NOPLOTBIT                  ;2
+                dc.b NOPLOTBIT                  ;3
+                dc.b NOPLOTBIT                  ;4
+                dc.b NOPLOTBIT                  ;5
+                dc.b NOPLOTBIT                  ;6
 
 spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
+                dc.b ITEM_PISTOL|SPAWN_AIR      ;1
+                dc.b ITEM_NIGHTSTICK            ;2
+                dc.b ITEM_PISTOL                ;3
+                dc.b ITEM_SHOTGUN               ;4
+                dc.b ITEM_AUTORIFLE             ;5
+                dc.b ITEM_MINIGUN               ;6

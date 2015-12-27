@@ -134,9 +134,11 @@ AH_HasFullMagReserve:
                 lda actAttackD+ACTI_PLAYER
                 bne AH_NoAttack2                ;While ongoing, keep weapon in down position
                 bcs AH_ReloadComplete           ;Reload finished?
+                lda menuMode                    ;Interrupt shotgun reload by pressing fire
+                bne AH_ReloadNextShot           ;while not in inventory
                 lda actCtrl+ACTI_PLAYER
                 cmp #JOY_FIRE
-                bcc AH_ReloadNextShot           ;Interrupt shotgun reload by pressing fire
+                bcc AH_ReloadNextShot
 AH_ReloadComplete:
                 lda #RELOAD_FINISH_DELAY
                 sta actAttackD+ACTI_PLAYER

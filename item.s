@@ -192,7 +192,7 @@ AI_AmmoNotExceeded:
 AI_NewItem:     cpy #ITEM_FIRST_CONSUMABLE      ;If picking up a weapon, check limit now
                 bcs AI_NoWeaponLimit
                 ldx #$00
-                ldy #ITEM_FIRST_NONWEAPON-1
+                ldy #ITEM_FIRST_CONSUMABLE-1
 AI_CheckWeapons:jsr FindItem
                 bcc AI_CheckWeaponsNext
                 inx

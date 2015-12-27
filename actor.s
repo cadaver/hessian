@@ -418,16 +418,21 @@ AA_NoHealthBarFlash:
 
         ; Get screen border map coordinates for adding/removing actors
 
-GetActorBorders:lda mapX                        ;Calculate borders for add/removechecks
-                sbc #ADDACTOR_LEFT_LIMIT-1      ;C=0 here
+GetActorBorders:lda SL_CSSMapX+1                ;Calculate borders for add/removechecks
+                sec
+                sbc #ADDACTOR_LEFT_LIMIT
                 bcs GAB_LeftOK1
                 lda #$00
 GAB_LeftOK1:    cmp limitL
                 bcs GAB_LeftOK2
                 lda limitL
-GAB_LeftOK2:    sta UA_RALeftCheck+1            ;Left border
-                sta AA_LeftCheck+1
-                lda mapX
+GAB_LeftOK2:    sta AA_LeftCheck+1
+                sec
+                sbc #$00
+                bcs GAB_LeftOK3
+                lda #$00
+GAB_LeftOK3:    sta UA_RALeftCheck+1
+                lda SL_CSSMapX+1
                 clc
                 adc #ADDACTOR_RIGHT_LIMIT
                 bcc GAB_RightOK1
@@ -435,14 +440,16 @@ GAB_LeftOK2:    sta UA_RALeftCheck+1            ;Left border
 GAB_RightOK1:   cmp limitR
                 bcc GAB_RightOK2
                 lda limitR
-GAB_RightOK2:   sta UA_RARightCheck+1           ;Right border
-                sta AA_RightCheck+1
-                lda mapY
+GAB_RightOK2:   sta AA_RightCheck+1
+                clc
+                adc #$01
+                sta UA_RARightCheck+1
+                lda SL_CSSMapY+1
 GAB_TopOK1:     cmp limitU
                 bcs GAB_TopOK2
                 lda limitU
 GAB_TopOK2:     sta AA_TopCheck+1
-                lda mapY
+                lda SL_CSSMapY+1
                 clc
                 adc #ADDACTOR_BOTTOM_LIMIT
                 bpl GAB_BottomOK1
@@ -501,6 +508,7 @@ UA_SpawnCount:  cmp #$00
                 endif
 UA_NoSpawnLimit:dey
                 jsr Random
+                sta temp1
                 if SPAWN_TEST=0
                 and (zoneLo),y
                 else
@@ -511,15 +519,19 @@ UA_SpawnDelay:  adc #$00                        ;Spawn delay counting
                 bcc UA_SpawnNotOver
                 lda #$ff                        ;Clamp to maximum so that we will retry each frame
 UA_SpawnNotOver:sta UA_SpawnDelay+1             ;until spawn actually successful
-                bcc UA_SpawnDone
+                bcc UA_SpawnRandomize
                 dey
                 lda (zoneLo),y                  ;Take global spawnlist parameter
                 tay
-                jsr Random
+UA_SpawnParam:  lda #$00
                 and spawnListAndTbl,y
                 clc
                 adc spawnListAddTbl,y
                 jsr AttemptSpawn
+                jmp BuildTargetList
+UA_SpawnRandomize:
+                lda temp1                       ;Do not re-randomize when retrying, otherwise
+                sta UA_SpawnParam+1             ;flying enemies would be greatly favored over groundbased
 UA_SpawnDone:
 
         ; Build target list for AI & bullet collision
@@ -1723,11 +1735,11 @@ AS_SideNoReverse:
                 asl
                 bcc AS_GroundRight
 AS_GroundLeft:  lda AA_LeftCheck+1
-                ldx #$3f
+                ldx #$00
                 bne AS_GroundStorePosDir
 AS_GroundRight: lda AA_RightCheck+1
                 sbc #$00                         ;C=0 here
-                ldx #$c0
+                ldx #$ff
 AS_GroundStorePosDir:
                 cmp actXH+ACTI_PLAYER            ;Do not spawn exactly at player
                 beq AS_Remove2

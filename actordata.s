@@ -80,11 +80,11 @@ HP_ORGANICWALKER = 14
 HP_GUARD        = 14
 HP_LARGEDROID   = 16
 HP_SMALLWALKER  = 16
-HP_COMBATROBOT  = 18
+HP_COMBATROBOT  = 16
 HP_SPIDERWALKER = 20
 HP_HEAVYGUARD   = 20
-HP_SMALLTANK    = 24
 HP_CEILINGTURRET = 24
+HP_SMALLTANK    = 24
 HP_CPU          = 32
 HP_HIGHWALKER   = 36
 HP_LARGEWALKER  = 40
@@ -282,7 +282,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 11,12,13,14,22,15,16,17,18
                 dc.b 19,23,20,20,20,20,20,20,20,20,20,20,21
-                dc.b 24,25,26,27
+                dc.b 24,25,26,28,27
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -873,11 +873,11 @@ alSmallDroid:   dc.w MoveDroid                  ;Update routine
                 dc.w 25                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $05                        ;AI offense AND-value
+                dc.b $07                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
-                dc.b 4*8                        ;Horiz max movement speed
-                dc.b 3                          ;Horiz acceleration
+                dc.b 3*8                        ;Horiz max movement speed
+                dc.b 2                          ;Horiz acceleration
                 dc.b 2*8                        ;Vert max movement speed
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
@@ -936,7 +936,7 @@ alSmallWalker:  dc.w USESCRIPT|EP_MOVEWALKER    ;Update routine
                 dc.w 45                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $05                        ;AI offense AND-value
+                dc.b $07                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
                 dc.b AMF_JUMP                   ;Move flags
