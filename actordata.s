@@ -278,10 +278,11 @@ adPlayerTopSprFile:
 adItem:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_ITEM                     ;Spritefile number
                 dc.b 0                          ;Left frame add
-                dc.b 19                         ;Number of frames
+                dc.b 38                         ;Number of frames
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 11,12,13,14,22,15,16,17,18
-                dc.b 19,23,20,20,20,20,20,20,20,20,20,21
+                dc.b 19,23,20,20,20,20,20,20,20,20,20,20,21
+                dc.b 24,25,26,27
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number

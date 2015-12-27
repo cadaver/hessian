@@ -45,9 +45,9 @@ titleTexts      = chars+608+168*2
 ;START_X          = $0b80
 ;START_Y          = $0f00
 
-START_LEVEL      = $05                         ;First upgrade lab
-START_X          = $0d80
-START_Y          = $0600
+;START_LEVEL      = $05                         ;First upgrade lab
+;START_X          = $0d80
+;START_Y          = $0600
 
 ;START_LEVEL     = $06                          ;Upper labs
 ;START_X         = $0180
@@ -73,9 +73,9 @@ START_Y          = $0600
 ;START_X         = $0080
 ;START_Y         = $5600
 
-;START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
-;START_X         = $a580
-;START_Y         = $7400
+START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
+START_X         = $a580
+START_Y         = $7400
 
 ;START_LEVEL     = $0a                          ;Jormungandr
 ;START_X         = $ed80
@@ -100,6 +100,14 @@ START_Y          = $0600
 ;START_LEVEL     = $0c                          ;Security chief
 ;START_X         = $1980
 ;START_Y         = $1300
+
+;START_LEVEL     = $0f                          ;Old tunnels
+;START_X         = $0180
+;START_Y         = $4a00
+
+;START_LEVEL     = $0f                          ;Old tunnels lab
+;START_X         = $6f80
+;START_Y         = $4c00
 
                 org scriptCodeStart
 

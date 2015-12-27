@@ -162,16 +162,17 @@ SPI_Loop:       dey
         ;          zpBitsHi dropped ammo count
         ; Modifies: A,X,Y,loader temp vars
 
-AddItem:        sta zpSrcLo
+AddItem:        cmp #ITEM_LAST+1                ;Check items which only exist in world but
+                bcs AI_Fail                     ;cannot be held in inventory
+                sta zpSrcLo
                 stx zpSrcHi
                 ldx #$00
                 stx zpBitsLo                    ;Assume: don't have to drop an existing weapon
                 tay
                 jsr FindItem
                 bcc AI_NewItem
-AI_HasItem:     cpy #ITEM_FIRST_IMPORTANT       ;Quest items don't need checking, always x1
-                lda #1
-                bcs AI_AmmoNotExceeded
+AI_HasItem:     cpy #ITEM_FIRST_IMPORTANT       ;Quest items don't need checking
+                bcs AI_HasRoomForAmmo
                 lda invCount-1,y                ;Check for maximum ammo
                 cmp itemMaxCount-1,y
                 bcc AI_HasRoomForAmmo

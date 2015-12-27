@@ -33,6 +33,10 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtServerVaultPass
                 dc.b <txtOldTunnelsPass
                 dc.b <txtBiometricId
+                dc.b <txtAmplifier
+                dc.b <txtFuelCan
+                dc.b <txtTruckBattery
+                dc.b <txtHazmatSuit
 
 itemNameHi:     dc.b >txtFists
                 dc.b >txtKnife
@@ -67,6 +71,10 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtServerVaultPass
                 dc.b >txtOldTunnelsPass
                 dc.b >txtBiometricId
+                dc.b >txtAmplifier
+                dc.b >txtFuelCan
+                dc.b >txtTruckBattery
+                dc.b >txtHazmatSuit
 
 txtFists:       dc.b "FISTS",0
 txtKnife:       dc.b "COMBAT KNIFE",0
@@ -81,20 +89,23 @@ txtSniperRifle: dc.b "SNIPER"
                 textjump txtRifle
 txtMinigun:     dc.b "MINI"
                 textjump txtGun
-txtFlameThrower:dc.b "FLAMETHROWER",0
+txtFlameThrower:dc.b "FLAMETHROW"
+                textjump txtEr
 txtLaserRifle:  dc.b "LASER"
                 textjump txtRifle
 txtPlasmaGun:   dc.b "PLASMA "
                 textjump txtGun
 txtEMPGenerator:dc.b "EMP GENERATOR",0
 txtGrenadeLauncher:dc.b "GRENADE LAUNC"
-txtHer:         dc.b "HER",0
+txtHer:         dc.b "H"
+txtEr:          dc.b "ER",0
 txtBazooka:     dc.b "BAZOOKA",0
 txtExtinguisher:dc.b "FIRE EXTINGUIS"
                 textjump txtHer
 txtGrenade:     dc.b "GRENADES",0
 txtMine:        dc.b "SMART MINE",0
-txtMedKit:      dc.b "MEDKIT",0
+txtMedKit:      dc.b "MEDK"
+txtIt:          dc.b "IT",0
 txtBattery:     dc.b "BATTERY",0
 txtArmor:       dc.b "ARMOR",0
 txtParts:       dc.b "PARTS",0
@@ -119,6 +130,13 @@ txtServerVaultPass:dc.b "SERVER VAULT"
 txtOldTunnelsPass:dc.b "OLD TUNNELS"
                 textjump txtPass
 txtBiometricId: dc.b "BIOMETRIC ID",0
+txtAmplifier:   dc.b "SIGNAL AMPLIFI"
+                textjump txtEr
+txtFuelCan:     dc.b "FUEL CAN",0
+txtTruckBattery:dc.b "TRUCK "
+                textjump txtBattery
+txtHazmatSuit:  dc.b "HAZMAT SU"
+                textjump txtIt
 
         ; Game messages
 
