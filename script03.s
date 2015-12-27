@@ -10,7 +10,7 @@ DROID_SPAWN_DELAY = 4*25
 CHUNK_DURATION = 40
 
 RECYCLER_ITEM_FIRST = ITEM_PISTOL
-RECYCLER_ITEM_LAST = ITEM_BATTERY
+RECYCLER_ITEM_LAST = ITEM_ARMOR
 MAX_RECYCLER_ITEMS = 9
 RECYCLER_MOVEDELAY = 8
 
@@ -967,7 +967,7 @@ spiderDelayAndTbl:
 recyclerCountTbl:
                 dc.b 10                         ;Pistol
                 dc.b 8                          ;Shotgun
-                dc.b 15                         ;Auto rifle
+                dc.b 30                         ;Auto rifle
                 dc.b 5                          ;Sniper rifle
                 dc.b 25                         ;Minigun
                 dc.b 30                         ;Flamethrower
@@ -981,24 +981,26 @@ recyclerCountTbl:
                 dc.b 1                          ;Mine
                 dc.b 1                          ;Medikit
                 dc.b 1                          ;Battery
+                dc.b 100                        ;Armor
 
 recyclerCostTbl:
                 dc.b 10                         ;Pistol
                 dc.b 15                         ;Shotgun
                 dc.b 20                         ;Auto rifle
                 dc.b 25                         ;Sniper rifle
-                dc.b 30                         ;Minigun
+                dc.b 25                         ;Minigun
                 dc.b 30                         ;Flamethrower
                 dc.b 35                         ;Laser rifle
                 dc.b 40                         ;Plasma gun
                 dc.b 35                         ;EMP generator
-                dc.b 40                         ;Grenade launcher
-                dc.b 50                         ;Bazooka
+                dc.b 35                         ;Grenade launcher
+                dc.b 40                         ;Bazooka
                 dc.b 0                          ;Extinguisher
-                dc.b 35                         ;Grenade
-                dc.b 45                         ;Mine
+                dc.b 30                         ;Grenade
+                dc.b 40                         ;Mine
                 dc.b 50                         ;Medikit
                 dc.b 50                         ;Battery
+                dc.b 50                         ;Armor
 
 recyclerItemList:
                 ds.b MAX_RECYCLER_ITEMS+1,0

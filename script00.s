@@ -465,10 +465,10 @@ IP_InitInventory:
                 jsr AddItem
                 if STARTITEM_CHEAT>0
                 lda #ITEM_PISTOL
-                ldx #30
+                ldx #20
                 jsr AddItem
                 lda #ITEM_PARTS
-                ldx #100
+                ldx #50
                 jsr AddItem
                 endif
                 jsr StopScript                  ;Stop any continuous script
@@ -500,23 +500,15 @@ IP_InitInventory:
                 sta oxygen
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
-                if ALLITEMS_CHEAT>0
-                ldy #ITEM_LAST
-                sty lastItemIndex
-IP_GiveAllItems:
-                lda #1
-                cpy #ITEM_FIRST_IMPORTANT
-                bcs IP_GiveAllNoCount
-                lda itemMaxCount-1,y
-IP_GiveAllNoCount:
-                sta invCount-1,y
-                jsr GetMagazineSize
-                bcc IP_GiveAllNoMag
-                lda #$00
-                sta invMag-ITEM_FIRST_MAG,y
-IP_GiveAllNoMag:
-                dey
-                bne IP_GiveAllItems
+                if ALLQUESTITEMS_CHEAT>0
+                lda #ITEM_WAREHOUSEPASS
+IP_GiveAllLoop: sta temp1
+                ldx #1
+                jsr AddItem
+                lda temp1
+                adc #$00
+                cmp #ITEM_HAZMATSUIT
+                bcc IP_GiveAllLoop
                 endif
                 jsr FindPlayerZone              ;Need to get starting level's charset so that save is named properly
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately

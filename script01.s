@@ -514,7 +514,7 @@ RD_SetFrameAndSpeed:
                 sta actF1,x
                 lda #-28
                 sta actSY,x
-                rts
+                jmp MH_ResetGrounded
 
         ; Spider death
         ;

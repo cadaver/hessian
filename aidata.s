@@ -33,11 +33,13 @@ flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP
 
 spawnListAndTbl:dc.b $01                        ;0: entries 0-1 (first courtyard)
                 dc.b $03                        ;1: entries 1-4 (entrance)
-                dc.b $01                        ;2: entires 5-6 (tunnel beneath courtyard)
+                dc.b $03                        ;2: entries 4-7 (service tunnels)
+                dc.b $03                        ;3: entries 5-8 (service tunnels lowest levels)
 
 spawnListAddTbl:dc.b $00                        ;0: entries 0-1 (first courtyard)
                 dc.b $01                        ;1: entries 1-4 (entrance)
-                dc.b $05                        ;2: entries 5-6 (tunnel beneath courtyard)
+                dc.b $04                        ;2: entries 4-7 (service tunnels)
+                dc.b $05                        ;3: entries 5-8 (service tunnels lowest levels)
 
         ; Spawn list entries
 
@@ -46,8 +48,10 @@ spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
                 dc.b ACT_COMBATROBOT            ;2
                 dc.b ACT_COMBATROBOT            ;3
                 dc.b ACT_COMBATROBOT            ;4
-                dc.b ACT_SMALLTANK              ;6
-                dc.b ACT_SMALLDROID             ;5
+                dc.b ACT_RAT                    ;5
+                dc.b ACT_SMALLDROID             ;6
+                dc.b ACT_RAT                    ;7
+                dc.b ACT_COMBATROBOT            ;8
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
                 dc.b NOPLOTBIT                  ;1
@@ -56,11 +60,16 @@ spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
                 dc.b NOPLOTBIT                  ;4
                 dc.b NOPLOTBIT                  ;5
                 dc.b NOPLOTBIT                  ;6
+                dc.b NOPLOTBIT                  ;7
+                dc.b NOPLOTBIT                  ;8
 
 spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_PISTOL|SPAWN_AIR      ;1
                 dc.b ITEM_NIGHTSTICK            ;2
                 dc.b ITEM_PISTOL                ;3
                 dc.b ITEM_SHOTGUN               ;4
-                dc.b ITEM_AUTORIFLE             ;5
-                dc.b ITEM_MINIGUN               ;6
+                dc.b ITEM_ANIMALBITE            ;5
+                dc.b ITEM_MINIGUN|SPAWN_AIR     ;6
+                dc.b ITEM_ANIMALBITE            ;7
+                dc.b ITEM_AUTORIFLE             ;8
+

@@ -282,7 +282,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 11,12,13,14,22,15,16,17,18
                 dc.b 19,23,20,20,20,20,20,20,20,20,20,20,21
-                dc.b 24,25,26,28,27
+                dc.b 24,25,26,29,28,27
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -1296,7 +1296,7 @@ alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
                 dc.b 36                         ;Size up
                 dc.b 0                          ;Size down
                 dc.w ExplodeEnemy3_Ofs15        ;Destroy routine
-                dc.b HP_HEAVYGUARD              ;Initial health
+                dc.b HP_COMBATROBOT             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
@@ -1322,7 +1322,7 @@ alCombatRobotFast:
                 dc.b 36                         ;Size up
                 dc.b 0                          ;Size down
                 dc.w ExplodeEnemy3_Ofs15        ;Destroy routine
-                dc.b HP_HEAVYGUARD              ;Initial health
+                dc.b HP_COMBATROBOT             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 115                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
