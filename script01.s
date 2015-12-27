@@ -55,6 +55,7 @@ TURRET_ANIMDELAY = 2
                 dc.w ExplodeEnemy4_Ofs15
                 dc.w ExplodeEnemy4_Rising
                 dc.w MoveExplosionGeneratorRising
+                dc.w DestroyFlyingCraft
 
         ; Flying craft update routine
         ;
@@ -85,6 +86,25 @@ MFC_Fall:       jsr FallingMotionCommon
                 tay
                 beq MFC_ContinueFall
                 jmp ExplodeEnemy2_8             ;Drop item & explode at any collision
+
+        ; Flying craft destroy routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+DestroyFlyingCraft:
+                stx DFC_RestX+1                 ;Spawn one explosion when starts to fall
+                lda #ACTI_FIRSTNPC              ;Use any free actors
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc DFC_NoRoom
+                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
+                tya
+                tax
+                jsr ExplodeActor                ;Play explosion sound & init animation
+DFC_RestX:      ldx #$00
+DFC_NoRoom:     rts
 
         ; Walking robot update routine
         ;

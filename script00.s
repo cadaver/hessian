@@ -21,17 +21,17 @@ logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
-START_LEVEL     = $00                          ;Warehouse
-START_X         = $6780
-START_Y         = $1700
+;START_LEVEL     = $00                          ;Warehouse
+;START_X         = $6780
+;START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard
 ;START_X         = $0280
 ;START_Y         = $1700
 
-;START_LEVEL     = $03                          ;Entrance, next to car park
-;START_X         = $2980
-;START_Y         = $1b00
+START_LEVEL     = $03                          ;Entrance, next to car park
+START_X         = $2980
+START_Y         = $1b00
 
 ;START_LEVEL     = $04                          ;Service tunnels
 ;START_X         = $5180

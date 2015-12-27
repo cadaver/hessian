@@ -80,7 +80,7 @@ HP_ORGANICWALKER = 14
 HP_GUARD        = 14
 HP_LARGEDROID   = 16
 HP_SMALLWALKER  = 16
-HP_COMBATROBOT  = 16
+HP_COMBATROBOT  = 18
 HP_SPIDERWALKER = 20
 HP_HEAVYGUARD   = 20
 HP_CEILINGTURRET = 24
@@ -468,7 +468,7 @@ adSteam:        dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_HAZARDS                  ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 3                          ;Number of frames
-                dc.b´8,9,10
+                dc.b 8,9,10,17
 
 adOrganicWalker:dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_ANIMALS                  ;Spritefile number
@@ -909,7 +909,7 @@ alFlyingCraft:  dc.w USESCRIPT|EP_MOVEFLYINGCRAFT ;Update routine
                 dc.b 11                         ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 7                          ;Size down
-                dc.w DoNothing                  ;Destroy routine (destroy handled by move routine)
+                dc.w USESCRIPT|EP_DESTROYFLYINGCRAFT ;Destroy routine (destroy handled by move routine)
                 dc.b HP_FLYINGCRAFT             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 65                         ;Score from kill
