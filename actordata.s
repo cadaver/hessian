@@ -1358,7 +1358,7 @@ alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
                 dc.w 175                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $3f                        ;AI offense AND-value
+                dc.b $1f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
                 dc.b AMF_CUSTOMANIMATION        ;Move flags

@@ -1558,13 +1558,14 @@ DA_UseModify:   txa
                 lda invCount-1,y                ;Check player armor
                 bmi DA_NoPlayerArmor
                 pha
-                lda #5                          ;Round the armor strength reduction to next 5
+                lda #8                          ;Round the armor strength reduction to next 5
 DA_NextMultiplyOf5:
                 cmp temp7
                 bcs DA_ReduceOK
                 adc #5
                 bcc DA_NextMultiplyOf5
-DA_ReduceOK:    jsr DecreaseAmmo
+DA_ReduceOK:    sbc #3
+                jsr DecreaseAmmo
                 lda #INVENTORY_TEXT_DURATION    ;Show decreased armor level in the status
                 sta armorMsgTime                ;panel center (same as oxygen meter)
                 pla
@@ -1713,11 +1714,11 @@ AS_Ground:      lda #CI_GROUND
 AS_SideCommon:  jsr Random
                 tax
                 and #$07
+                beq AS_SideCommon               ;Retry until is within screen
                 cmp #$06
-                bcc AS_SideYOK
-                sbc #$03
+                bcs AS_SideCommon
                 clc
-AS_SideYOK:     adc mapY
+                adc mapY
                 sta actYH,y
                 txa
                 cmp #SPAWNINFRONT_PROBABILITY   ;Prefer to spawn in front of player

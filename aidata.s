@@ -35,11 +35,13 @@ spawnListAndTbl:dc.b $01                        ;0: entries 0-1 (first courtyard
                 dc.b $03                        ;1: entries 1-4 (entrance)
                 dc.b $03                        ;2: entries 4-7 (service tunnels)
                 dc.b $03                        ;3: entries 7-10 (upper lab)
+                dc.b $01                        ;4: entries 10-11 (second courtyard)
 
 spawnListAddTbl:dc.b $00                        ;0: entries 0-1 (first courtyard)
                 dc.b $01                        ;1: entries 1-4 (entrance)
                 dc.b $04                        ;2: entries 4-7 (service tunnels)
                 dc.b $07                        ;3: entries 7-10 (upper lab)
+                dc.b $0a                        ;4: entries 10-11 (second courtyard)
 
         ; Spawn list entries
 
@@ -51,9 +53,10 @@ spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
                 dc.b ACT_RAT                    ;5
                 dc.b ACT_SMALLDROID             ;6
                 dc.b ACT_COMBATROBOT            ;7
-                dc.b ACT_FLYINGCRAFT            ;8
-                dc.b ACT_SMALLTANK              ;9
-                dc.b ACT_COMBATROBOT            ;10
+                dc.b ACT_SMALLTANK              ;8
+                dc.b ACT_COMBATROBOT            ;9
+                dc.b ACT_FLYINGCRAFT            ;10
+                dc.b ACT_SMALLWALKER            ;11
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
                 dc.b NOPLOTBIT                  ;1
@@ -66,6 +69,7 @@ spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
                 dc.b NOPLOTBIT                  ;8
                 dc.b NOPLOTBIT                  ;9
                 dc.b NOPLOTBIT                  ;10
+                dc.b NOPLOTBIT                  ;11
 
 spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_PISTOL|SPAWN_AIR      ;1
@@ -75,6 +79,7 @@ spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_ANIMALBITE            ;5
                 dc.b ITEM_MINIGUN|SPAWN_AIR     ;6
                 dc.b ITEM_AUTORIFLE             ;7
-                dc.b ITEM_MINIGUN|SPAWN_AIR     ;8
-                dc.b ITEM_AUTORIFLE             ;9
-                dc.b ITEM_EMPGENERATOR          ;10
+                dc.b ITEM_AUTORIFLE             ;8
+                dc.b ITEM_EMPGENERATOR          ;9
+                dc.b ITEM_MINIGUN|SPAWN_AIR     ;10
+                dc.b ITEM_LASERRIFLE            ;11
