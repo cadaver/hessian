@@ -1236,7 +1236,7 @@ alGuard:        dc.w MoveAndAttackHuman         ;Update routine
                 dc.b $17                        ;AI offense random AND-value
                 dc.b $38                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
-                dc.b AMF_JUMP|AMF_CLIMB|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
+                dc.b AMF_CLIMB|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
                 dc.b 3*8+2                      ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
@@ -1286,7 +1286,7 @@ alLightGuard:   dc.w MoveAndAttackHuman         ;Update routine
                 dc.b $13                        ;AI offense random AND-value
                 dc.b $40                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
-                dc.b AMF_JUMP|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
+                dc.b AMF_FALLDAMAGE|AMF_DUCK    ;Move flags
                 dc.b 3*8+4                      ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
@@ -1306,9 +1306,9 @@ alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
                 dc.b $0f                        ;AI offense random AND-value
-                dc.b $28                        ;AI defense probability
+                dc.b $20                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
                 dc.b AMF_JUMP|AMF_CLIMB|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
                 dc.b 3*8                        ;Max. movement speed
@@ -1332,7 +1332,7 @@ alCombatRobotFast:
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 115                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
                 dc.b $13                        ;AI offense random AND-value
                 dc.b $20                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -1592,7 +1592,7 @@ alArmorer:      dc.w MoveAndAttackHuman         ;Update routine
                 dc.b $1f                        ;AI offense random AND-value
                 dc.b $50                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
-                dc.b AMF_JUMP|AMF_CLIMB|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
+                dc.b AMF_CLIMB|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
                 dc.b 3*8                        ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
