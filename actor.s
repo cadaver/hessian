@@ -503,6 +503,7 @@ UA_DoSpawn:     lda numSpawned                  ;Skip if already max. spawned en
                 lda (zoneLo),y
                 bmi UA_NoSpawnLimit             ;Negative spawncount = unlimited
 UA_SpawnCount:  cmp #$00
+                beq UA_SpawnDone
 UA_NoSpawnLimit:dey
                 jsr Random
                 and (zoneLo),y
@@ -1728,7 +1729,7 @@ AS_SideNoReverse:
                 bcc AS_GroundRight
 AS_GroundLeft:  lda AA_LeftCheck+1
                 ldx #$00
-                bne AS_GroundStorePosDir
+                beq AS_GroundStorePosDir
 AS_GroundRight: lda AA_RightCheck+1
                 sbc #$00                         ;C=0 here
                 ldx #$ff
