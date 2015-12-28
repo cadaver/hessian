@@ -29,13 +29,13 @@ titleTexts      = chars+608+168*2
 ;START_X         = $0280
 ;START_Y         = $1700
 
-START_LEVEL     = $03                          ;Entrance, next to car park
-START_X         = $2980
-START_Y         = $1b00
-
-;START_LEVEL     = $04                          ;Service tunnels
-;START_X         = $5180
+;START_LEVEL     = $03                          ;Entrance, next to car park
+;START_X         = $2980
 ;START_Y         = $1b00
+
+START_LEVEL     = $04                          ;Service tunnels
+START_X         = $5180
+START_Y         = $1b00
 
 ;START_LEVEL     = $04                          ;Service tunnels bridge
 ;START_X         = $5480

@@ -427,32 +427,32 @@ adSmokeCloud:   dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b 4                          ;Base spritenumber
 
 adRat:          dc.b ONESPRITE                  ;Number of sprites
-                dc.b C_ANIMALS                  ;Spritefile number
+                dc.b C_HAZARDS                  ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 14                         ;Number of frames
-                dc.b 1,0,1,2,1,0,1,2,1,3,3,3,4,5
+                dc.b 19,18,19,20,19,18,19,20,19,21,21,21,22,23
 
 adSpider:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_ANIMALS                  ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 5                          ;Number of frames
-                dc.b 11,12,13,14,15
+                dc.b 5,6,7,8,9
 
 adFly:          dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_ANIMALS                  ;Spritefile number
-                dc.b 23                         ;Base spritenumber
+                dc.b 17                         ;Base spritenumber
 
 adBat:          dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_ANIMALS                  ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 7                          ;Number of frames
-                dc.b 6,7,8,9,8,7,10
+                dc.b 0,1,2,3,2,1,4
 
 adFish:         dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_ANIMALS                  ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 4                          ;Number of frames
-                dc.b 16,17
+                dc.b 10,11
 
 adRock:         dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_HAZARDS                  ;Spritefile number
@@ -474,7 +474,7 @@ adOrganicWalker:dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_ANIMALS                  ;Spritefile number
                 dc.b LEFTFRAME_FLIP             ;Left frame add
                 dc.b 14                         ;Number of frames
-                dc.b 19,18,19,20,19,18,19,20,19,21,21,19,18,22
+                dc.b 13,12,13,14,13,12,13,14,13,15,15,13,12,16
 
 adGuard:        dc.b HUMANOID                   ;Number of sprites
                 dc.b C_GUARD                    ;Lower part spritefile number

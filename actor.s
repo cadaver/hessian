@@ -503,17 +503,9 @@ UA_DoSpawn:     lda numSpawned                  ;Skip if already max. spawned en
                 lda (zoneLo),y
                 bmi UA_NoSpawnLimit             ;Negative spawncount = unlimited
 UA_SpawnCount:  cmp #$00
-                if SPAWN_TEST=0
-                beq UA_SpawnDone
-                endif
 UA_NoSpawnLimit:dey
                 jsr Random
-                sta temp1
-                if SPAWN_TEST=0
                 and (zoneLo),y
-                else
-                and #$1f
-                endif
                 clc
 UA_SpawnDelay:  adc #$00                        ;Spawn delay counting
                 bcc UA_SpawnNotOver
@@ -530,7 +522,7 @@ UA_SpawnParam:  lda #$00
                 jsr AttemptSpawn
                 jmp BuildTargetList
 UA_SpawnRandomize:
-                lda temp1                       ;Do not re-randomize when retrying, otherwise
+                jsr Random                      ;Do not re-randomize when retrying, otherwise
                 sta UA_SpawnParam+1             ;flying enemies would be greatly favored over groundbased
 UA_SpawnDone:
 

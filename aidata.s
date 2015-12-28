@@ -48,7 +48,7 @@ spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
                 dc.b ACT_COMBATROBOT            ;4
                 dc.b ACT_RAT                    ;5
                 dc.b ACT_SMALLDROID             ;6
-                dc.b ACT_RAT                    ;7
+                dc.b ACT_COMBATROBOT            ;7
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
                 dc.b NOPLOTBIT                  ;1
@@ -66,4 +66,4 @@ spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_SHOTGUN               ;4
                 dc.b ITEM_ANIMALBITE            ;5
                 dc.b ITEM_MINIGUN|SPAWN_AIR     ;6
-                dc.b ITEM_ANIMALBITE            ;7
+                dc.b ITEM_AUTORIFLE             ;7

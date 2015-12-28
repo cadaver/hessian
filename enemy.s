@@ -185,14 +185,15 @@ ExplodeEnemyMultiple_CustomRadius:
         ; Modifies: A,Y,temp vars
 
 ExplodeEnemy3_Ofs24:
-                dec actYH,x
-                lda #8*8
+                lda #-15*8
                 jsr MoveActorYNoInterpolation
                 lda #3
                 sta actTime,x
                 lda #$3f
                 ldy #$ff
-                bne ExplodeEnemyMultiple_CustomRadius
+                jsr ExplodeEnemyMultiple_CustomRadius
+                lda #-8*8
+                jmp MoveActorYNoInterpolation
 
         ; Explosion generator update routine
         ;
