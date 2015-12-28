@@ -37,6 +37,7 @@ playerStateEnd:
 
         ; Not saved variables
 
+scriptVariable: dc.b 0
 codeEntry:      ds.b 3,0
 
         ; In-memory checkpoint save

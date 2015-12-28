@@ -978,7 +978,7 @@ alSmallTank:    dc.w USESCRIPT|EP_MOVETANK      ;Update routine
                 dc.b 4                          ;Ground braking
                 dc.b -3                         ;Height in chars for headbump check (negative)
 
-alFloatingMine: dc.w USESCRIPT|EP_MOVEFLOATINGMINE ;Update routine
+alFloatingMine: dc.w MoveFloatingMine           ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 6                          ;Horizontal size
                 dc.b 5                          ;Size up
@@ -1297,7 +1297,7 @@ alLightGuard:   dc.w MoveAndAttackHuman         ;Update routine
                 dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
 
 alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
-                dc.b GRP_ENEMIES|AF_ORGANIC     ;Actor flags
+                dc.b GRP_ENEMIES                ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 36                         ;Size up
                 dc.b 0                          ;Size down
@@ -1308,7 +1308,7 @@ alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
                 dc.b $0f                        ;AI offense random AND-value
-                dc.b $20                        ;AI defense probability
+                dc.b $18                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
                 dc.b AMF_JUMP|AMF_CLIMB|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
                 dc.b 3*8                        ;Max. movement speed
@@ -1323,7 +1323,7 @@ alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
 
 alCombatRobotFast:
                 dc.w MoveAndAttackHuman         ;Update routine
-                dc.b GRP_ENEMIES|AF_ORGANIC     ;Actor flags
+                dc.b GRP_ENEMIES                ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 36                         ;Size up
                 dc.b 0                          ;Size down

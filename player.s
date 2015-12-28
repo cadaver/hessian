@@ -973,6 +973,7 @@ RCP_ClearActorLoop:
                 bpl RCP_ClearActorLoop
                 jsr LoadLevel
                 ldy #ACTI_PLAYER
+                sty scriptVariable              ;Reset shared script variable when game started / checkpoint retried
                 jsr GFA_Found
                 ldx #6
                 ldy #6*MAX_ACT

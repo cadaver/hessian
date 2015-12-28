@@ -120,7 +120,7 @@ itemDefaultPickup:
                 dc.b 30                         ;Flamethrower
                 dc.b 7                          ;Laser rifle
                 dc.b 5                          ;Plasma gun
-                dc.b 4                          ;EMP generator
+                dc.b 2                          ;EMP generator
                 dc.b 3                          ;Grenade launcher
                 dc.b 2                          ;Bazooka
                 dc.b 100                        ;Extinguisher
@@ -224,7 +224,7 @@ itemNPCAttackThreshold:
                 dc.b $58                        ;Flamethrower
                 dc.b $48                        ;Laser rifle
                 dc.b $58                        ;Plasma gun
-                dc.b $7f                        ;EMP generator (not used by NPCs)
+                dc.b $7f                        ;EMP generator
                 dc.b $7f                        ;Grenade launcher
                 dc.b $7f                        ;Bazooka
                 dc.b $7f                        ;Extinguisher (not an actual weapon, not used by NPCs)

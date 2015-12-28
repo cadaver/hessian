@@ -19,7 +19,7 @@ TURRET_ANIMDELAY = 2
                 dc.w MoveFlyingCraft
                 dc.w MoveWalker
                 dc.w MoveTank
-                dc.w MoveFloatingMine
+                dc.w DestroyFlyingCraft
                 dc.w MoveTurret
                 dc.w MoveFire
                 dc.w MoveSmokeCloud
@@ -55,7 +55,6 @@ TURRET_ANIMDELAY = 2
                 dc.w ExplodeEnemy4_Ofs15
                 dc.w ExplodeEnemy4_Rising
                 dc.w MoveExplosionGeneratorRising
-                dc.w DestroyFlyingCraft
 
         ; Flying craft update routine
         ;
@@ -79,7 +78,18 @@ MFC_FrameOK1:   lsr
                 lda #4
 MFC_FrameOK2:   sta actF1,x
                 cmp #2                          ;Cannot fire when no speed (middle frame)
-                bne MFC_CanAttack
+                beq MFC_NoAttack
+                bcs MFC_FacingRight
+MFC_FacingLeft: lda actCtrl,x                   ;Check that animation & firing dir matches
+                and #JOY_FIRE|JOY_LEFT
+                cmp #JOY_FIRE|JOY_LEFT
+                beq MFC_CanAttack
+                bne MFC_NoAttack
+MFC_FacingRight:lda actCtrl,x
+                and #JOY_FIRE|JOY_RIGHT
+                cmp #JOY_FIRE|JOY_RIGHT
+                beq MFC_CanAttack
+MFC_NoAttack:
 MFC_ContinueFall:
                 rts
 MFC_Fall:       jsr FallingMotionCommon
@@ -152,19 +162,6 @@ GetAbsXSpeed:   lda actSX,x                       ;Tracks animation from absolut
                 eor #$ff
                 adc #$01
 GAXS_Pos:       rts
-
-        ; Floating mine update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveFloatingMine:
-                lda #3
-                ldy #3
-                jsr LoopingAnimation
-                jsr MoveAccelerateFlyer
-                jmp MineCommon
 
         ; Ceiling turret update routine
         ;

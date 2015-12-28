@@ -21,9 +21,9 @@ logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
-START_LEVEL     = $00                          ;Warehouse
-START_X         = $6780
-START_Y         = $1700
+;START_LEVEL     = $00                          ;Warehouse
+;START_X         = $6780
+;START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard
 ;START_X         = $0280
@@ -49,9 +49,9 @@ START_Y         = $1700
 ;START_X          = $0d80
 ;START_Y          = $0600
 
-;START_LEVEL     = $06                          ;Upper labs
-;START_X         = $0180
-;START_Y         = $1700
+START_LEVEL     = $06                          ;Upper labs
+START_X         = $0180
+START_Y         = $1700
 
 ;START_LEVEL     = $06                          ;Upper labs, next to recharger
 ;START_X         = $4b80
@@ -468,8 +468,8 @@ IP_InitInventory:
                 ldx #1
                 jsr AddItem
                 if STARTITEM_CHEAT>0
-                lda #ITEM_PISTOL
-                ldx #20
+                lda #ITEM_AUTORIFLE
+                ldx #60
                 jsr AddItem
                 lda #ITEM_PARTS
                 ldx #50

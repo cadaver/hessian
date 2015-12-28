@@ -75,6 +75,7 @@ CU_AlreadyConfigured:
                 jmp IU_TextCommon
 
 ConfigureUpgrade:
+                jsr CheckForReset
                 jsr FindUpgradeIndex
                 lda upgrade
                 and upgradeBitTbl,x
@@ -781,7 +782,7 @@ PT_Done:        iny
         ; Returns: -
         ; Modifies: various
 
-InstallUpgrade:
+InstallUpgrade: jsr CheckForReset
                 jsr FindUpgradeIndex
                 lda upgrade
                 and upgradeBitTbl,x
@@ -861,6 +862,18 @@ FUI_Found:      cpx upgradeIndex                ;Same upgrade?
                 lda #$00
                 sta upgradeOK                   ;Reset configure status
 FUI_Same:       rts
+
+        ; Check whether the game was restarted from checkpoint and puzzle should be reset
+
+CheckForReset:  lda scriptVariable
+                bne CFR_OK
+                inc scriptVariable
+                lda #$ff
+                sta upgradeIndex
+                sta upgradePuzzleIndex
+                lda #$00
+                sta upgradeOK
+CFR_OK:         rts
 
 upgradeLvlTbl:  dc.b 6,8,5,8,6,8,12
 upgradeObjTbl:  dc.b $56,$59,$25,$55,$54,$47,$15

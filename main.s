@@ -9,8 +9,8 @@ SHOW_SPRITEDEPACK_TIME = 0
 
 DROP_ITEM_TEST  = 0                             ;Drop a copy of current item to test actor save
 AMMO_CHEAT      = 0
-ALLQUESTITEMS_CHEAT = 0
-STARTITEM_CHEAT = 0                             ;Start with pistol & parts instead of empty inventory
+ALLQUESTITEMS_CHEAT = 1
+STARTITEM_CHEAT = 1                             ;Start with weapon & parts instead of empty inventory
 UPGRADE_CHEAT   = 0
 GODMODE_CHEAT   = 0                             ;Whether health/battery cheat is on initially
 

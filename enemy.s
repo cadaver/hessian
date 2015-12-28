@@ -89,6 +89,19 @@ MoveDroid:      lda #$02
                 jsr MoveAccelerateFlyer
                 jmp AttackGeneric
 
+        ; Floating mine update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveFloatingMine:
+                lda #3
+                ldy #3
+                jsr LoopingAnimation
+                jsr MoveAccelerateFlyer
+                jmp MineCommon
+
         ; Rolling mine update routine
         ;
         ; Parameters: X actor index
