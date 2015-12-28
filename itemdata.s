@@ -215,7 +215,7 @@ itemNPCAttackThreshold:
                 dc.b $20                        ;Fists (not used by NPCs)
                 dc.b $20                        ;Knife
                 dc.b $28                        ;Nightstick
-                dc.b $30                        ;Bat
+                dc.b $38                        ;Bat
                 dc.b $40                        ;Pistol
                 dc.b $60                        ;Shotgun
                 dc.b $50                        ;Auto rifle

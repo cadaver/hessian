@@ -11,7 +11,7 @@ CHUNK_DURATION = 40
 
 RECYCLER_ITEM_FIRST = ITEM_PISTOL
 RECYCLER_ITEM_LAST = ITEM_ARMOR
-MAX_RECYCLER_ITEMS = 9
+MAX_RECYCLER_ITEMS = 10
 RECYCLER_MOVEDELAY = 8
 
                 org scriptCodeStart
@@ -738,7 +738,7 @@ RS_PrintExit:   lda #<txtExit
                 jsr PrintText
                 lda #9
                 sta temp1
-                lda #16
+                lda #17
                 sta temp2
                 lda #<txtParts
                 ldx #>txtParts
@@ -765,7 +765,7 @@ RS_ArrowLastPos:sta screen1
                 sta RS_ArrowLastPos+2
                 lda #15
                 sta temp1
-                lda #16
+                lda #17
                 sta temp2
                 lda invCount+ITEM_PARTS-1
                 cmp #NO_ITEM_COUNT

@@ -2036,7 +2036,8 @@ SWO_SetCoords:  lda actXL,x
         ; Calculate distance to target actor in blocks
         ;
         ; Parameters: X actor index, Y target actor index
-        ; Returns: temp4 result of Y lowbyte subtraction, temp5 X distance, temp6 abs X distance, temp7 Y distance, temp8 abs Y distance
+        ; Returns: temp3 result of X lowbyte subtraction, temp4 result of Y lowbyte subtraction, 
+        ;          temp5 X distance, temp6 abs X distance, temp7 Y distance, temp8 abs Y distance
         ; Modifies: A
 
 GetActorDistance:
@@ -2057,12 +2058,12 @@ GetActorXDistance:
                 lda actXL,y
                 sec
                 sbc actXL,x
-                sta temp6
+                sta temp3
                 lda actXH,y
                 sbc actXH,x
                 sta temp5
                 bpl GAD_XDistPos
-                bit temp6
+                bit temp3
                 bne GAD_XDistNegOK
                 sbc #$00
 GAD_XDistNegOK: eor #$ff

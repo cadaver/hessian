@@ -65,6 +65,7 @@ ROTORDRONE
 LARGESPIDER
 ACID
 SPIDERCHUNK
+ARMORER
 end
 ;Item names
 ;----------

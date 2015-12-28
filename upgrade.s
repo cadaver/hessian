@@ -124,21 +124,21 @@ upgrade7:       dc.w nameRecharge
                 dc.b bl,bl,VE,VE,VE,VE,VE,VE,VE,VE,VE,bl,bl
 
                      ;0123456789012345678901234567
-descMovement:   dc.b "ENHANCED MANEUVERABILITY,",0
-                dc.b "HIGH JUMPS AND FAST CLIMBING",0
-                dc.b "AT THE COST OF EXTRA BATTERY",0
-                dc.b "DRAIN",0,0
-                
+descMovement:   dc.b "IMPROVED TURNS, JUMPS AND",0
+                dc.b "CLIMBING SPEED AT COST OF",0
+                dc.b "EXTRA BATTERY DRAIN. CARRY",0
+                dc.b "ONE MORE WEAPON",0,0
+
                      ;0123456789012345678901234567
-descStrength:   dc.b "IMPROVED UNARMED OR MELEE",0
-                dc.b "STRENGTH AND LOAD CAPACITY",0
-                dc.b "AT THE COST OF EXTRA BATTERY",0
-                dc.b "DRAIN",0,0
+descStrength:   dc.b "IMPROVED MELEE STRENGTH AT",0
+                dc.b "COST OF EXTRA BATTERY DRAIN.",0
+                dc.b "CARRY ONE MORE WEAPON AND",0
+                dc.b "MORE AMMO",0,0
 
                      ;0123456789012345678901234567
 descFirearms:   dc.b "IMPROVED FIREARMS PRECISION",0
-                dc.b "(BETTER STOPPING POWER) AND",0
-                dc.b "REDUCED RELOAD TIMES",0,0
+                dc.b "(MORE STOPPING POWER) AND",0
+                dc.b "REDUCED RELOAD TIME",0,0
 
                      ;0123456789012345678901234567
 descArmor:      dc.b "REDUCED BLUNT AND PIERCING",0
@@ -155,8 +155,8 @@ descDrain:      dc.b "INCREASED TIME OF OPERATION",0
 
                      ;0123456789012345678901234567
 descRecharge:   dc.b "CONVERTS BODY ELECTRICITY",0
-                dc.b "INTO BATTERY POWER AT THE",0
-                dc.b "COST OF INCREASED METABOLIC",0
+                dc.b "INTO BATTERY POWER AT COST",0
+                dc.b "OF INCREASED METABOLIC ",0
                 dc.b "STRAIN",0,0
 
                 if * > screen2+SCROLLROWS*40

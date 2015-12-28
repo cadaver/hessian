@@ -21,9 +21,9 @@ logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
-;START_LEVEL     = $00                          ;Warehouse
-;START_X         = $6780
-;START_Y         = $1700
+START_LEVEL     = $00                          ;Warehouse
+START_X         = $6780
+START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard
 ;START_X         = $0280
@@ -33,9 +33,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $2980
 ;START_Y         = $1b00
 
-START_LEVEL     = $04                          ;Service tunnels
-START_X         = $5180
-START_Y         = $1b00
+;START_LEVEL     = $04                          ;Service tunnels
+;START_X         = $5180
+;START_Y         = $1b00
 
 ;START_LEVEL     = $04                          ;Service tunnels bridge
 ;START_X         = $5480
@@ -55,6 +55,10 @@ START_Y         = $1b00
 
 ;START_LEVEL     = $06                          ;Upper labs, next to recharger
 ;START_X         = $4b80
+;START_Y         = $1300
+
+;START_LEVEL     = $06                          ;Upper labs, next to recycler
+;START_X         = $3780
 ;START_Y         = $1300
 
 ;START_LEVEL     = $07                          ;First cave

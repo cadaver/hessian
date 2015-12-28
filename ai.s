@@ -583,9 +583,15 @@ FT_NotHorizontal:
                 beq GAD_Vertical
 GAD_Horizontal2:cmp itemNPCMinDist-1,y
                 bcc GAD_NeedMoreDistance
-                cmp itemNPCMaxDist-1,y
+                cmp #$01
+                bcs GAD_NoMelee
+                lda temp3                       ;Do not melee attack if distance unsuitable
+                adc #$40
+                bpl GAD_NeedMoreDistance
+                bmi GAD_MeleeOK
+GAD_NoMelee:    cmp itemNPCMaxDist-1,y
                 bcs GAD_NoAttackDir
-                lda temp8
+GAD_MeleeOK:    lda temp8
                 beq GAD_Horizontal
                 cmp temp6
                 beq GAD_Diagonal
@@ -597,7 +603,7 @@ GAD_NoAttackDir2:
 GAD_HasAttackDir:
                 sec
                 rts
-GAD_Horizontal: ;lda temp1                       ;Check valid attack direction
+GAD_Horizontal: ;lda temp1                      ;Check valid attack direction
                 ;and #AB_HORIZONTAL             ;(horizontal dir always valid)
                 ;beq GAD_NoAttackDir2
                 lda #$00
