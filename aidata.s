@@ -36,12 +36,14 @@ spawnListAndTbl:dc.b $01                        ;0: entries 0-1 (first courtyard
                 dc.b $03                        ;2: entries 4-7 (service tunnels)
                 dc.b $03                        ;3: entries 7-10 (upper lab)
                 dc.b $01                        ;4: entries 10-11 (second courtyard)
+                dc.b $01                        ;5: entries 12-13 (first cave)
 
 spawnListAddTbl:dc.b $00                        ;0: entries 0-1 (first courtyard)
                 dc.b $01                        ;1: entries 1-4 (entrance)
                 dc.b $04                        ;2: entries 4-7 (service tunnels)
                 dc.b $07                        ;3: entries 7-10 (upper lab)
                 dc.b $0a                        ;4: entries 10-11 (second courtyard)
+                dc.b $0c                        ;5: entries 12-13 (first cave)
 
         ; Spawn list entries
 
@@ -57,6 +59,9 @@ spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
                 dc.b ACT_COMBATROBOT            ;9
                 dc.b ACT_FLYINGCRAFT            ;10
                 dc.b ACT_SMALLWALKER            ;11
+                dc.b ACT_SPIDER                 ;12
+                dc.b ACT_BAT                    ;13
+
 
 spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
                 dc.b NOPLOTBIT                  ;1
@@ -70,6 +75,8 @@ spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
                 dc.b NOPLOTBIT                  ;9
                 dc.b NOPLOTBIT                  ;10
                 dc.b NOPLOTBIT                  ;11
+                dc.b NOPLOTBIT                  ;12
+                dc.b NOPLOTBIT                  ;13
 
 spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_PISTOL|SPAWN_AIR      ;1
@@ -83,3 +90,5 @@ spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_EMPGENERATOR          ;9
                 dc.b ITEM_MINIGUN|SPAWN_AIR     ;10
                 dc.b ITEM_LASERRIFLE            ;11
+                dc.b ITEM_NONE                  ;12
+                dc.b ITEM_NONE|SPAWN_AIR        ;13

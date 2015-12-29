@@ -1305,8 +1305,7 @@ CP_OverUp:      lda limitU
 CP_NotOverUp:   sta mapY
                 sty blockY
                 ldx #$00
-                stx UA_SpawnCount+1             ;Reset enemy spawning variables
-                stx UA_SpawnDelay+1
+                stx UA_SpawnDelay+1             ;Reset enemy spawning 
                 stx attackTime                  ;Reset global attack timer
                 dex
                 stx ULO_COSubY+1                ;Reset object search

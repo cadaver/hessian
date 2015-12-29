@@ -496,15 +496,11 @@ AA_IndexNotOver:stx AA_Start+1                  ;Store search start & endpositio
 
         ; Process spawning
 
-UA_DoSpawn:     lda numSpawned                  ;Skip if already max. spawned enemies + player
-                cmp #MAX_SPAWNEDACT+1
+UA_DoSpawn:     ldy #ZONEH_SPAWNCOUNT
+                lda numSpawned
+                cmp (zoneLo),y
                 bcs UA_SpawnDone
-                ldy #ZONEH_SPAWNCOUNT
-                lda (zoneLo),y
-                bmi UA_NoSpawnLimit             ;Negative spawncount = unlimited
-UA_SpawnCount:  cmp #$00
-                beq UA_SpawnDone
-UA_NoSpawnLimit:dey
+                dey
                 jsr Random
                 and (zoneLo),y
                 clc
@@ -1773,7 +1769,6 @@ AS_BGOK:        lda actYH,x                     ;Do not spawn into a wall
                 and #CI_OBSTACLE
                 bne AS_Remove3
 AS_SpawnOK:     jsr EnsureActorFiles            ;Also calls InitActor
-                inc UA_SpawnCount+1
                 ldy #AL_SPAWNAIMODE
                 lda (actLo),y                   ;Set default AI mode for actor type
                 sta actAIMode,x

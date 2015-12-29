@@ -122,6 +122,7 @@ IA_IsLive:      lda #<txtCantInstall
                 sta actYL,x
                 lda #ACT_EMP
                 sta actT,x
+                jsr InitActor
                 lda #COLOR_FLICKER
                 sta actFlash,x
                 lda #8
@@ -130,7 +131,6 @@ IA_IsLive:      lda #<txtCantInstall
                 sta actHp,x
                 lda #GRP_HEROES
                 sta actFlags,x
-                jsr InitActor
                 jsr NoInterpolation
 IA_NoEffect:    ldx #ACTI_PLAYER
                 lda #DMG_PISTOL+NOMODIFY

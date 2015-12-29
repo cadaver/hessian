@@ -362,6 +362,9 @@ MoveFish:       lda #CI_WATER
 
 MoveRock:       lda actTime,x                   ;Randomize X-speed on first frame
                 bne MR_HasRandomSpeed
+                jsr GetCharInfo
+                and #CI_OBSTACLE
+                bne MR_InitRemove               ;Remove on init if inside wall (used to cache the first rock in caves)
                 inc actTime,x
                 jsr Random
                 and #$0f
@@ -379,7 +382,7 @@ MR_HasRandomSpeed:
                 jsr CollideAndDamagePlayer
 MR_NoDamage:    jsr BounceMotion
                 bcc MR_NoCollision
-DestroyRock:    lda #SFX_DAMAGE
+DestroyRock:    lda #SFX_SHOTGUN
                 jsr PlaySfx
                 inc actF1,x
                 lda actF1,x
@@ -408,7 +411,7 @@ RemoveRock:     lda #-4*8
                 jsr MoveActorYNoInterpolation
                 lda #COLOR_FLICKER
                 sta actFlash,x
-                lda #ACT_SMOKETRAIL
+MR_InitRemove:  lda #ACT_SMOKETRAIL
                 jmp TransformActor
 MR_RandomizeSmallerRock:
                 sta temp1
@@ -512,9 +515,7 @@ DestroyFire:    lda #ACT_SMOKECLOUD
 
 RatDeath:       lda #FR_DEADRATAIR
 RD_Common:      pha
-                jsr HD_Common
-                lda #SFX_ANIMALDEATH
-                jsr PlaySfx
+                jsr AnimalDeathCommon
                 pla
 RD_SetFrameAndSpeed:
                 sta actF1,x
@@ -539,9 +540,14 @@ SpiderDeath:    lda #FR_DEADSPIDERAIR
 
 FlyDeath:       lda #FR_DEADFLY
                 sta actF1,x
-BatDeath:       lda #SFX_ANIMALDEATH
-                jsr PlaySfx
-                jmp HD_Common
+BatDeath:
+AnimalDeathCommon:
+                jsr HD_Common
+                lda actSX,x                     ;Reduce the impulse from weapon
+                jsr Asr8
+                sta actSX,x
+                lda #SFX_ANIMALDEATH
+                jmp PlaySfx
 
         ; Organic walker death
         ;
