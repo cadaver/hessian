@@ -78,18 +78,7 @@ MFC_FrameOK1:   lsr
                 lda #4
 MFC_FrameOK2:   sta actF1,x
                 cmp #2                          ;Cannot fire when no speed (middle frame)
-                beq MFC_NoAttack
-                bcs MFC_FacingRight
-MFC_FacingLeft: lda actCtrl,x                   ;Check that animation & firing dir matches
-                and #JOY_FIRE|JOY_LEFT
-                cmp #JOY_FIRE|JOY_LEFT
-                beq MFC_CanAttack
-                bne MFC_NoAttack
-MFC_FacingRight:lda actCtrl,x
-                and #JOY_FIRE|JOY_RIGHT
-                cmp #JOY_FIRE|JOY_RIGHT
-                beq MFC_CanAttack
-MFC_NoAttack:
+                bne MFC_CanAttack
 MFC_ContinueFall:
                 rts
 MFC_Fall:       jsr FallingMotionCommon
