@@ -21,9 +21,9 @@ logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
-;START_LEVEL     = $00                          ;Warehouse
-;START_X         = $6780
-;START_Y         = $1700
+START_LEVEL     = $00                          ;Warehouse
+START_X         = $6780
+START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard
 ;START_X         = $0280
@@ -61,9 +61,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $3780
 ;START_Y         = $1300
 
-START_LEVEL     = $07                          ;First cave
-START_X         = $1f80
-START_Y         = $1c00
+;START_LEVEL     = $07                          ;First cave
+;START_X         = $1f80
+;START_Y         = $1c00
 
 ;START_LEVEL     = $07                          ;Large spider's lair
 ;START_X         = $4f80
