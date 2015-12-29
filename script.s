@@ -64,8 +64,16 @@ EP_CONFIGUREUPGRADE = $0400
 EP_INSTALLUPGRADE = $0401
 EP_INSTALLEFFECT = $0402
 
+EP_SWITCHGENERATOR = $0500
+EP_SWITCHLASER = $0501
+EP_INSTALLAMPLIFIER = $0502
+EP_RUNLASER = $0503
+EP_MOVEGENERATOR = $0504
+
 PLOT_ELEVATOR1  = $00                       ;Upper <-> lower lab
 PLOT_ELEVATOR2  = $01                       ;Jormungandr <-> Bio-Dome
+PLOT_GENERATOR  = $02                       ;HV Supply switched on
+PLOT_AMPINSTALLED = $03                     ;Amplifier installed in laser
 
 SPEECHBUBBLEOFFSET = -40*8
 

@@ -66,6 +66,7 @@ LARGESPIDER
 ACID
 SPIDERCHUNK
 ARMORER
+GENERATOR
 end
 ;Item names
 ;----------

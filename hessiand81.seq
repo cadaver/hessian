@@ -28,6 +28,7 @@ write script01.pak @8:21
 write script02.pak @8:22
 write script03.pak @8:23
 write script04.pak @8:24
+write script05.pak @8:25
 write logo.pak @8:2e
 write upgrade.pak @8:2f
 write level00.pak @8:30

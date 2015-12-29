@@ -64,6 +64,7 @@ ACT_LARGESPIDER = 62
 ACT_ACID        = 63
 ACT_SPIDERCHUNK = 64
 ACT_ARMORER     = 65
+ACT_GENERATOR   = 66
 
 HP_PLAYER       = 56
 HP_ACID         = 1
@@ -134,6 +135,7 @@ adExplosionGenerator = $0000
 adRockTrap      = $0000
 adEyeInvisible  = $0000
 adJormungandr   = $0000
+adGenerator     = $0000
 
 actDispTblLo:   dc.b <adPlayer
                 dc.b <adItem
@@ -200,6 +202,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adAcid
                 dc.b <adSpiderChunk
                 dc.b <adGuard
+                dc.b <adGenerator
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -266,6 +269,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adAcid
                 dc.b >adSpiderChunk
                 dc.b >adGuard
+                dc.b >adGenerator
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -671,6 +675,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alAcid
                 dc.b <alScrapMetal
                 dc.b <alArmorer
+                dc.b <alGenerator
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -737,6 +742,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alAcid
                 dc.b >alScrapMetal
                 dc.b >alArmorer
+                dc.b >alGenerator
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -1602,3 +1608,11 @@ alArmorer:      dc.w MoveAndAttackHuman         ;Update routine
                 dc.b -4                         ;Height in chars for headbump check (negative)
                 dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
                 dc.b INITIAL_CLIMBSPEED         ;Climbing speed
+
+alGenerator:    dc.w USESCRIPT|EP_MOVEGENERATOR ;Update routine
+                dc.b AF_NOREMOVECHECK           ;Actor flags
+                dc.b 0                          ;Horizontal size
+                dc.b 0                          ;Size up
+                dc.b 0                          ;Size down
+                dc.w RemoveActor                ;Destroy routine
+                dc.b 0                          ;Initial health

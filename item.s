@@ -299,9 +299,21 @@ UseItem:        lda actHp+ACTI_PLAYER           ;Can't use/reload after dying
                 beq UseMedKit
                 cpy #ITEM_BATTERY
                 beq UseBattery
+                cpy #ITEM_AMPLIFIER
+                beq UseAmplifier
 UI_Dead:
 UB_FullBattery:
+UA_NotRightPosition:
 UMK_FullHealth: rts
+UseAmplifier:   lda levelNum
+                cmp #$06
+                bne UA_NotRightPosition
+                lda lvlObjNum
+                cmp #$0e
+                bne UA_NotRightPosition
+                lda #<EP_INSTALLAMPLIFIER
+                ldx #>EP_INSTALLAMPLIFIER
+                jmp ExecScript
 UseBattery:     lda battery+1
                 cmp #MAX_BATTERY
                 bcs UB_FullBattery

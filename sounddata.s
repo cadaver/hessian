@@ -30,6 +30,7 @@ SFX_DAMAGE          = $1c
 SFX_ANIMALDEATH     = $1d
 SFX_HUMANDEATH      = $1e
 SFX_EXPLOSION       = $1f
+SFX_GENERATOR       = $20
 SFX_NONE            = $ff
 
         ; Sound effect data
@@ -66,6 +67,7 @@ sfxTblLo:       dc.b <sfxFootstep
                 dc.b <sfxAnimalDeath
                 dc.b <sfxHumanDeath
                 dc.b <sfxExplosion
+                dc.b <sfxGenerator
 
 sfxTblHi:       dc.b >sfxFootstep
                 dc.b >sfxJump
@@ -99,6 +101,7 @@ sfxTblHi:       dc.b >sfxFootstep
                 dc.b >sfxAnimalDeath
                 dc.b >sfxHumanDeath
                 dc.b >sfxExplosion
+                dc.b >sfxGenerator
 
 sfxFootstep:    include sfx/footstep.sfx
 sfxJump:        include sfx/jump.sfx
@@ -132,3 +135,4 @@ sfxSniperRifle: include sfx/sniperrifle.sfx
 sfxBazooka:     include sfx/bazooka.sfx
 sfxExplosion:   include sfx/explosion.sfx
 sfxEMP:         include sfx/emp.sfx
+sfxGenerator:   include sfx/generator.sfx

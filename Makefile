@@ -29,7 +29,8 @@ clean:
 
 hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak upgrade.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
-	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak script01.pak script02.pak script03.pak script04.pak \
+	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak script01.pak script02.pak script03.pak \
+	script04.pak script05.pak \
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
@@ -148,6 +149,9 @@ sfx/jump.sfx: sfx/jump.ins
 sfx/animaldeath.sfx: sfx/animaldeath.ins
 	ins2nt2 sfx/animaldeath.ins sfx/animaldeath.sfx
 
+sfx/generator.sfx: sfx/generator.ins
+	ins2nt2 sfx/generator.ins sfx/generator.sfx
+
 main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s enemy.s file.s init.s input.s item.s itemdata.s level.s \
 	leveldata.s macros.s main.s math.s memory.s panel.s paneldata.s physics.s player.s raster.s screen.s script.s \
 	sound.s sounddata.s sprite.s text.s weapon.s weapondata.s loader.prg bg/scorescr.chr bg/world.s sfx/pistol.sfx sfx/shotgun.sfx \
@@ -155,7 +159,7 @@ main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s enemy
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
 	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/heavymelee.sfx \
 	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/splash.sfx sfx/object.sfx sfx/footstep.sfx sfx/roll.sfx sfx/jump.sfx \
-	sfx/animaldeath.sfx pics/covert.iff pics/loadpic.iff loadermusic.bin
+	sfx/animaldeath.sfx sfx/generator.sfx pics/covert.iff pics/loadpic.iff loadermusic.bin
 	pic2chr pics/covert.iff covert.chr -b11 -m12 -n13 -c -s -x30 -y4
 	pic2chr pics/covert.iff covertscr.dat -b11 -m12 -n13 -x30 -y4 -t -c
 	gfxconv pics/loadpic.iff loadpic.dat -r -b0 -o -nc -ns
@@ -210,6 +214,10 @@ script03.pak: script03.s memory.s mainsym.s
 script04.pak: script04.s memory.s mainsym.s
 	dasm script04.s -oscript04.bin -f3
 	pack2 script04.bin script04.pak
+
+script05.pak: script05.s memory.s mainsym.s
+	dasm script05.s -oscript05.bin -f3
+	pack2 script05.bin script05.pak
 
 loadermusic.bin: music/hessianmusic.d64
 	d642prg music/hessianmusic.d64 loader.bin loadermusic.bin -h

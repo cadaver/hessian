@@ -14,8 +14,11 @@ UpdateLevel:    inc bgAnimDelay
                 eor #%00100000
                 sta chars+166*8+6
 ULSkipCursor:   tya
-                and #$07                        ;Todo: must be conditional on the generator
-                bne ULSkipGenerator             ;actually being switched on
+                and #$07
+                bne ULSkipGenerator
+                lda plotBits
+                and #$04                        ;3rd plotbit
+                beq ULSkipGenerator
                 ldx #$06
 ULGeneratorLoop:lda chars+227*8,x
                 asl
