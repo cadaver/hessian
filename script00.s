@@ -37,9 +37,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $5180
 ;START_Y         = $1b00
 
-;START_LEVEL     = $04                          ;Service tunnels bridge
-;START_X         = $5480
-;START_Y         = $3000
+START_LEVEL     = $04                          ;Service tunnels bridge
+START_X         = $5480
+START_Y         = $3000
 
 ;START_LEVEL      = $05                         ;Security center
 ;START_X          = $0b80
@@ -49,9 +49,9 @@ titleTexts      = chars+608+168*2
 ;START_X          = $0d80
 ;START_Y          = $0600
 
-START_LEVEL     = $06                          ;Upper labs
-START_X         = $0180
-START_Y         = $1700
+;START_LEVEL     = $06                          ;Upper labs
+;START_X         = $0180
+;START_Y         = $1700
 
 ;START_LEVEL     = $06                          ;Upper labs, next to recharger
 ;START_X         = $4b80

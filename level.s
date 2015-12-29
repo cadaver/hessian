@@ -1044,7 +1044,7 @@ ULO_HasObject:  lda actF1+ACTI_PLAYER           ;Check if player is standing at 
                 cmp #OBJTYPE_SCRIPT
                 beq OO_RequirementOK            ;Script object doesn't have requirement
                 lda lvlObjDH,y                  ;Check requirement item from object parameters if has them
-                bmi OO_RequirementCode
+                bmi OO_RequirementScript
                 beq OO_RequirementOK
                 sta temp3
                 tay
@@ -1061,18 +1061,17 @@ ULO_HasObject:  lda actF1+ACTI_PLAYER           ;Check if player is standing at 
                 jmp ContinuePanelText
 OO_RequirementOK:
                 ldy lvlObjNum
-                lda lvlObjY,y                   ;If animating, play sound always
-                bmi OO_PlaySound
-                lda lvlObjB,y                   ;Otherwise check that isn't a door that is always open
-                and #OBJ_TYPEBITS               ;(keycard slots and other non-animating objects should
-                cmp #OBJTYPE_DOOR               ;play a sound)
-                beq OO_NoSound
-OO_PlaySound:   lda #SFX_OBJECT
+                lda lvlObjB,y                   ;Check that actually is a manually usable object
+                and #OBJ_MODEBITS
+                cmp #OBJMODE_MANUAL
+                bcc ULO_NoOperate
+                lda #SFX_OBJECT
                 jsr PlaySfx
-OO_NoSound:     jmp ToggleObject
-OO_RequirementCode:
-                lda #<EP_ENTERCODE
-                ldx #>EP_ENTERCODE
+                jmp ToggleObject
+OO_RequirementScript:
+                and #$7f
+                tax
+                lda lvlObjDL,y
                 jmp ExecScript
 ULO_NoOperate:  lda lvlObjB,y
                 and #OBJ_TYPEBITS+OBJ_ACTIVE
@@ -1114,8 +1113,11 @@ ULO_EnterSideDoorLeft:
                 sbc #$00                        ;C=0
 ULO_EnterSideDoorCommon:
                 tax
-ULO_EnterDoor:  lda lvlObjDL,y
+ULO_EnterDoor:  lda lvlObjDH,y
+                bmi ULO_NoExplicitDest
+                lda lvlObjDL,y
                 bne ULO_EnterDoorDest           ;Can also specify destination explicitly
+ULO_NoExplicitDest:
                 lda lvlObjY,y
                 and #$7f
                 tay

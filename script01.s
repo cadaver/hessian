@@ -1110,7 +1110,7 @@ txtHealthRecharger:
 txtBatteryRecharger:
                 dc.b "BATTERY RECHARGED",0
 txtElevatorLocked:
-                dc.b "ELEVATOR OFFLINE",0
+                dc.b "ELEVATOR LOCKED",0
 txtEnterCode:   dc.b "ENTER CODE",0
 
                 checkscriptend

@@ -27,6 +27,7 @@ RECYCLER_MOVEDELAY = 8
                 dc.w OpenWall
                 dc.w MoveAcid
                 dc.w RecyclingStation
+                dc.w HideoutDoor
 
         ; Eye (Construct) boss phase 1
         ;
@@ -358,7 +359,8 @@ MRD_NoExplosion:
 DestroyRotorDrone:
                 lda #-2*8                       ;Give upward speed so that the fall lasts longer
                 sta actSY,x
-                rts
+                lda #PLOT_ROTORDRONE
+                jmp SetPlotBit
 
         ; Large spider boss move routine
         ;
@@ -932,6 +934,24 @@ RSC_NotUp:      lsr
                 ldy #$00
                 beq RSC_HasMove
 
+        ; Hideout door script routine (check that rotordrone is destroyed)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+HideoutDoor:    lda #SFX_OBJECT
+                jsr PlaySfx
+                lda #PLOT_ROTORDRONE
+                jsr GetPlotBit
+                beq HD_Offline
+                ldy lvlObjNum
+                jmp ToggleObject
+HD_Offline:     lda #<txtHideoutLocked
+                ldx #>txtHideoutLocked
+                ldy #REQUIREMENT_TEXT_DURATION
+                jmp PrintPanelText
+
         ; Final server room droid spawn positions
 
 droidSpawnXH:   dc.b $3e,$43,$3e,$43
@@ -1011,6 +1031,7 @@ txtCost:        dc.b "COST",0
 txtCount:       dc.b " "
 txtDigits:      dc.b "000",0
 txtArrow:       dc.b 62,0
+txtHideoutLocked:dc.b "LOCKED",0
 
                 checkscriptend
 

@@ -59,6 +59,7 @@ EP_MOVELARGESPIDER = $0307
 EP_OPENWALL     = $0308
 EP_MOVEACID     = $0309
 EP_RECYCLINGSTATION = $030a
+EP_HIDEOUTDOOR = $030b
 
 EP_CONFIGUREUPGRADE = $0400
 EP_INSTALLUPGRADE = $0401
@@ -74,6 +75,7 @@ PLOT_ELEVATOR1  = $00                       ;Upper <-> lower lab
 PLOT_ELEVATOR2  = $01                       ;Jormungandr <-> Bio-Dome
 PLOT_GENERATOR  = $02                       ;HV Supply switched on
 PLOT_AMPINSTALLED = $03                     ;Amplifier installed in laser
+PLOT_ROTORDRONE  = $04                      ;Rotordrone boss destroyed
 
 SPEECHBUBBLEOFFSET = -40*8
 
