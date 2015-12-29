@@ -1039,13 +1039,24 @@ ULO_HasObject:  lda actF1+ACTI_PLAYER           ;Check if player is standing at 
                 lda actFd+ACTI_PLAYER
                 cmp #OPERATEDELAY
                 bne ULO_NoOperate
-                lda lvlObjB,y
+                lda lvlObjB,y                   ;Check that actually is a manually usable object
+                tax
+                and #OBJ_MODEBITS               ;(we may also be here just because of entering an already open door)
+                cmp #OBJMODE_MANUAL
+                bcc ULO_NoOperate
+                lda lvlObjY,y
+                bmi ULO_PlaySound
+                cpx #OBJ_AUTODEACT+OBJ_SIZE+OBJMODE_MANUAL+OBJTYPE_DOOR ;Play sound, except if is a nonanimating door
+                beq ULO_NoSound
+ULO_PlaySound:  lda #SFX_OBJECT
+                jsr PlaySfx
+ULO_NoSound:    txa
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_SCRIPT
                 beq OO_RequirementOK            ;Script object doesn't have requirement
                 lda lvlObjDH,y                  ;Check requirement item from object parameters if has them
-                bmi OO_RequirementScript
-                beq OO_RequirementOK
+                bmi OO_RequirementScript        ;Side doors may also have a scripted requirement check
+                beq OO_RequirementOK            ;(e.g. check plotbit, enter 3-digit code..)
                 sta temp3
                 tay
                 jsr FindItem
@@ -1061,12 +1072,6 @@ ULO_HasObject:  lda actF1+ACTI_PLAYER           ;Check if player is standing at 
                 jmp ContinuePanelText
 OO_RequirementOK:
                 ldy lvlObjNum
-                lda lvlObjB,y                   ;Check that actually is a manually usable object
-                and #OBJ_MODEBITS
-                cmp #OBJMODE_MANUAL
-                bcc ULO_NoOperate
-                lda #SFX_OBJECT
-                jsr PlaySfx
                 jmp ToggleObject
 OO_RequirementScript:
                 and #$7f
@@ -1305,7 +1310,6 @@ CP_OverUp:      lda limitU
 CP_NotOverUp:   sta mapY
                 sty blockY
                 ldx #$00
-                stx UA_SpawnDelay+1             ;Reset enemy spawning 
                 stx attackTime                  ;Reset global attack timer
                 dex
                 stx ULO_COSubY+1                ;Reset object search

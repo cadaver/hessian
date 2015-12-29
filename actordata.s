@@ -903,7 +903,7 @@ alLargeDroid:   dc.w MoveDroid                  ;Update routine
                 dc.w ExplodeEnemy2_8            ;Destroy routine
                 dc.b HP_LARGEDROID              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 50                         ;Score from kill
+                dc.w 75                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
                 dc.b $0b                        ;AI offense AND-value
@@ -1179,7 +1179,7 @@ alRock:         dc.w USESCRIPT|EP_MOVEROCK      ;Update routine
                 dc.w USESCRIPT|EP_DESTROYROCK   ;Destroy routin
                 dc.b HP_ROCK                    ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 10                         ;Score from kill
+                dc.w 15                         ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alFireball:     dc.w USESCRIPT|EP_MOVEFIREBALL  ;Update routine
@@ -1203,7 +1203,7 @@ alSteam:        dc.w USESCRIPT|EP_MOVESTEAM     ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
-                
+
 alOrganicWalker:dc.w USESCRIPT|EP_MOVEORGANICWALKER ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON|AF_ORGANIC ;Actor flags
                 dc.b 12                         ;Horizontal size
@@ -1212,7 +1212,7 @@ alOrganicWalker:dc.w USESCRIPT|EP_MOVEORGANICWALKER ;Update routine
                 dc.w USESCRIPT|EP_ORGANICWALKERDEATH ;Destroy routine
                 dc.b HP_ORGANICWALKER           ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 50                         ;Score from kill
+                dc.w 75                         ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense AND-value
@@ -1236,7 +1236,7 @@ alGuard:        dc.w MoveAndAttackHuman         ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b HP_GUARD                   ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 65                         ;Score from kill
+                dc.w 85                         ;Score from kill
                 dc.b AIMODE_GUARD               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONMEDKITARMOR     ;Itemdrop table index or item override
                 dc.b $17                        ;AI offense random AND-value
@@ -1286,7 +1286,7 @@ alLightGuard:   dc.w MoveAndAttackHuman         ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b HP_LIGHTGUARD              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 35                         ;Score from kill
+                dc.w 75                         ;Score from kill
                 dc.b AIMODE_GUARD               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONMEDKIT          ;Itemdrop table index or item override
                 dc.b $13                        ;AI offense random AND-value
@@ -1310,7 +1310,7 @@ alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
                 dc.w ExplodeEnemy3_Ofs24        ;Destroy routine
                 dc.b HP_COMBATROBOT             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 75                         ;Score from kill
+                dc.w 65                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
                 dc.b $0f                        ;AI offense random AND-value
@@ -1336,7 +1336,7 @@ alCombatRobotFast:
                 dc.w ExplodeEnemy3_Ofs24        ;Destroy routine
                 dc.b HP_COMBATROBOT             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 115                        ;Score from kill
+                dc.w 110                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
                 dc.b $13                        ;AI offense random AND-value
@@ -1445,7 +1445,7 @@ alSpiderWalker: dc.w USESCRIPT|EP_MOVESPIDERWALKER ;Update routine
                 dc.w USESCRIPT|EP_EXPLODEENEMY2_OFS15 ;Destroy routine
                 dc.b HP_SPIDERWALKER            ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 55                         ;Score from kill
+                dc.w 60                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $07                        ;AI offense AND-value

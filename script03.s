@@ -1007,20 +1007,20 @@ recyclerCostTbl:
                 dc.b 10                         ;Pistol
                 dc.b 15                         ;Shotgun
                 dc.b 20                         ;Auto rifle
-                dc.b 20                         ;Sniper rifle
-                dc.b 20                         ;Minigun
-                dc.b 20                         ;Flamethrower
-                dc.b 25                         ;Laser rifle
-                dc.b 25                         ;Plasma gun
-                dc.b 30                         ;EMP generator
-                dc.b 30                         ;Grenade launcher
-                dc.b 30                         ;Bazooka
+                dc.b 25                         ;Sniper rifle
+                dc.b 25                         ;Minigun
+                dc.b 25                         ;Flamethrower
+                dc.b 30                         ;Laser rifle
+                dc.b 30                         ;Plasma gun
+                dc.b 35                         ;EMP generator
+                dc.b 35                         ;Grenade launcher
+                dc.b 40                         ;Bazooka
                 dc.b 0                          ;Extinguisher
-                dc.b 25                         ;Grenade
-                dc.b 30                         ;Mine
-                dc.b 40                         ;Medikit
-                dc.b 40                         ;Battery
-                dc.b 50                         ;Armor
+                dc.b 30                         ;Grenade
+                dc.b 40                         ;Mine
+                dc.b 50                         ;Medikit
+                dc.b 50                         ;Battery
+                dc.b 75                         ;Armor
 
 recyclerItemList:
                 ds.b MAX_RECYCLER_ITEMS+1,0

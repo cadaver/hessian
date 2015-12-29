@@ -974,6 +974,7 @@ RCP_ClearActorLoop:
                 jsr LoadLevel
                 ldy #ACTI_PLAYER
                 sty scriptVariable              ;Reset shared script variable when game started / checkpoint retried
+                sty UA_SpawnDelay+1             ;Reset enemy spawning delay counter
                 jsr GFA_Found
                 ldx #6
                 ldy #6*MAX_ACT
