@@ -133,7 +133,7 @@ IA_IsLive:      lda #<txtCantInstall
                 jsr InitActor
                 jsr NoInterpolation
 IA_NoEffect:    ldx #ACTI_PLAYER
-                lda #DMG_PISTOL
+                lda #DMG_PISTOL+NOMODIFY
                 jmp DamageSelf
 IA_NotOpen:     rts
 

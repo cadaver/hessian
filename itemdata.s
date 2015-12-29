@@ -120,7 +120,7 @@ itemDefaultPickup:
                 dc.b 30                         ;Flamethrower
                 dc.b 7                          ;Laser rifle
                 dc.b 5                          ;Plasma gun
-                dc.b 2                          ;EMP generator
+                dc.b 1                          ;EMP generator
                 dc.b 3                          ;Grenade launcher
                 dc.b 2                          ;Bazooka
                 dc.b 100                        ;Extinguisher
@@ -161,7 +161,7 @@ itemNPCMinDist: dc.b 0                          ;Fists (not used by NPCs)
                 dc.b 1                          ;Flamethrower
                 dc.b 1                          ;Laser rifle
                 dc.b 1                          ;Plasma gun
-                dc.b 1                          ;EMP generator (not used by NPCs)
+                dc.b 1                          ;EMP generator
                 dc.b 2                          ;Grenade launcher
                 dc.b 3                          ;Bazooka
                 dc.b 2                          ;Extinguisher (not an actual weapon, not used by NPCs)
@@ -182,7 +182,7 @@ itemNPCMaxDist: dc.b 1                          ;Fists (not used by NPCs)
                 dc.b 4                          ;Flamethrower
                 dc.b 5                          ;Laser rifle
                 dc.b 5                          ;Plasma gun
-                dc.b 5                          ;EMP generator (not used by NPCs)
+                dc.b 5                          ;EMP generator
                 dc.b 5                          ;Grenade launcher
                 dc.b 7                          ;Bazooka
                 dc.b 3                          ;Extinguisher (not an actual weapon, not used by NPCs)
@@ -203,7 +203,7 @@ itemNPCAttackLength:                            ;Note: stored as negative
                 dc.b -7                         ;Flamethrower (3 shots)
                 dc.b -6                         ;Laser rifle
                 dc.b -7                         ;Plasma gun
-                dc.b -7                         ;EMP generator (not used by NPCs)
+                dc.b -7                         ;EMP generator
                 dc.b -10                        ;Grenade launcher
                 dc.b -10                        ;Bazooka
                 dc.b -10                        ;Extinguisher (not an actual weapon, not used by NPCs)
