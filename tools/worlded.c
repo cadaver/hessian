@@ -531,6 +531,20 @@ void level_mainloop(void)
               lvlactw[actindex] |= dir;
             }
           }
+          
+          if (k == KEY_5)
+          {
+            lvlactt[actindex]--;
+            if (!lvlactt[actindex])
+                lvlactt[actindex] = 1;
+          }
+          if (k == KEY_6)
+          {
+            lvlactt[actindex]++;
+            if (!lvlactt[actindex])
+              lvlactt[actindex] = 0xff;
+          }
+
           if (k == KEY_H)
           {
             lvlacty[actindex] ^= 128; // Hidden

@@ -1013,8 +1013,8 @@ recyclerCostTbl:
                 dc.b 30                         ;Laser rifle
                 dc.b 30                         ;Plasma gun
                 dc.b 35                         ;EMP generator
-                dc.b 35                         ;Grenade launcher
-                dc.b 40                         ;Bazooka
+                dc.b 25                         ;Grenade launcher
+                dc.b 35                         ;Bazooka
                 dc.b 0                          ;Extinguisher
                 dc.b 30                         ;Grenade
                 dc.b 40                         ;Mine
