@@ -86,7 +86,7 @@ MEye_SpawnDroid:cmp numSpawned
                 sta actYL,x
                 lda droidSpawnCtrl,y
                 sta actMoveCtrl,x
-                lda #ACT_LARGEDROID
+                lda #ACT_LARGEDROIDFINAL
                 sta actT,x
                 lda #AIMODE_FLYER
                 sta actAIMode,x
@@ -217,7 +217,7 @@ DestroyEye:     lda #COLOR_FLICKER
                 ldx #ACTI_LASTNPC
 DE_DestroyDroids:
                 lda actT,x
-                cmp #ACT_LARGEDROID
+                cmp #ACT_LARGEDROIDFINAL
                 bne DE_Skip
                 jsr DestroyActorNoSource
 DE_Skip:        dex

@@ -64,6 +64,7 @@ ACT_LARGESPIDER = 62
 ACT_ACID        = 63
 ACT_SPIDERCHUNK = 64
 ACT_ARMORER     = 65
+ACT_LARGEDROIDFINAL = 66
 
 HP_PLAYER       = 56
 HP_ACID         = 1
@@ -200,6 +201,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adAcid
                 dc.b <adSpiderChunk
                 dc.b <adGuard
+                dc.b <adLargeDroid
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -266,6 +268,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adAcid
                 dc.b >adSpiderChunk
                 dc.b >adGuard
+                dc.b >adLargeDroid
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -661,6 +664,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alAcid
                 dc.b <alScrapMetal
                 dc.b <alArmorer
+                dc.b <alLargeDroid
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -727,6 +731,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alAcid
                 dc.b >alScrapMetal
                 dc.b >alArmorer
+                dc.b >alLargeDroid
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -889,7 +894,7 @@ alLargeDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $0b                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -1379,7 +1384,7 @@ alCpu:          dc.w FlashActor_CheckDamageFlash ;Update routine
                 dc.w DestroyCPU                 ;Destroy routine
                 dc.b HP_CPU                     ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 200                        ;Score from kill
+                dc.w 250                        ;Score from kill
 
 alSuperCpu:     dc.w FlashActor_CheckDamageFlash ;Update routine
                 dc.b GRP_ENEMIES|AF_ORGANIC     ;Actor flags (hack: protect against easy victory with EMP)

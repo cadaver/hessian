@@ -344,6 +344,9 @@ DropItem:       lda #$00
                 sta temp4
                 lda #$03                        ;Retry counter
                 sta temp7
+                lda actT,x                      ;Exception: final room large droids drop nothing
+                cmp #ACT_LARGEDROIDFINAL
+                beq DI_NoItem
                 ldy #AL_SIZEHORIZ               ;If enemy is going to drop parts, make their
                 jsr Random                      ;count proportional to the enemy size + random add
                 and #$0c
