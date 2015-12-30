@@ -39,6 +39,7 @@ spawnListAndTbl:dc.b $01                        ;0: entries 0-1 (first courtyard
                 dc.b $01                        ;5: entries 12-13 (first cave)
                 dc.b $00                        ;6: entry 14 (lower lab stairwells)
                 dc.b $03                        ;7: entries 15-18 (lower lab corridor)
+                dc.b $03                        ;8: entries 19-22 (server vault)
 
 spawnListAddTbl:dc.b $00                        ;0: entries 0-1 (first courtyard)
                 dc.b $01                        ;1: entries 1-4 (entrance)
@@ -48,6 +49,7 @@ spawnListAddTbl:dc.b $00                        ;0: entries 0-1 (first courtyard
                 dc.b $0c                        ;5: entries 12-13 (first cave)
                 dc.b $0e                        ;6: entry 14 (lower lab stairwells)
                 dc.b $0f                        ;7: entries 15-18 (lower lab corridor)
+                dc.b $13                        ;8: entries 19-22 (server vault)
 
         ; Spawn list entries
 
@@ -70,6 +72,10 @@ spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
                 dc.b ACT_SMALLTANK              ;16
                 dc.b ACT_FLYINGCRAFT            ;17
                 dc.b ACT_COMBATROBOT            ;18
+                dc.b ACT_FLYINGCRAFT            ;19
+                dc.b ACT_ROLLINGMINE            ;20
+                dc.b ACT_COMBATROBOT            ;21
+                dc.b ACT_COMBATROBOT            ;22
 
 spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_PISTOL|SPAWN_AIR      ;1
@@ -90,3 +96,7 @@ spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_LASERRIFLE            ;16
                 dc.b ITEM_LASERRIFLE            ;17
                 dc.b ITEM_MINIGUN               ;18
+                dc.b ITEM_PLASMAGUN|SPAWN_AIR   ;19
+                dc.b ITEM_NONE                  ;20
+                dc.b ITEM_LASERRIFLE            ;21
+                dc.b ITEM_PLASMAGUN             ;22

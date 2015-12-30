@@ -77,7 +77,7 @@ HP_ROLLINGMINE  = 7
 HP_SMALLDROID   = 8
 HP_LIGHTGUARD   = 10
 HP_ROCK         = 10
-HP_FLYINGCRAFT  = 13
+HP_FLYINGCRAFT  = 12
 HP_ORGANICWALKER = 14
 HP_GUARD        = 14
 HP_ARMORER      = 16
@@ -95,7 +95,7 @@ HP_SUPERCPU     = 40
 HP_LARGETANK    = 56
 HP_SECURITYCHIEF = 64
 HP_LARGESPIDER  = 72
-HP_EYE          = 80
+HP_EYE          = 96
 HP_JORMUNGANDR  = 128
 
 MOD_HEAVYROBOT  = 7
@@ -916,7 +916,7 @@ alFlyingCraft:  dc.w USESCRIPT|EP_MOVEFLYINGCRAFT ;Update routine
                 dc.w 65                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $07                        ;AI offense AND-value
+                dc.b $0b                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN ;Attack directions
                 dc.b 5*8                        ;Horiz max movement speed
@@ -1029,7 +1029,7 @@ alCeilingTurret:dc.w USESCRIPT|EP_MOVETURRET    ;Update routine
                 dc.w 150                        ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $1f                        ;AI offense AND-value
+                dc.b $17                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
 
