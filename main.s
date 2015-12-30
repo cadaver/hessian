@@ -11,7 +11,7 @@ DROP_ITEM_TEST  = 0                             ;Drop a copy of current item to 
 AMMO_CHEAT      = 0
 ALLQUESTITEMS_CHEAT = 0
 STARTITEM_CHEAT = 1                             ;Start with weapon & parts instead of empty inventory
-UPGRADE_CHEAT   = 0
+UPGRADE_CHEAT   = 1
 GODMODE_CHEAT   = 0                             ;Whether health/battery cheat is on initially
 
         ; Memory configuration & loader symbols

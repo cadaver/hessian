@@ -77,7 +77,7 @@ HP_ROLLINGMINE  = 7
 HP_SMALLDROID   = 8
 HP_LIGHTGUARD   = 10
 HP_ROCK         = 10
-HP_FLYINGCRAFT  = 12
+HP_FLYINGCRAFT  = 14
 HP_ORGANICWALKER = 14
 HP_GUARD        = 14
 HP_ARMORER      = 16
@@ -1460,7 +1460,7 @@ alHighWalker:   dc.w USESCRIPT|EP_MOVEHIGHWALKER ;Update routine
                 dc.w 150                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $0f                        ;AI offense AND-value
+                dc.b $1f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
                 dc.b AMF_CUSTOMANIMATION        ;Move flags

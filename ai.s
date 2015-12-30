@@ -574,11 +574,20 @@ FT_TargetOK:    jsr GetActorDistance
                 lda temp7                       ;For purposes of diagonal attacks,
                 bne FT_NotHorizontal            ;consider target below if half block or greater distance
                 lda temp4
-                bpl FT_NotHorizontal
-                inc temp7
+                bpl FT_AdjustOK
                 inc temp8
+                inc temp7
+                bne FT_AdjustOK
 FT_NotHorizontal:
-                ldy actWpn,x
+                cmp #$01                        ;Hack for high walker: consider 1 block below horizontal
+                bne FT_AdjustOK
+                lda actT,x
+                cmp #ACT_HIGHWALKER
+                bne FT_AdjustOK
+                lda #$00
+                sta temp7
+                sta temp8
+FT_AdjustOK:    ldy actWpn,x
                 lda temp6
                 beq GAD_Vertical
 GAD_Horizontal2:cmp itemNPCMinDist-1,y
