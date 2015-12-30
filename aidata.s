@@ -71,27 +71,6 @@ spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
                 dc.b ACT_FLYINGCRAFT            ;17
                 dc.b ACT_COMBATROBOT            ;18
 
-
-spawnPlotTbl:   dc.b NOPLOTBIT                  ;0
-                dc.b NOPLOTBIT                  ;1
-                dc.b NOPLOTBIT                  ;2
-                dc.b NOPLOTBIT                  ;3
-                dc.b NOPLOTBIT                  ;4
-                dc.b NOPLOTBIT                  ;5
-                dc.b NOPLOTBIT                  ;6
-                dc.b NOPLOTBIT                  ;7
-                dc.b NOPLOTBIT                  ;8
-                dc.b NOPLOTBIT                  ;9
-                dc.b NOPLOTBIT                  ;10
-                dc.b NOPLOTBIT                  ;11
-                dc.b NOPLOTBIT                  ;12
-                dc.b NOPLOTBIT                  ;13
-                dc.b NOPLOTBIT                  ;14
-                dc.b NOPLOTBIT                  ;15
-                dc.b NOPLOTBIT                  ;16
-                dc.b NOPLOTBIT                  ;17
-                dc.b NOPLOTBIT                  ;18
-
 spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_PISTOL|SPAWN_AIR      ;1
                 dc.b ITEM_NIGHTSTICK            ;2

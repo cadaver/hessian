@@ -101,7 +101,6 @@ LVLOBJSEARCH    = 32
 LVLACTSEARCH    = 32
 
 NODAMAGESRC     = $80
-NOPLOTBIT       = $80
 
 SPAWNINFRONT_PROBABILITY = $c0
 
@@ -1687,11 +1686,7 @@ AS_Remove:      jmp RemoveActor                 ;Spawned into wrong background t
 AS_Done3:       jmp AS_Done2                    ;Reset spawn delay if fail hard (no need to retry on next frame)
 
 AttemptSpawn:   tax
-                lda spawnPlotTbl,x              ;Requires a plotbit to spawn?
-                bmi AS_NoPlotBit
-                jsr GetPlotBit
-                beq AS_Done3
-AS_NoPlotBit:   jsr GetFreeNPC
+                jsr GetFreeNPC
                 bcc AS_Done3
                 lda #$00
                 sta actYL,y
