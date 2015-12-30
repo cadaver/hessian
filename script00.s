@@ -69,7 +69,11 @@ START_Y         = $1700
 ;START_X         = $4f80
 ;START_Y         = $3b00
 
-;START_LEVEL     = $08                          ;Lower labs
+;START_LEVEL     = $08                           ;Lower labs beginning
+;START_X         = $4f80
+;START_Y         = $3900
+
+;START_LEVEL     = $08                           ;Lower labs corridor
 ;START_X         = $3780
 ;START_Y         = $4100
 

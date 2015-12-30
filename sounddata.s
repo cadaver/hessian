@@ -122,6 +122,7 @@ sfxReloadBazooka:include sfx/reloadbazooka.sfx
 sfxDamage:      include sfx/damage.sfx
 sfxSplash:      include sfx/splash.sfx
 sfxFlamer:      include sfx/flamer.sfx
+sfxGenerator:   include sfx/generator.sfx
 sfxPistol:      include sfx/pistol.sfx
 sfxAutoRifle:   include sfx/autorifle.sfx
 sfxMinigun:     include sfx/minigun.sfx
@@ -135,4 +136,3 @@ sfxSniperRifle: include sfx/sniperrifle.sfx
 sfxBazooka:     include sfx/bazooka.sfx
 sfxExplosion:   include sfx/explosion.sfx
 sfxEMP:         include sfx/emp.sfx
-sfxGenerator:   include sfx/generator.sfx

@@ -41,7 +41,7 @@ TURRET_ANIMDELAY = 2
                 dc.w OrganicWalkerDeath
                 dc.w MoveLargeWalker
                 dc.w MoveRockTrap
-                dc.w MoveSpiderWalker
+                dc.w MoveExplosionGeneratorRising
                 dc.w MoveLargeTank
                 dc.w MoveHighWalker
                 dc.w UseHealthRecharger
@@ -54,7 +54,8 @@ TURRET_ANIMDELAY = 2
                 dc.w ExplodeEnemy2_Ofs15
                 dc.w ExplodeEnemy4_Ofs15
                 dc.w ExplodeEnemy4_Rising
-                dc.w MoveExplosionGeneratorRising
+                dc.w DisconnectSubnet
+                dc.w InstallFilter
 
         ; Flying craft update routine
         ;
@@ -78,7 +79,21 @@ MFC_FrameOK1:   lsr
                 lda #4
 MFC_FrameOK2:   sta actF1,x
                 cmp #2                          ;Cannot fire when no speed (middle frame)
+                beq MFC_CannotAttack
+                cmp #0
+                bne MFC_NotLeft
+                lda actCtrl,x
+                and #JOY_FIRE|JOY_RIGHT         ;Cannot fire right in the extreme left orientation
+                cmp #JOY_FIRE|JOY_RIGHT
                 bne MFC_CanAttack
+                beq MFC_CannotAttack
+MFC_NotLeft:    cmp #4
+                bne MFC_CanAttack
+                lda actCtrl,x
+                and #JOY_FIRE|JOY_LEFT          ;Cannot fire left in the extreme right orientation
+                cmp #JOY_FIRE|JOY_LEFT
+                bne MFC_CanAttack
+MFC_CannotAttack:
 MFC_ContinueFall:
                 rts
 MFC_Fall:       jsr FallingMotionCommon
@@ -604,37 +619,6 @@ MoveRockTrap:   lda actYH,x                     ;Trigger when player is below
                 jmp InitActor
 MRT_NoTrigger:  rts
 
-        ; Spiderwalker update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveSpiderWalker:
-                jsr MoveGeneric                   ;Use human movement for physics
-                lda actMoveCtrl,x
-                and #JOY_LEFT|JOY_RIGHT
-                beq MSW_AnimDone                  ;0 = walk frame
-                lda actSX,x
-                beq MSW_AnimDone
-                asl
-                bcc MSW_WalkAnimSpeedPos
-                eor #$ff
-                adc #$00
-MSW_WalkAnimSpeedPos:
-                adc #$40
-                adc actFd,x
-                sta actFd,x
-                bcc MSW_AnimDone2
-                lda actF1,x
-                adc #$00
-                and #$03
-MSW_AnimDone:   sta actF1,x
-MSW_AnimDone2:  ldy #tankTurretOfs-turretFrameTbl
-                lda #1
-                jsr AnimateTurret
-                jmp AttackGeneric
-
         ; Large tank update routine
         ;
         ; Parameters: X actor index
@@ -870,8 +854,17 @@ ElevatorLoop:   ldx elevatorIndex
                 lda elevatorTime
                 bne EL_NotFirstFrame
                 sta charInfo-1                  ;Reset elevator speed
+                sta elevatorSound
 EL_NotFirstFrame:
-                lda charInfo-1                  ;Accelerate until full speed
+                inc elevatorSound
+                lda elevatorSound
+                cmp #$03
+                bcc EL_NoSound
+                lda #SFX_GENERATOR
+                jsr PlaySfx
+                lda #$00
+                sta elevatorSound
+EL_NoSound:     lda charInfo-1                  ;Accelerate until full speed
                 cmp elevatorSpeed,x
                 beq EL_HasFullSpeed
                 clc
@@ -1059,6 +1052,54 @@ MoveExplosionGeneratorRising:
                 jsr MoveActorY
                 jmp MoveExplosionGenerator
 
+        ; Subnet router script
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+        
+DisconnectSubnet:
+                lda #<250
+                ldy #>250
+                jsr AddScore
+                lda #<txtDisconnected
+                ldx #>txtDisconnected
+                ldy #REQUIREMENT_TEXT_DURATION
+                jsr PrintPanelText
+                lda lvlObjB+$4d
+                bpl DS_NotBoth
+                lda lvlObjB+$4e
+                bpl DS_NotBoth
+                lda #SFX_POWERUP
+                jsr PlaySfx
+                lda #PLOT_ELEVATOR1
+                jmp SetPlotBit                  ;Todo: other stuff, more prominent effect
+DS_NotBoth:     rts
+
+        ; Surgery station script (TODO: remove and replace with proper story elements)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+InstallFilter:  ldy #ITEM_LUNGFILTER
+                jsr FindItem
+                bcc IF_NotFound
+                jsr RemoveItem
+                lda #<500
+                ldy #>500
+                jsr AddScore
+                lda #<txtInstalled
+                ldx #>txtInstalled
+                ldy #REQUIREMENT_TEXT_DURATION
+                jsr PrintPanelText
+                lda #SFX_POWERUP
+                jsr PlaySfx
+                lda upgrade
+                ora #UPG_TOXINFILTER
+                sta upgrade
+IF_NotFound:    rts
+
         ; Tank Y-size addition table (based on turret direction)
 
 tankSizeAddTbl: dc.b 2,0,6,8
@@ -1097,17 +1138,18 @@ elevatorSrcLevel:
 elevatorDestLevel:
                 dc.b $08,$06,$0b,$0a
 elevatorDestObject:
-                dc.b $43,$3f,$0f,$39
+                dc.b $43,$3e,$0f,$39
 elevatorPlotBit:
                 dc.b PLOT_ELEVATOR1,PLOT_ELEVATOR1,PLOT_ELEVATOR2,PLOT_ELEVATOR2
-elevatorSpeed:  dc.b 32,-32,-64,64
-elevatorAcc:    dc.b 2,-2,-4,4
+elevatorSpeed:  dc.b 48,-48,-64,64
+elevatorAcc:    dc.b 2,-2,-2,2
 
         ; Variables
 
 elevatorIndex:  dc.b 0
 rechargerColor:
 elevatorTime:   dc.b 0
+elevatorSound:  dc.b 0
 
         ; Messages
 
@@ -1118,5 +1160,7 @@ txtBatteryRecharger:
 txtElevatorLocked:
                 dc.b "ELEVATOR LOCKED",0
 txtEnterCode:   dc.b "ENTER CODE",0
+txtDisconnected:dc.b "SUBNET ISOLATED",0
+txtInstalled    dc.b "FILTER INSTALLED",0
 
                 checkscriptend

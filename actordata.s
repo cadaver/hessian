@@ -24,7 +24,7 @@ ACT_SPEECHBUBBLE = 22
 ACT_EXPLOSIONGENERATOR = 23
 ACT_SMALLDROID  = 24
 ACT_LARGEDROID  = 25
-ACT_SPIDERWALKER = 26
+ACT_EXPLOSIONGENERATORRISING = 26
 ACT_FLYINGCRAFT = 27
 ACT_SMALLWALKER = 28
 ACT_SMALLTANK   = 29
@@ -57,14 +57,13 @@ ACT_EYE         = 55
 ACT_JORMUNGANDR = 56
 ACT_LARGETANK   = 57
 ACT_HIGHWALKER  = 58
-ACT_EXPLOSIONGENERATORRISING = 59
+ACT_GENERATOR = 59
 ACT_SECURITYCHIEF = 60
 ACT_ROTORDRONE  = 61
 ACT_LARGESPIDER = 62
 ACT_ACID        = 63
 ACT_SPIDERCHUNK = 64
 ACT_ARMORER     = 65
-ACT_GENERATOR   = 66
 
 HP_PLAYER       = 56
 HP_ACID         = 1
@@ -84,7 +83,6 @@ HP_ARMORER      = 16
 HP_LARGEDROID   = 16
 HP_SMALLWALKER  = 16
 HP_COMBATROBOT  = 18
-HP_SPIDERWALKER = 20
 HP_HEAVYGUARD   = 20
 HP_CEILINGTURRET = 24
 HP_SMALLTANK    = 24
@@ -162,7 +160,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adExplosionGenerator
                 dc.b <adSmallDroid
                 dc.b <adLargeDroid
-                dc.b <adSpiderWalker
+                dc.b <adExplosionGenerator
                 dc.b <adFlyingCraft
                 dc.b <adSmallWalker
                 dc.b <adSmallTank
@@ -195,14 +193,13 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adJormungandr
                 dc.b <adLargeTank
                 dc.b <adHighWalker
-                dc.b <adExplosionGenerator
+                dc.b <adGenerator
                 dc.b <adSecurityChief
                 dc.b <adRotorDrone
                 dc.b <adLargeSpider
                 dc.b <adAcid
                 dc.b <adSpiderChunk
                 dc.b <adGuard
-                dc.b <adGenerator
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -229,7 +226,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adExplosionGenerator
                 dc.b >adSmallDroid
                 dc.b >adLargeDroid
-                dc.b >adSpiderWalker
+                dc.b >adExplosionGenerator
                 dc.b >adFlyingCraft
                 dc.b >adSmallWalker
                 dc.b >adSmallTank
@@ -262,14 +259,13 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adJormungandr
                 dc.b >adLargeTank
                 dc.b >adHighWalker
-                dc.b >adExplosionGenerator
+                dc.b >adGenerator
                 dc.b >adSecurityChief
                 dc.b >adRotorDrone
                 dc.b >adLargeSpider
                 dc.b >adAcid
                 dc.b >adSpiderChunk
                 dc.b >adGuard
-                dc.b >adGenerator
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -545,16 +541,6 @@ adEye:          dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_SERVER                   ;Spritefile number
                 dc.b 1                          ;Base spritenumber
 
-adSpiderWalker: dc.b HUMANOID                   ;Number of sprites
-                dc.b C_MEDIUMROBOTS             ;Lower part spritefile number
-                dc.b 11                         ;Lower part base spritenumber
-                dc.b 0                          ;Lower part base index into the frametable
-                dc.b 32                         ;Lower part left frame add
-                dc.b C_MEDIUMROBOTS             ;Upper part spritefile number
-                dc.b 7                          ;Upper part base spritenumber
-                dc.b 78                         ;Upper part base index into the frametable
-                dc.b 4                          ;Upper part left frame add
-
 adLargeTank:    dc.b FOURSPRITE                 ;Number of sprites
                 dc.b C_LARGETANK                ;Spritefile number
                 dc.b 4                          ;Left frame add
@@ -635,7 +621,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alExplosionGenerator
                 dc.b <alSmallDroid
                 dc.b <alLargeDroid
-                dc.b <alSpiderWalker
+                dc.b <alExplosionGeneratorRising
                 dc.b <alFlyingCraft
                 dc.b <alSmallWalker
                 dc.b <alSmallTank
@@ -668,14 +654,13 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alJormungandr
                 dc.b <alLargeTank
                 dc.b <alHighWalker
-                dc.b <alExplosionGeneratorRising
+                dc.b <alGenerator
                 dc.b <alSecurityChief
                 dc.b <alRotorDrone
                 dc.b <alLargeSpider
                 dc.b <alAcid
                 dc.b <alScrapMetal
                 dc.b <alArmorer
-                dc.b <alGenerator
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -702,7 +687,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alExplosionGenerator
                 dc.b >alSmallDroid
                 dc.b >alLargeDroid
-                dc.b >alSpiderWalker
+                dc.b >alExplosionGeneratorRising
                 dc.b >alFlyingCraft
                 dc.b >alSmallWalker
                 dc.b >alSmallTank
@@ -735,14 +720,13 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alJormungandr
                 dc.b >alLargeTank
                 dc.b >alHighWalker
-                dc.b >alExplosionGeneratorRising
+                dc.b >alGenerator
                 dc.b >alSecurityChief
                 dc.b >alRotorDrone
                 dc.b >alLargeSpider
                 dc.b >alAcid
                 dc.b >alScrapMetal
                 dc.b >alArmorer
-                dc.b >alGenerator
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -927,7 +911,7 @@ alFlyingCraft:  dc.w USESCRIPT|EP_MOVEFLYINGCRAFT ;Update routine
                 dc.w 65                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $06                        ;AI offense AND-value
+                dc.b $07                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN ;Attack directions
                 dc.b 5*8                        ;Horiz max movement speed
@@ -1436,29 +1420,6 @@ alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
                 dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 2000                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
-
-alSpiderWalker: dc.w USESCRIPT|EP_MOVESPIDERWALKER ;Update routine
-                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
-                dc.b 12                         ;Horizontal size
-                dc.b 33                         ;Size up
-                dc.b 0                          ;Size down
-                dc.w USESCRIPT|EP_EXPLODEENEMY2_OFS15 ;Destroy routine
-                dc.b HP_SPIDERWALKER            ;Initial health
-                dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 60                         ;Score from kill
-                dc.b AIMODE_MOVER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $07                        ;AI offense AND-value
-                dc.b $10                        ;AI defense probability
-                dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DIAGONALUP|AB_UP ;Attack directions
-                dc.b AMF_CUSTOMANIMATION        ;Move flags
-                dc.b 2*8+4                      ;Max. movement speed
-                dc.b 8                          ;Ground movement acceleration
-                dc.b 0                          ;In air movement acceleration
-                dc.b 8                          ;Gravity acceleration
-                dc.b 8                          ;Long jump gravity acceleration
-                dc.b 8                          ;Ground braking
-                dc.b -4                         ;Height in chars for headbump check (negative)
 
 alLargeTank:    dc.w USESCRIPT|EP_MOVELARGETANK ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags

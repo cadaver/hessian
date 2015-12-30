@@ -34,8 +34,6 @@ SwitchGenerator:
                 lda #<250
                 ldy #>250
                 jsr AddScore
-                lda #SFX_GENERATOR
-                jsr PlaySfx
                 lda #<txtGeneratorOn
                 ldx #>txtGeneratorOn
                 ldy #REQUIREMENT_TEXT_DURATION
@@ -219,6 +217,15 @@ MoveGenerator:  lda #PLOT_GENERATOR
                 lda actFd,x
                 and #$01
                 sta shakeScreen
+                inc actTime,x
+                lda actTime,x
+                cmp #$03
+                bcc MG_NoSound
+                lda #SFX_GENERATOR
+                jsr PlaySfx
+                lda #$00
+                sta actTime,x
+MG_NoSound:
 MG_NotOn:       rts
 
         ; Variables
