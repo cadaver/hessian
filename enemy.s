@@ -119,7 +119,7 @@ MRM_NoClimb:    inc actFd,x
                 lda actFd,x
                 and #$01
                 sta actF1,x
-MineCommon:     ldy actAITarget,x
+MineCommon:     ldy #ACTI_PLAYER                    ;To avoid bugs, only ever collide with player
                 bmi MC_NoCollision
                 lda #DMG_ENEMYMINE
                 jsr CollideAndDamageTarget

@@ -40,6 +40,8 @@ spawnListAndTbl:dc.b $01                        ;0: entries 0-1 (first courtyard
                 dc.b $00                        ;6: entry 14 (lower lab stairwells)
                 dc.b $03                        ;7: entries 15-18 (lower lab corridor)
                 dc.b $03                        ;8: entries 19-22 (server vault)
+                dc.b $07                        ;9: entries 23-30 (nether tunnel)
+                dc.b $00                        ;a: entry 31 (nether tunnel)
 
 spawnListAddTbl:dc.b $00                        ;0: entries 0-1 (first courtyard)
                 dc.b $01                        ;1: entries 1-4 (entrance)
@@ -50,6 +52,8 @@ spawnListAddTbl:dc.b $00                        ;0: entries 0-1 (first courtyard
                 dc.b $0e                        ;6: entry 14 (lower lab stairwells)
                 dc.b $0f                        ;7: entries 15-18 (lower lab corridor)
                 dc.b $13                        ;8: entries 19-22 (server vault)
+                dc.b $17                        ;9: entries 23-30 (nether tunnel)
+                dc.b $1f                        ;a: entry 31 (nether tunnel)
 
         ; Spawn list entries
 
@@ -76,6 +80,15 @@ spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
                 dc.b ACT_ROLLINGMINE            ;20
                 dc.b ACT_FLYINGCRAFT            ;21
                 dc.b ACT_COMBATROBOT            ;22
+                dc.b ACT_FLYINGCRAFT            ;23
+                dc.b ACT_FLYINGCRAFT            ;24
+                dc.b ACT_FLYINGCRAFT            ;25
+                dc.b ACT_ROLLINGMINE            ;26
+                dc.b ACT_ROLLINGMINE            ;27
+                dc.b ACT_COMBATROBOT            ;28
+                dc.b ACT_COMBATROBOT            ;29
+                dc.b ACT_LARGEWALKER            ;30
+                dc.b ACT_FIREBALL               ;31
 
 spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_PISTOL|SPAWN_AIR      ;1
@@ -100,3 +113,12 @@ spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_NONE                  ;20
                 dc.b ITEM_PLASMAGUN|SPAWN_AIR   ;21
                 dc.b ITEM_PLASMAGUN             ;22
+                dc.b ITEM_PLASMAGUN|SPAWN_AIR   ;23
+                dc.b ITEM_PLASMAGUN|SPAWN_AIR   ;24
+                dc.b ITEM_PLASMAGUN|SPAWN_AIR   ;25
+                dc.b ITEM_NONE                  ;26
+                dc.b ITEM_NONE                  ;27
+                dc.b ITEM_MINIGUN               ;28
+                dc.b ITEM_MINIGUN               ;29
+                dc.b ITEM_GRENADELAUNCHER       ;30
+                dc.b ITEM_NONE|SPAWN_AIRBOTTOM  ;31

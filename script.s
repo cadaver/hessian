@@ -95,6 +95,8 @@ ES_LoadedScriptFile:
                 txa
                 ldx #F_SCRIPT
                 jsr MakeFileName
+                lda #$00                        ;Reset any text printing in case it was from
+                sta textHi                      ;script and will be overwritten
                 lda #<scriptCodeStart
                 ldx #>scriptCodeStart
                 jsr LoadFileRetry

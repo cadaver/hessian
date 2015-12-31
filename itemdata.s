@@ -116,7 +116,7 @@ itemDefaultPickup:
                 dc.b 4                          ;Shotgun
                 dc.b 10                         ;Auto rifle
                 dc.b 3                          ;Sniper rifle
-                dc.b 30                         ;Minigun
+                dc.b 20                         ;Minigun
                 dc.b 30                         ;Flamethrower
                 dc.b 7                          ;Laser rifle
                 dc.b 5                          ;Plasma gun

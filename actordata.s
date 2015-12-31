@@ -1339,7 +1339,7 @@ alCombatRobotFast:
                 dc.b 4                          ;Long jump gravity acceleration
                 dc.b INITIAL_GROUNDBRAKE        ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
-                dc.b -INITIAL_JUMPSPEED-4       ;Jump initial speed (negative)
+                dc.b -INITIAL_JUMPSPEED-8       ;Jump initial speed (negative)
                 dc.b INITIAL_CLIMBSPEED+4       ;Climbing speed
 
 alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
@@ -1351,7 +1351,7 @@ alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
                 dc.b HP_LARGEWALKER             ;Initial health
                 dc.b MOD_HEAVYROBOT             ;Damage modifier
                 dc.w 175                        ;Score from kill
-                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
+                dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
                 dc.b $1f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability

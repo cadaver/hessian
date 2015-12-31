@@ -81,9 +81,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $0080
 ;START_Y         = $5600
 
-;START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
-;START_X         = $a580
-;START_Y         = $7400
+START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
+START_X         = $a580
+START_Y         = $7400
 
 ;START_LEVEL     = $0a                          ;Jormungandr
 ;START_X         = $ed80
@@ -93,9 +93,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $4780
 ;START_Y         = $1700
 
-START_LEVEL      = $0d                         ;Server vault
-START_X          = $0180
-START_Y          = $2300
+;START_LEVEL      = $0d                         ;Server vault
+;START_X          = $0180
+;START_Y          = $2300
 
 ;START_LEVEL      = $0d                         ;Next to final server room
 ;START_X          = $3a80
@@ -472,8 +472,8 @@ IP_InitInventory:
                 ldx #1
                 jsr AddItem
                 if STARTITEM_CHEAT>0
-                lda #ITEM_LASERRIFLE
-                ldx #30
+                lda #ITEM_MINIGUN
+                ldx #50
                 jsr AddItem
                 lda #ITEM_PARTS
                 ldx #50

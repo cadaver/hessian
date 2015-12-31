@@ -460,7 +460,7 @@ MoveFireball:   lda actTime,x                   ;Randomize X-speed on first fram
                 jsr Random
                 and #$0f
                 sec
-                sbc #6*8
+                sbc #5*8+8
                 sta actSY,x
                 lda #SFX_GRENADELAUNCHER
                 jsr PlaySfx
