@@ -33,8 +33,7 @@ DMG_ACID        = 16
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
 DMGMOD_NOORGANIC = $80                          ;No organic damage
 DMGMOD_NONONORGANIC = $08                       ;No nonorganic damage
-DMGMOD_NONORGANIC75 = $68                       ;Nonorganic receives 75% of damage
-DMGMOD_NONORGANIC12 = $18                       ;Nonorganic receives 12% of damage
+DMGMOD_NONORGANIC75 = $78                       ;Nonorganic receives 75% of damage
 
 SPDTBL_NORMAL   = 0
 SPDTBL_GRENADE  = 9

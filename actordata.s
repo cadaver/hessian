@@ -245,7 +245,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adRock
                 dc.b >adFireball
                 dc.b >adSteam
-                dc.b >adSmallWalker
+                dc.b >adOrganicWalker
                 dc.b >adGuard
                 dc.b >adHeavyGuard
                 dc.b >adLightGuard
@@ -1021,8 +1021,8 @@ alRollingMine:  dc.w MoveRollingMine            ;Update routine
 alCeilingTurret:dc.w USESCRIPT|EP_MOVETURRET    ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 8                          ;Horizontal size
-                dc.b 0                          ;Size up
-                dc.b 12                         ;Size down
+                dc.b 1                          ;Size up
+                dc.b 13                         ;Size down
                 dc.w ExplodeEnemy2_8_Ofs6       ;Destroy routine
                 dc.b HP_CEILINGTURRET           ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
@@ -1099,7 +1099,7 @@ alSpider:       dc.w USESCRIPT|EP_MOVESPIDER    ;Update routine
 
 alFly:          dc.w USESCRIPT|EP_MOVEFLY       ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
-                dc.b 10                         ;Horizontal size
+                dc.b 8                          ;Horizontal size
                 dc.b 5                          ;Size up
                 dc.b 3                          ;Size down
                 dc.w USESCRIPT|EP_FLYDEATH      ;Destroy routine
@@ -1194,7 +1194,7 @@ alSteam:        dc.w USESCRIPT|EP_MOVESTEAM     ;Update routine
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alOrganicWalker:dc.w USESCRIPT|EP_MOVEORGANICWALKER ;Update routine
-                dc.b GRP_ENEMIES|AF_NOWEAPON|AF_ORGANIC ;Actor flags
+                dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC ;Actor flags
                 dc.b 12                         ;Horizontal size
                 dc.b 21                         ;Size up
                 dc.b 0                          ;Size down
@@ -1208,7 +1208,7 @@ alOrganicWalker:dc.w USESCRIPT|EP_MOVEORGANICWALKER ;Update routine
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALUP|AB_DIAGONALDOWN ;Attack directions
                 dc.b AMF_JUMP                   ;Move flags
-                dc.b 4*8-2                      ;Max. movement speed
+                dc.b 4*8-4                      ;Max. movement speed
                 dc.b 8                          ;Ground movement acceleration
                 dc.b 2                          ;In air movement acceleration
                 dc.b 6                          ;Gravity acceleration

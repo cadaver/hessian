@@ -1702,9 +1702,9 @@ AttemptSpawn:   tax
 
 AS_Ground:      lda #CI_GROUND
                 sta temp3
-AS_SideCommon:  jsr Random
+AS_SideCommon:  jsr Random                      ;Retry until is within screen
                 and #$07
-                beq AS_SideCommon               ;Retry until is within screen
+                beq AS_SideCommon
                 cmp #$06
                 bcs AS_SideCommon
                 tax
@@ -1727,16 +1727,23 @@ AS_GroundRight: lda AA_RightCheck+1
                 ldx #$ff
 AS_GroundStorePosDir:
                 sta actXH,y
-                adc #$01                        ;C=1 here (add 2)
-                sbc actXH+ACTI_PLAYER           ;C=0 here (subtracts one more)
-                cmp #$03
-                bcc AS_Remove2                  ;Do not spawn close to player
                 txa
                 sta actXL,y
                 sta actD,y
 AS_CheckBackground:
                 tya
                 tax
+                lda actXH,x
+                clc
+                adc #$02
+                sbc actXH+ACTI_PLAYER           ;C=0 here (subtracts one more)
+                cmp #$03
+                bcs AS_PlayerDistOK             ;Do not spawn close to player (check both X & Y)
+                lda actYH,x
+                adc #$02                        ;C=0 here
+                sbc actYH+ACTI_PLAYER           ;C=0 here (subtracts one more)
+                bcc AS_Remove3
+AS_PlayerDistOK:
 AS_BGRetry:     jsr GetCharInfo
                 and #CI_GROUND|CI_OBSTACLE|CI_NOPATH|CI_NOSPAWN
                 cmp temp3

@@ -41,7 +41,9 @@ spawnListAndTbl:dc.b $01                        ;0: entries 0-1 (first courtyard
                 dc.b $03                        ;7: entries 15-18 (lower lab corridor)
                 dc.b $03                        ;8: entries 19-22 (server vault)
                 dc.b $07                        ;9: entries 23-30 (nether tunnel)
-                dc.b $00                        ;a: entry 31 (nether tunnel)
+                dc.b $00                        ;a: entry 31 (nether tunnel lava)
+                dc.b $00                        ;b: entry 32 (biodome)
+                dc.b $00                        ;c: entry 33 (second cave)
 
 spawnListAddTbl:dc.b $00                        ;0: entries 0-1 (first courtyard)
                 dc.b $01                        ;1: entries 1-4 (entrance)
@@ -53,7 +55,9 @@ spawnListAddTbl:dc.b $00                        ;0: entries 0-1 (first courtyard
                 dc.b $0f                        ;7: entries 15-18 (lower lab corridor)
                 dc.b $13                        ;8: entries 19-22 (server vault)
                 dc.b $17                        ;9: entries 23-30 (nether tunnel)
-                dc.b $1f                        ;a: entry 31 (nether tunnel)
+                dc.b $1f                        ;a: entry 31 (nether tunnel lava)
+                dc.b $20                        ;b: entry 32 (biodome)
+                dc.b $21                        ;c: entry 33 (second cave)
 
         ; Spawn list entries
 
@@ -89,6 +93,8 @@ spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
                 dc.b ACT_COMBATROBOT            ;29
                 dc.b ACT_LARGEWALKER            ;30
                 dc.b ACT_FIREBALL               ;31
+                dc.b ACT_FLY                    ;32
+                dc.b ACT_ROCK                   ;33
 
 spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_PISTOL|SPAWN_AIR      ;1
@@ -122,3 +128,5 @@ spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_MINIGUN               ;29
                 dc.b ITEM_GRENADELAUNCHER       ;30
                 dc.b ITEM_NONE|SPAWN_AIRBOTTOM  ;31
+                dc.b ITEM_NONE|SPAWN_AIR        ;32
+                dc.b ITEM_NONE|SPAWN_AIRTOP     ;33
