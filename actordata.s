@@ -1020,7 +1020,7 @@ alRollingMine:  dc.w MoveRollingMine            ;Update routine
 
 alCeilingTurret:dc.w USESCRIPT|EP_MOVETURRET    ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
-                dc.b 6                          ;Horizontal size
+                dc.b 8                          ;Horizontal size
                 dc.b 0                          ;Size up
                 dc.b 12                         ;Size down
                 dc.w ExplodeEnemy2_8_Ofs6       ;Destroy routine

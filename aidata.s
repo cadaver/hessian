@@ -79,7 +79,7 @@ spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
                 dc.b ACT_COMBATROBOT            ;19
                 dc.b ACT_ROLLINGMINE            ;20
                 dc.b ACT_FLYINGCRAFT            ;21
-                dc.b ACT_COMBATROBOT            ;22
+                dc.b ACT_COMBATROBOTFAST        ;22
                 dc.b ACT_FLYINGCRAFT            ;23
                 dc.b ACT_FLYINGCRAFT            ;24
                 dc.b ACT_FLYINGCRAFT            ;25

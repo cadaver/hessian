@@ -1703,11 +1703,11 @@ AttemptSpawn:   tax
 AS_Ground:      lda #CI_GROUND
                 sta temp3
 AS_SideCommon:  jsr Random
-                tax
                 and #$07
                 beq AS_SideCommon               ;Retry until is within screen
                 cmp #$06
                 bcs AS_SideCommon
+                tax
                 clc
                 adc mapY
                 sta actYH,y
@@ -1723,12 +1723,14 @@ AS_GroundLeft:  lda AA_LeftCheck+1
                 ldx #$00
                 beq AS_GroundStorePosDir
 AS_GroundRight: lda AA_RightCheck+1
-                sbc #$00                         ;C=0 here
+                sbc #$00                        ;C=0 here, becomes 1
                 ldx #$ff
 AS_GroundStorePosDir:
-                cmp actXH+ACTI_PLAYER            ;Do not spawn exactly at player
-                beq AS_Remove2
                 sta actXH,y
+                adc #$01                        ;C=1 here (add 2)
+                sbc actXH+ACTI_PLAYER           ;C=0 here (subtracts one more)
+                cmp #$03
+                bcc AS_Remove2                  ;Do not spawn close to player
                 txa
                 sta actXL,y
                 sta actD,y
