@@ -77,13 +77,13 @@ titleTexts      = chars+608+168*2
 ;START_X         = $3780
 ;START_Y         = $4100
 
-;START_LEVEL     = $0a                          ;Nether tunnel
-;START_X         = $0080
-;START_Y         = $5600
+START_LEVEL     = $0a                          ;Nether tunnel
+START_X         = $0080
+START_Y         = $5600
 
-START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
-START_X         = $a580
-START_Y         = $7400
+;START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
+;START_X         = $a580
+;START_Y         = $7400
 
 ;START_LEVEL     = $0a                          ;Jormungandr
 ;START_X         = $ed80
@@ -478,6 +478,9 @@ IP_InitInventory:
                 lda #ITEM_PARTS
                 ldx #50
                 jsr AddItem
+                lda #ITEM_ARMOR
+                ldx #50
+                jsr AddItem
                 endif
                 jsr StopScript                  ;Stop any continuous script
                 lda #START_LEVEL
@@ -486,6 +489,9 @@ IP_InitInventory:
                 sta reload
                 sta battery
                 sta saveD
+                #if FILTER_UPGRADE_CHEAT>0
+                lda #$80
+                #endif
                 #if UPGRADE_CHEAT>0
                 lda #$ff
                 #endif

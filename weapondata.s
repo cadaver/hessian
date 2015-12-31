@@ -2,7 +2,7 @@ NOMODIFY        = $80
 
 DMG_DROWNING    = 2+NOMODIFY
 DMG_FISTS       = 4
-DMG_FLAMETHROWER = 6
+DMG_FLAMETHROWER = 5
 DMG_MINIGUN     = 6
 DMG_KNIFE       = 6
 DMG_NIGHTSTICK  = 6
@@ -367,7 +367,7 @@ wdBazooka:      dc.b WDB_BULLETDIRFRAME|WDB_NOSKILLBONUS|WDB_LOCKANIMATION ;Weap
                 dc.b ACT_ROCKET                 ;Bullet actor type
                 dc.b DMG_BAZOOKA                ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 28                         ;Bullet time duration
+                dc.b 56                         ;Bullet time duration
                 dc.b 10                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_BAZOOKA                ;Sound effect

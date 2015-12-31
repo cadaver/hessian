@@ -103,7 +103,7 @@ MOD_BOSS        = 3
 
         ; Difficulty mod for damage on player
 
-plrDmgModifyTbl:dc.b 4,6,8,12
+plrDmgModifyTbl:dc.b 3,5,8,12
 
         ; Human Y-size reduce table based on animation
 
@@ -1353,7 +1353,7 @@ alLargeWalker:  dc.w USESCRIPT|EP_MOVELARGEWALKER ;Update routine
                 dc.w 175                        ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $1f                        ;AI offense AND-value
+                dc.b $13                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
                 dc.b AMF_CUSTOMANIMATION        ;Move flags
