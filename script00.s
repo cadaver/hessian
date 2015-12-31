@@ -21,9 +21,9 @@ logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
-;START_LEVEL     = $00                          ;Warehouse
-;START_X         = $6780
-;START_Y         = $1700
+START_LEVEL     = $00                          ;Warehouse
+START_X         = $6780
+START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard
 ;START_X         = $0280
@@ -113,9 +113,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $1980
 ;START_Y         = $1300
 
-START_LEVEL     = $0f                          ;Old tunnels
-START_X         = $0180
-START_Y         = $4a00
+;START_LEVEL     = $0f                          ;Old tunnels
+;START_X         = $0180
+;START_Y         = $4a00
 
 ;START_LEVEL     = $0f                          ;Old tunnels lab
 ;START_X         = $6f80
