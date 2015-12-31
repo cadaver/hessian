@@ -77,13 +77,13 @@ titleTexts      = chars+608+168*2
 ;START_X         = $3780
 ;START_Y         = $4100
 
-START_LEVEL     = $0a                          ;Nether tunnel
-START_X         = $0080
-START_Y         = $5600
+;START_LEVEL     = $0a                          ;Nether tunnel
+;START_X         = $0080
+;START_Y         = $5600
 
-;START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
-;START_X         = $a580
-;START_Y         = $7400
+START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
+START_X         = $a580
+START_Y         = $7400
 
 ;START_LEVEL     = $0a                          ;Jormungandr
 ;START_X         = $ed80

@@ -54,8 +54,7 @@ TURRET_ANIMDELAY = 2
                 dc.w ExplodeEnemy2_Ofs15
                 dc.w ExplodeEnemy4_Ofs15
                 dc.w ExplodeEnemy4_Rising
-                dc.w DisconnectSubnet
-                dc.w InstallFilter
+                dc.w TunnelReroute
 
         ; Flying craft update routine
         ;
@@ -1052,53 +1051,18 @@ MoveExplosionGeneratorRising:
                 jsr MoveActorY
                 jmp MoveExplosionGenerator
 
-        ; Subnet router script
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-        
-DisconnectSubnet:
-                lda #<250
-                ldy #>250
-                jsr AddScore
-                lda #<txtDisconnected
-                ldx #>txtDisconnected
-                ldy #REQUIREMENT_TEXT_DURATION
-                jsr PrintPanelText
-                lda lvlObjB+$4d
-                bpl DS_NotBoth
-                lda lvlObjB+$4e
-                bpl DS_NotBoth
-                lda #SFX_POWERUP
-                jsr PlaySfx
-                lda #PLOT_ELEVATOR1
-                jmp SetPlotBit                  ;Todo: other stuff, more prominent effect
-DS_NotBoth:     rts
-
-        ; Surgery station script (TODO: remove and replace with proper story elements)
+        ; Tunnel reroute after the machine has been used once
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-InstallFilter:  ldy #ITEM_LUNGFILTER
-                jsr FindItem
-                bcc IF_NotFound
-                jsr RemoveItem
-                lda #<500
-                ldy #>500
-                jsr AddScore
-                lda #<txtInstalled
-                ldx #>txtInstalled
-                ldy #REQUIREMENT_TEXT_DURATION
-                jsr PrintPanelText
-                lda #SFX_POWERUP
-                jsr PlaySfx
-                lda upgrade
-                ora #UPG_TOXINFILTER
-                sta upgrade
-IF_NotFound:    rts
+TunnelReroute:  lda #PLOT_WALLBREACHED
+                jsr GetPlotBit
+                beq TR_NotDone
+                lda #$3d                        ;Change sidedoor destination to version
+                sta lvlObjDL+$2a                ;of zone without machine + new enemies
+TR_NotDone:     rts
 
         ; Tank Y-size addition table (based on turret direction)
 
@@ -1132,7 +1096,7 @@ ceilingTurretOfs:
                 dc.b 0
 
         ; Elevator tables
-        
+
 elevatorSrcLevel:
                 dc.b $06,$08,$0a,$0b
 elevatorDestLevel:
@@ -1160,7 +1124,5 @@ txtBatteryRecharger:
 txtElevatorLocked:
                 dc.b "ELEVATOR LOCKED",0
 txtEnterCode:   dc.b "ENTER CODE",0
-txtDisconnected:dc.b "SUBNET ISOLATED",0
-txtInstalled    dc.b "FILTER INSTALLED",0
 
                 checkscriptend

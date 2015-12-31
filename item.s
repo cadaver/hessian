@@ -297,6 +297,7 @@ RI_Cmp:         cpy #$00                     ;selection backward
 
 UseItem:        lda actHp+ACTI_PLAYER           ;Can't use/reload after dying
                 beq UI_Dead
+                lda levelNum
                 cpy #ITEM_FIRST_NONWEAPON
                 bcc UI_Reload
                 cpy #ITEM_MEDKIT
@@ -305,12 +306,30 @@ UseItem:        lda actHp+ACTI_PLAYER           ;Can't use/reload after dying
                 beq UseBattery
                 cpy #ITEM_AMPLIFIER
                 beq UseAmplifier
+                cpy #ITEM_FUELCAN
+                beq UseTunnelMachineItems
+                cpy #ITEM_TRUCKBATTERY
+                beq UseTunnelMachineItems
 UI_Dead:
 UB_FullBattery:
+UTMI_NotRightPosition:
 UA_NotRightPosition:
 UMK_FullHealth: rts
-UseAmplifier:   lda levelNum
-                cmp #$06
+UseTunnelMachineItems:
+                cmp #$0a
+                bne UTMI_NotRightPosition
+                lda actYH+ACTI_PLAYER
+                cmp #$74
+                bne UTMI_NotRightPosition
+                lda actXH+ACTI_PLAYER
+                cmp #$a6
+                bcc UTMI_NotRightPosition
+                cmp #$aa
+                bcs UTMI_NotRightPosition
+                lda #<EP_TUNNELMACHINEITEMS
+                ldx #>EP_TUNNELMACHINEITEMS
+                jmp ExecScript
+UseAmplifier:   cmp #$06
                 bne UA_NotRightPosition
                 lda lvlObjNum
                 cmp #$0e

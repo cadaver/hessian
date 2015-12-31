@@ -44,8 +44,7 @@ EP_ELEVATORLOOP = $0122
 EP_EXPLODEENEMY2_OFS15 = $0123
 EP_EXPLODEENEMY4_OFS15 = $0124
 EP_EXPLODEENEMY4_RISING = $0125
-EP_DISCONNECTSUBNET = $0126
-EP_INSTALLFILTER = $0127
+EP_TUNNELREROUTE = $0126
 
 EP_MOVEJORMUNGANDR = $0200
 
@@ -71,12 +70,20 @@ EP_SWITCHLASER = $0501
 EP_INSTALLAMPLIFIER = $0502
 EP_RUNLASER = $0503
 EP_MOVEGENERATOR = $0504
+EP_SUBNETROUTER = $0505
+EP_INSTALLFILTER = $0506 ;TODO replace
+EP_TUNNELMACHINE = $0507
+EP_TUNNELMACHINEITEMS = $0508
+EP_TUNNELMACHINERUN = $0509
 
 PLOT_ELEVATOR1  = $00                       ;Upper <-> lower lab
 PLOT_ELEVATOR2  = $01                       ;Jormungandr <-> Bio-Dome
-PLOT_GENERATOR  = $02                       ;HV Supply switched on
-PLOT_AMPINSTALLED = $03                     ;Amplifier installed in laser
+PLOT_GENERATOR  = $02                       ;Upper labs generator switched on
+PLOT_AMPINSTALLED = $03                     ;Laser amplifier installed
 PLOT_ROTORDRONE  = $04                      ;Rotordrone boss destroyed
+PLOT_BATTERY    = $05                       ;Tunnel machine battery installed
+PLOT_FUEL       = $06                       ;Tunnel machine refueled
+PLOT_WALLBREACHED = $07                     ;Tunnel machine has been used
 
 SPEECHBUBBLEOFFSET = -40*8
 
