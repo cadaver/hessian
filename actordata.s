@@ -103,7 +103,7 @@ MOD_BOSS        = 3
 
         ; Difficulty mod for damage on player
 
-plrDmgModifyTbl:dc.b 3,5,8,12
+plrDmgModifyTbl:dc.b 4,6,8,12
 
         ; Human Y-size reduce table based on animation
 

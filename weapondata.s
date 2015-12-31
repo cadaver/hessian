@@ -13,9 +13,9 @@ DMG_LASER       = 12
 DMG_SHOTGUN     = 14                            ;Reduced by 2 per animation frame
 DMG_PLASMA      = 16
 DMG_SNIPERRIFLE = 20
+DMG_ENEMYMINE   = 32
 DMG_LAUNCHERGRENADE = 40
 DMG_GRENADE     = 40
-DMG_ENEMYMINE   = 40
 DMG_MINE        = 56
 DMG_BAZOOKA     = 56
 DMG_EMP         = 4+NOMODIFY                    ;4 damage for 8 frames = 32 total
