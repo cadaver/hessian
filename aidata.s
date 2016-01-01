@@ -113,7 +113,7 @@ spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_LASERRIFLE|SPAWN_AIRTOP ;14
                 dc.b ITEM_NONE                  ;15
                 dc.b ITEM_LASERRIFLE            ;16
-                dc.b ITEM_LASERRIFLE            ;17
+                dc.b ITEM_LASERRIFLE|SPAWN_AIR  ;17
                 dc.b ITEM_MINIGUN               ;18
                 dc.b ITEM_LASERRIFLE            ;19
                 dc.b ITEM_NONE                  ;20

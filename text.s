@@ -34,8 +34,8 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtOldTunnelsPass
                 dc.b <txtBiometricId
                 dc.b <txtAmplifier
-                dc.b <txtFuelCan
                 dc.b <txtTruckBattery
+                dc.b <txtFuelCan
                 dc.b <txtLungFilter
                 dc.b <txtCommGear
                 dc.b <txtHazmatSuit
@@ -136,9 +136,9 @@ txtOldTunnelsPass:dc.b "OLD TUNNELS"
 txtBiometricId: dc.b "BIOMETRIC ID",0
 txtAmplifier:   dc.b "SIGNAL AMPLIFI"
                 textjump txtEr
-txtFuelCan:     dc.b "FUEL CAN",0
 txtTruckBattery:dc.b "TRUCK "
                 textjump txtBattery
+txtFuelCan:     dc.b "FUEL CAN",0
 txtLungFilter:  dc.b "LUNG FILT"
                 textjump txtEr
 txtCommGear:    dc.b "RADIO & EYECAM",0
