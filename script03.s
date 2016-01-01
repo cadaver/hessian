@@ -449,6 +449,11 @@ MLS_NotTooClose:dec actTime,x
 MLS_NoForcedAttack:
                 jsr Random
                 and #$03
+                cmp #$02                        ;Do not attack twice in a row
+                bcc MLS_ForcedMove
+                ldy actMoveCtrl,x
+                cpy #JOY_FIRE
+                beq MLS_NoForcedAttack          ;Rerandomize in that case
 MLS_ForcedMove: tay
                 jsr Random
                 and spiderDelayAndTbl,y
