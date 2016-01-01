@@ -348,15 +348,10 @@ DropItem:       lda #$00
                 cmp #ACT_LARGEDROIDFINAL
                 beq DI_NoItem
                 jsr Random
-                and #$18
+                and #$0c
                 ldy #AL_SIZEHORIZ               ;If enemy is going to drop parts, make their
                 clc                             ;count proportional to the enemy size + random add
                 adc (actLo),y
-                iny
-                adc (actLo),y
-                iny
-                adc (actLo),y
-                lsr
                 lsr
                 lsr
                 sta itemDefaultPickup+ITEM_PARTS-1
