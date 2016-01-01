@@ -404,6 +404,9 @@ AI_FlyerCommon: bcc AI_FlyerIdle
                 tay
                 bmi AI_FlyerIdle                ;Too close to target, make a diagonal pass
                 sta temp1
+                lda actSX,x                     ;Make sure is traveling to direction of target
+                eor temp5                       ;before firing
+                bmi AI_FlyerFollow
                 jsr PA_NoDucking
                 bcs AI_FlyerDone
 AI_FlyerFollow: lda temp7

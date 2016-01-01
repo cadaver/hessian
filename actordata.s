@@ -65,6 +65,7 @@ ACT_ACID        = 63
 ACT_SPIDERCHUNK = 64
 ACT_ARMORER     = 65
 ACT_LARGEDROIDFINAL = 66
+ACT_MEDIUMWALKER = 67
 
 HP_PLAYER       = 56
 HP_ACID         = 1
@@ -86,10 +87,11 @@ HP_SMALLWALKER  = 16
 HP_COMBATROBOT  = 18
 HP_HEAVYGUARD   = 20
 HP_CEILINGTURRET = 24
+HP_MEDIUMWALKER = 24
 HP_SMALLTANK    = 24
 HP_CPU          = 32
 HP_HIGHWALKER   = 36
-HP_LARGEWALKER  = 40
+HP_LARGEWALKER  = 48
 HP_ROTORDRONE   = 40
 HP_SUPERCPU     = 40
 HP_LARGETANK    = 56
@@ -202,6 +204,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adSpiderChunk
                 dc.b <adGuard
                 dc.b <adLargeDroid
+                dc.b <adSmallWalker
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -269,6 +272,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adSpiderChunk
                 dc.b >adGuard
                 dc.b >adLargeDroid
+                dc.b >adSmallWalker
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -665,6 +669,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alScrapMetal
                 dc.b <alArmorer
                 dc.b <alLargeDroid
+                dc.b <alMediumWalker
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -732,6 +737,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alScrapMetal
                 dc.b >alArmorer
                 dc.b >alLargeDroid
+                dc.b >alMediumWalker
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -916,7 +922,7 @@ alFlyingCraft:  dc.w USESCRIPT|EP_MOVEFLYINGCRAFT ;Update routine
                 dc.w 65                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
-                dc.b $0b                        ;AI offense AND-value
+                dc.b $0f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN ;Attack directions
                 dc.b 5*8                        ;Horiz max movement speed
@@ -1041,7 +1047,7 @@ alFire:         dc.w USESCRIPT|EP_MOVEFIRE      ;Update routine
                 dc.w USESCRIPT|EP_DESTROYFIRE   ;Destroy routine
                 dc.b 0                          ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 100                        ;Score from kill
+                dc.w 150                        ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alSmokeCloud:   dc.w USESCRIPT|EP_MOVESMOKECLOUD ;Update routine
@@ -1394,7 +1400,7 @@ alSuperCpu:     dc.w FlashActor_CheckDamageFlash ;Update routine
                 dc.w DestroyCPU                 ;Destroy routine
                 dc.b HP_SUPERCPU                ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 250                        ;Score from kill
+                dc.w 500                        ;Score from kill
 
 alEyeInvisible: dc.w USESCRIPT|EP_MOVEEYESTAGE1 ;Update routine
                 dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_ORGANIC ;Actor flags
@@ -1412,7 +1418,7 @@ alEye:          dc.w USESCRIPT|EP_MOVEEYESTAGE2 ;Update routine
                 dc.w USESCRIPT|EP_DESTROYEYE    ;Destroy routine
                 dc.b HP_EYE                     ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier
-                dc.w 1000                       ;Score from kill
+                dc.w 2000                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
@@ -1423,7 +1429,7 @@ alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
                 dc.w DoNothing                  ;Destroy routine
                 dc.b 0                          ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier
-                dc.w 2000                       ;Score from kill
+                dc.w 2500                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alLargeTank:    dc.w USESCRIPT|EP_MOVELARGETANK ;Update routine
@@ -1529,7 +1535,7 @@ alLargeSpider:  dc.w USESCRIPT|EP_MOVELARGESPIDER ;Update routine
                 dc.w DoNothing                  ;Destroy routine
                 dc.b HP_LARGESPIDER             ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier
-                dc.w 1250                       ;Score from kill
+                dc.w 1500                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop table index or item override
                 dc.b $00                        ;AI offense AND-value
@@ -1582,3 +1588,27 @@ alGenerator:    dc.w USESCRIPT|EP_MOVEGENERATOR ;Update routine
                 dc.b 0                          ;Size down
                 dc.w RemoveActor                ;Destroy routine
                 dc.b 0                          ;Initial health
+
+alMediumWalker: dc.w USESCRIPT|EP_MOVEWALKER    ;Update routine
+                dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
+                dc.b 12                         ;Horizontal size
+                dc.b 21                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
+                dc.b HP_MEDIUMWALKER            ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 85                         ;Score from kill
+                dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
+                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b $07                        ;AI offense AND-value
+                dc.b $10                        ;AI defense probability
+                dc.b AB_HORIZONTAL              ;Attack directions
+                dc.b AMF_JUMP                   ;Move flags
+                dc.b 3*8+4                      ;Max. movement speed
+                dc.b 6                          ;Ground movement acceleration
+                dc.b 2                          ;In air movement acceleration
+                dc.b 6                          ;Gravity acceleration
+                dc.b 6                          ;Long jump gravity acceleration
+                dc.b 8                          ;Ground braking
+                dc.b -3                         ;Height in chars for headbump check (negative)
+                dc.b -6*8                       ;Jump initial speed (negative)

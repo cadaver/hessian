@@ -77,11 +77,11 @@ spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
                 dc.b ACT_BAT                    ;13
                 dc.b ACT_LARGEDROID             ;14
                 dc.b ACT_ROLLINGMINE            ;15
-                dc.b ACT_SMALLTANK              ;16
+                dc.b ACT_MEDIUMWALKER           ;16
                 dc.b ACT_FLYINGCRAFT            ;17
                 dc.b ACT_COMBATROBOT            ;18
                 dc.b ACT_COMBATROBOT            ;19
-                dc.b ACT_ROLLINGMINE            ;20
+                dc.b ACT_SMALLTANK              ;20
                 dc.b ACT_FLYINGCRAFT            ;21
                 dc.b ACT_COMBATROBOTFAST        ;22
                 dc.b ACT_FLYINGCRAFT            ;23
@@ -107,7 +107,7 @@ spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_AUTORIFLE             ;8
                 dc.b ITEM_EMPGENERATOR          ;9
                 dc.b ITEM_MINIGUN|SPAWN_AIR     ;10
-                dc.b ITEM_LASERRIFLE            ;11
+                dc.b ITEM_MINIGUN               ;11
                 dc.b ITEM_NONE                  ;12
                 dc.b ITEM_NONE|SPAWN_AIR        ;13
                 dc.b ITEM_LASERRIFLE|SPAWN_AIRTOP ;14
@@ -116,7 +116,7 @@ spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
                 dc.b ITEM_LASERRIFLE|SPAWN_AIR  ;17
                 dc.b ITEM_MINIGUN               ;18
                 dc.b ITEM_LASERRIFLE            ;19
-                dc.b ITEM_NONE                  ;20
+                dc.b ITEM_MINIGUN               ;20
                 dc.b ITEM_PLASMAGUN|SPAWN_AIR   ;21
                 dc.b ITEM_PLASMAGUN             ;22
                 dc.b ITEM_PLASMAGUN|SPAWN_AIR   ;23

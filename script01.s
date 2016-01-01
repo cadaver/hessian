@@ -78,21 +78,7 @@ MFC_FrameOK1:   lsr
                 lda #4
 MFC_FrameOK2:   sta actF1,x
                 cmp #2                          ;Cannot fire when no speed (middle frame)
-                beq MFC_CannotAttack
-                cmp #0
-                bne MFC_NotLeft
-                lda actCtrl,x
-                and #JOY_FIRE|JOY_RIGHT         ;Cannot fire right in the extreme left orientation
-                cmp #JOY_FIRE|JOY_RIGHT
                 bne MFC_CanAttack
-                beq MFC_CannotAttack
-MFC_NotLeft:    cmp #4
-                bne MFC_CanAttack
-                lda actCtrl,x
-                and #JOY_FIRE|JOY_LEFT          ;Cannot fire left in the extreme right orientation
-                cmp #JOY_FIRE|JOY_LEFT
-                bne MFC_CanAttack
-MFC_CannotAttack:
 MFC_ContinueFall:
                 rts
 MFC_Fall:       jsr FallingMotionCommon

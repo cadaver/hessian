@@ -1742,6 +1742,7 @@ AS_CheckBackground:
                 lda actYH,x
                 adc #$02                        ;C=0 here
                 sbc actYH+ACTI_PLAYER           ;C=0 here (subtracts one more)
+                cmp #$03
                 bcc AS_Remove3
 AS_PlayerDistOK:
 AS_BGRetry:     jsr GetCharInfo

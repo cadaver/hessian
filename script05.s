@@ -36,15 +36,17 @@ SwitchGenerator:
                 bne SG_AlreadyOn
                 lda #PLOT_GENERATOR
                 jsr SetPlotBit
-                lda #<250
-                ldy #>250
-                jsr AddScore
+                jsr AddScoreCommon
                 lda #<txtGeneratorOn
                 ldx #>txtGeneratorOn
                 ldy #REQUIREMENT_TEXT_DURATION
                 jmp PrintPanelText
 SL_Broken:
 SG_AlreadyOn:   rts
+
+AddScoreCommon: lda #<500
+                ldy #>500
+                jmp AddScore
 
         ; Switch laser script routine
         ;
@@ -93,9 +95,7 @@ InstallAmplifier:
                 bpl IA_NotOpen
                 lda lvlObjB+$0f
                 bmi IA_IsLive
-                lda #<250
-                ldy #>250
-                jsr AddScore
+                jsr AddScoreCommon
                 lda #SFX_POWERUP
                 jsr PlaySfx
                 lda #PLOT_AMPINSTALLED
@@ -199,9 +199,7 @@ RL_Explode:     ldy #$0f
                 jsr ToggleObject
                 ldy #$2b
                 jsr ToggleObject
-                lda #<250
-                ldy #>250
-                jsr AddScore
+                jsr AddScoreCommon
                 lda #SFX_EXPLOSION
                 jmp PlaySfx
 RL_Finish:      jsr StopScript
@@ -240,9 +238,7 @@ MG_NotOn:       rts
         ; Modifies: various
 
 DisconnectSubnet:
-                lda #<250
-                ldy #>250
-                jsr AddScore
+                jsr AddScoreCommon
                 lda #<txtDisconnected
                 ldx #>txtDisconnected
                 ldy #REQUIREMENT_TEXT_DURATION
@@ -372,9 +368,7 @@ TMR_Decision:   lda tmChoice
 TMR_Finish:     jsr StopScript
                 ldx #MENU_NONE
                 jmp SetMenuMode
-TMR_Drive:      lda #<250
-                ldy #>250
-                jsr AddScore
+TMR_Drive:      jsr AddScoreCommon
                 jsr TMR_Finish
                 lda #$00
                 sta tmTime1                     ;TODO: replace with cutscene
@@ -418,9 +412,7 @@ TMI_Fuel:       lda #PLOT_FUEL
 TMI_Common:     jsr TM_TextCommon
                 ldy itemIndex
                 jsr RemoveItem
-                lda #<250
-                ldy #>250
-                jsr AddScore
+                jsr AddScoreCommon
                 lda #SFX_POWERUP
                 jmp PlaySfx
 
