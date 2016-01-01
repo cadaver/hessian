@@ -1,49 +1,15 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 1, loadable enemy movement routines + data, and common objects
+RECYCLER_ITEM_FIRST = ITEM_PISTOL
+RECYCLER_ITEM_LAST = ITEM_ARMOR
+MAX_RECYCLER_ITEMS = 10
+RECYCLER_MOVEDELAY = 8
 
-FR_DEADRATAIR = 12
-FR_DEADRATGROUND = 13
-FR_DEADSPIDERAIR = 3
-FR_DEADSPIDERGROUND = 4
-FR_DEADFLY = 2
-FR_DEADBATGROUND = 6
-FR_DEADWALKERAIR = 12
-FR_DEADWALKERGROUND = 13
-
-TURRET_ANIMDELAY = 2
+        ; Script 1: common objects
 
                 org scriptCodeStart
 
-                dc.w MoveFlyingCraft
-                dc.w MoveWalker
-                dc.w MoveTank
-                dc.w DestroyFlyingCraft
-                dc.w MoveTurret
-                dc.w MoveFire
-                dc.w MoveSmokeCloud
-                dc.w MoveRat
-                dc.w MoveSpider
-                dc.w MoveFly
-                dc.w MoveBat
-                dc.w MoveFish
-                dc.w MoveRock
-                dc.w MoveFireball
-                dc.w MoveSteam
-                dc.w MoveOrganicWalker
-                dc.w DestroyFire
-                dc.w RatDeath
-                dc.w SpiderDeath
-                dc.w FlyDeath
-                dc.w BatDeath
-                dc.w DestroyRock
-                dc.w OrganicWalkerDeath
-                dc.w MoveLargeWalker
-                dc.w MoveRockTrap
-                dc.w MoveExplosionGeneratorRising
-                dc.w MoveLargeTank
-                dc.w MoveHighWalker
                 dc.w UseHealthRecharger
                 dc.w UseBatteryRecharger
                 dc.w RechargerEffect
@@ -51,689 +17,13 @@ TURRET_ANIMDELAY = 2
                 dc.w EnterCodeLoop
                 dc.w Elevator
                 dc.w ElevatorLoop
-                dc.w ExplodeEnemy2_Ofs15
-                dc.w ExplodeEnemy4_Ofs15
-                dc.w ExplodeEnemy4_Rising
                 dc.w TunnelReroute
-
-        ; Flying craft update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveFlyingCraft:lda actHp,x
-                beq MFC_Fall
-                jsr MoveAccelerateFlyer
-                lda actSX,x
-                clc
-                adc #2*8+4
-                bpl MFC_FrameOK1
-                lda #0
-MFC_FrameOK1:   lsr
-                lsr
-                lsr
-                cmp #5
-                bcc MFC_FrameOK2
-                lda #4
-MFC_FrameOK2:   sta actF1,x
-                cmp #2                          ;Cannot fire when no speed (middle frame)
-                bne MFC_CanAttack
-MFC_ContinueFall:
-                rts
-MFC_Fall:       jsr FallingMotionCommon
-                tay
-                beq MFC_ContinueFall
-                jmp ExplodeEnemy2_8             ;Drop item & explode at any collision
-
-        ; Flying craft destroy routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-DestroyFlyingCraft:
-                stx DFC_RestX+1                 ;Spawn one explosion when starts to fall
-                lda #ACTI_FIRSTNPC              ;Use any free actors
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
-                bcc DFC_NoRoom
-                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
-                tya
-                tax
-                jsr ExplodeActor                ;Play explosion sound & init animation
-DFC_RestX:      ldx #$00
-DFC_NoRoom:     rts
-
-        ; Walking robot update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveWalker:     jsr MoveGeneric
-MFC_CanAttack:  jmp AttackGeneric
-
-        ; Tank update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveTank:       jsr MoveGeneric                   ;Use human movement for physics
-                ldy #tankTurretOfs-turretFrameTbl
-                lda #1
-                jsr AnimateTurret
-                jsr AttackGeneric
-                jsr GetAbsXSpeed
-                clc
-                adc actFd,x
-                cmp #$30
-                bcc MT_NoWrap
-                sbc #$30
-MT_NoWrap:      sta actFd,x
-                lsr
-                lsr
-                lsr
-                lsr
-                sta actF1,x
-                ldy #AL_SIZEUP                      ;Modify size up based on turret direction
-                lda (actLo),y
-                ldy actF2,x
-                clc
-                adc tankSizeAddTbl,y
-                sta actSizeU,x
-MFM_NoExplosion:rts
-
-GetAbsXSpeed:   lda actSX,x                       ;Tracks animation from absolute speed
-                bpl GAXS_Pos
-                clc
-                eor #$ff
-                adc #$01
-GAXS_Pos:       rts
-
-        ; Ceiling turret update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveTurret:     lda actF2,x
-                ldy actFd,x                         ;Start from middle frame
-                bne MT_NoInit
-                inc actFd,x
-                lda #2
-                sta actF2,x
-MT_NoInit:      ldy #ceilingTurretOfs-turretFrameTbl
-                jsr AnimateTurret
-                lda actF2,x
-                sta actF1,x                         ;Ceiling turret uses only 1-part animation, so copy to frame1
-                jmp AttackGeneric
-
-        ; Fire movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveFire:       lda actTime,x                   ;Restore oxygen level if not extinguished
-                beq MF_FullOxygen               ;completely, destroy if depleted enough
-                cmp #EXTINGUISH_THRESHOLD
-                bcs MF_Destroy
-                dec actTime,x
-                bcc MF_Flash
-MF_FullOxygen:  sta actFlash,x                  ;Stop flickering at full oxygen
-MF_Flash:       lda #DMG_FIRE
-                jsr CollideAndDamagePlayer
-                lda #2
-                ldy #3
-                jsr LoopingAnimation
-                lda actF1,x
-                ora actFd,x
-                bne MF_NoSpawn
-                lda #ACTI_FIRSTEFFECT
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
-                bcc MF_NoSpawn
-                lda #ACT_SMOKECLOUD
-                jsr SpawnActor
-                tya
-                tax
-                jsr InitActor                   ;Set collision size
-                lda #-15*8
-                jsr MoveActorY
-                lda #COLOR_FLICKER
-                sta actFlash,x
-                ldx actIndex
-MSC_NoRemove:
-MF_NoSpawn:     rts
-MF_Destroy:     ldy #ACTI_FIRSTPLRBULLET        ;Make sure player receives score
-                jmp DestroyActor
-
-        ; Smokecloud movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveSmokeCloud: lda upgrade
-                bmi MSC_NoSmokeDamage           ;If filter installed, no damage
-                lda #DMG_SMOKE
-                jsr CollideAndDamagePlayer
-MSC_NoSmokeDamage:
-                lda #-12
-                jsr MoveActorY
-                lda #4
-                ldy #3
-                jsr OneShotAnimation
-                bcc MSC_NoRemove
-                jmp RemoveActor
-
-        ; Rat movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveRat:        lda #FR_DEADRATGROUND
-                sta temp1
-                lda actHp,x
-                beq MR_Dead
-                jsr MoveGeneric
-                jmp AttackGeneric
-MR_Dead:        jsr DeadAnimalMotion
-                bcs MR_DeadGrounded
-                rts
-MR_DeadGrounded:lda #$00
-                sta actSX,x                     ;Instant braking
-                lda temp1
-                sta actF1,x
-                rts
-
-        ; Spider movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-        
-MoveSpider:     lda #FR_DEADSPIDERGROUND
-                sta temp1
-                lda actHp,x
-                beq MR_Dead
-                jsr MoveGeneric
-                lda #2
-                ldy #2
-                jsr LoopingAnimation
-MS_Damage:      lda actFd,x
-                lsr
-                bcs MS_NoDamage                 ;Touch damage only each third frame
-                lda #DMG_SPIDER
-                jmp CollideAndDamagePlayer
-MS_NoDamage:    rts
-
-        ; Fly movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveFly:        lda actHp,x
-                beq MF_Dead
-                lda actMB,x
-                and #MB_HITWALL|MB_HITWALLVERTICAL
-                bne MF_SetNewControls
-                dec actTime,x
-                bpl MF_NoNewControls
-MF_SetNewControls:
-                jsr Random
-                and #$03
-                tay
-                lda flyerDirTbl,y
-                sta actMoveCtrl,x
-                jsr Random
-                and #$1f
-                sta actTime,x
-MF_NoNewControls:
-                jsr MoveAccelerateFlyer
-                inc actFd,x
-                lda actFd,x
-                and #$01
-                sta actF1,x
-                jmp MS_Damage                   ;Use same damage code as spider
-MF_Dead:        lda #2
-                ldy #FR_DEADFLY+1
-                jmp OneShotAnimateAndRemove
-
-        ; Bat movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MB_Dead:        lda #FR_DEADBATGROUND
-                sta temp1
-                jmp MR_Dead
-MoveBat:        lda actHp,x
-                beq MB_Dead
-                lda #2                          ;Wings flapping acceleration up
-                cmp actF1,x                     ;or gravity acceleration down,
-                bcc MB_Gravity                  ;depending on frame
-                lda actMoveCtrl,x
-                and #JOY_UP
-                bne MB_StrongFlap
-                lda #2
-                skip2
-MB_StrongFlap:  lda #7
-                bne MB_Accel
-MB_Gravity:     lda #2
-MB_Accel:       ldy #2*8
-                jsr AccActorYNegOrPos
-                lda #$00
-                sta temp6
-                jsr MFE_NoVertAccel             ;Left/right acceleration & move
-                lda #2
-                ldy #FR_DEADBATGROUND-1
-MB_BatCommon:   jsr LoopingAnimation
-                ldy #ACTI_PLAYER
-                jsr GetActorDistance
-                lda temp5                       ;No damage after has flown past player
-                eor actD,x                      ;Otherwise use same damage code as spider
-                bmi MB_NoDamage
-                jmp MS_Damage
-MB_NoDamage:    rts
-
-        ; Fish movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveFish:       lda #CI_WATER
-                jsr MFE_CustomCharInfo
-                lda #2
-                ldy #1
-                bne MB_BatCommon
-
-        ; Rock movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveRock:       lda actTime,x                   ;Randomize X-speed on first frame
-                bne MR_HasRandomSpeed
-                jsr GetCharInfo
-                and #CI_OBSTACLE
-                bne MR_InitRemove               ;Remove on init if inside wall (used to cache the first rock in caves)
-                inc actTime,x
-                jsr Random
-                and #$0f
-                sec
-                sbc #$08
-                sta actSX,x
-MR_HasRandomSpeed:
-                ldy actF1,x                     ;Set size according to frame
-                lda rockSizeTbl,y
-                sta actSizeH,x
-                asl
-                sta actSizeU,x
-                lda rockDamageTbl,y
-                beq MR_NoDamage
-                jsr CollideAndDamagePlayer
-MR_NoDamage:    jsr BounceMotion
-                bcc MR_NoCollision
-DestroyRock:    lda #SFX_SHOTGUN
-                jsr PlaySfx
-                inc actF1,x
-                lda actF1,x
-                cmp #3
-                bcs RemoveRock
-                lda #-2*8
-                jsr MR_RandomizeSmallerRock
-                lda #ACTI_FIRSTNPC
-                ldy #ACTI_LASTNPC
-                jsr GetFreeActor
-                bcc MR_NoSpawn
-                lda #ACT_ROCK
-                jsr SpawnActor
-                lda actF1,x
-                sta actF1,y
-                stx temp6
-                tya
-                tax
-                jsr InitActor
-                lda #$00
-                jsr MR_RandomizeSmallerRock
-                ldx temp6
-MR_NoCollision:
-MR_NoSpawn:     rts
-RemoveRock:     lda #-4*8
-                jsr MoveActorYNoInterpolation
-                lda #COLOR_FLICKER
-                sta actFlash,x
-MR_InitRemove:  lda #ACT_SMOKETRAIL
-                jmp TransformActor
-MR_RandomizeSmallerRock:
-                sta temp1
-                jsr Random
-                and #$0f
-                clc
-                adc temp1
-                sta actSX,x
-                lda #-4*8
-                sta actSY,x
-                lda #$00                        ;Reset ground flag
-                sta actMB,x
-                lda #HP_ROCK                    ;Reset hitpoints if was destroyed
-                sta actHp,x
-                rts
-
-        ; Fireball movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveFireball:   lda actTime,x                   ;Randomize X-speed on first frame
-                bne MFB_HasRandomSpeed          ;and set upward motion
-                inc actTime,x
-                jsr Random
-                and #$0f
-                sec
-                sbc #$08
-                sta actSX,x
-                jsr Random
-                and #$0f
-                sec
-                sbc #5*8+8
-                sta actSY,x
-                lda #SFX_GRENADELAUNCHER
-                jsr PlaySfx
-MFB_HasRandomSpeed:
-                lda #DMG_FIREBALL
-                jsr CollideAndDamagePlayer
-                lda #1
-                ldy #3
-                jsr LoopingAnimation
-                lda #GRENADE_ACCEL-2
-                ldy #GRENADE_MAX_YSPEED
-                jsr AccActorY
-                lda actSX,x
-                jsr MoveActorX
-                lda actSY,x
-                jmp MoveActorY
-                rts
-
-        ; Steam movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveSteam:      lda #COLOR_FLICKER
-                sta actFlash,x
-                inc actTime,x
-                bmi MS_Invisible
-                lda #1
-                ldy #2
-                jsr LoopingAnimation
-                lda #DMG_STEAM
-                jmp CollideAndDamagePlayer
-MS_Invisible:   lda #3
-                sta actF1,x
-                rts
-
-        ; Organic walker movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveOrganicWalker:
-                lda actHp,x
-                beq MOW_Dead
-                jsr MoveGeneric
-                jmp AttackGeneric
-MOW_Dead:       lda #FR_DEADWALKERGROUND
-                sta temp1
-                jmp MR_Dead
-
-        ; Fire destruction (transform into smoke)
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-DestroyFire:    lda #ACT_SMOKECLOUD
-                jmp TransformActor
-
-        ; Rat death
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A
-
-RatDeath:       lda #FR_DEADRATAIR
-RD_Common:      pha
-                jsr AnimalDeathCommon
-                pla
-RD_SetFrameAndSpeed:
-                sta actF1,x
-                lda #-28
-                sta actSY,x
-                jmp MH_ResetGrounded
-
-        ; Spider death
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A
-
-SpiderDeath:    lda #FR_DEADSPIDERAIR
-                bne RD_Common
-
-        ; Fly / bat death
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A
-
-FlyDeath:       lda #FR_DEADFLY
-                sta actF1,x
-BatDeath:
-AnimalDeathCommon:
-                jsr HD_Common
-                lda actSX,x                     ;Reduce the impulse from weapon
-                jsr Asr8
-                sta actSX,x
-                lda #SFX_ANIMALDEATH
-                jmp PlaySfx
-
-        ; Organic walker death
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A
-
-OrganicWalkerDeath:
-                jsr HumanDeath
-                lda #FR_DEADWALKERAIR
-                bne RD_SetFrameAndSpeed
-
-        ; Large walker movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveLargeWalker:jsr MoveGeneric
-                jsr GetAbsXSpeed
-                clc
-                adc actFd,x
-                sta actFd,x
-                rol
-                rol
-                rol
-                and #$03
-                sta actF1,x
-                and #$01
-                bne MLW_NoShake                 ;Shake screen when transitioning to 0 or 2 frame
-                ldy actFallL,x
-                beq MLW_NoShake
-                inc shakeScreen
-MLW_NoShake:    sta actFallL,x
-                jmp AttackGeneric
-
-        ; Rock trap movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveRockTrap:   lda actYH,x                     ;Trigger when player is below
-                cmp actYH+ACTI_PLAYER
-                bcs MRT_NoTrigger
-                lda actXH+ACTI_PLAYER
-                adc #$02                        ;C=0 (next sbc will subtract one too much)
-                sbc actXH,x
-                cmp #$03                        ;Trigger when X block distance is between -1 and +1
-                bcs MRT_NoTrigger
-                lda #ACT_ROCK
-                sta actT,x
-                jsr SetNotPersistent            ;Disappear after triggering once
-                jmp InitActor
-MRT_NoTrigger:  rts
-
-        ; Large tank update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveLargeTank:  jsr MoveGeneric                   ;Use human movement for physics
-                jsr AttackGeneric
-                lda actSX,x                       ;Then overwrite animation
-                beq MLT_NoCenterFrame
-                eor actD,x                        ;If direction & speed don't agree, show the
-                bmi MLT_CenterFrame               ;center frame (turning)
-MLT_NoCenterFrame:
-                jsr GetAbsXSpeed
-                clc
-                adc actFd,x
-                cmp #$60
-                bcc MLT_NoWrap
-                sbc #$60
-MLT_NoWrap:     sta actFd,x
-                lsr
-                lsr
-                lsr
-                lsr
-                lsr
-                skip2
-MLT_CenterFrame:lda #3
-                sta actF1,x
-                rts
-
-        ; High walker movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveHighWalker: jsr MoveGeneric
-                lda actSX,x
-                beq MHW_NoSpeed
-                inc actFd,x
-MHW_NoSpeed:    lda actFd,x
-                lsr
-                lsr
-                and #$03
-                sta actF1,x
-                lda #$ff
-                sta tgtActIndex
-                jsr AttackGeneric
-                ldy tgtActIndex                 ;Did attack?
-                bmi MHW_NoAttack
-                lda actT,y
-                cmp #ACT_LASER
-                bne MHW_NoLaser
-                lda actSX,y                     ;Use a special 22.5 degree angle frame
-                asl
-                lda #10
-                adc #$00
-                sta actF1,y
-MHW_NoLaser:    lda actSY,y                     ;Set 22.5 angle downward speed for bullet
-                bne MHW_SpeedYOK
-                lda actSX,y
-                bpl MHW_SpeedXPos
-                clc
-                eor #$ff
-                adc #$01
-MHW_SpeedXPos:  lsr
-                sta actSY,y
-MHW_SpeedYOK:
-MHW_NoAttack:   rts
-
-        ; Turret animation routine
-        ;
-        ; Parameters: X actor index, A default frame, Y turret frame table start index
-        ; Returns: Frame in actF2
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-AnimateTurret:  sta AT_Default+1
-AT_Loop:        lda turretFrameTbl,y
-                beq AT_Default
-                cmp actCtrl,x
-                beq AT_Found
-                iny
-                iny
-                bne AT_Loop
-AT_Found:       lda turretFrameTbl+1,y
-                skip2
-AT_Default:     lda #$00
-AT_FrameDone:   cmp actF2,x
-                beq AT_NoAnim
-                ldy actAttackD,x
-                bne AT_NoAnim
-                bcc AT_AnimDown
-AT_AnimUp:      inc actF2,x
-                bne AT_AnimCommon
-AT_AnimDown:    dec actF2,x
-AT_AnimCommon:  lda #TURRET_ANIMDELAY
-                sta actAttackD,x
-                lda actTime,x
-                bpl AT_NoOngoingAttack
-                sec
-                sbc #TURRET_ANIMDELAY
-                sta actTime,x                       ;Restore time to the AI attack counter,
-AT_NoOngoingAttack:                                 ;since time was lost animating
-AT_NoAnim:      rts
-
-        ; Common dead animal falling motion
-        ;
-        ; Parameters: X actor index
-        ; Returns: C Grounded status
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-DeadAnimalMotion:
-                jsr DeathFlickerAndRemove
-                jsr FallingMotionCommon
-                bpl DAM_NoWater
-                pha
-                lda #WATER_XBRAKING
-                jsr BrakeActorX
-                lda #WATER_YBRAKING*2
-                jsr BrakeActorY
-                pla
-DAM_NoWater:    and #MB_HITWALL
-                beq DAM_NoWallHit
-                lda #$00
-                sta actSX,x
-DAM_NoWallHit:  lda actMB,x
-                lsr
-UHR_Full:
-UBR_Full:
-                rts
+                dc.w RecyclingStation
+                dc.w DisconnectSubnet
+                dc.w InstallFilter
+                dc.w TunnelMachine
+                dc.w TunnelMachineItems
+                dc.w TunnelMachineRun
 
         ; Health recharger script routine
         ;
@@ -759,6 +49,8 @@ Recharger_Common:
                 lda #<EP_RECHARGEREFFECT
                 ldx #>EP_RECHARGEREFFECT
                 jmp SetScript
+UHR_Full:
+UBR_Full:       rts
 
         ; Battery recharger script routine
         ;
@@ -946,97 +238,6 @@ ECL_Finish:     jsr StopScript
                 ldx #MENU_NONE
                 jmp SetMenuMode
 
-        ; Generate 2 explosions at 8 pixel radius horizontally and 15 pixel radius
-        ; vertically
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy2_Ofs15:
-                lda #-15*8
-                jsr MoveActorYNoInterpolation
-                lda #2
-                sta actTime,x
-                lda #$3f
-                ldy #$7f
-                jmp ExplodeEnemyMultiple_CustomRadius
-
-        ; Generate 4 explosions at 32 pixel radius and spawn 3 pieces of scrap metal
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy4_Ofs15:
-                lda #-15*8
-                jsr MoveActorYNoInterpolation
-                lda #4
-                ldy #$ff
-                jsr ExplodeEnemyMultiple
-                lda #-2*8-8
-                sta temp7                       ;Initial base X-speed
-                jsr Random
-                sta temp8                       ;Initial shape
-EE_ScrapMetalLoop:
-                lda #ACTI_FIRSTNPC              ;Use any free actors
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
-                bcc EE_ScrapMetalDone
-                lda #ACT_SCRAPMETAL
-                jsr SpawnActor
-                jsr Random
-                and #$0f                        ;Randomize upward + sideways speed
-                clc
-                adc #-7*8
-                sta actSY,y
-                jsr Random
-                and #$0f
-                clc
-                adc temp7
-                sta actSX,y
-                inc temp8
-                lda temp8
-                and #$03
-                sta actF1,y
-                lda #SCRAP_DURATION
-                sta actTime,y
-                lda temp7
-                bpl EE_ScrapMetalDone
-                clc
-                adc #2*8
-                sta temp7
-                bne EE_ScrapMetalLoop
-EE_ScrapMetalDone:
-                rts
-
-        ; Generate 4 explosions at 15 pixel radius horizontally, rising
-        ; vertically
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp vars
-
-ExplodeEnemy4_Rising:
-                lda #-8*8
-                jsr MoveActorYNoInterpolation
-                lda #4
-                ldy #$7f
-                jsr ExplodeEnemyMultiple
-                lda #ACT_EXPLOSIONGENERATORRISING
-                jmp TransformActor
-
-        ; Rising explosion generator
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveExplosionGeneratorRising:
-                lda #-4*8
-                jsr MoveActorY
-                jmp MoveExplosionGenerator
-
         ; Tunnel reroute after the machine has been used once
         ;
         ; Parameters: -
@@ -1050,36 +251,489 @@ TunnelReroute:  lda #PLOT_WALLBREACHED
                 sta lvlObjDL+$2a                ;of zone without machine + new enemies
 TR_NotDone:     rts
 
-        ; Tank Y-size addition table (based on turret direction)
+        ; Recycling station script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
 
-tankSizeAddTbl: dc.b 2,0,6,8
+recyclerSelection = menuCounter
+recyclerListLength = wpnLo
+originalItem    = wpnHi
+currentIndex    = wpnBits
 
-        ; Rock size table
+RecyclingStation:
+                ldy itemIndex
+                sty originalItem
+                ldy #RECYCLER_ITEM_FIRST
+                ldx #$00
+RS_FindItems:   cpy #ITEM_FIRST_CONSUMABLE
+                bcs RS_ItemOK
+                jsr FindItem                    ;For weapons, check that is currently held in inventory
+                bcc RS_NextItem                 ;(recycler only "sells" ammo, not weapons)
+RS_ItemOK:      lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                beq RS_NextItem
+                tya
+                sta recyclerItemList,x
+                inx                             ;If using "all items" cheat, the list could be exceeded
+                cpx #MAX_RECYCLER_ITEMS         ;Simply cut it in this case
+                bcs RS_ListDone
+RS_NextItem:    iny
+                cpy #RECYCLER_ITEM_LAST+1
+                bcc RS_FindItems
+RS_ListDone:    lda #$ff
+                sta recyclerItemList,x          ;Write endmark
+                sta menuMoveDelay               ;Disable controls until joystick centered
+                stx recyclerListLength
+                jsr BlankScreen
+                lda #$02
+                sta screen                      ;Set text screen mode
+                lda #$0f
+                sta scrollX
+                ldx #$00
+                stx recyclerSelection
+                stx SL_CSSScrollY+1
+                stx Irq1_Bg1+1
+RS_ClearScreenLoop:lda #$20
+                sta screen1,x
+                sta screen1+$100,x
+                sta screen1+$200,x
+                sta screen1+SCROLLROWS*40-$100,x
+                lda #$01
+                sta colors,x
+                sta colors+$100,x
+                sta colors+$200,x
+                sta colors+SCROLLROWS*40-$100,x
+                inx
+                bne RS_ClearScreenLoop
+                lda #9
+                sta temp1
+                lda #3
+                sta temp2
+                lda #<txtRecycler
+                ldx #>txtRecycler
+                jsr PrintText
+                lda #0
+                sta currentIndex
+                lda #5
+                sta temp2
+RS_PrintItemsLoop:
+                lda #10
+                sta temp1
+                ldx currentIndex
+                lda recyclerItemList,x
+                bmi RS_PrintExit
+                jsr GetItemName
+                jsr PrintText
+                lda #26
+                sta temp1
+                ldx currentIndex
+                ldy recyclerItemList,x
+                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                jsr ConvertDigits
+                ldx #0
+RS_FindNonZero: lda txtDigits,x
+                cmp #$30
+                bne RS_FindNonZeroFound
+                lda #$20
+                sta txtDigits,x
+                sta txtDigits-1,x
+                inx
+                bne RS_FindNonZero
+RS_FindNonZeroFound:
+                lda #"+"
+                sta txtDigits-1,x
+                lda #<txtCount
+                ldx #>txtCount
+                jsr PrintText
+                inc temp2
+                inc currentIndex
+                bne RS_PrintItemsLoop
+RS_PrintExit:   lda #<txtExit
+                ldx #>txtExit
+                jsr PrintText
+                lda #9
+                sta temp1
+                lda #17
+                sta temp2
+                lda #<txtParts
+                ldx #>txtParts
+                jsr PrintText
+                lda #23
+                sta temp1
+                lda #<txtCost
+                ldx #>txtCost
+                jsr PrintText
+RS_Redraw:      lda #$20
+RS_ArrowLastPos:sta screen1
+                lda #8
+                sta temp1
+                lda recyclerSelection
+                clc
+                adc #5
+                sta temp2
+                lda #<txtArrow
+                ldx #>txtArrow
+                jsr PrintText
+                lda zpDestLo
+                sta RS_ArrowLastPos+1
+                lda zpDestHi
+                sta RS_ArrowLastPos+2
+                lda #15
+                sta temp1
+                lda #17
+                sta temp2
+                lda invCount+ITEM_PARTS-1
+                cmp #NO_ITEM_COUNT
+                adc #$00
+                sta RS_NumParts+1
+                jsr Print3Digits
+                lda #28
+                sta temp1
+                lda #$00
+                sta reload                      ;Cancel any reloading so that ammo can be shown
+                ldx recyclerSelection
+                ldy recyclerItemList,x
+                bmi RS_ZeroCost
+                sty itemIndex
+                jsr SetPanelRedrawItemAmmo
+                lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
+RS_ZeroCost:    jsr Print3Digits
+RS_ControlLoop: jsr FinishFrame
+                jsr GetControls
+                lda recyclerSelection
+                ldx recyclerListLength
+                jsr RS_Control
+                sta recyclerSelection
+                bcs RS_Redraw
+                jsr GetFireClick
+                bcs RS_Action
+                lda keyPress
+                bmi RS_ControlLoop
+RS_Exit:        ldy originalItem
+                sty itemIndex
+                jsr SetPanelRedrawItemAmmo
+                ldy lvlObjNum                   ;Allow immediate re-entry
+                jsr InactivateObject
+                jmp CenterPlayer
+RS_Action:      lda recyclerSelection
+                cmp recyclerListLength
+                bne RS_Buy
+                lda #SFX_SELECT
+                jsr PlaySfx
+                jmp RS_Exit
+RS_Buy:         ldy itemIndex
+RS_NumParts:    lda #$00
+                cmp recyclerCostTbl-RECYCLER_ITEM_FIRST,y
+                bcc RS_BuyFail
+                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                tax
+                tya
+                jsr AddItem
+                bcc RS_BuyFail
+                ldy itemIndex
+                lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
+                ldy #ITEM_PARTS
+                jsr DecreaseAmmo
+                lda #SFX_EMP
+                jsr PlaySfx
+                jmp RS_Redraw
+RS_BuyFail:     lda #SFX_DAMAGE
+                jsr PlaySfx
+                jmp RS_ControlLoop
 
-rockSizeTbl:    dc.b 9,7,5
+        ; Print 8-bit number in A
 
-        ; Rock damage table
+Print3Digits:   jsr ConvertDigits
+                lda #<txtDigits
+                ldx #>txtDigits
 
-rockDamageTbl:  dc.b DMG_ROCK,DMG_ROCK-1,0
+        ; Print null-terminated text, with textjump support for item names
 
-        ; Turret firing ctrl + frame table
+PrintText:      sta zpSrcLo
+                stx zpSrcHi
+                ldy temp2
+                lda #40
+                ldx #zpDestLo
+                jsr MulU
+                lda temp1
+                jsr Add8
+                lda zpDestHi
+                ora #>screen1
+                sta zpDestHi
+                ldy #$00
+PT_Loop:        lda (zpSrcLo),y
+                bmi PT_Jump
+                beq PT_Done
+                sta (zpDestLo),y
+                iny
+                bne PT_Loop
+PT_Done:        rts
+PT_Jump:        sty PT_Sub+1
+                pha
+                iny
+                lda (zpSrcLo),y
+                dey
+                sec
+PT_Sub:         sbc #$00
+                sta zpSrcLo
+                pla
+                and #$7f
+                sbc #$00
+                sta zpSrcHi
+                bpl PT_Loop
 
-turretFrameTbl:
-tankTurretOfs:  dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE,0
-                dc.b JOY_RIGHT|JOY_DOWN|JOY_FIRE,0
-                dc.b JOY_LEFT|JOY_FIRE,1
-                dc.b JOY_RIGHT|JOY_FIRE,1
-                dc.b JOY_LEFT|JOY_UP|JOY_FIRE,2
-                dc.b JOY_RIGHT|JOY_UP|JOY_FIRE,2
-                dc.b JOY_UP|JOY_FIRE,3
-                dc.b 0
-ceilingTurretOfs:
-                dc.b JOY_RIGHT|JOY_FIRE,0
-                dc.b JOY_RIGHT|JOY_DOWN|JOY_FIRE,1
-                dc.b JOY_DOWN|JOY_FIRE,2
-                dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE,3
-                dc.b JOY_LEFT|JOY_FIRE,4
-                dc.b 0
+        ; Convert 3 digits to a printable string
+
+ConvertDigits:  jsr ConvertToBCD8
+                ldx #$00
+                lda temp7
+                jsr StoreDigit
+                lda temp6
+                pha
+                lsr
+                lsr
+                lsr
+                lsr
+                jsr StoreDigit
+                pla
+StoreDigit:     and #$0f
+                ora #$30
+                sta txtDigits,x
+                inx
+                rts
+
+        ; Recycler menu control
+
+RS_Control:     tay
+                stx temp6
+                ldx menuMoveDelay
+                beq RSC_NoDelay
+                bpl RSC_Decrement
+RSC_InitialDelay:ldx joystick
+                bne RSC_ContinueDelay
+                stx menuMoveDelay
+RSC_ContinueDelay:
+                rts
+RSC_Decrement:  dec menuMoveDelay
+                rts
+RSC_NoDelay:    lda joystick
+                lsr
+                bcc RSC_NotUp
+                dey
+                bpl RSC_HasMove
+                ldy temp6
+RSC_HasMove:    lda #SFX_SELECT
+                jsr PlaySfx
+                ldx #RECYCLER_MOVEDELAY
+                lda joystick
+                cmp prevJoy
+                bne RSC_NormalDelay
+                dex
+                dex
+                dex
+RSC_NormalDelay:stx menuMoveDelay
+                sec
+                tya
+                rts
+RSC_NoMove:     clc
+                tya
+                rts
+RSC_NotUp:      lsr
+                bcc RSC_NoMove
+                iny
+                cpy temp6
+                bcc RSC_HasMove
+                beq RSC_HasMove
+                ldy #$00
+                beq RSC_HasMove
+
+        ; Subnet router script
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+DisconnectSubnet:
+                jsr AddQuestScore
+                lda #<txtDisconnected
+                ldx #>txtDisconnected
+                ldy #REQUIREMENT_TEXT_DURATION
+                jsr PrintPanelText
+                lda lvlObjB+$4d
+                bpl DS_NotBoth
+                lda lvlObjB+$4e
+                bpl DS_NotBoth
+                lda #SFX_POWERUP
+                jsr PlaySfx
+                lda #PLOT_ELEVATOR1
+                jmp SetPlotBit                  ;Todo: other stuff, more prominent effect
+DS_NotBoth:     rts
+
+        ; Surgery station script (TODO: remove and replace with proper story elements)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+InstallFilter:  ldy #ITEM_LUNGFILTER
+                jsr FindItem
+                bcc IF_NotFound
+                jsr RemoveItem
+                lda #SFX_POWERUP
+                jsr PlaySfx
+                lda upgrade
+                ora #UPG_TOXINFILTER
+                sta upgrade
+IF_NotFound:    rts
+
+        ; Tunnel machine script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+tmChoice        = menuCounter
+
+TunnelMachine:  lda #PLOT_BATTERY
+                jsr GetPlotBit
+                beq TM_NoBattery
+                lda #PLOT_FUEL
+                jsr GetPlotBit
+                beq TM_NoFuel
+                lda #$00
+                sta tmTime1
+                sta tmTime2
+                sta tmChoice
+                lda #<EP_TUNNELMACHINERUN
+                ldx #>EP_TUNNELMACHINERUN
+                jsr SetScript
+                ldx #MENU_INTERACTION
+                jsr SetMenuMode
+                lda #<txtReady
+                ldx #>txtReady
+                jsr PrintPanelTextIndefinite
+                jmp TMR_RedrawNoSound
+TM_NoBattery:   lda #<txtNoBattery
+                ldx #>txtNoBattery
+                bne TM_TextCommon
+TM_NoFuel:      lda #1
+                sta shakeScreen
+                lda #SFX_GENERATOR
+                jsr PlaySfx
+                lda #<txtNoFuel
+                ldx #>txtNoFuel
+TM_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
+                jmp PrintPanelText
+
+        ; Tunnel machine decision runloop
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+TunnelMachineRun:
+                inc tmTime1
+                lda tmTime1
+                and #$01
+                sta shakeScreen
+                inc tmTime2
+                lda tmTime2
+                cmp #3
+                bcc TMR_NoSound
+                lda #$00
+                sta tmTime2
+                lda #SFX_GENERATOR
+                jsr PlaySfx
+TMR_NoSound:    lda joystick
+                and #JOY_DOWN
+                bne TMR_Finish
+                lda keyPress
+                bpl TMR_Finish
+                jsr GetFireClick
+                bcs TMR_Decision
+                jsr MenuControl
+                ldy tmChoice
+                lsr
+                bcs TMR_MoveLeft
+                lsr
+                bcs TMR_MoveRight
+TMR_NoMove:     rts
+TMR_MoveLeft:   tya
+                beq TMR_NoMove
+                dey
+                sty tmChoice
+TMR_Redraw:     lda #SFX_SELECT
+                jsr PlaySfx
+TMR_RedrawNoSound:
+                ldy #$00
+TMR_RedrawLoop: ldx tmArrowPosTbl,y
+                lda #$20
+                cpy tmChoice
+                bne TMR_NoArrow
+                lda #62
+TMR_NoArrow:    jsr PrintPanelChar
+                iny
+                cpy #2
+                bcc TMR_RedrawLoop
+                rts
+TMR_MoveRight:  tya
+                bne TMR_NoMove
+                iny
+                sty tmChoice
+                bne TMR_Redraw
+TMR_Decision:   lda tmChoice
+                bne TMR_Drive
+TMR_Finish:     jsr StopScript
+                ldx #MENU_NONE
+                jmp SetMenuMode
+TMR_Drive:      jsr AddQuestScore
+                jsr TMR_Finish
+                lda #$00
+                sta tmTime1                     ;TODO: replace with cutscene
+                jsr BlankScreen
+TMR_BreakWallLoop:
+                jsr WaitBottom
+                jsr Random
+                cmp #$40
+                bcs TMR_BreakWallNoSound
+                lda #$00
+                sta PSfx_LastSfx+1
+                lda #SFX_EXPLOSION
+                jsr PlaySfx
+TMR_BreakWallNoSound:
+                inc tmTime1
+                bpl TMR_BreakWallLoop
+                lda #PLOT_WALLBREACHED
+                jsr SetPlotBit
+                lda #$32
+                jmp ULO_EnterDoorDest
+
+        ; Tunnel machine item installation script routines
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+TunnelMachineItems:
+                lda itemIndex
+                cmp #ITEM_TRUCKBATTERY
+                bne TMI_Fuel
+TMI_Battery:    lda #PLOT_BATTERY
+                jsr SetPlotBit
+                lda #<txtBatteryInstalled
+                ldx #>txtBatteryInstalled
+                bne TMI_Common
+TMI_Fuel:       lda #PLOT_FUEL
+                jsr SetPlotBit
+                lda #<txtRefueled
+                ldx #>txtRefueled
+TMI_Common:     jsr TM_TextCommon
+                ldy itemIndex
+                jsr RemoveItem
+                jsr AddQuestScore
+                lda #SFX_POWERUP
+                jmp PlaySfx
 
         ; Elevator tables
 
@@ -1094,12 +748,61 @@ elevatorPlotBit:
 elevatorSpeed:  dc.b 48,-48,-64,64
 elevatorAcc:    dc.b 2,-2,-2,2
 
+        ; Recycler tables
+
+recyclerCountTbl:
+                dc.b 10                         ;Pistol
+                dc.b 8                          ;Shotgun
+                dc.b 30                         ;Auto rifle
+                dc.b 5                          ;Sniper rifle
+                dc.b 25                         ;Minigun
+                dc.b 30                         ;Flamethrower
+                dc.b 15                         ;Laser rifle
+                dc.b 10                         ;Plasma gun
+                dc.b 1                          ;EMP generator
+                dc.b 1                          ;Grenade launcher
+                dc.b 1                          ;Bazooka
+                dc.b 0                          ;Extinguisher
+                dc.b 1                          ;Grenade
+                dc.b 1                          ;Mine
+                dc.b 1                          ;Medikit
+                dc.b 1                          ;Battery
+                dc.b 100                        ;Armor
+
+recyclerCostTbl:
+                dc.b 10                         ;Pistol
+                dc.b 15                         ;Shotgun
+                dc.b 20                         ;Auto rifle
+                dc.b 20                         ;Sniper rifle
+                dc.b 20                         ;Minigun
+                dc.b 20                         ;Flamethrower
+                dc.b 25                         ;Laser rifle
+                dc.b 25                         ;Plasma gun
+                dc.b 25                         ;EMP generator
+                dc.b 25                         ;Grenade launcher
+                dc.b 30                         ;Bazooka
+                dc.b 0                          ;Extinguisher
+                dc.b 25                         ;Grenade
+                dc.b 30                         ;Mine
+                dc.b 40                         ;Medikit
+                dc.b 40                         ;Battery
+                dc.b 50                         ;Armor
+
+        ; Misc. tables
+
+tmArrowPosTbl:  dc.b 9,14
+
         ; Variables
 
+tmTime1:
 elevatorIndex:  dc.b 0
+tmTime2:
 rechargerColor:
 elevatorTime:   dc.b 0
 elevatorSound:  dc.b 0
+
+recyclerItemList:
+                ds.b MAX_RECYCLER_ITEMS+1,0
 
         ; Messages
 
@@ -1110,5 +813,18 @@ txtBatteryRecharger:
 txtElevatorLocked:
                 dc.b "ELEVATOR LOCKED",0
 txtEnterCode:   dc.b "ENTER CODE",0
+txtRecycler:    dc.b "PART RECYCLING STATION",0
+txtExit:        dc.b "EXIT",0
+txtCost:        dc.b "COST",0
+txtDisconnected:dc.b "SUBNET ISOLATED",0
+txtNoBattery:   dc.b "BATTERY DEAD",0
+txtNoFuel:      dc.b "NO FUEL",0
+txtBatteryInstalled:
+                dc.b "BATTERY INSTALLED",0
+txtRefueled:    dc.b "REFUELED",0
+txtReady:       dc.b " STOP DRIVE",0
+txtCount:       dc.b " "
+txtDigits:      dc.b "000",0
+txtArrow:       dc.b 62,0
 
                 checkscriptend

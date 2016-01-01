@@ -941,6 +941,15 @@ DB_Amount:      sbc #$00
 DB_Done:        sta battery
                 rts
 
+        ; Add (sub)quest completion score (5000 points)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,Y
+
+AddQuestScore:  lda #<500
+                ldy #>500
+
         ; Add score
         ;
         ; Parameters: A score lowbyte, Y score highbyte
