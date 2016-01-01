@@ -998,7 +998,7 @@ recyclerCountTbl:
                 dc.b 30                         ;Flamethrower
                 dc.b 15                         ;Laser rifle
                 dc.b 10                         ;Plasma gun
-                dc.b 2                          ;EMP generator
+                dc.b 1                          ;EMP generator
                 dc.b 1                          ;Grenade launcher
                 dc.b 1                          ;Bazooka
                 dc.b 0                          ;Extinguisher
@@ -1012,20 +1012,20 @@ recyclerCostTbl:
                 dc.b 10                         ;Pistol
                 dc.b 15                         ;Shotgun
                 dc.b 20                         ;Auto rifle
-                dc.b 25                         ;Sniper rifle
-                dc.b 25                         ;Minigun
-                dc.b 25                         ;Flamethrower
-                dc.b 30                         ;Laser rifle
-                dc.b 30                         ;Plasma gun
-                dc.b 35                         ;EMP generator
+                dc.b 20                         ;Sniper rifle
+                dc.b 20                         ;Minigun
+                dc.b 20                         ;Flamethrower
+                dc.b 25                         ;Laser rifle
+                dc.b 25                         ;Plasma gun
+                dc.b 25                         ;EMP generator
                 dc.b 25                         ;Grenade launcher
-                dc.b 35                         ;Bazooka
+                dc.b 30                         ;Bazooka
                 dc.b 0                          ;Extinguisher
-                dc.b 30                         ;Grenade
-                dc.b 40                         ;Mine
-                dc.b 50                         ;Medikit
-                dc.b 50                         ;Battery
-                dc.b 75                         ;Armor
+                dc.b 25                         ;Grenade
+                dc.b 30                         ;Mine
+                dc.b 40                         ;Medikit
+                dc.b 40                         ;Battery
+                dc.b 50                         ;Armor
 
 recyclerItemList:
                 ds.b MAX_RECYCLER_ITEMS+1,0
