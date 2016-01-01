@@ -33,7 +33,6 @@ DMG_ACID        = 16
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
 DMGMOD_NOORGANIC = $80                          ;No organic damage
 DMGMOD_NONONORGANIC = $08                       ;No nonorganic damage
-DMGMOD_NONORGANIC75 = $78                       ;Nonorganic receives 75% of damage
 
 SPDTBL_NORMAL   = 0
 SPDTBL_GRENADE  = 9
@@ -134,7 +133,7 @@ wdKnife:        dc.b WDB_MELEE                  ;Weapon bits
                 dc.b 7                          ;Attack delay
                 dc.b ACT_MELEEHIT               ;Bullet actor type
                 dc.b DMG_KNIFE                  ;Bullet damage
-                dc.b DMGMOD_NONORGANIC75        ;Damage modifier nonorganic/organic
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 1                          ;Bullet time duration
                 dc.b 1                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
@@ -273,7 +272,7 @@ wdFlameThrower: dc.b WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOSKILLBONUS|WDB_FLIC
                 dc.b 2                          ;Attack delay
                 dc.b ACT_FLAME                  ;Bullet actor type
                 dc.b DMG_FLAMETHROWER           ;Bullet damage
-                dc.b DMGMOD_NONORGANIC75        ;Damage modifier nonorganic/organic
+                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 15                         ;Bullet time duration
                 dc.b 7                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset

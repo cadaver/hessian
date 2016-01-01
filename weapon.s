@@ -349,8 +349,11 @@ AH_FireDir:     lda #$00
                 ldx tgtActIndex
                 jsr GetCharInfo                 ;Check if spawned inside wall
                 and #CI_OBSTACLE                ;and destroy immediately in that case
-                bne AH_InsideWall
-                lda temp1                       ;Set speed
+                beq AH_NotInsideWall
+AH_InsideWall:  jsr RemoveActor
+                ldx actIndex
+                rts
+AH_NotInsideWall:lda temp1                       ;Set speed
                 sta actSX,x
                 lda temp3
                 sta actSY,x
@@ -402,6 +405,9 @@ AH_PlayerMeleeAttack:
                 jsr DrainBatteryDouble
 AH_PlayerMeleeBonus:
                 ldy #NO_MODIFY
+                cpy #NO_MODIFY
+                beq AH_PlayerBonusCommon
+                dec actAttackD,x                ;When player has strength upgrade, slightly faster melee attacks
 AH_PlayerBonusCommon:
                 lda temp8
                 jsr ModifyDamage
@@ -413,9 +419,6 @@ AH_NoAmmoDecrement:
                 lda (wpnLo),y
                 bmi AH_NoSound
                 jmp PlaySfx
-AH_InsideWall:  jsr RemoveActor
-                ldx actIndex
-AH_NoSound:     rts
 
         ; Modify damage
         ;
@@ -438,5 +441,6 @@ ModifyDamage:   cpy #NO_MODIFY                  ;Optimize the unmodified case
                 ror
                 bne MD_Done
 MD_EnsureOne:   lda #$01                        ;Ensure at least 1 point damage
+AH_NoSound:
 MD_Done:        rts
 
