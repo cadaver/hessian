@@ -347,10 +347,10 @@ DropItem:       lda #$00
                 lda actT,x                      ;Exception: final room large droids drop nothing
                 cmp #ACT_LARGEDROIDFINAL
                 beq DI_NoItem
-                ldy #AL_SIZEHORIZ               ;If enemy is going to drop parts, make their
-                jsr Random                      ;count proportional to the enemy size + random add
+                jsr Random
                 and #$18
-                clc
+                ldy #AL_SIZEHORIZ               ;If enemy is going to drop parts, make their
+                clc                             ;count proportional to the enemy size + random add
                 adc (actLo),y
                 iny
                 adc (actLo),y
