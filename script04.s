@@ -876,7 +876,7 @@ CheckForReset:  lda scriptVariable
 CFR_OK:         rts
 
 upgradeLvlTbl:  dc.b 6,8,5,8,6,8,12
-upgradeObjTbl:  dc.b $56,$59,$25,$55,$54,$47,$15
+upgradeObjTbl:  dc.b $55,$59,$24,$55,$53,$47,$15
 upgradeBitTbl:  dc.b 1,2,4,8,16,32,64
 arrowPosTbl:    dc.b 0,11,0
 tileColorTbl:   dc.b $08,$0b,$0f,$0f,$0f,$0f,$0f,$09
