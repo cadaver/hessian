@@ -833,8 +833,8 @@ IE_Restore:     jmp SetZoneColors
 IE_End:         jsr StopScript
                 ldx #MENU_NONE
                 jsr SetMenuMode
-                lda #<500
-                ldy #>500
+                lda #<1000
+                ldy #>1000
                 jsr AddScore
                 lda #<txtInstallDone
                 ldx #>txtInstallDone

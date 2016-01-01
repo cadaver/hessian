@@ -131,9 +131,7 @@ IA_IsLive:      lda #<txtCantInstall
                 lda #8
                 sta actTime,x
                 lda #0
-                sta actHp,x
-                lda #GRP_HEROES
-                sta actFlags,x
+                sta actBulletDmgMod-ACTI_FIRSTPLRBULLET,x
                 jsr NoInterpolation
 IA_NoEffect:    ldx #ACTI_PLAYER
                 lda #DMG_PISTOL+NOMODIFY
