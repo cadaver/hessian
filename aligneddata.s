@@ -353,6 +353,7 @@ actYH:          ds.b MAX_ACT,0
 actT:           ds.b MAX_ACT,0
 actD:           ds.b MAX_ACT,0
 actHp:          ds.b MAX_ACT,0
+actLvlDataOrg:  ds.b MAX_PERSISTENTACT,0
 actF1:          ds.b MAX_ACT,0
 actFd:          ds.b MAX_ACT,0
 actFlash:       ds.b MAX_ACT,0
@@ -364,12 +365,11 @@ actPrevYL:      ds.b MAX_ACT,0
 actPrevYH:      ds.b MAX_ACT,0
 actFlags:       ds.b MAX_ACT,0
 actSizeH:       ds.b MAX_ACT,0
+actBulletDmgMod:ds.b MAX_BULLETS,0
 actSizeU:       ds.b MAX_ACT,0
 actSizeD:       ds.b MAX_ACT,0
 actTime:        ds.b MAX_ACT,0
 actMB:          ds.b MAX_ACT,0
-actBulletDmgMod:ds.b MAX_BULLETS,0
-actLvlDataOrg:  ds.b MAX_PERSISTENTACT,0
 actF2:          ds.b MAX_COMPLEXACT,0
 actCtrl:        ds.b MAX_COMPLEXACT,0
 actMoveCtrl:    ds.b MAX_COMPLEXACT,0
