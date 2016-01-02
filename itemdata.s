@@ -110,7 +110,7 @@ itemDefaultPickup:
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
-                dc.b 5                          ;Pistol
+                dc.b 6                          ;Pistol
                 dc.b 4                          ;Shotgun
                 dc.b 10                         ;Auto rifle
                 dc.b 3                          ;Sniper rifle
