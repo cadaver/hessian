@@ -1168,6 +1168,9 @@ DI_NoArmor:     lsr temp5                       ;Weapon?
                 bcc DI_DropCountedItem          ;OK if can pick up
 DI_NoWeapon:    lsr temp5                       ;Parts?
                 bcc DI_NoItem
+                lda #ITEM_PARTS
+                jsr CountItem
+                bcs DI_NoItem
                 lda temp6
                 cmp #PARTS_DROP_PROBABILITY
                 bcs DI_NoItem
@@ -1178,8 +1181,7 @@ DI_NoWeapon:    lsr temp5                       ;Parts?
                 lsr
                 lsr
                 sta itemDefaultPickup+ITEM_PARTS-1
-                lda #ITEM_PARTS
-                bne DI_ItemNumber
+                bpl DI_DropCountedItem
 DI_NoItem:      rts
 DI_ItemNumber:  tay
                 sta temp5                       ;Item type to drop
