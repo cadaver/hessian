@@ -93,13 +93,13 @@ upgrade4:       dc.w nameArmor
 upgrade5:       dc.w nameHealing
                 dc.w descHealing
                 dc.b %00000010
-                dc.b bl,bl,TL,SL,HO,HO,TR,TL,HO,HO,HO,TR,bl
-                dc.b PS,HO,SR,VE,bl,bl,VE,VE,SL,AM,SR,VE,bl
-                dc.b bl,bl,BL,SL,HO,TR,VE,VE,SR,SH,SL,VE,bl
-                dc.b bl,bl,bl,VE,bl,AM,CR,SR,SL,SU,SR,CR,HO
-                dc.b bl,bl,TL,SL,HO,BR,VE,VE,SR,SH,SL,VE,bl
-                dc.b PS,HO,SR,VE,bl,bl,VE,VE,SL,AM,SR,VE,bl
-                dc.b bl,bl,BL,SL,HO,HO,BR,BL,HO,HO,HO,BR,bl
+                dc.b bl,bl,TL,HO,HO,HO,TR,TL,HO,CR,HO,TR,bl
+                dc.b PS,HO,SR,AM,bl,bl,VE,VE,SL,AM,SR,VE,bl
+                dc.b bl,bl,BL,HO,HO,TR,VE,VE,SR,SH,SL,VE,bl
+                dc.b bl,bl,bl,bl,AM,SR,CR,SL,SR,CR,SL,CR,HO
+                dc.b bl,bl,TL,HO,HO,BR,VE,VE,SR,SH,SL,VE,bl
+                dc.b PS,HO,SR,AM,bl,bl,VE,VE,SL,AM,SR,VE,bl
+                dc.b bl,bl,BL,HO,HO,HO,BR,BL,HO,CR,HO,BR,bl
 
 upgrade6:       dc.w nameDrain
                 dc.w descDrain
@@ -115,13 +115,13 @@ upgrade6:       dc.w nameDrain
 upgrade7:       dc.w nameRecharge
                 dc.w descRecharge
                 dc.b %00111100
-                dc.b bl,bl,VE,VE,VE,VE,VE,VE,VE,VE,VE,bl,bl
-                dc.b PS,SV,SD,SU,SD,SU,SD,SU,SD,SU,SD,SV,HO
-                dc.b bl,bl,SL,SD,SR,SD,SU,SL,SL,SD,SR,bl,bl
-                dc.b PS,SV,SR,SL,AM,SL,SR,SD,AM,SR,SL,SV,HO
-                dc.b bl,bl,SL,SR,SR,SR,SD,SR,SU,SL,SR,bl,bl
-                dc.b PS,SV,SU,SD,SU,SD,SU,SD,SU,SD,SU,SV,HO
-                dc.b bl,bl,VE,VE,VE,VE,VE,VE,VE,VE,VE,bl,bl
+                dc.b bl,bl,VE,bl,VE,bl,VE,bl,VE,bl,VE,bl,bl
+                dc.b PS,SV,SD,HO,SD,HO,SD,HO,SD,HO,SD,SV,HO
+                dc.b bl,bl,VE,SR,SU,SU,SU,SU,SU,SL,VE,bl,bl
+                dc.b PS,SV,SR,SL,AM,SR,CR,SL,AM,SR,SL,SV,HO
+                dc.b bl,bl,VE,SR,SD,SD,SD,SD,SD,SL,VE,bl,bl
+                dc.b PS,SV,SU,HO,SU,HO,SU,HO,SU,HO,SU,SV,HO
+                dc.b bl,bl,VE,bl,VE,bl,VE,bl,VE,bl,VE,bl,bl
 
                      ;0123456789012345678901234567
 descMovement:   dc.b "IMPROVED TURNS, JUMPS AND",0
