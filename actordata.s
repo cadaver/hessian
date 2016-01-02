@@ -780,7 +780,7 @@ alPlayer:       dc.w MovePlayer                 ;Update routine
 plrDmgModify:   dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
-                dc.b ITEM_NONE                  ;Itemdrop table index or item override
+                dc.b ITEM_NONE                  ;Itemdrop type or item override
                 dc.b $ff                        ;AI offense random AND-value
                 dc.b $ff                        ;AI defense probability
                 dc.b $ff                        ;Attack directions
@@ -910,7 +910,7 @@ alSmallDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 25                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $07                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -931,7 +931,7 @@ alLargeDroid:   dc.w MoveDroid                  ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $0b                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -952,7 +952,7 @@ alFlyingCraft:  dc.w MoveFlyingCraft            ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 65                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $0f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN ;Attack directions
@@ -973,7 +973,7 @@ alSmallWalker:  dc.w MoveWalker                 ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 45                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $07                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
@@ -997,7 +997,7 @@ alSmallTank:    dc.w MoveTank                   ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 60                         ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $06                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALUP|AB_UP ;Attack directions
@@ -1020,7 +1020,7 @@ alFloatingMine: dc.w MoveFloatingMine           ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 25                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $00                        ;AI offense AND-value
                 dc.b $00                        ;AI defense probability
                 dc.b AB_NONE                    ;Attack directions
@@ -1041,7 +1041,7 @@ alRollingMine:  dc.w MoveRollingMine            ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 30                         ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $08                        ;AI offense AND-value
                 dc.b $05                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
@@ -1065,7 +1065,7 @@ alCeilingTurret:dc.w MoveTurret                 ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 150                        ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $17                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
@@ -1097,7 +1097,7 @@ alRat:          dc.w MoveRat                    ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 10                         ;Score from kill
                 dc.b AIMODE_ANIMAL              ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $07                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
@@ -1121,7 +1121,7 @@ alSpider:       dc.w MoveSpider                 ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 20                         ;Score from kill
                 dc.b AIMODE_FREEMOVE            ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $00                        ;AI offense AND-value
                 dc.b $00                        ;AI defense probability
                 dc.b AB_NONE                    ;Attack directions
@@ -1144,7 +1144,7 @@ alFly:          dc.w MoveFly                    ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 15                         ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $00                        ;AI offense AND-value
                 dc.b $00                        ;AI defense probability
                 dc.b AB_NONE                    ;Attack directions
@@ -1165,7 +1165,7 @@ alBat:          dc.w MoveBat                    ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 15                         ;Score from kill
                 dc.b AIMODE_FLYERFREEMOVE       ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $00                        ;AI offense AND-value
                 dc.b $00                        ;AI defense probability
                 dc.b AB_NONE                    ;Attack directions
@@ -1186,7 +1186,7 @@ alFish:         dc.w MoveFish                   ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
                 dc.b AIMODE_FISH                ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $1f                        ;AI offense AND-value
                 dc.b $00                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
@@ -1240,7 +1240,7 @@ alOrganicWalker:dc.w MoveOrganicWalker          ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $07                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALUP|AB_DIAGONALDOWN ;Attack directions
@@ -1264,7 +1264,7 @@ alGuard:        dc.w MoveAndAttackHuman         ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 85                         ;Score from kill
                 dc.b AIMODE_GUARD               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONMEDKITARMOR     ;Itemdrop table index or item override
+                dc.b DROP_WEAPON|DROP_MEDKIT|DROP_ARMOR ;Itemdrop type or item override
                 dc.b $17                        ;AI offense random AND-value
                 dc.b $38                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -1289,7 +1289,7 @@ alHeavyGuard:   dc.w MoveAndAttackHuman         ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 95                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONMEDKITARMOR     ;Itemdrop table index or item override
+                dc.b DROP_WEAPON|DROP_MEDKIT|DROP_BATTERY|DROP_ARMOR ;Itemdrop type or item override
                 dc.b $17                        ;AI offense random AND-value
                 dc.b $20                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -1314,7 +1314,7 @@ alLightGuard:   dc.w MoveAndAttackHuman         ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_GUARD               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONMEDKIT          ;Itemdrop table index or item override
+                dc.b DROP_WEAPON|DROP_MEDKIT    ;Itemdrop type or item override
                 dc.b $13                        ;AI offense random AND-value
                 dc.b $40                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -1338,7 +1338,7 @@ alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 65                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b DROP_WEAPON|DROP_BATTERY   ;Itemdrop type or item override
                 dc.b $0f                        ;AI offense random AND-value
                 dc.b $18                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -1364,7 +1364,7 @@ alCombatRobotFast:
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 110                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERY         ;Itemdrop table index or item override
+                dc.b DROP_WEAPON|DROP_BATTERY   ;Itemdrop type or item override
                 dc.b $13                        ;AI offense random AND-value
                 dc.b $20                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -1389,7 +1389,7 @@ alLargeWalker:  dc.w MoveLargeWalker            ;Update routine
                 dc.b MOD_HEAVYROBOT             ;Damage modifier
                 dc.w 175                        ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $13                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
@@ -1473,7 +1473,7 @@ alLargeTank:    dc.w MoveLargeTank              ;Update routine
                 dc.b MOD_HEAVYROBOT             ;Damage modifier
                 dc.w 200                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $0f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
@@ -1496,7 +1496,7 @@ alHighWalker:   dc.w MoveHighWalker             ;Update routine
                 dc.b MOD_HEAVYROBOT             ;Damage modifier
                 dc.w 150                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $1f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions
@@ -1523,7 +1523,7 @@ alSecurityChief:dc.w USESCRIPT|EP_MOVESECURITYCHIEF ;Update routine
                 dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 1500                       ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b ITEM_VAULTPASS             ;Itemdrop table index or item override
+                dc.b ITEM_VAULTPASS             ;Itemdrop type or item override
                 dc.b $17                        ;AI offense random AND-value
                 dc.b $20                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -1547,7 +1547,7 @@ alRotorDrone:   dc.w USESCRIPT|EP_MOVEROTORDRONE ;Update routine
                 dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 1000                       ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $1f                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
@@ -1568,7 +1568,7 @@ alLargeSpider:  dc.w USESCRIPT|EP_MOVELARGESPIDER ;Update routine
                 dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 1500                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $00                        ;AI offense AND-value
                 dc.b $00                        ;AI defense probability
                 dc.b AB_NONE                    ;Attack directions
@@ -1597,7 +1597,7 @@ alArmorer:      dc.w MoveAndAttackHuman         ;Update routine
                 dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 150                        ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPON                ;Itemdrop table index or item override
+                dc.b DROP_WEAPON                ;Itemdrop type or item override
                 dc.b $1f                        ;AI offense random AND-value
                 dc.b $50                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -1630,7 +1630,7 @@ alMediumWalker: dc.w MoveWalker                 ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 85                         ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b DROP_WEAPONBATTERYPARTS    ;Itemdrop table index or item override
+                dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $07                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL              ;Attack directions

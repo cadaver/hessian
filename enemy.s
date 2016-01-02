@@ -1121,12 +1121,56 @@ HD_NoDamageSource:
 
 DropItem:       lda #$00
                 sta temp4
-                lda #$03                        ;Retry counter
-                sta temp7
                 lda actT,x                      ;Exception: final room large droids drop nothing
-                cmp #ACT_LARGEDROIDFINAL
+                cmp #ACT_LARGEDROIDFINAL        ;(avoid duplicating actor logic structure)
                 beq DI_NoItem
-                jsr Random
+                jsr Random                      ;Common random number
+                sta temp6
+                ldy #AL_DROPITEMTYPE
+                lda (actLo),y
+                beq DI_NoItem
+                bpl DI_ItemNumber               ;Direct item number?
+                sta temp5
+                lsr temp5                       ;Medkit?
+                bcc DI_NoMedkit
+                lda #ITEM_MEDKIT
+                jsr CountItem
+                tay
+                bne DI_NoMedkit                 ;Must be none in inventory
+                lda temp6
+                cmp #MEDKIT_DROP_PROBABILITY
+                bcs DI_NoMedkit
+DI_DropCountedItem:
+                lda temp7
+                bne DI_ItemNumber
+DI_NoMedkit:    lsr temp5                       ;Battery?
+                bcc DI_NoBattery
+                lda #ITEM_BATTERY
+                jsr CountItem
+                tay
+                bne DI_NoBattery
+                lda temp6
+                cmp #BATTERY_DROP_PROBABILITY
+                bcc DI_DropCountedItem
+DI_NoBattery:   lsr temp5                       ;Armor?
+                bcc DI_NoArmor
+                lda #ITEM_ARMOR
+                jsr CountItem
+                cmp #50                         ;Must be less than half left
+                bcs DI_NoArmor
+                lda temp6
+                cmp #ARMOR_DROP_PROBABILITY
+                bcc DI_DropCountedItem
+DI_NoArmor:     lsr temp5                       ;Weapon?
+                bcc DI_NoWeapon
+                lda actWpn,x
+                jsr CountItem
+                bcc DI_DropCountedItem          ;OK if can pick up
+DI_NoWeapon:    lsr temp5                       ;Parts?
+                bcc DI_NoItem
+                lda temp6
+                cmp #PARTS_DROP_PROBABILITY
+                bcs DI_NoItem
                 and #$0c
                 ldy #AL_SIZEHORIZ               ;If enemy is going to drop parts, make their
                 clc                             ;count proportional to the enemy size + random add
@@ -1134,56 +1178,12 @@ DropItem:       lda #$00
                 lsr
                 lsr
                 sta itemDefaultPickup+ITEM_PARTS-1
-DI_Retry:       ldy #AL_DROPITEMINDEX
-                lda (actLo),y
-                bpl DI_ItemNumber
-                sta temp5
-                jsr Random
-                and #DROPTABLERANDOM-1
-                adc temp5
-                tay
-                lda itemDropTable-$80,y
-                beq DI_NoItem
-                bpl DI_ItemNumber
-                lda actFlags,x                  ;Check if enemy has weapon "integrated"
-                bmi DI_NoItem                   ;in which case no drop
-                lda actWpn,x
+                lda #ITEM_PARTS
+                bne DI_ItemNumber
+DI_NoItem:      rts
 DI_ItemNumber:  tay
-                beq DI_NoItem
                 sta temp5                       ;Item type to drop
                 lda #$00                        ;X-speed
-                sta temp8                       ;Capacity counter
-                ldy #ACTI_FIRSTITEM             ;Count capacity on both ground and inventory, do not spawn
-DI_CountGroundItems:                            ;if player can't pick up
-                lda actT,y
-                beq DI_CGINext
-                lda actF1,y
-                cmp temp5
-                bne DI_CGINext
-                lda actHp,y
-                clc
-                adc temp8
-                bcs DI_Exceeded
-                sta temp8
-DI_CGINext:     iny
-                cpy #ACTI_LASTITEM+1
-                bcc DI_CountGroundItems
-                ldy temp5
-                jsr FindItem
-                bcc DI_NotInInventory
-                lda invCount-1,y
-                clc
-                adc temp8
-                bcs DI_Exceeded
-                sta temp8
-DI_NotInInventory:
-                lda temp8
-                cmp itemMaxCount-1,y
-                bcc DI_HasCapacity
-DI_Exceeded:    dec temp7
-                bne DI_Retry                    ;If player has no capacity, retry to drop something else
-DI_NoItem:      rts                             ;(e.g. batteries or medkits)
-DI_HasCapacity: lda #$00
 DI_SpawnItemWithSpeed:
                 sta temp8
                 lda #ACTI_FIRSTITEM
@@ -1217,4 +1217,40 @@ DI_CountOK:     sta actHp,y
                 ora #ORG_GLOBAL
 DI_NotImportant:sta actLvlDataOrg,x             ;Make item either persistent or temp persistent
                 ldx temp6                       ;depending on importance
+                rts
+
+        ; Subroutine to count item (type in A) on ground + inventory. Return total in A,
+        ; C=1 if cannot pick up more
+
+CountItem:      sta temp7
+                lda #$00
+                sta temp8                       ;Total counter
+                ldy #ACTI_FIRSTITEM
+DI_CountGroundItems:
+                lda actT,y
+                beq DI_CGINext
+                lda actF1,y
+                cmp temp7
+                bne DI_CGINext
+                lda actHp,y
+                clc
+                adc temp8
+                bcs DI_Exceeded
+                sta temp8
+DI_CGINext:     iny
+                cpy #ACTI_LASTITEM+1
+                bcc DI_CountGroundItems
+                ldy temp7
+                jsr FindItem
+                bcc DI_NotInInventory
+                lda invCount-1,y
+                clc
+                adc temp8
+                bcs DI_Exceeded
+                sta temp8
+DI_NotInInventory:
+                lda temp8
+                cmp itemMaxCount-1,y
+                rts
+DI_Exceeded:    lda #$ff
                 rts
