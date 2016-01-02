@@ -706,7 +706,7 @@ UA_RALeftCheck: cmp #$00
 UA_RARightCheck:cmp #$00
                 bcs UA_Remove
                 lda actYH,x                     ;Note: use mapY as the top remove border, as the zone
-                cmp mapY                        ;may not be a full screen tall
+                cmp SL_CSSMapY+1                ;may not be a full screen tall
                 bcc UA_Remove
 UA_RABottomCheck:
                 cmp #$00
@@ -1710,7 +1710,7 @@ AS_SideCommon:  jsr Random                      ;Retry until is within screen
                 bcs AS_SideCommon
                 tax
                 clc
-                adc mapY
+                adc SL_CSSMapY+1
                 sta actYH,y
                 txa
                 cmp #SPAWNINFRONT_PROBABILITY   ;Prefer to spawn in front of player
