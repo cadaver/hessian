@@ -1134,33 +1134,18 @@ DropItem:       lda #$00
                 lsr temp5                       ;Medkit?
                 bcc DI_NoMedkit
                 lda #ITEM_MEDKIT
-                jsr CountItem
-                tay
-                bne DI_NoMedkit                 ;Must be none in inventory
-                lda temp6
-                cmp #MEDKIT_DROP_PROBABILITY
-                bcs DI_NoMedkit
-DI_DropCountedItem:
-                lda temp7
-                bne DI_ItemNumber
+                ldy #1
+                jsr DropLowProbability
 DI_NoMedkit:    lsr temp5                       ;Battery?
                 bcc DI_NoBattery
                 lda #ITEM_BATTERY
-                jsr CountItem
-                tay
-                bne DI_NoBattery
-                lda temp6
-                cmp #BATTERY_DROP_PROBABILITY
-                bcc DI_DropCountedItem
+                ldy #1
+                jsr DropLowProbability
 DI_NoBattery:   lsr temp5                       ;Armor?
                 bcc DI_NoArmor
                 lda #ITEM_ARMOR
-                jsr CountItem
-                cmp #50                         ;Must be less than half left
-                bcs DI_NoArmor
-                lda temp6
-                cmp #ARMOR_DROP_PROBABILITY
-                bcc DI_DropCountedItem
+                ldy #50
+                jsr DropLowProbability
 DI_NoArmor:     lsr temp5                       ;Weapon?
                 bcc DI_NoWeapon
                 lda actWpn,x
@@ -1183,6 +1168,25 @@ DI_NoWeapon:    lsr temp5                       ;Parts?
                 sta itemDefaultPickup+ITEM_PARTS-1
                 bpl DI_DropCountedItem
 DI_NoItem:      rts
+
+        ; Common code for dropping item that has a low probability (medkit, battery, armor)
+        ; Does not return if drop OK
+
+DropLowProbability:
+                sty DLP_Cmp+1
+                jsr CountItem
+DLP_Cmp:        cmp #$00
+                bcs DI_NoItem
+                lda temp6
+                cmp #MEDKIT_DROP_PROBABILITY
+                bcs DI_NoItem
+                pla
+                pla
+DI_DropCountedItem:
+                lda temp7
+
+        ; Drop explicit item
+
 DI_ItemNumber:  tay
                 sta temp5                       ;Item type to drop
                 lda #$00                        ;X-speed
@@ -1255,4 +1259,4 @@ DI_NotInInventory:
                 cmp itemMaxCount-1,y
                 rts
 DI_Exceeded:    lda #$ff
-                rts
+DLP_NoItem:     rts

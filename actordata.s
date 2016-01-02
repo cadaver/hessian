@@ -971,7 +971,7 @@ alSmallWalker:  dc.w MoveWalker                 ;Update routine
                 dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
                 dc.b HP_SMALLWALKER             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 45                         ;Score from kill
+                dc.w 50                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $07                        ;AI offense AND-value
@@ -995,7 +995,7 @@ alSmallTank:    dc.w MoveTank                   ;Update routine
                 dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
                 dc.b HP_SMALLTANK               ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 60                         ;Score from kill
+                dc.w 75                         ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $06                        ;AI offense AND-value
@@ -1039,7 +1039,7 @@ alRollingMine:  dc.w MoveRollingMine            ;Update routine
                 dc.w ExplodeEnemy_Ofs8          ;Destroy routine
                 dc.b HP_ROLLINGMINE             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 30                         ;Score from kill
+                dc.w 50                         ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $08                        ;AI offense AND-value
@@ -1142,7 +1142,7 @@ alFly:          dc.w MoveFly                    ;Update routine
                 dc.w FlyDeath                   ;Destroy routine
                 dc.b HP_FLY                     ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 15                         ;Score from kill
+                dc.w 25                         ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
                 dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $00                        ;AI offense AND-value
@@ -1205,7 +1205,7 @@ alRock:         dc.w MoveRock                   ;Update routine
                 dc.w DestroyRock                ;Destroy routin
                 dc.b HP_ROCK                    ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 15                         ;Score from kill
+                dc.w 20                         ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alFireball:     dc.w MoveFireball               ;Update routine
@@ -1287,7 +1287,7 @@ alHeavyGuard:   dc.w MoveAndAttackHuman         ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b HP_HEAVYGUARD              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 95                         ;Score from kill
+                dc.w 100                        ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPON|DROP_MEDKIT|DROP_BATTERY|DROP_ARMOR ;Itemdrop type or item override
                 dc.b $17                        ;AI offense random AND-value
@@ -1362,7 +1362,7 @@ alCombatRobotFast:
                 dc.w ExplodeEnemy3_Ofs24        ;Destroy routine
                 dc.b HP_COMBATROBOT             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 110                        ;Score from kill
+                dc.w 125                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_WEAPON|DROP_BATTERY   ;Itemdrop type or item override
                 dc.b $13                        ;AI offense random AND-value
@@ -1387,7 +1387,7 @@ alLargeWalker:  dc.w MoveLargeWalker            ;Update routine
                 dc.w ExplodeEnemy4_Ofs15        ;Destroy routine
                 dc.b HP_LARGEWALKER             ;Initial health
                 dc.b MOD_HEAVYROBOT             ;Damage modifier
-                dc.w 175                        ;Score from kill
+                dc.w 250                        ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $13                        ;AI offense AND-value
@@ -1421,7 +1421,7 @@ alCpu:          dc.w FlashActor_CheckDamageFlash ;Update routine
                 dc.w DestroyCPU                 ;Destroy routine
                 dc.b HP_CPU                     ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 250                        ;Score from kill
+                dc.w 500                        ;Score from kill
 
 alSuperCpu:     dc.w FlashActor_CheckDamageFlash ;Update routine
                 dc.b GRP_ENEMIES|AF_ORGANIC     ;Actor flags (hack: protect against easy victory with EMP)
@@ -1466,12 +1466,12 @@ alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
 alLargeTank:    dc.w MoveLargeTank              ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 24                         ;Horizontal size
-                dc.b 38                         ;Size up
+                dc.b 41                         ;Size up
                 dc.b 0                          ;Size down
                 dc.w ExplodeEnemy4_Ofs15        ;Destroy routine
                 dc.b HP_LARGETANK               ;Initial health
                 dc.b MOD_HEAVYROBOT             ;Damage modifier
-                dc.w 200                        ;Score from kill
+                dc.w 300                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $0f                        ;AI offense AND-value
@@ -1494,7 +1494,7 @@ alHighWalker:   dc.w MoveHighWalker             ;Update routine
                 dc.w ExplodeEnemy4_Rising       ;Destroy routine
                 dc.b HP_HIGHWALKER              ;Initial health
                 dc.b MOD_HEAVYROBOT             ;Damage modifier
-                dc.w 150                        ;Score from kill
+                dc.w 175                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $1f                        ;AI offense AND-value
@@ -1595,7 +1595,7 @@ alArmorer:      dc.w MoveAndAttackHuman         ;Update routine
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b HP_ARMORER                 ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier
-                dc.w 150                        ;Score from kill
+                dc.w 250                        ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop type or item override
                 dc.b $1f                        ;AI offense random AND-value

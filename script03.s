@@ -59,10 +59,10 @@ MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phas
 MEye_HasCPUs:   lda #1
 MEye_SpawnDroid:cmp numSpawned
                 bcc MEye_Done
-                lda #ACTI_FIRSTNPC              ;Use any free slots for droids,
-                ldy #ACTI_LASTNPC               ;meaning the battle becomes more insane
-                jsr GetFreeActor                ;as more CPUs are destroyed
-                bcc MEye_Done                   ;(up to 2)
+                lda #ACTI_FIRSTNPC
+                ldy #ACTI_LASTNPC
+                jsr GetFreeActor
+                bcc MEye_Done
                 lda actTime,x
                 bne MEye_DoSpawnDelay
                 tya

@@ -33,6 +33,7 @@ DMG_ACID        = 16
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
 DMGMOD_NOORGANIC = $80                          ;No organic damage
 DMGMOD_NONONORGANIC = $08                       ;No nonorganic damage
+DMGMOD_REDUCEDNONORGANIC = $78                  ;Reduced damage to nonorganic enemies
 
 SPDTBL_NORMAL   = 0
 SPDTBL_GRENADE  = 9
@@ -272,7 +273,7 @@ wdFlameThrower: dc.b WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOSKILLBONUS|WDB_FLIC
                 dc.b 2                          ;Attack delay
                 dc.b ACT_FLAME                  ;Bullet actor type
                 dc.b DMG_FLAMETHROWER           ;Bullet damage
-                dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
+                dc.b DMGMOD_REDUCEDNONORGANIC   ;Damage modifier nonorganic/organic
                 dc.b 15                         ;Bullet time duration
                 dc.b 7                          ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
