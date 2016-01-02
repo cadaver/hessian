@@ -971,7 +971,7 @@ alSmallWalker:  dc.w MoveWalker                 ;Update routine
                 dc.w ExplodeEnemy2_8_Ofs10      ;Destroy routine
                 dc.b HP_SMALLWALKER             ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
-                dc.w 50                         ;Score from kill
+                dc.w 45                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
                 dc.b $07                        ;AI offense AND-value
@@ -1449,7 +1449,7 @@ alEye:          dc.w USESCRIPT|EP_MOVEEYESTAGE2 ;Update routine
                 dc.w USESCRIPT|EP_DESTROYEYE    ;Destroy routine
                 dc.b HP_EYE                     ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier
-                dc.w 2000                       ;Score from kill
+                dc.w 2500                       ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
@@ -1521,7 +1521,7 @@ alSecurityChief:dc.w USESCRIPT|EP_MOVESECURITYCHIEF ;Update routine
                 dc.w USESCRIPT|EP_DESTROYSECURITYCHIEF ;Destroy routine
                 dc.b HP_SECURITYCHIEF           ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier
-                dc.w 1500                       ;Score from kill
+                dc.w 2000                       ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b ITEM_VAULTPASS             ;Itemdrop type or item override
                 dc.b $17                        ;AI offense random AND-value

@@ -1155,6 +1155,8 @@ DI_NoWeapon:    lsr temp5                       ;Parts?
                 bcc DI_NoItem
                 lda #ITEM_PARTS
                 jsr CountItem
+                lda temp3                       ;If already 2 or more parts onscreen,
+                cmp #2                          ;do not drop more
                 bcs DI_NoItem
                 lda temp6
                 cmp #PARTS_DROP_PROBABILITY
@@ -1226,18 +1228,21 @@ DI_NotImportant:sta actLvlDataOrg,x             ;Make item either persistent or 
                 rts
 
         ; Subroutine to count item (type in A) on ground + inventory. Return total in A,
-        ; C=1 if cannot pick up more
+        ; count of ground items of matching type in temp3 and C=1 if cannot pick up more
 
 CountItem:      sta temp7
                 lda #$00
+                sta temp3
                 sta temp8                       ;Total counter
                 ldy #ACTI_FIRSTITEM
 DI_CountGroundItems:
-                lda actT,y
-                beq DI_CGINext
+                lda actT,y                      ;Occasionally (explosions etc.) item actors
+                cmp #ACT_ITEM                   ;may be reused for other purposes
+                bne DI_CGINext
                 lda actF1,y
                 cmp temp7
                 bne DI_CGINext
+                inc temp3
                 lda actHp,y
                 clc
                 adc temp8
