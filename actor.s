@@ -169,9 +169,9 @@ DA_SprSubYH:    sbc #$00
                 lsr
                 lsr
                 ora coordTblLo+1,y
-                sta temp3                       ;Y pos
+                sta GASS_YLo+1                  ;Y pos
                 lda coordTblHi+1,y
-                bne DA_ActorDone                ;Skip if Y coord MSB nonzero
+                sta GASS_YHi+1
                 lda actXL,x
                 sta actPrevXL,x
                 sec
@@ -191,8 +191,9 @@ DA_SprSubXH:    sbc #$00
                 sta GASS_XLo+1                  ;X add
                 lda coordTblHi,y
                 sta GASS_XHi+1
-                lda #$00                        ;X current pos within actor
-                sta temp1
+                lda #$00
+                sta temp1                       ;X current pos within actor
+                sta temp3                       ;Y current pos within actor
                 stx actIndex
                 jsr DrawActorSub
                 stx sprIndex

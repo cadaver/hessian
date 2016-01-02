@@ -268,10 +268,7 @@ UpdateFrame:    if SHOW_SPRITESORT_TIME > 0
                 lda firstSortSpr                ;Switch sprite doublebuffer side
                 eor #MAX_SPR
                 sta firstSortSpr
-                ldx #$ff                        ;Make sure the sort endmark is intact (may have been
-                stx sprY+MAX_SPR                ;overwritten if ran out of sprites)
-                stx PSfx_LastSfx+1              ;Reset last sound played
-                inx
+                ldx #$00
                 stx temp6                       ;D010 bits for first IRQ
                 txa
 SSpr_Loop1:     ldy sprOrder,x                  ;Check for coordinates being in order
@@ -304,17 +301,11 @@ SSpr_NoSwap2:   inx
                 sta $d020
                 endif
                 lda #$80                        ;Wait until last set sprites have displayed
+                sta PSfx_LastSfx+1              ;Reset last sound played
                 jsr WaitFrame                   ;and the second doublebuffer half is free
-                ldx #$00
-SSpr_FindFirst: ldy sprOrder,x                  ;Find upmost visible sprite
-                lda sprY,y
-                cmp #MIN_SPRY
-                bcs SSpr_FirstFound
-                inx
-                bne SSpr_FindFirst
-SSpr_FirstFound:txa
-                adc #<sprOrder                  ;Add one more, C=1 becomes 0
-                sbc firstSortSpr                ;Subtract one more to cancel out
+                lda #<sprOrder
+                sec
+                sbc firstSortSpr
                 sta SSpr_CopyLoop1+1
                 ldy firstSortSpr
                 tya

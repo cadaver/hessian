@@ -74,12 +74,26 @@ GetAndStoreSprite:
                 lda temp3                       ;Subtract Y-hotspot
                 sec
                 sbc (frameLo),y
-                sta sprY,x
+                sta temp4
                 iny
                 clc
                 adc (frameLo),y                 ;Add Y-connect spot
                 sta temp3
                 cpx #MAX_SPR                    ;Ran out of sprites?
+                bcs GASS_DoNotAccept
+                ldy #$00                        ;Finalize Y-pos
+                lda temp4
+                bpl GASS_YLo
+                dey
+GASS_YLo:       adc #$00
+                sta sprY,x
+                tya
+GASS_YHi:       adc #$00
+                bne GASS_DoNotAccept            ;Y high byte must be zero (visible)
+                lda sprY,x                      ;Check Y visibility
+                cmp #MIN_SPRY
+                bcc GASS_DoNotAccept
+                cmp #MAX_SPRY
                 bcs GASS_DoNotAccept
                 ldy #$00
                 lda temp2                       ;Finalize X-pos
