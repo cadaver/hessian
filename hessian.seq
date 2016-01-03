@@ -1,84 +1,92 @@
-format hessian,he d64 hessian.d64 8
-write boot.prg @8:hessian
-write loader.prg @8:00
-write main.pak @8:01
-write sprcommon.pak @8:02
-write spritem.pak @8:03
-write sprweapon.pak @8:04
-write sprplayert.pak @8:05
-write sprplayerta.pak @8:06
-write sprplayerb.pak @8:07
-write sprplayerba.pak @8:08
-write sprsmallrobots.pak @8:09
-write sprhazards.pak @8:0a
-write spranimals.pak @8:0b
-write sprmediumrobots.pak @8:0c
-write sprguard.pak @8:0d
-write sprheavyguard.pak @8:0e
-write sprcombatrobot.pak @8:0f
-write sprlargewalker.pak @8:10
-write sprlargetank.pak @8:11
-write sprhighwalker.pak @8:12
-write sprserver.pak @8:13
-write sprsecuritychief.pak @8:14
-write sprrotordrone.pak @8:15
-write sprlargespider.pak @8:16
-write script00.pak @8:20
-write script01.pak @8:21
-write script02.pak @8:22
-write script03.pak @8:23
-write script04.pak @8:24
-write script05.pak @8:25
-write logo.pak @8:2e
-write upgrade.pak @8:2f
-write level00.pak @8:30
-write level01.pak @8:31
-write level02.pak @8:32
-write level03.pak @8:33
-write level04.pak @8:34
-write level05.pak @8:35
-write level06.pak @8:36
-write level07.pak @8:37
-write level08.pak @8:38
-write level09.pak @8:39
-write level10.pak @8:3a
-write level11.pak @8:3b
-write level12.pak @8:3c
-write level13.pak @8:3d
-write level14.pak @8:3e
-write level15.pak @8:3f
-write charset00.pak @8:40
-write charset01.pak @8:41
-write charset02.pak @8:42
-write charset03.pak @8:43
-write charset04.pak @8:44
-write charset05.pak @8:45
-write charset06.pak @8:46
-write charset07.pak @8:47
-write charset08.pak @8:48
-write charset09.pak @8:49
-write charset10.pak @8:4a
-write charset11.pak @8:4b
-write charset12.pak @8:4c
-write charset13.pak @8:4d
-write charset14.pak @8:4e
-write music00.pak @8:50
-write music01.pak @8:51
-write music02.pak @8:52
-write music03.pak @8:53
-write music04.pak @8:54
-write music05.pak @8:55
-write music06.pak @8:56
-write music07.pak @8:57
-write music08.pak @8:58
-write music09.pak @8:59
-write music10.pak @8:5a
-write music11.pak @8:5b
-write music12.pak @8:5c
-write emptysave.bin @8:70
-write emptysave.bin @8:71
-write emptysave.bin @8:72
-write emptysave.bin @8:73
-write emptysave.bin @8:74
-write savelist.bin @8:75
-write options.bin @8:76
+level02.pak 32
+level04.pak 34
+level15.pak 3F
+charset05.pak 45
+charset06.pak 46
+music07.pak 57
+sprrotordrone.pak 15
+script03.pak 23
+
+level00.pak 30
+charset00.pak 40
+music04.pak 54
+
+level05.pak 35
+level09.pak 39
+charset04.pak 44
+sprguard.pak 0D
+level01.pak 31
+charset03.pak 43
+music06.pak 56
+
+level03.pak 33
+charset02.pak 42
+charset01.pak 41
+music05.pak 55
+sprcombatrobot.pak 0F
+sprplayert.pak 05
+sprplayerb.pak 07
+sprsmallrobots.pak 09
+sprmediumrobots.pak 0C
+sprhazards.pak 0A
+script01.pak 21
+music00.pak 50
+sprlargewalker.pak 10
+sprhighwalker.pak 12
+sprserver.pak 13
+
+level11.pak 3B
+charset13.pak 4D
+music09.pak 59
+sprheavyguard.pak 0E
+level12.pak 3C
+charset14.pak 4E
+sprsecuritychief.pak 14
+level13.pak 3D
+music12.pak 5C
+
+level06.pak 36
+charset08.pak 48
+charset07.pak 47
+music10.pak 5A
+script04.pak 24
+upgrade.pak 2F
+sprplayerta.pak 06
+sprplayerba.pak 08
+script05.pak 25
+
+level07.pak 37
+level14.pak 3E
+charset09.pak 49
+music08.pak 58
+spranimals.pak 0B
+sprlargespider.pak 16
+
+level08.pak 38
+charset10.pak 4A
+level10.pak 3A
+charset11.pak 4B
+charset12.pak 4C
+music11.pak 5B
+sprlargetank.pak 11
+script02.pak 22
+
+boot.prg HESSIAN
+loader.prg 00
+
+main.pak 01
+options.bin 76
+sprcommon.pak 02
+spritem.pak 03
+sprweapon.pak 04
+script00.pak 20
+logo.pak 2E
+music01.pak 51
+savelist.bin 75
+emptysave.bin 70
+emptysave.bin 71
+emptysave.bin 72
+emptysave.bin 73
+emptysave.bin 74
+music02.pak 52
+music03.pak 53

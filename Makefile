@@ -27,7 +27,7 @@ clean:
 	-rm e?
 	-rm f?
 
-hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak upgrade.pak \
+hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak upgrade.pak \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak script00.pak script01.pak script02.pak script03.pak \
 	script04.pak script05.pak \
@@ -39,7 +39,8 @@ hessian.d64: loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak
 	sprsmallrobots.pak sprhazards.pak spranimals.pak sprmediumrobots.pak sprguard.pak sprheavyguard.pak \
 	sprcombatrobot.pak sprlargewalker.pak sprlargetank.pak sprhighwalker.pak \
 	sprserver.pak sprsecuritychief.pak sprrotordrone.pak sprlargespider.pak
-	c1541 < hessian.seq
+	maked64 hessian.d64 hessian.seq HESSIAN___________HE_2A 10
+	reorder hessian.d64
 
 hessian.d81: hessian.d64 hessiand81.seq
 	c1541 < hessiand81.seq
