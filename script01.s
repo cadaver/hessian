@@ -401,13 +401,13 @@ RS_ArrowLastPos:sta screen1
 RS_ZeroCost:    jsr Print3Digits
 RS_ControlLoop: jsr FinishFrame
                 jsr GetControls
+                jsr GetFireClick
+                bcs RS_Action
                 lda recyclerSelection
                 ldx recyclerListLength
                 jsr RS_Control
                 sta recyclerSelection
                 bcs RS_Redraw
-                jsr GetFireClick
-                bcs RS_Action
                 lda keyPress
                 bmi RS_ControlLoop
 RS_Exit:        ldy originalItem
