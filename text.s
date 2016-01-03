@@ -74,8 +74,8 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtOldTunnelsPass
                 dc.b >txtBiometricId
                 dc.b >txtAmplifier
-                dc.b >txtFuelCan
                 dc.b >txtTruckBattery
+                dc.b >txtFuelCan
                 dc.b >txtLungFilter
                 dc.b >txtCommGear
                 dc.b >txtHazmatSuit

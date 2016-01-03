@@ -14,8 +14,8 @@ DMG_SHOTGUN     = 14                            ;Reduced by 2 per animation fram
 DMG_PLASMA      = 16
 DMG_SNIPERRIFLE = 20
 DMG_ENEMYMINE   = 32
-DMG_LAUNCHERGRENADE = 40
 DMG_GRENADE     = 40
+DMG_LAUNCHERGRENADE = 48
 DMG_MINE        = 56
 DMG_BAZOOKA     = 56
 DMG_EMP         = 4+NOMODIFY                    ;4 damage for 8 frames = 32 total
@@ -286,7 +286,7 @@ wdFlameThrower: dc.b WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_NOSKILLBONUS|WDB_FLIC
                 dc.b SFX_RELOADFLAMER           ;Reload finished sound
                 dc.b FR_WALK+2                  ;Lock animation upper body frame
 
-wdLaserRifle:   dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
+wdLaserRifle:   dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 6                          ;Attack delay
@@ -304,7 +304,7 @@ wdLaserRifle:   dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_POWERUP                ;Reload finished sound
 
-wdPlasmaGun:    dc.b WDB_FLICKERBULLET          ;Weapon bits
+wdPlasmaGun:    dc.b WDB_FLICKERBULLET|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 8                          ;Attack delay

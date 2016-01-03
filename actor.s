@@ -668,7 +668,16 @@ LC_Lda:         lda (zpDestLo),y
                 lda charInfo,y
                 and #CI_OBSTACLE
                 beq LC_Loop
-LC_NoLine:      lda #LINE_NO
+LC_NoLine:      ldy actAITarget,x               ;Special hack: if target is standing at zone edge
+                lda temp1                       ;and line check hit obstacle there, allow line of sight
+                cmp actXH,y
+                bne LC_NoLineNoEdge
+                cmp limitL
+                beq LC_HasLine
+                adc #$00
+                cmp limitR
+                beq LC_HasLine
+LC_NoLineNoEdge:lda #LINE_NO
                 bne LC_StoreLine
 
         ; Call update routines of all actors, then interpolate. If game is paused, only interpolate

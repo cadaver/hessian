@@ -136,13 +136,16 @@ descStrength:   dc.b "IMPROVED MELEE STRENGTH AT",0
                 dc.b "MORE AMMO",0,0
 
                      ;0123456789012345678901234567
-descFirearms:   dc.b "IMPROVED FIREARMS PRECISION",0
-                dc.b "(MORE STOPPING POWER) AND",0
-                dc.b "REDUCED RELOAD TIME",0,0
+descFirearms:   dc.b "IMPROVED BULLET AIM (MORE",0
+                dc.b "DAMAGE) AND REDUCED RELOAD",0
+                dc.b "TIME. AREA-BASED WEAPONS",0
+                dc.b "RECEIVE NO BENEFIT",0,0
 
                      ;0123456789012345678901234567
-descArmor:      dc.b "REDUCED BLUNT AND PIERCING",0
-                dc.b "TRAUMA OVER THE ENTIRE BODY",0,0
+descArmor:      dc.b "REDUCED COMBAT DAMAGE OVER",0
+                dc.b "THE ENTIRE BODY. FALLING,",0
+                dc.b "DROWNING AND TOXIC DAMAGE",0
+                dc.b "ARE UNAFFECTED",0,0
 
                      ;0123456789012345678901234567
 descHealing:    dc.b "FASTER NANOMECHANICAL TISSUE",0
@@ -156,7 +159,7 @@ descDrain:      dc.b "INCREASED TIME OF OPERATION",0
                      ;0123456789012345678901234567
 descRecharge:   dc.b "CONVERTS BODY ELECTRICITY",0
                 dc.b "INTO BATTERY POWER AT COST",0
-                dc.b "OF INCREASED METABOLIC ",0
+                dc.b "OF INCREASED METABOLIC",0
                 dc.b "STRAIN",0,0
 
                 if * > screen2+SCROLLROWS*40
