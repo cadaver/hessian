@@ -375,9 +375,8 @@ MLS_DyingNoWall:lda #<EP_OPENWALL               ;Wall script runs until spider n
                 ldx #>EP_OPENWALL
                 jsr SetScript
                 ldx actIndex
-                inc actTime,x
-                lda actTime,x
-                and #$01
+                lda actFd,x
+                and #$08
                 beq MLS_DyingNoFlash
                 lda #$0c
 MLS_DyingNoFlash:
