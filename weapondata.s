@@ -27,7 +27,6 @@ DMG_FLY         = 1+NOMODIFY
 DMG_ROCK        = 2+NOMODIFY
 DMG_FIREBALL    = 2+NOMODIFY
 DMG_STEAM       = 1+NOMODIFY
-DMG_LARGESPIDER = 1+NOMODIFY
 DMG_ACID        = 16
 
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
