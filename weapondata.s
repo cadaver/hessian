@@ -194,7 +194,7 @@ wdPistol:       dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b SFX_RELOAD                 ;Reload sound
                 dc.b SFX_COCKWEAPON             ;Reload finished sound
 
-wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET         ;Weapon bits
+wdShotgun:      dc.b WDB_BULLETDIRFRAME|WDB_NOSKILLBONUS|WDB_FLICKERBULLET         ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DOWN+1                 ;First invalid aim direction
                 dc.b 10                         ;Attack delay
