@@ -911,12 +911,12 @@ alSmallDroid:   dc.w MoveDroid                  ;Update routine
                 dc.w 25                         ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
-                dc.b $07                        ;AI offense AND-value
+                dc.b $09                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
                 dc.b 3*8                        ;Horiz max movement speed
-                dc.b 2                          ;Horiz acceleration
-                dc.b 2*8                        ;Vert max movement speed
+                dc.b 1                          ;Horiz acceleration
+                dc.b 2*8-2                      ;Vert max movement speed
                 dc.b 1                          ;Vert acceleration
                 dc.b 0                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset

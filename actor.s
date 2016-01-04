@@ -399,9 +399,9 @@ AA_ItemFlashCounter:                            ;Get color override for items + 
                 sta FlashActor+1
                 and #$07
                 tax
-                lda panelScreen+PANELROW*40+9
-                cmp #"H"
-                bne AA_NoHealthBarFlash
+                lda panelScreen+PANELROW*40+11
+                cmp #122
+                bcc AA_NoHealthBarFlash
                 txa
                 ldy actHp+ACTI_PLAYER           ;Flash the H & C letters if health or battery low
                 cpy #LOW_HEALTH+1

@@ -53,6 +53,8 @@ music09.pak 2A
 music10.pak 2B
 music11.pak 2C
 music12.pak 2D
+boot.prg HESSIAN
+loader.prg 00
 sprplayerb.pak 33
 sprplayert.pak 31
 sprplayerba.pak 34
@@ -78,6 +80,4 @@ script03.pak 53
 script04.pak 54
 script05.pak 55
 upgrade.pak 5F
-boot.prg HESSIAN
-loader.prg 00
 main.pak 01
