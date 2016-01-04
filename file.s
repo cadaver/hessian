@@ -26,16 +26,16 @@ C_FIRSTPURGEABLE = C_PLAYER_TOP
 
 F_LOADER        = $00
 F_MAIN          = $01
-F_SPRITE        = $02
-F_SCRIPT        = $20
-F_LOGO          = $2e
-F_UPGRADE       = $2f
-F_LEVEL         = $30
-F_CHARSET       = $40
-F_MUSIC         = $50
-F_SAVE          = $70
-F_SAVELIST      = $75
-F_OPTIONS       = $76
+F_LEVEL         = $02
+F_CHARSET       = $12
+F_MUSIC         = $21
+F_SPRITE        = $2e
+F_SCRIPT        = $50
+F_LOGO          = $5e
+F_UPGRADE       = $5f
+F_SAVE          = $60
+F_SAVELIST      = $65
+F_OPTIONS       = $66
 
         ; Create a number-based file name
         ;
