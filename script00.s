@@ -432,6 +432,7 @@ RSF_End:        tay                             ;Check if load errored
                 beq LoadSkipFade
                 jsr FadeOutAll
 LoadSkipFade:   jsr SaveModifiedOptions
+                lda #RCP_RESETTIME
                 jmp RestartCheckpoint           ;Start loaded game
 LoadGameCancel: jmp MainMenu
 

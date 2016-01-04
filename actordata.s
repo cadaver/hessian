@@ -790,7 +790,7 @@ plrGroundAcc:   dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
 plrInAirAcc:    dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
                 dc.b 4                          ;Long jump gravity acceleration
-plrGroundBrake:dc.b INITIAL_GROUNDBRAKE         ;Ground braking
+plrGroundBrake:dc.b INITIAL_GROUNDBRAKE+1       ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
 plrJumpSpeed:   dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
 plrClimbSpeed:  dc.b INITIAL_CLIMBSPEED         ;Climbing speed

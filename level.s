@@ -36,6 +36,9 @@ OPERATEDELAY    = 1
 DOORENTRYDELAY  = 6
 AUTODEACTDELAY  = 12
 
+RCP_RESETTIME   = 0
+RCP_CONTINUETIME = 4
+
 UpdateLevel     = lvlCodeStart
 
 LoadLevelError: jsr LFR_ErrorPrompt
@@ -689,7 +692,7 @@ AAOG_Done:      rts
         ; Save an in-memory checkpoint. Removes other actors than player as a byproduct
         ;
         ; Parameters: -
-        ; Returns: -
+        ; Returns: N=1
         ; Modifies: A,X,Y,temp regs
 
 SaveCheckpoint: jsr SaveLevelState
@@ -1201,22 +1204,31 @@ ULO_FinePositionLoop:                           ;Fineposition player to ground a
 
         ; Restore an in-memory checkpoint
         ;
-        ; Parameters: -
+        ; Parameters: A=0 restore time, A=4 do not restore
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
 RestartCheckpoint:
+                sta temp1
                 ldx #playerStateZPEnd-playerStateZPStart
 RCP_ZPState:    lda saveStateZP-1,x
                 sta playerStateZPStart-1,x
                 dex
                 bne RCP_ZPState
                 lda #<saveState
+                clc
+                adc temp1
                 sta zpSrcLo
                 lda #>saveState
+                adc #$00
                 sta zpSrcHi
                 lda #<playerStateStart
-                ldx #>playerStateStart
+                adc temp1
+                pha
+                lda #>playerStateStart
+                adc #$00
+                tax
+                pla
                 jsr SaveState_CopyMemory
                 ldx #MAX_SAVEACT-1
 RCP_CopySaveActorsLoop:

@@ -577,7 +577,8 @@ UM_PauseMenuAction:
                 ldy #$01
                 sty ES_LoadedScriptFile+1       ;Always reload title script
                 jmp ExecScriptParam
-UM_Retry:       jmp RestartCheckpoint
+UM_Retry:       lda #RCP_CONTINUETIME
+                jmp RestartCheckpoint
 
 UM_PauseMenuLeft:
                 tya

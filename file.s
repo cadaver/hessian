@@ -298,7 +298,7 @@ SaveState_CopyMemory:
         ; Copy a block of memory
         ;
         ; Parameters: A,X: destination, zpSrcLo,Hi source zpBitsLo,Hi amount of bytes
-        ; Returns: -
+        ; Returns: N=1
         ; Modifies: A,X,Y,loader temp vars
 
 CopyMemory:     sta zpDestLo

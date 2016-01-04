@@ -36,6 +36,7 @@ playerStateEnd:
                 endif
 
         ; Not saved variables
+        ; Note: must be at least 4
 
 scriptVariable: dc.b 0
 codeEntry:      ds.b 3,0
