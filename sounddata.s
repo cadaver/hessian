@@ -107,8 +107,8 @@ sfxFootstep:    include sfx/footstep.sfx
 sfxJump:        include sfx/jump.sfx
 sfxRoll:        include sfx/roll.sfx
 sfxSelect:      include sfx/select.sfx
-sfxPickup:      include sfx/pickup.sfx
 sfxObject:      include sfx/object.sfx
+sfxPickup:      include sfx/pickup.sfx
 sfxReloadFlamer:include sfx/reloadflamer.sfx
 sfxReload:      include sfx/reload.sfx
 sfxCockWeapon:  include sfx/cockfast.sfx

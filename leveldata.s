@@ -59,6 +59,7 @@ saveYH:         dc.b 0
 saveT:          dc.b 0
 saveD:          dc.b 0
 saveHP:         dc.b 0
+saveDifficulty: dc.b 0
 saveStateEnd:
 
 saveBattery     = saveState + battery - playerStateStart

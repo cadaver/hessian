@@ -707,11 +707,16 @@ StorePlayerActorVars:
                 tay
                 dex
                 bpl StorePlayerActorVars
-                ldx saveHP                      ;Ensure minimum health & battery level when saving
-                cpx #LOW_HEALTH
+                lda difficulty                  ;Save difficulty, but if the savestate has
+                cmp saveDifficulty              ;already recorded a lower difficulty, do not bump it up
+                bcs SCP_NoDifficulty
+                sta saveDifficulty
+SCP_NoDifficulty:
+                lda saveHP                      ;Ensure minimum health & battery level when saving
+                cmp #LOW_HEALTH
                 bcs SCP_HealthOK
-                ldx #LOW_HEALTH
-                stx saveHP
+                lda #LOW_HEALTH
+                sta saveHP
 SCP_HealthOK:   lda #$00
                 ldx saveBattery+1
                 cpx #LOW_BATTERY

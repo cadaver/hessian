@@ -998,7 +998,7 @@ alSmallTank:    dc.w MoveTank                   ;Update routine
                 dc.w 75                         ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b DROP_BATTERY|DROP_PARTS    ;Itemdrop type or item override
-                dc.b $06                        ;AI offense AND-value
+                dc.b $07                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALUP|AB_UP ;Attack directions
                 dc.b AMF_CUSTOMANIMATION ;Move flags
