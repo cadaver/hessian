@@ -219,7 +219,7 @@ itemNPCAttackThreshold:
                 dc.b $50                        ;Auto rifle
                 dc.b $70                        ;Sniper rifle
                 dc.b $58                        ;Minigun
-                dc.b $58                        ;Flamethrower
+                dc.b $40                        ;Flamethrower
                 dc.b $48                        ;Laser rifle
                 dc.b $58                        ;Plasma gun
                 dc.b $7f                        ;EMP generator
