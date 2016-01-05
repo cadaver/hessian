@@ -17,7 +17,7 @@ DMG_ENEMYMINE   = 32
 DMG_GRENADE     = 40
 DMG_LAUNCHERGRENADE = 48
 DMG_MINE        = 56
-DMG_BAZOOKA     = 56
+DMG_BAZOOKA     = 64
 DMG_EMP         = 4+NOMODIFY                    ;4 damage for 8 frames = 32 total
 DMG_FIRE        = 2+NOMODIFY
 DMG_SMOKE       = 1+NOMODIFY
@@ -343,7 +343,7 @@ wdGrenadeLauncher:
                 dc.b WDB_NOSKILLBONUS           ;Weapon bits
                 dc.b AIM_UP                     ;First aim direction
                 dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
-                dc.b 14                         ;Attack delay
+                dc.b 15                         ;Attack delay
                 dc.b ACT_LAUNCHERGRENADE        ;Bullet actor type
                 dc.b DMG_LAUNCHERGRENADE        ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
