@@ -513,6 +513,8 @@ IP_InitInventory:
                 sta saveT
                 lda #HP_PLAYER
                 sta saveHP
+                lda #$03                        ;Reset save difficulty to maximum,
+                sta saveDifficulty              ;will be corrected by SaveCheckpoint
                 lda #MAX_BATTERY
                 sta battery+1
                 lda #MAX_OXYGEN
@@ -521,12 +523,12 @@ IP_InitInventory:
                 jsr CreatePlayerActor
                 if ALLQUESTITEMS_CHEAT>0
                 lda #ITEM_WAREHOUSEPASS
-IP_GiveAllLoop: sta temp1
+IP_GiveAllLoop: pha
                 ldx #1
                 jsr AddItem
-                lda temp1
+                pla
                 adc #$00
-                cmp #ITEM_HAZMATSUIT
+                cmp #ITEM_LAST+1
                 bcc IP_GiveAllLoop
                 endif
                 jsr FindPlayerZone              ;Need to get starting level's charset so that save is named properly
