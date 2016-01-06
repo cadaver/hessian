@@ -398,7 +398,11 @@ AH_NoFlicker:   ldx actIndex                    ;If player, decrement ammo (unle
                 bne AH_NoPlayerBonus
 AH_PlayerFirearmBonus:
                 ldy #NO_MODIFY
-                bpl AH_PlayerBonusCommon
+                cpy #NO_MODIFY
+                beq AH_PlayerBonusCommon
+                lda #DRAIN_ASSISTEDAIM          ;Assisted aiming (damage bonus) drains battery
+                jsr DrainBattery
+                jmp AH_PlayerBonusCommon
 AH_PlayerMeleeAttack:
                 lda #UPG_STRENGTH
                 ldy #DRAIN_MELEE

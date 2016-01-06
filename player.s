@@ -48,6 +48,7 @@ LOW_HEALTH      = HP_PLAYER/4
 DRAIN_WALK      = 3                             ;At footstep sound, 6 per anim. cycle
 DRAIN_SWIM      = 24                            ;When animation wraps
 DRAIN_CLIMB     = 6                             ;At footstep sound, 12 per anim. cycle
+DRAIN_ASSISTEDAIM = 12
 DRAIN_JUMP      = 16
 DRAIN_ROLL      = 20
 DRAIN_MELEE     = 20
@@ -833,7 +834,7 @@ MH_NotSwimmingUp:
                 cmp #FR_SWIM+4
                 bcc MH_SwimAnimDone
                 ldy #DRAIN_SWIM
-                jsr DrainBatteryDoubleMovement  ;Drain battery when the animation wraps
+                jsr DrainBattery                ;Drain battery when the animation wraps
                 lda #FR_SWIM                    ;Assumes only the player will swim
 MH_SwimAnimDone:jmp MH_AnimDone
 
