@@ -1713,11 +1713,11 @@ AttemptSpawn:   tax
 AS_Ground:      lda #CI_GROUND
                 sta temp3
 AS_SideCommon:  jsr Random                      ;Retry until is within screen
+                tax
                 and #$07
                 beq AS_SideCommon
                 cmp #$06
                 bcs AS_SideCommon
-                tax
                 clc
                 adc SL_CSSMapY+1
                 sta actYH,y
