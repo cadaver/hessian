@@ -105,9 +105,8 @@ AI_CantJump:    sta temp2
                 lda temp7                       ;If target 1 block above and jumping, treat as if level
                 cmp #$ff
                 bcc AI_TargetNotJumping
-                lda actMB,y
-                and #MB_GROUNDED
-                bne AI_TargetNotJumping
+                lda actSY,y
+                beq AI_TargetNotJumping
                 sta temp7
                 sta temp8
 AI_TargetNotJumping:
