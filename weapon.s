@@ -196,6 +196,8 @@ AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
                 tay
                 lda attackTbl,y
                 bmi AH_NoAttack2
+                ldy actFlags,x                  ;If integrated weapon, all directions are OK
+                bmi AH_DirOk2
                 ldy #WD_MINAIM                  ;Check that aim direction is OK for weapon
                 cmp (wpnLo),y                   ;in question
                 bcc AH_NoAttack2

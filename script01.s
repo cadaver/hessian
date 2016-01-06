@@ -776,8 +776,8 @@ recyclerCostTbl:
                 dc.b 20                         ;Sniper rifle
                 dc.b 25                         ;Minigun
                 dc.b 25                         ;Flamethrower
-                dc.b 30                         ;Laser rifle
-                dc.b 30                         ;Plasma gun
+                dc.b 25                         ;Laser rifle
+                dc.b 25                         ;Plasma gun
                 dc.b 20                         ;EMP generator
                 dc.b 25                         ;Grenade launcher
                 dc.b 30                         ;Bazooka
