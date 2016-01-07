@@ -66,6 +66,7 @@ ACT_SPIDERCHUNK = 64
 ACT_ARMORER     = 65
 ACT_LARGEDROIDFINAL = 66
 ACT_MEDIUMWALKER = 67
+ACT_SCIENTIST1 = 68
 
 HP_PLAYER       = 56
 HP_ACID         = 1
@@ -75,6 +76,7 @@ HP_BAT          = 4
 HP_SPIDER       = 6
 HP_FLOATINGMINE = 7
 HP_ROLLINGMINE  = 7
+HP_SCIENTIST1   = 8
 HP_SMALLDROID   = 8
 HP_LIGHTGUARD   = 10
 HP_ROCK         = 10
@@ -236,6 +238,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adGuard
                 dc.b <adLargeDroid
                 dc.b <adSmallWalker
+                dc.b <adScientist1
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -304,6 +307,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adGuard
                 dc.b >adLargeDroid
                 dc.b >adSmallWalker
+                dc.b >adScientist1
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -632,6 +636,16 @@ adSpiderChunk:  dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_LARGESPIDER              ;Spritefile number
                 dc.b 20                         ;Base spritenumber
 
+adScientist1:   dc.b HUMANOID                   ;Number of sprites
+                dc.b C_SCIENTIST                ;Lower part spritefile number
+                dc.b 12                         ;Lower part base spritenumber
+                dc.b 0                          ;Lower part base index into the frametable
+                dc.b 32                         ;Lower part left frame add
+                dc.b C_SCIENTIST                ;Upper part spritefile number
+                dc.b 0                          ;Upper part base spritenumber
+                dc.b 0                          ;Upper part base index into the frametable
+                dc.b 39                         ;Upper part left frame add
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -701,6 +715,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alArmorer
                 dc.b <alLargeDroid
                 dc.b <alMediumWalker
+                dc.b <alScientist1
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -769,6 +784,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alArmorer
                 dc.b >alLargeDroid
                 dc.b >alMediumWalker
+                dc.b >alScientist1
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -1643,3 +1659,27 @@ alMediumWalker: dc.w MoveWalker                 ;Update routine
                 dc.b 8                          ;Ground braking
                 dc.b -3                         ;Height in chars for headbump check (negative)
                 dc.b -6*8                       ;Jump initial speed (negative)
+
+alScientist1:   dc.w USESCRIPT|EP_SCIENTIST1    ;Update routine
+                dc.b GRP_HEROES|AF_ORGANIC      ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 35                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w HumanDeath                 ;Destroy routine
+                dc.b HP_SCIENTIST1              ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 0                          ;Score from kill
+                dc.b AIMODE_GUARD               ;AI mode when spawned randomly
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
+                dc.b $00                        ;AI offense random AND-value
+                dc.b $00                        ;AI defense probability
+                dc.b AB_NONE                     ;Attack directions
+                dc.b AMF_JUMP|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
+                dc.b 3*8                        ;Max. movement speed
+                dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
+                dc.b INITIAL_INAIRACC           ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 4                          ;Long jump gravity acceleration
+                dc.b INITIAL_GROUNDBRAKE         ;Ground braking
+                dc.b -4                         ;Height in chars for headbump check (negative)
+                dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)

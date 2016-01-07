@@ -22,7 +22,7 @@ logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
 START_LEVEL     = $00                          ;Warehouse
-START_X         = $6780
+START_X         = $6680
 START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard

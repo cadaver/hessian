@@ -1216,6 +1216,7 @@ DI_CountOK:     sta actHp,y
                 jsr InitActor
                 lda temp8
                 sta actSX,x
+                stx temp8
                 lda temp4
                 jsr MoveActorY
                 lda temp5

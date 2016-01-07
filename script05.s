@@ -10,6 +10,7 @@
                 dc.w InstallAmplifier
                 dc.w RunLaser
                 dc.w MoveGenerator
+                dc.w Scientist1
 
         ; Switch generator script routine
         ;
@@ -210,6 +211,119 @@ MoveGenerator:  lda #PLOT_GENERATOR
                 sta actTime,x
 MG_NoSound:
 MG_NotOn:       rts
+
+        ; Scientist 1 (intro) move routine
+        ;
+        ; Parameters: X actor number
+        ; Returns: -
+        ; Modifies: various
+
+Scientist1:     jsr MoveHuman
+                lda menuMode
+                cmp #MENU_DIALOGUE
+                beq S1_InDialogue
+                lda scriptVariable
+                asl
+                tay
+                lda S1_JumpTbl,y
+                sta S1_Jump+1
+                lda S1_JumpTbl+1,y
+                sta S1_Jump+2
+S1_Jump:        jsr $0000
+                ldx actIndex
+S1_InDialogue:  rts
+
+S1_JumpTbl:     dc.w S1_WaitFrame
+                dc.w S1_IntroDialogue
+                dc.w S1_SetAttack
+                dc.w S1_Dying
+                dc.w S1_DoNothing
+
+S1_WaitFrame:   inc scriptVariable              ;Special case wait 1 frame (loading)
+                lda #MENU_INTERACTION           ;Set interaction mode meanwhile so that player can't move
+                sta menuMode                    ;under any circumstance
+                rts
+
+S1_IntroDialogue:
+                inc scriptVariable
+                ldy #ACT_SCIENTIST1
+                lda #<txtIntroDialogue
+                ldx #>txtIntroDialogue
+                jmp SpeakLine
+
+S1_SetAttack:   lda actHp,x
+                beq S1_Dead
+                lda #MENU_INTERACTION           ;Player doesn't move yet..
+                sta menuMode
+                lda #JOY_RIGHT
+                sta actMoveCtrl,x
+                lda #ACT_SMALLDROID
+                jsr FindActor
+                bcc S1_NoDroid
+                lda #AIMODE_FLYER
+                sta actAIMode,x
+                lda actIndex                    ;Make sure targets the scientist
+                sta actAITarget,x
+                lda actTime,x                   ;Artificially increase aggression to guarantee kill
+                bmi S1_NoAggression
+                clc
+                adc #$20
+                bpl S1_AggressionOK
+                lda #$7f
+S1_AggressionOK:sta actTime,x
+S1_NoAggression:lda #LINE_YES
+                sta actLine,x
+S1_DyingContinue:
+S1_NoDroid:     rts
+S1_Dead:        inc scriptVariable
+                lda #ACT_SMALLDROID
+                jsr FindActor
+                bcc S1_NoDroid
+                lda #JOY_LEFT|JOY_UP
+                sta actMoveCtrl,x
+                lda #AIMODE_FLYERFREEMOVE
+                sta actAIMode,x                 ;Fly away after kill, become nonpersistent (not found anymore)
+                jmp SetNotPersistent
+
+S1_Dying:       lda actF1,x                     ;Wait until on the ground
+                cmp #FR_DUCK+1
+                beq S1_DieAgain
+                cmp #FR_DIE+2
+                bcc S1_DyingContinue
+                lda actTime,x
+                cmp #DEATH_FLICKER_DELAY+1
+                bcs S1_DyingContinue
+                lda #$80
+                sta actD,x
+                inc actHp,x                     ;Halt dying for now to speak
+                lda #FR_DUCK+1
+                sta actF1,x
+                sta actF2,x
+                lda #JOY_DOWN
+                sta actMoveCtrl,x
+                ldy #ACT_SCIENTIST1
+                lda #<txtDyingDialogue
+                ldx #>txtDyingDialogue
+                jmp SpeakLine
+S1_DieAgain:    inc scriptVariable
+                lda #DEATH_FLICKER_DELAY+25
+                sta actTime,x
+                lda #FR_DIE+2
+                sta actF1,x
+                sta actF2,x
+                dec actHp,x
+                lda #ITEM_PISTOL
+                jsr DI_ItemNumber
+                ldx temp8
+                lda #10
+                sta actHp,x                     ;Full mag
+S1_DoNothing:   rts
+
+txtIntroDialogue:
+                dc.b 34,"GOOD, YOU'RE ON YOUR FEET. I'M VIKTOR - WE NEED TO REACH THE REST, WHO ARE HOLED UP ON THE PARKING GARAGE BOTTOM LEVEL.",34,0
+
+txtDyingDialogue:
+                dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'LL NEED A PASSCARD WE USED TO LOCK UP THIS PLACE. AND WATCH OUT FOR MORE OF THOSE BASTARDS..",34,0
 
         ; Variables
 

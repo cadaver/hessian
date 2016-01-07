@@ -67,6 +67,7 @@ write sprserver.pak @8:3f
 write sprsecuritychief.pak @8:40
 write sprrotordrone.pak @8:41
 write sprlargespider.pak @8:42
+write sprscientist.pak @8:43
 write script00.pak @8:50
 write script01.pak @8:51
 write script02.pak @8:52

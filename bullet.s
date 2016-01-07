@@ -66,6 +66,13 @@ MExpl_NoAnimation:
 MRckt_Done:
 MExpl_NoRemove: rts
 
+        ; Speech bubble update routine
+        
+MoveSpeechBubble:
+                lda menuMode                    ;Remove once return to game mode
+                beq MMH_Remove
+                rts
+
         ; Melee hit update routine
         ;
         ; Parameters: X actor index
@@ -73,7 +80,6 @@ MExpl_NoRemove: rts
         ; Modifies: A,Y
 
 MoveMeleeHit:   jsr CheckBulletCollisionsApplyDamage
-MoveSpeechBubble:
 MMH_Remove:     jmp RemoveActor
 
         ; Flame update routine

@@ -44,6 +44,7 @@ EP_SWITCHLASER = $0501
 EP_INSTALLAMPLIFIER = $0502
 EP_RUNLASER = $0503
 EP_MOVEGENERATOR = $0504
+EP_SCIENTIST1 = $0505
 
 PLOT_ELEVATOR1  = $00                       ;Upper <-> lower lab
 PLOT_ELEVATOR2  = $01                       ;Jormungandr <-> Bio-Dome
