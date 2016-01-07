@@ -292,7 +292,7 @@ wdLaserRifle:   dc.b WDB_BULLETDIRFRAME|WDB_FLICKERBULLET ;Weapon bits
                 dc.b ACT_LASER                  ;Bullet actor type
                 dc.b DMG_LASER                  ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 18                         ;Bullet time duration
+                dc.b 20                         ;Bullet time duration
                 dc.b 15                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_LASER                  ;Sound effect
@@ -310,7 +310,7 @@ wdPlasmaGun:    dc.b WDB_FLICKERBULLET|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b ACT_PLASMA                 ;Bullet actor type
                 dc.b DMG_PLASMA                 ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
-                dc.b 22                         ;Bullet time duration
+                dc.b 30                         ;Bullet time duration
                 dc.b 12                         ;Bullet speed in pixels
                 dc.b SPDTBL_NORMAL              ;Bullet speed table offset
                 dc.b SFX_PLASMA                 ;Sound effect
