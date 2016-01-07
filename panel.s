@@ -544,9 +544,11 @@ SetMenuMode2:   jmp SetMenuMode
 UM_Dialogue:    ldx #MENU_NONE
                 lda textTime
                 beq SetMenuMode2
-                jsr GetFireClick                ;Skip to next text line by pressing fire
+                lda keyType
+                bpl UM_DNext
+                jsr GetFireClick                ;Skip to next text line by pressing fire or by keypress
                 bcc UM_DNoFire
-                lda #$01
+UM_DNext:       lda #$01
                 sta textTime
 UM_Interaction:
 UM_DNoFire:     rts

@@ -204,7 +204,7 @@ ECL_EmptyDigit: lda #"-"
 CheckForExit:   lda joystick
                 and #JOY_DOWN
                 bne ECL_Finish
-                lda keyPress
+                lda keyType
                 bpl ECL_Finish
                 jsr MenuControl
                 ldx numberIndex
@@ -408,7 +408,7 @@ RS_ControlLoop: jsr FinishFrame
                 jsr RS_Control
                 sta recyclerSelection
                 bcs RS_Redraw
-                lda keyPress
+                lda keyType
                 bmi RS_ControlLoop
 RS_Exit:        ldy originalItem
                 sty itemIndex
@@ -648,7 +648,7 @@ TunnelMachineRun:
 TMR_NoSound:    lda joystick
                 and #JOY_DOWN
                 bne TMR_Finish
-                lda keyPress
+                lda keyType
                 bpl TMR_Finish
                 jsr GetFireClick
                 bcs TMR_Decision

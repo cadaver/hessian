@@ -300,7 +300,7 @@ CU_ConfigureLoop:
                 endif
                 jsr GetControls
                 if EDIT_PUZZLE=0
-                lda keyPress
+                lda keyType
                 bpl CU_DoExit
                 else
                 lda menuMoveDelay
