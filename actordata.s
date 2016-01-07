@@ -1675,7 +1675,7 @@ alScientist1:   dc.w USESCRIPT|EP_SCIENTIST1    ;Update routine
                 dc.b $00                        ;AI defense probability
                 dc.b AB_NONE                     ;Attack directions
                 dc.b AMF_JUMP|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
-                dc.b 3*8                        ;Max. movement speed
+                dc.b 2*8+4                      ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
