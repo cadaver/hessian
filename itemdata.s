@@ -224,7 +224,7 @@ itemNPCAttackThreshold:
                 dc.b $58                        ;Plasma gun
                 dc.b $7f                        ;EMP generator
                 dc.b $7f                        ;Grenade launcher
-                dc.b $7f                        ;Bazooka
+                dc.b $70                        ;Bazooka
                 dc.b $7f                        ;Extinguisher (not an actual weapon, not used by NPCs)
                 dc.b $7f                        ;Grenade
                 dc.b $7f                        ;Mine (not used by NPCs)
