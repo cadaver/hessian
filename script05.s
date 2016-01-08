@@ -240,8 +240,8 @@ S1_JumpTbl:     dc.w S1_WaitFrame
                 dc.w S1_DoNothing
 
 S1_WaitFrame:   inc scriptVariable              ;Special case wait 1 frame (loading)
-                lda #MENU_INTERACTION           ;Set interaction mode meanwhile so that player can't move
-                sta menuMode                    ;under any circumstance
+                lda #MENU_INTERACTION           ;Set interaction mode meanwhile so that player can't move away
+                sta menuMode
                 rts
 
 S1_IntroDialogue:
@@ -251,10 +251,9 @@ S1_IntroDialogue:
                 ldx #>txtIntroDialogue
                 jmp SpeakLine
 
-S1_SetAttack:   lda actHp,x
+S1_SetAttack:   jsr S1_LimitControl
+                lda actHp,x
                 beq S1_Dead
-                lda #MENU_INTERACTION           ;No move yet
-                sta menuMode
                 lda #JOY_RIGHT
                 sta actMoveCtrl,x
                 lda #ACT_SMALLDROID
@@ -285,7 +284,8 @@ S1_Dead:        inc scriptVariable
                 sta actAIMode,x                 ;Fly away after kill, become nonpersistent (not found anymore)
                 jmp SetNotPersistent
 
-S1_Dying:       lda actF1,x                     ;Wait until on the ground
+S1_Dying:       jsr S1_LimitControl
+                lda actF1,x                     ;Wait until on the ground
                 cmp #FR_DUCK+1
                 beq S1_DieAgain
                 cmp #FR_DIE+2
@@ -321,8 +321,18 @@ S1_DieAgain:    inc scriptVariable
                 sta actHp,x                     ;Full mag
 S1_DoNothing:   rts
 
+S1_LimitControl:lda #JOY_RIGHT|JOY_LEFT|JOY_DOWN ;Only allow left/right/down control in the beginning,
+                ldy actXH+ACTI_PLAYER           ;and not going too far left from the scientist
+                cpy #$67
+                bcs S1_LimitLeft
+                lda #JOY_RIGHT|JOY_DOWN
+S1_LimitLeft:   and joystick
+                sta joystick
+                rts
+
+
 txtIntroDialogue:
-                dc.b 34,"GOOD, YOU'RE ON YOUR FEET. I'M VIKTOR - WE NEED TO REACH THE REST, WHO ARE HOLED UP ON THE PARKING GARAGE BOTTOM LEVEL.",34,0
+                dc.b 34,"GOOD, YOU'RE ON YOUR FEET. I'M VIKTOR - WE NEED TO REACH THE OTHERS, WHO ARE HOLED UP ON THE PARKING GARAGE BOTTOM LEVEL. FOLLOW ME.",34,0
 
 txtDyingDialogue:
                 dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'LL NEED A PASSCARD WE USED TO LOCK UP THIS PLACE. "

@@ -820,7 +820,7 @@ txtDisconnected:dc.b "SUBNET ISOLATED",0
 txtNoBattery:   dc.b "BATTERY DEAD",0
 txtNoFuel:      dc.b "NO FUEL",0
 txtBatteryInstalled:
-                dc.b "BATTERY INSTALLED",0
+                dc.b "NEW BATTERY INSTALLED",0
 txtRefueled:    dc.b "REFUELED",0
 txtReady:       dc.b " STOP DRIVE",0
 txtCount:       dc.b " "
