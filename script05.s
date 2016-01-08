@@ -253,7 +253,7 @@ S1_IntroDialogue:
 
 S1_SetAttack:   lda actHp,x
                 beq S1_Dead
-                lda #MENU_INTERACTION           ;Player doesn't move yet..
+                lda #MENU_INTERACTION           ;No move yet
                 sta menuMode
                 lda #JOY_RIGHT
                 sta actMoveCtrl,x
@@ -293,7 +293,9 @@ S1_Dying:       lda actF1,x                     ;Wait until on the ground
                 lda actTime,x
                 cmp #DEATH_FLICKER_DELAY+1
                 bcs S1_DyingContinue
-                lda #$80
+                ldy #ACTI_PLAYER                ;Turn to player
+                jsr GetActorDistance
+                lda temp5
                 sta actD,x
                 inc actHp,x                     ;Halt dying for now to speak
                 lda #FR_DUCK+1
@@ -323,7 +325,9 @@ txtIntroDialogue:
                 dc.b 34,"GOOD, YOU'RE ON YOUR FEET. I'M VIKTOR - WE NEED TO REACH THE REST, WHO ARE HOLED UP ON THE PARKING GARAGE BOTTOM LEVEL.",34,0
 
 txtDyingDialogue:
-                dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'LL NEED A PASSCARD WE USED TO LOCK UP THIS PLACE. AND WATCH OUT FOR MORE OF THOSE BASTARDS..",34,0
+                dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'LL NEED A PASSCARD WE USED TO LOCK UP THIS PLACE. "
+                dc.b "WATCH OUT FOR MORE OF THOSE BASTARDS. AND ONE FINAL THING - THE NANO-BOTS RUNNING YOUR BODY DEPEND ON BATTERY POWER. "
+                dc.b "DON'T RUN OUT.",34,0
 
         ; Variables
 
