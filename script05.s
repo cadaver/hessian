@@ -185,7 +185,7 @@ RL_Explode:     ldy #$0f
                 jmp PlaySfx
 RL_Finish:      jsr StopScript
                 ldx #MENU_NONE
-                stx menuMode
+                jsr SetMenuMode
                 jmp CenterPlayer
 
         ; Generator (screen shake) move routine
@@ -240,9 +240,8 @@ S1_JumpTbl:     dc.w S1_WaitFrame
                 dc.w S1_DoNothing
 
 S1_WaitFrame:   inc scriptVariable              ;Special case wait 1 frame (loading)
-                lda #MENU_INTERACTION           ;Set interaction mode meanwhile so that player can't move away
-                sta menuMode
-                rts
+                ldx #MENU_INTERACTION           ;Set interaction mode meanwhile so that player can't move away
+                jmp SetMenuMode
 
 S1_IntroDialogue:
                 inc scriptVariable
@@ -321,8 +320,8 @@ S1_DieAgain:    inc scriptVariable
                 sta actHp,x                     ;Full mag
 S1_DoNothing:   rts
 
-S1_LimitControl:lda #JOY_RIGHT|JOY_LEFT|JOY_DOWN ;Only allow left/right/down control in the beginning,
-                ldy actXH+ACTI_PLAYER           ;and not going too far left from the scientist
+S1_LimitControl:lda #JOY_RIGHT|JOY_LEFT|JOY_DOWN|JOY_UP ;Don't allow entering the container in the beginning,
+                ldy actXH+ACTI_PLAYER                   ;or going too far to the left
                 cpy #$67
                 bcs S1_LimitLeft
                 lda #JOY_RIGHT|JOY_DOWN
@@ -336,7 +335,7 @@ txtIntroDialogue:
 
 txtDyingDialogue:
                 dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'LL NEED A PASSCARD WE USED TO LOCK UP THIS PLACE. "
-                dc.b "WATCH OUT FOR MORE OF THOSE BASTARDS. AND ONE FINAL THING - THE NANO-BOTS RUNNING YOUR BODY DEPEND ON BATTERY POWER. "
+                dc.b "WATCH OUT FOR MORE OF THOSE BASTARDS.. AND ONE FINAL THING - THE NANO-BOTS RUNNING YOUR BODY DEPEND ON BATTERY POWER. "
                 dc.b "DON'T RUN OUT.",34,0
 
         ; Variables

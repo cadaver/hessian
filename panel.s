@@ -439,8 +439,6 @@ SMM_Redraw:     lda menuRedrawTblLo,x
                 sta SMM_RedrawJump+1
                 lda menuRedrawTblHi,x
                 sta SMM_RedrawJump+2
-                lda #SFX_SELECT
-                jsr PlaySfx
 SMM_RedrawJump: jmp $0000
 
         ; Menu logic routines
@@ -556,7 +554,11 @@ UM_DNoFire:     rts
         ; Pause menu
 
 UM_PauseMenu:   lda keyType
-                bpl UM_PauseMenuExit
+                bmi UM_PauseMenuNoKey
+                lda #$00
+                sta menuCounter
+                beq UM_PauseMenuAction
+UM_PauseMenuNoKey:
                 ldy menuCounter
                 jsr GetFireClick
                 bcs UM_PauseMenuAction
@@ -568,6 +570,8 @@ UM_PauseMenu:   lda keyType
 UM_PauseMenuDone:
                 rts
 UM_PauseMenuAction:
+                lda #SFX_SELECT
+                jsr PlaySfx
                 dey
                 bmi UM_PauseMenuExit
                 php
@@ -605,6 +609,8 @@ UM_PauseMenuClear:
         ; Inventory
 
 UM_RedrawInventory:
+                lda #SFX_SELECT
+                jsr PlaySfx
                 lda #$00
                 sta UM_ForceRefresh+1
                 inc textLeftMargin
@@ -637,6 +643,8 @@ UM_NoRightArrow:ldx #30
         ; Pause menu
 
 UM_RedrawPauseMenu:
+                lda #SFX_SELECT
+                jsr PlaySfx
                 lda actT+ACTI_PLAYER            ;Player actor exists?
                 beq UM_PauseDead
                 lda #$00
