@@ -638,7 +638,7 @@ adSpiderChunk:  dc.b ONESPRITEDIRECT            ;Number of sprites
 
 adScientist1:   dc.b HUMANOID                   ;Number of sprites
                 dc.b C_SCIENTIST                ;Lower part spritefile number
-                dc.b 12                         ;Lower part base spritenumber
+                dc.b 16                         ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
                 dc.b C_SCIENTIST                ;Upper part spritefile number

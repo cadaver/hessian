@@ -555,8 +555,7 @@ UM_DNoFire:     rts
 
 UM_PauseMenu:   lda keyType
                 bmi UM_PauseMenuNoKey
-                lda #$00
-                sta menuCounter
+                ldy #$00
                 beq UM_PauseMenuAction
 UM_PauseMenuNoKey:
                 ldy menuCounter
