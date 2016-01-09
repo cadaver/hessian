@@ -369,7 +369,7 @@ S2_Wait:        rts
 Scientist2:     lda actXH+ACTI_PLAYER           ;Wait until player close enough
                 cmp #$37
                 bcc S2_Wait
-                cmp #$3b
+                cmp #$3c
                 bcs S2_Wait
                 lda actYH+ACTI_PLAYER
                 cmp #$29
