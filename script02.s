@@ -38,6 +38,7 @@ S1_JumpTbl:     dc.w S1_WaitFrame
                 dc.w S1_DoNothing
 
 S1_WaitFrame:   inc scriptVariable              ;Special case wait 1 frame (loading)
+                jsr CreatePersistentNPCs
                 ldx #MENU_INTERACTION           ;Set interaction mode meanwhile so that player can't move away
                 jmp SetMenuMode
 
@@ -154,6 +155,10 @@ CPNPC_Loop:     jsr GetLevelActorIndex
                 sta actEP
                 lda #>EP_SCIENTIST2
                 sta actScript
+                lda #<EP_HACKER
+                sta actEP+2
+                lda #>EP_HACKER
+                sta actScript+2
 S2_Wait:        rts
 
         ; Scientist 2 (hideout 1) script
@@ -250,12 +255,12 @@ RULI_NoPass:    ldy lvlObjNum
 
         ; Persistent NPC table
 
-npcX:           dc.b $39,$38
-npcY:           dc.b $28,$28
-npcF:           dc.b $30+AIMODE_TURNTO,$10+AIMODE_TURNTO
-npcT:           dc.b ACT_SCIENTIST2, ACT_SCIENTIST3
-npcWpn:         dc.b $00,$00
-npcOrg:         dc.b 1+ORG_GLOBAL,1+ORG_GLOBAL
+npcX:           dc.b $39,$38,$17
+npcY:           dc.b $28,$28,$30
+npcF:           dc.b $30+AIMODE_TURNTO,$10+AIMODE_TURNTO,$30+AIMODE_TURNTO
+npcT:           dc.b ACT_SCIENTIST2, ACT_SCIENTIST3,ACT_HACKER
+npcWpn:         dc.b $00,$00,$00
+npcOrg:         dc.b 1+ORG_GLOBAL,1+ORG_GLOBAL,4+ORG_GLOBAL
 
         ; Texts
 
@@ -267,7 +272,7 @@ txtDyingDialogue:
                 dc.b "DON'T RUN OUT.",34,0
 txtHideoutDialogue1:
                 dc.b 34,"I SEE VIKTOR DIDN'T MAKE IT. BUT YOU DID, THAT'S WHAT COUNTS. AMOS, NANOSURGEON. SHE'S LINDA, CYBER-PSYCHOLOGIST. "
-                dc.b "AS YOU'VE SEEN, OUR CREATIONS HAVE TURNED ON US. TOTAL OUTSIDE BLACKOUT. WE'RE STUCK AND HELP IS UNLIKELY. "
+                dc.b "YOU'VE SEEN HOW OUR CREATIONS HAVE TURNED ON US. THERE'S A TOTAL COMMS BLACKOUT. WE'RE STUCK AND HELP IS UNLIKELY. "
                 dc.b "AS THE ONLY ENHANCED PERSON IN THIS ROOM, RIGHT NOW YOU'RE OUR BEST BET.",34,0
 txtHideoutDialogue2:
                 dc.b 34,"COMMON SENSE WOULD DICTATE WE ATTEMPT TO ESCAPE. BUT THESE MACHINES' HIGHLY COORDINATED ACTIONS "

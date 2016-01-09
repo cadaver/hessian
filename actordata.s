@@ -248,6 +248,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adScientist1
                 dc.b <adScientist2
                 dc.b <adScientist3
+                dc.b <adHacker
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -319,6 +320,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adScientist1
                 dc.b >adScientist2
                 dc.b >adScientist3
+                dc.b >adHacker
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -677,6 +679,16 @@ adScientist3:   dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
+adHacker:       dc.b HUMANOID                   ;Number of sprites
+                dc.b C_HACKER                   ;Lower part spritefile number
+                dc.b 12                         ;Lower part base spritenumber
+                dc.b 0                          ;Lower part base index into the frametable
+                dc.b 32                         ;Lower part left frame add
+                dc.b C_HACKER                   ;Upper part spritefile number
+                dc.b 0                          ;Upper part base spritenumber
+                dc.b 0                          ;Upper part base index into the frametable
+                dc.b 39                         ;Upper part left frame add
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -749,6 +761,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alScientist1
                 dc.b <alPersistentNPC
                 dc.b <alPersistentNPC
+                dc.b <alPersistentNPC
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -818,6 +831,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alLargeDroid
                 dc.b >alMediumWalker
                 dc.b >alScientist1
+                dc.b >alPersistentNPC
                 dc.b >alPersistentNPC
                 dc.b >alPersistentNPC
 

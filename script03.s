@@ -17,6 +17,7 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w MoveRotorDrone
                 dc.w DestroyRotorDrone
                 dc.w HideoutDoor
+                dc.w Hacker
 
         ; Eye (Construct) boss phase 1
         ;
@@ -325,8 +326,12 @@ MRD_Fall:       jsr Random
                 jmp ExplodeEnemy2_8             ;Drop item & explode at any collision
 MRD_ContinueFall:
                 jsr Random                      ;Spawn explosions randomly while falling
-                cmp #$30
-                bcs MRD_NoExplosion
+                and #$3f
+                clc
+                adc #$10
+                adc actTime,x
+                sta actTime,x
+                bcc MRD_NoExplosion
                 lda #ACTI_FIRSTNPC              ;Use any free actors
                 ldy #ACTI_LASTNPCBULLET
                 jsr GetFreeActor
@@ -369,6 +374,24 @@ HD_Offline:     lda #<txtHideoutLocked
                 ldy #REQUIREMENT_TEXT_DURATION
                 jmp PrintPanelText
 
+        ; Hacker script routine (initial scene in the hideout)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+Hacker:         lda actXH+ACTI_PLAYER
+                cmp #$1c
+                bcs H_NotClose                  ;Wait until close
+                jsr AddQuestScore
+                lda #$00
+                sta actScript+2                 ;No further script execution for now
+                ldy #ACT_HACKER
+                lda #<txtHacker
+                ldx #>txtHacker
+                jmp SpeakLine
+H_NotClose:     rts
+
         ; Final server room droid spawn positions
 
 droidSpawnXH:   dc.b $3e,$43,$3e,$43
@@ -396,6 +419,11 @@ explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
         ; Messages
 
 txtHideoutLocked:dc.b "LOCKED",0
+txtHacker:      dc.b 34,"HEY. YOU MUST BE KIM. THE SCIENTISTS TOLD YOU MIGHT BE COMING. "
+                dc.b "I'M JEFF. SORRY ABOUT THAT SENTRY DRONE, HAD TO MAKE SURE YOU'RE NOT A MACHINE. "
+                dc.b "I'D ESTIMATE YOUR FIGHTING STYLE AS 95% HUMAN. YOU CAME FOR THAT SIGNAL AMP FOR THE LASER, RIGHT? "
+                dc.b "NEVER TESTED IT SO CAN'T BE SURE WHAT HAPPENS WHEN YOU PLUG IT IN. OH, FEEL FREE TO USE THE RECYCLER "
+                dc.b "AT THE BACK IF YOU NEED. BUT DON'T TOUCH ANYTHING ELSE.",34,0
 
                 checkscriptend
 

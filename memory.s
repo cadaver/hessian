@@ -16,7 +16,7 @@ MAX_SAVEACT     = 24                            ;Amount of persistent actors sav
 MAX_LVLOBJ      = 96
 MAX_PLOTBITS    = 64
 MAX_SAVES       = 5
-MAX_PERSISTENTNPCS = 2
+MAX_PERSISTENTNPCS = 3
 
 ACTI_PLAYER     = 0
 ACTI_FIRSTNPC   = 1
