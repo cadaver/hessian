@@ -185,9 +185,10 @@ S2_Jump:        jmp $0000
 S2_JumpTbl:     dc.w S2_Dialogue1
                 dc.w S2_Dialogue2
                 dc.w S2_Dialogue3
-                dc.w S2_Stop
+                dc.w S2_Dialogue4
 
-S2_Dialogue1:   inc scriptVariable
+S2_Dialogue1:   jsr AddQuestScore
+                inc scriptVariable
                 ldy #ACT_SCIENTIST2
                 lda #<txtHideoutDialogue1
                 ldx #>txtHideoutDialogue1
@@ -205,20 +206,28 @@ S2_Dialogue3:   inc scriptVariable
                 ldx #>txtHideoutDialogue3
                 jmp SpeakLine
 
-S2_Stop:        ldy #$1a                        ;Show the passcard on the table
-                jsr ActivateObject
+S2_Dialogue4:   lda #ITEM_COMMGEAR
+                ldx #1
+                jsr AddItem
+                ldx actIndex
                 lda #ITEM_SECURITYPASS
-                jsr AddQuestItem
-                lda #ITEM_COMMGEAR
-                jsr AddQuestItem
+                jsr DI_ItemNumber
+                lda actD,x
+                asl
+                lda #$7f
+                adc #$00
+                ldx temp8
+                jsr MoveActorX                  ;Move item to scientist's facing direction
+                lda #-16*8
+                jsr MoveActorY
                 lda #SFX_PICKUP
                 jsr PlaySfx
                 lda #$00
-                sta actScript                   ;No more script exec
-                rts
-                
-AddQuestItem:   ldx #1
-                jmp AddItem
+                sta actScript                   ;No more script exec here
+                ldy #ACT_SCIENTIST2
+                lda #<txtHideoutDialogue4
+                ldx #>txtHideoutDialogue4
+                jmp SpeakLine
 
         ; Radio speech for upper labs entrance
         ;
@@ -237,7 +246,7 @@ RadioUpperLabsEntrance:
                 ldy #ACT_PLAYER
                 jmp SpeakLine
 RULI_NoPass:    ldy lvlObjNum
-                jmp InactivateObject            ;Retry once has pass
+                jmp InactivateObject            ;Retry later to check for pass
 
         ; Persistent NPC table
 
@@ -261,13 +270,16 @@ txtHideoutDialogue1:
                 dc.b "AS YOU'VE SEEN, OUR CREATIONS HAVE TURNED ON US. TOTAL OUTSIDE BLACKOUT. WE'RE STUCK AND HELP IS UNLIKELY. "
                 dc.b "AS THE ONLY ENHANCED PERSON IN THIS ROOM, RIGHT NOW YOU'RE OUR BEST BET.",34,0
 txtHideoutDialogue2:
-                dc.b 34,"COMMON SENSE WOULD DICTATE AN ESCAPE ATTEMPT. BUT THE ROBOTS' HIGHLY COORDINATED ACTIONS "
+                dc.b 34,"COMMON SENSE WOULD DICTATE WE ATTEMPT TO ESCAPE. BUT THESE MACHINES' HIGHLY COORDINATED ACTIONS "
                 dc.b "SUGGEST A CENTRAL AI, WHICH I DIDN'T KNOW WE HAD DEVELOPED. "
-                dc.b "THERE CAN BE MORE THAN OUR LIVES AT STAKE.",34,0
+                dc.b "THERE MAY BE MORE THAN OUR LIVES AT STAKE.",34,0
 txtHideoutDialogue3:
                 dc.b 34,"YES. WE MUST FIND OUT THEIR ULTIMATE AIM BEYOND JUST KILLING EVERYONE. "
-                dc.b "TAKE THIS SECURITY PASS TO ACCESS THE UPPER LABS. PLUS A WIRELESS CAMERA/RADIO SET "
-                dc.b "SO WE CAN STAY IN TOUCH. GOOD LUCK.",34,0
+                dc.b "TAKE THIS SECURITY PASS TO ACCESS THE UPPER LABS, PLUS A WIRELESS CAMERA/RADIO "
+                dc.b "SET SO WE CAN STAY IN TOUCH.",34,0
+txtHideoutDialogue4:
+                dc.b 34,"GOOD LUCK.",34,0
+
 txtRadioUpperLabsIntro:
                 dc.b 34,"AMOS HERE. YOU'RE CLOSE TO THE UPPER LABS. SEE IF YOU CAN FIND ANY CLUES. "
                 dc.b "IF NOT, YOU'LL HAVE TO PUSH ON TO THE HIGH-CLEARANCE LOWER LABS. "
