@@ -67,8 +67,13 @@ ACT_ARMORER     = 65
 ACT_LARGEDROIDFINAL = 66
 ACT_MEDIUMWALKER = 67
 ACT_SCIENTIST1 = 68
+ACT_SCIENTIST2 = 69
+ACT_SCIENTIST3 = 70
+ACT_HACKER      = 71
+ACT_THRONECHIEF = 72
 
 HP_PLAYER       = 56
+HP_NONCOMBATANT = 0
 HP_ACID         = 1
 HP_RAT          = 4
 HP_FLY          = 4
@@ -239,6 +244,8 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adLargeDroid
                 dc.b <adSmallWalker
                 dc.b <adScientist1
+                dc.b <adScientist2
+                dc.b <adScientist3
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -308,6 +315,8 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adLargeDroid
                 dc.b >adSmallWalker
                 dc.b >adScientist1
+                dc.b >adScientist2
+                dc.b >adScientist3
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -646,6 +655,26 @@ adScientist1:   dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
+adScientist2:   dc.b HUMANOID                   ;Number of sprites
+                dc.b C_SCIENTIST                ;Lower part spritefile number
+                dc.b 16                         ;Lower part base spritenumber
+                dc.b 0                          ;Lower part base index into the frametable
+                dc.b 32                         ;Lower part left frame add
+                dc.b C_SCIENTIST                ;Upper part spritefile number
+                dc.b 4                          ;Upper part base spritenumber
+                dc.b 0                          ;Upper part base index into the frametable
+                dc.b 39                         ;Upper part left frame add
+
+adScientist3:   dc.b HUMANOID                   ;Number of sprites
+                dc.b C_SCIENTIST                ;Lower part spritefile number
+                dc.b 16                         ;Lower part base spritenumber
+                dc.b 0                          ;Lower part base index into the frametable
+                dc.b 32                         ;Lower part left frame add
+                dc.b C_SCIENTIST                ;Upper part spritefile number
+                dc.b 28                         ;Upper part base spritenumber
+                dc.b 0                          ;Upper part base index into the frametable
+                dc.b 39                         ;Upper part left frame add
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -716,6 +745,8 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alLargeDroid
                 dc.b <alMediumWalker
                 dc.b <alScientist1
+                dc.b <alPersistentNPC
+                dc.b <alPersistentNPC
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -785,6 +816,8 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alLargeDroid
                 dc.b >alMediumWalker
                 dc.b >alScientist1
+                dc.b >alPersistentNPC
+                dc.b >alPersistentNPC
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -1669,13 +1702,37 @@ alScientist1:   dc.w USESCRIPT|EP_SCIENTIST1    ;Update routine
                 dc.b HP_SCIENTIST1              ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
-                dc.b AIMODE_GUARD               ;AI mode when spawned randomly
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
                 dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $00                        ;AI offense random AND-value
                 dc.b $00                        ;AI defense probability
                 dc.b AB_NONE                     ;Attack directions
                 dc.b AMF_JUMP|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
                 dc.b 2*8+4                      ;Max. movement speed
+                dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
+                dc.b INITIAL_INAIRACC           ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 4                          ;Long jump gravity acceleration
+                dc.b INITIAL_GROUNDBRAKE         ;Ground braking
+                dc.b -4                         ;Height in chars for headbump check (negative)
+                dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
+
+alPersistentNPC:dc.w MovePersistentNPC          ;Update routine
+                dc.b GRP_HEROES|AF_ORGANIC      ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 35                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w HumanDeath                 ;Destroy routine
+                dc.b HP_NONCOMBATANT            ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 0                          ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
+                dc.b $1f                        ;AI offense random AND-value
+                dc.b $20                        ;AI defense probability
+                dc.b AB_NONE                    ;Attack directions
+                dc.b AMF_JUMP|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
+                dc.b 3*8                        ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration

@@ -11,6 +11,8 @@
                 dc.w RunLaser
                 dc.w MoveGenerator
                 dc.w Scientist1
+                dc.w CreatePersistentNPCs
+                dc.w Scientist2
 
         ; Switch generator script routine
         ;
@@ -329,14 +331,99 @@ S1_LimitLeft:   and joystick
                 sta joystick
                 rts
 
+        ; Create persistent NPCs to the leveldata
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
 
-txtIntroDialogue:
-                dc.b 34,"GOOD, YOU'RE ON YOUR FEET. I'M VIKTOR - WE NEED TO REACH THE OTHERS, WHO ARE HOLED UP ON THE PARKING GARAGE BOTTOM LEVEL. FOLLOW ME.",34,0
+CreatePersistentNPCs:
+                ldx #MAX_PERSISTENTNPCS-1
+CPNPC_Loop:     jsr GetLevelActorIndex
+                lda npcX,x
+                sta lvlActX,y
+                lda npcY,x
+                sta lvlActY,y
+                lda npcF,x
+                sta lvlActF,y
+                lda npcT,x
+                sta lvlActT,y
+                lda npcWpn,x
+                sta lvlActWpn,y
+                lda npcOrg,x
+                sta lvlActOrg,y
+                dex
+                bpl CPNPC_Loop
+                lda #<EP_SCIENTIST2         ;Initial script to drive the plot forward
+                sta actEP
+                lda #>EP_SCIENTIST2
+                sta actScript
+S2_Wait:        rts
 
-txtDyingDialogue:
-                dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'LL NEED A PASSCARD WE USED TO LOCK UP THIS PLACE. "
-                dc.b "WATCH OUT FOR MORE OF THOSE BASTARDS.. AND ONE FINAL THING - THE NANO-BOTS RUNNING YOUR BODY DEPEND ON BATTERY POWER. "
-                dc.b "DON'T RUN OUT.",34,0
+        ; Scientist 2 (hideout 1) script
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+Scientist2:     lda actXH+ACTI_PLAYER           ;Wait until player close enough
+                cmp #$37
+                bcc S2_Wait
+                cmp #$3b
+                bcs S2_Wait
+                lda actYH+ACTI_PLAYER
+                cmp #$29
+                bcs S2_Wait
+                lda actMB+ACTI_PLAYER
+                lsr
+                bcc S2_Wait
+                lda scriptVariable
+                asl
+                tay
+                lda S2_JumpTbl,y
+                sta S2_Jump+1
+                lda S2_JumpTbl+1,y
+                sta S2_Jump+2
+S2_Jump:        jmp $0000
+
+S2_JumpTbl:     dc.w S2_Dialogue1
+                dc.w S2_Dialogue2
+                dc.w S2_Dialogue3
+                dc.w S2_Stop
+
+S2_Dialogue1:   inc scriptVariable
+                ldy #ACT_SCIENTIST2
+                lda #<txtHideoutDialogue1
+                ldx #>txtHideoutDialogue1
+                jmp SpeakLine
+
+S2_Dialogue2:   inc scriptVariable
+                ldy #ACT_SCIENTIST3
+                lda #<txtHideoutDialogue2
+                ldx #>txtHideoutDialogue2
+                jmp SpeakLine
+
+S2_Dialogue3:   inc scriptVariable
+                ldy #ACT_SCIENTIST2
+                lda #<txtHideoutDialogue3
+                ldx #>txtHideoutDialogue3
+                jmp SpeakLine
+
+S2_Stop:        ldy #$1a                        ;Show the passcard on the table
+                jsr ActivateObject
+                lda #ITEM_SECURITYPASS
+                jsr AddQuestItem
+                lda #ITEM_COMMGEAR
+                jsr AddQuestItem
+                lda #SFX_PICKUP
+                jsr PlaySfx
+                lda #$00
+                sta actScript                   ;No more script exec
+                rts
+                
+AddQuestItem:   ldx #1
+                jmp AddItem
+
 
         ; Variables
 
@@ -346,11 +433,38 @@ laserTime:      dc.b 0
 
 laserColorTbl:  dc.b $0c,$0e
 
+        ; Persistent NPC table
+
+npcX:           dc.b $39,$38
+npcY:           dc.b $28,$28
+npcF:           dc.b $30+AIMODE_TURNTO,$10+AIMODE_TURNTO
+npcT:           dc.b ACT_SCIENTIST2, ACT_SCIENTIST3
+npcWpn:         dc.b $00,$00
+npcOrg:         dc.b 1+ORG_GLOBAL,1+ORG_GLOBAL
+
         ; Messages
 
 txtGeneratorOn: dc.b "GENERATOR ON",0
 txtNoPower:     dc.b "NO POWER",0
 txtAmpInstalled:dc.b "AMPLIFIER INSTALLED",0
 txtCantInstall: dc.b "TURN OFF TO INSTALL",0
+txtIntroDialogue:
+                dc.b 34,"GOOD, YOU'RE ON YOUR FEET. I'M VIKTOR - WE NEED TO REACH THE OTHERS, WHO ARE HOLED UP ON THE PARKING GARAGE BOTTOM LEVEL. FOLLOW ME.",34,0
+txtDyingDialogue:
+                dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'LL NEED A PASSCARD WE USED TO LOCK UP THIS PLACE. "
+                dc.b "WATCH OUT FOR MORE OF THOSE BASTARDS.. AND ONE FINAL THING - THE NANO-BOTS RUNNING YOUR BODY DEPEND ON BATTERY POWER. "
+                dc.b "DON'T RUN OUT.",34,0
+txtHideoutDialogue1:
+                dc.b 34,"I SEE VIKTOR DIDN'T MAKE IT. BUT YOU DID, THAT'S WHAT COUNTS. AMOS, NANOSURGEON. SHE'S LINDA, CYBER-PSYCHOLOGIST. "
+                dc.b "AS YOU'VE SEEN, OUR CREATIONS HAVE TURNED ON US. TOTAL OUTSIDE BLACKOUT. WE'RE STUCK AND HELP IS UNLIKELY. "
+                dc.b "AS THE ONLY AUGMENTED PERSON IN THIS ROOM, RIGHT NOW YOU'RE OUR BEST BET.",34,0
+txtHideoutDialogue2:
+                dc.b 34,"COMMON SENSE WOULD DICTATE AN ESCAPE ATTEMPT. BUT THE ROBOTS' HIGHLY COORDINATED ACTIONS "
+                dc.b "SUGGEST A CENTRAL INTELLIGENCE, WHICH I DIDN'T KNOW WE HAD DEVELOPED. "
+                dc.b "THERE CAN BE MORE THAN OUR LIVES AT STAKE.",34,0
+txtHideoutDialogue3:
+                dc.b 34,"YES. WE MUST FIND OUT THEIR ULTIMATE AIM BEYOND JUST KILLING EVERYONE. "
+                dc.b "TAKE THIS SECURITY PASS TO ACCESS THE UPPER LABS. PLUS A WIRELESS CAMERA/RADIO SET "
+                dc.b "SO WE CAN STAY IN TOUCH. GOOD LUCK.",34,0
 
                 checkscriptend

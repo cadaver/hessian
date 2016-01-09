@@ -365,14 +365,14 @@ DA_NormalFlipLeft:
         ; Set all actors to be added on screen. Used on level transitions
         ;
         ; Parameters: -
-        ; Returns: -
+        ; Returns: A=0
         ; Modifies: A
 
 AddAllActorsNextFrame:
-                lda #$00
-                sta AA_Start+1
                 lda #MAX_LVLACT
                 sta AA_EndCmp+1
+                lda #$00
+                sta AA_Start+1
 AA_Paused:      rts
 
         ; Add actors to screen and perform other miscellaneous tasks, like spawners and navigation AI

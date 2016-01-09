@@ -1266,3 +1266,22 @@ DI_NotInInventory:
                 rts
 DI_Exceeded:    lda #$ff
 DLP_NoItem:     rts
+
+        ; Persistent NPC move logic. Branch off to script code according to game state
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8
+
+MovePersistentNPC:
+                jsr MoveAndAttackHuman
+                lda menuMode
+                bne MPNPC_InDialogue
+                ldy actT,x
+                ldx actScript-ACT_SCIENTIST2,y
+                beq MPNPC_NoScript
+                lda actEP-ACT_SCIENTIST2,y
+                jsr ExecScript
+MPNPC_NoScript: ldx actIndex
+MPNPC_InDialogue:
+                rts

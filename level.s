@@ -1189,6 +1189,7 @@ ULO_SkipDestDoorActivation:
                 sta actD+ACTI_PLAYER
                 ldx #ACTI_PLAYER
                 stx actSX+ACTI_PLAYER           ;Stop X-movement
+                stx scriptVariable              ;Reset per-zone script variable
                 jsr MH_StandAnim
                 jsr MH_SetGrounded
                 jsr MH_ResetFall

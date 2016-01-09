@@ -45,6 +45,8 @@ EP_INSTALLAMPLIFIER = $0502
 EP_RUNLASER = $0503
 EP_MOVEGENERATOR = $0504
 EP_SCIENTIST1 = $0505
+EP_CREATEPERSISTENTNPCS = $0506                 ;Used for testing. Once game is final, trigger object can be removed
+EP_SCIENTIST2 = $0507
 
 PLOT_ELEVATOR1  = $00                       ;Upper <-> lower lab
 PLOT_ELEVATOR2  = $01                       ;Jormungandr <-> Bio-Dome

@@ -84,7 +84,7 @@ AI_FollowClimbInCombat:
                 bne AI_FollowClimbCheckExit
                 rts
 
-AI_Follow:      lda #ACTI_PLAYER                ;Todo: do not hardcode player as target
+AI_Follow:      lda #ACTI_PLAYER
                 sta actAITarget,x
                 ldy actAITarget,x
                 jsr GetActorDistance
@@ -214,8 +214,7 @@ AI_StairsDownRight:
 
         ; Turn to AI
 
-AI_TurnTo:      ldy actAITarget,x
-                bmi AI_Idle
+AI_TurnTo:      ldy #ACTI_PLAYER
                 jsr GetActorDistance
 AI_TurnToTarget:lda temp5
                 sta actD,x                      ;Fall through
