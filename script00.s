@@ -33,6 +33,10 @@ START_Y         = $1700
 ;START_X         = $2980
 ;START_Y         = $1b00
 
+;START_LEVEL     = $01                          ;Car park bottom level
+;START_X         = $4a80
+;START_Y         = $2800
+
 ;START_LEVEL     = $04                          ;Service tunnels
 ;START_X         = $5180
 ;START_Y         = $1b00

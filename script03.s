@@ -1,7 +1,7 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 3, Construct + other boss fights, recycling station
+        ; Script 3, Construct + other boss fights
 
 EYE_MOVE_TIME = 10
 EYE_FIRE_TIME = 8

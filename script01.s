@@ -24,6 +24,7 @@ RECYCLER_MOVEDELAY = 8
                 dc.w TunnelMachine
                 dc.w TunnelMachineItems
                 dc.w TunnelMachineRun
+                dc.w RadioUpperLabsElevator
 
         ; Health recharger script routine
         ;
@@ -735,6 +736,42 @@ TMI_Common:     jsr TM_TextCommon
                 lda #SFX_POWERUP
                 jmp PlaySfx
 
+        ; Radio speech for upper labs elevator
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RadioUpperLabsElevator:
+                lda #OBJ_ACTIVE                 ;Disable both triggers
+                ora lvlObjB+$5c
+                sta lvlObjB+$5c
+                sta lvlObjB+$5d
+                ldy #ITEM_AMPLIFIER             ;Skip if already has the signal amp
+                jsr FindItem
+                bcs RULE_HasAmplifier
+                lda #PLOT_ELEVATOR1             ;Skip if elevator already activated
+                jsr GetPlotBit
+                bne RULE_AlreadyActive
+                ldy #ITEM_SERVICEPASS
+                jsr FindItem
+                lda #<txtNoServicePass
+                ldx #>(txtNoServicePass+$8000)
+                bcc RULE_NoPass
+                lda #<txtHasServicePass
+                ldx #>(txtHasServicePass+$8000)
+RULE_NoPass:    stx txtRadioPassJump
+                sta txtRadioPassJump+1
+                lda #SFX_RADIO
+                jsr PlaySfx
+                ldy #ACT_PLAYER
+                lda #<txtRadioUpperLabsElevator
+                ldx #>txtRadioUpperLabsElevator
+                jmp SpeakLine
+RULE_HasAmplifier:
+RULE_AlreadyActive:
+                rts
+
         ; Elevator tables
 
 elevatorSrcLevel:
@@ -826,5 +863,17 @@ txtReady:       dc.b " STOP DRIVE",0
 txtCount:       dc.b " "
 txtDigits:      dc.b "000",0
 txtArrow:       dc.b 62,0
+
+txtRadioUpperLabsElevator:
+                dc.b 34,"AMOS HERE AGAIN. AS I FEARED, THE ELEVATOR IS IN LOCKDOWN. YOU'LL HAVE TO FIND A WAY AROUND. "
+                dc.b "THE LASER IN THE BASEMENT MIGHT CUT THROUGH THE WALL, IF ITS POWER IS INCREASED BEYOND "
+                dc.b "SAFE LIMITS. OUR IT SPECIALIST JEFF, WHO SHOULD BE IN HIS PRIVATE HIDEOUT "
+                dc.b "IN THE SERVICE TUNNELS, COULD HAVE IDEAS. JUST WATCH OUT, HE'S A BIT STRANGE."
+txtRadioPassJump:
+                textjump txtNoServicePass
+txtNoServicePass:
+                dc.b " SEARCH THE ENTRANCE OFFICES FOR THE SERVICE PASSCARD."
+txtHasServicePass:
+                dc.b 34,0
 
                 checkscriptend

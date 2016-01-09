@@ -74,6 +74,7 @@ write script02.pak @8:52
 write script03.pak @8:53
 write script04.pak @8:54
 write script05.pak @8:55
+write script06.pak @8:56
 write logo.pak @8:5e
 write upgrade.pak @8:5f
 write emptysave.bin @8:60
