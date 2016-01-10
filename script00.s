@@ -21,9 +21,9 @@ logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
-START_LEVEL     = $00                          ;Warehouse
-START_X         = $6680
-START_Y         = $1700
+;START_LEVEL     = $00                          ;Warehouse
+;START_X         = $6680
+;START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard
 ;START_X         = $0280
@@ -80,6 +80,10 @@ START_Y         = $1700
 ;START_LEVEL     = $08                           ;Lower labs corridor
 ;START_X         = $3780
 ;START_Y         = $4100
+
+START_LEVEL     = $08                           ;Lower labs server room
+START_X         = $1f80
+START_Y         = $5300
 
 ;START_LEVEL     = $0a                          ;Nether tunnel
 ;START_X         = $0080

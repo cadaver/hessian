@@ -20,6 +20,9 @@ RECYCLER_MOVEDELAY = 8
                 dc.w RadioUpperLabsElevator
                 dc.w RecyclingStation
                 dc.w MovePlayerTank
+                dc.w EscortScientistsStart
+                dc.w EscortScientistsRefresh
+                dc.w EscortScientistsZone
 
         ; Health recharger script routine
         ;
@@ -614,6 +617,103 @@ MPT_SkipControls:
                 sta itemIndex
                 jmp MoveTank
 
+        ; Start escort scientists sequence
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+EscortScientistsStart:
+                ldx actIndex
+                lda actXH,x
+                sec
+                sbc actXH+ACTI_PLAYER
+                cmp #$04
+                bcs ESS_WaitUntilClose
+                jsr AddQuestScore
+                ldy #ACT_SCIENTIST2
+                lda #<txtEscortBegin
+                ldx #>txtEscortBegin
+                jsr SpeakLine
+                lda #<EP_ESCORTSCIENTISTSREFRESH
+                sta actScriptEP
+                sta actScriptEP+1
+                lda #>EP_ESCORTSCIENTISTSREFRESH
+                sta actScriptF
+                sta actScriptF+1
+ESS_WaitUntilClose:
+                rts
+
+        ; Refresh escort scientists sequence (ensure they follow)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+EscortScientistsRefresh:
+                lda menuMode
+                bne ESR_InDialogue
+                lda #<EP_ESCORTSCIENTISTSZONE   ;Set zone script which keeps the scientists
+                ldx #>EP_ESCORTSCIENTISTSZONE   ;warping to player
+                jsr SetZoneScript
+                ldx actIndex
+                lda actF1+ACTI_PLAYER           ;If player is climbing, explicitly stop
+                cmp #FR_CLIMB+4                 ;(will look stupid otherwise)
+                bcs ESR_NotClimbing
+                cmp #FR_CLIMB
+                bcc ESR_NotClimbing
+                lda #AIMODE_TURNTO
+                skip2
+ESR_NotClimbing:
+                lda #AIMODE_FOLLOW
+                sta actAIMode,x
+                lda actT,x
+                cmp #ACT_SCIENTIST3
+                beq ESR_FollowPlayer
+                lda #ACT_SCIENTIST3
+                jsr FindActor
+                bcc ESR_NoActor
+                txa
+                ldx actIndex
+ESR_StoreTarget:sta actAITarget,x
+ESR_InDialogue:
+ESR_NoActor:    rts
+ESR_FollowPlayer:
+                lda #ACTI_PLAYER
+                beq ESR_StoreTarget
+
+        ; Escort scientists zone change (warp to player)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+EscortScientistsZone:
+                lda ECS_LoadedCharSet+1
+                cmp #$07
+                beq ESZ_LevelFail               ;Do not go inside upgrade research labs
+                lda levelNum
+                cmp #$06
+                beq ESZ_LevelOk
+                cmp #$08
+                beq ESZ_LevelOk
+ESZ_LevelFail:  jmp StopZoneScript              ;Ventured outside valid levels for following, stop
+ESZ_LevelOk:    lda #ACT_SCIENTIST2
+                jsr ESZ_ActorSub
+                lda #ACT_SCIENTIST3
+ESZ_ActorSub:   jsr FindLevelActor
+                bcc ESZ_NoActor
+                lda actXH+ACTI_PLAYER
+                sta lvlActX,y
+                lda actYH+ACTI_PLAYER
+                sta lvlActY,y
+                lda #$20+AIMODE_FOLLOW
+                sta lvlActF,y
+                lda levelNum
+                ora #ORG_GLOBAL
+                sta lvlActOrg,y
+ESZ_NoActor:    rts
+
         ; Elevator tables
 
 elevatorSrcLevel:
@@ -699,7 +799,7 @@ txtDigits:      dc.b "000",0
 txtArrow:       dc.b 62,0
 
 txtRadioUpperLabsElevator:
-                dc.b 34,"AMOS HERE AGAIN. AS I FEARED, THE ELEVATOR IS IN LOCKDOWN. YOU'LL HAVE TO FIND A WAY AROUND. "
+                dc.b 34,"AMOS HERE AGAIN. AS I FEARED, THE ELEVATOR IS LOCKED. YOU'LL HAVE TO FIND A WAY AROUND. "
                 dc.b "THE LASER IN THE BASEMENT MIGHT CUT THROUGH THE WALL, IF ITS POWER IS INCREASED BEYOND "
                 dc.b "SAFE LIMITS. OUR IT SPECIALIST JEFF, WHO SHOULD BE IN HIS PRIVATE HIDEOUT "
                 dc.b "IN THE SERVICE TUNNELS, COULD HAVE IDEAS. JUST WATCH OUT, HE'S A BIT STRANGE."
@@ -709,5 +809,7 @@ txtNoServicePass:
                 dc.b " SEARCH THE ENTRANCE OFFICES FOR THE SERVICE PASSCARD."
 txtHasServicePass:
                 dc.b 34,0
+txtEscortBegin: dc.b 34,"THE PLAN IS THIS: YOU NEED A LUNG FILTER TO SURVIVE THE NETHER TUNNEL. THE OPERATING ROOM IS ON THE LOWER LABS "
+                dc.b "RIGHT SIDE, AT THE VERY BOTTOM. LEAD THE WAY.",34,0
 
                 checkscriptend

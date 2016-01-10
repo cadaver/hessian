@@ -8,12 +8,12 @@ SHOW_LEVELUPDATE_TIME = 0
 SHOW_SPRITEDEPACK_TIME = 0
 
 DROP_ITEM_TEST  = 0                             ;Drop a copy of current item to test actor save
-AMMO_CHEAT      = 0
+AMMO_CHEAT      = 1
 ALLQUESTITEMS_CHEAT = 0
-STARTITEM_CHEAT = 0                            ;Start with weapon & parts instead of empty inventory
+STARTITEM_CHEAT = 1                            ;Start with weapon & parts instead of empty inventory
 FILTER_UPGRADE_CHEAT = 0
 UPGRADE_CHEAT   = 0
-GODMODE_CHEAT   = 0                             ;Whether health/battery cheat is on initially
+GODMODE_CHEAT   = 1                             ;Whether health/battery cheat is on initially
 
         ; Memory configuration & loader symbols
 

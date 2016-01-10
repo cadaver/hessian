@@ -16,6 +16,9 @@ EP_ELEVATORLOOP = $0106
 EP_RADIOUPPERLABSELEVATOR = $0107
 EP_RECYCLINGSTATION = $0108
 EP_MOVEPLAYERTANK = $0109
+EP_ESCORTSCIENTISTSSTART = $010a
+EP_ESCORTSCIENTISTSREFRESH = $010b
+EP_ESCORTSCIENTISTSZONE = $010c
 
 EP_GAMESTART    = $0200
 EP_SCIENTIST1   = $0201
@@ -52,7 +55,9 @@ EP_RADIOCAVES   = $050a
 EP_MOVEJORMUNGANDR = $0600
 
 EP_SUBNETROUTER = $0700
-EP_INSTALLFILTER = $0701 ;TODO replace
+EP_SERVERROOMCOMPUTER = $0701
+EP_MOVESCIENTISTS = $0702
+EP_HIJACKPLAN = $0703
 
 EP_TUNNELMACHINE = $0800
 EP_TUNNELMACHINEITEMS = $0801
@@ -66,6 +71,7 @@ PLOT_ROTORDRONE  = $04                      ;Rotordrone boss destroyed
 PLOT_BATTERY    = $05                       ;Tunnel machine battery installed
 PLOT_FUEL       = $06                       ;Tunnel machine refueled
 PLOT_WALLBREACHED = $07                     ;Tunnel machine has been used
+PLOT_MOVESCIENTISTS = $08                   ;Scientists moved to wait in upper labs
 
 SPEECHBUBBLEOFFSET = -40*8
 
@@ -103,7 +109,7 @@ ES_ScriptJump:  jmp $1000
 
         ; Set/stop a continuous script
         ;
-        ; Parameters: A script entrypoint, X script file (negative = stop)
+        ; Parameters: A script entrypoint, X script file (0 = stop)
         ; Returns: -
         ; Modifies: -
         
@@ -111,6 +117,17 @@ StopScript:     ldx #$00
 SetScript:      stx scriptF
                 sta scriptEP
 ES_LoadOnly:    rts
+
+        ; Set/stop zone transition script
+        ;
+        ; Parameters: A script entrypoint, X script file (0 = stop)
+        ; Returns: -
+        ; Modifies: -
+        
+StopZoneScript: ldx #$00
+SetZoneScript:  stx zoneScriptF
+                sta zoneScriptEP
+                rts
 
         ; NPC speak a line
         ;

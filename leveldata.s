@@ -27,6 +27,8 @@ oxygen:         dc.b 0
 plotBits:       ds.b MAX_PLOTBITS/8,0
 actScriptF:     ds.b MAX_PERSISTENTNPCS,0
 actScriptEP:    ds.b MAX_PERSISTENTNPCS,0
+zoneScriptF:    dc.b 0
+zoneScriptEP:   dc.b 0
 codes:          ds.b MAX_CODES*3,0
 playerStateZeroEnd:
 invMag:         ds.b ITEM_LAST_MAG-ITEM_FIRST_MAG+1,0

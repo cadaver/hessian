@@ -84,9 +84,12 @@ AI_FollowClimbInCombat:
                 bne AI_FollowClimbCheckExit
                 rts
 
-AI_Follow:      lda #ACTI_PLAYER
+AI_Follow:      ldy actAITarget,x               ;Set player as target if none
+                bpl AI_FollowHasTarget
+                lda #ACTI_PLAYER
                 sta actAITarget,x
-                ldy actAITarget,x
+                tay
+AI_FollowHasTarget:
                 jsr GetActorDistance
 AI_FollowHasTargetDistance:
                 ldy #AL_MOVEFLAGS               ;Get movement capability flags

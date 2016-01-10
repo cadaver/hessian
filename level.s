@@ -1204,6 +1204,11 @@ ULO_FinePositionLoop:                           ;Fineposition player to ground a
                 jsr GetCharInfo
                 and #CI_GROUND
                 beq ULO_FinePositionLoop
+                ldx zoneScriptF
+                beq ULO_NoZoneScript
+                lda zoneScriptEP
+                jsr ExecScript
+ULO_NoZoneScript:
                 ldy #ZONEH_BG1
                 lda (zoneLo),y                  ;Check for save-disabled zone
                 ora ULO_AirToxinFlag+1          ;Also don't save if the zone is damaging

@@ -116,13 +116,13 @@ sfxReloadFlamer:include sfx/reloadflamer.sfx
 sfxReload:      include sfx/reload.sfx
 sfxCockWeapon:  include sfx/cockfast.sfx
 sfxCockShotgun: include sfx/cockshotgun.sfx
-sfxPowerup:     include sfx/powerup.sfx
 sfxPunch:       include sfx/punch.sfx
 sfxMelee:       include sfx/melee.sfx
 sfxHeavyMelee:  include sfx/heavymelee.sfx
 sfxThrow:       include sfx/throw.sfx
 sfxReloadBazooka:include sfx/reloadbazooka.sfx
 sfxDamage:      include sfx/damage.sfx
+sfxPowerup:     include sfx/powerup.sfx
 sfxSplash:      include sfx/splash.sfx
 sfxFlamer:      include sfx/flamer.sfx
 sfxGenerator:   include sfx/generator.sfx

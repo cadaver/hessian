@@ -676,7 +676,7 @@ adScientist3:   dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
                 dc.b C_SCIENTIST                ;Upper part spritefile number
-                dc.b 28                         ;Upper part base spritenumber
+                dc.b 29                         ;Upper part base spritenumber
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
@@ -1723,8 +1723,8 @@ alScientist1:   dc.w USESCRIPT|EP_SCIENTIST1    ;Update routine
                 dc.b DROP_NOTHING               ;Itemdrop type or item override
                 dc.b $00                        ;AI offense random AND-value
                 dc.b $00                        ;AI defense probability
-                dc.b AB_NONE                     ;Attack directions
-                dc.b AMF_JUMP|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
+                dc.b AB_NONE                    ;Attack directions
+                dc.b AMF_DUCK                   ;Move flags
                 dc.b 2*8+4                      ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
@@ -1748,8 +1748,8 @@ alPersistentNPC:dc.w MovePersistentNPC          ;Update routine
                 dc.b $1f                        ;AI offense random AND-value
                 dc.b $20                        ;AI defense probability
                 dc.b AB_NONE                    ;Attack directions
-                dc.b AMF_JUMP|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
-                dc.b 3*8                        ;Max. movement speed
+                dc.b AMF_DUCK                   ;Move flags
+                dc.b 4*8                        ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
