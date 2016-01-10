@@ -1836,23 +1836,41 @@ void drawmap(void)
       {
         int a = actindex;
 
+        int lid = -1;
+        int z;
+        int lev = -1;
+        // Find out index within level for the currently selected actor
+        z = findzone(lvlactx[a], lvlacty[a]&0x7f);
+        if (z < NUMZONES)
+        {
+          lev = zonelevel[z];
+          lid = 0;
+          for (c = 0; c < actindex; c++)
+          {
+            if (lvlactx[c] || lvlacty[c])
+            {
+              z = findzonefast(lvlactx[c], lvlacty[c]&0x7f, z);
+              if (z < NUMZONES && zonelevel[z] == lev)
+                lid++;
+            }
+          }
+        }
+
         if (lvlactt[a] < 128)
         {
-          sprintf(textbuffer, "ACTOR %02X (%s) (%02X,%02X) ", lvlactt[a], actorname[lvlactt[a]], lvlactx[a]-levelx[zonelevel[zonenum]], lvlacty[a] & 0x7f);
-          if (lvlacty[a] & 128) strcat(textbuffer, "(HIDDEN)");
+          sprintf(textbuffer, "ACTOR %02X (%s) (%02X,%02X) ID:%02X", lvlactt[a], actorname[lvlactt[a]], lvlactx[a]-levelx[zonelevel[zonenum]], lvlacty[a] & 0x7f, lid);
           printtext_color(textbuffer, 0,195,SPR_FONTS,COL_WHITE);
-          if (lvlactw[a] & 128) sprintf(textbuffer, "LEFT");
-          else sprintf(textbuffer, "RIGHT");
-          printtext_color(textbuffer, 256,195,SPR_FONTS,COL_WHITE);
-          sprintf(textbuffer, "MODE:%1X (%s)", lvlactf[a] & 0xf, modename[lvlactf[a] & 0xf]);
+          sprintf(textbuffer, "MODE:%1X (%s) ", lvlactf[a] & 0xf, modename[lvlactf[a] & 0xf]);
+          if (lvlactw[a] & 128) strcat(textbuffer, "LEFT");
+          else strcat(textbuffer, "RIGHT");
+          if (lvlacty[a] & 128) strcat(textbuffer, " (HIDDEN)");
           printtext_color(textbuffer, 0,205,SPR_FONTS,COL_WHITE);
           sprintf(textbuffer, "WPN:%02X (%s)", lvlactw[a] & 0x7f, itemname[lvlactw[a] & 0x7f]);
           printtext_color(textbuffer, 0,215,SPR_FONTS,COL_WHITE);
         }
         else
         {
-          sprintf(textbuffer, "ITEM %02X (%s) (%02X,%02X) ", lvlactt[a] & 0x7f, itemname[lvlactt[a]-128], lvlactx[a]-levelx[zonelevel[zonenum]], lvlacty[a] & 0x7f);
-          if (lvlacty[a] & 128) strcat(textbuffer, "(HIDDEN)");
+          sprintf(textbuffer, "ITEM %02X (%s) (%02X,%02X) ID:%02X", lvlactt[a] & 0x7f, itemname[lvlactt[a]-128], lvlactx[a]-levelx[zonelevel[zonenum]], lvlacty[a] & 0x7f, lid);
           printtext_color(textbuffer, 0,195,SPR_FONTS,COL_WHITE);
           if (lvlactw[a] != 255)
           {
@@ -1862,6 +1880,7 @@ void drawmap(void)
           {
             sprintf(textbuffer, "COUNT:DEFAULT");
           }
+          if (lvlacty[a] & 128) strcat(textbuffer, " (HIDDEN)");
           printtext_color(textbuffer, 0,205,SPR_FONTS,COL_WHITE);
         }
       }
