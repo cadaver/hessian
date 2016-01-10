@@ -516,6 +516,9 @@ PA_AggressionNotOver:
                 bmi PA_CannotAttack             ;(someone else attacking now?)
                 ldy actAttackD,x                ;Check weapon's attack timer
                 bne PA_CannotAttack
+                ldy menuMode                    ;No attacks during dialogue
+                cpy #MENU_DIALOGUE
+                beq PA_CannotAttack
                 ldy actWpn,x
                 beq PA_NoWeapon
                 cmp itemNPCAttackThreshold-1,y  ;Enough aggression?

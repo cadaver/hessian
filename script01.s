@@ -6,6 +6,8 @@ RECYCLER_ITEM_LAST = ITEM_ARMOR
 MAX_RECYCLER_ITEMS = 10
 RECYCLER_MOVEDELAY = 8
 
+rechargerColor  = menuCounter
+
         ; Script 1: common objects
 
                 org scriptCodeStart
@@ -105,7 +107,17 @@ E_FindLoop:     cmp elevatorSrcLevel,x
 E_Found:        lda elevatorPlotBit,x
                 jsr GetPlotBit
                 bne E_HasAccess
-E_NoAccess:     lda #<txtElevatorLocked
+E_NoAccess:     txa                             ;Only show message for the upper labs elevator, and only once
+                bne E_NoRadioMsg
+                lda #PLOT_ELEVATORMSG
+                jsr GetPlotBit
+                bne E_NoRadioMsg
+                lda #PLOT_ELEVATORMSG
+                jsr SetPlotBit
+                lda #<EP_RADIOUPPERLABSELEVATOR ;Set a timed script, exec when text cleared
+                ldx #>EP_RADIOUPPERLABSELEVATOR
+                jsr SetScript
+E_NoRadioMsg:   lda #<txtElevatorLocked
                 ldx #>txtElevatorLocked
                 ldy #REQUIREMENT_TEXT_DURATION
                 jmp PrintPanelText
@@ -172,7 +184,6 @@ EC_Reset:       sta codeEntry,x
                 bpl EC_Reset
                 lda #<EP_ENTERCODELOOP
                 ldx #>EP_ENTERCODELOOP
-SetScriptAndInteraction:
                 jsr SetScript
                 ldx #MENU_INTERACTION
                 jmp SetMenuMode
@@ -562,16 +573,10 @@ RSC_NotUp:      lsr
         ; Modifies: various
 
 RadioUpperLabsElevator:
-                lda #OBJ_ACTIVE                 ;Disable both triggers
-                ora lvlObjB+$5c
-                sta lvlObjB+$5c
-                sta lvlObjB+$5d
-                ldy #ITEM_AMPLIFIER             ;Skip if already has the signal amp
-                jsr FindItem
-                bcs RULE_HasAmplifier
-                lda #PLOT_ELEVATOR1             ;Skip if elevator already activated
-                jsr GetPlotBit
-                bne RULE_AlreadyActive
+                lda textTime
+                cmp #35
+                bcs RULE_Wait
+                jsr StopScript
                 ldy #ITEM_SERVICEPASS
                 jsr FindItem
                 lda #<txtNoServicePass
@@ -587,9 +592,7 @@ RULE_NoPass:    stx txtRadioPassJump
                 lda #<txtRadioUpperLabsElevator
                 ldx #>txtRadioUpperLabsElevator
                 jmp SpeakLine
-RULE_HasAmplifier:
-RULE_AlreadyActive:
-                rts
+RULE_Wait:      rts
 
         ; Player tank controls
         ;
@@ -775,7 +778,6 @@ recyclerCostTbl:
         ; Variables
 
 elevatorIndex:  dc.b 0
-rechargerColor:
 elevatorTime:   dc.b 0
 elevatorSound:  dc.b 0
 
@@ -799,10 +801,10 @@ txtDigits:      dc.b "000",0
 txtArrow:       dc.b 62,0
 
 txtRadioUpperLabsElevator:
-                dc.b 34,"AMOS HERE AGAIN. AS I FEARED, THE ELEVATOR IS LOCKED. YOU'LL HAVE TO FIND A WAY AROUND. "
-                dc.b "THE LASER IN THE BASEMENT MIGHT CUT THROUGH THE WALL, IF ITS POWER IS INCREASED BEYOND "
-                dc.b "SAFE LIMITS. OUR IT SPECIALIST JEFF, WHO SHOULD BE IN HIS PRIVATE HIDEOUT "
-                dc.b "IN THE SERVICE TUNNELS, COULD HAVE IDEAS. JUST WATCH OUT, HE'S A BIT STRANGE."
+                dc.b 34,"AMOS HERE AGAIN. YOU NEED A WAY AROUND. "
+                dc.b "THE LASER IN THE BASEMENT MIGHT CUT THROUGH THE WALL IF ITS POWER IS BOOSTED. "
+                dc.b "OUR IT SPECIALIST JEFF COULD HAVE IDEAS. HE'S GOT A PRIVATE HIDEOUT "
+                dc.b "IN THE SERVICE TUNNELS. JUST WATCH OUT, HE'S A BIT STRANGE."
 txtRadioPassJump:
                 textjump txtNoServicePass
 txtNoServicePass:

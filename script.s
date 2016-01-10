@@ -72,6 +72,7 @@ PLOT_BATTERY    = $05                       ;Tunnel machine battery installed
 PLOT_FUEL       = $06                       ;Tunnel machine refueled
 PLOT_WALLBREACHED = $07                     ;Tunnel machine has been used
 PLOT_MOVESCIENTISTS = $08                   ;Scientists moved to wait in upper labs
+PLOT_ELEVATORMSG = $09                      ;Player attempted lower lab elevator entry
 
 SPEECHBUBBLEOFFSET = -40*8
 
