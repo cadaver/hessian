@@ -535,9 +535,9 @@ IP_GiveAllLoop: pha
                 cmp #ITEM_LAST+1
                 bcc IP_GiveAllLoop
                 endif
-                jsr FindPlayerZone              ;Need to get starting level's charset so that save is named properly
-                jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
-                jmp CenterPlayer
+                lda #<EP_GAMESTART          ;Exec initial script to setup persistent NPC states etc.
+                ldx #>EP_GAMESTART
+                jmp ExecScript
 
         ; Save options if modified
 
@@ -1016,7 +1016,7 @@ levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
 levelNames:
 levelWarehouses:dc.b "WAREHOUSE",0
 levelCourtyard: dc.b "COURTYARD",0
-levelCarPark:   dc.b "CAR PARK",0
+levelCarPark:   dc.b "PARKING GARAGE",0
 levelServiceTunnels:dc.b "SERVICE TUNNELS",0
 levelEntrance:  dc.b "ENTRANCE",0
 levelSecurityCenter:dc.b "SECURITY CENTER",0

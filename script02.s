@@ -5,11 +5,45 @@
 
                 org scriptCodeStart
 
+                dc.w GameStart
                 dc.w Scientist1
-                dc.w CreatePersistentNPCs
                 dc.w Scientist2
                 dc.w RadioUpperLabsEntrance
 
+        ; Finalize game start. Create persistent NPCs to the leveldata
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+GameStart:      ldx #MAX_PERSISTENTNPCS-1
+GS_Loop:        jsr GetLevelActorIndex
+                lda npcX,x
+                sta lvlActX,y
+                lda npcY,x
+                sta lvlActY,y
+                lda npcF,x
+                sta lvlActF,y
+                lda npcT,x
+                sta lvlActT,y
+                lda npcWpn,x
+                sta lvlActWpn,y
+                lda npcOrg,x
+                sta lvlActOrg,y
+                dex
+                bpl GS_Loop
+                lda #<EP_SCIENTIST2         ;Initial NPC scripts to drive the plot forward
+                sta actEP
+                lda #>EP_SCIENTIST2
+                sta actScript
+                lda #<EP_HACKER
+                sta actEP+2
+                lda #>EP_HACKER
+                sta actScript+2
+                jsr FindPlayerZone              ;Need to get starting level's charset so that save is named properly
+                jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
+                jmp CenterPlayer
+                
         ; Scientist 1 (intro) move routine
         ;
         ; Parameters: X actor number
@@ -38,7 +72,6 @@ S1_JumpTbl:     dc.w S1_WaitFrame
                 dc.w S1_DoNothing
 
 S1_WaitFrame:   inc scriptVariable              ;Special case wait 1 frame (loading)
-                jsr CreatePersistentNPCs
                 ldx #MENU_INTERACTION           ;Set interaction mode meanwhile so that player can't move away
                 jmp SetMenuMode
 
@@ -128,39 +161,6 @@ S1_LimitLeft:   and joystick
                 sta joystick
                 rts
 
-        ; Create persistent NPCs to the leveldata
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-CreatePersistentNPCs:
-                ldx #MAX_PERSISTENTNPCS-1
-CPNPC_Loop:     jsr GetLevelActorIndex
-                lda npcX,x
-                sta lvlActX,y
-                lda npcY,x
-                sta lvlActY,y
-                lda npcF,x
-                sta lvlActF,y
-                lda npcT,x
-                sta lvlActT,y
-                lda npcWpn,x
-                sta lvlActWpn,y
-                lda npcOrg,x
-                sta lvlActOrg,y
-                dex
-                bpl CPNPC_Loop
-                lda #<EP_SCIENTIST2         ;Initial script to drive the plot forward
-                sta actEP
-                lda #>EP_SCIENTIST2
-                sta actScript
-                lda #<EP_HACKER
-                sta actEP+2
-                lda #>EP_HACKER
-                sta actScript+2
-S2_Wait:        rts
-
         ; Scientist 2 (hideout 1) script
         ;
         ; Parameters: -
@@ -186,6 +186,7 @@ Scientist2:     lda actXH+ACTI_PLAYER           ;Wait until player close enough
                 lda S2_JumpTbl+1,y
                 sta S2_Jump+2
 S2_Jump:        jmp $0000
+S2_Wait:        rts
 
 S2_JumpTbl:     dc.w S2_Dialogue1
                 dc.w S2_Dialogue2
