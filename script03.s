@@ -392,7 +392,7 @@ H_Random:       jsr Random
                 adc #$36                        ;Randomize between 75%, 85%, 95%
                 sta txtPercent
                 lda #<EP_HACKER2
-                sta actEP+2                     ;Set 2nd script
+                sta actScriptEP+2               ;Set 2nd script
                 ldy #ACT_HACKER
                 lda #<txtHacker
                 ldx #>txtHacker
@@ -413,7 +413,7 @@ Hacker2:        ldy #ITEM_AMPLIFIER
                 cmp #FR_DUCK
                 bcs H_NoItem
                 lda #$00                        ;No more scripts for now
-                sta actScript+2
+                sta actScriptF+2
                 ldy #ACT_HACKER
                 lda #<txtHacker2
                 ldx #>txtHacker2

@@ -10,7 +10,7 @@
                 dc.w Scientist2
                 dc.w RadioUpperLabsEntrance
 
-        ; Finalize game start. Create persistent NPCs to the leveldata
+        ; Finalize game start. Create persistent NPCs to the leveldata and randomize entry codes
         ;
         ; Parameters: -
         ; Returns: -
@@ -33,17 +33,28 @@ GS_Loop:        jsr GetLevelActorIndex
                 dex
                 bpl GS_Loop
                 lda #<EP_SCIENTIST2         ;Initial NPC scripts to drive the plot forward
-                sta actEP
+                sta actScriptEP
                 lda #>EP_SCIENTIST2
-                sta actScript
+                sta actScriptF
                 lda #<EP_HACKER
-                sta actEP+2
+                sta actScriptEP+2
                 lda #>EP_HACKER
-                sta actScript+2
+                sta actScriptF+2
+                ldx #(MAX_CODES)*3-1
+GS_CodeLoop:    jsr Random
+                and #$0f
+                cmp #$0a
+                bcs GS_CodeLoop
+                sta codes,x
+                dex
+                bpl GS_CodeLoop
+                lda codes+MAX_CODES*3-1         ;Make the last (nether tunnels) code initially
+                ora #$80                        ;impossible to enter, even by guessing
+                sta codes+MAX_CODES*3-1
                 jsr FindPlayerZone              ;Need to get starting level's charset so that save is named properly
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
                 jmp CenterPlayer
-                
+
         ; Scientist 1 (intro) move routine
         ;
         ; Parameters: X actor number
@@ -229,7 +240,7 @@ S2_Dialogue4:   lda #ITEM_COMMGEAR
                 lda #SFX_PICKUP
                 jsr PlaySfx
                 lda #$00
-                sta actScript                   ;No more script exec here
+                sta actScriptF                  ;No more script exec here
                 ldy #ACT_SCIENTIST2
                 lda #<txtHideoutDialogue4
                 ldx #>txtHideoutDialogue4
@@ -271,6 +282,7 @@ txtDyingDialogue:
                 dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'LL NEED A PASSCARD WE USED TO LOCK UP THIS PLACE. "
                 dc.b "WATCH OUT FOR MORE OF THOSE BASTARDS.. AND ONE FINAL THING - THE NANOBOTS RUNNING YOUR BODY DEPEND ON BATTERY POWER. "
                 dc.b "DON'T RUN OUT.",34,0
+
 txtHideoutDialogue1:
                 dc.b 34,"I SEE VIKTOR DIDN'T MAKE IT. BUT YOU DID, THAT'S WHAT COUNTS. AMOS, NANOSURGEON. SHE'S LINDA, CYBER-PSYCHOLOGIST. "
                 dc.b "YOU'VE SEEN HOW OUR CREATIONS HAVE TURNED ON US. THERE'S A TOTAL COMMS BLACKOUT. WE'RE STUCK AND HELP IS UNLIKELY. "

@@ -132,25 +132,25 @@ START_Y         = $1700
 TitleScreen:    jsr BlankScreen
                 lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE ;Redraw all
                 sta panelUpdateFlags
-                lda #$00                        ;Armor message no longer necessary,
-                sta armorMsgTime                ;as game is over
                 jsr ClearPanelText
                 jsr InitScroll                  ;Make sure no scrolling
 
         ; Load logo chars & clear screen
 
                 jsr StopScript
+                stx Irq1_Bg1+1                  ;X=0 on return
+                stx Irq1_Bg2+1
+                stx Irq1_Bg3+1
+                stx menuMode                    ;Reset in-game menu mode
+                stx armorMsgTime                ;Reset armor message if any
+                dex
                 stx ECS_LoadedCharSet+1         ;Mark game charset destroyed (X=$ff)
                 lda #F_LOGO
                 jsr MakeFileName_Direct
                 lda #<logoStart
                 ldx #>logoStart
                 jsr LoadFileRetry
-                lda #$00                        ;Fade out colors initially
-                sta Irq1_Bg1+1
-                sta Irq1_Bg2+1
-                sta Irq1_Bg3+1
-                sta menuMode                    ;Reset in-game menu mode
+
                 lda #$03
                 sta screen                      ;Set split screen mode
                 lda #$0f
@@ -491,7 +491,6 @@ IP_InitInventory:
                 ldx #50
                 jsr AddItem
                 endif
-                jsr StopScript                  ;Stop any continuous script
                 lda #START_LEVEL
                 sta levelNum
                 lda #$00

@@ -229,10 +229,31 @@ ECL_Next:       jsr ECL_Sound
                 stx numberIndex
                 cpx #3
                 bcc ECL_Done
-                jsr OO_RequirementOK            ;Open the door. TODO: actually verify code
+                ldx #MAX_CODES-1
+ECL_Verify:     lda levelNum
+                cmp codeLevel,x
+                bne ECL_VerifyNext
+                lda lvlObjNum
+                cmp codeObject,x
+                beq ECL_VerifyFound
+ECL_VerifyNext: dex
+                bpl ECL_Verify
+ECL_VerifyFound:txa
+                sta temp1
+                asl
+                adc temp1
+                tay
+                ldx #$00
+ECL_VerifyLoop: lda codeEntry,x
+                cmp codes,y
+                bne ECL_Finish
+                iny
+                inx
+                cpx #$03
+                bcc ECL_VerifyLoop
+                jsr OO_RequirementOK            ;Open the door if code right
 ECL_Finish:     jsr StopScript
-                ldx #MENU_NONE
-                jmp SetMenuMode
+                jmp SetMenuMode                 ;X=0 on return
 
         ; Recycling station script routine
         ;
@@ -605,6 +626,11 @@ elevatorPlotBit:
                 dc.b PLOT_ELEVATOR1,PLOT_ELEVATOR1,PLOT_ELEVATOR2,PLOT_ELEVATOR2
 elevatorSpeed:  dc.b 48,-48,-64,64
 elevatorAcc:    dc.b 2,-2,-2,2
+
+        ; Code entry tables
+
+codeLevel:      dc.b $05,$06,$06,$08,$08,$08,$0c,$08
+codeObject:     dc.b $12,$29,$27,$16,$27,$22,$08,$31
 
         ; Recycler tables
 

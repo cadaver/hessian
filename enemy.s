@@ -1277,9 +1277,9 @@ MovePersistentNPC:
                 lda menuMode
                 bne MPNPC_InDialogue
                 ldy actT,x
-                ldx actScript-ACT_FIRSTPERSISTENTNPC,y
+                ldx actScriptF-ACT_FIRSTPERSISTENTNPC,y
                 beq MPNPC_NoScript
-                lda actEP-ACT_FIRSTPERSISTENTNPC,y
+                lda actScriptEP-ACT_FIRSTPERSISTENTNPC,y
                 jsr ExecScript
 MPNPC_NoScript: ldx actIndex
 MPNPC_InDialogue:

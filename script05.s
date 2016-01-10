@@ -191,8 +191,7 @@ RL_Explode:     ldy #$0f
                 lda #SFX_EXPLOSION
                 jmp PlaySfx
 RL_Finish:      jsr StopScript
-                ldx #MENU_NONE
-                jsr SetMenuMode
+                jsr SetMenuMode                 ;X=0 on return
                 jmp CenterPlayer
 
         ; Generator (screen shake) move routine

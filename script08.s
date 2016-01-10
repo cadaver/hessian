@@ -107,8 +107,7 @@ TMR_MoveRight:  tya
 TMR_Decision:   lda tmChoice
                 bne TMR_Drive
 TMR_Finish:     jsr StopScript
-                ldx #MENU_NONE
-                jmp SetMenuMode
+                jmp SetMenuMode                 ;X=0 on return
 TMR_Drive:      jsr AddQuestScore
                 jsr TMR_Finish
                 lda #$00

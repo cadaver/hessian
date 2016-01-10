@@ -831,8 +831,7 @@ IE_NoSound:     lda installColor
                 rts
 IE_Restore:     jmp SetZoneColors
 IE_End:         jsr StopScript
-                ldx #MENU_NONE
-                jsr SetMenuMode
+                jsr SetMenuMode                 ;X=0 on return
                 lda #<1000
                 ldy #>1000
                 jsr AddScore

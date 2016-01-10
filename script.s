@@ -107,7 +107,7 @@ ES_ScriptJump:  jmp $1000
         ; Returns: -
         ; Modifies: -
         
-StopScript:     ldx #$ff
+StopScript:     ldx #$00
 SetScript:      stx scriptF
                 sta scriptEP
 ES_LoadOnly:    rts

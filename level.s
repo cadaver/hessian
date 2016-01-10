@@ -821,7 +821,7 @@ UpdateLevelObjects:
                 inc attackTime
 ULO_NoGlobalAttack:
                 ldx scriptF                     ;Check for continuous script execution
-                bmi ULO_NoScript
+                beq ULO_NoScript                ;Can't be from scriptfile 0 (title)
                 lda scriptEP
                 jsr ExecScript
 ULO_NoScript:   ldy autoDeactObjNum             ;Check object auto-deactivation
@@ -1197,7 +1197,7 @@ ULO_SkipDestDoorActivation:
                 jsr MH_SetGrounded
                 jsr MH_ResetFall
                 lda #$40
-                sta actYL,x
+                sta actYL+ACTI_PLAYER
 ULO_FinePositionLoop:                           ;Fineposition player to ground at floor
                 lda #8*8
                 jsr MoveActorY
