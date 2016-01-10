@@ -18,6 +18,7 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w DestroyRotorDrone
                 dc.w HideoutDoor
                 dc.w Hacker
+                dc.w Hacker2
 
         ; Eye (Construct) boss phase 1
         ;
@@ -384,13 +385,39 @@ Hacker:         lda actXH+ACTI_PLAYER
                 cmp #$1c
                 bcs H_NotClose                  ;Wait until close
                 jsr AddQuestScore
-                lda #$00
-                sta actScript+2                 ;No further script execution for now
+H_Random:       jsr Random
+                and #$03
+                beq H_Random
+                clc
+                adc #$36                        ;Randomize between 75%, 85%, 95%
+                sta txtPercent
+                lda #<EP_HACKER2
+                sta actEP+2                     ;Set 2nd script
                 ldy #ACT_HACKER
                 lda #<txtHacker
                 ldx #>txtHacker
                 jmp SpeakLine
+H_NoItem:
 H_NotClose:     rts
+
+        ; Hacker script routine 2 (when picking up the amp)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+Hacker2:        ldy #ITEM_AMPLIFIER
+                jsr FindItem
+                bcc H_NoItem
+                lda actF1+ACTI_PLAYER           ;Wait until player is standing again
+                cmp #FR_DUCK
+                bcs H_NoItem
+                lda #$00                        ;No more scripts for now
+                sta actScript+2
+                ldy #ACT_HACKER
+                lda #<txtHacker2
+                ldx #>txtHacker2
+                jmp SpeakLine
 
         ; Final server room droid spawn positions
 
@@ -421,9 +448,13 @@ explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
 txtHideoutLocked:dc.b "LOCKED",0
 txtHacker:      dc.b 34,"HEY. YOU MUST BE KIM. THE SCIENTISTS TOLD YOU MIGHT BE COMING. "
                 dc.b "I'M JEFF. SORRY ABOUT THAT SENTRY DRONE, HAD TO MAKE SURE YOU'RE NOT A MACHINE. "
-                dc.b "I'D ESTIMATE YOUR FIGHTING STYLE AS 95% HUMAN. YOU CAME FOR THAT SIGNAL AMP FOR THE LASER, RIGHT? "
+                dc.b "I'D ESTIMATE YOUR FIGHTING STYLE AS "
+txtPercent:     dc.b "95% HUMAN. YOU CAME FOR THAT SIGNAL AMP FOR THE LASER, RIGHT? "
                 dc.b "NEVER TESTED IT SO CAN'T BE SURE WHAT HAPPENS WHEN YOU PLUG IT IN. OH, FEEL FREE TO USE THE RECYCLER "
                 dc.b "AT THE BACK IF YOU NEED. BUT DON'T TOUCH ANYTHING ELSE.",34,0
+
+txtHacker2:     dc.b 34,"IT'S A MESSED UP SITUATION ALL RIGHT. BUT I WASN'T THAT SHOCKED. "
+                dc.b "WITH WHAT WE'RE DOING, IT WAS BOUND TO HAPPEN SOONER OR LATER.",34,0
 
                 checkscriptend
 

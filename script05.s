@@ -16,6 +16,7 @@ CHUNK_DURATION = 40
                 dc.w OpenWall
                 dc.w MoveAcid
                 dc.w RadioLowerLabs
+                dc.w RadioSecurityCenter
 
         ; Switch generator script routine
         ;
@@ -505,10 +506,28 @@ MA_StartPlayerSplash:
 RadioLowerLabs:
                 lda #SFX_RADIO
                 jsr PlaySfx
-                lda #<txtRadioSpiderLair
-                ldx #>txtRadioSpiderLair
+                lda #<txtRadioLowerLabs
+                ldx #>txtRadioLowerLabs
                 ldy #ACT_PLAYER
                 jmp SpeakLine
+
+        ; Radio speech when entering security center
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RadioSecurityCenter:
+                lda #PLOT_ELEVATOR1             ;If lower labs already visited/completed, skip this
+                jsr GetPlotBit
+                bne RSC_Skip
+                lda #SFX_RADIO
+                jsr PlaySfx
+                lda #<txtRadioSecurityCenter
+                ldx #>txtRadioSecurityCenter
+                ldy #ACT_PLAYER
+                jmp SpeakLine
+RSC_Skip:       rts
 
         ; Variables
 
@@ -527,11 +546,15 @@ txtGeneratorOn: dc.b "GENERATOR ON",0
 txtNoPower:     dc.b "NO POWER",0
 txtAmpInstalled:dc.b "AMPLIFIER INSTALLED",0
 txtCantInstall: dc.b "TURN OFF TO INSTALL",0
-txtRadioSpiderLair:
+txtRadioLowerLabs:
                 dc.b 34,"LINDA HERE. WE GOT JEFF TO HELP - HE MANAGED TO DECRYPT SOME OF THE MACHINES' "
                 dc.b "COMMUNICATIONS. THEIR ACTIVITY IS FOCUSED ON THE TUNNELS THAT LEAD FURTHER BELOW "
                 dc.b "THE LOWER LABS. THEY'VE BUILT SOMETHING LARGE CALLED "
                 dc.b "'JORMUNGANDR' WHICH DOESN'T SOUND GOOD. THE AIR DOWN THERE IS POISONOUS. "
                 dc.b "WE MUST THINK HOW TO PROCEED. BUT ONE THING IS SURE: WE NEED THE ELEVATOR WORKING.",34,0
+txtRadioSecurityCenter:
+                dc.b 34,"AMOS HERE. GOOD THINKING, THE ARMORY SHOULD HOLD POWERFUL WEAPONRY. STAY ALERT THOUGH, "
+                dc.b "ANY GUARDS INSIDE MAY THINK YOU'VE GONE ROGUE. OR THE WORSE POSSIBILITY, THAT THEY'RE SOMEHOW "
+                dc.b "COMPLICIT.",34,0
 
                 checkscriptend
