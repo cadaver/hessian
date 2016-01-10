@@ -276,6 +276,7 @@ DA_NotNegative: sta invCount-1,y
 
 RemoveItem:     lda #NO_ITEM_COUNT
                 sta invCount-1,y
+                sta UM_ForceRefresh+1
                 sty RI_Cmp+1
                 cpy lastItemIndex
                 bne RI_NotLast

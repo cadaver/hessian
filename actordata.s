@@ -64,7 +64,7 @@ ACT_LARGESPIDER = 62
 ACT_ACID        = 63
 ACT_SPIDERCHUNK = 64
 ACT_ARMORER     = 65
-ACT_LARGEDROIDFINAL = 66
+ACT_PLAYERTANK  = 66
 ACT_MEDIUMWALKER = 67
 ACT_SCIENTIST1 = 68
 ACT_SCIENTIST2 = 69
@@ -75,6 +75,7 @@ ACT_THRONECHIEF = 72
 ACT_FIRSTPERSISTENTNPC = ACT_SCIENTIST2
 
 HP_PLAYER       = 56
+HP_PLAYERTANK   = HP_PLAYER*2
 HP_NONCOMBATANT = 0
 HP_ACID         = 1
 HP_RAT          = 4
@@ -243,7 +244,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adAcid
                 dc.b <adSpiderChunk
                 dc.b <adGuard
-                dc.b <adLargeDroid
+                dc.b <adSmallTank
                 dc.b <adSmallWalker
                 dc.b <adScientist1
                 dc.b <adScientist2
@@ -315,7 +316,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adAcid
                 dc.b >adSpiderChunk
                 dc.b >adGuard
-                dc.b >adLargeDroid
+                dc.b >adSmallTank
                 dc.b >adSmallWalker
                 dc.b >adScientist1
                 dc.b >adScientist2
@@ -756,7 +757,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alAcid
                 dc.b <alScrapMetal
                 dc.b <alArmorer
-                dc.b <alLargeDroid
+                dc.b <alPlayerTank
                 dc.b <alMediumWalker
                 dc.b <alScientist1
                 dc.b <alPersistentNPC
@@ -828,7 +829,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alAcid
                 dc.b >alScrapMetal
                 dc.b >alArmorer
-                dc.b >alLargeDroid
+                dc.b >alPlayerTank
                 dc.b >alMediumWalker
                 dc.b >alScientist1
                 dc.b >alPersistentNPC
@@ -1756,3 +1757,28 @@ alPersistentNPC:dc.w MovePersistentNPC          ;Update routine
                 dc.b INITIAL_GROUNDBRAKE         ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
                 dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
+
+alPlayerTank:
+                dc.w USESCRIPT|EP_MOVEPLAYERTANK ;Update routine
+                dc.b GRP_HEROES|AF_NOWEAPON     ;Actor flags
+                dc.b 12                         ;Horizontal size
+                dc.b 22                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w ExplodeEnemy_Ofs8          ;Destroy routine
+                dc.b HP_PLAYERTANK              ;Initial health
+plrTankDmgModify:
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 0                          ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
+                dc.b $ff                        ;AI offense AND-value
+                dc.b $ff                        ;AI defense probability
+                dc.b $ff                        ;Attack directions
+                dc.b AMF_CUSTOMANIMATION        ;Move flags
+                dc.b 4*8                        ;Max. movement speed
+                dc.b 4                          ;Ground movement acceleration
+                dc.b 0                          ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 8                          ;Long jump gravity acceleration
+                dc.b 4                          ;Ground braking
+                dc.b -3                         ;Height in chars for headbump check (negative)

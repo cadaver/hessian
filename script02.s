@@ -147,9 +147,9 @@ S1_DieAgain:    inc scriptVariable
                 dec actHp,x
                 lda #ITEM_PISTOL
                 jsr DI_ItemNumber
-                ldx temp8
+                ldy temp8
                 lda #10
-                sta actHp,x                     ;Full mag
+                sta actHp,y                     ;Full mag
 S1_DoNothing:   rts
 
 S1_LimitControl:lda #JOY_RIGHT|JOY_LEFT|JOY_DOWN|JOY_UP ;Don't allow entering the container in the beginning,

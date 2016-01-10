@@ -17,14 +17,9 @@ RECYCLER_MOVEDELAY = 8
                 dc.w EnterCodeLoop
                 dc.w Elevator
                 dc.w ElevatorLoop
-                dc.w TunnelReroute
-                dc.w RecyclingStation
-                dc.w DisconnectSubnet
-                dc.w InstallFilter
-                dc.w TunnelMachine
-                dc.w TunnelMachineItems
-                dc.w TunnelMachineRun
                 dc.w RadioUpperLabsElevator
+                dc.w RecyclingStation
+                dc.w MovePlayerTank
 
         ; Health recharger script routine
         ;
@@ -238,19 +233,6 @@ ECL_Next:       jsr ECL_Sound
 ECL_Finish:     jsr StopScript
                 ldx #MENU_NONE
                 jmp SetMenuMode
-
-        ; Tunnel reroute after the machine has been used once
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-TunnelReroute:  lda #PLOT_WALLBREACHED
-                jsr GetPlotBit
-                beq TR_NotDone
-                lda #$3d                        ;Change sidedoor destination to version
-                sta lvlObjDL+$2a                ;of zone without machine + new enemies
-TR_NotDone:     rts
 
         ; Recycling station script routine
         ;
@@ -549,193 +531,6 @@ RSC_NotUp:      lsr
                 ldy #$00
                 beq RSC_HasMove
 
-        ; Subnet router script
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-DisconnectSubnet:
-                jsr AddQuestScore
-                lda #<txtDisconnected
-                ldx #>txtDisconnected
-                ldy #REQUIREMENT_TEXT_DURATION
-                jsr PrintPanelText
-                lda lvlObjB+$4d
-                bpl DS_NotBoth
-                lda lvlObjB+$4e
-                bpl DS_NotBoth
-                lda #SFX_POWERUP
-                jsr PlaySfx
-                lda #PLOT_ELEVATOR1
-                jmp SetPlotBit                  ;Todo: other stuff, more prominent effect
-DS_NotBoth:     rts
-
-        ; Surgery station script (TODO: remove and replace with proper story elements)
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-InstallFilter:  ldy #ITEM_LUNGFILTER
-                jsr FindItem
-                bcc IF_NotFound
-                jsr RemoveItem
-                lda #SFX_POWERUP
-                jsr PlaySfx
-                lda upgrade
-                ora #UPG_TOXINFILTER
-                sta upgrade
-IF_NotFound:    rts
-
-        ; Tunnel machine script routine
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-tmChoice        = menuCounter
-
-TunnelMachine:  lda #PLOT_BATTERY
-                jsr GetPlotBit
-                beq TM_NoBattery
-                lda #PLOT_FUEL
-                jsr GetPlotBit
-                beq TM_NoFuel
-                lda #$00
-                sta tmTime1
-                sta tmTime2
-                sta tmChoice
-                lda #<EP_TUNNELMACHINERUN
-                ldx #>EP_TUNNELMACHINERUN
-                jsr SetScript
-                ldx #MENU_INTERACTION
-                jsr SetMenuMode
-                lda #<txtReady
-                ldx #>txtReady
-                jsr PrintPanelTextIndefinite
-                jmp TMR_RedrawNoSound
-TM_NoBattery:   lda #<txtNoBattery
-                ldx #>txtNoBattery
-                bne TM_TextCommon
-TM_NoFuel:      lda #1
-                sta shakeScreen
-                lda #SFX_GENERATOR
-                jsr PlaySfx
-                lda #<txtNoFuel
-                ldx #>txtNoFuel
-TM_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
-                jmp PrintPanelText
-
-        ; Tunnel machine decision runloop
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-TunnelMachineRun:
-                inc tmTime1
-                lda tmTime1
-                and #$01
-                sta shakeScreen
-                inc tmTime2
-                lda tmTime2
-                cmp #3
-                bcc TMR_NoSound
-                lda #$00
-                sta tmTime2
-                lda #SFX_GENERATOR
-                jsr PlaySfx
-TMR_NoSound:    lda joystick
-                and #JOY_DOWN
-                bne TMR_Finish
-                lda keyType
-                bpl TMR_Finish
-                jsr GetFireClick
-                bcs TMR_Decision
-                jsr MenuControl
-                ldy tmChoice
-                lsr
-                bcs TMR_MoveLeft
-                lsr
-                bcs TMR_MoveRight
-TMR_NoMove:     rts
-TMR_MoveLeft:   tya
-                beq TMR_NoMove
-                dey
-                sty tmChoice
-TMR_Redraw:     lda #SFX_SELECT
-                jsr PlaySfx
-TMR_RedrawNoSound:
-                ldy #$00
-TMR_RedrawLoop: ldx tmArrowPosTbl,y
-                lda #$20
-                cpy tmChoice
-                bne TMR_NoArrow
-                lda #62
-TMR_NoArrow:    jsr PrintPanelChar
-                iny
-                cpy #2
-                bcc TMR_RedrawLoop
-                rts
-TMR_MoveRight:  tya
-                bne TMR_NoMove
-                iny
-                sty tmChoice
-                bne TMR_Redraw
-TMR_Decision:   lda tmChoice
-                bne TMR_Drive
-TMR_Finish:     jsr StopScript
-                ldx #MENU_NONE
-                jmp SetMenuMode
-TMR_Drive:      jsr AddQuestScore
-                jsr TMR_Finish
-                lda #$00
-                sta tmTime1                     ;TODO: replace with cutscene
-                jsr BlankScreen
-TMR_BreakWallLoop:
-                jsr WaitBottom
-                jsr Random
-                cmp #$40
-                bcs TMR_BreakWallNoSound
-                lda #$00
-                sta PSfx_LastSfx+1
-                lda #SFX_EXPLOSION
-                jsr PlaySfx
-TMR_BreakWallNoSound:
-                inc tmTime1
-                bpl TMR_BreakWallLoop
-                lda #PLOT_WALLBREACHED
-                jsr SetPlotBit
-                lda #$32
-                jmp ULO_EnterDoorDest
-
-        ; Tunnel machine item installation script routines
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-TunnelMachineItems:
-                lda itemIndex
-                cmp #ITEM_TRUCKBATTERY
-                bne TMI_Fuel
-TMI_Battery:    lda #PLOT_BATTERY
-                jsr SetPlotBit
-                lda #<txtBatteryInstalled
-                ldx #>txtBatteryInstalled
-                bne TMI_Common
-TMI_Fuel:       lda #PLOT_FUEL
-                jsr SetPlotBit
-                lda #<txtRefueled
-                ldx #>txtRefueled
-TMI_Common:     jsr TM_TextCommon
-                ldy itemIndex
-                jsr RemoveItem
-                jsr AddQuestScore
-                lda #SFX_POWERUP
-                jmp PlaySfx
-
         ; Radio speech for upper labs elevator
         ;
         ; Parameters: -
@@ -771,6 +566,32 @@ RULE_NoPass:    stx txtRadioPassJump
 RULE_HasAmplifier:
 RULE_AlreadyActive:
                 rts
+
+        ; Player tank controls
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MovePlayerTank: ldy difficulty                  ;Set damage mod according to difficulty
+                lda plrDmgModifyTbl,y
+                sta plrTankDmgModify
+                lda menuMode
+                bne MPT_SkipControls
+                lda joystick
+                tay
+                and #JOY_FIRE|JOY_DOWN
+                cmp #JOY_FIRE|JOY_DOWN
+                tya
+                bcc MPT_FireCtrlOK              ;Do not fire down
+                and #$ff-JOY_FIRE
+MPT_FireCtrlOK: sta actCtrl,x
+                sta actMoveCtrl,x
+MPT_SkipControls:
+                lda #ITEM_MINIGUN
+                sta actWpn,x
+                sta itemIndex
+                jmp MoveTank
 
         ; Elevator tables
 
@@ -825,15 +646,9 @@ recyclerCostTbl:
                 dc.b 40                         ;Battery
                 dc.b 50                         ;Armor
 
-        ; Misc. tables
-
-tmArrowPosTbl:  dc.b 9,14
-
         ; Variables
 
-tmTime1:
 elevatorIndex:  dc.b 0
-tmTime2:
 rechargerColor:
 elevatorTime:   dc.b 0
 elevatorSound:  dc.b 0
@@ -853,13 +668,6 @@ txtEnterCode:   dc.b "ENTER CODE",0
 txtRecycler:    dc.b "PART RECYCLING STATION",0
 txtExit:        dc.b "EXIT",0
 txtCost:        dc.b "COST",0
-txtDisconnected:dc.b "SUBNET ISOLATED",0
-txtNoBattery:   dc.b "BATTERY DEAD",0
-txtNoFuel:      dc.b "NO FUEL",0
-txtBatteryInstalled:
-                dc.b "NEW BATTERY INSTALLED",0
-txtRefueled:    dc.b "REFUELED",0
-txtReady:       dc.b " STOP DRIVE",0
 txtCount:       dc.b " "
 txtDigits:      dc.b "000",0
 txtArrow:       dc.b 62,0

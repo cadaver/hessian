@@ -395,13 +395,15 @@ AH_NoFlicker:   ldx actIndex                    ;If player, decrement ammo (unle
                 if AMMO_CHEAT=0
                 jsr DecreaseAmmoOne
                 endif
+                jsr CheckPlayerHuman            ;No skill bonus when controlling a machine
+                bne AH_NoPlayerBonus
                 lda wpnBits
                 and #WDB_NOSKILLBONUS
                 bne AH_NoPlayerBonus
 AH_PlayerFirearmBonus:
                 ldy #NO_MODIFY
                 cpy #NO_MODIFY
-                beq AH_PlayerBonusCommon
+                beq AH_NoPlayerBonus
                 lda #DRAIN_ASSISTEDAIM          ;Assisted aiming (damage bonus) drains battery
                 jsr DrainBattery
                 jmp AH_PlayerBonusCommon
@@ -412,13 +414,13 @@ AH_PlayerMeleeAttack:
 AH_PlayerMeleeBonus:
                 ldy #NO_MODIFY
                 cpy #NO_MODIFY
-                beq AH_PlayerBonusCommon
+                beq AH_NoPlayerBonus
                 dec actAttackD,x                ;When player has strength upgrade, slightly faster melee attacks
 AH_PlayerBonusCommon:
                 lda temp8
                 jsr ModifyDamage
                 ldy tgtActIndex
-                sta actHp,y                     ;Set bullet damage
+                sta actHp,y                     ;Set modified bullet damage
 AH_NoPlayerBonus:
 AH_NoAmmoDecrement:
                 ldy #WD_SFX

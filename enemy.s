@@ -1121,9 +1121,8 @@ HD_NoDamageSource:
 
 DropItem:       lda #$00
                 sta temp4
-                lda actT,x                      ;Exception: final room large droids drop nothing
-                cmp #ACT_LARGEDROIDFINAL        ;(avoid duplicating actor logic structure)
-                beq DI_NoItem
+                jsr CheckPlayerHuman            ;When controlling a machine, cannot pick up items,
+                bne DI_NoItem                   ;so don't clutter the gameworld
                 jsr Random                      ;Common random number
                 sta temp6
                 ldy #AL_DROPITEMTYPE

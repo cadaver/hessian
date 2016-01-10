@@ -66,13 +66,13 @@ UPG_TOXINFILTER = 128
 
         ; Player control and movement routine
         ;
-        ; Parameters: X actor index, A previous frame controls
+        ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 MovePlayer:     ldy #$00
                 cpy menuMode                    ;When in inventory / dialogue / interaction, no new controls
-                bne MP_Scroll
+                bne MP_SetWeapon
                 ldy actF1+ACTI_PLAYER
                 cpy #FR_DUCK+1
                 bne MP_NoDuckFirePrevent
@@ -104,67 +104,6 @@ MP_ControlMask: and #$ff
                 ora #JOY_DOWN
 MP_NotDucked:   and actMoveCtrl+ACTI_PLAYER
 MP_NewMoveCtrl: sta actMoveCtrl+ACTI_PLAYER
-MP_Scroll:      ldy #ZONEH_BG3
-                lda (zoneLo),y
-                bmi MP_SetWeapon                ;Scroll-disabled zone?
-MP_ScrollHorizontal:
-                ldy #$00
-                lda actXL+ACTI_PLAYER
-                rol
-                rol
-                rol
-                and #$03
-                sec
-                sbc SL_CSSBlockX+1
-                and #$03
-                sta zpSrcLo
-                lda actXH+ACTI_PLAYER
-                sbc SL_CSSMapX+1
-                asl
-                asl
-                ora zpSrcLo
-                cmp #SCRCENTER_X-1
-                bcs MP_NotLeft1
-                dey
-MP_NotLeft1:    cmp #SCRCENTER_X
-                bcs MP_NotLeft2
-                dey
-MP_NotLeft2:    cmp #SCRCENTER_X+1
-                bcc MP_NotRight1
-                iny
-MP_NotRight1:   cmp #SCRCENTER_X+2
-                bcc MP_NotRight2
-                iny
-MP_NotRight2:   sty scrollSX
-MP_ScrollVertical:
-                ldy #$00
-                lda actYL+ACTI_PLAYER
-                rol
-                rol
-                rol
-                and #$03
-                sec
-                sbc SL_CSSBlockY+1
-                and #$03
-                sta zpSrcLo
-                lda actYH+ACTI_PLAYER
-                sbc SL_CSSMapY+1
-                asl
-                asl
-                ora zpSrcLo
-                cmp #SCRCENTER_Y-2
-                bcs MP_NotUp1
-                dey
-MP_NotUp1:      cmp #SCRCENTER_Y
-                bcs MP_NotUp2
-                dey
-MP_NotUp2:      cmp #SCRCENTER_Y+1
-                bcc MP_NotDown1
-                iny
-MP_NotDown1:    cmp #SCRCENTER_Y+3
-                bcc MP_NotDown2
-                iny
-MP_NotDown2:    sty scrollSY
 MP_SetWeapon:   ldy itemIndex
                 cpy #ITEM_FIRST_NONWEAPON
                 bcc MP_WeaponOK
@@ -463,6 +402,8 @@ MH_NoAutoTurn:  lda actCtrl,x                   ;When holding fire can not initi
                 bne MH_NoOperate
                 ldy lvlObjNum
                 bmi MH_NoOperate
+                jsr CheckPlayerHuman
+                bne MH_NoOperate
                 jsr OperateObject
                 bcc MH_NoNewJump
                 rts                             ;If operated successfully, do nothing else
@@ -931,6 +872,8 @@ DrainBatteryRound:
                 lda #$00
                 endif
                 sta DB_Amount+1
+                jsr CheckPlayerHuman
+                bne DB_Skip
                 lda battery
                 sec
 DB_Amount:      sbc #$00
@@ -940,7 +883,7 @@ DB_Amount:      sbc #$00
                 lda #$00
                 sta battery+1
 DB_Done:        sta battery
-                rts
+DB_Skip:        rts
 
         ; Add (sub)quest completion score (5000 points)
         ;
@@ -1090,4 +1033,15 @@ AU_NoHealing:   sta ULO_HealingRate+1
                 lda #$4a                        ;LSR
 AU_NoDrainReduce:
                 sta DrainBattery
+                rts
+
+        ; Check if player is controlling a human character
+        ;
+        ; Parameters: -
+        ; Returns: Z=0 is human
+        ; Modifies: A
+        
+CheckPlayerHuman:
+                lda actT+ACTI_PLAYER
+                cmp #ACT_PLAYER
                 rts
