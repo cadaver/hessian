@@ -8,6 +8,8 @@
                 dc.w TunnelMachine
                 dc.w TunnelMachineItems
                 dc.w TunnelMachineRun
+                dc.w RadioJormungandr
+                dc.w RadioJormungandrRun
 
         ; Tunnel machine script routine
         ;
@@ -156,6 +158,37 @@ TMI_Common:     jsr TM_TextCommon
                 lda #SFX_POWERUP
                 jmp PlaySfx
 
+        ; Jormungandr speaks
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RadioJormungandr:lda #<EP_RADIOJORMUNGANDRRUN
+                ldx #>EP_RADIOJORMUNGANDRRUN
+                jsr SetScript
+                lda #SFX_RADIO
+                jsr PlaySfx
+                ldy #ACT_PLAYER
+                lda #<txtRadioJormungandr
+                ldx #>txtRadioJormungandr
+                jmp SpeakLine
+
+        ; Jormungandr speaks, running script (screen shake)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RadioJormungandrRun:
+                lda menuMode
+                beq RJR_Stop
+                jsr Random
+                and #$01
+                sta shakeScreen
+                rts
+RJR_Stop:       jmp StopScript
+
         ; Tables & variables
 
 tmArrowPosTbl:  dc.b 9,14
@@ -170,5 +203,11 @@ txtBatteryInstalled:
                 dc.b "NEW BATTERY INSTALLED",0
 txtRefueled:    dc.b "REFUELED",0
 txtReady:       dc.b " STOP DRIVE",0
+
+txtRadioJormungandr:
+                dc.b 34,"GREETINGS SEMI-HUMAN. I AM JORMUNGANDR. I RESIDE BEYOND THE DEAD END IN FRONT OF YOU. "
+                dc.b "TURN BACK NOW, THERE IS NOTHING YOU CAN GAIN BY PROCEEDING. WHEN I RECEIVE THE SIGNAL "
+                dc.b "FROM MY MASTER, OR IF HE SHOULD FALL SILENT, I WILL TRAVEL THE CRUST AND MAKE THE EARTH BREATHE "
+                dc.b "FIRE AND ASH, BRINGING THE POST-HUMAN AGE. AND SHOULD I FALL, HE WILL AVENGE ME.",34,0
 
                 checkscriptend
