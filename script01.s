@@ -639,14 +639,6 @@ EscortScientistsRefresh:
                 ldx #>EP_ESCORTSCIENTISTSZONE   ;warping to player
                 jsr SetZoneScript
                 ldx actIndex
-                lda actF1+ACTI_PLAYER           ;If player is climbing, explicitly stop
-                cmp #FR_CLIMB+4                 ;(will look stupid otherwise)
-                bcs ESR_NotClimbing
-                cmp #FR_CLIMB
-                bcc ESR_NotClimbing
-                lda #AIMODE_TURNTO
-                skip2
-ESR_NotClimbing:
                 lda #AIMODE_FOLLOW
                 sta actAIMode,x
                 lda actT,x
@@ -690,7 +682,12 @@ EscortScientistsZone:
                 cmp #$06
                 beq ESZ_LevelOk
                 cmp #$08
-                beq ESZ_LevelOk
+                bne ESZ_LevelFail
+                lda actXH+ACTI_PLAYER
+                cmp #$1e                        ;Check X range in lower labs, don't allow going to the left side (wrong directio)
+                bcc ESZ_LevelFail               ;or far right (contains acid and nether tunnels entry)
+                cmp #$5a
+                bcc ESZ_LevelOk
 ESZ_LevelFail:  jmp StopZoneScript              ;Ventured outside valid levels for following, stop
 ESZ_LevelOk:    lda #ACT_SCIENTIST2
                 jsr TransportNPCToPlayer
@@ -821,7 +818,7 @@ txtNoServicePass:
                 dc.b " SEARCH THE ENTRANCE OFFICES FOR THE SERVICE PASS."
 txtHasServicePass:
                 dc.b 34,0
-txtEscortBegin: dc.b 34,"THE PLAN IS THIS: YOU NEED LUNG FILTERS TO SURVIVE THE NETHER TUNNEL. THE SURGERY ROOM IS ON THE LOWER LABS "
+txtEscortBegin: dc.b 34,"THERE YOU ARE. THE PLAN IS THIS: YOU NEED LUNG FILTERS TO SURVIVE THE NETHER TUNNEL. THE OPERATING ROOM IS ON THE LOWER LABS "
                 dc.b "RIGHT SIDE, AT THE VERY BOTTOM. LEAD THE WAY.",34,0
 txtEscortFinish:dc.b 34,"WE'D NEVER HAVE MADE IT ALONE. NOW WE NEED TO SET UP. WE'LL CALL YOU WHEN IT'S TIME.",34,0
 
