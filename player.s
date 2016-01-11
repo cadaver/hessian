@@ -402,8 +402,6 @@ MH_NoAutoTurn:  lda actCtrl,x                   ;When holding fire can not initi
                 bne MH_NoOperate
                 ldy lvlObjNum
                 bmi MH_NoOperate
-                jsr CheckPlayerHuman
-                bne MH_NoOperate
                 jsr OperateObject
                 bcc MH_NoNewJump
                 rts                             ;If operated successfully, do nothing else
@@ -872,8 +870,6 @@ DrainBatteryRound:
                 lda #$00
                 endif
                 sta DB_Amount+1
-                jsr CheckPlayerHuman
-                bne DB_Skip
                 lda battery
                 sec
 DB_Amount:      sbc #$00
@@ -1033,15 +1029,4 @@ AU_NoHealing:   sta ULO_HealingRate+1
                 lda #$4a                        ;LSR
 AU_NoDrainReduce:
                 sta DrainBattery
-                rts
-
-        ; Check if player is controlling a human character
-        ;
-        ; Parameters: -
-        ; Returns: Z=0 is human
-        ; Modifies: A
-        
-CheckPlayerHuman:
-                lda actT+ACTI_PLAYER
-                cmp #ACT_PLAYER
                 rts

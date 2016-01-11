@@ -25,7 +25,6 @@ recyclerItemList = screen2
                 dc.w ElevatorLoop
                 dc.w RadioUpperLabsElevator
                 dc.w RecyclingStation
-                dc.w MovePlayerTank
                 dc.w EscortScientistsStart
                 dc.w EscortScientistsRefresh
                 dc.w EscortScientistsZone
@@ -600,32 +599,6 @@ RULE_NoPass:    stx txtRadioPassJump
                 jmp SpeakLine
 RULE_Wait:      rts
 
-        ; Player tank controls
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MovePlayerTank: ldy difficulty                  ;Set damage mod according to difficulty
-                lda plrDmgModifyTbl,y
-                sta plrTankDmgModify
-                lda menuMode
-                bne MPT_SkipControls
-                lda joystick
-                tay
-                and #JOY_FIRE|JOY_DOWN
-                cmp #JOY_FIRE|JOY_DOWN
-                tya
-                bcc MPT_FireCtrlOK              ;Do not fire down
-                and #$ff-JOY_FIRE
-MPT_FireCtrlOK: sta actCtrl,x
-                sta actMoveCtrl,x
-MPT_SkipControls:
-                lda #ITEM_MINIGUN
-                sta actWpn,x
-                sta itemIndex
-                jmp MoveTank
-
         ; Start escort scientists sequence
         ;
         ; Parameters: -
@@ -848,7 +821,7 @@ txtNoServicePass:
                 dc.b " SEARCH THE ENTRANCE OFFICES FOR THE SERVICE PASS."
 txtHasServicePass:
                 dc.b 34,0
-txtEscortBegin: dc.b 34,"THE PLAN IS THIS: YOU NEED LUNG FILTERS TO SURVIVE BELOW. THE SURGERY ROOM IS ON THE LOWER LABS "
+txtEscortBegin: dc.b 34,"THE PLAN IS THIS: YOU NEED LUNG FILTERS TO SURVIVE THE NETHER TUNNEL. THE SURGERY ROOM IS ON THE LOWER LABS "
                 dc.b "RIGHT SIDE, AT THE VERY BOTTOM. LEAD THE WAY.",34,0
 txtEscortFinish:dc.b 34,"WE'D NEVER HAVE MADE IT ALONE. NOW WE NEED TO SET UP. WE'LL CALL YOU WHEN IT'S TIME.",34,0
 

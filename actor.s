@@ -1622,8 +1622,6 @@ DamageActor:    sta temp7
                 bpl DA_SkipModify
 DA_UseModify:   txa
                 bne DA_NoPlayerArmor
-                jsr CheckPlayerHuman            ;When controlling a machine, skip armor
-                bne DA_NoPlayerArmor
                 ldy #ITEM_ARMOR
                 lda invCount-1,y                ;Check player armor
                 bmi DA_NoPlayerArmor

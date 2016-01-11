@@ -839,10 +839,7 @@ ULO_AutoDeactOK:lda #$ff
                 sta autoDeactObjNum
                 jsr InactivateObject
 
-ULO_NoAutoDeact:jsr CheckPlayerHuman            ;When player is controlling a machine, skip most of this
-                beq ULO_IsHuman                 ;(health recharge, displaying item name, toxin damage..)
-                jmp ULO_CheckObject
-ULO_IsHuman:    ldx #ACTI_PLAYER
+ULO_NoAutoDeact:ldx #ACTI_PLAYER
                 lda actHp+ACTI_PLAYER           ;Heal if not dead and not yet at full health
                 beq ULO_OxygenDone
                 cmp #HP_PLAYER

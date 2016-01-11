@@ -10,7 +10,7 @@ CHUNK_DURATION = 40
                 dc.w DisconnectSubnet
                 dc.w ServerRoomComputer
                 dc.w MoveScientists
-                dc.w HijackPlan
+                dc.w RadioConstruct
 
         ; Subnet router script
         ;
@@ -44,8 +44,6 @@ DS_NotBoth:     rts
         ; Modifies: various
 
 ServerRoomComputer:
-                ;lda #PLOT_ELEVATOR1
-                ;jsr SetPlotBit
                 jsr SetupTextScreen
                 lda #0
                 sta temp1
@@ -127,12 +125,10 @@ MoveScientists: jsr StopScript
                 lda #ACT_SCIENTIST2             ;Then move the persistent NPCs
                 jsr FindLevelActor
                 lda #$37
-                ;lda #$2f
                 jsr MoveScientistSub
                 lda #ACT_SCIENTIST3
                 jsr FindLevelActor
                 lda #$36
-                ;lda #$2e
                 jsr MoveScientistSub
                 lda #<EP_ESCORTSCIENTISTSSTART
                 sta actScriptEP
@@ -148,29 +144,27 @@ MoveScientists: jsr StopScript
 MoveScientistSub:
                 sta lvlActX,y
                 lda #$13
-                ;lda #$55
                 sta lvlActY,y
                 lda #$20+AIMODE_TURNTO
                 sta lvlActF,y
                 lda #$06+ORG_GLOBAL
-                ;lda #$08+ORG_GLOBAL
                 sta lvlActOrg,y
                 rts
 
-        ; Jeff's hijack plan script
+        ; Radio briefing on Construct
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-HijackPlan:     lda #PLOT_MOVESCIENTISTS
+RadioConstruct: lda #PLOT_MOVESCIENTISTS
                 jsr GetPlotBit
                 beq HP_TryAgain
                 lda #SFX_RADIO
                 jsr PlaySfx
                 ldy #ACT_PLAYER
-                lda #<txtRadioHijackPlan
-                ldx #>txtRadioHijackPlan
+                lda #<txtRadioConstruct
+                ldx #>txtRadioConstruct
                 jmp SpeakLine
 HP_TryAgain:    ldy lvlObjNum
                 jmp InactivateObject
@@ -275,9 +269,8 @@ txtRadioMoveScientists:
                 dc.b "AND NEED TO REACH THE LOWER LABS NOW. BUT GOING ON OUR OWN IS LIKELY TO "
                 dc.b "GET US KILLED. WE MANAGED TO SAFELY REACH THE UPPER LABS RECYCLING STATION, MEET US THERE.",34,0
 
-txtRadioHijackPlan:
-                dc.b 34,"IT'S JEFF. I HAVE ANOTHER SUGGESTION. GET INSIDE THE ARMORY IN THE LOWER LABS "
-                dc.b "SECURITY CENTER, AND I CAN HELP YOU HIJACK A ROBOT TANK. THAT GIVES YOU MORE FIREPOWER "
-                dc.b "AND A DISTRACTION ON YOUR SIDE FOR ESCORTING THE SCIENTISTS.",34,0
+txtRadioConstruct:
+                dc.b 34,"IT'S JEFF. I'VE BEEN DECRYPTING MORE OF THE MACHINES' TRAFFIC. NOW I GET IT. 'CONSTRUCT' IS THE NAME FOR THE CENTRAL AI. "
+                dc.b "IT ORDERED THE CONSTRUCTION OF 'JORMUNGANDR.' IF THEY FOLLOW MYTHOLOGY, THEN THAT SHOULD BE A HUGE MECHANICAL SERPENT. FUN, RIGHT?",34,0
 
                 checkscriptend

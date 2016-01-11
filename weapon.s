@@ -395,8 +395,6 @@ AH_NoFlicker:   ldx actIndex                    ;If player, decrement ammo (unle
                 if AMMO_CHEAT=0
                 jsr DecreaseAmmoOne
                 endif
-                jsr CheckPlayerHuman            ;No skill bonus when controlling a machine
-                bne AH_NoPlayerBonus
                 lda wpnBits
                 and #WDB_NOSKILLBONUS
                 bne AH_NoPlayerBonus

@@ -77,13 +77,6 @@ DHB_Sub:        sta panelScreen+PANELROW*40,y
                 iny
                 rts
 
-UP_DrawTankHealth:
-                lda actHp+ACTI_PLAYER
-                lsr
-                lsr
-                jsr DrawHealthBar
-                jmp UP_SkipHealth
-
         ; Finish frame. Update frame and score panel
         ;
         ; Parameters: -
@@ -117,11 +110,6 @@ UP_SkipTime:    pla
                 ora displayedItemName
                 bne UP_SkipHealth
                 tax
-                lda actT+ACTI_PLAYER
-                beq UP_DrawHumanHealth
-                cmp #ACT_PLAYER
-                bne UP_DrawTankHealth
-UP_DrawHumanHealth:
                 lda actHp+ACTI_PLAYER
                 lsr
                 jsr DrawHealthBar
@@ -476,8 +464,6 @@ UM_NoFire:      iny
                 beq SetMenuMode
 UM_StoreCounter:sty menuCounter
 UM_NoCounter:   ldy itemIndex
-                jsr CheckPlayerHuman
-                bne UM_ControlDone
                 lda keyType
                 cmp #KEY_COMMA
                 beq UM_MoveLeft
@@ -520,8 +506,6 @@ UM_StoreCounter2:
 UM_NoCounter2:
 UM_ForceRefresh:lda #$00                        ;Check for forced refresh (when inventory
                 bne RedrawMenu                  ;modified while open)
-                jsr CheckPlayerHuman
-                bne UM_MoveDone
                 jsr MenuControl                 ;Check for selecting items
                 lsr
                 bcs UM_MoveLeft

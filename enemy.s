@@ -1121,8 +1121,6 @@ HD_NoDamageSource:
 
 DropItem:       lda #$00
                 sta temp4
-                jsr CheckPlayerHuman            ;When controlling a machine, cannot pick up items,
-                bne DI_NoItem                   ;so don't clutter the gameworld
                 jsr Random                      ;Common random number
                 sta temp6
                 ldy #AL_DROPITEMTYPE
