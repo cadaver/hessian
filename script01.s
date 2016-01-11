@@ -248,14 +248,11 @@ ECL_Next:       jsr ECL_Sound
                 cpx #3
                 bcc ECL_Done
                 ldx #MAX_CODES-1
-ECL_Verify:     lda levelNum
-                cmp codeLevel,x
-                bne ECL_VerifyNext
-                lda lvlObjNum
-                cmp codeObject,x
-                beq ECL_VerifyFound
-ECL_VerifyNext: dex
-                bpl ECL_Verify
+ECL_Verify:     lda lvlObjNum
+                cmp codeObject,x                ;All object numbers for code doors are unique, don't
+                beq ECL_VerifyFound             ;need to check level
+                dex
+                bpl ECL_Verify                  ;This should never exit the loop
 ECL_VerifyFound:txa
                 sta temp1
                 asl
@@ -661,7 +658,7 @@ ESR_FollowPlayer:
                 beq ESR_HasGoal
 ESR_NoGoal:     lda #ACTI_PLAYER
                 beq ESR_StoreTarget
-ESR_HasGoal:    jsr StopZoneScript              ;Todo: set a zone script which setups NPCs for next scene
+ESR_HasGoal:    jsr StopZoneScript              ;Todo: set a zone script which setups NPCs for next scene once player leaves
                 lda #<EP_ESCORTSCIENTISTSFINISH
                 sta actScriptEP
                 sta actScriptEP+1
@@ -692,7 +689,19 @@ ESZ_LevelFail:  jmp StopZoneScript              ;Ventured outside valid levels f
 ESZ_LevelOk:    lda #ACT_SCIENTIST2
                 jsr TransportNPCToPlayer
                 lda #ACT_SCIENTIST3
-ESZ_ActorSub:   jmp TransportNPCToPlayer
+TransportNPCToPlayer:
+                jsr FindLevelActor
+                bcc TNPC_NoActor
+                lda actXH+ACTI_PLAYER
+                sta lvlActX,y
+                lda actYH+ACTI_PLAYER
+                sta lvlActY,y
+                lda #$20+AIMODE_FOLLOW
+                sta lvlActF,y
+                lda levelNum
+                ora #ORG_GLOBAL
+                sta lvlActOrg,y
+TNPC_NoActor:   rts
 
         ; Escort scientists sequence finish
         ;
@@ -742,8 +751,7 @@ elevatorAcc:    dc.b 2,-2,-2,2
 
         ; Code entry tables
 
-codeLevel:      dc.b $05,$06,$06,$08,$08,$08,$0c,$08
-codeObject:     dc.b $12,$29,$27,$16,$27,$22,$08,$31
+codeObject:     dc.b $12,$29,$27,$16,$26,$22,$08,$31
 
         ; Recycler tables
 
