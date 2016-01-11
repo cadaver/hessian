@@ -19,6 +19,7 @@ EP_MOVEPLAYERTANK = $0109
 EP_ESCORTSCIENTISTSSTART = $010a
 EP_ESCORTSCIENTISTSREFRESH = $010b
 EP_ESCORTSCIENTISTSZONE = $010c
+EP_ESCORTSCIENTISTSFINISH = $010d
 
 EP_GAMESTART    = $0200
 EP_SCIENTIST1   = $0201
@@ -73,6 +74,7 @@ PLOT_FUEL       = $06                       ;Tunnel machine refueled
 PLOT_WALLBREACHED = $07                     ;Tunnel machine has been used
 PLOT_MOVESCIENTISTS = $08                   ;Scientists moved to wait in upper labs
 PLOT_ELEVATORMSG = $09                      ;Player attempted lower lab elevator entry
+PLOT_ESCORTCOMPLETE = $0a                   ;Scientists got to the operating room
 
 SPEECHBUBBLEOFFSET = -40*8
 

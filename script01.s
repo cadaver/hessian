@@ -7,6 +7,10 @@ MAX_RECYCLER_ITEMS = 10
 RECYCLER_MOVEDELAY = 8
 
 rechargerColor  = menuCounter
+elevatorSound   = toxinDelay
+txtDigits       = actLo
+txtCount        = txtDigits-1
+recyclerItemList = screen2
 
         ; Script 1: common objects
 
@@ -25,6 +29,7 @@ rechargerColor  = menuCounter
                 dc.w EscortScientistsStart
                 dc.w EscortScientistsRefresh
                 dc.w EscortScientistsZone
+                dc.w EscortScientistsFinish
 
         ; Health recharger script routine
         ;
@@ -124,6 +129,7 @@ E_NoRadioMsg:   lda #<txtElevatorLocked
 E_HasAccess:    stx elevatorIndex
                 lda #$00
                 sta elevatorTime
+                sta elevatorSound
                 lda #<EP_ELEVATORLOOP
                 ldx #>EP_ELEVATORLOOP
                 jsr SetScript
@@ -142,7 +148,6 @@ ElevatorLoop:   ldx elevatorIndex
                 lda elevatorTime
                 bne EL_NotFirstFrame
                 sta charInfo-1                  ;Reset elevator speed
-                sta elevatorSound
 EL_NotFirstFrame:
                 inc elevatorSound
                 lda elevatorSound
@@ -285,6 +290,7 @@ RecyclingStation:
                 sty originalItem
                 ldy #RECYCLER_ITEM_FIRST
                 ldx #$00
+                stx txtDigits+3
 RS_FindItems:   cpy #ITEM_FIRST_CONSUMABLE
                 bcs RS_ItemOK
                 jsr FindItem                    ;For weapons, check that is currently held in inventory
@@ -682,8 +688,20 @@ ESR_StoreTarget:sta actAITarget,x
 ESR_InDialogue:
 ESR_NoActor:    rts
 ESR_FollowPlayer:
-                lda #ACTI_PLAYER
+                lda actYH,x                     ;Check for reaching the operation room
+                cmp #$56
+                bne ESR_NoGoal
+                lda actXH,x
+                cmp #$4f
+                beq ESR_HasGoal
+ESR_NoGoal:     lda #ACTI_PLAYER
                 beq ESR_StoreTarget
+ESR_HasGoal:    jsr StopZoneScript              ;Todo: set a zone script which setups NPCs for next scene
+                lda #<EP_ESCORTSCIENTISTSFINISH
+                sta actScriptEP
+                sta actScriptEP+1
+                lda #PLOT_ESCORTCOMPLETE
+                jmp SetPlotBit
 
         ; Escort scientists zone change (warp to player)
         ;
@@ -702,20 +720,42 @@ EscortScientistsZone:
                 beq ESZ_LevelOk
 ESZ_LevelFail:  jmp StopZoneScript              ;Ventured outside valid levels for following, stop
 ESZ_LevelOk:    lda #ACT_SCIENTIST2
-                jsr ESZ_ActorSub
+                jsr TransportNPCToPlayer
                 lda #ACT_SCIENTIST3
-ESZ_ActorSub:   jsr FindLevelActor
-                bcc ESZ_NoActor
-                lda actXH+ACTI_PLAYER
-                sta lvlActX,y
-                lda actYH+ACTI_PLAYER
-                sta lvlActY,y
-                lda #$20+AIMODE_FOLLOW
-                sta lvlActF,y
-                lda levelNum
-                ora #ORG_GLOBAL
-                sta lvlActOrg,y
-ESZ_NoActor:    rts
+ESZ_ActorSub:   jmp TransportNPCToPlayer
+
+        ; Escort scientists sequence finish
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+EscortScientistsFinish:
+                ldx actIndex
+                ldy actT,x
+                lda npcBrakeTbl-ACT_FIRSTPERSISTENTNPC,y
+                jsr BrakeActorX  ;Move at slightly different speed to not look stupid
+                lda actXH,x
+                cmp npcStopPos-ACT_FIRSTPERSISTENTNPC,y
+                bcc ESF_Stop
+                lda #JOY_LEFT
+                sta actMoveCtrl,x
+                lda #AIMODE_IDLE
+                beq ESF_StoreMode
+ESF_Stop:       cpy #ACT_SCIENTIST3
+                bne ESF_NoDialogue
+                lda actSX,x
+                bne ESF_NoDialogue
+                lda #$00                        ;Stop actor script exec for now
+                sta actScriptF
+                sta actScriptF+1
+                ldy #ACT_SCIENTIST2
+                lda #<txtEscortFinish
+                ldx #>txtEscortFinish
+                jmp SpeakLine
+ESF_NoDialogue: lda #AIMODE_TURNTO
+ESF_StoreMode:  sta actAIMode,x
+                rts
 
         ; Elevator tables
 
@@ -775,14 +815,13 @@ recyclerCostTbl:
                 dc.b 40                         ;Battery
                 dc.b 50                         ;Armor
 
+npcStopPos:     dc.b $4e,$4d
+npcBrakeTbl:    dc.b 4,0
+
         ; Variables
 
 elevatorIndex:  dc.b 0
 elevatorTime:   dc.b 0
-elevatorSound:  dc.b 0
-
-recyclerItemList:
-                ds.b MAX_RECYCLER_ITEMS+1,0
 
         ; Messages
 
@@ -796,8 +835,6 @@ txtEnterCode:   dc.b "ENTER CODE",0
 txtRecycler:    dc.b "PART RECYCLING STATION",0
 txtExit:        dc.b "EXIT",0
 txtCost:        dc.b "COST",0
-txtCount:       dc.b " "
-txtDigits:      dc.b "000",0
 txtArrow:       dc.b 62,0
 
 txtRadioUpperLabsElevator:
@@ -808,10 +845,11 @@ txtRadioUpperLabsElevator:
 txtRadioPassJump:
                 textjump txtNoServicePass
 txtNoServicePass:
-                dc.b " SEARCH THE ENTRANCE OFFICES FOR THE SERVICE PASSCARD."
+                dc.b " SEARCH THE ENTRANCE OFFICES FOR THE SERVICE PASS."
 txtHasServicePass:
                 dc.b 34,0
-txtEscortBegin: dc.b 34,"THE PLAN IS THIS: YOU NEED A LUNG FILTER TO SURVIVE THE NETHER TUNNEL. THE OPERATING ROOM IS ON THE LOWER LABS "
+txtEscortBegin: dc.b 34,"THE PLAN IS THIS: YOU NEED LUNG FILTERS TO SURVIVE BELOW. THE SURGERY ROOM IS ON THE LOWER LABS "
                 dc.b "RIGHT SIDE, AT THE VERY BOTTOM. LEAD THE WAY.",34,0
+txtEscortFinish:dc.b 34,"WE'D NEVER HAVE MADE IT ALONE. NOW WE NEED TO SET UP. WE'LL CALL YOU WHEN IT'S TIME.",34,0
 
                 checkscriptend

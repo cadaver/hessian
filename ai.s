@@ -140,7 +140,7 @@ AI_FollowNoStairExit:
                 lda temp8                       ;Turn to target if at same level
                 bne AI_FollowWalk
                 lda temp6                       ;Special case: don't turn when target is on stairs and X & Y dist
-                bne AI_FollowTurnToTarget       ;both zero
+                bne AI_FollowTurnToTarget       ;both zero, unless also on stairs
                 lda temp1
                 bmi AI_FollowWalk
 AI_FollowTurnToTarget:
@@ -155,7 +155,8 @@ AI_FollowChangeDir:
 AI_FollowWalk:  lsr actLastNavLadder,x
                 lda temp6                       ;If no X & Y distance, idle
                 ora temp8
-                beq AI_Idle
+                bne AI_NoIdle
+                jmp AI_Idle
 AI_NoIdle:      lda actGroundCharInfo,x         ;Check climbing down
                 and #CI_CLIMB
                 beq AI_FollowNoClimbDown
@@ -187,9 +188,14 @@ AI_FollowNoWalkUp:
                 jmp AI_StoreMoveCtrl
 
 AI_FollowOnStairs:
-                ldy temp1                       ;Turning OK if target also on stairs
-                bmi AI_FollowStairTurnOK
-                ldy actLastNavStairs,x          ;Turn once in each flight of stairs
+                ldy temp1                       ;Turning OK if target also on stairs & X/Y dist zero
+                bpl AI_FollowStairTurnOnce
+                ldy temp6
+                bne AI_FollowStairTurnOnce
+                ldy temp8
+                beq AI_FollowStairTurnOK
+AI_FollowStairTurnOnce:
+                ldy actLastNavStairs,x          ;Otherwise turn once in each flight of stairs
                 bmi AI_FollowWalk
                 sta actLastNavStairs,x
                 lda temp7
@@ -206,10 +212,10 @@ AI_StairsDownLeft:
                 bpl AI_StairsTurnLeft
 AI_StairsTurnRight:
                 lda #$00
-                beq AI_FollowChangeDir
+                jmp AI_FollowChangeDir
 AI_StairsTurnLeft:
                 lda #$80
-                bne AI_FollowChangeDir
+                jmp AI_FollowChangeDir
 AI_StairsDownRight:
                 lda temp7
                 bpl AI_StairsTurnRight

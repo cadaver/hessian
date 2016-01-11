@@ -2228,3 +2228,23 @@ GLAI_Loop2:     lda lvlActOrg,y                 ;Second loop: overwrite any temp
                 bne GLAI_Loop2
 GLAI_Found:     sty levelActorIndex             ;Store pos for next search
                 rts
+
+        ; Transport NPC to player at zone transition
+        ;
+        ; Parameters: A actor type
+        ; Returns: .
+        ; Modifies: A,X,Y
+
+TransportNPCToPlayer:
+                jsr FindLevelActor
+                bcc TNPC_NoActor
+                lda actXH+ACTI_PLAYER
+                sta lvlActX,y
+                lda actYH+ACTI_PLAYER
+                sta lvlActY,y
+                lda #$20+AIMODE_FOLLOW
+                sta lvlActF,y
+                lda levelNum
+                ora #ORG_GLOBAL
+                sta lvlActOrg,y
+TNPC_NoActor:   rts
