@@ -658,7 +658,9 @@ ESR_FollowPlayer:
                 beq ESR_HasGoal
 ESR_NoGoal:     lda #ACTI_PLAYER
                 beq ESR_StoreTarget
-ESR_HasGoal:    jsr StopZoneScript              ;Todo: set a zone script which setups NPCs for next scene once player leaves
+ESR_HasGoal:    lda #<EP_FINDFILTER
+                ldx #>EP_FINDFILTER
+                jsr SetZoneScript
                 lda #<EP_ESCORTSCIENTISTSFINISH
                 sta actScriptEP
                 sta actScriptEP+1
@@ -728,6 +730,7 @@ ESF_Stop:       cpy #ACT_SCIENTIST3
                 lda #$00                        ;Stop actor script exec for now
                 sta actScriptF
                 sta actScriptF+1
+                jsr AddQuestScore
                 ldy #ACT_SCIENTIST2
                 lda #<txtEscortFinish
                 ldx #>txtEscortFinish
@@ -826,7 +829,7 @@ txtNoServicePass:
                 dc.b " SEARCH THE ENTRANCE OFFICES FOR THE SERVICE PASS."
 txtHasServicePass:
                 dc.b 34,0
-txtEscortBegin: dc.b 34,"THERE YOU ARE. THE PLAN IS THIS: YOU NEED LUNG FILTERS TO SURVIVE THE NETHER TUNNEL. THE OPERATING ROOM IS ON THE LOWER LABS "
+txtEscortBegin: dc.b 34,"THERE YOU ARE. THE PLAN IS THIS: YOU'LL NEED A LUNG FILTER TO SURVIVE THE NETHER TUNNEL. THE OPERATING ROOM IS ON THE LOWER LABS "
                 dc.b "RIGHT SIDE, AT THE VERY BOTTOM. LEAD THE WAY.",34,0
 txtEscortFinish:dc.b 34,"WE'D NEVER HAVE MADE IT ALONE. NOW WE NEED TO SET UP. WE'LL CALL YOU WHEN IT'S TIME.",34,0
 

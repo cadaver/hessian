@@ -11,6 +11,9 @@ CHUNK_DURATION = 40
                 dc.w ServerRoomComputer
                 dc.w MoveScientists
                 dc.w RadioConstruct
+                dc.w FindFilter
+                dc.w BeginSurgery
+                dc.w BeginSurgery2
 
         ; Subnet router script
         ;
@@ -44,6 +47,7 @@ DS_NotBoth:     rts
         ; Modifies: various
 
 ServerRoomComputer:
+                ;jmp FindFilter
                 jsr SetupTextScreen
                 lda #0
                 sta temp1
@@ -169,6 +173,78 @@ RadioConstruct: lda #PLOT_MOVESCIENTISTS
 HP_TryAgain:    ldy lvlObjNum
                 jmp InactivateObject
 
+        ; Find filter script. Also move scientists to final positions before surgery
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+FindFilter:     jsr StopZoneScript
+                lda #ACT_SCIENTIST3
+                jsr FindLevelActor
+                lda #$3f
+                ldx #$30+AIMODE_TURNTO
+                jsr MoveScientistSub2
+                lda #ACT_SCIENTIST2
+                jsr FindLevelActor
+                lda #$42
+                ldx #$00+AIMODE_TURNTO
+                jsr MoveScientistSub2
+                lda #<EP_BEGINSURGERY
+                sta actScriptEP
+                lda #>EP_BEGINSURGERY
+                sta actScriptF
+                lda #SFX_RADIO
+                jsr PlaySfx
+                ldy #ACT_PLAYER
+                lda #<txtRadioFindFilter
+                ldx #>txtRadioFindFilter
+                jmp SpeakLine
+MoveScientistSub2:
+                sta lvlActX,y                   ;Set also Y & level so that this can be used as shortcut in testing
+                lda #$56
+                sta lvlActY,y
+                txa
+                sta lvlActF,y
+                lda #$08+ORG_GLOBAL
+                sta lvlActOrg,y
+BS_NoFilter:    rts
+
+        ; Begin surgery script.
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+BeginSurgery:   ldy #ITEM_LUNGFILTER
+                jsr FindItem
+                bcc BS_NoFilter
+                lda actXH+ACTI_PLAYER
+                cmp #$44
+                bcs BS_NoFilter
+                jsr AddQuestScore
+                lda #<EP_BEGINSURGERY2
+                sta actScriptEP
+                ldy #ACT_SCIENTIST2
+                lda #<txtBeginSurgery
+                ldx #>txtBeginSurgery
+                jmp SpeakLine
+
+        ; Begin surgery script, part 2
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+BeginSurgery2:  lda actXH+ACTI_PLAYER
+                cmp #$40
+                bne BS2_NotYet
+                lda actMB+ACTI_PLAYER
+                lsr
+                bcc BS2_NotYet
+                inc $d020
+BS2_NotYet:     rts
+
         ; Setup text screen
 
 SetupTextScreen:jsr BlankScreen
@@ -265,12 +341,17 @@ txtProtocolOff: dc.b "SECURITY PROTOCOL OFF",0
 txtNA:          dc.b "N/A",0
 
 txtRadioMoveScientists:
-                dc.b 34,"AMOS HERE. SUPERB JOB FIXING THE ELEVATOR. WE'VE FIGURED OUT THE NEXT STEP "
+                dc.b 34,"AMOS HERE. GREAT JOB FIXING THE ELEVATOR. WE'VE FIGURED OUT THE NEXT STEP "
                 dc.b "AND NEED TO REACH THE LOWER LABS NOW. BUT GOING ON OUR OWN IS LIKELY TO "
                 dc.b "GET US KILLED. WE MANAGED TO SAFELY REACH THE UPPER LABS RECYCLING STATION, MEET US THERE.",34,0
-
 txtRadioConstruct:
-                dc.b 34,"IT'S JEFF. I'VE BEEN DECRYPTING MORE OF THE MACHINES' TRAFFIC. NOW I GET IT. 'CONSTRUCT' IS THE NAME FOR THE CENTRAL AI. "
-                dc.b "IT ORDERED THE CONSTRUCTION OF 'JORMUNGANDR.' IF THEY FOLLOW MYTHOLOGY, THEN THAT SHOULD BE A HUGE MECHANICAL SERPENT. FUN, RIGHT?",34,0
+                dc.b 34,"KIM, IT'S JEFF. I'VE BEEN DECRYPTING MORE OF THE MACHINES' TRAFFIC. WAS DUMB TO NOT GET IT AT FIRST. 'CONSTRUCT' IS THE NAME OF THE CENTRAL AI. "
+                dc.b "IT TASKED THE MACHINES TO BUILD 'JORMUNGANDR.' IF THEY KNOW MYTHOLOGY, THEN THAT HAS TO BE A HUGE MECHANICAL SERPENT. FUN, RIGHT?",34,0
+txtRadioFindFilter:
+                dc.b 34,"LINDA HERE. WE GOT AHEAD OF OURSELVES - THERE ARE NO LUNG FILTERS STORED HERE. SINCE YOU'RE MUCH BETTER SUITED TO EXPLORING, "
+                dc.b "WE'LL HAVE TO ASK YOU TO FIND ONE. THERE SHOULD BE AT LEAST ONE PACKAGE SOMEWHERE IN THE LOWER LABS.",34,0
+txtBeginSurgery:dc.b 34,"YOU GOT THE FILTER? EXCELLENT. WE'RE READY, FOR REAL THIS TIME. THIS IS A STANDARD NANO-ASSISTED "
+                dc.b "PROCEDURE WITH ACCEPTABLE RISKS. THE TUNNELS BELOW SHOULD BE SURVIVABLE AFTER. "
+                dc.b "STEP TO THE OPERATING TABLE WHEN YOU WANT TO PROCEED.",34,0
 
                 checkscriptend

@@ -496,7 +496,9 @@ AA_IndexNotOver:stx AA_Start+1                  ;Store search start & endpositio
 
         ; Process spawning
 
-UA_DoSpawn:     ldy #ZONEH_SPAWNCOUNT
+UA_DoSpawn:     lda menuMode                    ;No new enemies during dialogue / interaction
+                bne UA_SpawnDone
+                ldy #ZONEH_SPAWNCOUNT
                 lda numSpawned
                 cmp (zoneLo),y
                 bcs UA_SpawnDone
