@@ -691,19 +691,7 @@ ESZ_LevelFail:  jmp StopZoneScript              ;Ventured outside valid levels f
 ESZ_LevelOk:    lda #ACT_SCIENTIST2
                 jsr TransportNPCToPlayer
                 lda #ACT_SCIENTIST3
-TransportNPCToPlayer:
-                jsr FindLevelActor
-                bcc TNPC_NoActor
-                lda actXH+ACTI_PLAYER
-                sta lvlActX,y
-                lda actYH+ACTI_PLAYER
-                sta lvlActY,y
-                lda #$20+AIMODE_FOLLOW
-                sta lvlActF,y
-                lda levelNum
-                ora #ORG_GLOBAL
-                sta lvlActOrg,y
-TNPC_NoActor:   rts
+                jmp TransportNPCToPlayer
 
         ; Escort scientists sequence finish
         ;

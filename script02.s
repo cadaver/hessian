@@ -156,6 +156,8 @@ S1_DieAgain:    inc scriptVariable
                 sta actF1,x
                 sta actF2,x
                 dec actHp,x
+                lda #$00
+                sta temp4
                 lda #ITEM_PISTOL
                 jsr DI_ItemNumber
                 ldy temp8
@@ -227,6 +229,8 @@ S2_Dialogue4:   lda #ITEM_COMMGEAR
                 ldx #1
                 jsr AddItem
                 ldx actIndex
+                lda #$00
+                sta temp4
                 lda #ITEM_SECURITYPASS
                 jsr DI_ItemNumber
                 lda actD,x

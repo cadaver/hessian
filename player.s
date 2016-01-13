@@ -174,7 +174,10 @@ MH_DeathGrounded:
 MH_DeathAnimDelay:
                 jsr OneShotAnimation
 MH_DeathAnimDone:
+                lda actHp,x                     ;For story purposes
+                bne MH_NotActuallyDead
                 jsr DeathFlickerAndRemove
+MH_NotActuallyDead:
                 jmp MH_Brake
 MH_RollAnim:    lda #$01
                 jsr AnimationDelay

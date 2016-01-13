@@ -841,8 +841,9 @@ ULO_AutoDeactOK:lda #$ff
 
 ULO_NoAutoDeact:ldx #ACTI_PLAYER
                 lda actHp+ACTI_PLAYER           ;Heal if not dead and not yet at full health
-                beq ULO_OxygenDone
-                cmp #HP_PLAYER
+                bne ULO_PlayerAlive
+                jmp ULO_OxygenDone
+ULO_PlayerAlive:cmp #HP_PLAYER
                 bcs ULO_NoHealing
                 lda battery+1                   ;No healing if low battery
                 cmp #LOW_BATTERY+1
@@ -865,7 +866,17 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
                 bne ULO_NoRecharge
                 inc battery+1
 
-ULO_NoRecharge: lda actF1+ACTI_PLAYER           ;Check for player losing oxygen
+ULO_NoRecharge: lda levelNum
+                cmp #$08
+                bne ULO_CheckHeadUnderWater
+                lda #PLOT_LOWERLABSNOAIR        ;This should be script code, but
+                jsr GetPlotBit                  ;hard to do without interfering with other scripts
+                beq ULO_CheckHeadUnderWater     ;or without causing excessive loading
+                lda AA_ItemFlashCounter+1
+                and #$03
+                bpl ULO_OxygenDelay
+ULO_CheckHeadUnderWater:
+                lda actF1+ACTI_PLAYER           ;Check for player losing oxygen
                 cmp #FR_SWIM                    ;(must be swimming & head under water)
                 bcc ULO_RestoreOxygen
                 lda #-1
@@ -873,12 +884,12 @@ ULO_NoRecharge: lda actF1+ACTI_PLAYER           ;Check for player losing oxygen
                 and #CI_WATER|CI_OBSTACLE
                 beq ULO_RestoreOxygen
                 lda actFd+ACTI_PLAYER
-                bne ULO_OxygenDone
+ULO_OxygenDelay:bne ULO_OxygenDone
                 lda oxygen
                 bne ULO_DecreaseOxygen
-                lda actF1+ACTI_PLAYER           ;Do damage slower than oxygen drain
-                lsr
-                bcc ULO_OxygenDone
+                lda AA_ItemFlashCounter+1
+                and #$07
+                bne ULO_OxygenDone
                 jsr ULO_DoDrowningDamage
                 jmp ULO_OxygenDone
 ULO_RestoreOxygen:

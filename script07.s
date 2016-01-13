@@ -180,6 +180,13 @@ HP_TryAgain:    ldy lvlObjNum
         ; Modifies: various
 
 FindFilter:     jsr StopZoneScript
+
+                ldy lvlObjNum                   ;Hack for testing (when this script is executed by a door)
+                lda #$00
+                sta lvlObjDL,y
+                sta lvlObjDH,y
+                sta lvlObjB,y
+
                 lda #ACT_SCIENTIST3
                 jsr FindLevelActor
                 lda #$3f
@@ -208,6 +215,7 @@ MoveScientistSub2:
                 sta lvlActF,y
                 lda #$08+ORG_GLOBAL
                 sta lvlActOrg,y
+BS2_NotYet:
 BS_NoFilter:    rts
 
         ; Begin surgery script.
@@ -225,6 +233,8 @@ BeginSurgery:   ldy #ITEM_LUNGFILTER
                 jsr AddQuestScore
                 lda #<EP_BEGINSURGERY2
                 sta actScriptEP
+                lda #$00
+                sta scriptVariable
                 ldy #ACT_SCIENTIST2
                 lda #<txtBeginSurgery
                 ldx #>txtBeginSurgery
@@ -237,13 +247,76 @@ BeginSurgery:   ldy #ITEM_LUNGFILTER
         ; Modifies: various
 
 BeginSurgery2:  lda actXH+ACTI_PLAYER
-                cmp #$40
-                bne BS2_NotYet
+                cmp #$41
+                bcs BS2_NotYet
                 lda actMB+ACTI_PLAYER
                 lsr
                 bcc BS2_NotYet
-                inc $d020
-BS2_NotYet:     rts
+                lda scriptVariable
+                asl
+                tay
+                lda bs2JumpTbl,y
+                sta BS2_Jump+1
+                lda bs2JumpTbl+1,y
+                sta BS2_Jump+2
+BS2_Jump:       jmp BS2_1
+
+BS2_1:          inc scriptVariable
+                ldy #ACT_SCIENTIST2
+                lda #<txtBeginSurgery2_1
+                ldx #>txtBeginSurgery2_1
+                jmp SpeakLine
+
+BS2_2:          lda #$00                    ;Disabled controls during the delay to simplify scripting
+                sta joystick
+                lda #ACT_SCIENTIST3
+                jsr FindActor
+                lda #AIMODE_IDLE
+                sta actAIMode,x
+                lda #$80
+                sta actD,x
+                inc actTime,x
+                lda actTime,x
+                cmp #25
+                bcc BS2_2Wait
+                lda #$00
+                sta actTime,x
+                inc scriptVariable
+BS2_2Wait:      rts
+
+BS2_3:          inc scriptVariable
+                lda #ACT_SCIENTIST3
+                jsr FindActor
+                lda #AIMODE_TURNTO
+                sta actAIMode,x
+                lda #ITEM_EMPGENERATOR
+                sta actWpn,x
+                ldy #ACT_SCIENTIST3
+                lda #<txtBeginSurgery2_2
+                ldx #>txtBeginSurgery2_2
+                jmp SpeakLine
+
+BS2_4:          jsr BlankScreen
+                lda #<EP_AFTERSURGERY
+                sta actScriptEP+1
+                lda #>EP_AFTERSURGERY
+                sta actScriptF+1
+                lda #0
+                sta actScriptF
+                lda #<EP_AFTERSURGERYRUN
+                ldx #>EP_AFTERSURGERYRUN
+                jsr SetScript
+                lda #50
+                sta scriptVariable
+BS2_Delay:      jsr WaitBottom
+                dec scriptVariable
+                bne BS2_Delay
+                jmp CenterPlayer
+
+bs2JumpTbl:     dc.w BS2_1
+                dc.w BS2_2
+                dc.w BS2_3
+                dc.w BS2_4
 
         ; Setup text screen
 
@@ -352,7 +425,12 @@ txtRadioFindFilter:
                 dc.b 34,"LINDA HERE. WE GOT AHEAD OF OURSELVES - THERE ARE NO LUNG FILTERS STORED HERE. SINCE YOU'RE MUCH BETTER SUITED TO EXPLORING, "
                 dc.b "WE'LL HAVE TO ASK YOU TO FIND ONE. THERE SHOULD BE AT LEAST ONE PACKAGE SOMEWHERE IN THE LOWER LABS.",34,0
 txtBeginSurgery:dc.b 34,"YOU GOT THE FILTER? EXCELLENT. WE'RE READY, FOR REAL THIS TIME. THIS IS A STANDARD NANO-ASSISTED "
-                dc.b "PROCEDURE WITH ACCEPTABLE RISKS. THE TUNNELS BELOW SHOULD BE SURVIVABLE AFTER. "
-                dc.b "STEP TO THE OPERATING TABLE WHEN YOU WANT TO PROCEED.",34,0
+                dc.b "PROCEDURE WITH SOME RISK INVOLVED. THE TUNNELS BELOW SHOULD BE SURVIVABLE AFTER. "
+                dc.b "STEP TO THE OPERATING TABLE WHEN YOU WISH TO PROCEED.",34,0
+
+txtBeginSurgery2_1:
+                dc.b 34,"GOOD. WE WILL BEGIN. LINDA, JUST IN CASE WE GET COMPANY, THERE SHOULD BE A WEAPON IN THE CUPBOARD.",34,0
+txtBeginSurgery2_2:
+                dc.b 34,"GOT IT.",34,0
 
                 checkscriptend

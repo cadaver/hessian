@@ -388,7 +388,7 @@ AddActors:      lda menuMode
 
         ; Flash actors such as items, and H & B letters if health/battery low
 
-F                inc AA_ItemFlashCounter+1
+F               inc AA_ItemFlashCounter+1
 AA_ItemFlashCounter:                            ;Get color override for items + object marker
                 lda #$00
                 lsr
@@ -2228,3 +2228,24 @@ GLAI_Loop2:     lda lvlActOrg,y                 ;Second loop: overwrite any temp
                 bne GLAI_Loop2
 GLAI_Found:     sty levelActorIndex             ;Store pos for next search
                 rts
+
+        ; Transport NPC to player if found and set follow mode. To be used by zone scripts.
+        ;
+        ; Parameters: A actor type
+        ; Returns: C=1 actor found, index in Y, C=0 not found
+        ; Modifies: A,X,Y
+
+TransportNPCToPlayer:
+                jsr FindLevelActor
+                bcc TNPC_NoActor
+                lda actXH+ACTI_PLAYER
+                sta lvlActX,y
+                lda actYH+ACTI_PLAYER
+                sta lvlActY,y
+                lda #$20+AIMODE_FOLLOW
+                sta lvlActF,y
+                lda levelNum
+                ora #ORG_GLOBAL
+                sta lvlActOrg,y
+TNPC_NoActor:   rts
+

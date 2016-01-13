@@ -1271,7 +1271,6 @@ DLP_NoItem:     rts
         ; Modifies: A,Y,temp1-temp8
 
 MovePersistentNPC:
-                jsr MoveAndAttackHuman
                 lda menuMode
                 bne MPNPC_InDialogue
                 ldy actT,x
@@ -1281,4 +1280,4 @@ MovePersistentNPC:
                 jsr ExecScript
 MPNPC_NoScript: ldx actIndex
 MPNPC_InDialogue:
-                rts
+                jmp MoveAndAttackHuman

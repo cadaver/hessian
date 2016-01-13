@@ -67,6 +67,12 @@ EP_TUNNELMACHINEITEMS = $0801
 EP_TUNNELMACHINERUN = $0802
 EP_RADIOJORMUNGANDR = $0803
 EP_RADIOJORMUNGANDRRUN = $0804
+EP_AFTERSURGERY = $0805
+EP_AFTERSURGERYRUN = $0806
+EP_AFTERSURGERYZONE = $0807
+EP_AFTERSURGERYNOAIR = $0808
+EP_AFTERSURGERYFOLLOW = $0809
+EP_AFTERSURGERYNOAIRDIE = $080a
 
 PLOT_ELEVATOR1  = $00                       ;Upper <-> lower lab
 PLOT_ELEVATOR2  = $01                       ;Jormungandr <-> Bio-Dome
@@ -79,6 +85,7 @@ PLOT_WALLBREACHED = $07                     ;Tunnel machine has been used
 PLOT_MOVESCIENTISTS = $08                   ;Scientists moved to wait in upper labs
 PLOT_ELEVATORMSG = $09                      ;Player attempted lower lab elevator entry
 PLOT_ESCORTCOMPLETE = $0a                   ;Scientists got to the operating room
+PLOT_LOWERLABSNOAIR = $0b                   ;Air being sucked from lower labs
 
 SPEECHBUBBLEOFFSET = -40*8
 
