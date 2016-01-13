@@ -421,7 +421,10 @@ AfterSurgeryZone:
                 jsr SetPlotBit
                 lda #PLOT_LOWERLABSNOAIR
                 jmp SetPlotBit
-ASZ_Survived:   lda #ACT_SCIENTIST3             ;Todo: continue story from here
+ASZ_Survived:   jsr AddQuestScore
+                lda #PLOT_INOLDTUNNELS1
+                jsr SetPlotBit
+                lda #ACT_SCIENTIST3             ;Todo: continue story from here
                 jsr TransportNPCToPlayer
                 lda #$20+AIMODE_TURNTO          ;Stop following
                 sta lvlActF,y

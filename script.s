@@ -88,6 +88,8 @@ PLOT_MOVESCIENTISTS = $08                   ;Scientists moved to wait in upper l
 PLOT_ELEVATORMSG = $09                      ;Player attempted lower lab elevator entry
 PLOT_ESCORTCOMPLETE = $0a                   ;Scientists got to the operating room
 PLOT_LOWERLABSNOAIR = $0b                   ;Air being sucked from lower labs
+PLOT_INOLDTUNNELS1 = $0c                    ;Linda reached old tunnels
+PLOT_INOLDTUNNELS2 = $0d                    ;Jeff reached old tunnels
 
 SPEECHBUBBLEOFFSET = -40*8
 
