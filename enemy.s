@@ -1276,6 +1276,11 @@ MovePersistentNPC:
                 ldy actT,x
                 ldx actScriptF-ACT_FIRSTPERSISTENTNPC,y
                 beq MPNPC_NoScript
+                lda scriptF
+                beq MPNPC_AnyScriptOK           ;If continuous script is in same file, OK to exec
+                cmp actScriptF-ACT_FIRSTPERSISTENTNPC,y
+                bne MPNPC_NoScript              ;Otherwise skip actor script when running
+MPNPC_AnyScriptOK:
                 lda actScriptEP-ACT_FIRSTPERSISTENTNPC,y
                 jsr ExecScript
 MPNPC_NoScript: ldx actIndex

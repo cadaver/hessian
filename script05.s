@@ -16,7 +16,6 @@ CHUNK_DURATION = 40
                 dc.w OpenWall
                 dc.w MoveAcid
                 dc.w RadioLowerLabs
-                dc.w RadioSecurityCenter
                 dc.w RadioCaves
 
         ; Switch generator script routine
@@ -511,24 +510,6 @@ RadioLowerLabs:
                 ldy #ACT_PLAYER
                 jmp SpeakLine
 
-        ; Radio speech when entering security center
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-RadioSecurityCenter:
-                lda #PLOT_ELEVATOR1             ;If lower labs already visited/completed, skip this
-                jsr GetPlotBit
-                bne RSC_Skip
-                lda #SFX_RADIO
-                jsr PlaySfx
-                lda #<txtRadioSecurityCenter
-                ldx #>txtRadioSecurityCenter
-                ldy #ACT_PLAYER
-                jmp SpeakLine
-RSC_Skip:       rts
-
         ; Radio speech when entering caves
         ;
         ; Parameters: -
@@ -565,10 +546,6 @@ txtRadioLowerLabs:
                 dc.b "FROM THE LOWER LABS. THEY'VE BUILT SOMETHING CALLED "
                 dc.b "'JORMUNGANDR.' THAT DOESN'T SOUND GOOD. THE AIR DOWN THERE IS TOXIC. "
                 dc.b "WE MUST FIGURE OUT HOW TO PROCEED. MEANWHILE, YOU JUST GET THE ELEVATOR WORKING.",34,0
-txtRadioSecurityCenter:
-                dc.b 34,"AMOS HERE. GOOD THINKING, THE ARMORY SHOULD HOLD POWERFUL WEAPONRY. STAY ALERT THOUGH, "
-                dc.b "ANY GUARDS INSIDE MAY THINK YOU'VE GONE ROGUE. OR THE WORSE POSSIBILITY, THAT THEY'RE SOMEHOW "
-                dc.b "COMPLICIT.",34,0
 txtRadioCaves:  dc.b 34,"IT'S AMOS. EXCELLENT WORK. WITH LUCK, THESE CAVES LEAD YOU TO THE LOWER LABS. ONCE THERE, "
                 dc.b "SEE IF YOU CAN UNLOCK THE ELEVATOR. I'D TRY THE SERVER ROOM. DON'T BE ALARMED IF YOU SEE "
                 dc.b "UNUSUAL CAVE DWELLERS. SOME STRONGLY MUTAGENIC CHEMICALS MAY HAVE LEAKED.",34,0

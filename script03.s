@@ -1,269 +1,341 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 3, Construct + other boss fights
+        ; Script 3: recycler, early bosses, early NPC interactions
 
-EYE_MOVE_TIME = 10
-EYE_FIRE_TIME = 8
-DROID_SPAWN_DELAY = 4*25
+RECYCLER_ITEM_FIRST = ITEM_PISTOL
+RECYCLER_ITEM_LAST = ITEM_ARMOR
+MAX_RECYCLER_ITEMS = 10
+RECYCLER_MOVEDELAY = 8
+txtDigits       = actLo
+txtCount        = txtDigits-1
+recyclerItemList = screen2
+recyclerSelection = menuCounter
+recyclerListLength = wpnLo
+originalItem    = wpnHi
+currentIndex    = wpnBits
 
                 org scriptCodeStart
 
-                dc.w MoveEyePhase1
-                dc.w MoveEyePhase2
-                dc.w DestroyEye
-                dc.w MoveSecurityChief
-                dc.w DestroySecurityChief
+                dc.w RecyclingStation
+                dc.w HideoutDoor
                 dc.w MoveRotorDrone
                 dc.w DestroyRotorDrone
-                dc.w HideoutDoor
                 dc.w Hacker
                 dc.w Hacker2
+                dc.w Hacker3
+                dc.w Hacker4
 
-        ; Eye (Construct) boss phase 1
+        ; Recycling station script routine
         ;
-        ; Parameters: X actor index
+        ; Parameters: -
         ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
+        ; Modifies: various
 
-MoveEyePhase1:  lda lvlObjB+$1e                 ;Close door immediately once player moves or fires
-                bpl MEye_DoorDone
-                lda actXL+ACTI_PLAYER
-                bpl MEye_CloseDoor
-                cmp #$88
-                bcs MEye_CloseDoor
-                lda actF2+ACTI_PLAYER
-                cmp #FR_PREPARE
-                bcc MEye_DoorOpen
-MEye_CloseDoor: ldy #$1e
-                jsr InactivateObject
-                ldx actIndex
-MEye_DoorDone:  lda #$01
-                sta ULO_NoAirFlag+1             ;Cause air to be sucked away during battle
-MEye_DoorOpen:  lda #DROID_SPAWN_DELAY
-                sta MEye_SpawnDelay+1
-                lda #ACT_SUPERCPU               ;Wait until all CPUs destroyed
-                jsr FindActor
-                ldx actIndex
-                bcs MEye_HasCPUs
-MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phase1 destroyed
-                cmp #2
-                bcs MEye_WaitDroids
-                inc actT,x                      ;Move to visible eye stage
-                jsr InitActor
-                lda #5                          ;Descend animation
-                sta actF1,x
-                jmp InitActor
-
-MEye_HasCPUs:   lda #1
-MEye_SpawnDroid:cmp numSpawned
-                bcc MEye_Done
-                lda #ACTI_FIRSTNPC
-                ldy #ACTI_LASTNPC
-                jsr GetFreeActor
-                bcc MEye_Done
-                lda actTime,x
-                bne MEye_DoSpawnDelay
+RecyclingStation:
+                ldy itemIndex
+                sty originalItem
+                ldy #RECYCLER_ITEM_FIRST
+                ldx #$00
+                stx txtDigits+3
+RS_FindItems:   cpy #ITEM_FIRST_CONSUMABLE
+                bcs RS_ItemOK
+                jsr FindItem                    ;For weapons, check that is currently held in inventory
+                bcc RS_NextItem                 ;(recycler only "sells" ammo, not weapons)
+RS_ItemOK:      lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                beq RS_NextItem
                 tya
-                tax
-                jsr Random                      ;Randomize location from 4 possible
-                and #$03
-                tay
-                lda droidSpawnXH,y
-                sta actXH,x
-                lda #$80
-                sta actXL,x
-                lda droidSpawnYH,y
-                sta actYH,x
-                lda droidSpawnYL,y
-                sta actYL,x
-                lda droidSpawnCtrl,y
-                sta actMoveCtrl,x
-                lda #ACT_LARGEDROID
-                sta actT,x
-                lda #AIMODE_FLYER
-                sta actAIMode,x
-                lda #ITEM_LASERRIFLE
-                sta actWpn,x
-                jsr InitActor
-                jsr NoInterpolation             ;If explosion is immediately reused on same frame,
-                ldx actIndex                    ;prevent artifacts
-MEye_SpawnDelay:lda #DROID_SPAWN_DELAY
-                sta actTime,x
-MEye_WaitDroids:
-MEye_Done:      rts
-MEye_DoSpawnDelay:
-                dec actTime,x
-                rts
-
-        ; Eye (Construct) boss phase 2
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveEyePhase2:  lda #DROID_SPAWN_DELAY-25
-                sta MEye_SpawnDelay+1
-                lda actHp,x
-                beq MEye_Destroy
-                lda actF1,x
-                cmp #5
-                bcc MEye_Turret
-MEye_Descend:   sbc #4
-                sta actSizeD,x                  ;Set collision size based on frame,
-                lda #HP_EYE                     ;keep resetting health to full until fully descended
-                sta actHp,x
-                lda actFd,x
-                bne MEye_NoSound
-                lda #SFX_RELOADBAZOOKA
-                jsr PlaySfx
-MEye_NoSound:   ldy #14
-                lda #2
-                jsr OneShotAnimation
-                bcc MEye_Done
-                lda #2                          ;Start from center frame
-                sta actF1,x
-                lda #$00                        ;Reset droid spawn delay
-                sta actTime,x
-                ldy actXH+ACTI_PLAYER           ;If player is right from center, shoot to right first
-                cpy #$41
-                bcs MEye_FireRightFirst
-                lda #$04
-MEye_FireRightFirst:
-                sta actFallL,x
-                lda #EYE_MOVE_TIME*2            ;Some delay before firing initially
-                sta actFall,X
-MEye_Turret:    dec actFall,x                   ;Read firing controls from table with delay
-                bmi MEye_NextMove
-                lda actFall,x
-                cmp #EYE_FIRE_TIME
-                bcs MEye_Animate
+                sta recyclerItemList,x
+                inx                             ;If using "all items" cheat, the list could be exceeded
+                cpx #MAX_RECYCLER_ITEMS         ;Simply cut it in this case
+                bcs RS_ListDone
+RS_NextItem:    iny
+                cpy #RECYCLER_ITEM_LAST+1
+                bcc RS_FindItems
+RS_ListDone:    lda #$ff
+                sta recyclerItemList,x          ;Write endmark
+                sta menuMoveDelay               ;Disable controls until joystick centered
+                stx recyclerListLength
+                jsr BlankScreen
+                lda #$02
+                sta screen                      ;Set text screen mode
+                lda #$0f
+                sta scrollX
+                ldx #$00
+                stx recyclerSelection
+                stx SL_CSSScrollY+1
+                stx Irq1_Bg1+1
+RS_ClearScreenLoop:lda #$20
+                sta screen1,x
+                sta screen1+$100,x
+                sta screen1+$200,x
+                sta screen1+SCROLLROWS*40-$100,x
+                lda #$01
+                sta colors,x
+                sta colors+$100,x
+                sta colors+$200,x
+                sta colors+SCROLLROWS*40-$100,x
+                inx
+                bne RS_ClearScreenLoop
+                lda #9
+                sta temp1
+                lda #3
+                sta temp2
+                lda #<txtRecycler
+                ldx #>txtRecycler
+                jsr PrintText
+                lda #0
+                sta currentIndex
+                lda #5
+                sta temp2
+RS_PrintItemsLoop:
+                lda #10
+                sta temp1
+                ldx currentIndex
+                lda recyclerItemList,x
+                bmi RS_PrintExit
+                jsr GetItemName
+                jsr PrintText
+                lda #26
+                sta temp1
+                ldx currentIndex
+                ldy recyclerItemList,x
+                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                jsr ConvertDigits
+                ldx #0
+RS_FindNonZero: lda txtDigits,x
+                cmp #$30
+                bne RS_FindNonZeroFound
+                lda #$20
+                sta txtDigits,x
+                sta txtDigits-1,x
+                inx
+                bne RS_FindNonZero
+RS_FindNonZeroFound:
+                lda #"+"
+                sta txtDigits-1,x
+                lda #<txtCount
+                ldx #>txtCount
+                jsr PrintText
+                inc temp2
+                inc currentIndex
+                bne RS_PrintItemsLoop
+RS_PrintExit:   lda #<txtExit
+                ldx #>txtExit
+                jsr PrintText
+                lda #9
+                sta temp1
+                lda #17
+                sta temp2
+                lda #<txtParts
+                ldx #>txtParts
+                jsr PrintText
+                lda #23
+                sta temp1
+                lda #<txtCost
+                ldx #>txtCost
+                jsr PrintText
+RS_Redraw:      lda #$20
+RS_ArrowLastPos:sta screen1
+                lda #8
+                sta temp1
+                lda recyclerSelection
+                clc
+                adc #5
+                sta temp2
+                lda #<txtArrow
+                ldx #>txtArrow
+                jsr PrintText
+                lda zpDestLo
+                sta RS_ArrowLastPos+1
+                lda zpDestHi
+                sta RS_ArrowLastPos+2
+                lda #15
+                sta temp1
+                lda #17
+                sta temp2
+                lda invCount+ITEM_PARTS-1
+                cmp #NO_ITEM_COUNT
+                adc #$00
+                sta RS_NumParts+1
+                jsr Print3Digits
+                lda #28
+                sta temp1
                 lda #$00
-                beq MEye_StoreCtrl
-MEye_NextMove:  lda actFallL,x
-                inc actFallL,x
-                and #$07
-                tay
-                lda #EYE_MOVE_TIME
-                sta actFall,x
-                lda eyeFrameTbl,y
-                sta actF1,x
-                lda eyeCtrlTbl,y
-MEye_StoreCtrl: sta actCtrl,x
-MEye_Animate:   jsr AttackGeneric
-                lda #2
-                jmp MEye_SpawnDroid             ;Continue to spawn droids, now 2 at a time
-MEye_Destroy:   lda #$00
-                sta ULO_NoAirFlag+1             ;Restore oxygen now
-                jsr Random
+                sta reload                      ;Cancel any reloading so that ammo can be shown
+                ldx recyclerSelection
+                ldy recyclerItemList,x
+                bmi RS_ZeroCost
+                sty itemIndex
+                jsr SetPanelRedrawItemAmmo
+                lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
+RS_ZeroCost:    jsr Print3Digits
+RS_ControlLoop: jsr FinishFrame
+                jsr GetControls
+                jsr GetFireClick
+                bcs RS_Action
+                lda recyclerSelection
+                ldx recyclerListLength
+                jsr RS_Control
+                sta recyclerSelection
+                bcs RS_Redraw
+                lda keyType
+                bmi RS_ControlLoop
+RS_Exit:        ldy originalItem
+                sty itemIndex
+                jsr SetPanelRedrawItemAmmo
+                ldy lvlObjNum                   ;Allow immediate re-entry
+                jsr InactivateObject
+                jmp CenterPlayer
+RS_Action:      lda recyclerSelection
+                cmp recyclerListLength
+                bne RS_Buy
+                lda #SFX_SELECT
+                jsr PlaySfx
+                jmp RS_Exit
+RS_Buy:         ldy itemIndex
+RS_NumParts:    lda #$00
+                cmp recyclerCostTbl-RECYCLER_ITEM_FIRST,y
+                bcc RS_BuyFail
+                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
+                tax
+                tya
+                jsr AddItem
+                bcc RS_BuyFail
+                ldy itemIndex
+                lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
+                ldy #ITEM_PARTS
+                jsr DecreaseAmmo
+                lda #SFX_EMP
+                jsr PlaySfx
+                jmp RS_Redraw
+RS_BuyFail:     lda #SFX_DAMAGE
+                jsr PlaySfx
+                jmp RS_ControlLoop
+
+        ; Print 8-bit number in A
+
+Print3Digits:   jsr ConvertDigits
+                lda #<txtDigits
+                ldx #>txtDigits
+
+        ; Print null-terminated text, with textjump support for item names
+
+PrintText:      sta zpSrcLo
+                stx zpSrcHi
+                ldy temp2
+                lda #40
+                ldx #zpDestLo
+                jsr MulU
+                lda temp1
+                jsr Add8
+                lda zpDestHi
+                ora #>screen1
+                sta zpDestHi
+                ldy #$00
+PT_Loop:        lda (zpSrcLo),y
+                bmi PT_Jump
+                beq PT_Done
+                sta (zpDestLo),y
+                iny
+                bne PT_Loop
+PT_Done:        rts
+PT_Jump:        sty PT_Sub+1
                 pha
-                and #$03
-                sta shakeScreen
+                iny
+                lda (zpSrcLo),y
+                dey
+                sec
+PT_Sub:         sbc #$00
+                sta zpSrcLo
                 pla
                 and #$7f
-                clc
-                adc actFall,x
-                sta actFall,x
-                bcc MEye_NoExplosion
-                lda #ACTI_FIRSTNPC              ;Use any free actors for explosions
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
-                bcc MEye_NoExplosion
-                lda #$01
-                sta Irq1_Bg3+1
-                jsr Random
-                sta actXL,y
-                and #$07
-                clc
-                adc #$3d
-                sta actXH,y
-                jsr Random
-                sta actYL,y
-                and #$07
-                tax
-                lda explYTbl,x
-                sta actYH,y
-                tya
-                tax
-                jsr ExplodeActor                ;Play explosion sound & init animation
-                ldx actIndex
-                rts
-MEye_NoExplosion:
-                jsr SetZoneColors
-                inc actTime,x
-                bpl MEye_NoExplosionFinish
-                lda #4*8
-                jsr MoveActorYNoInterpolation
-                jmp ExplodeActor                ;Finally explode self
-MEye_NoExplosionFinish:
+                sbc #$00
+                sta zpSrcHi
+                bpl PT_Loop
+
+        ; Convert 3 digits to a printable string
+
+ConvertDigits:  jsr ConvertToBCD8
+                ldx #$00
+                lda temp7
+                jsr StoreDigit
+                lda temp6
+                pha
+                lsr
+                lsr
+                lsr
+                lsr
+                jsr StoreDigit
+                pla
+StoreDigit:     and #$0f
+                ora #$30
+                sta txtDigits,x
+                inx
                 rts
 
-        ; Eye destroy routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
+        ; Recycler menu control
 
-DestroyEye:     lda #COLOR_FLICKER
-                sta actFlash,x
-                lda #$00                        ;Final explosion counter
-                sta actTime,x
-                stx DE_RestX+1
-                ldx #ACTI_LASTNPC
-DE_DestroyDroids:
-                lda actT,x
-                cmp #ACT_LARGEDROID
-                bne DE_Skip
-                jsr DestroyActorNoSource
-DE_Skip:        dex
-                bne DE_DestroyDroids
-DE_RestX:       ldx #$00
-                rts
-
-        ; Security chief move routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveSecurityChief:
-                lda actHp,x
-                beq MSC_Dead
-                cmp #HP_SECURITYCHIEF/2         ;Switch to grenade launcher at half health
-                bcs MSC_NoWeaponChange
-                lda actTime,x
-                bmi MSC_NoWeaponChange
-                lda actAttackD,x
-                bne MSC_NoWeaponChange
-                lda #ITEM_GRENADELAUNCHER
-                sta actWpn,x
-MSC_NoWeaponChange:
-                lda #MUSIC_THRONE+1             ;If alive, play the bossfight music
-                jsr PlaySong
-                ldx actIndex
-MSC_Dead:       jmp MoveAndAttackHuman
-
-        ; Security chief destroy routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-DestroySecurityChief:
+RS_Control:     tay
                 stx temp6
-                lda #MUSIC_THRONE               ;Back to regular song
-                jsr PlaySong
-                ldx temp6
-                jsr HumanDeath
-                lda #ITEM_MINIGUN
-                sta temp5
-                lda #-2*8                       ;Drop also both weapons in addition
-                jsr DI_SpawnItemWithSpeed       ;to the keycard
-                sta temp3
-                lda #ITEM_GRENADELAUNCHER
-                sta temp5
-                lda #2*8
-                jmp DI_SpawnItemWithSpeed
+                ldx menuMoveDelay
+                beq RSC_NoDelay
+                bpl RSC_Decrement
+RSC_InitialDelay:ldx joystick
+                bne RSC_ContinueDelay
+                stx menuMoveDelay
+RSC_ContinueDelay:
+                rts
+RSC_Decrement:  dec menuMoveDelay
+                rts
+RSC_NoDelay:    lda joystick
+                lsr
+                bcc RSC_NotUp
+                dey
+                bpl RSC_HasMove
+                ldy temp6
+RSC_HasMove:    lda #SFX_SELECT
+                jsr PlaySfx
+                ldx #RECYCLER_MOVEDELAY
+                lda joystick
+                cmp prevJoy
+                bne RSC_NormalDelay
+                dex
+                dex
+                dex
+RSC_NormalDelay:stx menuMoveDelay
+                sec
+                tya
+                rts
+RSC_NoMove:     clc
+                tya
+                rts
+RSC_NotUp:      lsr
+                bcc RSC_NoMove
+                iny
+                cpy temp6
+                bcc RSC_HasMove
+                beq RSC_HasMove
+                ldy #$00
+                beq RSC_HasMove
+
+        ; Hideout door script routine (check that rotordrone is destroyed)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+HideoutDoor:    lda #SFX_OBJECT
+                jsr PlaySfx
+                lda #PLOT_ROTORDRONE
+                jsr GetPlotBit
+                beq HD_Offline
+                ldy lvlObjNum
+                jmp ToggleObject
+HD_Offline:     lda #<txtHideoutLocked
+                ldx #>txtHideoutLocked
+                ldy #REQUIREMENT_TEXT_DURATION
+                jmp PrintPanelText
 
         ; Rotor drone boss move routine
         ;
@@ -361,33 +433,13 @@ DestroyRotorDrone:
                 lda #PLOT_ROTORDRONE
                 jmp SetPlotBit
 
-        ; Hideout door script routine (check that rotordrone is destroyed)
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-HideoutDoor:    lda #SFX_OBJECT
-                jsr PlaySfx
-                lda #PLOT_ROTORDRONE
-                jsr GetPlotBit
-                beq HD_Offline
-                ldy lvlObjNum
-                jmp ToggleObject
-HD_Offline:     lda #<txtHideoutLocked
-                ldx #>txtHideoutLocked
-                ldy #REQUIREMENT_TEXT_DURATION
-                jmp PrintPanelText
-
         ; Hacker script routine (initial scene in the hideout)
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-Hacker:         lda actXH+ACTI_PLAYER
-                cmp #$1c
-                bcs H_NotClose                  ;Wait until close
+Hacker:         jsr CheckDistance
                 jsr AddQuestScore
 H_Random:       jsr Random
                 and #$03
@@ -397,12 +449,18 @@ H_Random:       jsr Random
                 sta txtPercent
                 lda #<EP_HACKER2
                 sta actScriptEP+2               ;Set 2nd script
-                ldy #ACT_HACKER
                 lda #<txtHacker
                 ldx #>txtHacker
+H_SpeakCommon:  ldy #ACT_HACKER
                 jmp SpeakLine
+
+CheckDistance:  lda actXH+ACTI_PLAYER
+                cmp #$1c
+                bcc CD_Close
+                pla                             ;If far, do not return
+                pla
 H_NoItem:
-H_NotClose:     rts
+CD_Close:       rts
 
         ; Hacker script routine 2 (when picking up the amp)
         ;
@@ -418,36 +476,106 @@ Hacker2:        ldy #ITEM_AMPLIFIER
                 bcs H_NoItem
                 lda #$00                        ;No more scripts for now
                 sta actScriptF+2
-                ldy #ACT_HACKER
                 lda #<txtHacker2
                 ldx #>txtHacker2
-                jmp SpeakLine
+                bne H_SpeakCommon
 
-        ; Final server room droid spawn positions
+        ; Hacker script routine 3 (after lower labs server room)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
 
-droidSpawnXH:   dc.b $3e,$43,$3e,$43
-droidSpawnYH:   dc.b $30,$30,$37,$37
-droidSpawnYL:   dc.b $00,$00,$ff,$ff
-droidSpawnCtrl: dc.b JOY_DOWN|JOY_RIGHT,JOY_DOWN|JOY_LEFT,JOY_UP|JOY_RIGHT,JOY_UP|JOY_LEFT
+Hacker3:        jsr CheckDistance
+                jsr AddQuestScore
+                lda #<EP_HACKER4
+                sta actScriptEP+2
+                if SKIP_PLOT > 0
+                lda #PLOT_ESCORTCOMPLETE
+                jsr SetPlotBit
+                lda #PLOT_ELEVATOR1
+                jsr SetPlotBit
+                endif
+                lda #<txtHacker3
+                ldx #>txtHacker3
+                bne H_SpeakCommon
 
-        ; Eye firing pattern
+        ; Hacker script routine 4 (going to old tunnels)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
 
-eyeCtrlTbl:     dc.b JOY_DOWN|JOY_FIRE
-                dc.b JOY_RIGHT|JOY_DOWN|JOY_FIRE
-                dc.b JOY_RIGHT|JOY_FIRE
-                dc.b JOY_RIGHT|JOY_DOWN|JOY_FIRE
-                dc.b JOY_DOWN|JOY_FIRE
-                dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE
-                dc.b JOY_LEFT|JOY_FIRE
-                dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE
+Hacker4:        jsr CheckDistance
+                lda #PLOT_ESCORTCOMPLETE
+                jsr GetPlotBit
+                bne H4_Ready
+                lda #$00                        ;No more scripts for now
+                sta actScriptF+2
+                lda #<txtHacker4a
+                ldx #>txtHacker4a
+                jmp H_SpeakCommon
+H4_Ready:       lda #PLOT_LOWERLABSNOAIR        ;If late in the game, the sabotage
+                jsr GetPlotBit                  ;must first be dealt with
+                bne H4_Unsafe
+                ldy #ITEM_OLDTUNNELSPASS
+                jsr FindItem
+                bcs H4_HasPass
+H4_Unsafe:      rts
+H4_HasPass:     lda #<EP_HACKERFOLLOW
+                sta actScriptEP+2
+                lda #>EP_HACKERFOLLOW
+                sta actScriptF+2
+                lda #<txtHacker4b
+                ldx #>txtHacker4b
+                jmp H_SpeakCommon
 
-eyeFrameTbl:    dc.b 2,1,0,1,2,3,4,3
+        ; Recycler tables
 
-        ; Final explosion Y-positions
+recyclerCountTbl:
+                dc.b 10                         ;Pistol
+                dc.b 8                          ;Shotgun
+                dc.b 30                         ;Auto rifle
+                dc.b 5                          ;Sniper rifle
+                dc.b 25                         ;Minigun
+                dc.b 30                         ;Flamethrower
+                dc.b 15                         ;Laser rifle
+                dc.b 10                         ;Plasma gun
+                dc.b 1                          ;EMP generator
+                dc.b 1                          ;Grenade launcher
+                dc.b 1                          ;Bazooka
+                dc.b 0                          ;Extinguisher
+                dc.b 1                          ;Grenade
+                dc.b 1                          ;Mine
+                dc.b 1                          ;Medikit
+                dc.b 1                          ;Battery
+                dc.b 100                        ;Armor
 
-explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
+recyclerCostTbl:
+                dc.b 10                         ;Pistol
+                dc.b 15                         ;Shotgun
+                dc.b 20                         ;Auto rifle
+                dc.b 20                         ;Sniper rifle
+                dc.b 25                         ;Minigun
+                dc.b 25                         ;Flamethrower
+                dc.b 25                         ;Laser rifle
+                dc.b 25                         ;Plasma gun
+                dc.b 20                         ;EMP generator
+                dc.b 25                         ;Grenade launcher
+                dc.b 30                         ;Bazooka
+                dc.b 0                          ;Extinguisher
+                dc.b 25                         ;Grenade
+                dc.b 30                         ;Mine
+                dc.b 40                         ;Medikit
+                dc.b 40                         ;Battery
+                dc.b 50                         ;Armor
 
         ; Messages
+
+txtRecycler:    dc.b "PART RECYCLING STATION",0
+txtExit:        dc.b "EXIT",0
+txtCost:        dc.b "COST",0
+txtArrow:       dc.b 62,0
 
 txtHideoutLocked:dc.b "LOCKED",0
 txtHacker:      dc.b 34,"HEY. YOU MUST BE KIM. THE SCIENTISTS TOLD YOU MIGHT BE COMING. "
@@ -455,10 +583,20 @@ txtHacker:      dc.b 34,"HEY. YOU MUST BE KIM. THE SCIENTISTS TOLD YOU MIGHT BE 
                 dc.b "I'D ESTIMATE YOUR FIGHTING STYLE AS "
 txtPercent:     dc.b "95% HUMAN. YOU CAME FOR THAT SIGNAL AMP FOR THE LASER, RIGHT? "
                 dc.b "NEVER TESTED IT SO CAN'T BE SURE WHAT HAPPENS WHEN YOU PLUG IT IN. OH, FEEL FREE TO USE THE RECYCLER "
-                dc.b "AT THE BACK IF YOU NEED. BUT DON'T TOUCH ANYTHING ELSE.",34,0
+                dc.b "AT THE BACK. BUT DON'T TOUCH ANYTHING ELSE.",34,0
 
-txtHacker2:     dc.b 34,"IT'S A MESSED UP SITUATION ALL RIGHT. BUT I WASN'T THAT SURPRISED. "
-                dc.b "WITH WHAT WE'RE DOING, IT WAS BOUND TO HAPPEN SOONER OR LATER.",34,0
+txtHacker2:     dc.b 34,"IT'S A MESSED UP SITUATION ALL RIGHT. BUT WITH WHAT WE'RE DOING, "
+                dc.b "IT WAS BOUND TO HAPPEN SOONER OR LATER.",34,0
+
+txtHacker3:     dc.b 34,"HEY. I APPRECIATE YOU CHECKING ON ME. THIS PLACE IS SECURE SO FAR. BUT I'M SURE THE 'CONSTRUCT' IS AWARE OF IT. "
+                dc.b "I'VE PINPOINTED ITS ROUGH LOCATION TO THE FAR SIDE OF THIS "
+                dc.b "COMPLEX, UNDER THE BIO-DOME. ANOTHER THING I CAME ACROSS ARE THE SO-CALLED 'OLD TUNNELS' "
+                dc.b "WHICH ALSO BRANCH OFF FROM THE LOWER LABS. HAVEN'T SEEN MACHINE TRAFFIC FROM "
+                dc.b "THERE AT ALL. COULD BE THEIR BLIND SPOT.",34,0
+
+txtHacker4a:    dc.b 34,"BUT GO AND TAKE CARE OF THOSE SCIENTISTS NOW. THEY'RE NOT EXACTLY SAFE.",34,0
+
+txtHacker4b:    dc.b 34,"YOU'VE GOT THE OLD TUNNELS PASS? I THINK WE SHOULD HEAD THERE IMMEDIATELY.",34,0
 
                 checkscriptend
 

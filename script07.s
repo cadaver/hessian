@@ -144,6 +144,10 @@ MoveScientists: jsr StopScript
                 sta actScriptEP
                 lda #>EP_ESCORTSCIENTISTSSTART
                 sta actScriptF
+                lda #<EP_HACKER3                ;Also advance Jeff script
+                sta actScriptEP+2
+                lda #>EP_HACKER3
+                sta actScriptF+2
                 lda #<txtRadioMoveScientists
                 ldx #>txtRadioMoveScientists
 RadioMsg:       pha
@@ -174,7 +178,7 @@ RadioConstruct: lda #PLOT_MOVESCIENTISTS
                 beq HP_TryAgain
                 lda #<txtRadioConstruct
                 ldx #>txtRadioConstruct
-                jsr RadioMsg
+                jmp RadioMsg
 HP_TryAgain:    ldy lvlObjNum
                 jmp InactivateObject
 
@@ -201,7 +205,8 @@ FindFilter:     jsr StopZoneScript
                 sta actScriptF
                 lda #<txtRadioFindFilter
                 ldx #>txtRadioFindFilter
-                jsr RadioMsg
+                jmp RadioMsg
+
 MoveScientistSub2:
                 sta lvlActX,y                   ;Set also Y & level so that this can be used as shortcut in testing
                 lda #$56

@@ -36,10 +36,17 @@ GS_Loop:        jsr GetLevelActorIndex
                 sta actScriptEP
                 lda #>EP_SCIENTIST2
                 sta actScriptF
+                if SKIP_PLOT > 0
+                lda #<EP_HACKER3
+                sta actScriptEP+2
+                lda #>EP_HACKER3
+                sta actScriptF+2
+                else
                 lda #<EP_HACKER
                 sta actScriptEP+2
                 lda #>EP_HACKER
                 sta actScriptF+2
+                endif
                 ldx #(MAX_CODES)*3-1
 GS_CodeLoop:    jsr Random
                 and #$0f

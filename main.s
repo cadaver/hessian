@@ -14,6 +14,7 @@ STARTITEM_CHEAT = 1                            ;Start with weapon & parts instea
 FILTER_UPGRADE_CHEAT = 0
 UPGRADE_CHEAT   = 0
 GODMODE_CHEAT   = 1                             ;Whether health/battery cheat is on initially
+SKIP_PLOT       = 1                             ;Various instant jumps to late game plot sequences
 
         ; Memory configuration & loader symbols
 

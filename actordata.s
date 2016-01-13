@@ -684,7 +684,7 @@ adScientist3:   dc.b HUMANOID                   ;Number of sprites
 
 adHacker:       dc.b HUMANOID                   ;Number of sprites
                 dc.b C_HACKER                   ;Lower part spritefile number
-                dc.b 12                         ;Lower part base spritenumber
+                dc.b 15                         ;Lower part base spritenumber
                 dc.b 0                          ;Lower part base index into the frametable
                 dc.b 32                         ;Lower part left frame add
                 dc.b C_HACKER                   ;Upper part spritefile number
@@ -764,9 +764,9 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alThroneChief
                 dc.b <alMediumWalker
                 dc.b <alScientist1
-                dc.b <alPersistentNPC
-                dc.b <alPersistentNPC
-                dc.b <alPersistentNPC
+                dc.b <alScientist23
+                dc.b <alScientist23
+                dc.b <alHacker
                 dc.b <alCombatRobotSaboteur
 
 actLogicTblHi:  dc.b >alPlayer
@@ -837,9 +837,9 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alThroneChief
                 dc.b >alMediumWalker
                 dc.b >alScientist1
-                dc.b >alPersistentNPC
-                dc.b >alPersistentNPC
-                dc.b >alPersistentNPC
+                dc.b >alScientist23
+                dc.b >alScientist23
+                dc.b >alHacker
                 dc.b >alCombatRobotSaboteur
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
@@ -1673,7 +1673,7 @@ alArmorer:      dc.w MoveAndAttackHuman         ;Update routine
                 dc.b $1f                        ;AI offense random AND-value
                 dc.b $50                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
-                dc.b AMF_CLIMB|AMF_FALLDAMAGE|AMF_DUCK ;Move flags
+                dc.b AMF_FALLDAMAGE|AMF_DUCK ;Move flags
                 dc.b 3*8                        ;Max. movement speed
                 dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
@@ -1681,8 +1681,6 @@ alArmorer:      dc.w MoveAndAttackHuman         ;Update routine
                 dc.b 4                          ;Long jump gravity acceleration
                 dc.b INITIAL_GROUNDBRAKE         ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
-                dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
-                dc.b INITIAL_CLIMBSPEED         ;Climbing speed
 
 alGenerator:    dc.w USESCRIPT|EP_MOVEGENERATOR ;Update routine
                 dc.b AF_NOREMOVECHECK           ;Actor flags
@@ -1738,9 +1736,8 @@ alScientist1:   dc.w USESCRIPT|EP_SCIENTIST1    ;Update routine
                 dc.b 4                          ;Long jump gravity acceleration
                 dc.b INITIAL_GROUNDBRAKE         ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
-                dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
 
-alPersistentNPC:dc.w MovePersistentNPC          ;Update routine
+alScientist23:dc.w MovePersistentNPC          ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC      ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 35                         ;Size up
@@ -1762,7 +1759,31 @@ alPersistentNPC:dc.w MovePersistentNPC          ;Update routine
                 dc.b 4                          ;Long jump gravity acceleration
                 dc.b INITIAL_GROUNDBRAKE         ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
+
+alHacker:       dc.w MovePersistentNPC          ;Update routine
+                dc.b GRP_HEROES|AF_ORGANIC      ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 35                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w HumanDeath                 ;Destroy routine
+                dc.b HP_NONCOMBATANT            ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 0                          ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
+                dc.b $3f                        ;AI offense random AND-value
+                dc.b $00                        ;AI defense probability
+                dc.b AB_NONE                    ;Attack directions
+                dc.b AMF_DUCK|AMF_CLIMB|AMF_JUMP         ;Move flags
+                dc.b 4*8                        ;Max. movement speed
+                dc.b INITIAL_GROUNDACC          ;Ground movement acceleration
+                dc.b INITIAL_INAIRACC           ;In air movement acceleration
+                dc.b 8                          ;Gravity acceleration
+                dc.b 4                          ;Long jump gravity acceleration
+                dc.b INITIAL_GROUNDBRAKE         ;Ground braking
+                dc.b -4                         ;Height in chars for headbump check (negative)
                 dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
+                dc.b INITIAL_CLIMBSPEED         ;Climbing speed
 
 alCombatRobotSaboteur:
                 dc.w USESCRIPT|EP_COMBATROBOTSABOTEUR ;Update routine
