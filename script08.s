@@ -216,9 +216,9 @@ AS_1:           jsr AfterSurgeryRun             ;Ensure player position right wh
                 lda upgrade
                 ora #UPG_TOXINFILTER
                 sta upgrade                     ;Has the filter upgrade now
-                lda #HP_PLAYER                  ;Always full HP, as there will be an attack
-                sta actHp+ACTI_PLAYER
-                lda battery+1                   ;Ensure minimal battery, as there will be EMP attacks
+                lda #HP_PLAYER                  ;Always full HP + at least minimal battery, as there will
+                sta actHp+ACTI_PLAYER           ;be battery drain
+                lda battery+1
                 cmp #LOW_BATTERY
                 bcs AS_1BatteryOK
                 lda #LOW_BATTERY
@@ -303,13 +303,16 @@ AS_5:           lda #ACT_HIGHWALKER
                 sta shakeScreen
                 lda #0
 AS_5Duck:       sta actMoveCtrl,x
-                lda actF1,x
-                cmp #FR_DIE+2
-                bcc AS_5Wait
-                lda #75                        ;Make the corpse stay slightly longer
+                lda actHp,x
+                bne AS_5Wait
+                lda #75                         ;Make the corpse stay slightly longer
                 sta actTime,x
-AS_5Done:       lda #ACT_SCIENTIST3
+                lda #ACT_HIGHWALKER
                 jsr FindActor
+                lda #ITEM_NONE                  ;No further attacks by the high walker
+                sta actWpn,x                    ;(reduce multiplexer load, prevent damage to player)
+                lda #ACT_SCIENTIST3
+                jsr FindActor                   ;Linda uses EMP to destroy (2 shots needed)
                 lda #AIMODE_SNIPER
                 sta actAIMode,x
                 inc scriptVariable
@@ -392,6 +395,8 @@ ASZ_AlreadySet: rts
 
 AfterSurgeryZone:
                 lda levelNum
+                cmp #$0f                        ;Reached old tunnels?
+                beq ASZ_Survived
                 cmp #$08
                 bne ASZ_Stop
                 lda #ACT_SCIENTIST3
@@ -407,7 +412,13 @@ AfterSurgeryZone:
                 jsr SetPlotBit
                 lda #PLOT_LOWERLABSNOAIR
                 jmp SetPlotBit
-ASZ_Stop:       jmp StopZoneScript
+ASZ_Survived:   lda #ACT_SCIENTIST3             ;Todo: continue story from here
+                jsr TransportNPCToPlayer
+                lda #$20+AIMODE_TURNTO          ;Stop following
+                sta lvlActF,y
+                lda #$00
+                sta actScriptF+1                ;No actor script for now
+ASZ_Stop:       jmp StopZoneScript              ;No zone script for now
 
         ; After surgery follow script (refresh follow mode & zone script)
         ;
@@ -426,11 +437,29 @@ AfterSurgeryFollow:
                 bcs ASF_Die
                 cmp #$4a+$42
                 bcc ASF_Die
-                lda #AIMODE_FOLLOW
+                lda actMB,x             ;Do not follow again until landed
+                lsr
+                bcc ASF_NoFollow
+                lda actXH,x             ;Scripted jump to access the old tunnels
+                cmp #$65
+                bne ASF_NoJump
+                lda actYH,x
+                cmp #$4a
+                bne ASF_NoJump
+                lda actSX,x
+                bmi ASF_NoJump
+                lda #AIMODE_IDLE
+                sta actAIMode,x
+                lda #JOY_RIGHT|JOY_UP  ;Jump as far as possible
+                sta actMoveCtrl,x
+                lda #-6*8+4
+                sta actSY,x
+                jmp MH_JumpNoPlayer
+ASF_NoJump:     lda #AIMODE_FOLLOW
                 sta actAIMode,x
                 lda #ACTI_PLAYER
                 sta actAITarget,x
-                lda #<EP_AFTERSURGERYZONE
+ASF_NoFollow:   lda #<EP_AFTERSURGERYZONE
                 ldx #>EP_AFTERSURGERYZONE
                 jmp SetZoneScript
 ASF_Die:        ldx actIndex
@@ -592,9 +621,9 @@ txtAfterSurgery_1:
 txtAfterSurgery_2:
                 dc.b 34,"WHAT'S THAT?",34,0
 txtAfterSurgery_3:
-                dc.b 34,"AMOS.. TOO LATE.",34,0
+                dc.b 34,"NO! AMOS.. TOO LATE.",34,0
 txtAfterSurgery_4:
-                dc.b 34,"YOU OK? WE NEED TO MOVE. THERE COULD BE MORE AT ANY MOMENT.",34,0
+                dc.b 34,"YOU OK? AMOS IS GONE, BUT WE HAVE TO GET MOVING. THERE COULD BE MORE AT ANY MOMENT.",34,0
 txtAfterSurgeryNoAir:
                 dc.b 34,"DO YOU NOTICE? IT'S HARDER TO BREATHE. DAMN.. IT'S THE AI DOING THIS!",34,0
 txtAfterSurgeryNoAirDie:
