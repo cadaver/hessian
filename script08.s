@@ -629,7 +629,7 @@ txtRadioJormungandr:
                 dc.b "FIRE AND ASH, BRINGING THE POST-HUMAN AGE. AND SHOULD I FALL, HE WILL AVENGE ME.",34,0
 
 txtAfterSurgery_1:
-                dc.b 34,"MINOR COMPLICATIONS. THE RESTORATIVE NANO-BOTS WILL TAKE CARE.",34,0
+                dc.b 34,"MINOR COMPLICATIONS. THE NANOBOTS WILL TAKE CARE OF IT.",34,0
 txtAfterSurgery_2:
                 dc.b 34,"WHAT'S THAT?",34,0
 txtAfterSurgery_3:

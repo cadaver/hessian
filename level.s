@@ -1219,7 +1219,6 @@ ULO_FinePositionLoop:                           ;Fineposition player to ground a
 ULO_NoZoneScript:
                 ldy #ZONEH_BG1
                 lda (zoneLo),y                  ;Check for save-disabled zone
-                ora ULO_AirToxinFlag+1          ;Also don't save if the zone is damaging
                 bmi CenterPlayer
                 jsr SaveCheckpoint              ;Save checkpoint now
                 bmi CenterPlayer                ;N=1 upon returning
