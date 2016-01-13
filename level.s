@@ -866,13 +866,16 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
                 bne ULO_NoRecharge
                 inc battery+1
 
-ULO_NoRecharge: lda levelNum
-                cmp #$08
-                bne ULO_CheckHeadUnderWater
-                lda #PLOT_LOWERLABSNOAIR        ;This should be script code, but
-                jsr GetPlotBit                  ;hard to do without interfering with other scripts
-                beq ULO_CheckHeadUnderWater     ;or without causing excessive loading
-                lda AA_ItemFlashCounter+1
+ULO_NoRecharge:
+ULO_NoAirFlag:  lda #$00
+                bne ULO_NoAir
+                lda levelNum                    ;Scripted sucking of air in lower labs
+                cmp #$08                        ;(should really be script code, but hard to do
+                bne ULO_CheckHeadUnderWater     ;without interfering with other scripts)
+                lda #PLOT_LOWERLABSNOAIR
+                jsr GetPlotBit
+                beq ULO_CheckHeadUnderWater
+ULO_NoAir:      lda AA_ItemFlashCounter+1
                 and #$03
                 bpl ULO_OxygenDelay
 ULO_CheckHeadUnderWater:

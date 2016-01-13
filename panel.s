@@ -118,15 +118,14 @@ UP_SkipTime:    pla
                 adc #$00                        ;Round upward
                 inx
                 jsr DrawHealthBar
-                lda #"O"
-                sta temp1
+                lda armorMsgTime                ;Armor meter requested?
+                bne UP_ArmorMsg
                 lda oxygen                      ;Show oxygen meter if less than maximum
                 lsr
                 cmp #MAX_OXYGEN/2
                 bcc UP_ShowOxygen
-                lda armorMsgTime                ;Armor meter requested?
-                beq UP_ClearOxygen
-                dec armorMsgTime
+                bcs UP_ClearOxygen
+UP_ArmorMsg:    dec armorMsgTime
                 lda invCount+ITEM_ARMOR-1
                 bpl UP_HasArmor
                 lda #$00
@@ -135,7 +134,6 @@ UP_HasArmor:    cmp #100                        ;If picked up a full armor while
                 ldy #"A"
                 skip2
 UP_ShowOxygen:  ldy #"O"
-UP_ShowOxygenOrArmor:
                 sty temp1
                 jsr ConvertToBCD8
                 ldx #18

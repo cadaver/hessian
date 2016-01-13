@@ -34,11 +34,12 @@ MoveEyePhase1:  lda lvlObjB+$1e                 ;Close door immediately once pla
                 bcs MEye_CloseDoor
                 lda actF2+ACTI_PLAYER
                 cmp #FR_PREPARE
-                bcc MEye_DoorDone
+                bcc MEye_DoorOpen
 MEye_CloseDoor: ldy #$1e
                 jsr InactivateObject
                 ldx actIndex
-MEye_DoorDone:  lda #DROID_SPAWN_DELAY
+MEye_DoorDone:  inc ULO_NoAirFlag+1             ;Cause air to be sucked away during battle
+MEye_DoorOpen:  lda #DROID_SPAWN_DELAY
                 sta MEye_SpawnDelay+1
                 lda #ACT_SUPERCPU               ;Wait until all CPUs destroyed
                 jsr FindActor
@@ -104,6 +105,7 @@ MoveEyePhase2:  lda #DROID_SPAWN_DELAY-25
                 sta MEye_SpawnDelay+1
                 lda actHp,x
                 beq MEye_Destroy
+                inc ULO_NoAirFlag+1             ;Cause air to be sucked away during battle
                 lda actF1,x
                 cmp #5
                 bcc MEye_Turret
