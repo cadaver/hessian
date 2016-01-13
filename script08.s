@@ -262,11 +262,19 @@ AS_4:           lda #ACT_HIGHWALKER
                 lda lvlActY,y                   ;Unhide waiting enemy now
                 and #$7f
                 sta lvlActY,y
-                lda #ACT_COMBATROBOTSABOTEUR
-                jsr FindLevelActor
-                lda lvlActY,y                   ;Unhide the saboteur enemy
-                and #$7f
+                jsr GetLevelActorIndex
+                lda #$38
+                sta lvlActX,y
+                lda #$3c
                 sta lvlActY,y
+                lda #ACT_COMBATROBOTSABOTEUR
+                sta lvlActT,y
+                lda #$10+AIMODE_IDLE
+                sta lvlActF,y
+                lda #$00
+                sta lvlActWpn,y
+                lda #$08+ORG_GLOBAL
+                sta lvlActOrg,y                 ;Create saboteur enemy
                 inc scriptVariable
                 lda #ACT_SCIENTIST2
                 jsr FindActor
@@ -395,12 +403,10 @@ AfterSurgeryZone:
                 sta UA_SpawnDelay+1             ;Wait a bit before next dialogue, ensure
                 lda #<EP_AFTERSURGERYNOAIR      ;no enemy spawn in the meanwhile
                 sta actScriptEP+1
+                lda #PLOT_ELEVATOR1             ;For testing: enable this too
+                jsr SetPlotBit
                 lda #PLOT_LOWERLABSNOAIR
                 jmp SetPlotBit
-                lda #PLOT_ELEVATOR1             ;Elevator locked again
-                jsr ClearPlotBit
-                lda #PLOT_ELEVATORMSG           ;Make sure this is set so that Amos doesn't
-                jsr SetPlotBit                  ;speak from beyond
 ASZ_Stop:       jmp StopZoneScript
 
         ; After surgery follow script (refresh follow mode & zone script)
@@ -413,9 +419,14 @@ AfterSurgeryFollow:
                 ldx actIndex
                 lda oxygen              ;Die if run out of oxygen,
                 beq ASF_Die             ;or if player goes to nether tunnel entrance
-                jsr IsAtNetherTunnelEntrance
+                lda actXH+ACTI_PLAYER   ;or to the corridor (avoid elevator script load thrashing)
+                clc
+                adc actYH+ACTI_PLAYER
+                cmp #$6e+$54
                 bcs ASF_Die
-ASF_CoordOK:    lda #AIMODE_FOLLOW
+                cmp #$4a+$42
+                bcc ASF_Die
+                lda #AIMODE_FOLLOW
                 sta actAIMode,x
                 lda #ACTI_PLAYER
                 sta actAITarget,x
@@ -446,12 +457,6 @@ ASF_DTCLoop:    lda codes+MAX_CODES*3-3,x
                 lda #<txtAfterSurgeryNoAirDie
                 ldx #>txtAfterSurgeryNoAirDie
                 jmp SpeakLine
-
-IsAtNetherTunnelEntrance:
-                lda actXH+ACTI_PLAYER
-                clc
-                adc actYH+ACTI_PLAYER
-                cmp #$6e+$54
 ASF_DieWait:    rts
 
         ; After surgery "no air" dialogue
@@ -551,9 +556,7 @@ CRS_NoEffect:   rts
         ; Modifies: various
 
 DestroyCombatRobotSaboteur:
-                lda #PLOT_ELEVATOR1             ;Make lower labs safe again + elevator back online
-                jsr SetPlotBit
-                lda #PLOT_LOWERLABSNOAIR
+                lda #PLOT_LOWERLABSNOAIR        ;Make lower labs safe again
                 jsr ClearPlotBit
                 jmp ExplodeEnemy3_Ofs24
 
