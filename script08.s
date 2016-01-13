@@ -222,8 +222,6 @@ AS_1:           jsr AfterSurgeryRun             ;Ensure player position right wh
                 lda #LOW_BATTERY
                 sta battery+1
 AS_1BatteryOK:  jsr AddQuestScore
-                lda #SFX_POWERUP
-                jsr PlaySfx
                 inc scriptVariable
                 ldy #ACT_SCIENTIST2
                 lda #<txtAfterSurgery_1
@@ -246,6 +244,11 @@ AS_2NoExplosion:lda #ACT_SCIENTIST3
                 inc scriptVariable
 AS_2Wait:       rts
 
+HeavyShake:     lda #$02
+                sta shakeScreen
+                lda #SFX_EXPLOSION
+                jmp PlaySfx
+
 AS_3:           inc scriptVariable
                 ldy #ACT_SCIENTIST3
                 lda #<txtAfterSurgery_2
@@ -264,11 +267,7 @@ AS_4:           lda #ACT_HIGHWALKER
                 sta actAIMode,x
                 lda #HP_SCIENTIST1              ;Make possible to die
                 sta actHp,x
-HeavyShake:     lda #SFX_EXPLOSION              ;One final shake + explosion
-                jsr PlaySfx
-                lda #$02
-                sta shakeScreen
-                rts
+                jmp HeavyShake                  ;One more shake + explosion as walker appears
 
 AS_5:           lda #ACT_HIGHWALKER
                 jsr FindActor
@@ -281,11 +280,17 @@ AS_5:           lda #ACT_HIGHWALKER
                 plp
                 lda #JOY_DOWN+JOY_RIGHT
                 bcc AS_5Duck
+                lda AA_ItemFlashCounter+1       ;Shake screen until walker visibly onscreen
+                asl
+                and #$02
+                sta shakeScreen
                 lda #0
 AS_5Duck:       sta actMoveCtrl,x
                 lda actF1,x
                 cmp #FR_DIE+2
                 bcc AS_5Wait
+                lda #75                        ;Make the corpse stay slightly longer
+                sta actTime,x
 AS_5Done:       lda #ACT_SCIENTIST3
                 jsr FindActor
                 lda #AIMODE_SNIPER
@@ -383,6 +388,10 @@ AfterSurgeryZone:
                 sta actScriptEP+1
                 lda #PLOT_LOWERLABSNOAIR
                 jmp SetPlotBit
+                lda #PLOT_ELEVATOR1             ;Elevator locked again
+                jsr ClearPlotBit
+                lda #PLOT_ELEVATORMSG           ;Make sure this is set so that Amos doesn't
+                jsr SetPlotBit                  ;speak from beyond
 ASZ_Stop:       jmp StopZoneScript
 
         ; After surgery follow script (refresh follow mode & zone script)
@@ -394,14 +403,8 @@ ASZ_Stop:       jmp StopZoneScript
 AfterSurgeryFollow:
                 ldx actIndex
                 lda oxygen              ;Die if run out of oxygen,
-                beq ASF_Die             ;almost reach lift,
-                lda actXH+ACTI_PLAYER   ;or if player goes to nether tunnel
-                cmp #$39
-                bcc ASF_Die
-                cmp #$6d
-                bcc ASF_CoordOK
-                lda actYH+ACTI_PLAYER
-                cmp #$53
+                beq ASF_Die             ;or if player goes to nether tunnel entrance
+                jsr IsAtNetherTunnelEntrance
                 bcs ASF_Die
 ASF_CoordOK:    lda #AIMODE_FOLLOW
                 sta actAIMode,x
@@ -420,19 +423,26 @@ ASF_Die:        ldx actIndex
                 lda actSX,x                 ;Wait for zero X-speed for the speech bubble
                 bne ASF_DieWait
                 jsr StopZoneScript
-                ldx actIndex
-                lda #-15*8
-                sta temp4
-                lda #ITEM_EMPGENERATOR
-                jsr DI_ItemNumber
-                lda #ITEM_NONE
-                sta actWpn,x
                 lda #<EP_AFTERSURGERYNOAIRDIE
                 sta actScriptEP+1
+ASF_DieTellCode:ldx #$02
+ASF_DTCLoop:    lda codes+MAX_CODES*3-3,x
+                and #$7f
+                sta codes+MAX_CODES*3-3,x   ;Unscramble code forcibly now (for testing)
+                ora #$30
+                sta txtNetherTunnelCode,x
+                dex
+                bpl ASF_DTCLoop
                 ldy #ACT_SCIENTIST3
                 lda #<txtAfterSurgeryNoAirDie
                 ldx #>txtAfterSurgeryNoAirDie
                 jmp SpeakLine
+
+IsAtNetherTunnelEntrance:
+                lda actXH+ACTI_PLAYER
+                clc
+                adc actYH+ACTI_PLAYER
+                cmp #$6e+$54
 ASF_DieWait:    rts
 
         ; After surgery "no air" dialogue
@@ -468,7 +478,13 @@ AfterSurgeryNoAirDie:
                 jsr SetNotPersistent
                 lda #JOY_DOWN
                 sta actMoveCtrl,x
-                jmp DeathFlickerAndRemove
+                jsr DeathFlickerAndRemove
+                lda actT,x
+                bne ASNAD_NotRemoved
+                lda #-12*8
+                sta temp4
+                lda #ITEM_EMPGENERATOR
+                jmp DI_ItemNumber           ;Drop weapon when vanishing
 
         ; Tables & variables
 
@@ -498,10 +514,12 @@ txtAfterSurgery_2:
 txtAfterSurgery_3:
                 dc.b 34,"AMOS.. TOO LATE.",34,0
 txtAfterSurgery_4:
-                dc.b 34,"YOU OK? WE NEED TO GET OUT OF HERE.",34,0
+                dc.b 34,"YOU OK? WE NEED TO MOVE. THERE COULD BE MORE AT ANY MOMENT.",34,0
 txtAfterSurgeryNoAir:
-                dc.b 34,"DO YOU NOTICE? IT'S HARDER TO BREATH. DAMN.. IT'S THE AI DOING THIS!",34,0
+                dc.b 34,"DO YOU NOTICE? IT'S HARDER TO BREATHE. DAMN.. IT'S THE AI DOING THIS!",34,0
 txtAfterSurgeryNoAirDie:
-                dc.b 34,"CAN'T.. MAKE IT FURTHER. YOU GO..",34,0
+                dc.b 34,"I CAN'T GO ON.. BUT I REMEMBER THE CODE. IT'S "
+txtNetherTunnelCode:
+                dc.b "000. GO!",34,0
 
                 checkscriptend

@@ -64,10 +64,24 @@ ServerRoomComputer:
                 inc temp2
                 lda lvlObjB+$4e
                 jsr PrintSubnetText
+                ldy #0
+                sty temp1
+                ldy #5
+                sty temp2
                 lda #PLOT_ELEVATOR1
                 jsr GetPlotBit
                 beq SRC_SecurityOn
-SRC_SecurityOff:ldx #2
+SRC_SecurityOff:
+                lda #<txtProtocolOff
+                ldx #>txtProtocolOff
+                bne SRC_Common
+SRC_SecurityOn:
+                lda #<txtProtocolOn
+                ldx #>txtProtocolOn
+SRC_Common:     jsr PrintMultiRow
+                lda codes+MAX_CODES*3-1
+                bmi SRC_NoCode
+SRC_ShowCode:   ldx #2
                 ldy #4
 SRC_CodeLoop:   lda codes+MAX_CODES*3-3,x
                 ora #$30
@@ -83,24 +97,16 @@ SRC_CodeLoop:   lda codes+MAX_CODES*3-3,x
                 ldx #>EP_MOVESCIENTISTS
                 jsr SetScript
 SRC_AlreadyMoved:
-                lda #<txtProtocolOff
-                ldx #>txtProtocolOff
-                bne SRC_Common
-SRC_SecurityOn: lda #26
+                jmp WaitForExit
+SRC_NoCode:     lda #26
                 sta temp1
                 lda #7
                 sta temp2
                 lda #<txtNA
                 ldx #>txtNA
                 jsr PrintText
-                lda #<txtProtocolOn
-                ldx #>txtProtocolOn
-SRC_Common:     ldy #0
-                sty temp1
-                ldy #5
-                sty temp2
-                jsr PrintMultiRow
                 jmp WaitForExit
+
 PrintSubnetText:bmi PST_Isolated
                 lda #<txtConnected
                 ldx #>txtConnected
@@ -291,6 +297,8 @@ BS2_3:          inc scriptVariable
                 sta actAIMode,x
                 lda #ITEM_EMPGENERATOR
                 sta actWpn,x
+                lda #SFX_OBJECT
+                jsr PlaySfx
                 ldy #ACT_SCIENTIST3
                 lda #<txtBeginSurgery2_2
                 ldx #>txtBeginSurgery2_2

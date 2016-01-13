@@ -1745,7 +1745,7 @@ alPersistentNPC:dc.w MovePersistentNPC          ;Update routine
                 dc.w 0                          ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
                 dc.b DROP_NOTHING               ;Itemdrop type or item override
-                dc.b $2f                        ;AI offense random AND-value
+                dc.b $3f                        ;AI offense random AND-value
                 dc.b $00                        ;AI defense probability
                 dc.b AB_NONE                    ;Attack directions
                 dc.b AMF_DUCK                   ;Move flags
