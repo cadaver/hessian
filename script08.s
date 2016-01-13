@@ -558,6 +558,12 @@ CRS_NoEffect:   rts
 DestroyCombatRobotSaboteur:
                 lda #PLOT_LOWERLABSNOAIR        ;Make lower labs safe again
                 jsr ClearPlotBit
+                lda #$00
+                sta ULO_NoAirFlag+1
+                stx temp6
+                lda #MUSIC_MYSTERY              ;Restore original music
+                jsr PlaySong
+                ldx temp6
                 jmp ExplodeEnemy3_Ofs24
 
         ; Tables & variables

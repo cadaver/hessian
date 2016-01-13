@@ -38,7 +38,8 @@ MoveEyePhase1:  lda lvlObjB+$1e                 ;Close door immediately once pla
 MEye_CloseDoor: ldy #$1e
                 jsr InactivateObject
                 ldx actIndex
-MEye_DoorDone:  inc ULO_NoAirFlag+1             ;Cause air to be sucked away during battle
+MEye_DoorDone:  lda #$01
+                sta ULO_NoAirFlag+1             ;Cause air to be sucked away during battle
 MEye_DoorOpen:  lda #DROID_SPAWN_DELAY
                 sta MEye_SpawnDelay+1
                 lda #ACT_SUPERCPU               ;Wait until all CPUs destroyed
@@ -105,7 +106,6 @@ MoveEyePhase2:  lda #DROID_SPAWN_DELAY-25
                 sta MEye_SpawnDelay+1
                 lda actHp,x
                 beq MEye_Destroy
-                inc ULO_NoAirFlag+1             ;Cause air to be sucked away during battle
                 lda actF1,x
                 cmp #5
                 bcc MEye_Turret
@@ -153,7 +153,9 @@ MEye_StoreCtrl: sta actCtrl,x
 MEye_Animate:   jsr AttackGeneric
                 lda #2
                 jmp MEye_SpawnDroid             ;Continue to spawn droids, now 2 at a time
-MEye_Destroy:   jsr Random
+MEye_Destroy:   lda #$00
+                sta ULO_NoAirFlag+1             ;Restore oxygen now
+                jsr Random
                 pha
                 and #$03
                 sta shakeScreen

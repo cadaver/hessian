@@ -694,7 +694,6 @@ UA_Paused:      stx scrollSX                    ;Stop scrolling when paused & on
 
 UpdateActors:   ldx #$00
                 stx shakeScreen
-                stx ULO_NoAirFlag+1
                 lda menuMode
                 cmp #MENU_PAUSE
                 bcs UA_Paused

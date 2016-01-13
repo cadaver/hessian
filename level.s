@@ -789,7 +789,7 @@ SaveActorSub:   lda lvlActX,x
 ULO_Paused:
 ULO_ToxinDelay:
                 rts
-  
+
         ; Update level objects. Handle operation, auto-deactivation and actually entering doors.
         ; Also check for picking up items & player health regeneration and toxin damage
         ;
@@ -868,12 +868,6 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
 
 ULO_NoRecharge:
 ULO_NoAirFlag:  lda #$00
-                bne ULO_NoAir
-                lda levelNum                    ;Scripted sucking of air in lower labs
-                cmp #$08                        ;(should really be script code, but hard to do
-                bne ULO_CheckHeadUnderWater     ;without interfering with other scripts)
-                lda #PLOT_LOWERLABSNOAIR
-                jsr GetPlotBit
                 beq ULO_CheckHeadUnderWater
 ULO_NoAir:      lda AA_ItemFlashCounter+1
                 and #$03
@@ -1294,9 +1288,18 @@ RCP_NoObstacle:                                 ;Fall through to CenterPlayer
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-CenterPlayer:   ldy #ZONEH_MUSIC
-                lda (zoneLo),y
-                jsr PlaySong                    ;Play zone's music
+CenterPlayer:   lda #$00
+                ldy levelNum                    ;Scripted sucking of air in lower labs
+                cpy #$08                        ;(should really be script code, but hard to do
+                bne CP_NotLowerLabs             ;without interfering with other scripts)
+                lda #PLOT_LOWERLABSNOAIR
+                jsr GetPlotBit
+                beq CP_NotLowerLabs
+                lda #$01
+CP_NotLowerLabs:sta ULO_NoAirFlag+1             ;Play zone's music. No air flag keeps
+                ldy #ZONEH_MUSIC                ;the boss / danger music variation going
+                ora (zoneLo),y
+                jsr PlaySong
                 lda limitR
                 sec
                 sbc #10
