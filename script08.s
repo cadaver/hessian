@@ -16,6 +16,8 @@
                 dc.w AfterSurgeryNoAir
                 dc.w AfterSurgeryFollow
                 dc.w AfterSurgeryNoAirDie
+                dc.w CombatRobotSaboteur
+                dc.w DestroyCombatRobotSaboteur
                 
         ; Tunnel machine script routine
         ;
@@ -260,6 +262,11 @@ AS_4:           lda #ACT_HIGHWALKER
                 lda lvlActY,y                   ;Unhide waiting enemy now
                 and #$7f
                 sta lvlActY,y
+                lda #ACT_COMBATROBOTSABOTEUR
+                jsr FindLevelActor
+                lda lvlActY,y                   ;Unhide the saboteur enemy
+                and #$7f
+                sta lvlActY,y
                 inc scriptVariable
                 lda #ACT_SCIENTIST2
                 jsr FindActor
@@ -267,6 +274,8 @@ AS_4:           lda #ACT_HIGHWALKER
                 sta actAIMode,x
                 lda #HP_SCIENTIST1              ;Make possible to die
                 sta actHp,x
+                lda #MUSIC_MYSTERY+1
+                jsr PlaySong
                 jmp HeavyShake                  ;One more shake + explosion as walker appears
 
 AS_5:           lda #ACT_HIGHWALKER
@@ -485,6 +494,68 @@ AfterSurgeryNoAirDie:
                 sta temp4
                 lda #ITEM_EMPGENERATOR
                 jmp DI_ItemNumber           ;Drop weapon when vanishing
+
+        ; Saboteur robot
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+CombatRobotSaboteur:
+                lda #FR_ATTACK+3
+                sta actF2,x
+                lda #FR_STAND
+                sta actF1,x
+                jsr Random
+                and #$08
+                sta temp1
+                lda actXL,x
+                and #$f0
+                ora temp1
+                sta actXL,x
+                jsr Random
+                and #$1f
+                clc
+                adc actTime,x
+                sta actTime,x
+                bcc CRS_NoEffect
+                lda #ACTI_FIRSTNPCBULLET
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc CRS_NoEffect
+                lda #<(8*8)
+                sta temp1
+                lda #>(8*8)
+                sta temp2
+                lda #<(-24*8)
+                sta temp3
+                lda #>(-24*8)
+                sta temp4
+                lda #ACT_EMP
+                jsr SpawnWithOffset
+                tya
+                tax
+                lda #COLOR_FLICKER
+                sta actFlash,x
+                lda #8
+                sta actTime,x
+                lda #0
+                sta actBulletDmgMod-ACTI_FIRSTPLRBULLET,x
+                lda actIndex
+CRS_NoEffect:   rts
+
+        ; Saboteur robot death
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+DestroyCombatRobotSaboteur:
+                lda #PLOT_ELEVATOR1             ;Make lower labs safe again + elevator back online
+                jsr SetPlotBit
+                lda #PLOT_LOWERLABSNOAIR
+                jsr ClearPlotBit
+                jmp ExplodeEnemy3_Ofs24
 
         ; Tables & variables
 

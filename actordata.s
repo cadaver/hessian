@@ -70,6 +70,7 @@ ACT_SCIENTIST1 = 68
 ACT_SCIENTIST2 = 69
 ACT_SCIENTIST3 = 70
 ACT_HACKER      = 71
+ACT_COMBATROBOTSABOTEUR = 72
 
 ACT_FIRSTPERSISTENTNPC = ACT_SCIENTIST2
 
@@ -248,6 +249,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adScientist2
                 dc.b <adScientist3
                 dc.b <adHacker
+                dc.b <adCombatRobot
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -320,6 +322,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adScientist2
                 dc.b >adScientist3
                 dc.b >adHacker
+                dc.b >adCombatRobot
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -763,6 +766,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alPersistentNPC
                 dc.b <alPersistentNPC
                 dc.b <alPersistentNPC
+                dc.b <alCombatRobotSaboteur
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -835,6 +839,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alPersistentNPC
                 dc.b >alPersistentNPC
                 dc.b >alPersistentNPC
+                dc.b >alCombatRobotSaboteur
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -1758,4 +1763,17 @@ alPersistentNPC:dc.w MovePersistentNPC          ;Update routine
                 dc.b -4                         ;Height in chars for headbump check (negative)
                 dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
 
+alCombatRobotSaboteur:
+                dc.w USESCRIPT|EP_COMBATROBOTSABOTEUR ;Update routine
+                dc.b GRP_ENEMIES                ;Actor flags
+                dc.b 8                          ;Horizontal size
+                dc.b 36                         ;Size up
+                dc.b 0                          ;Size down
+                dc.w USESCRIPT|EP_DESTROYCOMBATROBOTSABOTEUR ;Destroy routine
+                dc.b HP_COMBATROBOT             ;Initial health
+                dc.b NO_MODIFY                  ;Damage modifier
+                dc.w 500                        ;Score from kill
+                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
+                dc.b DROP_NOTHING               ;Itemdrop type or item override
+                
 alThroneChief:
