@@ -24,6 +24,8 @@ elevatorSound   = toxinDelay
                 dc.w HackerFollow
                 dc.w HackerFollowZone
                 dc.w RadioSecurityCenter
+                dc.w CombatRobotSaboteur
+                dc.w DestroyCombatRobotSaboteur
 
         ; Health recharger script routine
         ;
@@ -569,6 +571,72 @@ RadioSecurityCenter:
                 ldy #ACT_PLAYER
                 jmp SpeakLine
 RSC_Skip:       rts
+
+        ; Saboteur robot
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+CombatRobotSaboteur:
+                lda #FR_ATTACK+3
+                sta actF2,x
+                lda #FR_STAND
+                sta actF1,x
+                jsr Random
+                and #$08
+                sta temp1
+                lda actXL,x
+                and #$f0
+                ora temp1
+                sta actXL,x
+                jsr Random
+                and #$1f
+                clc
+                adc actTime,x
+                sta actTime,x
+                bcc CRS_NoEffect
+                lda #ACTI_FIRSTNPCBULLET
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc CRS_NoEffect
+                lda #<(8*8)
+                sta temp1
+                lda #>(8*8)
+                sta temp2
+                lda #<(-24*8)
+                sta temp3
+                lda #>(-24*8)
+                sta temp4
+                lda #ACT_EMP
+                jsr SpawnWithOffset
+                tya
+                tax
+                lda #COLOR_FLICKER
+                sta actFlash,x
+                lda #8
+                sta actTime,x
+                lda #0
+                sta actBulletDmgMod-ACTI_FIRSTPLRBULLET,x
+                lda actIndex
+CRS_NoEffect:   rts
+
+        ; Saboteur robot death
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+DestroyCombatRobotSaboteur:
+                lda #PLOT_LOWERLABSNOAIR        ;Make lower labs safe again
+                jsr ClearPlotBit
+                lda #$00
+                sta ULO_NoAirFlag+1
+                stx temp6
+                lda #MUSIC_MYSTERY              ;Restore original music
+                jsr PlaySong
+                ldx temp6
+                jmp ExplodeEnemy3_Ofs24
 
         ; Elevator tables
 

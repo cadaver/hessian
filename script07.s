@@ -47,7 +47,12 @@ DS_NotBoth:     rts
         ; Modifies: various
 
 ServerRoomComputer:
-                ;jmp FindFilter
+                if SKIP_PLOT > 0
+                lda #$80
+                sta lvlObjB+$4d
+                sta lvlObjB+$4e
+                jsr DisconnectSubnet
+                endif
                 jsr SetupTextScreen
                 lda #0
                 sta temp1
@@ -144,10 +149,11 @@ MoveScientists: jsr StopScript
                 sta actScriptEP
                 lda #>EP_ESCORTSCIENTISTSSTART
                 sta actScriptF
-                lda #<EP_HACKER3                ;Also advance Jeff script
-                sta actScriptEP+2
-                lda #>EP_HACKER3
-                sta actScriptF+2
+                if SKIP_PLOT > 0
+                lda #PLOT_ESCORTCOMPLETE
+                jsr SetPlotBit
+                jmp FindFilter
+                endif
                 lda #<txtRadioMoveScientists
                 ldx #>txtRadioMoveScientists
 RadioMsg:       pha
@@ -176,6 +182,10 @@ MoveScientistSub:
 RadioConstruct: lda #PLOT_MOVESCIENTISTS
                 jsr GetPlotBit
                 beq HP_TryAgain
+                lda #<EP_HACKER3                ;Advance Jeff script now
+                sta actScriptEP+2
+                lda #>EP_HACKER3
+                sta actScriptF+2
                 lda #<txtRadioConstruct
                 ldx #>txtRadioConstruct
                 jmp RadioMsg
