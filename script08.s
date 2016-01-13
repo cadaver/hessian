@@ -172,7 +172,8 @@ TMI_Common:     jsr TM_TextCommon
         ; Returns: -
         ; Modifies: various
 
-RadioJormungandr:lda #<EP_RADIOJORMUNGANDRRUN
+RadioJormungandr:
+                lda #<EP_RADIOJORMUNGANDRRUN
                 ldx #>EP_RADIOJORMUNGANDRRUN
                 jsr SetScript
                 lda #SFX_RADIO
@@ -280,7 +281,11 @@ AS_4:           lda #ACT_HIGHWALKER
                 jsr FindActor
                 lda #AIMODE_IDLE
                 sta actAIMode,x
-                lda #HP_SCIENTIST1              ;Make possible to die
+                lda #$00
+                sta actMoveCtrl,x
+                sta actTime,x
+                sta actD,x
+                lda #HP_SCIENTIST2              ;Make possible to die
                 sta actHp,x
                 lda #MUSIC_MYSTERY+1
                 jsr PlaySong
@@ -290,27 +295,31 @@ AS_5:           lda #ACT_HIGHWALKER
                 jsr FindActor
                 bcc AS_5Wait
                 lda actXH,x
-                cmp #$46
-                php
+                pha
                 lda #ACT_SCIENTIST2
                 jsr FindActor
-                plp
-                lda #JOY_DOWN+JOY_RIGHT
-                bcc AS_5Duck
-                lda AA_ItemFlashCounter+1       ;Shake screen until walker visibly onscreen
+                pla
+                ldy actHp,x
+                beq AS_5Dead
+                cmp #$46
+                bcs AS_5Shake
+                inc actTime,x
+                lda actTime,x
+                cmp #8
+                bcc AS_5RunRight
+                bcs AS_5RunLeft
+AS_5Shake:      lda AA_ItemFlashCounter+1       ;Shake screen until walker visibly onscreen
                 asl
                 and #$02
                 sta shakeScreen
-                lda #0
-AS_5Duck:       sta actMoveCtrl,x
-                lda actHp,x
-                bne AS_5Wait
-                lda #75                         ;Make the corpse stay slightly longer
+                rts
+AS_5RunRight:   lda #JOY_RIGHT
+                skip2
+AS_5RunLeft:    lda #JOY_LEFT
+                sta actMoveCtrl,x
+                rts
+AS_5Dead:       lda #75                         ;Make the corpse stay slightly longer
                 sta actTime,x
-                lda #ACT_HIGHWALKER
-                jsr FindActor
-                lda #ITEM_NONE                  ;No further attacks by the high walker
-                sta actWpn,x                    ;(reduce multiplexer load, prevent damage to player)
                 lda #ACT_SCIENTIST3
                 jsr FindActor                   ;Linda uses EMP to destroy (2 shots needed)
                 lda #AIMODE_SNIPER
