@@ -144,11 +144,13 @@ MoveScientists: jsr StopScript
                 sta actScriptEP
                 lda #>EP_ESCORTSCIENTISTSSTART
                 sta actScriptF
-                lda #SFX_RADIO
-                jsr PlaySfx
-                ldy #ACT_PLAYER
                 lda #<txtRadioMoveScientists
                 ldx #>txtRadioMoveScientists
+RadioMsg:       pha
+                lda #SFX_RADIO
+                jsr PlaySfx
+                pla
+                ldy #ACT_PLAYER
                 jmp SpeakLine
 
 MoveScientistSub:
@@ -170,12 +172,9 @@ MoveScientistSub:
 RadioConstruct: lda #PLOT_MOVESCIENTISTS
                 jsr GetPlotBit
                 beq HP_TryAgain
-                lda #SFX_RADIO
-                jsr PlaySfx
-                ldy #ACT_PLAYER
                 lda #<txtRadioConstruct
                 ldx #>txtRadioConstruct
-                jmp SpeakLine
+                jsr RadioMsg
 HP_TryAgain:    ldy lvlObjNum
                 jmp InactivateObject
 
@@ -186,13 +185,6 @@ HP_TryAgain:    ldy lvlObjNum
         ; Modifies: various
 
 FindFilter:     jsr StopZoneScript
-
-                ldy lvlObjNum                   ;Hack for testing (when this script is executed by a door)
-                lda #$00
-                sta lvlObjDL,y
-                sta lvlObjDH,y
-                sta lvlObjB,y
-
                 lda #ACT_SCIENTIST3
                 jsr FindLevelActor
                 lda #$3f
@@ -207,12 +199,9 @@ FindFilter:     jsr StopZoneScript
                 sta actScriptEP
                 lda #>EP_BEGINSURGERY
                 sta actScriptF
-                lda #SFX_RADIO
-                jsr PlaySfx
-                ldy #ACT_PLAYER
                 lda #<txtRadioFindFilter
                 ldx #>txtRadioFindFilter
-                jmp SpeakLine
+                jsr RadioMsg
 MoveScientistSub2:
                 sta lvlActX,y                   ;Set also Y & level so that this can be used as shortcut in testing
                 lda #$56
