@@ -482,20 +482,18 @@ IP_InitInventory:
                 sta invCount-1,x
                 dex
                 bne IP_InitInventory
+                ldy lvlDataActBitsStart+$04 ;Disable enemies from level4, ids 16,17,18,19 (must not change.) Will be enabled later
+                lda #$ff-$40-$80
+                sta lvlStateBits+2,y
+                lda #$ff-$01-$02
+                sta lvlStateBits+3,y
                 lda #ITEM_FISTS
                 sta itemIndex
                 sta lastItemIndex
-                lda #ITEM_FISTS
                 ldx #1
                 jsr AddItem
                 if STARTITEM_CHEAT>0
                 lda #ITEM_MINIGUN
-                ldx #50
-                jsr AddItem
-                lda #ITEM_PARTS
-                ldx #50
-                jsr AddItem
-                lda #ITEM_ARMOR
                 ldx #50
                 jsr AddItem
                 endif
