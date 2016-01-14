@@ -18,7 +18,6 @@ currentIndex    = wpnBits
                 org scriptCodeStart
 
                 dc.w RecyclingStation
-                dc.w HideoutDoor
                 dc.w MoveRotorDrone
                 dc.w DestroyRotorDrone
                 dc.w Hacker
@@ -319,24 +318,6 @@ RSC_NotUp:      lsr
                 ldy #$00
                 beq RSC_HasMove
 
-        ; Hideout door script routine (check that rotordrone is destroyed)
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-HideoutDoor:    lda #SFX_OBJECT
-                jsr PlaySfx
-                lda #PLOT_ROTORDRONE
-                jsr GetPlotBit
-                beq HD_Offline
-                ldy lvlObjNum
-                jmp ToggleObject
-HD_Offline:     lda #<txtHideoutLocked
-                ldx #>txtHideoutLocked
-                ldy #REQUIREMENT_TEXT_DURATION
-                jmp PrintPanelText
-
         ; Rotor drone boss move routine
         ;
         ; Parameters: X actor index
@@ -430,7 +411,7 @@ MRD_NoExplosion:
 DestroyRotorDrone:
                 lda #-2*8                       ;Give upward speed so that the fall lasts longer
                 sta actSY,x
-                lda #PLOT_ROTORDRONE
+                lda #PLOT_HIDEOUTOPEN
                 jmp SetPlotBit
 
         ; Hacker script routine (initial scene in the hideout)
@@ -577,7 +558,6 @@ txtExit:        dc.b "EXIT",0
 txtCost:        dc.b "COST",0
 txtArrow:       dc.b 62,0
 
-txtHideoutLocked:dc.b "LOCKED",0
 txtHacker:      dc.b 34,"HEY. YOU MUST BE KIM. THE SCIENTISTS TOLD YOU MIGHT BE COMING. "
                 dc.b "I'M JEFF. SORRY ABOUT THAT SENTRY DRONE, HAD TO MAKE SURE YOU'RE NOT A MACHINE. "
                 dc.b "I'D ESTIMATE YOUR FIGHTING STYLE AS "

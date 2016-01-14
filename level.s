@@ -1076,13 +1076,11 @@ ULO_NoSound:    txa
                 beq OO_RequirementOK            ;Script object doesn't have requirement
                 lda lvlObjDH,y                  ;Check requirement item from object parameters if has them
                 bmi OO_RequirementScript        ;Side doors may also have a scripted requirement check
-                beq OO_RequirementOK            ;(e.g. check plotbit, enter 3-digit code..)
+                beq OO_RequirementOK            ;(e.g. enter 3-digit code..)
                 sta temp3
                 tay
                 jsr FindItem
                 bcs OO_RequirementOK
-                lda #SFX_OBJECT
-                jsr PlaySfx
                 lda #<txtRequired
                 ldx #>txtRequired
                 ldy #REQUIREMENT_TEXT_DURATION
@@ -1096,8 +1094,17 @@ OO_RequirementOK:
 OO_RequirementScript:
                 and #$7f
                 tax
+                beq OO_RequirementPlotBit       ;If script number 0, check plotbit instead
                 lda lvlObjDL,y
                 jmp ExecScript
+OO_RequirementPlotBit:
+                lda lvlObjDL,y
+                jsr GetPlotBit
+                bne OO_RequirementOK
+                lda #<txtLocked
+                ldx #>txtLocked
+                ldy #REQUIREMENT_TEXT_DURATION
+                jmp PrintPanelText
 ULO_NoOperate:  lda lvlObjB,y
                 and #OBJ_TYPEBITS+OBJ_ACTIVE
                 cmp #OBJTYPE_DOOR+OBJ_ACTIVE

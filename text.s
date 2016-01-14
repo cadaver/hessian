@@ -152,6 +152,7 @@ txtRequired:    dc.b "NEED ",0
 txtInf:         dc.b "*INF"
 txtLoad:        dc.b "LOAD"
 txtPause:       dc.b " RESUME RETRY SAVE&END",0
+txtLocked:      dc.b "LOCKED",0
 
         ; System messages
 
