@@ -1363,19 +1363,15 @@ CP_NotOverUp:   sta mapY
                 stx attackTime                  ;Reset global attack timer
                 dex
                 stx ULO_COSubY+1                ;Reset object search
-                ldx #ACTI_PLAYER
-                jsr GetCharInfo1Above
-                and #CI_WATER                   ;Check if player standing in water
-                beq CP_NotInWater               ;and set water bit now to prevent
-                lda #MB_INWATER                 ;creating a splash on door entry /
-CP_NotInWater:  ora #MB_GROUNDED                ;checkpoint restore
-                sta actMB+ACTI_PLAYER
+                stx CreateSplash+1              ;Disable creation of splashes during the initial update
                 jsr RedrawScreen
                 jsr SetZoneColors
                 jsr AddAllActorsNextFrame
                 jsr AddActors
                 jsr UpdateActors                ;Update actors once first to make sure
                                                 ;e.g. weapons are shown correctly
+                lda #ACTI_FIRSTEFFECT
+                sta CreateSplash+1              ;Now can allow again
 
         ; Game main loop
 

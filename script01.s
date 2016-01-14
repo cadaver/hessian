@@ -1,6 +1,7 @@
                 include macros.s
                 include mainsym.s
 
+numberIndex     = menuCounter
 rechargerColor  = menuCounter
 elevatorSound   = toxinDelay
 
@@ -176,8 +177,6 @@ EL_Exit:        jsr StopScript
         ; Returns: -
         ; Modifies: various
 
-numberIndex     = menuCounter
-
 EnterCode:      lda #0
                 ldx #2
 EC_Reset:       sta codeEntry,x
@@ -344,8 +343,6 @@ ESS_WaitUntilClose:
         ; Modifies: various
 
 EscortScientistsRefresh:
-                lda menuMode
-                bne ESR_InDialogue
                 lda #<EP_ESCORTSCIENTISTSZONE   ;Set zone script which keeps the scientists
                 ldx #>EP_ESCORTSCIENTISTSZONE   ;warping to player
                 jsr SetZoneScript
@@ -385,6 +382,7 @@ ESR_HasGoal:    lda #<EP_FINDFILTER
                 lda #>EP_HACKER4
                 sta actScriptF+2
 ESR_SkipJeffScript:
+                jsr AddQuestScore
                 lda #PLOT_ESCORTCOMPLETE
                 jmp SetPlotBit
 
@@ -439,7 +437,6 @@ ESF_Stop:       cpy #ACT_SCIENTIST3
                 lda #$00                        ;Stop actor script exec for now
                 sta actScriptF
                 sta actScriptF+1
-                jsr AddQuestScore
                 ldy #ACT_SCIENTIST2
                 lda #<txtEscortFinish
                 ldx #>txtEscortFinish
@@ -566,20 +563,14 @@ HackerFollowZone:
                 lda levelNum
                 cmp #$0f                        ;Success condition
                 beq HFZ_Finished
-                cmp #$01                        ;Allowed levels for route
-                beq HFZ_LevelOK
-                cmp #$03
-                beq HFZ_LevelOK
-                cmp #$04
-                beq HFZ_LevelOK
-                cmp #$06
-                beq HFZ_LevelOK
-                cmp #$08
-                beq HFZ_LevelOK
-HFZ_LevelFail:  jmp StopZoneScript
+                cmp #$07                        ;Never go to caves
+                beq HFZ_LevelFail
+                cmp #$0b                        ;Or the 2nd courtyard
+                beq HFZ_LevelFail
 HFZ_LevelOK:    lda #ACT_HACKER
                 jmp TransportNPCToPlayer
-HFZ_Finished:   jsr AddQuestScore
+HFZ_Finished:   jsr HFZ_LevelOK
+                jsr AddQuestScore
                 lda #PLOT_INOLDTUNNELS2
                 jsr SetPlotBit
                 lda #ACT_HACKER                 ;Todo: continue story from here
@@ -587,8 +578,8 @@ HFZ_Finished:   jsr AddQuestScore
                 lda #$20+AIMODE_TURNTO          ;Stop following
                 sta lvlActF,y
                 lda #$00
-                sta actScriptF+1                ;No actor script for now
-HFZ_Stop:       jmp StopZoneScript              ;No zone script for now
+                sta actScriptF+2                ;No actor script for now
+HFZ_LevelFail:  jmp StopZoneScript              ;No zone script
 
         ; Radio speech when entering security center
         ;
@@ -685,7 +676,6 @@ elevatorAcc:    dc.b 2,-2,-2,2
 
 codeObject:     dc.b $12,$29,$27,$16,$26,$22,$08,$31
 
-
 npcStopPos:     dc.b $4e,$4d
 npcBrakeTbl:    dc.b 4,0
 
@@ -701,7 +691,8 @@ txtHealthRecharger:
 txtBatteryRecharger:
                 dc.b "BATTERY RECHARGED",0
 txtElevatorLocked:
-                dc.b "ELEVATOR LOCKED",0
+                dc.b "ELEVATOR "
+                textjump txtLocked
 txtEnterCode:   dc.b "ENTER CODE",0
 
 txtRadioUpperLabsElevator:

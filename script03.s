@@ -503,7 +503,9 @@ H4_Ready:       lda #PLOT_LOWERLABSNOAIR        ;If late in the game, the sabota
                 jsr FindItem
                 bcs H4_HasPass
 H4_Unsafe:      rts
-H4_HasPass:     lda #<EP_HACKERFOLLOW
+H4_HasPass:     lda #PLOT_HIDEOUTOPEN           ;Can not return to hideout
+                jsr ClearPlotBit
+                lda #<EP_HACKERFOLLOW
                 sta actScriptEP+2
                 lda #>EP_HACKERFOLLOW
                 sta actScriptF+2

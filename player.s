@@ -832,6 +832,7 @@ PMS_NoSound:    rts
         ; Modifies: A,Y
 
 CreateSplash:   lda #ACTI_FIRSTEFFECT
+                bmi CS_NoFreeActor
                 ldy #ACTI_LASTEFFECT
                 jsr GetFreeActor
                 bcc CS_NoFreeActor
