@@ -280,11 +280,14 @@ RadioUpperLabsElevator:
                 lda #<EP_RADIOSECURITYPASS
                 ldx #>EP_RADIOSECURITYPASS
                 jsr SetScript
-                lda #SFX_RADIO
-                jsr PlaySfx
-                ldy #ACT_PLAYER
                 lda #<txtRadioUpperLabsElevator
                 ldx #>txtRadioUpperLabsElevator
+RadioSpeechCommon:
+                pha
+                lda #SFX_RADIO
+                jsr PlaySfx
+                pla
+                ldy #ACT_PLAYER
                 jmp SpeakLine
 RSP_HasItem:
 RULE_Wait:      rts
@@ -597,12 +600,9 @@ RadioSecurityCenter:
                 lda #PLOT_ELEVATOR1             ;If lower labs already visited/completed, skip this
                 jsr GetPlotBit
                 bne RSC_Skip
-                lda #SFX_RADIO
-                jsr PlaySfx
                 lda #<txtRadioSecurityCenter
                 ldx #>txtRadioSecurityCenter
-                ldy #ACT_PLAYER
-                jmp SpeakLine
+                jmp RadioSpeechCommon
 RSC_Skip:       rts
 
         ; Saboteur robot
@@ -633,25 +633,22 @@ CombatRobotSaboteur:
                 ldy #ACTI_LASTNPCBULLET
                 jsr GetFreeActor
                 bcc CRS_NoEffect
-                lda #<(8*8)
-                sta temp1
-                lda #>(8*8)
-                sta temp2
-                lda #<(-24*8)
-                sta temp3
-                lda #>(-24*8)
-                sta temp4
                 lda #ACT_EMP
-                jsr SpawnWithOffset
+                jsr SpawnActor
                 tya
                 tax
+                lda #8*8
+                jsr MoveActorX
+                lda #8*8
+                jsr MoveActorY
+                dec actYH,x
                 lda #COLOR_FLICKER
                 sta actFlash,x
                 lda #8
                 sta actTime,x
                 lda #0
-                sta actBulletDmgMod-ACTI_FIRSTPLRBULLET,x
-                lda actIndex
+                sta actBulletDmgMod-ACTI_FIRSTPLRBULLET,x ;Make sure the EMP doesn't do actual damage to anyone
+                ldx actIndex
 CRS_NoEffect:   rts
 
         ; Saboteur robot death
