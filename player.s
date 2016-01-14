@@ -958,12 +958,10 @@ ApplyUpgrades:  lda upgrade
                 and #UPG_MOVEMENT               ;Movement upgrade turns lower part armored
                 beq AU_NoBottomArmor
                 inx
-                inx
 AU_NoBottomArmor:
                 lda temp6
-                and #UPG_STRENGTH     ;Strength upgrade turns upper part armored
+                and #UPG_STRENGTH               ;Strength upgrade turns upper part armored
                 beq AU_NoTopArmor
-                iny
                 iny
 AU_NoTopArmor:  stx adPlayerBottomSprFile
                 sty adPlayerTopSprFile
