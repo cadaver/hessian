@@ -25,6 +25,8 @@ MP_GetNextTarget:
                 bne MP_GetNextTarget
                 jsr CheckActorCollision
                 bcc MP_GetNextTarget
+                txa
+                sta actFall,y                   ;Store damage source actor
                 lda #COLOR_FLICKER
                 sta actFlash,y
                 lda actTime,y                   ;Reduce fire "oxygen level"

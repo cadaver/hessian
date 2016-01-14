@@ -2242,7 +2242,9 @@ TransportNPCToPlayer:
                 sta lvlActX,y
                 lda actYH+ACTI_PLAYER
                 sta lvlActY,y
-                lda #$20+AIMODE_FOLLOW
+                lda actYL+ACTI_PLAYER
+                and #$c0
+                ora #$20+AIMODE_FOLLOW
                 sta lvlActF,y
                 lda levelNum
                 ora #ORG_GLOBAL

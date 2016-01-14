@@ -289,7 +289,7 @@ MF_Flash:       lda #DMG_FIRE
                 ldx actIndex
 MSC_NoRemove:
 MF_NoSpawn:     rts
-MF_Destroy:     ldy #ACTI_FIRSTPLRBULLET        ;Make sure player receives score
+MF_Destroy:     ldy actFall,x                   ;Damage source stored by the extinguisher bullet
                 jmp DestroyActor
 
         ; Smokecloud movement

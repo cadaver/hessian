@@ -459,15 +459,23 @@ HackerFollow:   ldx actIndex
                 lsr
                 bcs HF_NotInAir
                 lda actSY,x
-                bmi HF_NoFollow
-                lda actMoveCtrl,x       ;Clear jump control when landing
-                and #$ff-JOY_UP
-                sta actMoveCtrl,x
+                bpl HF_Landing
                 jmp HF_NoFollow
+HF_Landing:     lda actMoveCtrl,x       ;Clear jump control when landing
+                and #$7f-JOY_UP
+                bpl HF_StoreMoveCtrl
 HF_NotInAir:    lda levelNum            ;Try to jump over pits in service tunnels
                 cmp #$04
                 bne HF_NoChasmJump
-                jsr GetBlockNum
+
+                ldy actYH,x             ;Get block from current position
+                lda mapTblLo,y
+                sta zpDestLo
+                lda mapTblHi,y
+                sta zpDestHi
+                ldy actXH,x
+                lda (zpDestLo),y
+
                 cmp #156
                 beq HF_ChasmRight
                 cmp #157
@@ -497,28 +505,53 @@ HF_NoChasmJump: lda levelNum
                 bne HF_NoJump
                 lda actSX,x
                 bmi HF_NoJump
-HF_DoJump:      lda #AIMODE_IDLE
-                sta actAIMode,x
-                lda actMoveCtrl,x
+HF_DoJump:      lda actMoveCtrl,x
                 ora #JOY_UP  ;Jump as far as possible
+HF_StoreMoveCtrl:
                 sta actMoveCtrl,x
+                lda #AIMODE_IDLE
+                sta actAIMode,x
                 rts
-HF_NoJump:      lda #AIMODE_FOLLOW
+HF_NoJump:      lda #ACT_FIRE           ;If standing next to a fire, put it out
+                jsr FindActor
+                bcc HF_NoFire
+                txa
+                tay
+                ldx actIndex
+                lda actYH,y
+                cmp actYH,x
+                bne HF_NoFire
+                lda actXH,y
+                sbc actXH,x             ;C=1
+                cmp #$01
+                beq HF_FireRight
+                cmp #$ff
+                bne HF_NoFire
+HF_FireLeft:    lda actXL,x
+                bmi HF_NoFire           ;Must be standing at block left edge
+                lda #JOY_FIRE|JOY_DOWN|JOY_LEFT
+HF_FireCommon:  pha
+                lda #ITEM_EXTINGUISHER
+                sta actWpn,x
+                pla
+                sta actCtrl,x
+                lda #$00
+                beq HF_StoreMoveCtrl
+HF_FireRight:   lda actXL,x             ;Must be standing at block right edge
+                bpl HF_NoFire
+                lda #JOY_FIRE|JOY_DOWN|JOY_RIGHT
+                bne HF_FireCommon
+HF_NoFire:      ldx actIndex
+                lda #AIMODE_FOLLOW
                 sta actAIMode,x
                 lda #ACTI_PLAYER
                 sta actAITarget,x
+                lda #$00
+                sta actWpn,x
+                sta actCtrl,x
 HF_NoFollow:    lda #<EP_HACKERFOLLOWZONE
                 ldx #>EP_HACKERFOLLOWZONE
                 jmp SetZoneScript
-
-GetBlockNum:    ldy actYH,x
-                lda mapTblLo,y
-                sta zpDestLo
-                lda mapTblHi,y
-                sta zpDestHi
-                ldy actXH,x
-                lda (zpDestLo),y
-                rts
 
         ; To old tunnels follow zone script
         ;
