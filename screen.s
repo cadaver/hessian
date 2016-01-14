@@ -171,7 +171,7 @@ SL_YDone:       stx SW_ShiftDir+1
 SL_DetermineSpeed:
                 lda scrollCSX                   ;Get absolute X-speed
                 bpl SL_XPos2
-                eor #$ff
+                eor #$ff                        ;C=0 here
                 adc #$01
 SL_XPos2:       tax
                 sta scrAdd
@@ -230,7 +230,7 @@ SL_CSSScrollY:  ora #$00
 SL_CSSMapY:     lda #$00
                 sbc #(>(54*8))
                 sta DA_SprSubYH+1
-                rts
+WF_Done:        rts
 
         ; Re-enable raster interrupts, wait for new frame indicator and perform scrollwork
         ;
@@ -249,7 +249,6 @@ WF_Loop:        lda newFrame
                 beq WF_Loop
                 jsr ScrollWork
                 jmp WF_Loop
-WF_Done:        rts
 
         ; Sort sprites, set new frame to be displayed and perform scrollwork
         ;
@@ -909,7 +908,6 @@ SWDL_Outside:   tay
                 lda blkTblHi,y
                 sta SWDL_Lda+2
                 ldy temp2
-                clc
 SWDL_Lda:       lda $1000,y
 SWDL_Sta:       sta $1000,x
 SWDL_EndCmp:    cpx #<((SCROLLROWS-1)*40)
