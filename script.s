@@ -89,10 +89,10 @@ PLOT_HIDEOUTOPEN = $04                      ;Rotordrone boss destroyed
 PLOT_BATTERY    = $05                       ;Tunnel machine battery installed
 PLOT_FUEL       = $06                       ;Tunnel machine refueled
 PLOT_WALLBREACHED = $07                     ;Tunnel machine has been used
-PLOT_MOVESCIENTISTS = $08                   ;Scientists moved to wait in upper labs
-PLOT_ELEVATORMSG = $09                      ;Player attempted lower lab elevator entry
-PLOT_ESCORTCOMPLETE = $0a                   ;Scientists got to the operating room
-PLOT_LOWERLABSNOAIR = $0b                   ;Air being sucked from lower labs
+PLOT_LOWERLABSNOAIR = $08                   ;Air being sucked from lower labs (must be plotbit 8)
+PLOT_MOVESCIENTISTS = $09                   ;Scientists moved to wait in upper labs
+PLOT_ELEVATORMSG = $0a                      ;Player attempted lower lab elevator entry
+PLOT_ESCORTCOMPLETE = $0b                   ;Scientists got to the operating room
 PLOT_INOLDTUNNELS1 = $0c                    ;Linda reached old tunnels
 PLOT_INOLDTUNNELS2 = $0d                    ;Jeff reached old tunnels
 

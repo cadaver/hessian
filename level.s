@@ -1297,15 +1297,13 @@ RCP_NoObstacle:                                 ;Fall through to CenterPlayer
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-CenterPlayer:   lda #$00
-                ldy levelNum                    ;Scripted sucking of air in lower labs
-                cpy #$08                        ;(should really be script code, but hard to do
+CenterPlayer:   lda levelNum                    ;Scripted sucking of air in lower labs
+                cmp #$08                        ;(should really be script code, but hard to do
                 bne CP_NotLowerLabs             ;without interfering with other scripts)
-                lda #PLOT_LOWERLABSNOAIR
                 jsr GetPlotBit
-                beq CP_NotLowerLabs
-                lda #$01
-CP_NotLowerLabs:sta ULO_NoAirFlag+1             ;Play zone's music. No air flag keeps
+                skip2
+CP_NotLowerLabs:lda #$00
+                sta ULO_NoAirFlag+1             ;Play zone's music. No air flag keeps
                 ldy #ZONEH_MUSIC                ;the boss / danger music variation going
                 ora (zoneLo),y
                 jsr PlaySong
