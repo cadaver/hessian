@@ -81,24 +81,17 @@ NoPause:        lda #<$2000
 
                 lda #$34                        ;Copy bitmap to proper videobank
                 sta $01                         ;(loader does not support loading under I/O)
-                ldy #$00
-                sty zpSrcLo
-                sty zpDestLo
-                lda #$20
-                sta zpSrcHi
-                lda #$c0
-                sta zpDestHi
-CopyPicture:    lda (zpSrcLo),y
-                sta (zpDestLo),y
-                iny
+                ldx #$00
+CopyPicture:    lda $2000,x
+CopyPictureSta: sta $c000,x
+                inx
                 bne CopyPicture
-                inc zpSrcHi
-                inc zpDestHi
-                lda zpDestHi
+                inc CopyPicture+2
+                inc CopyPictureSta+2
+                lda CopyPictureSta+2
                 cmp #$e0
                 bcc CopyPicture
-                lda #$35
-                sta $01
+                inc $01
 
                 ldx #LOGO_FADE_FRAMES
 FadeOutLoop:    jsr SetLogoColors

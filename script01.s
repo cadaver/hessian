@@ -563,10 +563,12 @@ HackerFollowZone:
                 lda levelNum
                 cmp #$0f                        ;Success condition
                 beq HFZ_Finished
-                cmp #$07                        ;Never go to caves
+                cmp #$0a                        ;Do not go to nether tunnel
                 beq HFZ_LevelFail
-                cmp #$0b                        ;Or the 2nd courtyard
-                beq HFZ_LevelFail
+                lsr
+                bcc HFZ_LevelOK
+                cmp #$02                        ;Do go to odd-numbered levels 5,7,9,11 (caves, security centers, 2nd courtyard)
+                bcs HFZ_LevelFail
 HFZ_LevelOK:    lda #ACT_HACKER
                 jmp TransportNPCToPlayer
 HFZ_Finished:   jsr HFZ_LevelOK
