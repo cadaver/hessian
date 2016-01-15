@@ -828,11 +828,21 @@ ULO_NoScript:   ldy autoDeactObjNum             ;Check object auto-deactivation
                 bmi ULO_NoAutoDeact
                 dec autoDeactObjCounter
                 bne ULO_NoAutoDeact
-                cpy lvlObjNum                   ;If it's a sidedoor the player is standing at,
-                bne ULO_AutoDeactOK             ;do not deactivate until walked away
-                lda lvlObjB,y
+                lda lvlObjB,y                   ;Sidedoor?
                 and #OBJ_TYPEBITS
                 bne ULO_AutoDeactOK
+                ldx #ACTI_LASTNPC
+ULO_AutoDeactCheckActors:                       ;For sidedoors, check player and enemies to have
+                lda actT,x                      ;exited before closing
+                beq ULO_AutoDeactCheckActorsNext
+                lda actXH,x
+                cmp lvlObjX,y
+                beq ULO_AutoDeactDoorWait
+ULO_AutoDeactCheckActorsNext:
+                dex
+                bpl ULO_AutoDeactCheckActors
+                bmi ULO_AutoDeactOK
+ULO_AutoDeactDoorWait:
                 inc autoDeactObjCounter         ;Retry next frame
                 bne ULO_NoAutoDeact
 ULO_AutoDeactOK:lda #$ff
