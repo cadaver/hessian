@@ -20,7 +20,26 @@ txtPressFire:   dc.b "A COVERT BITOPS PRODUCTION IN 2016",0
                 dc.b 0
                 dc.b "PRESS FIRE FOR MENU",0
 
-txtInstructions:dc.b "USE JOYSTICK IN PORT 2 AND KEYS",0
+txtInstructions:
+                dc.b "USE JOYSTICK IN PORT 2 FOR CONTROL",0
+                dc.b 0
+                dc.b "JUMP  CLIMB/OPERATE  JUMP",0
+                dc.b 0
+                dc.b "GO LEFT      +     GO RIGHT",0
+                dc.b 0
+                dc.b "ROLL DUCK/CLIMB/PICK ROLL",0
+
+txtInstructions2:
+                dc.b "TO ATTACK, PRESS FIRE AND DIRECTION",0
+                dc.b 0
+                dc.b "HOLD FIRE TO ENTER INVENTORY. WHILE FIRE",0
+                dc.b "IS HELD, PRESS LEFT OR RIGHT TO SELECT",0
+                dc.b "ITEMS AND DOWN TO RELOAD OR USE ITEM",0
+                dc.b 0
+                dc.b "HOLD FIRE LONGER FOR PAUSE MENU",0
+
+txtInstructions3:
+                dc.b "KEYBOARD SHORTCUT CONTROLS",0
                 dc.b 0
                 dc.b ", .     SELECT ITEM",0
                 dc.b $80+11,"R       RELOAD/USE",0
@@ -29,23 +48,6 @@ txtInstructions:dc.b "USE JOYSTICK IN PORT 2 AND KEYS",0
                 dc.b "RUNSTOP PAUSE MENU",0
                 dc.b 0
 
-txtInstructions2:
-                dc.b "MOVEMENT CONTROLS (FIRE NOT PRESSED)",0
-                dc.b 0
-                dc.b "JUMP    CLIMB/ACTIVATE    JUMP",0
-                dc.b 0
-                dc.b "GO LEFT  +  GO RIGHT",0
-                dc.b 0
-                dc.b "ROLL  DUCK/CLIMB/PICK UP  ROLL",0
-
-txtInstructions3:
-                dc.b "TO ATTACK, PRESS FIRE AND DIRECTION",0
-                dc.b 0
-                dc.b "HOLD FIRE TO ENTER INVENTORY. WHILE FIRE",0
-                dc.b "IS HELD, PRESS LEFT OR RIGHT TO SELECT",0
-                dc.b "ITEMS. PRESS DOWN TO RELOAD OR USE ITEM",0
-                dc.b 0
-                dc.b "HOLD FIRE LONGER FOR PAUSE MENU",0
 
 txtMainMenu:    dc.b 0
                 dc.b $80+13,"START NEW GAME",0
