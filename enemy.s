@@ -14,6 +14,29 @@ FR_DEADWALKERGROUND = 13
 
 TURRET_ANIMDELAY = 2
 
+        ; Persistent NPC move logic. Branch off to script code according to game state
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8
+
+MovePersistentNPC:
+                lda menuMode
+                bne MPNPC_InDialogue
+                ldy actT,x
+                ldx actScriptF-ACT_FIRSTPERSISTENTNPC,y
+                beq MPNPC_NoScript
+                lda scriptF
+                beq MPNPC_AnyScriptOK           ;If continuous script is in same file, OK to exec
+                cmp actScriptF-ACT_FIRSTPERSISTENTNPC,y
+                bne MPNPC_NoScript              ;Otherwise skip actor script when running
+MPNPC_AnyScriptOK:
+                lda actScriptEP-ACT_FIRSTPERSISTENTNPC,y
+                jsr ExecScript
+MPNPC_NoScript: ldx actIndex
+MPNPC_InDialogue:
+                jmp MoveAndAttackHuman
+                
         ; Common flying enemy movement
         ;
         ; Parameters: X actor index
@@ -330,7 +353,7 @@ MR_DeadGrounded:lda #$00
                 sta actSX,x                     ;Instant braking
                 lda temp1
                 sta actF1,x
-                rts
+MS_NoDamage:    rts
 
         ; Spider movement
         ;
@@ -351,7 +374,6 @@ MS_Damage:      lda actFd,x
                 bcs MS_NoDamage                 ;Touch damage only each third frame
                 lda #DMG_SPIDER
                 jmp CollideAndDamagePlayer
-MS_NoDamage:    rts
 
         ; Fly movement
         ;
@@ -544,7 +566,6 @@ MFB_HasRandomSpeed:
                 jsr MoveActorX
                 lda actSY,x
                 jmp MoveActorY
-                rts
 
         ; Steam movement
         ;
@@ -579,68 +600,6 @@ MoveOrganicWalker:
 MOW_Dead:       lda #FR_DEADWALKERGROUND
                 sta temp1
                 jmp MR_Dead
-
-        ; Fire destruction (transform into smoke)
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-DestroyFire:    lda #ACT_SMOKECLOUD
-                jmp TransformActor
-
-        ; Rat death
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A
-
-RatDeath:       lda #FR_DEADRATAIR
-RD_Common:      pha
-                jsr AnimalDeathCommon
-                pla
-RD_SetFrameAndSpeed:
-                sta actF1,x
-                lda #-28
-                sta actSY,x
-                jmp MH_ResetGrounded
-
-        ; Spider death
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A
-
-SpiderDeath:    lda #FR_DEADSPIDERAIR
-                bne RD_Common
-
-        ; Fly / bat death
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A
-
-FlyDeath:       lda #FR_DEADFLY
-                sta actF1,x
-BatDeath:
-AnimalDeathCommon:
-                jsr HD_Common
-                lda actSX,x                     ;Reduce the impulse from weapon
-                jsr Asr8
-                sta actSX,x
-                lda #SFX_ANIMALDEATH
-                jmp PlaySfx
-
-        ; Organic walker death
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A
-
-OrganicWalkerDeath:
-                jsr HumanDeath
-                lda #FR_DEADWALKERAIR
-                bne RD_SetFrameAndSpeed
 
         ; Large walker movement
         ;
@@ -791,6 +750,68 @@ AT_AnimCommon:  lda #TURRET_ANIMDELAY
 AT_NoOngoingAttack:                                 ;since time was lost animating
 AT_NoAnim:      rts
 
+        ; Fire destruction (transform into smoke)
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+DestroyFire:    lda #ACT_SMOKECLOUD
+                jmp TransformActor
+
+        ; Rat death
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A
+
+RatDeath:       lda #FR_DEADRATAIR
+RD_Common:      pha
+                jsr AnimalDeathCommon
+                pla
+RD_SetFrameAndSpeed:
+                sta actF1,x
+                lda #-28
+                sta actSY,x
+                jmp MH_ResetGrounded
+
+        ; Spider death
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A
+
+SpiderDeath:    lda #FR_DEADSPIDERAIR
+                bne RD_Common
+
+        ; Fly / bat death
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A
+
+FlyDeath:       lda #FR_DEADFLY
+                sta actF1,x
+BatDeath:
+AnimalDeathCommon:
+                jsr HD_Common
+                lda actSX,x                     ;Reduce the impulse from weapon
+                jsr Asr8
+                sta actSX,x
+                lda #SFX_ANIMALDEATH
+                jmp PlaySfx
+
+        ; Organic walker death
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A
+
+OrganicWalkerDeath:
+                jsr HumanDeath
+                lda #FR_DEADWALKERAIR
+                bne RD_SetFrameAndSpeed
+
         ; Common dead animal falling motion
         ;
         ; Parameters: X actor index
@@ -911,7 +932,7 @@ ExplodeEnemy2_Ofs15:
                 sta actTime,x
                 lda #$3f
                 ldy #$7f
-                jmp ExplodeEnemyMultiple_CustomRadius
+                bne ExplodeEnemyMultiple_CustomRadius
 
         ; Generate 4 explosions at 32 pixel radius and spawn 3 pieces of scrap metal
         ;
@@ -1040,7 +1061,7 @@ MEG_NoNewExplosion:
 
 MoveScrapMetal: jsr BounceMotion
 
-        ; Flicker corpse, then remove.
+        ; Flicker corpse, then remove
         ;
         ; Parameters: X actor index
         ; Returns: -
@@ -1263,26 +1284,3 @@ DI_NotInInventory:
                 rts
 DI_Exceeded:    lda #$ff
 DLP_NoItem:     rts
-
-        ; Persistent NPC move logic. Branch off to script code according to game state
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8
-
-MovePersistentNPC:
-                lda menuMode
-                bne MPNPC_InDialogue
-                ldy actT,x
-                ldx actScriptF-ACT_FIRSTPERSISTENTNPC,y
-                beq MPNPC_NoScript
-                lda scriptF
-                beq MPNPC_AnyScriptOK           ;If continuous script is in same file, OK to exec
-                cmp actScriptF-ACT_FIRSTPERSISTENTNPC,y
-                bne MPNPC_NoScript              ;Otherwise skip actor script when running
-MPNPC_AnyScriptOK:
-                lda actScriptEP-ACT_FIRSTPERSISTENTNPC,y
-                jsr ExecScript
-MPNPC_NoScript: ldx actIndex
-MPNPC_InDialogue:
-                jmp MoveAndAttackHuman
