@@ -692,7 +692,12 @@ adHacker:       dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
-adThroneChief:
+adThroneChief:  dc.b TWOSPRITE                  ;Number of sprites
+                dc.b C_GUARD                    ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 1                          ;Number of frames
+                dc.b 44
+                dc.b 43
 
         ; Actor logic data
 
@@ -1798,4 +1803,5 @@ alCombatRobotSaboteur:
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
                 dc.b DROP_NOTHING               ;Itemdrop type or item override
                 
-alThroneChief:
+alThroneChief:  dc.w DoNothing                  ;Update routine
+                dc.b AF_INITONLYSIZE            ;Actor flags

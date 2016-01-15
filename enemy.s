@@ -281,7 +281,10 @@ MT_NoInit:      ldy #ceilingTurretOfs-turretFrameTbl
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveFire:       lda actTime,x                   ;Restore oxygen level if not extinguished
+MoveFire:       ldy #ACTI_FIRSTNPCBULLET
+                lda ULO_NoAirFlag+1             ;Destroy fires when noairflag on
+                bne MF_Destroy
+                lda actTime,x                   ;Restore oxygen level if not extinguished
                 beq MF_FullOxygen               ;completely, destroy if depleted enough
                 cmp #EXTINGUISH_THRESHOLD
                 bcs MF_Destroy

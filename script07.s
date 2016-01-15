@@ -11,9 +11,7 @@ CHUNK_DURATION = 40
                 dc.w ServerRoomComputer
                 dc.w MoveScientists
                 dc.w RadioConstruct
-                dc.w FindFilter
-                dc.w BeginSurgery
-                dc.w BeginSurgery2
+                dc.w ThroneChief
 
         ; Subnet router script
         ;
@@ -152,7 +150,9 @@ MoveScientists: jsr StopScript
                 if SKIP_PLOT > 0
                 lda #PLOT_ESCORTCOMPLETE
                 jsr SetPlotBit
-                jmp FindFilter
+                lda #<EP_FINDFILTER
+                ldx #>EP_FINDFILTER
+                jmp ExecScript
                 endif
                 lda #<txtRadioMoveScientists
                 ldx #>txtRadioMoveScientists
@@ -192,143 +192,17 @@ RadioConstruct: lda #PLOT_MOVESCIENTISTS
 HP_TryAgain:    ldy lvlObjNum
                 jmp InactivateObject
 
-        ; Find filter script. Also move scientists to final positions before surgery
+        ; Throne chief corpse
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-FindFilter:     jsr StopZoneScript
-                lda #ACT_SCIENTIST3
-                jsr FindLevelActor
-                lda #$3f
-                ldx #$30+AIMODE_TURNTO
-                jsr MoveScientistSub2
-                lda #ACT_SCIENTIST2
-                jsr FindLevelActor
-                lda #$42
-                ldx #$00+AIMODE_TURNTO
-                jsr MoveScientistSub2
-                lda #<EP_BEGINSURGERY
-                sta actScriptEP
-                lda #>EP_BEGINSURGERY
-                sta actScriptF
-                lda #<txtRadioFindFilter
-                ldx #>txtRadioFindFilter
-                jmp RadioMsg
-
-MoveScientistSub2:
-                sta lvlActX,y                   ;Set also Y & level so that this can be used as shortcut in testing
-                lda #$56
-                sta lvlActY,y
-                txa
-                sta lvlActF,y
-                lda #$08+ORG_GLOBAL
-                sta lvlActOrg,y
-BS2_NotYet:
-BS_NoFilter:    rts
-
-        ; Begin surgery script.
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-BeginSurgery:   ldy #ITEM_LUNGFILTER
-                jsr FindItem
-                bcc BS_NoFilter
-                lda actXH+ACTI_PLAYER
-                cmp #$44
-                bcs BS_NoFilter
-                jsr AddQuestScore
-                lda #<EP_BEGINSURGERY2
-                sta actScriptEP
-                lda #$00
-                sta scriptVariable
-                ldy #ACT_SCIENTIST2
-                lda #<txtBeginSurgery
-                ldx #>txtBeginSurgery
-                jmp SpeakLine
-
-        ; Begin surgery script, part 2
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-BeginSurgery2:  lda actXH+ACTI_PLAYER
-                cmp #$41
-                bcs BS2_NotYet
-                lda actMB+ACTI_PLAYER
-                lsr
-                bcc BS2_NotYet
-                lda scriptVariable
-                asl
-                tay
-                lda bs2JumpTbl,y
-                sta BS2_Jump+1
-                lda bs2JumpTbl+1,y
-                sta BS2_Jump+2
-BS2_Jump:       jmp BS2_1
-
-BS2_1:          inc scriptVariable
-                ldy #ACT_SCIENTIST2
-                lda #<txtBeginSurgery2_1
-                ldx #>txtBeginSurgery2_1
-                jmp SpeakLine
-
-BS2_2:          lda #$00                    ;Disabled controls during the delay to simplify scripting
-                sta joystick
-                lda #ACT_SCIENTIST3
-                jsr FindActor
-                lda #AIMODE_IDLE
-                sta actAIMode,x
-                lda #$80
-                sta actD,x
-                inc actTime,x
-                lda actTime,x
-                cmp #25
-                bcc BS2_2Wait
-                lda #$00
-                sta actTime,x
-                inc scriptVariable
-BS2_2Wait:      rts
-
-BS2_3:          inc scriptVariable
-                lda #ACT_SCIENTIST3
-                jsr FindActor
-                lda #AIMODE_TURNTO
-                sta actAIMode,x
-                lda #ITEM_EMPGENERATOR
-                sta actWpn,x
-                lda #SFX_OBJECT
-                jsr PlaySfx
-                ldy #ACT_SCIENTIST3
-                lda #<txtBeginSurgery2_2
-                ldx #>txtBeginSurgery2_2
-                jmp SpeakLine
-
-BS2_4:          jsr BlankScreen
-                lda #<EP_AFTERSURGERY
-                sta actScriptEP+1
-                lda #>EP_AFTERSURGERY
-                sta actScriptF+1
-                lda #0
-                sta actScriptF
-                lda #<EP_AFTERSURGERYRUN
-                ldx #>EP_AFTERSURGERYRUN
-                jsr SetScript
-                lda #50
-                sta scriptVariable
-BS2_Delay:      jsr WaitBottom
-                dec scriptVariable
-                bne BS2_Delay
-                jmp CenterPlayer
-
-bs2JumpTbl:     dc.w BS2_1
-                dc.w BS2_2
-                dc.w BS2_3
-                dc.w BS2_4
+ThroneChief:    lda #ITEM_BIOMETRICID           ;Todo: cutscene
+                sta temp2                       ;Todo: setup story elements as needed
+                ldx #1
+                jsr AddItem
+                jmp TP_PrintItemName
 
         ; Setup text screen
 
@@ -433,16 +307,5 @@ txtRadioConstruct:
                 dc.b 34,"KIM, IT'S JEFF. I'VE BEEN DECRYPTING MORE OF THE MACHINES' TRAFFIC. 'CONSTRUCT' HAS TO BE THE NAME OF THE CENTRAL AI. "
                 dc.b "IT TASKED THE MACHINES TO BUILD 'JORMUNGANDR.' AMOUNT OF MATERIALS USED WAS ASTRONOMICAL. "
                 dc.b "IF THEY FOLLOW NORSE MYTHS, THAT SHOULD BE ONE HUGE SERPENT. FUN, RIGHT?",34,0
-txtRadioFindFilter:
-                dc.b 34,"LINDA HERE. WE GOT AHEAD OF OURSELVES - THERE ARE NO LUNG FILTERS STORED HERE. SINCE YOU'RE MUCH BETTER SUITED TO EXPLORING, "
-                dc.b "WE'LL HAVE TO ASK YOU TO FIND ONE. THERE SHOULD BE AT LEAST ONE PACKAGE SOMEWHERE IN THE LOWER LABS.",34,0
-txtBeginSurgery:dc.b 34,"YOU GOT THE FILTER? EXCELLENT. WE'RE READY, FOR REAL THIS TIME. THIS IS A STANDARD NANO-ASSISTED "
-                dc.b "PROCEDURE WITH SOME RISK INVOLVED. THE TUNNELS BELOW SHOULD BE SURVIVABLE AFTER. "
-                dc.b "STEP TO THE OPERATING TABLE WHEN YOU WISH TO PROCEED.",34,0
-
-txtBeginSurgery2_1:
-                dc.b 34,"GOOD. WE WILL BEGIN. LINDA, JUST IN CASE WE GET COMPANY, THERE SHOULD BE A WEAPON IN THE CUPBOARD.",34,0
-txtBeginSurgery2_2:
-                dc.b 34,"GOT IT.",34,0
 
                 checkscriptend

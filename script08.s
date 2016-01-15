@@ -1,200 +1,164 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 8, nether tunnels interactions
+        ; Script 8, filter install surgical operation
 
                 org scriptCodeStart
 
-                dc.w TunnelMachine
-                dc.w TunnelMachineItems
-                dc.w TunnelMachineRun
-                dc.w RadioJormungandr
-                dc.w RadioJormungandrRun
+                dc.w FindFilter
+                dc.w BeginSurgery
+                dc.w BeginSurgery2
                 dc.w AfterSurgery
                 dc.w AfterSurgeryRun
                 dc.w AfterSurgeryZone
                 dc.w AfterSurgeryNoAir
                 dc.w AfterSurgeryFollow
                 dc.w AfterSurgeryNoAirDie
+                dc.w AfterSurgeryNoAirRadio
 
-        ; Tunnel machine script routine
+        ; Find filter script. Also move scientists to final positions before surgery
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-tmChoice        = menuCounter
-
-TunnelMachine:  lda #PLOT_BATTERY
-                jsr GetPlotBit
-                beq TM_NoBattery
-                lda #PLOT_FUEL
-                jsr GetPlotBit
-                beq TM_NoFuel
-                lda #$00
-                sta tmTime1
-                sta tmTime2
-                sta tmChoice
-                lda #<EP_TUNNELMACHINERUN
-                ldx #>EP_TUNNELMACHINERUN
-                jsr SetScript
-                ldx #MENU_INTERACTION
-                jsr SetMenuMode
-                lda #<txtReady
-                ldx #>txtReady
-                jsr PrintPanelTextIndefinite
-                jmp TMR_RedrawNoSound
-TM_NoBattery:   lda #<txtNoBattery
-                ldx #>txtNoBattery
-                bne TM_TextCommon
-TM_NoFuel:      lda #1
-                sta shakeScreen
-                lda #SFX_GENERATOR
-                jsr PlaySfx
-                lda #<txtNoFuel
-                ldx #>txtNoFuel
-TM_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
-                jmp PrintPanelText
-
-        ; Tunnel machine decision runloop
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-TunnelMachineRun:
-                inc tmTime1
-                lda tmTime1
-                and #$01
-                sta shakeScreen
-                inc tmTime2
-                lda tmTime2
-                cmp #3
-                bcc TMR_NoSound
-                lda #$00
-                sta tmTime2
-                lda #SFX_GENERATOR
-                jsr PlaySfx
-TMR_NoSound:    lda joystick
-                and #JOY_DOWN
-                bne TMR_Finish
-                lda keyType
-                bpl TMR_Finish
-                jsr GetFireClick
-                bcs TMR_Decision
-                jsr MenuControl
-                ldy tmChoice
-                lsr
-                bcs TMR_MoveLeft
-                lsr
-                bcs TMR_MoveRight
-TMR_NoMove:     rts
-TMR_MoveLeft:   tya
-                beq TMR_NoMove
-                dey
-                sty tmChoice
-TMR_Redraw:     lda #SFX_SELECT
-                jsr PlaySfx
-TMR_RedrawNoSound:
-                ldy #$00
-TMR_RedrawLoop: ldx tmArrowPosTbl,y
-                lda #$20
-                cpy tmChoice
-                bne TMR_NoArrow
-                lda #62
-TMR_NoArrow:    jsr PrintPanelChar
-                iny
-                cpy #2
-                bcc TMR_RedrawLoop
-                rts
-TMR_MoveRight:  tya
-                bne TMR_NoMove
-                iny
-                sty tmChoice
-                bne TMR_Redraw
-TMR_Decision:   lda tmChoice
-                bne TMR_Drive
-TMR_Finish:     jsr StopScript
-                jmp SetMenuMode                 ;X=0 on return
-TMR_Drive:      jsr AddQuestScore
-                jsr TMR_Finish
-                lda #$00
-                sta tmTime1                     ;TODO: replace with cutscene
-                jsr BlankScreen
-TMR_BreakWallLoop:
-                jsr WaitBottom
-                jsr Random
-                cmp #$40
-                bcs TMR_BreakWallNoSound
-                lda #$00
-                sta PSfx_LastSfx+1
-                lda #SFX_EXPLOSION
-                jsr PlaySfx
-TMR_BreakWallNoSound:
-                inc tmTime1
-                bpl TMR_BreakWallLoop
-                lda #PLOT_WALLBREACHED
-                jsr SetPlotBit
-                lda #$32
-                jmp ULO_EnterDoorDest
-
-        ; Tunnel machine item installation script routines
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-TunnelMachineItems:
-                lda itemIndex
-                cmp #ITEM_TRUCKBATTERY
-                bne TMI_Fuel
-TMI_Battery:    lda #PLOT_BATTERY
-                jsr SetPlotBit
-                lda #<txtBatteryInstalled
-                ldx #>txtBatteryInstalled
-                bne TMI_Common
-TMI_Fuel:       lda #PLOT_FUEL
-                jsr SetPlotBit
-                lda #<txtRefueled
-                ldx #>txtRefueled
-TMI_Common:     jsr TM_TextCommon
-                ldy itemIndex
-                jsr RemoveItem
-                jsr AddQuestScore
-                lda #SFX_POWERUP
-                jmp PlaySfx
-
-        ; Jormungandr speaks
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-RadioJormungandr:
-                lda #<EP_RADIOJORMUNGANDRRUN
-                ldx #>EP_RADIOJORMUNGANDRRUN
-                jsr SetScript
+FindFilter:     jsr StopZoneScript
+                lda #ACT_SCIENTIST3
+                jsr FindLevelActor
+                lda #$3f
+                ldx #$30+AIMODE_TURNTO
+                jsr MoveScientistSub2
+                lda #ACT_SCIENTIST2
+                jsr FindLevelActor
+                lda #$42
+                ldx #$00+AIMODE_TURNTO
+                jsr MoveScientistSub2
+                lda #<EP_BEGINSURGERY
+                sta actScriptEP
+                lda #>EP_BEGINSURGERY
+                sta actScriptF
+                lda #<txtRadioFindFilter
+                ldx #>txtRadioFindFilter
+RadioMsg:       pha
                 lda #SFX_RADIO
                 jsr PlaySfx
+                pla
                 ldy #ACT_PLAYER
-                lda #<txtRadioJormungandr
-                ldx #>txtRadioJormungandr
                 jmp SpeakLine
 
-        ; Jormungandr speaks, running script (screen shake)
+MoveScientistSub2:
+                sta lvlActX,y                   ;Set also Y & level so that this can be used as shortcut in testing
+                lda #$56
+                sta lvlActY,y
+                txa
+                sta lvlActF,y
+                lda #$08+ORG_GLOBAL
+                sta lvlActOrg,y
+                rts
+
+        ; Begin surgery script
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-RadioJormungandrRun:
-                lda menuMode
-                beq RJR_Stop
-                jsr Random
-                and #$01
-                sta shakeScreen
-                rts
-RJR_Stop:       jmp StopScript
+BeginSurgery:   ldy #ITEM_LUNGFILTER
+                jsr FindItem
+                bcc BS_NoFilter
+                lda actXH+ACTI_PLAYER
+                cmp #$44
+                bcs BS_NoFilter
+                jsr AddQuestScore
+                lda #<EP_BEGINSURGERY2
+                sta actScriptEP
+                lda #$00
+                sta scriptVariable
+                ldy #ACT_SCIENTIST2
+                lda #<txtBeginSurgery
+                ldx #>txtBeginSurgery
+                jmp SpeakLine
+
+        ; Begin surgery script, part 2
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+BeginSurgery2:  lda actXH+ACTI_PLAYER
+                cmp #$41
+                bcs BS2_NotYet
+                lda actMB+ACTI_PLAYER
+                lsr
+                bcc BS2_NotYet
+                lda scriptVariable
+                asl
+                tay
+                lda bs2JumpTbl,y
+                sta BS2_Jump+1
+                lda bs2JumpTbl+1,y
+                sta BS2_Jump+2
+BS2_Jump:       jmp BS2_1
+
+BS2_1:          inc scriptVariable
+                ldy #ACT_SCIENTIST2
+                lda #<txtBeginSurgery2_1
+                ldx #>txtBeginSurgery2_1
+                jmp SpeakLine
+
+BS2_2:          lda #$00                    ;Disabled controls during the delay to simplify scripting
+                sta joystick
+                lda #ACT_SCIENTIST3
+                jsr FindActor
+                lda #AIMODE_IDLE
+                sta actAIMode,x
+                lda #$80
+                sta actD,x
+                inc actTime,x
+                lda actTime,x
+                cmp #25
+                bcc BS2_2Wait
+                lda #$00
+                sta actTime,x
+                inc scriptVariable
+BS2_NotYet:
+BS_NoFilter:
+BS2_2Wait:      rts
+
+BS2_3:          inc scriptVariable
+                lda #ACT_SCIENTIST3
+                jsr FindActor
+                lda #AIMODE_TURNTO
+                sta actAIMode,x
+                lda #ITEM_EMPGENERATOR
+                sta actWpn,x
+                lda #SFX_OBJECT
+                jsr PlaySfx
+                ldy #ACT_SCIENTIST3
+                lda #<txtBeginSurgery2_2
+                ldx #>txtBeginSurgery2_2
+                jmp SpeakLine
+
+BS2_4:          jsr BlankScreen
+                lda #<EP_AFTERSURGERY
+                sta actScriptEP+1
+                lda #>EP_AFTERSURGERY
+                sta actScriptF+1
+                lda #0
+                sta actScriptF
+                lda #<EP_AFTERSURGERYRUN
+                ldx #>EP_AFTERSURGERYRUN
+                jsr SetScript
+                lda #50
+                sta scriptVariable
+BS2_Delay:      jsr WaitBottom
+                dec scriptVariable
+                bne BS2_Delay
+                jmp CenterPlayer
+
+bs2JumpTbl:     dc.w BS2_1
+                dc.w BS2_2
+                dc.w BS2_3
+                dc.w BS2_4
 
         ; After surgery ambush
         ;
@@ -486,12 +450,21 @@ ASF_Die:        ldx actIndex
                 sta actScriptEP+1
 ASF_DieTellCode:ldx #$02
 ASF_DTCLoop:    lda codes+MAX_CODES*3-3,x
+                if SKIP_PLOT > 0
                 and #$7f
                 sta codes+MAX_CODES*3-3,x   ;Unscramble code forcibly now (for testing)
+                endif
                 ora #$30
                 sta txtNetherTunnelCode,x
                 dex
                 bpl ASF_DTCLoop
+                ldx actIndex                ;Drop EMP generator now
+                lda #ITEM_NONE
+                sta actWpn,x
+                lda #-15*8
+                sta temp4
+                lda #ITEM_EMPGENERATOR
+                jsr DI_ItemNumber
                 ldy #ACT_SCIENTIST3
                 lda #<txtAfterSurgeryNoAirDie
                 ldx #>txtAfterSurgeryNoAirDie
@@ -511,7 +484,12 @@ AfterSurgeryNoAir:
                 lda oxygen                      ;Let player notice first
                 cmp #MAX_OXYGEN-5
                 bcs ASNA_Wait
-                lda #<EP_AFTERSURGERYFOLLOW     ;Restore follow script again
+                lda #ACT_HACKER
+                jsr FindLevelActor
+                bcc ASNA_JeffDead
+                lda #<EP_AFTERSURGERYNOAIRRADIO ;Radio transmission if Jeff alive
+                skip2
+ASNA_JeffDead:  lda #<EP_AFTERSURGERYFOLLOW     ;Restore follow script again
                 sta actScriptEP+1
                 ldy #ACT_SCIENTIST3
                 lda #<txtAfterSurgeryNoAir
@@ -531,34 +509,35 @@ AfterSurgeryNoAirDie:
                 jsr SetNotPersistent
                 lda #JOY_DOWN
                 sta actMoveCtrl,x
-                jsr DeathFlickerAndRemove
-                lda actT,x
-                bne ASNAD_NotRemoved
-                lda #-12*8
-                sta temp4
-                lda #ITEM_EMPGENERATOR
-                jmp DI_ItemNumber           ;Drop weapon when vanishing
+                jmp DeathFlickerAndRemove
 
-        ; Tables & variables
+        ; Jeff's radio transmission about the air shortage
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
 
-tmArrowPosTbl:  dc.b 9,14
-tmTime1:        dc.b 0
-tmTime2:        dc.b 0
+AfterSurgeryNoAirRadio:
+                lda #<EP_AFTERSURGERYFOLLOW
+                sta actScriptEP+1
+                lda #<txtAfterSurgeryNoAirRadio
+                ldx #>txtAfterSurgeryNoAirRadio
+                jmp RadioMsg
 
         ; Messages
 
-txtNoBattery:   dc.b "BATTERY DEAD",0
-txtNoFuel:      dc.b "NO FUEL",0
-txtBatteryInstalled:
-                dc.b "NEW BATTERY INSTALLED",0
-txtRefueled:    dc.b "REFUELED",0
-txtReady:       dc.b " STOP DRIVE",0
+txtRadioFindFilter:
+                dc.b 34,"LINDA HERE. WE GOT AHEAD OF OURSELVES - THERE ARE NO LUNG FILTERS STORED HERE. SINCE YOU'RE MUCH BETTER SUITED TO EXPLORING, "
+                dc.b "WE'LL HAVE TO ASK YOU TO FIND ONE. THERE SHOULD BE AT LEAST ONE PACKAGE SOMEWHERE IN THE LOWER LABS.",34,0
 
-txtRadioJormungandr:
-                dc.b 34,"GREETINGS SEMI-HUMAN. I AM JORMUNGANDR. I RESIDE BEYOND THE DEAD END IN FRONT OF YOU. "
-                dc.b "TURN BACK NOW, THERE IS NOTHING YOU CAN GAIN BY PROCEEDING. WHEN I RECEIVE THE SIGNAL "
-                dc.b "FROM MY MASTER, OR IF HE SHOULD FALL SILENT, I WILL TRAVEL THE CRUST AND MAKE THE EARTH BREATHE "
-                dc.b "FIRE AND ASH, BRINGING THE POST-HUMAN AGE. AND SHOULD I FALL, HE WILL AVENGE ME.",34,0
+txtBeginSurgery:dc.b 34,"YOU GOT THE FILTER? EXCELLENT. WE'RE READY, FOR REAL THIS TIME. THIS IS A STANDARD NANO-ASSISTED "
+                dc.b "PROCEDURE WITH SOME RISK INVOLVED. THE TUNNELS BELOW SHOULD BE SURVIVABLE AFTER. "
+                dc.b "STEP TO THE OPERATING TABLE WHEN YOU WISH TO PROCEED.",34,0
+
+txtBeginSurgery2_1:
+                dc.b 34,"GOOD. WE WILL BEGIN. LINDA, JUST IN CASE WE GET COMPANY, THERE SHOULD BE A WEAPON IN THE CUPBOARD.",34,0
+txtBeginSurgery2_2:
+                dc.b 34,"GOT IT.",34,0
 
 txtAfterSurgery_1:
                 dc.b 34,"MINOR COMPLICATIONS. THE NANOBOTS WILL TAKE CARE OF IT.",34,0
@@ -574,5 +553,9 @@ txtAfterSurgeryNoAirDie:
                 dc.b 34,"I CAN'T GO ON.. BUT I REMEMBER THE CODE. IT'S "
 txtNetherTunnelCode:
                 dc.b "000. GO!",34,0
+
+txtAfterSurgeryNoAirRadio:
+                dc.b 34,"JEFF HERE. AS YOU CUT OFF THE AI FROM THE SUBNETS, THE SABOTAGE MUST BE PHYSICAL, SOMEWHERE "
+                dc.b "CLOSE. DON'T THINK YOU HAVE TIME TO FIX IT NOW THOUGH.",34,0
 
                 checkscriptend

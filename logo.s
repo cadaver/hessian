@@ -39,7 +39,7 @@ txtInstructions2:
                 dc.b "HOLD FIRE LONGER FOR PAUSE MENU",0
 
 txtInstructions3:
-                dc.b "KEYBOARD SHORTCUT CONTROLS",0
+                dc.b "KEYBOARD CONTROLS",0
                 dc.b 0
                 dc.b ", .     SELECT ITEM",0
                 dc.b $80+11,"R       RELOAD/USE",0
