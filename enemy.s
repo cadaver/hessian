@@ -252,7 +252,7 @@ MFM_NoExplosion:rts
 
 GetAbsXSpeed:   lda actSX,x                       ;Tracks animation from absolute speed
                 bpl GAXS_Pos
-                clc
+Negate:         clc
                 eor #$ff
                 adc #$01
 GAXS_Pos:       rts
@@ -708,9 +708,7 @@ MHW_NoLaser:    lda actSY,y                     ;Set 22.5 angle downward speed f
                 bne MHW_SpeedYOK
                 lda actSX,y
                 bpl MHW_SpeedXPos
-                clc
-                eor #$ff
-                adc #$01
+                jsr Negate
 MHW_SpeedXPos:  lsr
                 sta actSY,y
 MHW_SpeedYOK:
