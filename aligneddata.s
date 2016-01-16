@@ -7,15 +7,8 @@ actWpn          ds.b MAX_COMPLEXACT,0
 actWpnF         ds.b MAX_COMPLEXACT,0
 
 keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
+healthFlashTbl: dc.b $08,$0f,$09,$0f
 
-lvlPropertiesStart:
-lvlWaterSplashColor:
-                dc.b 0
-lvlWaterToxinDelay:
-                dc.b 0
-lvlAirToxinDelay:
-                dc.b 0
-lvlPropertiesEnd:
 
                 org (* + $ff) & $ff00
 

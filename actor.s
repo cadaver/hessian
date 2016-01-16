@@ -397,18 +397,18 @@ AA_ItemFlashCounter:                            ;Get color override for items + 
                 tax
                 lda itemFlashTbl,x
                 sta FlashActor+1
-                and #$07
+                lda healthFlashTbl,x
                 tax
                 ldy actHp+ACTI_PLAYER           ;Flash the H & B letters if health or battery low
                 cpy #LOW_HEALTH+1
                 bcc AA_FlashHealth
-                lda #$01
+                lda #$08
 AA_FlashHealth: sta colors+PANELROW*40+49
                 txa
                 ldy battery+1
                 cpy #LOW_BATTERY+1
                 bcc AA_FlashBattery
-                lda #$01
+                lda #$08
 AA_FlashBattery:sta colors+PANELROW*40+63
 
         ; Get screen border map coordinates for adding/removing actors

@@ -8,6 +8,17 @@
                     err
                 endif
 
+        ; Level properties
+        
+lvlPropertiesStart:
+lvlWaterSplashColor:
+                dc.b 0
+lvlWaterToxinDelay:
+                dc.b 0
+lvlAirToxinDelay:
+                dc.b 0
+lvlPropertiesEnd:
+
         ; Player/world state
 
 playerStateStart:

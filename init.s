@@ -244,13 +244,13 @@ textCharsCopy:  incbin bg/scorescr.chr
 
         ; Scorepanel screen/color data (overwritten)
 
-scorePanel:     dc.b 35
+scorePanel:     dc.b 104
                 ds.b 7,32
-                dc.b 35
+                dc.b 104
                 ds.b 22,32
-                dc.b 35
+                dc.b 104
                 ds.b 7,32
-                dc.b 35
+                dc.b 104
 
                 dc.b 96
                 ds.b 7,97
@@ -277,13 +277,13 @@ scorePanelColors:
                 dc.b 11
 
                 ds.b 9,11
-                dc.b 1
-                ds.b 7,13
+                dc.b 8
+                ds.b 7,15
                 dc.b 11
                 ds.b 4,1
                 dc.b 11
-                dc.b 1
-                ds.b 7,13
+                dc.b 8
+                ds.b 7,15
                 ds.b 9,11
 
                 org scriptCodeEnd
