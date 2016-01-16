@@ -26,20 +26,6 @@ Add16:          lda $00,x
                 sta $01,x
                 rts
 
-        ; Add an immediate 16-bit value
-        ;
-        ; Parameters: X destination zeropage base, A,Y value to be added
-        ; Returns: zeropage result
-        ; Modifies: A
-
-Add16Immediate: clc
-                adc $00,x
-                sta $00,x
-                tya
-                adc $01,x
-                sta $01,x
-                rts
-
         ; Subtract a 8-bit value from a 16-bit value
         ;
         ; Parameters: A value to be subtracted, X zeropage base
@@ -54,21 +40,6 @@ Sub8_Value:     sbc #$00
                 bcs Sub8_Skip
                 dec $01,x
 Sub8_Skip:      rts
-
-        ; Subtract two 16-bit value
-        ;
-        ; Parameters: X destination zeropage base, Y source zeropage base
-        ; Returns: zeropage result
-        ; Modifies: A
-
-Sub16:          lda $00,x
-                sec
-                sbc $00,y
-                sta $00,x
-                lda $01,x
-                sbc $01,y
-                sta $01,x
-                rts
 
         ; Multiply two unsigned 8-bit values
         ;
@@ -159,19 +130,6 @@ Asr8:           cmp #$80
                 bpl Asr8Pos
                 adc #$00
 Asr8Pos:        rts
-
-        ; Compare two 16-bit values
-        ;
-        ; Parameters: X value to compare zeropage base, Y value to compare to zeropage base
-        ; Returns: flags
-        ; Modifies: A
-        
-Cmp16:          lda $01,x
-                cmp $01,y
-                bne Cmp16Done
-                lda $00,x
-                cmp $00,y
-Cmp16Done:      rts
 
         ; Return a 8bit pseudorandom number.
         ;
