@@ -176,6 +176,8 @@ AfterSurgery:   lda scriptVariable
 AS_Jump:        jmp $0000
 
 AS_1:           jsr AfterSurgeryRun             ;Ensure player position right when the screen turns on
+                ldy #ITEM_LUNGFILTER
+                jsr RemoveItem
                 lda upgrade
                 ora #UPG_TOXINFILTER
                 sta upgrade                     ;Has the filter upgrade now

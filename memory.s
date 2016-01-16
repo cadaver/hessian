@@ -6,7 +6,7 @@ MAX_SPR         = 24
 MAX_ACT         = 22
 MAX_COMPLEXACT  = 7
 MAX_CACHESPRITES = 64
-MAX_CHUNKFILES   = 26
+MAX_CHUNKFILES   = 27
 MAX_MAPROWS     = 128
 MAX_BLK         = 192
 MAX_LVLDATAACT  = 80                            ;Defined actors per level, on/off persistency
@@ -16,7 +16,7 @@ MAX_SAVEACT     = 24                            ;Amount of persistent actors sav
 MAX_LVLOBJ      = 96
 MAX_PLOTBITS    = 16
 MAX_SAVES       = 5
-MAX_PERSISTENTNPCS = 3
+MAX_PERSISTENTNPCS = 4
 MAX_CODES       = 8
 
 ACTI_PLAYER     = 0

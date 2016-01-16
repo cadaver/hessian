@@ -392,7 +392,7 @@ AH_NoFlicker:   ldx actIndex                    ;If player, decrement ammo (unle
                 and #WDB_MELEE
                 bne AH_PlayerMeleeAttack
                 ldy itemIndex
-                if AMMO_CHEAT=0
+                if AMMO_CHEAT = 0
                 jsr DecreaseAmmoOne
                 endif
                 lda wpnBits

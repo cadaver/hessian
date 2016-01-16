@@ -60,6 +60,8 @@ MObjMarker_Remove:
 
 TryPickup:      sty temp1                       ;Item actor number
                 lda actF1,y
+                cmp #ITEM_LAST_PICKUP+1         ;Check items which only exist in world / are given
+                bcs TP_PickupFail               ;by NPCs but cannot be picked up
                 sta temp2                       ;Item type
                 ldx actHp,y
                 jsr AddItem
@@ -164,8 +166,6 @@ SPI_Loop:       dey
 
 AddItem:        sta zpSrcLo
                 stx zpSrcHi
-                cmp #ITEM_LAST+1                ;Check items which only exist in world but
-                bcs AI_Fail                     ;cannot be held in inventory
                 cmp #ITEM_FIRST_IMPORTANT       ;Quest item?
                 bcc AI_NotQuestItem
                 lda #<250

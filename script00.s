@@ -146,7 +146,7 @@ TitleScreen:    jsr BlankScreen
         ; Load logo chars & clear screen
 
                 jsr StopScript
-                stx Irq1_Bg1+1                  ;X=0 on return
+                stx Irq1_Bg1+1                  ;X = 0 on return
                 stx Irq1_Bg2+1
                 stx Irq1_Bg3+1
                 stx menuMode                    ;Reset in-game menu mode
@@ -492,7 +492,7 @@ IP_InitInventory:
                 sta lastItemIndex
                 ldx #1
                 jsr AddItem
-                if STARTITEM_CHEAT>0
+                if STARTITEM_CHEAT > 0
                 lda #ITEM_MINIGUN
                 ldx #50
                 jsr AddItem
@@ -503,10 +503,10 @@ IP_InitInventory:
                 sta reload
                 sta battery
                 sta saveD
-                #if FILTER_UPGRADE_CHEAT>0
+                #if FILTER_UPGRADE_CHEAT > 0
                 lda #$80
                 #endif
-                #if UPGRADE_CHEAT>0
+                #if UPGRADE_CHEAT > 0
                 lda #$ff
                 #endif
                 sta upgrade                     ;Reset upgrade status
@@ -530,7 +530,7 @@ IP_InitInventory:
                 sta oxygen
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
-                if ALLQUESTITEMS_CHEAT>0
+                if ALLQUESTITEMS_CHEAT > 0
                 lda #ITEM_WAREHOUSEPASS
 IP_GiveAllLoop: pha
                 ldx #1

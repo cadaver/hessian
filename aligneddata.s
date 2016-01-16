@@ -1,3 +1,23 @@
+                if SHOW_FREE_MEMORY = 0
+
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
+
+        ; Level properties + saveslot
+
+lvlPropertiesStart:
+lvlWaterSplashColor:
+                dc.b 0
+lvlWaterToxinDelay:
+                dc.b 0
+lvlAirToxinDelay:
+                dc.b 0
+lvlPropertiesEnd:
+saveSlotChoice: dc.b 0
+
+                endif
+
                 org (* + $ff) & $ff00
 
         ; Sprite cache / depacking tables
@@ -374,39 +394,43 @@ actF2:          ds.b MAX_COMPLEXACT,0
 actCtrl:        ds.b MAX_COMPLEXACT,0
 actMoveCtrl:    ds.b MAX_COMPLEXACT,0
 actPrevCtrl:    ds.b MAX_COMPLEXACT,0
-actFall:        ds.b MAX_COMPLEXACT,0
-actFallL:       ds.b MAX_COMPLEXACT,0
-actWpn:         ds.b MAX_COMPLEXACT,ITEM_NONE
-actWpnF:        ds.b MAX_COMPLEXACT,$ff
-actAttackD:     ds.b MAX_COMPLEXACT,0
-actAIMode:      ds.b MAX_COMPLEXACT,0
-actAIHelp:      ds.b MAX_COMPLEXACT,0
-actAITarget:    ds.b MAX_COMPLEXACT,0
-actLine:        ds.b MAX_COMPLEXACT,0
-actLastNavStairs:
-                ds.b MAX_COMPLEXACT,0
-actLastNavLadder:
-                ds.b MAX_COMPLEXACT,0
-actGroundCharInfo:
-                ds.b MAX_COMPLEXACT,0
+actWpn          ds.b MAX_COMPLEXACT,0
+actWpnF         ds.b MAX_COMPLEXACT,0
 
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
-saveSlotChoice: dc.b 0
-                
+actFall         = screen1+SCROLLROWS*40+96
+actFallL        = screen1+SCROLLROWS*40+96+MAX_COMPLEXACT
+actAttackD      = screen1+SCROLLROWS*40+96+MAX_COMPLEXACT*2
+actAIMode       = screen1+SCROLLROWS*40+96+MAX_COMPLEXACT*3
+actAIHelp       = screen1+SCROLLROWS*40+96+MAX_COMPLEXACT*4
+actAITarget     = screen2+SCROLLROWS*40+96
+actLine         = screen2+SCROLLROWS*40+96+MAX_COMPLEXACT
+actLastNavStairs = screen2+SCROLLROWS*40+96+MAX_COMPLEXACT*2
+actLastNavLadder = screen2+SCROLLROWS*40+96+MAX_COMPLEXACT*3
+actGroundCharInfo = screen2+SCROLLROWS*40+96+MAX_COMPLEXACT*4
+
         ; Chunk-file memory allocation variables
 
 fileLo:         ds.b MAX_CHUNKFILES,0
 fileHi:         ds.b MAX_CHUNKFILES,0
-
-                if MAX_CHUNKFILES <= 40
-fileNumObjects  = screen2+SCROLLROWS*40+96
-                else
 fileNumObjects: ds.b MAX_CHUNKFILES,0
-                endif
-                if MAX_CHUNKFILES <= 40
-fileAge         = screen1+SCROLLROWS*40+96
-                else
 fileAge:        ds.b MAX_CHUNKFILES,0
+
+                if SHOW_FREE_MEMORY > 0
+
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
+
+        ; Level properties + saveslot
+
+lvlPropertiesStart:
+lvlWaterSplashColor:
+                dc.b 0
+lvlWaterToxinDelay:
+                dc.b 0
+lvlAirToxinDelay:
+                dc.b 0
+lvlPropertiesEnd:
+saveSlotChoice: dc.b 0
+
                 endif

@@ -214,7 +214,7 @@ CU_ChoiceRedrawSilent:
                 sta screen1+14*40+12,y
 CU_ChoiceLoop:  jsr FinishFrame
                 jsr GetControls
-                if EDIT_PUZZLE=0
+                if EDIT_PUZZLE = 0
                 lda keyPress
                 bmi CU_NoKey
                 lda #1
@@ -260,7 +260,7 @@ CU_DoExit:      ldy lvlObjNum                   ;Allow immediate re-entry
 
         ; Configuration puzzle
 
-                if EDIT_PUZZLE=0
+                if EDIT_PUZZLE = 0
 CU_Victory:     lda #SFX_POWERUP
                 sta upgradeOK
                 jsr PlaySfx
@@ -293,13 +293,13 @@ CU_DoConfigure: jsr BlankScreen
                 sta fireExitDelay
 CU_ConfigureLoop:
                 jsr CU_Frame
-                if EDIT_PUZZLE=0
+                if EDIT_PUZZLE = 0
                 lda poweredOutputs
                 cmp totalOutputs
                 beq CU_Victory
                 endif
                 jsr GetControls
-                if EDIT_PUZZLE=0
+                if EDIT_PUZZLE = 0
                 lda keyType
                 bpl CU_DoExit
                 else

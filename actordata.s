@@ -70,7 +70,8 @@ ACT_SCIENTIST1 = 68
 ACT_SCIENTIST2 = 69
 ACT_SCIENTIST3 = 70
 ACT_HACKER      = 71
-ACT_COMBATROBOTSABOTEUR = 72
+ACT_HAZMAT      = 72
+ACT_COMBATROBOTSABOTEUR = 73
 
 ACT_FIRSTPERSISTENTNPC = ACT_SCIENTIST2
 
@@ -138,16 +139,13 @@ humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5
                 dc.b 2,1,0
                 dc.b $80+2,$80+1,$80+0
 
-        ; Tank Y-size addition table (based on turret direction)
+        ; Tank size add based on animation
 
 tankSizeAddTbl: dc.b 2,0,6,8
 
-        ; Rock size table
-
+        ; Falling rock properties based on size
+        
 rockSizeTbl:    dc.b 9,7,5
-
-        ; Rock damage table
-
 rockDamageTbl:  dc.b DMG_ROCK,DMG_ROCK-1,0
 
         ; Turret firing ctrl + frame table
@@ -257,6 +255,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adScientist2
                 dc.b <adScientist3
                 dc.b <adHacker
+                dc.b <adHazmat
                 dc.b <adCombatRobot
 
 actDispTblHi:   dc.b >adPlayer
@@ -330,6 +329,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adScientist2
                 dc.b >adScientist3
                 dc.b >adHacker
+                dc.b >adHazmat
                 dc.b >adCombatRobot
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
@@ -351,7 +351,7 @@ adItem:         dc.b ONESPRITE                  ;Number of sprites
 itemFrames:     dc.b 0,0,1,2,3,4,5,6,7,8,9,10   ;Frametable (first all frames of sprite1, then sprite2)
                 dc.b 11,12,13,14,22,15,16,17,18
                 dc.b 19,23,20,20,20,20,20,20,20,20,20,20,21
-                dc.b 24,25,26,29,28,27
+                dc.b 24,25,26,29,30,28,27
 
 adBullet:       dc.b ONESPRITE                  ;Number of sprites
                 dc.b C_COMMON                   ;Spritefile number
@@ -659,6 +659,13 @@ adSpiderChunk:  dc.b ONESPRITEDIRECT            ;Number of sprites
                 dc.b C_LARGESPIDER              ;Spritefile number
                 dc.b 20                         ;Base spritenumber
 
+adThroneChief:  dc.b TWOSPRITE                  ;Number of sprites
+                dc.b C_GUARD                    ;Spritefile number
+                dc.b 0                          ;Left frame add
+                dc.b 1                          ;Number of frames
+                dc.b 44
+                dc.b 43
+
 adScientist1:   dc.b HUMANOID                   ;Number of sprites
                 dc.b C_SCIENTIST                ;Lower part spritefile number
                 dc.b 16                         ;Lower part base spritenumber
@@ -699,12 +706,15 @@ adHacker:       dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
-adThroneChief:  dc.b TWOSPRITE                  ;Number of sprites
-                dc.b C_GUARD                    ;Spritefile number
-                dc.b 0                          ;Left frame add
-                dc.b 1                          ;Number of frames
-                dc.b 44
-                dc.b 43
+adHazmat:       dc.b HUMANOID                   ;Number of sprites
+                dc.b C_HAZMAT                   ;Lower part spritefile number
+                dc.b 3                          ;Lower part base spritenumber
+                dc.b 0                          ;Lower part base index into the frametable
+                dc.b 32                         ;Lower part left frame add
+                dc.b C_HAZMAT                   ;Upper part spritefile number
+                dc.b 0                          ;Upper part base spritenumber
+                dc.b 0                          ;Upper part base index into the frametable
+                dc.b 39                         ;Upper part left frame add
 
         ; Actor logic data
 
@@ -779,6 +789,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alScientist23
                 dc.b <alScientist23
                 dc.b <alHacker
+                dc.b <alScientist23
                 dc.b <alCombatRobotSaboteur
 
 actLogicTblHi:  dc.b >alPlayer
@@ -852,6 +863,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alScientist23
                 dc.b >alScientist23
                 dc.b >alHacker
+                dc.b >alScientist23
                 dc.b >alCombatRobotSaboteur
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
@@ -1697,6 +1709,9 @@ alGenerator:    dc.w USESCRIPT|EP_MOVEGENERATOR ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b 0                          ;Initial health
 
+alThroneChief:  dc.w DoNothing                  ;Update routine
+                dc.b AF_INITONLYSIZE            ;Actor flags
+                
 alMediumWalker: dc.w MoveWalker                 ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 12                         ;Horizontal size
@@ -1804,6 +1819,3 @@ alCombatRobotSaboteur:
                 dc.w 500                        ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
                 dc.b DROP_NOTHING               ;Itemdrop type or item override
-
-alThroneChief:  dc.w DoNothing                  ;Update routine
-                dc.b AF_INITONLYSIZE            ;Actor flags

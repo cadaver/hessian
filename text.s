@@ -37,6 +37,7 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtTruckBattery
                 dc.b <txtFuelCan
                 dc.b <txtLungFilter
+                dc.b <txtLaptop
                 dc.b <txtCommGear
                 dc.b <txtHazmatSuit
 
@@ -77,6 +78,7 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtTruckBattery
                 dc.b >txtFuelCan
                 dc.b >txtLungFilter
+                dc.b >txtLaptop
                 dc.b >txtCommGear
                 dc.b >txtHazmatSuit
 
@@ -141,6 +143,7 @@ txtTruckBattery:dc.b "TRUCK "
 txtFuelCan:     dc.b "FUEL CAN",0
 txtLungFilter:  dc.b "LUNG FILT"
                 textjump txtEr
+txtLaptop:      dc.b "LAPTOP",0
 txtCommGear:    dc.b "RADIO & EYECAM",0
 txtHazmatSuit:  dc.b "HAZMAT SU"
                 textjump txtIt

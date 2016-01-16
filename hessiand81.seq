@@ -69,6 +69,7 @@ write sprsecuritychief.pak @8:41
 write sprlargetank.pak @8:42
 write sprhighwalker.pak @8:43
 write sprserver.pak @8:44
+write sprhazmat.pak @8:45
 write script00.pak @8:50
 write script01.pak @8:51
 write script02.pak @8:52
