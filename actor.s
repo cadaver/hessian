@@ -959,8 +959,8 @@ NoInterpolation:lda actXL,x
         ; Returns: -
         ; Modifies: A
 
-MoveActorXNeg:  eor #$ff
-                clc
+MoveActorXNeg:  clc
+                eor #$ff
                 adc #$01
 
         ; Move actor in X-direction
@@ -989,8 +989,8 @@ MAX_NegOk:      rts
         ; Returns: -
         ; Modifies: A
 
-MoveActorYNeg:  eor #$ff
-                clc
+MoveActorYNeg:  clc
+                eor #$ff
                 adc #$01
 
         ; Move actor in Y-direction

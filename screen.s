@@ -177,8 +177,8 @@ SL_XPos2:       tax
                 sta scrAdd
                 lda scrollCSY                   ;Then absolute Y-speed
                 bpl SL_YPos2
-                eor #$ff
                 clc
+                eor #$ff
                 adc #$01
 SL_YPos2:       tay
                 cmp scrAdd                      ;Use the higher speed
