@@ -26,21 +26,6 @@ Add16:          lda $00,x
                 sta $01,x
                 rts
 
-        ; Subtract a 8-bit value from a 16-bit value
-        ;
-        ; Parameters: A value to be subtracted, X zeropage base
-        ; Returns: zeropage result
-        ; Modifies: A
-
-Sub8:           sta Sub8_Value+1
-                lda $00,x
-                sec
-Sub8_Value:     sbc #$00
-                sta $00,x
-                bcs Sub8_Skip
-                dec $01,x
-Sub8_Skip:      rts
-
         ; Multiply two unsigned 8-bit values
         ;
         ; Parameters: A,Y values to be multiplied, X destination zeropage base
