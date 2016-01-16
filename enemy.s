@@ -198,7 +198,7 @@ MFC_Fall:       jsr FallingMotionCommon
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
 DestroyFlyingCraft:
-                stx DFC_RestX+1                 ;Spawn one explosion when starts to fall
+                stx temp6                       ;Spawn one explosion when starts to fall
                 lda #ACTI_FIRSTNPC              ;Use any free actors
                 ldy #ACTI_LASTNPCBULLET
                 jsr GetFreeActor
@@ -207,7 +207,7 @@ DestroyFlyingCraft:
                 tya
                 tax
                 jsr ExplodeActor                ;Play explosion sound & init animation
-DFC_RestX:      ldx #$00
+                ldx temp6
 DFC_NoRoom:     rts
 
         ; Walking robot update routine
@@ -333,9 +333,7 @@ MSC_NoSmokeDamage:
                 jsr MoveActorY
                 lda #4
                 ldy #3
-                jsr OneShotAnimation
-                bcc MSC_NoRemove
-                jmp RemoveActor
+                jmp OneShotAnimateAndRemove
 
         ; Rat movement
         ;

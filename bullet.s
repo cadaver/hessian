@@ -344,9 +344,7 @@ MEMP_ColorDone: jsr RadiusDamage
                 jsr MoveActorX
                 lda #1
                 ldy #3
-                jsr OneShotAnimation
-                bcc MEMP_NoAnim
-                jmp RemoveActor
+                jmp OneShotAnimateAndRemove
 
         ; Check bullet collisions and optionally apply damage
         ;
