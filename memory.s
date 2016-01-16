@@ -196,11 +196,11 @@ loaderCodeStart = $0500
 loaderCodeEnd   = $0534
 
 videoBank       = $c000
+emptySprite     = $d000
 spriteCache     = $d000
 fileAreaEnd     = spriteCache
 colors          = $d800
 textChars       = $e000
-emptySprite     = $e300
 panelScreen     = $e000
 mapTblLo        = $e000
 mapTblHi        = $e080

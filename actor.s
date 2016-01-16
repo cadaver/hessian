@@ -399,22 +399,17 @@ AA_ItemFlashCounter:                            ;Get color override for items + 
                 sta FlashActor+1
                 and #$07
                 tax
-                lda panelScreen+PANELROW*40+11
-                cmp #122
-                bcc AA_NoHealthBarFlash
-                txa
-                ldy actHp+ACTI_PLAYER           ;Flash the H & C letters if health or battery low
+                ldy actHp+ACTI_PLAYER           ;Flash the H & B letters if health or battery low
                 cpy #LOW_HEALTH+1
                 bcc AA_FlashHealth
                 lda #$01
-AA_FlashHealth: sta colors+PANELROW*40+9
+AA_FlashHealth: sta colors+PANELROW*40+49
                 txa
                 ldy battery+1
                 cpy #LOW_BATTERY+1
                 bcc AA_FlashBattery
                 lda #$01
-AA_FlashBattery:sta colors+PANELROW*40+23
-AA_NoHealthBarFlash:
+AA_FlashBattery:sta colors+PANELROW*40+63
 
         ; Get screen border map coordinates for adding/removing actors
 
@@ -1636,7 +1631,7 @@ DA_NextMultiplyOf5:
                 bcc DA_NextMultiplyOf5
 DA_ReduceOK:    sbc #3
                 jsr DecreaseAmmo
-                lda #INVENTORY_TEXT_DURATION    ;Show decreased armor level in the status
+                lda #ARMOR_TEXT_DURATION        ;Show decreased armor level in the status
                 sta armorMsgTime                ;panel center (same as oxygen meter)
                 pla
                 cmp temp7                       ;Can reduce damage fully, or partially?

@@ -2,7 +2,6 @@
                 include mainsym.s
 
 numberIndex     = menuCounter
-rechargerColor  = menuCounter
 elevatorSound   = toxinDelay
 
         ; Script 1: common objects
@@ -685,6 +684,7 @@ npcBrakeTbl:    dc.b 4,0
 
 elevatorIndex:  dc.b 0
 elevatorTime:   dc.b 0
+rechargerColor: dc.b 0
 
         ; Messages
 

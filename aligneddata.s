@@ -1,10 +1,12 @@
-                if SHOW_FREE_MEMORY = 0
+        ; Misc. vars and tables to pad memory use
 
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
+actCtrl:        ds.b MAX_COMPLEXACT,0
+actMoveCtrl:    ds.b MAX_COMPLEXACT,0
+actPrevCtrl:    ds.b MAX_COMPLEXACT,0
+actWpn          ds.b MAX_COMPLEXACT,0
+actWpnF         ds.b MAX_COMPLEXACT,0
 
-        ; Level properties + saveslot
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 
 lvlPropertiesStart:
 lvlWaterSplashColor:
@@ -14,9 +16,6 @@ lvlWaterToxinDelay:
 lvlAirToxinDelay:
                 dc.b 0
 lvlPropertiesEnd:
-saveSlotChoice: dc.b 0
-
-                endif
 
                 org (* + $ff) & $ff00
 
@@ -331,8 +330,8 @@ ntChnWaveOld:   dc.b 0
                 dc.b 0,0,0,0,0,0,0
                 dc.b 0,0,0,0,0,0,0
 
-healthBarLetter:dc.b "H", "B"
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
+saveSlotChoice: dc.b 0
+d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
 
         ; Sprite variables
 
@@ -341,8 +340,10 @@ sortSprY:       ds.b MAX_SPR*2,0
 sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
 
-d015Tbl:        dc.b $00,$80,$c0,$e0,$f0,$f8,$fc,$fe,$ff
-healthBarPosTbl:dc.b 10,24
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
+healthBarPosTbl:dc.b 50,64
 timeMaxTbl:     dc.b 99,60,60,50
 attackTime:     dc.b 0
 
@@ -391,11 +392,6 @@ actSizeD:       ds.b MAX_ACT,0
 actTime:        ds.b MAX_ACT,0
 actMB:          ds.b MAX_ACT,0
 actF2:          ds.b MAX_COMPLEXACT,0
-actCtrl:        ds.b MAX_COMPLEXACT,0
-actMoveCtrl:    ds.b MAX_COMPLEXACT,0
-actPrevCtrl:    ds.b MAX_COMPLEXACT,0
-actWpn          ds.b MAX_COMPLEXACT,0
-actWpnF         ds.b MAX_COMPLEXACT,0
 
 actFall         = screen1+SCROLLROWS*40+96
 actFallL        = screen1+SCROLLROWS*40+96+MAX_COMPLEXACT
@@ -414,23 +410,3 @@ fileLo:         ds.b MAX_CHUNKFILES,0
 fileHi:         ds.b MAX_CHUNKFILES,0
 fileNumObjects: ds.b MAX_CHUNKFILES,0
 fileAge:        ds.b MAX_CHUNKFILES,0
-
-                if SHOW_FREE_MEMORY > 0
-
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
-
-        ; Level properties + saveslot
-
-lvlPropertiesStart:
-lvlWaterSplashColor:
-                dc.b 0
-lvlWaterToxinDelay:
-                dc.b 0
-lvlAirToxinDelay:
-                dc.b 0
-lvlPropertiesEnd:
-saveSlotChoice: dc.b 0
-
-                endif

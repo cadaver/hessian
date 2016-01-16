@@ -138,7 +138,7 @@ GASS_CacheSprite:
 GASS_CachePos:  ldx #$7f                        ;Continue from where we left off last time
 GASS_Loop:      inx
                 bpl GASS_NotOver
-                ldx #FIRSTCACHEFRAME
+                ldx #FIRSTCACHEFRAME+1          ;First frame is used for the empty sprite
 GASS_NotOver:   lda cacheSprAge-FIRSTCACHEFRAME,x
 GASS_CurrentFrame:
                 cmp #$01

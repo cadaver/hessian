@@ -5,6 +5,7 @@ MENU_MOVEDELAY  = 3
 
 INDEFINITE_TEXT_DURATION = $7f
 INVENTORY_TEXT_DURATION = 25
+ARMOR_TEXT_DURATION = 37
 REQUIREMENT_TEXT_DURATION = 50
 
 REDRAW_ITEM     = $01
@@ -18,7 +19,6 @@ MENU_INTERACTION = 3
 MENU_PAUSE      = 4
 
 HEALTHBAR_LENGTH = 7
-HEALTHBAR_COLOR = $0d
 
 TEXTRIGHTMARGIN = 31
 
@@ -29,23 +29,16 @@ TEXTRIGHTMARGIN = 31
         ; Modifies: A,Y,temp1-temp2
 
 DrawHealthBar:  ldy healthBarPosTbl,x
-                pha
-                lda panelScreen+PANELROW*40,y   ;Check if need to redraw completely
-                cmp #33
-                pla
-                bcc DHB_Redraw
                 cmp displayedHealth,x
                 beq DHB_Done
                 bcc DHB_Decrement
 DHB_Increment:  inc displayedHealth,x
                 skip2
 DHB_Decrement:  dec displayedHealth,x
-DHB_Redraw:     tya                             ;Start position
+                tya                             ;Start position
                 clc
 DHB_Length:     adc #HEALTHBAR_LENGTH           ;End position
                 sta temp2
-                lda healthBarLetter,x
-                sta panelScreen+PANELROW*40-1,y
                 lda displayedHealth,x
                 lsr
                 lsr
@@ -72,8 +65,6 @@ DHB_EmptyCharsLoop:
                 bne DHB_EmptyCharsLoop
 DHB_Done:       rts
 DHB_Sub:        sta panelScreen+PANELROW*40,y
-                lda #HEALTHBAR_COLOR
-                sta colors+PANELROW*40,y
                 iny
                 rts
 
@@ -91,8 +82,7 @@ FinishFrame:    jsr UpdateFrame
         ; Returns: -
         ; Modifies: A,X,Y,loader temp vars,temp vars
 
-UpdatePanel:    lda menuMode                    ;Update health bars only when no text/menu
-                pha
+UpdatePanel:    lda menuMode
                 cmp #MENU_PAUSE                 ;Increment game clock, except when paused
                 beq UP_SkipTime
                 ldx #$03
@@ -104,12 +94,8 @@ UP_IncreaseTime:
                 lda #$00
                 sta time,x
                 dex
-                bpl UP_IncreaseTime
-UP_SkipTime:    pla
-                ora textTime
-                ora displayedItemName
-                bne UP_SkipHealth
-                tax
+                bne UP_IncreaseTime
+UP_SkipTime:    ldx #$00
                 lda actHp+ACTI_PLAYER
                 lsr
                 jsr DrawHealthBar
@@ -136,7 +122,7 @@ UP_HasArmor:    cmp #100                        ;If picked up a full armor while
 UP_ShowOxygen:  ldy #"O"
                 sty temp1
                 jsr ConvertToBCD8
-                ldx #18
+                ldx #58
                 lda temp1
                 jsr PrintPanelChar
                 jsr PrintBCDDigitsLSB
@@ -144,11 +130,11 @@ UP_ShowOxygen:  ldy #"O"
                 jsr PrintPanelChar
                 bne UP_SkipHealth
 UP_ClearOxygen: lda #32
-                cmp panelScreen+PANELROW*40+18
+                cmp panelScreen+PANELROW*40+58
                 beq UP_SkipHealth
                 ldx #3
 UP_ClearOxygenLoop:
-                sta panelScreen+PANELROW*40+18,x
+                sta panelScreen+PANELROW*40+58,x
                 dex
                 bpl UP_ClearOxygenLoop
 UP_SkipHealth:  if SHOW_BATTERY > 0

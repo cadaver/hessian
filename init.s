@@ -207,15 +207,21 @@ IVid_InitScorePanel:
 InitRaster:     sei
                 ldx #$ff
                 txs
-                lda #$35
-                sta irqSave01
-                sta $01
+                ldy #$35
+                sty irqSave01
+                dey
+                sty $01
+                lda #$00
+                ldx #$3f
+IR_EmptySprite: sta emptySprite,x               ;Clear the data of the empty sprite
+                dex
+                bpl IR_EmptySprite
+                inc $01
+                sta $d01a                       ;IRQs disabled until screen is ready to be shown
                 lda #<Irq1                      ;Set initial IRQ vector
                 sta $fffe
                 lda #>Irq1
                 sta $ffff
-                lda #$00                        ;IRQs disabled until the screen is ready to be drawn
-                sta $d01a
                 lda #IRQ1_LINE                  ;Line where next IRQ happens
                 sta $d012
                 lda fastLoadMode                ;If not using serial fastloading, disable MinSprY/MaxSprY writing
@@ -238,14 +244,28 @@ textCharsCopy:  incbin bg/scorescr.chr
 
         ; Scorepanel screen/color data (overwritten)
 
-scorePanel:     dc.b 35,"       ",35,"                      ",35,"       ",35
-                dc.b 36
-                ds.b 7,61
+scorePanel:     dc.b 35
+                ds.b 7,32
+                dc.b 35
+                ds.b 22,32
+                dc.b 35
+                ds.b 7,32
+                dc.b 35
+
+                dc.b 96
+                ds.b 7,97
+                dc.b 98
                 dc.b 120
-                ds.b 22,61
-                dc.b 120
-                ds.b 7,61
+                ds.b 7,122
+                dc.b 99
+                ds.b 4,32
+                dc.b 100
                 dc.b 121
+                ds.b 7,122
+                dc.b 101
+                ds.b 6,97
+                dc.b 102
+                dc.b 103
 
 scorePanelColors:
                 dc.b 11
@@ -255,6 +275,15 @@ scorePanelColors:
                 dc.b 11
                 ds.b 7,1
                 dc.b 11
-                ds.b 40,11
+
+                ds.b 9,11
+                dc.b 1
+                ds.b 7,13
+                dc.b 11
+                ds.b 4,1
+                dc.b 11
+                dc.b 1
+                ds.b 7,13
+                ds.b 9,11
 
                 org scriptCodeEnd
