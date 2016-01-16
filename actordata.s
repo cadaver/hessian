@@ -169,6 +169,13 @@ ceilingTurretOfs:
                 dc.b JOY_LEFT|JOY_FIRE,4
                 dc.b 0
 
+        ; Flying enemy freemove directions
+
+flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP
+                dc.b JOY_LEFT|JOY_UP
+                dc.b JOY_RIGHT|JOY_DOWN
+                dc.b JOY_LEFT|JOY_DOWN
+
         ; Actor display data
 
 adMeleeHit      = $0000                         ;Invisible
@@ -1156,7 +1163,6 @@ alFire:         dc.w MoveFire                   ;Update routine
                 dc.b 0                          ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 150                        ;Score from kill
-                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alSmokeCloud:   dc.w MoveSmokeCloud              ;Update routine
                 dc.b GRP_ENEMIES|AF_INITONLYSIZE ;Actor flags
@@ -1305,7 +1311,6 @@ alSteam:        dc.w MoveSteam                  ;Update routine
                 dc.b 0                          ;Initial health
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 0                          ;Score from kill
-                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alOrganicWalker:dc.w MoveOrganicWalker          ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC ;Actor flags
@@ -1403,7 +1408,6 @@ alLightGuard:   dc.w MoveAndAttackHuman         ;Update routine
                 dc.b 4                          ;Long jump gravity acceleration
                 dc.b INITIAL_GROUNDBRAKE         ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
-                dc.b -INITIAL_JUMPSPEED         ;Jump initial speed (negative)
 
 alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
                 dc.b GRP_ENEMIES                ;Actor flags
@@ -1527,7 +1531,6 @@ alEye:          dc.w USESCRIPT|EP_MOVEEYESTAGE2 ;Update routine
                 dc.b HP_EYE                     ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 2500                       ;Score from kill
-                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
                 dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON|AF_ORGANIC ;Actor flags
@@ -1538,7 +1541,6 @@ alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
                 dc.b 0                          ;Initial health
                 dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 2500                       ;Score from kill
-                dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
 alLargeTank:    dc.w MoveLargeTank              ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
@@ -1684,7 +1686,7 @@ alArmorer:      dc.w MoveAndAttackHuman         ;Update routine
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
                 dc.b 4                          ;Long jump gravity acceleration
-                dc.b INITIAL_GROUNDBRAKE         ;Ground braking
+                dc.b INITIAL_GROUNDBRAKE        ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
 
 alGenerator:    dc.w USESCRIPT|EP_MOVEGENERATOR ;Update routine
@@ -1739,10 +1741,10 @@ alScientist1:   dc.w USESCRIPT|EP_SCIENTIST1    ;Update routine
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
                 dc.b 4                          ;Long jump gravity acceleration
-                dc.b INITIAL_GROUNDBRAKE         ;Ground braking
+                dc.b INITIAL_GROUNDBRAKE        ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
 
-alScientist23:dc.w MovePersistentNPC          ;Update routine
+alScientist23:  dc.w MovePersistentNPC          ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC      ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 35                         ;Size up
@@ -1762,7 +1764,7 @@ alScientist23:dc.w MovePersistentNPC          ;Update routine
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
                 dc.b 8                          ;Gravity acceleration
                 dc.b 4                          ;Long jump gravity acceleration
-                dc.b INITIAL_GROUNDBRAKE         ;Ground braking
+                dc.b INITIAL_GROUNDBRAKE        ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
 
 alHacker:       dc.w MovePersistentNPC          ;Update routine
@@ -1802,6 +1804,6 @@ alCombatRobotSaboteur:
                 dc.w 500                        ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
                 dc.b DROP_NOTHING               ;Itemdrop type or item override
-                
+
 alThroneChief:  dc.w DoNothing                  ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags

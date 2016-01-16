@@ -24,11 +24,6 @@ aiJumpTblHi:    dc.b >AI_TurnTo
                 dc.b >AI_FlyerIdle
                 dc.b >AI_Fish
 
-flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP
-                dc.b JOY_LEFT|JOY_UP
-                dc.b JOY_RIGHT|JOY_DOWN
-                dc.b JOY_LEFT|JOY_DOWN
-
         ; Spawn list entry selection tables
 
 spawnListAndTbl:dc.b $01                        ;0: entries 0-1 (first courtyard)
