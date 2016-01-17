@@ -270,14 +270,21 @@ MJ_Destroy:     jsr Random
                 ldx actIndex
                 rts
 MJ_NoExplosion: jmp SetZoneColors
-MJ_DestroyDone: ldy #$33                        ;Exit door opens
+MJ_DestroyDone: ldx actIndex
+                jsr RemoveActor
+                lda #PLOT_DISRUPTCOMMS          ;Construct fooled?
+                jsr GetPlotBit
+                beq MJ_TriggerEnding            ;If not, game ends now
+                ldy #$33                        ;Exit door opens
                 jsr ActivateObject
                 lda #PLOT_ELEVATOR2             ;Elevator usable now
                 jsr SetPlotBit
                 lda #MUSIC_NETHER
-                jsr PlaySong
-                ldx actIndex
-                jmp RemoveActor
+                jmp PlaySong
+MJ_TriggerEnding:
+                lda #<EP_ENDING1
+                ldx #>EP_ENDING1
+                jmp ExecScript
 
 MJ_GetOffsetSub:jsr Random
                 pha

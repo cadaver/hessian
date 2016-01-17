@@ -561,7 +561,7 @@ UM_PauseMenuAction:
                 jsr UM_PauseMenuClear
                 plp
                 beq UM_Retry
-                lda #<EP_TITLE                  ;Execute titlescreen in "save" mode
+UM_SaveGame:    lda #<EP_TITLE                  ;Execute titlescreen in "save" mode
                 ldx #>EP_TITLE                  ;(parameter 1)
                 ldy #$01
                 sty ES_LoadedScriptFile+1       ;Always reload title script

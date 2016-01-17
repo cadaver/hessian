@@ -18,6 +18,7 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w HackerAmbush
                 dc.w GiveLaptop
                 dc.w InstallLaptop
+                dc.w BioDomeEnding
 
         ; Security chief move routine
         ;
@@ -270,7 +271,10 @@ DE_RestX:       ldx #$00
         ; Returns: -
         ; Modifies: various
 
-EnterBioDome:   lda #PLOT_HIDEOUTOPEN           ;Check if ambush resolved by locking the hideout
+EnterBioDome:   lda #PLOT_ELEVATOR2             ;Travelled too far while the comms disruption was going on?
+                jsr GetPlotBit
+                bne EBD_TriggerEnding
+                lda #PLOT_HIDEOUTOPEN           ;Check if ambush resolved by locking the hideout
                 jsr GetPlotBit
                 beq EBD_Skip
                 lda #ACT_HACKER
@@ -303,7 +307,29 @@ EBD_KillHackerCommon:
                 ldy temp1
                 lda #ACT_NONE
                 sta lvlActT,y                   ;Just remove from gameworld
+EBD_AlreadyTriggered:
                 rts
+EBD_TriggerEnding:
+                lda scriptF
+                bne EBD_AlreadyTriggered
+                lda #<EP_BIODOMEENDING
+                ldx #>EP_BIODOMEENDING
+                jsr SetScript
+                lda #<txtRadioBioDomeEnding
+                ldx #>txtRadioBioDomeEnding
+                jmp RadioMsg
+
+        ; Biodome trigger ending
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+BioDomeEnding:  lda textTime                    ;Wait until radio message text has been read
+                bne EBD_AlreadyTriggered
+                lda #<EP_ENDING1
+                ldx #>EP_ENDING1
+                jmp ExecScript
 
         ; Hacker ambush NPC script
         ;
@@ -481,5 +507,8 @@ txtGiveLaptop:  dc.b "ALSO TAKE THIS LAPTOP. MY THEORY IS, THE AI HAS A DEDICATE
 
 txtRadioInstallLaptop:
                 dc.b 34,"JEFF HERE. THIS MUST BE THE AI'S LINK. LET'S GET TO WORK.",34,0
+
+txtRadioBioDomeEnding:
+                dc.b 34,"KIM, JEFF HERE. THE NETWORK JUST LIT UP LIKE NEVER BEFORE. I THINK THE AI IS ON TO OUR TRICK. SHIT..",34,0
 
                 checkscriptend

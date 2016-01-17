@@ -51,6 +51,8 @@ GS_Loop:        jsr GetLevelActorIndex
                 ldx #>EP_HACKER
                 endif
                 if SKIP_PLOT3 > 0
+                lda #PLOT_ELEVATOR2
+                jsr SetPlotBit
                 lda #<EP_HACKERFOLLOWZONE
                 ldx #>EP_HACKERFOLLOWZONE
                 jsr SetZoneScript
