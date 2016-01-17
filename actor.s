@@ -397,7 +397,7 @@ AA_ItemFlashCounter:                            ;Get color override for items + 
                 tax
                 lda itemFlashTbl,x
                 sta FlashActor+1
-                lda healthFlashTbl,x
+                ora #$08
                 tax
                 ldy actHp+ACTI_PLAYER           ;Flash the H & B letters if health or battery low
                 cpy #LOW_HEALTH+1

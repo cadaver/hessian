@@ -42,8 +42,8 @@ DIFFICULTY_HARD = 2
 
 MAX_OXYGEN      = 200
 MAX_BATTERY     = 56
-LOW_BATTERY     = MAX_BATTERY/3
-LOW_HEALTH      = HP_PLAYER/3
+LOW_BATTERY     = MAX_BATTERY*2/7
+LOW_HEALTH      = HP_PLAYER*2/7
 
 DRAIN_WALK      = 3                             ;At footstep sound, 6 per anim. cycle
 DRAIN_SWIM      = 24                            ;When animation wraps

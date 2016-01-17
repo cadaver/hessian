@@ -172,12 +172,6 @@ IVid_CopyTextChars:
                 sta textChars+$300,x
                 inx
                 bne IVid_CopyTextChars
-                ldx #7
-                lda #EMPTYSPRITEFRAME
-IVid_SetEmptySpriteFrame:
-                sta panelScreen+1016,x
-                dex
-                bpl IVid_SetEmptySpriteFrame
                 ldx #39
 IVid_InitScorePanel:
                 lda #$20
@@ -238,10 +232,6 @@ IR_UseFastLoad: cli
                 ldy #$00
                 jmp ExecScriptParam
 
-        ; Scorepanel chars (overwritten)
-
-textCharsCopy:  incbin bg/scorescr.chr
-
         ; Scorepanel screen/color data (overwritten)
 
 scorePanel:     dc.b 104
@@ -285,5 +275,10 @@ scorePanelColors:
                 dc.b 8
                 ds.b 7,15
                 ds.b 9,11
+
+        ; Scorepanel chars (overwritten)
+
+textCharsCopy:  incbin bg/scorescr.chr
+                ds.b 8,EMPTYSPRITEFRAME
 
                 org scriptCodeEnd

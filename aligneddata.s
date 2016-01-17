@@ -1,15 +1,3 @@
-        ; Misc. vars and tables to pad memory use
-
-actCtrl:        ds.b MAX_COMPLEXACT,0
-actMoveCtrl:    ds.b MAX_COMPLEXACT,0
-actPrevCtrl:    ds.b MAX_COMPLEXACT,0
-actWpn          ds.b MAX_COMPLEXACT,0
-actWpnF         ds.b MAX_COMPLEXACT,0
-
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
-healthFlashTbl: dc.b $08,$0f,$09,$0f
-
-
                 org (* + $ff) & $ff00
 
         ; Sprite cache / depacking tables
@@ -385,6 +373,11 @@ actSizeD:       ds.b MAX_ACT,0
 actTime:        ds.b MAX_ACT,0
 actMB:          ds.b MAX_ACT,0
 actF2:          ds.b MAX_COMPLEXACT,0
+actCtrl:        ds.b MAX_COMPLEXACT,0
+actMoveCtrl:    ds.b MAX_COMPLEXACT,0
+actPrevCtrl:    ds.b MAX_COMPLEXACT,0
+actWpn          ds.b MAX_COMPLEXACT,0
+actWpnF         ds.b MAX_COMPLEXACT,0
 
 actFall         = screen1+SCROLLROWS*40+96
 actFallL        = screen1+SCROLLROWS*40+96+MAX_COMPLEXACT
@@ -403,3 +396,7 @@ fileLo:         ds.b MAX_CHUNKFILES,0
 fileHi:         ds.b MAX_CHUNKFILES,0
 fileNumObjects: ds.b MAX_CHUNKFILES,0
 fileAge:        ds.b MAX_CHUNKFILES,0
+
+        ; Remaining misc. data
+        
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
