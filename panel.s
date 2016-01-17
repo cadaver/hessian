@@ -777,3 +777,52 @@ ConvertToBCD24: sta temp3
                 sty temp5
                 ldy #$18
                 bne CTB_Common
+
+        ; Print null-terminated text on the text screen, with textjump support
+        ;
+        ; Parameters: A,X text pointer, temp1,temp2 column/row
+        ; Returns: zpSrcLo-Hi incremented textpointer
+        ; Modifies: A,X,Y,zpSrcLo-Hi,zpDestLo-Hi
+
+PrintText:      sta zpSrcLo
+                stx zpSrcHi
+PT_Continue:    ldy temp2
+                jsr GetRowAddress
+                lda temp1
+                jsr Add8
+PT_Back:        ldy #$00
+PT_Loop:        lda (zpSrcLo),y
+                bmi PT_Jump
+                beq PT_Done
+                sta (zpDestLo),y
+                iny
+                bne PT_Loop
+PT_Done:        iny
+                tya
+                ldx #zpSrcLo
+                jmp Add8
+PT_Jump:        pha
+                tya
+                ldx #zpDestLo
+                jsr Add8
+                iny
+                lda (zpSrcLo),y
+                sta zpSrcLo
+                pla
+                and #$7f
+                sta zpSrcHi
+                bpl PT_Back
+
+        ; Get address of text row on screen 1
+        ;
+        ; Parameters: Y row
+        ; Returns: zpDestLo-zpDestHi address
+        ; Modifies: A,X,Y
+
+GetRowAddress:  lda #40
+                ldx #zpDestLo
+                jsr MulU
+                lda zpDestHi
+                ora #>screen1
+                sta zpDestHi
+                rts

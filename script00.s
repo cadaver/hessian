@@ -21,9 +21,9 @@ logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 
-START_LEVEL     = $00                          ;Warehouse
-START_X         = $6680
-START_Y         = $1700
+;START_LEVEL     = $00                          ;Warehouse
+;START_X         = $6680
+;START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard
 ;START_X         = $0280
@@ -49,9 +49,9 @@ START_Y         = $1700
 ;START_X          = $0b80
 ;START_Y          = $0f00
 
-;START_LEVEL      = $05                         ;First upgrade lab
-;START_X          = $0d80
-;START_Y          = $0600
+START_LEVEL      = $05                         ;First upgrade lab
+START_X          = $0d80
+START_Y          = $0600
 
 ;START_LEVEL     = $06                          ;Upper labs
 ;START_X         = $0180
@@ -723,14 +723,14 @@ GetSaveDescription:
                 jsr ConvertToBCD8
                 ldx #5
                 jsr PrintTimeBCD2
-                jsr PrintTextContinue
+                jsr PT_Continue
                 lda #<txtTime
                 sta zpSrcLo
                 lda #>txtTime
                 sta zpSrcHi
                 lda #25
                 sta temp1
-                jsr PrintTextContinue
+                jsr PT_Continue
                 jmp SaveDone
 
         ; Pick choice by joystick up/down
@@ -841,26 +841,7 @@ PrintOnOff:     cmp #$01
                 ldx #>txtOn
 PrintOnOffCommon:
                 sty temp2
-
-        ; Print null-terminated text
-
-PrintText:      sta zpSrcLo
-                stx zpSrcHi
-PrintTextContinue:
-                ldy temp2
-                jsr GetRowAddress
-                lda temp1
-                jsr Add8
-                ldy #$00
-PrintTextLoop:  lda (zpSrcLo),y
-                beq PrintTextDone
-                sta (zpDestLo),y
-                iny
-                bne PrintTextLoop
-PrintTextDone:  iny
-                tya
-                ldx #zpSrcLo
-                jmp Add8
+                jmp PrintText
 
         ; Print centered text
 
@@ -872,17 +853,17 @@ PrintTextCenterContinue:
                 ldy #$00
 PTC_Loop:       lda (zpSrcLo),y
                 bmi PTC_SetAbsolute
-                beq PrintTextContinue
+                beq PTC_Continue
                 iny
                 lda (zpSrcLo),y
-                beq PrintTextContinue
+                beq PTC_Continue
                 iny
                 dec temp1
                 bpl PTC_Loop
 PTC_SetAbsolute:and #$7f
                 sta temp1
-                jsr PrintTextDone               ;Skip the negative byte, then print normally
-                jmp PrintTextContinue
+                jsr PT_Done                     ;Skip the negative byte, then print normally
+PTC_Continue:   jmp PT_Continue
 
         ; Print choice arrow
 
@@ -905,16 +886,6 @@ DCA_NoArrow:    sta (zpDestLo),y
 DCA_NextRowOK:  inx
                 cpx zpSrcHi
                 bcc DCA_Loop
-                rts
-
-        ; Get address of text row Y
-
-GetRowAddress:  lda #40
-                ldx #zpDestLo
-                jsr MulU
-                lda zpDestHi
-                ora #>screen1
-                sta zpDestHi
                 rts
 
         ; Get index of entry A in savegamelist

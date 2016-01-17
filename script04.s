@@ -131,43 +131,60 @@ CU_CopyPuzzle:  lda (actLo),y                   ;Reset puzzle if entering a diff
                 inx
                 cpx #BOARD_SIZEX*BOARD_SIZEY
                 bcc CU_CopyPuzzle
-CU_Same:        lda #4
+CU_Same:        lda #0
                 sta temp1
                 lda #7
                 sta temp2
-                lda #$0d
-                sta temp3
-                lda #<humanShape
-                ldx #>humanShape
-                jsr PrintMultipleRows
-                ldy #UD_BITS
+HS_Row:         ldy temp2
+                cpy #13
+                bcs HS_Done
+                jsr GetRowAddress
+                and #$03
+                ora #>colors
+                sta zpBitsHi
+                lda zpDestLo
+                sta zpBitsLo
+                ldx temp1
+                ldy #5
+HS_Column:      lda humanShape,x
+                sta (zpDestLo),y
+                lda #$0b
+                sta (zpBitsLo),y
+                inx
+                iny
+                cpy #8
+                bcc HS_Column
+                stx temp1
+                inc temp2
+                bne HS_Row
+HS_Done:        ldy #UD_BITS
                 lda (actLo),y
                 sta temp1
                 lda #$09
                 lsr temp1                       ;Highlight parts of the human shape
                 bcc HS_NoHead                   ;according to bits
-                sta colors+7*40+5
+                sta colors+7*40+6
 HS_NoHead:      lsr temp1
                 bcc HS_NoTorso
-                ldx #5
+                ldx #6
                 jsr Highlight2
 HS_NoTorso:     lsr temp1
                 bcc HS_NoRArm
-                ldx #4
+                ldx #5
                 jsr Highlight2
 HS_NoRArm:      lsr temp1
                 bcc HS_NoLArm
-                ldx #6
+                ldx #7
                 jsr Highlight2
 HS_NoLArm:      lsr temp1
                 bcc HS_NoRLeg
-                ldx #3*40+4                     ;Highlight also the center,
+                ldx #3*40+5                     ;Highlight also the center,
                 jsr Highlight3                  ;as leg upgrade is always both
                 inx
                 jsr Highlight3
 HS_NoRLeg:      lsr temp1
                 bcc HS_NoLLeg
-                ldx #3*40+6
+                ldx #3*40+7
                 jsr Highlight3
 HS_NoLLeg:      lda #6
                 sta temp1
@@ -175,7 +192,7 @@ HS_NoLLeg:      lda #6
                 sta temp2
                 lda #<txtStation
                 ldx #>txtStation
-                jsr PrintTextWhite              ;Print title text
+                jsr PrintText                   ;Print title text
                 lda #9
                 sta temp1
                 lda #7
@@ -270,7 +287,7 @@ CU_Victory:     lda #SFX_POWERUP
                 sta temp1
                 lda #<txtVictory
                 ldx #>txtVictory
-                jsr PrintTextWhite
+                jsr PrintText
                 lda #100
                 sta fireExitDelay
 CU_VictoryDelay:jsr CU_Frame
@@ -536,14 +553,14 @@ RedrawBoard:    lda #9
                 sta temp2
                 lda #<txtPuzzleTitle
                 ldx #>txtPuzzleTitle
-                jsr PrintTextWhite
+                jsr PrintText
                 lda #6
                 sta temp1
                 lda #18
                 sta temp2
                 lda #<txtOutputs
                 ldx #>txtOutputs
-                jsr PrintTextWhite
+                jsr PrintText
                 ldx #7
 RB_BottomRow:   lda #129
                 sta screen1+17*40,x
@@ -724,57 +741,26 @@ ClearScreenLoop:lda #$20
                 sta screen1+$100,x
                 sta screen1+$200,x
                 sta screen1+SCROLLROWS*40-$100,x
+                lda #$01
+                sta colors,x
+                sta colors+$100,x
+                sta colors+$200,x
+                sta colors+SCROLLROWS*40-$100,x
                 inx
                 bne ClearScreenLoop
                 rts
 
-        ; Print multiple rows
+        ; Print multiple text rows
 
 PrintMultipleRows:
                 sta zpSrcLo
                 stx zpSrcHi
-PMR_Loop:       ldy #$00
-                lda (zpSrcLo),y
-                beq PMR_End
-                jsr PT_HasAddress
+PMR_Loop:       jsr PT_Continue
                 inc temp2
-                bne PMR_Loop
-PMR_End:        rts
-
-        ; Print null-terminated text
-
-PrintTextWhite: ldy #$01
-                sty temp3
-PrintText:      sta zpSrcLo
-                stx zpSrcHi
-PT_HasAddress:  ldy temp2
-                ldy temp2
-                lda #40
-                ldx #zpDestLo
-                jsr MulU
-                lda temp1
-                jsr Add8
-                lda zpDestLo
-                sta zpBitsLo
-                lda zpDestHi
-                pha
-                ora #>screen1
-                sta zpDestHi
-                pla
-                ora #>colors
-                sta zpBitsHi
                 ldy #$00
-PT_Loop:        lda (zpSrcLo),y
-                beq PT_Done
-                sta (zpDestLo),y
-                lda temp3
-                sta (zpBitsLo),y
-                iny
-                bne PT_Loop
-PT_Done:        iny
-                tya
-                ldx #zpSrcLo
-                jmp Add8
+                lda (zpSrcLo),y
+                bne PMR_Loop
+                rts
 
         ; Install station script routine
         ;
@@ -917,12 +903,12 @@ txtAlreadyConfigured:
 txtAlreadyInstalled:
                 dc.b "ALREADY INSTALLED",0
 
-humanShape:     dc.b 128,193,128,0
-                dc.b 194,195,196,0
-                dc.b 197,198,199,0
-                dc.b 200,201,202,0
-                dc.b 203,204,205,0
-                dc.b 206,207,208,0,0
+humanShape:     dc.b 128,193,128
+                dc.b 194,195,196
+                dc.b 197,198,199
+                dc.b 200,201,202
+                dc.b 203,204,205
+                dc.b 206,207,208
 
 puzzleState:    ds.b BOARD_SIZEX*BOARD_SIZEY,0
 

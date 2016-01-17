@@ -217,41 +217,7 @@ RS_BuyFail:     lda #SFX_DAMAGE
 Print3Digits:   jsr ConvertDigits
                 lda #<txtDigits
                 ldx #>txtDigits
-
-        ; Print null-terminated text, with textjump support for item names
-
-PrintText:      sta zpSrcLo
-                stx zpSrcHi
-                ldy temp2
-                lda #40
-                ldx #zpDestLo
-                jsr MulU
-                lda temp1
-                jsr Add8
-                lda zpDestHi
-                ora #>screen1
-                sta zpDestHi
-                ldy #$00
-PT_Loop:        lda (zpSrcLo),y
-                bmi PT_Jump
-                beq PT_Done
-                sta (zpDestLo),y
-                iny
-                bne PT_Loop
-PT_Done:        rts
-PT_Jump:        sty PT_Sub+1
-                pha
-                iny
-                lda (zpSrcLo),y
-                dey
-                sec
-PT_Sub:         sbc #$00
-                sta zpSrcLo
-                pla
-                and #$7f
-                sbc #$00
-                sta zpSrcHi
-                bpl PT_Loop
+                jmp PrintText
 
         ; Convert 3 digits to a printable string
 

@@ -57,7 +57,7 @@ ServerRoomComputer:
                 sta temp2
                 lda #<txtMasterRouter
                 ldx #>txtMasterRouter
-                jsr PrintMultiRow
+                jsr PrintMultipleRows
                 lda #10
                 sta temp1
                 lda #2
@@ -81,7 +81,7 @@ SRC_SecurityOff:
 SRC_SecurityOn:
                 lda #<txtProtocolOn
                 ldx #>txtProtocolOn
-SRC_Common:     jsr PrintMultiRow
+SRC_Common:     jsr PrintMultipleRows
                 lda codes+MAX_CODES*3-1
                 bmi SRC_NoCode
 SRC_ShowCode:   ldx #2
@@ -240,42 +240,17 @@ DoExit:         ldy lvlObjNum                   ;Allow immediate re-entry
                 jsr InactivateObject
                 jmp CenterPlayer
 
-        ; Print multiple rows
+        ; Print multiple text rows
 
-PrintMultiRow:  sta zpSrcLo
+PrintMultipleRows:
+                sta zpSrcLo
                 stx zpSrcHi
-PMR_NextRow:    jsr PrintTextContinue
+PMR_Loop:       jsr PT_Continue
+                inc temp2
                 ldy #$00
                 lda (zpSrcLo),y
-                beq PMR_Exit
-                inc temp2
-                bne PMR_NextRow
-PMR_Exit:       rts
-
-        ; Print null-terminated text
-
-PrintText:      sta zpSrcLo
-                stx zpSrcHi
-PrintTextContinue:
-                ldy temp2
-                lda #40
-                ldx #zpDestLo
-                jsr MulU
-                lda zpDestHi
-                ora #>screen1
-                sta zpDestHi
-                lda temp1
-                jsr Add8
-                ldy #$00
-PrintTextLoop:  lda (zpSrcLo),y
-                beq PrintTextDone
-                sta (zpDestLo),y
-                iny
-                bne PrintTextLoop
-PrintTextDone:  iny
-                tya
-                ldx #zpSrcLo
-                jmp Add8
+                bne PMR_Loop
+                rts
 
         ; Messages
 
