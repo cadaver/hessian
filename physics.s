@@ -119,8 +119,11 @@ MWG_NoWallHit2: lda temp7
 MWG_CheckEnterWater:
                 and #CI_WATER
                 beq MWG_NoLeaveWater
+                lda actT,x                      ;Items may create multiple splashes, so avoid
+                cmp #ACT_ITEM
+                beq MWG_SkipSplash
                 jsr CreateSplash
-                lda temp5
+MWG_SkipSplash: lda temp5
                 ora #MB_INWATER
                 bne MWG_CheckWaterStoreFlags
 MWG_CheckLeaveWater:

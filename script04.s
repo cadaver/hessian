@@ -82,26 +82,19 @@ ConfigureUpgrade:
                 bne CU_AlreadyInstalled
                 lda upgradeOK
                 bne CU_AlreadyConfigured
-                jsr BlankScreen
-                stx sprIndex                    ;X=0 on return
-                jsr DA_FillSprites              ;Remove game sprites
-                ldx #$ff
-                stx ECS_LoadedCharSet+1         ;Mark game charset destroyed
+                jsr SetupTextScreen
+                lda #$0b
+                sta Irq1_Bg2+1
+                lda #$0c
+                sta Irq1_Bg3+1
                 lda #F_UPGRADE
                 jsr MakeFileName_Direct
                 lda #<upgradeCharsStart
                 ldx #>upgradeCharsStart
                 jsr LoadFileRetry
-                ldx #$00
-                stx Irq1_Bg1+1
-                stx screen
-                stx SL_CSSScrollY+1
-                lda #$0f
-                sta scrollX
-                lda #$0b
-                sta Irq1_Bg2+1
-                lda #$0c
-                sta Irq1_Bg3+1
+                ldx #$ff
+                stx ECS_LoadedCharSet+1         ;Mark game charset destroyed
+                inx
 CU_CopyTextChars:
                 lda textChars+$100,x
                 sta chars+$100,x
@@ -111,8 +104,10 @@ CU_CopyTextChars:
                 sta chars+$300,x
                 inx
                 bne CU_CopyTextChars
-CU_Again:       jsr ClearScreen
-                lda upgradeIndex
+                stx screen
+                stx sprIndex
+                jsr DA_FillSprites              ;Remove game sprites
+CU_Again:       lda upgradeIndex
                 asl
                 tax
                 lda upgradeDataStart,x          ;Get address of upgrade data structure
@@ -296,18 +291,18 @@ CU_VictoryDelay:jsr CU_Frame
                 beq CU_DoExit
                 endif
 
-CU_DoConfigure: jsr BlankScreen
-                jsr ClearScreen
+CU_DoConfigure: jsr SetupTextScreen
                 jsr Evaluate
                 jsr RedrawBoard
                 lda #BOARD_SIZEX/2
                 sta posX
                 lda #BOARD_SIZEY/2
                 sta posY
-                lda #$00
-                sta sightColor
-                sta menuMoveDelay
-                sta fireExitDelay
+                ldx #$00
+                stx screen
+                stx sightColor
+                stx menuMoveDelay
+                stx fireExitDelay
 CU_ConfigureLoop:
                 jsr CU_Frame
                 if EDIT_PUZZLE = 0
@@ -733,35 +728,6 @@ Highlight2:     sta colors+8*40,x
                 sta colors+9*40,x
                 rts
 
-        ; Clear whole screen
-        
-ClearScreen:    ldx #$00
-ClearScreenLoop:lda #$20
-                sta screen1,x
-                sta screen1+$100,x
-                sta screen1+$200,x
-                sta screen1+SCROLLROWS*40-$100,x
-                lda #$01
-                sta colors,x
-                sta colors+$100,x
-                sta colors+$200,x
-                sta colors+SCROLLROWS*40-$100,x
-                inx
-                bne ClearScreenLoop
-                rts
-
-        ; Print multiple text rows
-
-PrintMultipleRows:
-                sta zpSrcLo
-                stx zpSrcHi
-PMR_Loop:       jsr PT_Continue
-                inc temp2
-                ldy #$00
-                lda (zpSrcLo),y
-                bne PMR_Loop
-                rts
-
         ; Install station script routine
         ;
         ; Parameters: -
@@ -903,13 +869,6 @@ txtAlreadyConfigured:
 txtAlreadyInstalled:
                 dc.b "ALREADY INSTALLED",0
 
-humanShape:     dc.b 128,193,128
-                dc.b 194,195,196
-                dc.b 197,198,199
-                dc.b 200,201,202
-                dc.b 203,204,205
-                dc.b 206,207,208
-
 puzzleState:    ds.b BOARD_SIZEX*BOARD_SIZEY,0
 
 boardConnAndTbl:dc.b CONN_DOWN|CONN_RIGHT
@@ -923,6 +882,13 @@ boardConnAndTbl:dc.b CONN_DOWN|CONN_RIGHT
                 dc.b CONN_UP|CONN_RIGHT
                 ds.b BOARD_SIZEX-2,CONN_UP|CONN_RIGHT|CONN_LEFT
                 dc.b CONN_UP|CONN_LEFT
+
+humanShape:     dc.b 128,193,128
+                dc.b 194,195,196
+                dc.b 197,198,199
+                dc.b 200,201,202
+                dc.b 203,204,205
+                dc.b 206,207,208
 
 upgradePuzzleIndex:
                 dc.b $ff

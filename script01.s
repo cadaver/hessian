@@ -572,14 +572,10 @@ HFZ_LevelOK:    lda #ACT_HACKER
                 jmp TransportNPCToPlayer
 HFZ_Finished:   jsr HFZ_LevelOK
                 jsr AddQuestScore
-                lda #PLOT_INOLDTUNNELS2
-                jsr SetPlotBit
-                lda #ACT_HACKER                 ;Todo: continue story from here
-                jsr TransportNPCToPlayer
-                lda #$20+AIMODE_TURNTO          ;Stop following
-                sta lvlActF,y
-                lda #$00
-                sta actScriptF+2                ;No actor script for now
+                lda #<EP_HACKERFOLLOWFINISH
+                sta actScriptEP+2
+                lda #>EP_HACKERFOLLOWFINISH
+                sta actScriptF+2
 HFZ_LevelFail:  jmp StopZoneScript              ;No zone script
 
         ; Radio speech when entering security center

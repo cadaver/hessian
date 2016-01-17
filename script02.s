@@ -50,6 +50,13 @@ GS_Loop:        jsr GetLevelActorIndex
                 lda #<EP_HACKER
                 ldx #>EP_HACKER
                 endif
+                if SKIP_PLOT3 > 0
+                lda #<EP_HACKERFOLLOWZONE
+                ldx #>EP_HACKERFOLLOWZONE
+                jsr SetZoneScript
+                lda #<EP_HACKERFOLLOW
+                ldx #>EP_HACKERFOLLOW
+                endif
                 sta actScriptEP+2
                 stx actScriptF+2
                 ldx #(MAX_CODES)*3-1

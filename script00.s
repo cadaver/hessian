@@ -45,9 +45,9 @@ titleTexts      = chars+608+168*2
 ;START_X         = $5480
 ;START_Y         = $3000
 
-START_LEVEL     = $04                          ;Service tunnels hideout door
-START_X         = $2480
-START_Y         = $3000
+;START_LEVEL     = $04                          ;Service tunnels hideout door
+;START_X         = $2480
+;START_Y         = $3000
 
 ;START_LEVEL      = $05                         ;Security center
 ;START_X          = $0b80
@@ -89,6 +89,10 @@ START_Y         = $3000
 ;START_X         = $1f80
 ;START_Y         = $5300
 
+;START_LEVEL     = $08                          ;Lower labs, old tunnels entrance
+;START_X         = $6780
+;START_Y         = $4a00
+
 ;START_LEVEL     = $08                          ;Next to lower labs operating room
 ;START_X         = $5180
 ;START_Y         = $5600
@@ -125,13 +129,17 @@ START_Y         = $3000
 ;START_X         = $1d80
 ;START_Y         = $1d00
 
+;START_LEVEL     = $0e                          ;Second cave fiber cable
+;START_X         = $bf80
+;START_Y         = $4900
+
 ;START_LEVEL     = $0c                          ;Security chief
 ;START_X         = $1980
 ;START_Y         = $1300
 
-;START_LEVEL     = $0f                          ;Old tunnels
-;START_X         = $0180
-;START_Y         = $4a00
+START_LEVEL     = $0f                          ;Old tunnels
+START_X         = $0180
+START_Y         = $4a00
 
 ;START_LEVEL     = $0f                          ;Old tunnels lab
 ;START_X         = $6f80

@@ -340,13 +340,13 @@ AfterSurgeryZone:
                 sta UA_SpawnDelay+1             ;Wait a bit before next dialogue, ensure
                 lda #<EP_AFTERSURGERYNOAIR      ;no enemy spawn in the meanwhile
                 sta actScriptEP+1
+                if SKIP_PLOT > 0
                 lda #PLOT_ELEVATOR1             ;For testing: enable this too
                 jsr SetPlotBit
+                endif
                 lda #PLOT_LOWERLABSNOAIR
                 jmp SetPlotBit
 ASZ_Survived:   jsr AddQuestScore
-                lda #PLOT_INOLDTUNNELS1
-                jsr SetPlotBit
                 lda #ACT_SCIENTIST3             ;Todo: continue story from here
                 jsr TransportNPCToPlayer
                 lda #$20+AIMODE_TURNTO          ;Stop following

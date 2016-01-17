@@ -17,6 +17,7 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w EnterBioDome
                 dc.w HackerAmbush
                 dc.w GiveLaptop
+                dc.w InstallLaptop
 
         ; Security chief move routine
         ;
@@ -409,6 +410,33 @@ GiveLaptop:     lda #$00
                 ldx #>txtGiveLaptop
                 bne HA_SpeakCommon
 
+        ; Install laptop script
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+InstallLaptop:  ldy #ITEM_LAPTOP
+                jsr FindItem
+                bcc IL_NoItem
+                jsr RemoveItem
+                jsr AddQuestScore               ;Todo: cutscene
+                lda #PLOT_DISRUPTCOMMS          ;(if PLOT_OLDTUNNELSLAB2 is set, Jeff knows
+                jsr SetPlotBit                  ;what to expect)
+                lda #$00
+                sta temp4
+                lda #ITEM_LAPTOP
+                jsr DI_ItemNumber
+                ldx temp8
+                lda #$80
+                sta actXL,x                     ;Always center of block
+                lda #$00
+                sta actSY,x                     ;No speed
+                lda #<txtRadioInstallLaptop
+                ldx #>txtRadioInstallLaptop
+                jmp RadioMsg
+IL_NoItem:      rts
+
         ; Final server room droid spawn positions
 
 droidSpawnXH:   dc.b $3e,$43,$3e,$43
@@ -450,5 +478,8 @@ txtAmbushSuccess:
 
 txtGiveLaptop:  dc.b "ALSO TAKE THIS LAPTOP. MY THEORY IS, THE AI HAS A DEDICATED NETWORK LINK. "
                 dc.b "IF YOU CAN FIND IT, WE MAY BE ABLE TO CUT IT OFF COMPLETELY.",34,0
+
+txtRadioInstallLaptop:
+                dc.b 34,"JEFF HERE. THIS MUST BE THE AI'S LINK. LET'S GET TO WORK.",34,0
 
                 checkscriptend

@@ -1,212 +1,182 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 10, nether tunnel interactions
+        ; Script 10, old tunnels lab
 
                 org scriptCodeStart
 
-                dc.w TunnelMachine
-                dc.w TunnelMachineItems
-                dc.w TunnelMachineRun
-                dc.w RadioJormungandr
-                dc.w RadioJormungandrRun
+                dc.w HackerFollowFinish
+                dc.w EnterLab
+                dc.w HackerEnterLab
+                dc.w LabComputer
+                dc.w GiveLaptop2
 
-        ; Tunnel machine script routine
+        ; Finish escorting Jeff to old tunnels
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-tmChoice        = menuCounter
-
-TunnelMachine:  lda #PLOT_BATTERY
-                jsr GetPlotBit
-                beq TM_NoBattery
-                lda #PLOT_FUEL
-                jsr GetPlotBit
-                beq TM_NoFuel
-                lda #$00
-                sta tmTime1
-                sta tmTime2
-                sta tmChoice
-                lda #<EP_TUNNELMACHINERUN
-                ldx #>EP_TUNNELMACHINERUN
-                jsr SetScript
-                ldx #MENU_INTERACTION
-                jsr SetMenuMode
-                lda #<txtReady
-                ldx #>txtReady
-                jsr PrintPanelTextIndefinite
-                jmp TMR_RedrawNoSound
-TM_NoBattery:   lda #<txtNoBattery
-                ldx #>txtNoBattery
-                bne TM_TextCommon
-TM_NoFuel:      lda #1
-                sta shakeScreen
-                lda #SFX_GENERATOR
-                jsr PlaySfx
-                lda #<txtNoFuel
-                ldx #>txtNoFuel
-TM_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
-                jmp PrintPanelText
-
-        ; Tunnel machine decision runloop
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-TunnelMachineRun:
-                inc tmTime1
-                lda tmTime1
-                and #$01
-                sta shakeScreen
-                inc tmTime2
-                lda tmTime2
-                cmp #3
-                bcc TMR_NoSound
-                lda #$00
-                sta tmTime2
-                lda #SFX_GENERATOR
-                jsr PlaySfx
-TMR_NoSound:    lda joystick
-                and #JOY_DOWN
-                bne TMR_Finish
-                lda keyType
-                bpl TMR_Finish
-                jsr GetFireClick
-                bcs TMR_Decision
-                jsr MenuControl
-                ldy tmChoice
-                lsr
-                bcs TMR_MoveLeft
-                lsr
-                bcs TMR_MoveRight
-TMR_NoMove:     rts
-TMR_MoveLeft:   tya
-                beq TMR_NoMove
-                dey
-                sty tmChoice
-TMR_Redraw:     lda #SFX_SELECT
-                jsr PlaySfx
-TMR_RedrawNoSound:
+HackerFollowFinish:
+                ldx actIndex
+                lda actXH,x
+                cmp #$04
+                bcc HFF_Run
+                lda #AIMODE_TURNTO
+                sta actAIMode,x
+                lda actSX,x                     ;Wait for stop so that speech bubble isn't off
+                bne HFF_Wait
+                lda #<txtEnterOldTunnels
+                ldx #>txtEnterOldTunnels
+HFF_SpeakAndStopScript:
                 ldy #$00
-TMR_RedrawLoop: ldx tmArrowPosTbl,y
-                lda #$20
-                cpy tmChoice
-                bne TMR_NoArrow
-                lda #62
-TMR_NoArrow:    jsr PrintPanelChar
-                iny
-                cpy #2
-                bcc TMR_RedrawLoop
-                rts
-TMR_MoveRight:  tya
-                bne TMR_NoMove
-                iny
-                sty tmChoice
-                bne TMR_Redraw
-TMR_Decision:   lda tmChoice
-                bne TMR_Drive
-TMR_Finish:     jsr StopScript
-                jmp SetMenuMode                 ;X=0 on return
-TMR_Drive:      jsr AddQuestScore
-                jsr TMR_Finish
-                lda #$00
-                sta tmTime1                     ;TODO: replace with cutscene
-                jsr BlankScreen
-TMR_BreakWallLoop:
-                jsr WaitBottom
-                jsr Random
-                cmp #$40
-                bcs TMR_BreakWallNoSound
-                lda #$00
-                sta PSfx_LastSfx+1
-                lda #SFX_EXPLOSION
-                jsr PlaySfx
-TMR_BreakWallNoSound:
-                inc tmTime1
-                bpl TMR_BreakWallLoop
-                lda #$32
-                jmp ULO_EnterDoorDest
-
-        ; Tunnel machine item installation script routines
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-TunnelMachineItems:
-                lda itemIndex
-                cmp #ITEM_TRUCKBATTERY
-                bne TMI_Fuel
-TMI_Battery:    lda #PLOT_BATTERY
-                jsr SetPlotBit
-                lda #<txtBatteryInstalled
-                ldx #>txtBatteryInstalled
-                bne TMI_Common
-TMI_Fuel:       lda #PLOT_FUEL
-                jsr SetPlotBit
-                lda #<txtRefueled
-                ldx #>txtRefueled
-TMI_Common:     jsr TM_TextCommon
-                ldy itemIndex
-                jsr RemoveItem
-                jsr AddQuestScore
-                lda #SFX_POWERUP
-                jmp PlaySfx
-
-        ; Jormungandr speaks
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-RadioJormungandr:
-                lda #<EP_RADIOJORMUNGANDRRUN
-                ldx #>EP_RADIOJORMUNGANDRRUN
-                jsr SetScript
-                lda #SFX_RADIO
-                jsr PlaySfx
-                ldy #ACT_PLAYER
-                lda #<txtRadioJormungandr
-                ldx #>txtRadioJormungandr
+                sty actScriptF+2                ;Stop script for now
+                ldy #ACT_HACKER
                 jmp SpeakLine
+HFF_Run:        lda #AIMODE_IDLE
+                sta actAIMode,x
+                lda #JOY_RIGHT
+                sta actMoveCtrl,x
+HFF_Wait:
+EL_NoActors:    rts
 
-        ; Jormungandr speaks, running script (screen shake)
+        ; Enter old tunnels lab
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-RadioJormungandrRun:
-                lda menuMode
-                beq RJR_Stop
-                jsr Random
-                and #$01
-                sta shakeScreen
+EnterLab:       lda lvlObjB+$0c                 ;If player closed door from inside, no-one can enter
+                bpl EL_NoActors
+                lda #ACT_HACKER
+                jsr FindActor                   ;Skip if already onscreen
+                bcs EL_NoActor1
+                lda #ACT_HACKER
+                jsr FindLevelActor
+                bcc EL_NoActor1
+                lda lvlActOrg,y
+                cmp #$0f+ORG_GLOBAL
+                bne EL_NoActor1
+                lda lvlActX,y
+                cmp #$5a
+                bcs EL_NoActor1                 ;Already in lab or in the shaft?
+                lda #$6e
+                sta lvlActX,y
+                lda #$4c
+                sta lvlActY,y
+                lda #$00+AIMODE_IDLE
+                sta lvlActF,y
+                lda #<EP_HACKERENTERLAB
+                sta actScriptEP+2
+                lda #>EP_HACKERENTERLAB
+                sta actScriptF+2
+                lda #PLOT_OLDTUNNELSLAB2
+                jsr SetPlotBit
+EL_NoActor1:    
+HEL_Wait:       rts
+
+        ; Jeff in lab
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+HackerEnterLab: ldx actIndex
+                lda actXH,x
+                cmp #$70
+                bcc HFF_Run
+                lda #AIMODE_TURNTO
+                sta actAIMode,x
+                lda actSX,x
+                bne HEL_Wait
+                lda #<txtEnterLab
+                ldx #>txtEnterLab
+                jmp HFF_SpeakAndStopScript
+
+        ; Lab computer
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+LabComputer:    lda #ACT_HACKER
+                jsr FindLevelActor
+                bcc LC_NoActor
+                lda lvlActOrg,y
+                cmp #$0f+ORG_GLOBAL
+                bne LC_NoActor
+                lda lvlActX,y
+                cmp #$70
+                bne LC_NoActor
+                lda #$88
+                sta lvlActX,y
+                lda #$48
+                sta lvlActY,y
+                lda #$10+AIMODE_TURNTO
+                sta lvlActF,y
+                lda #<EP_GIVELAPTOP2
+                sta actScriptEP+2
+                lda #>EP_GIVELAPTOP2
+                sta actScriptF+2
+                lda #$00
+                sta scriptVariable
+LC_NoActor:     jsr SetupTextScreen
+                lda #0
+                sta temp1
+                sta temp2
+                lda #<txtLabComputer
+                ldx #>txtLabComputer
+                jsr PrintMultipleRows
+                jmp WaitForExit
+
+        ; Jeff gives laptop after reading apocalyptic note
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+GiveLaptop2:    lda scriptVariable
+                bne GiveLaptop2b
+                inc scriptVariable
+                lda #<txtGiveLaptop2
+                ldx #>txtGiveLaptop2
+                ldy #ACT_HACKER
+                jmp SpeakLine
+GiveLaptop2b:   lda #SFX_PICKUP
+                jsr PlaySfx
+                lda #ITEM_LAPTOP
+                ldx #1
+                jsr AddItem
+                lda #0
+                sta actScriptF+2
                 rts
-RJR_Stop:       jmp StopScript
-
-        ; Tables & variables
-
-tmArrowPosTbl:  dc.b 9,14
-tmTime1:        dc.b 0
-tmTime2:        dc.b 0
 
         ; Messages
 
-txtNoBattery:   dc.b "BATTERY DEAD",0
-txtNoFuel:      dc.b "NO FUEL",0
-txtBatteryInstalled:
-                dc.b "NEW BATTERY INSTALLED",0
-txtRefueled:    dc.b "REFUELED",0
-txtReady:       dc.b " STOP DRIVE",0
+txtEnterOldTunnels:
+                dc.b 34,"SO THESE ARE THE OLD TUNNELS. SHOULD BE NO MACHINES HERE. "
+                dc.b "STILL, DOESN'T LOOK EXACTLY SAFE SO I'LL WAIT HERE AND LET YOU DO THE EXPLORING.",34,0
 
-txtRadioJormungandr:
-                dc.b 34,"GREETINGS SEMI-HUMAN. I AM JORMUNGANDR. I RESIDE BEYOND THE DEAD END IN FRONT OF YOU. "
-                dc.b "TURN BACK NOW, THERE IS NOTHING YOU CAN GAIN BY PROCEEDING. WHEN I RECEIVE THE SIGNAL "
-                dc.b "FROM MY MASTER, OR IF HE SHOULD FALL SILENT, I WILL TRAVEL THE CRUST AND MAKE THE EARTH BREATHE "
-                dc.b "FIRE AND ASH, BRINGING THE POST-HUMAN AGE. AND SHOULD I FALL, HE WILL AVENGE ME.",34,0
+txtEnterLab:    dc.b 34,"THE PLOT THICKENS. A SECRET LAB.",34,0
+
+                     ;0123456789012345678901234567890123456789
+txtLabComputer: dc.b "NOTE #4",0
+                dc.b " ",0
+                dc.b "THE AI HAS REPURPOSED THE FIBER-OPTIC",0
+                dc.b "LINK BETWEEN THE SERVER VAULT AND THE",0
+                dc.b "INVENTION CHAMBER.",0
+                dc.b " ",0
+                dc.b "I CALL IT A 'BI-DIRECTIONAL REVENGE",0
+                dc.b "PROTOCOL.' IF COMMUNICATION ON THE LINE",0
+                dc.b "CEASES DUE TO EITHER JORMUNGANDR OR THE",0
+                dc.b "AI BEING INCAPACITATED, THE ONE THAT",0
+                dc.b "REMAINS WILL LAUNCH ITS ATTACK.",0
+                dc.b " ",0
+                dc.b "N.T",0,0
+
+txtGiveLaptop2: dc.b 34,"SORRY FOR SNEAKING UP ON YOU. BUT THAT'S TRUE EVIL GENIUS. TAKE THIS LAPTOP. "
+                dc.b "IF YOU FIND THE LINK, WE MIGHT BE ABLE TO FAKE THE COMMUNICATION. THEN YOU CAN PROCEED "
+                dc.b "TO BLAST THEM BOTH TO HELL. OF COURSE.. "
+                dc.b "TAMPERING WITH IT COULD ALREADY TRIGGER ARMAGEDDON.",34,0
 
                 checkscriptend

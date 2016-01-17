@@ -82,12 +82,19 @@ EP_DESTROYEYE   = $0904
 EP_ENTERBIODOME = $0905
 EP_HACKERAMBUSH = $0906
 EP_GIVELAPTOP = $0907
+EP_INSTALLLAPTOP = $0908
 
-EP_TUNNELMACHINE = $0a00
-EP_TUNNELMACHINEITEMS = $0a01
-EP_TUNNELMACHINERUN = $0a02
-EP_RADIOJORMUNGANDR = $0a03
-EP_RADIOJORMUNGANDRRUN = $0a04
+EP_HACKERFOLLOWFINISH = $0a00
+EP_ENTERLAB = $0a01
+EP_HACKERENTERLAB = $0a02
+EP_LABCOMPUTER = $0a03
+EP_GIVELAPTOP2 = $0a04
+
+EP_TUNNELMACHINE = $0b00
+EP_TUNNELMACHINEITEMS = $0b01
+EP_TUNNELMACHINERUN = $0b02
+EP_RADIOJORMUNGANDR = $0b03
+EP_RADIOJORMUNGANDRRUN = $0b04
 
 PLOT_ELEVATOR1  = $00                       ;Upper <-> lower lab
 PLOT_ELEVATOR2  = $01                       ;Jormungandr <-> Bio-Dome
@@ -96,13 +103,13 @@ PLOT_AMPINSTALLED = $03                     ;Laser amplifier installed
 PLOT_HIDEOUTOPEN = $04                      ;Rotordrone boss destroyed
 PLOT_BATTERY    = $05                       ;Tunnel machine battery installed
 PLOT_FUEL       = $06                       ;Tunnel machine refueled
-PLOT_LAPTOPINPLACE = $07                    ;Communication sabotaged with the laptop
+PLOT_DISRUPTCOMMS = $07                     ;AI communication disrupted with the laptop
 PLOT_LOWERLABSNOAIR = $08                   ;Air being sucked from lower labs (must be plotbit 8)
 PLOT_MOVESCIENTISTS = $09                   ;Scientists moved to wait in upper labs
 PLOT_ELEVATORMSG = $0a                      ;Player attempted lower lab elevator entry
 PLOT_ESCORTCOMPLETE = $0b                   ;Scientists got to the operating room
-PLOT_INOLDTUNNELS1 = $0c                    ;Linda reached old tunnels
-PLOT_INOLDTUNNELS2 = $0d                    ;Jeff reached old tunnels 
+PLOT_OLDTUNNELSLAB1 = $0c                   ;Linda reached old tunnels lab
+PLOT_OLDTUNNELSLAB2 = $0d                   ;Jeff reached old tunnels lab
 PLOT_HIDEOUTAMBUSH = $0e                    ;Robot ambush to Jeff's hideout ongoing
 
 SPEECHBUBBLEOFFSET = -40*8

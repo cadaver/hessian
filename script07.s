@@ -298,54 +298,6 @@ RadioConstruct2:jsr StopScript
                 ldx #>txtRadioConstruct2
                 jmp RadioMsg
 
-        ; Setup text screen
-
-SetupTextScreen:jsr BlankScreen
-                lda #$02
-                sta screen                      ;Set text screen mode
-                lda #$0f
-                sta scrollX
-                ldx #$00
-                stx SL_CSSScrollY+1
-                stx Irq1_Bg1+1
-STS_ClearScreenLoop:lda #$20
-                sta screen1,x
-                sta screen1+$100,x
-                sta screen1+$200,x
-                sta screen1+SCROLLROWS*40-$100,x
-                lda #$01
-                sta colors,x
-                sta colors+$100,x
-                sta colors+$200,x
-                sta colors+SCROLLROWS*40-$100,x
-                inx
-                bne STS_ClearScreenLoop
-                rts
-
-        ; Wait for exit from computer display either by pressing fire or key
-
-WaitForExit:    jsr FinishFrame
-                jsr GetControls
-                jsr GetFireClick
-                bcs DoExit
-                lda keyType
-                bmi WaitForExit
-DoExit:         ldy lvlObjNum                   ;Allow immediate re-entry
-                jsr InactivateObject
-                jmp CenterPlayer
-
-        ; Print multiple text rows
-
-PrintMultipleRows:
-                sta zpSrcLo
-                stx zpSrcHi
-PMR_Loop:       jsr PT_Continue
-                inc temp2
-                ldy #$00
-                lda (zpSrcLo),y
-                bne PMR_Loop
-                rts
-
         ; Messages
 
 txtDisconnected:dc.b "SUBNET "

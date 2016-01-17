@@ -630,6 +630,7 @@ UM_RedrawPauseMenu:
                 jsr PlaySfx
                 lda actT+ACTI_PLAYER            ;Player actor exists?
                 beq UM_PauseDead
+                if SHOW_FREE_MEMORY = 0
                 lda #$00
                 sta panelUpdateFlags
                 lda time                        ;Print game time over the weapon/ammo display if alive
@@ -641,6 +642,7 @@ UM_RedrawPauseMenu:
                 jsr PrintTimeSub
                 lda time+2
                 jsr PrintTimeSub
+                endif
 UM_PauseDead:   lda #<txtPause
                 ldx #>txtPause
                 jsr PrintPanelTextIndefinite
@@ -697,7 +699,7 @@ MC_NormalDelay: stx menuMoveDelay
         ; Parameters: temp6-temp7 value, X position
         ; Returns: X position incremented
         ; Modifies: A
-
+             
 Print3BCDDigits:lda temp7
                 jsr PrintBCDDigit
 PrintBCDDigitsLSB:
@@ -825,4 +827,65 @@ GetRowAddress:  lda #40
                 lda zpDestHi
                 ora #>screen1
                 sta zpDestHi
+                rts
+
+        ; Setup text screen
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X
+
+SetupTextScreen:jsr BlankScreen
+                lda #$02
+                sta screen                      ;Set text screen mode
+                lda #$0f
+                sta scrollX
+                ldx #$00
+                stx SL_CSSScrollY+1
+                stx Irq1_Bg1+1
+STS_ClearScreenLoop:lda #$20
+                sta screen1,x
+                sta screen1+$100,x
+                sta screen1+$200,x
+                sta screen1+SCROLLROWS*40-$100,x
+                lda #$01
+                sta colors,x
+                sta colors+$100,x
+                sta colors+$200,x
+                sta colors+SCROLLROWS*40-$100,x
+                inx
+                bne STS_ClearScreenLoop
+                rts
+
+        ; Wait for exit from a fullscreen computer display either by pressing fire or key
+        ; Exits to CenterPlayer.
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: Various
+
+WaitForExit:    jsr FinishFrame
+                jsr GetControls
+                jsr GetFireClick
+                bcs DoExit
+                lda keyType
+                bmi WaitForExit
+DoExit:         ldy lvlObjNum                   ;Allow immediate re-entry
+                jsr InactivateObject
+                jmp CenterPlayer
+
+        ; Print multiple text rows
+        ;
+        ; Parameters: A,X text pointer, temp1,temp2 column/row
+        ; Returns: zpSrcLo-Hi incremented textpointer
+        ; Modifies: A,X,Y,zpSrcLo-Hi,zpDestLo-Hi
+
+PrintMultipleRows:
+                sta zpSrcLo
+                stx zpSrcHi
+PMR_Loop:       jsr PT_Continue
+                inc temp2
+                ldy #$00
+                lda (zpSrcLo),y
+                bne PMR_Loop
                 rts

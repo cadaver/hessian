@@ -14,8 +14,9 @@ STARTITEM_CHEAT = 1                            ;Start with weapon & parts instea
 FILTER_UPGRADE_CHEAT = 0
 UPGRADE_CHEAT   = 0
 GODMODE_CHEAT   = 1                             ;Whether health/battery cheat is on initially
-SKIP_PLOT       = 1                             ;Various instant jumps to late game plot sequences
+SKIP_PLOT       = 0                             ;Various instant jumps to late game plot sequences
 SKIP_PLOT2      = 0
+SKIP_PLOT3      = 1
 
         ; Memory configuration & loader symbols
 
@@ -56,11 +57,7 @@ randomAreaEnd:
 
                 include init.s
 
-        ; Aligned data
-
-                include aligneddata.s
-
-        ; Non-aligned data and game state
+        ; Non-aligned data
 
                 include sounddata.s
                 include paneldata.s
@@ -70,6 +67,10 @@ randomAreaEnd:
                 include actordata.s
                 include text.s
                 include leveldata.s
+
+        ; Aligned data
+
+                include aligneddata.s
 
         ; Dynamic allocation area begin
 
