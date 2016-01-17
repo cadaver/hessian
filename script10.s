@@ -127,8 +127,6 @@ TMR_BreakWallLoop:
 TMR_BreakWallNoSound:
                 inc tmTime1
                 bpl TMR_BreakWallLoop
-                lda #PLOT_WALLBREACHED
-                jsr SetPlotBit
                 lda #$32
                 jmp ULO_EnterDoorDest
 
