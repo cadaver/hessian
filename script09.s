@@ -14,6 +14,9 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w MoveEyePhase1
                 dc.w MoveEyePhase2
                 dc.w DestroyEye
+                dc.w EnterBioDome
+                dc.w HackerAmbush
+                dc.w GiveLaptop
 
         ; Security chief move routine
         ;
@@ -260,6 +263,152 @@ DE_Skip:        dex
 DE_RestX:       ldx #$00
                 rts
 
+        ; Trigger script when entering Bio-Dome
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+EnterBioDome:   lda #PLOT_HIDEOUTOPEN           ;Check if ambush resolved by locking the hideout
+                jsr GetPlotBit
+                beq EBD_Skip
+                lda #ACT_HACKER
+                jsr FindLevelActor
+                bcc EBD_Skip
+                sty temp1
+                lda lvlActOrg,y
+                cmp #$0f+ORG_GLOBAL             ;In old tunnels (=safe)?
+                beq EBD_Skip
+                cmp #$04+ORG_GLOBAL             ;Abandoned elsewhere
+                bne EBD_DieAbandoned
+                lda #PLOT_HIDEOUTAMBUSH
+                bne EBD_DieAmbush
+EBD_Skip:       rts
+EBD_DieAmbush:  jsr EBD_KillHackerCommon
+                lda #<txtRadioDieAmbush
+                ldx #>txtRadioDieAmbush
+RadioMsg:       pha
+                lda #SFX_RADIO
+                jsr PlaySfx
+                pla
+                ldy #ACT_PLAYER
+                jmp SpeakLine
+EBD_DieAbandoned:
+                jsr EBD_KillHackerCommon
+                lda #<txtRadioDieAbandoned
+                ldx #>txtRadioDieAbandoned
+                bne RadioMsg
+EBD_KillHackerCommon:
+                ldy temp1
+                lda #ACT_NONE
+                sta lvlActT,y                   ;Just remove from gameworld
+                rts
+
+        ; Hacker ambush NPC script
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+HackerAmbush:   ldx actIndex
+                lda actF1,x
+                cmp #FR_DIE
+                bcs HA_Dying
+                cmp #FR_DUCK+1
+                beq HA_DieAgain
+                lda actHp,x                     ;Set health (invincible by default)
+                bne HA_HealthSet
+                lda #HP_HACKER
+                sta actHp,x
+HA_HealthSet:   lda #ACT_HIGHWALKER
+                jsr FindActor
+                bcc HA_EnemyDestroyed
+                lda actIndex
+                ldy actHp,x
+                cpy #HP_HIGHWALKER
+                bcs HA_NotDamaged
+                lda #ACTI_PLAYER                ;Attack player once damaged, Jeff otherwise
+HA_NotDamaged:  sta actAITarget,x
+                ldx actIndex
+                lda actXH,x                     ;Continue running if already left
+                cmp #$17
+                bcc HA_Run
+                lda actHp,x
+                cmp #HP_HACKER
+                bcs HA_Wait                     ;Wait until hit once, then run
+HA_Run:         lda #JOY_LEFT
+HA_SetControls: sta actMoveCtrl,x
+                lda #AIMODE_IDLE
+                sta actAIMode,x
+HA_Wait:        rts
+HA_Dying:       lda #DEATH_DISAPPEAR_DELAY      ;Keep resetting the time
+                sta actTime,x
+                lda #ACT_HIGHWALKER
+                jsr FindActor
+                bcs HA_Wait                     ;Wait until enemy gone
+                ldx actIndex
+                ldy #ACTI_PLAYER
+                jsr GetActorDistance
+                lda temp6                       ;Wait until player close
+                cmp #$04
+                bcs HA_Wait
+                lda temp5
+                sta actD,x
+                inc actHp,x
+                lda #FR_DUCK+1
+                sta actF1,x
+                sta actF2,x
+                lda #JOY_DOWN
+                jsr HA_SetControls
+                ldy #ACT_HACKER
+                lda #<txtHackerDeath
+                ldx #>txtHackerDeath
+                jmp SpeakLine
+HA_DieAgain:    lda #FR_DIE+2
+                sta actF1,x
+                sta actF2,x
+                dec actHp,x
+HA_StopScript:  lda #$00                        ;Stop actor script exec
+                sta actScriptF+2
+                rts
+HA_EnemyDestroyed:
+                lda #PLOT_HIDEOUTAMBUSH
+                jsr ClearPlotBit
+                ldx actIndex
+                lda #AIMODE_TURNTO
+                sta actAIMode,x
+                ldy #ACTI_PLAYER
+                jsr GetActorDistance
+                lda temp6                       ;Wait until close
+                cmp #$02
+                bcs HA_Wait
+                jsr AddQuestScore
+                lda #<EP_GIVELAPTOP
+                sta actScriptEP+2
+                lda #<txtAmbushSuccess
+                ldx #>txtAmbushSuccess
+HA_SpeakCommon: ldy #ACT_HACKER
+                jmp SpeakLine
+
+        ; Give laptop script (end of ambush)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+        
+GiveLaptop:     lda #$00
+                sta actScriptF+2                ;Stop script exec now
+                lda #PLOT_HIDEOUTOPEN
+                jsr ClearPlotBit                ;Hideout will be closed from now on
+                lda #SFX_PICKUP
+                jsr PlaySfx
+                lda #ITEM_LAPTOP
+                ldx #1
+                jsr AddItem
+                lda #<txtGiveLaptop
+                ldx #>txtGiveLaptop
+                bne HA_SpeakCommon
+
         ; Final server room droid spawn positions
 
 droidSpawnXH:   dc.b $3e,$43,$3e,$43
@@ -283,5 +432,23 @@ eyeFrameTbl:    dc.b 2,1,0,1,2,3,4,3
         ; Final explosion Y-positions
 
 explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
+
+        ; Messages
+        
+txtRadioDieAmbush:
+                dc.b 34,"IT'S JEFF. FOUND SOMETHING. FUN, RIGHT? 48 41 20 48 41 2C 20 48 4D 20 48 4D NO. THIS IS NOT JEFF, BUT THE CONSTRUCT. THE HACKER IS DEAD.",34,0
+
+txtRadioDieAbandoned:
+                dc.b 34,"JEFF HERE. COULD USE SOME HELP. THEY'VE GOT ME CORNERED.. AARGH!",34," (STATIC)",0
+
+txtHackerDeath: dc.b 34,"SUCKS IT HAPPENED LIKE THIS. BUT WITH YOU HERE, IT SUCKS A BIT LESS. PROMISE ME TO KICK THEIR ASS.",34,0
+
+txtAmbushSuccess:
+                dc.b 34,"THEY JAMMED THE RADIO AND FOOLED THE DOOR CAMERA TO GET IN. ONE MORE SECOND AND.. "
+                dc.b "I'D HUG YOU, BUT THOSE GUNS ARE IN THE WAY. I'LL LOCK THIS PLACE DOWN NOW, "
+                dc.b "SO USE THE RECYCLER IF YOU NEED.",0
+
+txtGiveLaptop:  dc.b "ALSO TAKE THIS LAPTOP. THE AI MUST HAVE A DEDICATED NETWORK LINK SOMEWHERE CLOSE TO IT. "
+                dc.b "IF YOU CAN FIND IT, WE MAY BE ABLE TO CUT IT OFF COMPLETELY.",34,0
 
                 checkscriptend

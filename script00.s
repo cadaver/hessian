@@ -45,13 +45,17 @@ titleTexts      = chars+608+168*2
 ;START_X         = $5480
 ;START_Y         = $3000
 
+START_LEVEL     = $04                          ;Service tunnels hideout door
+START_X         = $2480
+START_Y         = $3000
+
 ;START_LEVEL      = $05                         ;Security center
 ;START_X          = $0b80
 ;START_Y          = $0f00
 
-START_LEVEL      = $05                         ;First upgrade lab
-START_X          = $0d80
-START_Y          = $0600
+;START_LEVEL      = $05                         ;First upgrade lab
+;START_X          = $0d80
+;START_Y          = $0600
 
 ;START_LEVEL     = $06                          ;Upper labs
 ;START_X         = $0180
@@ -482,11 +486,13 @@ IP_InitInventory:
                 sta invCount-1,x
                 dex
                 bne IP_InitInventory
+                if SKIP_PLOT2 = 0
                 ldy lvlDataActBitsStart+$04 ;Disable enemies from level4, ids 16,17,18,19 (must not change.) Will be enabled later
                 lda #$ff-$40-$80
                 sta lvlStateBits+2,y
                 lda #$ff-$01-$02
                 sta lvlStateBits+3,y
+                endif
                 lda #ITEM_FISTS
                 sta itemIndex
                 sta lastItemIndex

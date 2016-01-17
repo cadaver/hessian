@@ -33,20 +33,25 @@ GS_Loop:        jsr GetLevelActorIndex
                 dex
                 bpl GS_Loop
                 lda #<EP_SCIENTIST2         ;Initial NPC scripts to drive the plot forward
+                ldx #>EP_SCIENTIST2
                 sta actScriptEP
-                lda #>EP_SCIENTIST2
-                sta actScriptF
+                stx actScriptF
                 if SKIP_PLOT > 0
+                if SKIP_PLOT2 > 0
+                lda #PLOT_HIDEOUTAMBUSH
+                jsr SetPlotBit
+                lda #<EP_HACKERAMBUSH
+                ldx #>EP_HACKERAMBUSH
+                else
                 lda #<EP_HACKER3
-                sta actScriptEP+2
-                lda #>EP_HACKER3
-                sta actScriptF+2
+                ldx #>EP_HACKER3
+                endif
                 else
                 lda #<EP_HACKER
-                sta actScriptEP+2
-                lda #>EP_HACKER
-                sta actScriptF+2
+                ldx #>EP_HACKER
                 endif
+                sta actScriptEP+2
+                stx actScriptF+2
                 ldx #(MAX_CODES)*3-1
 GS_CodeLoop:    jsr Random
                 and #$0f

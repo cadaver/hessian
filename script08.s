@@ -5,7 +5,6 @@
 
                 org scriptCodeStart
 
-                dc.w FindFilter
                 dc.w BeginSurgery
                 dc.w BeginSurgery2
                 dc.w AfterSurgery
@@ -15,46 +14,6 @@
                 dc.w AfterSurgeryFollow
                 dc.w AfterSurgeryNoAirDie
                 dc.w AfterSurgeryNoAirRadio
-
-        ; Find filter script. Also move scientists to final positions before surgery
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-FindFilter:     jsr StopZoneScript
-                lda #ACT_SCIENTIST3
-                jsr FindLevelActor
-                lda #$3f
-                ldx #$30+AIMODE_TURNTO
-                jsr MoveScientistSub2
-                lda #ACT_SCIENTIST2
-                jsr FindLevelActor
-                lda #$42
-                ldx #$00+AIMODE_TURNTO
-                jsr MoveScientistSub2
-                lda #<EP_BEGINSURGERY
-                sta actScriptEP
-                lda #>EP_BEGINSURGERY
-                sta actScriptF
-                lda #<txtRadioFindFilter
-                ldx #>txtRadioFindFilter
-RadioMsg:       pha
-                lda #SFX_RADIO
-                jsr PlaySfx
-                pla
-                ldy #ACT_PLAYER
-                jmp SpeakLine
-
-MoveScientistSub2:
-                sta lvlActX,y                   ;Set also Y & level so that this can be used as shortcut in testing
-                lda #$56
-                sta lvlActY,y
-                txa
-                sta lvlActF,y
-                lda #$08+ORG_GLOBAL
-                sta lvlActOrg,y
-                rts
 
         ; Begin surgery script
         ;
@@ -524,13 +483,14 @@ AfterSurgeryNoAirRadio:
                 sta actScriptEP+1
                 lda #<txtAfterSurgeryNoAirRadio
                 ldx #>txtAfterSurgeryNoAirRadio
-                jmp RadioMsg
+RadioMsg:       pha
+                lda #SFX_RADIO
+                jsr PlaySfx
+                pla
+                ldy #ACT_PLAYER
+                jmp SpeakLine
 
         ; Messages
-
-txtRadioFindFilter:
-                dc.b 34,"LINDA HERE. WE GOT AHEAD OF OURSELVES - THERE ARE NO LUNG FILTERS STORED HERE. SINCE YOU'RE MUCH BETTER SUITED TO EXPLORING, "
-                dc.b "WE'LL HAVE TO ASK YOU TO FIND ONE. THERE SHOULD BE AT LEAST ONE PACKAGE SOMEWHERE IN THE LOWER LABS.",34,0
 
 txtBeginSurgery:dc.b 34,"YOU GOT THE FILTER? EXCELLENT. WE'RE READY, FOR REAL THIS TIME. THIS IS A STANDARD NANO-ASSISTED "
                 dc.b "PROCEDURE WITH SOME RISK INVOLVED. THE TUNNELS BELOW SHOULD BE SURVIVABLE AFTER. "
