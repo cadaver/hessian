@@ -33,9 +33,9 @@ SKIP_PLOT3      = 0
 
 randomAreaStart:
 
-                include sound.s
                 include screen.s
                 include sprite.s
+                include sound.s
                 include input.s
                 include file.s
                 include math.s

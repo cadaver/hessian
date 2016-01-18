@@ -1394,29 +1394,6 @@ AC_Script:      stx ES_ParamX+1
                 lda (actLo),y
                 jmp ExecScript
 
-        ; Ensure that actor's needed files are preloaded. Called on adding / spawning
-        ; Falls through to InitActor
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,actLo-actHi,actIndex,loader temp regs
-
-EnsureActorFiles:
-                stx actIndex
-                lda #MAX_SPR                    ;Fake draw the actor to ensure sprites
-                sta sprIndex
-                jsr DrawActorSub_NoColor
-                ldx actIndex
-                jsr GetActorLogicData
-                ldy #AL_UPDATEROUTINE+1
-                lda (actLo),y
-                bpl IA_HasLogic
-                and #$7f
-                tax
-                lda #$ff                        ;Load only, no entrypoint
-                jsr ExecScript
-                ldx actIndex
-
         ; Init actor: set initial health, flags & collision size
         ;
         ; Parameters: X actor index
@@ -1843,7 +1820,7 @@ AS_BGOK:        lda actYH,x                     ;Do not spawn into a wall
                 jsr GetCharInfo1Above
                 and #CI_OBSTACLE
                 bne AS_Remove3
-AS_SpawnOK:     jsr EnsureActorFiles            ;Also calls InitActor
+AS_SpawnOK:     jsr InitActor
                 ldy #AL_SPAWNAIMODE
                 lda (actLo),y                   ;Set default AI mode for actor type
                 sta actAIMode,x
@@ -1905,7 +1882,7 @@ ALA_Common:     lda lvlActX,x
                 sta lvlActOrg,x
                 tya
                 tax
-                jsr EnsureActorFiles            ;Also calls InitActor
+                jsr InitActor
                 cpx #ACTI_FIRSTITEM
                 bcc ALA_NotItem
                 jsr GetCharInfo                 ;For items, check whether it's standing on a shelf/in a
