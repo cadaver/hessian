@@ -15,8 +15,10 @@
         ; Returns: -
         ; Modifies: Various
 
-Ending1:        jsr ClearPanelText
-                jsr SetupTextScreen
+Ending1:        jsr SetupTextScreen
+                lda #<2500
+                ldy #>2500
+                jsr EndingBonus
                 lda #5
                 sta temp2
                 lda #0
@@ -31,6 +33,7 @@ EndingCommon:   ldx #$00                        ;Kill sound effects so the music
                 stx ntChnSfx+14
                 jsr PlaySong
                 jsr StopScript
+                jsr ClearPanelText
                 lda score
                 ldx score+1
                 ldy score+2
@@ -76,6 +79,9 @@ EndingCommon:   ldx #$00                        ;Kill sound effects so the music
         ; Modifies: Various
 
 Ending2:        jsr SetupTextScreen
+                lda #<2500
+                ldy #>2500
+                jsr EndingBonus
                 lda #5
                 sta temp2
                 lda #0
@@ -93,6 +99,9 @@ Ending2:        jsr SetupTextScreen
         ; Modifies: Various
 
 Ending3:        jsr SetupTextScreen
+                lda #<3750
+                ldy #>3750
+                jsr EndingBonus
                 lda #5
                 sta temp2
                 lda #0
@@ -116,6 +125,21 @@ StoreOneDigit:  and #$0f
 StoreDigit:     ora #$30
                 sta txtScore,x
                 inx
+                rts
+
+        ; Ending bonus subroutine
+
+EndingBonus:    sta temp1
+                sty temp2
+                ldy saveDifficulty
+                lda plrDmgModifyTbl,y
+                lsr
+                tax
+EB_Loop:        lda temp1
+                ldy temp2
+                jsr AddScore
+                dex
+                bne EB_Loop
                 rts
 
                      ;0123456789012345678901234567890123456789
