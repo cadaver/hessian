@@ -820,10 +820,24 @@ ResetTitlePageDelay:
                 sta titlePageDelayHi
 FOT_Done:       rts
 
-        ; Wait until text faded out
+        ; Fade logo, text & music
 
 FadeOutAll:     lda #-1
                 sta logoFadeDir
+                lda #-1
+                sta textFadeDir
+FOA_FadeDelay:  lda #$05
+                sta musicFadeDelay
+FOA_Wait:       lda Play_MasterVol+1
+                beq FOT_Done
+                jsr Update
+                dec musicFadeDelay
+                bne FOA_Wait
+                dec Play_MasterVol+1
+                bpl FOA_FadeDelay
+
+        ; Fade text only
+
 FadeOutText:    lda #-1
                 sta textFadeDir
 FOT_Wait:       lda textFade
@@ -932,6 +946,7 @@ logoFade:       dc.b 0
 textFade:       dc.b 0
 logoFadeDir:    dc.b 1
 textFadeDir:    dc.b 1
+musicFadeDelay: dc.b 0
 moveDelay:      dc.b 0
 titlePage:      dc.b 0
 titlePageDelayLo:

@@ -69,6 +69,7 @@ EndingCommon:   ldx #$00                        ;Kill sound effects so the music
                 ldx #>txtFinalScore
                 jsr PrintMultipleRows
                 jsr WaitForExit
+                jsr SetupTextScreen
                 jsr FadeMusicEnd
                 ldx #STACKSTART
                 txs

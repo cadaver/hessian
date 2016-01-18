@@ -128,13 +128,13 @@ ISpr_ResetChunkFiles:
 
                 lda fastLoadMode
                 beq InitVideo
-FadeMusicLoop:  ldy #$08
-FadeMusicDelay: jsr WaitBottom
-                dey
-                bne FadeMusicDelay
-                lda musicData+$8c
+FadeMusicLoop:  lda musicData+$8c
                 beq InitVideo
                 dec musicData+$8c
+                ldx #$06
+FadeMusicDelay: jsr WaitBottom
+                dex
+                bne FadeMusicDelay
                 bpl FadeMusicLoop
 
         ; Initialize video registers and screen memory
