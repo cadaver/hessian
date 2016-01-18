@@ -172,7 +172,9 @@ Play_InitLoop:  sta ntChnPattPos-1,x
                 jsr Play_InitChn
                 ldx #$07
                 jsr Play_InitChn
-                ldx #$0e
+                ldx #$0f
+                stx Play_MasterVol+1
+                dex
 Play_InitChn:
 Play_SongTblP2: lda $1000,y
                 sta ntChnSongPos,x
@@ -204,8 +206,7 @@ Play_FiltTimeM1:lda $1000,y
                 bcs Play_FiltJump
 Play_SetFilt:   sta $d417
                 and #$70
-                ora #$0f
-                sta $d418
+                sta Play_FiltType+1
 Play_FiltJump:
 Play_FiltSpdM1a:lda $1000,y
                 bcs Play_FiltJump2
@@ -226,6 +227,9 @@ Play_StoreCutoff:
                 sta ntFiltCutoff
                 sta $d416
 Play_FiltDone:
+Play_FiltType:  lda #$00
+Play_MasterVol: ora #$0f
+                sta $d418
 
         ;Channel execution
 

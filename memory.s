@@ -121,6 +121,7 @@ STACKSTART      = $7f
                 var tgtActIndex
                 var numTargets
                 var numSpawned
+                var attackTime
 
                 var lvlObjNum                   ;Level object variables
                 var autoDeactObjNum
@@ -160,8 +161,8 @@ palFlag         = freeMemLo
                 checkvarbase $90
 
                 varbase $c0
-                varrange sprXL,MAX_SPR+1
-                varrange sprXH,MAX_SPR+1
+                varrange sprXL,MAX_SPR
+                varrange sprXH,MAX_SPR
 
                 var firstSortSpr                ;Frame update/raster IRQ variables
                 var newFrame

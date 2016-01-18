@@ -321,12 +321,9 @@ sortSprY:       ds.b MAX_SPR*2,0
 sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
 
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
-healthBarPosTbl:dc.b 50,64
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 timeMaxTbl:     dc.b 99,60,60,50
-attackTime:     dc.b 0
+plrDmgModifyTbl:dc.b 4,6,8,12
 
         ; Levelobject table (not saved)
 
@@ -398,5 +395,8 @@ fileNumObjects: ds.b MAX_CHUNKFILES,0
 fileAge:        ds.b MAX_CHUNKFILES,0
 
         ; Remaining misc. data
-        
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
+
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
+healthBarPosTbl:dc.b 50,64

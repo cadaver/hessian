@@ -15,7 +15,8 @@
         ; Returns: -
         ; Modifies: Various
 
-Ending1:        jsr SetupTextScreen
+Ending1:        jsr FadeMusic
+                jsr SetupTextScreen
                 lda #<2500
                 ldy #>2500
                 jsr EndingBonus
@@ -68,6 +69,7 @@ EndingCommon:   ldx #$00                        ;Kill sound effects so the music
                 ldx #>txtFinalScore
                 jsr PrintMultipleRows
                 jsr WaitForExit
+                jsr FadeMusicEnd
                 ldx #STACKSTART
                 txs
                 jmp UM_SaveGame
@@ -78,7 +80,8 @@ EndingCommon:   ldx #$00                        ;Kill sound effects so the music
         ; Returns: -
         ; Modifies: Various
 
-Ending2:        jsr SetupTextScreen
+Ending2:        jsr FadeMusic
+                jsr SetupTextScreen
                 lda #<2500
                 ldy #>2500
                 jsr EndingBonus
@@ -98,7 +101,8 @@ Ending2:        jsr SetupTextScreen
         ; Returns: -
         ; Modifies: Various
 
-Ending3:        jsr SetupTextScreen
+Ending3:        jsr FadeMusic
+                jsr SetupTextScreen
                 lda #<3750
                 ldy #>3750
                 jsr EndingBonus
@@ -141,6 +145,22 @@ EB_Loop:        lda temp1
                 dex
                 bne EB_Loop
                 rts
+
+        ; Music fade subroutine
+
+FadeMusic:      lda fastLoadMode
+                beq FM_Done                     ;Using fallback loader, no fade as there already are screen-blanking pauses
+FadeMusicEnd:   lda PS_CurrentSong+1
+                beq FM_Done                     ;No fade if game music off
+FM_Loop:        lda Play_MasterVol+1
+                beq FM_Done
+                dec Play_MasterVol+1
+                ldx #$06
+FM_Delay:       jsr WaitBottom
+                dex
+                bne FM_Delay
+                beq FM_Loop
+FM_Done:        rts
 
                      ;0123456789012345678901234567890123456789
 txtEnding1:     dc.b "MILITARY FAIL-DEADLY SYSTEMS ARE TRICKED",0
