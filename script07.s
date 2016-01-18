@@ -103,7 +103,9 @@ SRC_CodeLoop:   lda codes+MAX_CODES*3-3,x
                 ldx #>EP_MOVESCIENTISTS
                 jsr SetScript
 SRC_AlreadyMoved:
-                jmp WaitForExit
+SRC_WaitExitCommon:
+                jsr WaitForExit
+                jmp CenterPlayer
 SRC_NoCode:     lda #26
                 sta temp1
                 lda #7
@@ -111,7 +113,7 @@ SRC_NoCode:     lda #26
                 lda #<txtNA
                 ldx #>txtNA
                 jsr PrintText
-                jmp WaitForExit
+                jmp SRC_WaitExitCommon
 
 PrintSubnetText:bmi PST_Isolated
                 lda #<txtConnected

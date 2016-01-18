@@ -858,7 +858,6 @@ STS_ClearScreenLoop:lda #$20
                 rts
 
         ; Wait for exit from a fullscreen computer display either by pressing fire or key
-        ; Exits to CenterPlayer.
         ;
         ; Parameters: -
         ; Returns: -
@@ -867,12 +866,10 @@ STS_ClearScreenLoop:lda #$20
 WaitForExit:    jsr FinishFrame
                 jsr GetControls
                 jsr GetFireClick
-                bcs DoExit
+                bcs WFE_Done
                 lda keyType
                 bmi WaitForExit
-DoExit:         ldy lvlObjNum                   ;Allow immediate re-entry
-                jsr InactivateObject
-                jmp CenterPlayer
+WFE_Done:       rts
 
         ; Print multiple text rows
         ;

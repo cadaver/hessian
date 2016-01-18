@@ -127,7 +127,8 @@ LC_NoActor:     jsr SetupTextScreen
                 lda #<txtLabComputer
                 ldx #>txtLabComputer
                 jsr PrintMultipleRows
-                jmp WaitForExit
+                jsr WaitForExit
+                jmp CenterPlayer
 
         ; Jeff gives laptop after reading apocalyptic note
         ;

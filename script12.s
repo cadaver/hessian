@@ -63,13 +63,8 @@ EndingCommon:   ldx #$00                        ;Kill sound effects so the music
                 lda #<txtFinalScore
                 ldx #>txtFinalScore
                 jsr PrintMultipleRows
-EndingWait:     jsr UpdateFrame
-                jsr GetControls
-                jsr GetFireClick
-                bcs EndingExit
-                lda keyType
-                bmi EndingWait
-EndingExit:     ldx #STACKSTART
+                jsr WaitForExit
+                ldx #STACKSTART
                 txs
                 jmp UM_SaveGame
 

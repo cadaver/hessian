@@ -355,7 +355,8 @@ AH_FireDir:     lda #$00
 AH_InsideWall:  jsr RemoveActor
                 ldx actIndex
                 rts
-AH_NotInsideWall:lda temp1                       ;Set speed
+AH_NotInsideWall:
+                lda temp1                       ;Set speed
                 sta actSX,x
                 lda temp3
                 sta actSY,x
@@ -421,7 +422,7 @@ AH_PlayerBonusCommon:
                 sta actHp,y                     ;Set modified bullet damage
 AH_NoPlayerBonus:
 AH_NoAmmoDecrement:
-                ldy #WD_SFX
+                ldy #WD_SFX                     ;Finally play attack sound
                 lda (wpnLo),y
                 bmi AH_NoSound
                 jmp PlaySfx
