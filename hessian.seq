@@ -11,6 +11,7 @@ emptysave.bin 61
 emptysave.bin 62
 emptysave.bin 63
 emptysave.bin 64
+script02.pak 52
 level00.pak 02
 charset00.pak 12
 level01.pak 03
@@ -76,7 +77,6 @@ sprserver.pak 44
 sprhazmat.pak 45
 music00.pak 21
 script01.pak 51
-script02.pak 52
 script03.pak 53
 script04.pak 54
 upgrade.pak 5F
