@@ -18,6 +18,9 @@
 InstallLaptop:  ldy #ITEM_LAPTOP
                 jsr FindItem
                 bcc IL_NoItem
+                lda #ACT_HACKER                 ;Check for executing both of the plans: if Jeff is already
+                jsr FindLevelActor              ;in hazmat suit, this plan is not available
+                bcc IL_NoItem
                 lda actMB+ACTI_PLAYER
                 lsr
                 bcc IL_NoItem                   ;Wait until not jumping

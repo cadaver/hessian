@@ -14,6 +14,7 @@
                 dc.w AfterSurgeryFollow
                 dc.w AfterSurgeryNoAirDie
                 dc.w AfterSurgeryNoAirRadio
+                dc.w ReachOldTunnels
 
         ; Begin surgery script
         ;
@@ -341,7 +342,7 @@ AfterSurgeryZone:
                 lda #<EP_AFTERSURGERYNOAIR      ;no enemy spawn in the meanwhile
                 sta actScriptEP+1
                 if SKIP_PLOT > 0
-                lda #PLOT_ELEVATOR1             ;For testing: enable this too
+                lda #PLOT_ELEVATOR1
                 jsr SetPlotBit
                 endif
                 lda #PLOT_LOWERLABSNOAIR
@@ -349,10 +350,10 @@ AfterSurgeryZone:
 ASZ_Survived:   jsr AddQuestScore
                 lda #ACT_SCIENTIST3             ;Todo: continue story from here
                 jsr TransportNPCToPlayer
-                lda #$20+AIMODE_TURNTO          ;Stop following
-                sta lvlActF,y
-                lda #$00
-                sta actScriptF+1                ;No actor script for now
+                lda #<EP_REACHOLDTUNNELS
+                sta actScriptEP+1
+                lda #>EP_REACHOLDTUNNELS
+                sta actScriptF+1
 ASZ_Stop:       jmp StopZoneScript              ;No zone script for now
 
         ; After surgery follow script (refresh follow mode & zone script)
@@ -488,6 +489,34 @@ RadioMsg:       ldy #ACT_PLAYER
                 lda #SFX_RADIO
                 jmp PlaySfx
 
+        ; Escaped to old tunnels
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+ReachOldTunnels:
+                ldx actIndex
+                lda actXH,x
+                cmp #$03
+                bcc ROT_Run
+                lda #AIMODE_TURNTO
+                sta actAIMode,x
+                lda actSX,x                     ;Wait for stop so that speech bubble isn't off
+                bne ROT_Wait
+                lda #<txtReachOldTunnels
+                ldx #>txtReachOldTunnels
+ROT_SpeakAndStopScript:
+                ldy #$00
+                sty actScriptF+1                ;Stop script for now
+                ldy #ACT_SCIENTIST3
+                jmp SpeakLine
+ROT_Run:        lda #AIMODE_IDLE
+                sta actAIMode,x
+                lda #JOY_RIGHT
+                sta actMoveCtrl,x
+ROT_Wait:       rts
+
         ; Messages
 
 txtBeginSurgery:dc.b 34,"YOU GOT THE FILTER? EXCELLENT. WE'RE READY, FOR REAL THIS TIME. THIS IS A STANDARD NANO-ASSISTED "
@@ -517,5 +546,8 @@ txtNetherTunnelCode:
 txtAfterSurgeryNoAirRadio:
                 dc.b 34,"JEFF HERE. AS YOU CUT OFF THE AI FROM THE SUBNETS, THE SABOTAGE MUST BE PHYSICAL, SOMEWHERE "
                 dc.b "CLOSE. DON'T THINK YOU HAVE TIME TO FIX IT NOW THOUGH.",34,0
+
+txtReachOldTunnels:
+                dc.b 34,"AIR! AT LAST. THAT WAS QUICK THINKING TO HEAD THIS WAY. THANK YOU. I'LL CATCH MY BREATH FOR A WHILE.",34,0
 
                 checkscriptend

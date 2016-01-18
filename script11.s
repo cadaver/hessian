@@ -19,183 +19,7 @@ DROID_SPAWN_DELAY = 4*25
                 dc.w DestroyEye
                 dc.w ConstructSpeech
                 dc.w ConstructEnding
-
-        ; Tunnel machine script routine
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-tmChoice        = menuCounter
-
-TunnelMachine:  lda #PLOT_BATTERY
-                jsr GetPlotBit
-                beq TM_NoBattery
-                lda #PLOT_FUEL
-                jsr GetPlotBit
-                beq TM_NoFuel
-                lda #$00
-                sta tmTime1
-                sta tmTime2
-                sta tmChoice
-                lda #<EP_TUNNELMACHINERUN
-                ldx #>EP_TUNNELMACHINERUN
-                jsr SetScript
-                ldx #MENU_INTERACTION
-                jsr SetMenuMode
-                lda #<txtReady
-                ldx #>txtReady
-                jsr PrintPanelTextIndefinite
-                jmp TMR_RedrawNoSound
-TM_NoBattery:   lda #<txtNoBattery
-                ldx #>txtNoBattery
-                bne TM_TextCommon
-TM_NoFuel:      lda #1
-                sta shakeScreen
-                lda #SFX_GENERATOR
-                jsr PlaySfx
-                lda #<txtNoFuel
-                ldx #>txtNoFuel
-TM_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
-                jmp PrintPanelText
-
-        ; Tunnel machine decision runloop
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-TunnelMachineRun:
-                inc tmTime1
-                lda tmTime1
-                and #$01
-                sta shakeScreen
-                inc tmTime2
-                lda tmTime2
-                cmp #3
-                bcc TMR_NoSound
-                lda #$00
-                sta tmTime2
-                lda #SFX_GENERATOR
-                jsr PlaySfx
-TMR_NoSound:    lda joystick
-                and #JOY_DOWN
-                bne TMR_Finish
-                lda keyType
-                bpl TMR_Finish
-                jsr GetFireClick
-                bcs TMR_Decision
-                jsr MenuControl
-                ldy tmChoice
-                lsr
-                bcs TMR_MoveLeft
-                lsr
-                bcs TMR_MoveRight
-TMR_NoMove:     rts
-TMR_MoveLeft:   tya
-                beq TMR_NoMove
-                dey
-                sty tmChoice
-TMR_Redraw:     lda #SFX_SELECT
-                jsr PlaySfx
-TMR_RedrawNoSound:
-                ldy #$00
-TMR_RedrawLoop: ldx tmArrowPosTbl,y
-                lda #$20
-                cpy tmChoice
-                bne TMR_NoArrow
-                lda #62
-TMR_NoArrow:    jsr PrintPanelChar
-                iny
-                cpy #2
-                bcc TMR_RedrawLoop
-                rts
-TMR_MoveRight:  tya
-                bne TMR_NoMove
-                iny
-                sty tmChoice
-                bne TMR_Redraw
-TMR_Decision:   lda tmChoice
-                bne TMR_Drive
-TMR_Finish:     jsr StopScript
-                jmp SetMenuMode                 ;X=0 on return
-TMR_Drive:      jsr AddQuestScore
-                jsr TMR_Finish
-                lda #$00
-                sta tmTime1                     ;TODO: replace with cutscene
-                jsr BlankScreen
-TMR_BreakWallLoop:
-                jsr WaitBottom
-                jsr Random
-                cmp #$40
-                bcs TMR_BreakWallNoSound
-                lda #$00
-                sta PSfx_LastSfx+1
-                lda #SFX_EXPLOSION
-                jsr PlaySfx
-TMR_BreakWallNoSound:
-                inc tmTime1
-                bpl TMR_BreakWallLoop
-                lda #$32
-                jmp ULO_EnterDoorDest
-
-        ; Tunnel machine item installation script routines
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-TunnelMachineItems:
-                lda itemIndex
-                cmp #ITEM_TRUCKBATTERY
-                bne TMI_Fuel
-TMI_Battery:    lda #PLOT_BATTERY
-                jsr SetPlotBit
-                lda #<txtBatteryInstalled
-                ldx #>txtBatteryInstalled
-                bne TMI_Common
-TMI_Fuel:       lda #PLOT_FUEL
-                jsr SetPlotBit
-                lda #<txtRefueled
-                ldx #>txtRefueled
-TMI_Common:     jsr TM_TextCommon
-                ldy itemIndex
-                jsr RemoveItem
-                jsr AddQuestScore
-                lda #SFX_POWERUP
-                jmp PlaySfx
-
-        ; Jormungandr speaks
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-RadioJormungandr:
-                lda #<EP_RADIOJORMUNGANDRRUN
-                ldx #>EP_RADIOJORMUNGANDRRUN
-                jsr SetScript
-                lda #<txtRadioJormungandr
-                ldx #>txtRadioJormungandr
-RadioMsg:       ldy #ACT_PLAYER
-                jsr SpeakLine
-                lda #SFX_RADIO
-                jmp PlaySfx
-
-        ; Jormungandr speaks, running script (screen shake)
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-RadioJormungandrRun:
-                lda menuMode
-                beq RJR_Stop
-                jsr Random
-                and #$01
-                sta shakeScreen
-                rts
-RJR_Stop:       jmp StopScript
+                dc.w DestroyPlan
 
         ; Eye (Construct) boss phase 1
         ;
@@ -396,7 +220,198 @@ DE_DestroyDroids:
 DE_Skip:        dex
                 bne DE_DestroyDroids
 DE_RestX:       ldx #$00
-CE_Wait:        rts
+                rts
+
+        ; Tunnel machine script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+tmChoice        = menuCounter
+
+TunnelMachine:  lda scriptF                     ;If the destroy plan script running,
+                bne TM_Wait                     ;do not exec this script yet
+                lda #PLOT_BATTERY
+                jsr GetPlotBit
+                beq TM_NoBattery
+                lda #PLOT_FUEL
+                jsr GetPlotBit
+                beq TM_NoFuel
+                lda #$00
+                sta tmTime1
+                sta tmTime2
+                sta tmChoice
+                lda #<EP_TUNNELMACHINERUN
+                ldx #>EP_TUNNELMACHINERUN
+                jsr SetScript
+                ldx #MENU_INTERACTION
+                jsr SetMenuMode
+                lda #<txtReady
+                ldx #>txtReady
+                jsr PrintPanelTextIndefinite
+                jmp TMR_RedrawNoSound
+TM_NoBattery:   lda #<txtNoBattery
+                ldx #>txtNoBattery
+                bne TM_TextCommon
+TM_NoFuel:      lda #1
+                sta shakeScreen
+                lda #SFX_GENERATOR
+                jsr PlaySfx
+                lda #<txtNoFuel
+                ldx #>txtNoFuel
+TM_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
+                jmp PrintPanelText
+TM_Wait:        rts
+
+        ; Tunnel machine decision runloop
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+TunnelMachineRun:
+                inc tmTime1
+                lda tmTime1
+                and #$01
+                sta shakeScreen
+                inc tmTime2
+                lda tmTime2
+                cmp #3
+                bcc TMR_NoSound
+                lda #$00
+                sta tmTime2
+                lda #SFX_GENERATOR
+                jsr PlaySfx
+TMR_NoSound:    lda joystick
+                and #JOY_DOWN
+                bne TMR_Finish
+                lda keyType
+                bpl TMR_Finish
+                jsr GetFireClick
+                bcs TMR_Decision
+                jsr MenuControl
+                ldy tmChoice
+                lsr
+                bcs TMR_MoveLeft
+                lsr
+                bcs TMR_MoveRight
+TMR_NoMove:     rts
+TMR_MoveLeft:   tya
+                beq TMR_NoMove
+                dey
+                sty tmChoice
+TMR_Redraw:     lda #SFX_SELECT
+                jsr PlaySfx
+TMR_RedrawNoSound:
+                ldy #$00
+TMR_RedrawLoop: ldx tmArrowPosTbl,y
+                lda #$20
+                cpy tmChoice
+                bne TMR_NoArrow
+                lda #62
+TMR_NoArrow:    jsr PrintPanelChar
+                iny
+                cpy #2
+                bcc TMR_RedrawLoop
+                rts
+TMR_MoveRight:  tya
+                bne TMR_NoMove
+                iny
+                sty tmChoice
+                bne TMR_Redraw
+TMR_Decision:   lda tmChoice
+                bne TMR_Drive
+TMR_Finish:     jsr StopScript
+                jmp SetMenuMode                 ;X=0 on return
+TMR_Drive:      jsr AddQuestScore
+                jsr TMR_Finish
+                lda #$00
+                sta tmTime1                     ;TODO: replace with cutscene
+                jsr BlankScreen
+TMR_BreakWallLoop:
+                jsr WaitBottom
+                jsr Random
+                cmp #$40
+                bcs TMR_BreakWallNoSound
+                lda #$00
+                sta PSfx_LastSfx+1
+                lda #SFX_EXPLOSION
+                jsr PlaySfx
+TMR_BreakWallNoSound:
+                inc tmTime1
+                bpl TMR_BreakWallLoop
+                lda #$32
+                jmp ULO_EnterDoorDest
+
+        ; Tunnel machine item installation script routines
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+TunnelMachineItems:
+                lda itemIndex
+                cmp #ITEM_TRUCKBATTERY
+                bne TMI_Fuel
+TMI_Battery:    lda #PLOT_BATTERY
+                jsr SetPlotBit
+                lda #<txtBatteryInstalled
+                ldx #>txtBatteryInstalled
+                bne TMI_Common
+TMI_Fuel:       lda #PLOT_FUEL
+                jsr SetPlotBit
+                lda #<txtRefueled
+                ldx #>txtRefueled
+TMI_Common:     jsr TM_TextCommon
+                ldy itemIndex
+                jsr RemoveItem
+                jsr AddQuestScore
+                lda #SFX_POWERUP
+                jsr PlaySfx
+                lda plotBits
+                and #$20+$40+$80                ;If laptop in place, the destroy plan
+                cmp #$20+$40                    ;is not necessary
+                bne TMI_NoPlan
+                lda plotBits+1                  ;Any NPCs in lab?
+                and #$10+$20
+                beq TMI_NoPlan
+                lda #<EP_DESTROYPLAN
+                ldx #>EP_DESTROYPLAN
+                jmp SetScript
+TMI_NoPlan:     rts
+
+        ; Jormungandr speaks
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RadioJormungandr:
+                lda #<EP_RADIOJORMUNGANDRRUN
+                ldx #>EP_RADIOJORMUNGANDRRUN
+                jsr SetScript
+                lda #<txtRadioJormungandr
+                ldx #>txtRadioJormungandr
+RadioMsg:       ldy #ACT_PLAYER
+                jsr SpeakLine
+                lda #SFX_RADIO
+                jmp PlaySfx
+
+        ; Jormungandr speaks, running script (screen shake)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RadioJormungandrRun:
+                lda menuMode
+                beq RJR_Stop
+                jsr Random
+                and #$01
+                sta shakeScreen
+                rts
+RJR_Stop:       jmp StopScript
 
         ; Construct speaks
         ;
@@ -434,6 +449,56 @@ ConstructEnding:lda #ACT_EXPLOSION              ;Wait for final explosion to van
                 skip2
 CE_Ending3:     lda #<EP_ENDING3
                 jmp ExecScript
+DP_Wait:
+CE_Wait:        rts
+
+        ; Radio message for simultaneous destruction
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+DestroyPlan:    lda textTime                    ;Wait until the fuel/battery message gone
+                bne DP_Wait
+                jsr StopScript
+                lda plotBits+1
+                and #$20
+                bne DP_Jeff
+DP_Linda:       lda #ACT_SCIENTIST3
+                jsr DP_SetPosCommon
+                lda #<txtRadioDestroyLinda
+                ldx #>txtRadioDestroyLinda
+                bne RadioMsg
+DP_Jeff:        lda #<EP_DESTROYCOMMENT
+                sta actScriptEP+1
+                lda #>EP_DESTROYCOMMENT
+                sta actScriptF+1
+                lda #ACT_HACKER
+                jsr DP_SetPosCommon
+                lda #<txtRadioDestroyJeff
+                ldx #>txtRadioDestroyJeff
+                bne RadioMsg
+DP_SetPosCommon:
+                jsr FindLevelActor
+                lda #ACT_HAZMAT
+                sta lvlActT,y
+                lda #$61
+                sta lvlActX,y
+                lda #$55
+                sta lvlActY,y
+                lda #$10+AIMODE_TURNTO
+                sta lvlActF,y
+                lda #$0f+ORG_GLOBAL
+                sta lvlActOrg,y
+                lda #<EP_HAZMAT
+                sta actScriptEP+3
+                lda #>EP_HAZMAT
+                sta actScriptF+3
+                ldy lvlDataActBitsStart+$0f
+                lda lvlStateBits,y              ;Remove the hazmat item
+                and #$fe
+                sta lvlStateBits,y
+                rts
 
         ; Tables & variables
 
@@ -488,5 +553,18 @@ txtRadioConstructRigged:
                 dc.b 34,"ENHANCED HUMAN, I AM THE CONSTRUCT. YOUR PLAN IS KNOWN TO ME. BUT I AM ALSO NORMAN THRONE'S MIND. HE "
                 dc.b "RESPECTS YOUR COURAGE AND INGENUITY, SO I WILL NOT AVENGE EARLY. BUT KNOW "
                 dc.b "THAT IF YOU SUCCEED, IT IS BECAUSE I LET YOU.",34,0
+
+txtRadioDestroyJeff:
+                dc.b 34,"JEFF HERE. "
+                textjump txtRadioDestroyCommon
+
+txtRadioDestroyLinda:
+                dc.b 34,"IT'S LINDA. "
+
+txtRadioDestroyCommon:
+                dc.b "DON'T START THE MACHINE YET. IF I LOAD IT WITH "
+                dc.b "EXPLOSIVES FROM THE RECYCLER, MAYBE I CAN DESTROY JORMUNGANDR AS YOU DEAL WITH THE AI. "
+                dc.b "A HAZMAT SUIT SHOULD ALLOW ME TO SURVIVE LONG ENOUGH. "
+                dc.b "THE DOOR IN THE UPPER STORAGE LEADS BACK HERE. I'LL BE WAITING.",34,0
 
                 checkscriptend

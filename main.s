@@ -17,7 +17,6 @@ GODMODE_CHEAT   = 0                             ;Whether health/battery cheat is
 CODE_CHEAT      = 0                             ;All codes all zeroes
 SKIP_PLOT       = 0                             ;Various instant jumps to late game plot sequences
 SKIP_PLOT2      = 0
-SKIP_PLOT3      = 0
 
         ; Memory configuration & loader symbols
 
