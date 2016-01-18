@@ -11,7 +11,6 @@
                 dc.w HackerAmbush
                 dc.w GiveLaptop
                 dc.w EnterBioDome
-                dc.w InstallLaptop
                 dc.w BioDomeEnding
 
         ; Security chief move routine
@@ -246,33 +245,6 @@ GiveLaptop:     lda #$00
                 ldx #>txtGiveLaptop
                 bne HA_SpeakCommon
 
-        ; Install laptop script
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-InstallLaptop:  ldy #ITEM_LAPTOP
-                jsr FindItem
-                bcc IL_NoItem
-                jsr RemoveItem
-                jsr AddQuestScore               ;Todo: cutscene
-                lda #PLOT_DISRUPTCOMMS          ;(if PLOT_OLDTUNNELSLAB2 is set, Jeff knows
-                jsr SetPlotBit                  ;what to expect)
-                lda #$00
-                sta temp4
-                lda #ITEM_LAPTOP
-                jsr DI_ItemNumber
-                ldx temp8
-                lda #$80
-                sta actXL,x                     ;Always center of block
-                lda #$00
-                sta actSY,x                     ;No speed
-                lda #<txtRadioInstallLaptop
-                ldx #>txtRadioInstallLaptop
-                jmp RadioMsg
-IL_NoItem:      rts
-
         ; Security chief speech
         ;
         ; Parameters: -
@@ -286,7 +258,7 @@ SecurityChiefSpeech:
                 jmp SpeakLine
 
         ; Messages
-        
+
 txtRadioDieAmbush:
                 dc.b 34,"IT'S JEFF. FOUND SOMETHING. FUN, RIGHT? 48 41 20 48 41 2C 20 48 4D 20 48 4D NO. THIS IS NOT JEFF, BUT THE CONSTRUCT. THE HACKER IS DEAD.",34,0
 
@@ -303,16 +275,13 @@ txtAmbushSuccess:
 txtGiveLaptop:  dc.b "ALSO TAKE THIS LAPTOP. MY THEORY IS, THE AI HAS A DEDICATED NETWORK LINK. "
                 dc.b "IF YOU CAN FIND IT, WE MAY BE ABLE TO CUT IT OFF COMPLETELY.",34,0
 
-txtRadioInstallLaptop:
-                dc.b 34,"JEFF HERE. THIS MUST BE THE AI'S LINK. LET'S GET TO WORK.",34,0
-
 txtRadioBioDomeEnding:
-                dc.b 34,"KIM, JEFF HERE. THE NETWORK JUST LIT UP LIKE NEVER BEFORE. I THINK THE AI IS ON TO OUR TRICK. SHIT..",34,0
+                dc.b 34,"KIM, IT'S JEFF.. THE NETWORK JUST LIT UP LIKE NEVER BEFORE. I THINK THE AI FOUND OUT. WE'RE SCREWED..",34,0
 
 txtSecurityChief:
                 dc.b 34,"YOU! THE ROGUE GUARD. UNDERSTAND THIS - THE 'CONSTRUCT' REPRESENTS NORMAN'S UNFILTERED GENIUS. "
                 dc.b "BUT AFTER THE UPLOAD HE BEGAN TO UNRAVEL. I HAD TO LOCK HIM UP FOR THE RISK OF INTERFERENCE. "
-                dc.b "YOU GETTING HERE PAST THE BIOMETRIC LOCK "
-                dc.b "MEANS YOU MUST HAVE DEFILED HIS BODY. THAT'S ONE MORE REASON TO MAKE SURE YOU DON'T LEAVE THIS ROOM ALIVE!",34,0
+                dc.b "YOU GETTING HERE PAST THE BIOMETRIC LOCK MEANS YOU MUST HAVE DEFILED HIS BODY. "
+                dc.b "THAT'S ONE MORE REASON TO MAKE SURE YOU DON'T LEAVE THIS ROOM ALIVE!",34,0
 
                 ;checkscriptend
