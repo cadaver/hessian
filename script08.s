@@ -483,12 +483,10 @@ AfterSurgeryNoAirRadio:
                 sta actScriptEP+1
                 lda #<txtAfterSurgeryNoAirRadio
                 ldx #>txtAfterSurgeryNoAirRadio
-RadioMsg:       pha
+RadioMsg:       ldy #ACT_PLAYER
+                jsr SpeakLine
                 lda #SFX_RADIO
-                jsr PlaySfx
-                pla
-                ldy #ACT_PLAYER
-                jmp SpeakLine
+                jmp PlaySfx
 
         ; Messages
 

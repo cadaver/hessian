@@ -101,12 +101,11 @@ EBD_Skip:       rts
 EBD_DieAmbush:  jsr EBD_KillHackerCommon
                 lda #<txtRadioDieAmbush
                 ldx #>txtRadioDieAmbush
-RadioMsg:       pha
+RadioMsg:       ldy #ACT_PLAYER
+                jsr SpeakLine
                 lda #SFX_RADIO
-                jsr PlaySfx
-                pla
-                ldy #ACT_PLAYER
-                jmp SpeakLine
+                jmp PlaySfx
+
 EBD_DieAbandoned:
                 jsr EBD_KillHackerCommon
                 lda #<txtRadioDieAbandoned

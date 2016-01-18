@@ -175,12 +175,12 @@ RadioJormungandr:
                 lda #<EP_RADIOJORMUNGANDRRUN
                 ldx #>EP_RADIOJORMUNGANDRRUN
                 jsr SetScript
-                lda #SFX_RADIO
-                jsr PlaySfx
-                ldy #ACT_PLAYER
                 lda #<txtRadioJormungandr
                 ldx #>txtRadioJormungandr
-                jmp SpeakLine
+RadioMsg:       ldy #ACT_PLAYER
+                jsr SpeakLine
+                lda #SFX_RADIO
+                jmp PlaySfx
 
         ; Jormungandr speaks, running script (screen shake)
         ;
@@ -404,12 +404,9 @@ CE_Wait:        rts
         ; Returns: -
         ; Modifies: various
 
-ConstructSpeech:lda #SFX_RADIO                  ;Todo: cutscene / check plot state
-                jsr PlaySfx
-                ldy #ACT_PLAYER
-                lda #<txtRadioConstruct
+ConstructSpeech:lda #<txtRadioConstruct
                 ldx #>txtRadioConstruct
-                jmp SpeakLine
+                jmp RadioMsg
 
         ; Ending after Construct is destroyed
         ;

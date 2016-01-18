@@ -161,12 +161,10 @@ MoveScientists: jsr StopScript
                 endif
                 lda #<txtRadioMoveScientists
                 ldx #>txtRadioMoveScientists
-RadioMsg:       pha
+RadioMsg:       ldy #ACT_PLAYER
+                jsr SpeakLine
                 lda #SFX_RADIO
-                jsr PlaySfx
-                pla
-                ldy #ACT_PLAYER
-                jmp SpeakLine
+                jmp PlaySfx
 
 MoveScientistSub:
                 sta lvlActX,y
