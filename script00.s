@@ -154,6 +154,8 @@ TitleScreen:    jsr BlankScreen
                 sta panelUpdateFlags
                 jsr ClearPanelText
                 jsr InitScroll                  ;Make sure no scrolling
+                lda #1
+                sta logoFadeDir
 
         ; Load logo chars & clear screen
 
@@ -452,10 +454,8 @@ RSF_Loop:       jsr GetByte
                 bne RSF_Loop
 RSF_End:        tay                             ;Check if load errored
                 bne LoadGameLoop
-                lda fastLoadMode                ;Fade out screen, unless in slowload mode
-                beq LoadSkipFade
                 jsr FadeOutAll
-LoadSkipFade:   jsr SaveModifiedOptions
+                jsr SaveModifiedOptions
                 lda #RCP_RESETTIME
                 jmp RestartCheckpoint           ;Start loaded game
 LoadGameCancel: jmp MainMenu
@@ -822,9 +822,10 @@ FOT_Done:       rts
 
         ; Fade logo, text & music
 
-FadeOutAll:     lda #-1
-                sta logoFadeDir
+FadeOutAll:     lda fastLoadMode                ;No fade if using fallback loader
+                beq FOT_Done
                 lda #-1
+                sta logoFadeDir
                 sta textFadeDir
 FOA_FadeDelay:  lda #$05
                 sta musicFadeDelay
@@ -944,8 +945,8 @@ PTBCD1_NoAnd:   ora #$30
 
 logoFade:       dc.b 0
 textFade:       dc.b 0
-logoFadeDir:    dc.b 1
-textFadeDir:    dc.b 1
+logoFadeDir:    dc.b 0
+textFadeDir:    dc.b 0
 musicFadeDelay: dc.b 0
 moveDelay:      dc.b 0
 titlePage:      dc.b 0
