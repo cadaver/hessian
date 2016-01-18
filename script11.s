@@ -203,7 +203,6 @@ RJR_Stop:       jmp StopScript
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MEye_Wait:      rts
 MoveEyePhase1:  lda lvlObjB+$1e                 ;Close door immediately once player moves or fires
                 bpl MEye_DoorDone
                 lda actXL+ACTI_PLAYER
@@ -212,7 +211,8 @@ MoveEyePhase1:  lda lvlObjB+$1e                 ;Close door immediately once pla
                 bcs MEye_CloseDoor
                 lda actF2+ACTI_PLAYER
                 cmp #FR_PREPARE
-                bcc MEye_Wait
+                bcs MEye_CloseDoor
+MEye_Wait2:     rts
 MEye_CloseDoor: ldy #$1e
                 jsr InactivateObject
                 ldx actIndex
@@ -224,7 +224,7 @@ MEye_DoorDone:  lda #$01
                 bcs MEye_HasCPUs
 MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phase1 destroyed
                 cmp #2
-                bcs MEye_WaitDroids
+                bcs MEye_Wait
                 inc actT,x                      ;Move to visible eye stage
                 jsr InitActor
                 lda #5                          ;Descend animation
@@ -233,13 +233,13 @@ MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phas
 
 MEye_HasCPUs:   lda #1
 MEye_SpawnDroid:cmp numSpawned
-                bcc MEye_Done
+                bcc MEye_Wait
                 lda #ACTI_FIRSTNPC
                 ldy #ACTI_LASTNPC
                 jsr GetFreeActor
-                bcc MEye_Done
+                bcc MEye_Wait
                 lda actTime,x
-                bne MEye_DoSpawnDelay
+                bne MEye_DecSpawnDelay
                 tya
                 tax
                 jsr Random                      ;Randomize location from 4 possible
@@ -264,13 +264,13 @@ MEye_SpawnDroid:cmp numSpawned
                 jsr InitActor
                 jsr NoInterpolation             ;If explosion is immediately reused on same frame,
                 ldx actIndex                    ;prevent artifacts
-MEye_SpawnDelay:lda #DROID_SPAWN_DELAY
+MEye_ResetSpawnDelay:
+                lda #DROID_SPAWN_DELAY
+                skip2
+MEye_DecSpawnDelay:
+                sbc #$01                        ;C=1 here
                 sta actTime,x
-MEye_WaitDroids:
-MEye_Done:      rts
-MEye_DoSpawnDelay:
-                dec actTime,x
-                rts
+MEye_Wait:      rts
 
         ; Eye (Construct) boss phase 2
         ;
@@ -294,10 +294,10 @@ MEye_Descend:   sbc #4
 MEye_NoSound:   ldy #14
                 lda #2
                 jsr OneShotAnimation
-                bcc MEye_Done
+                bcc MEye_Wait
                 lda #2                          ;Start from center frame
                 sta actF1,x
-                lda #$00                        ;Reset droid spawn delay
+                lda #$00                        ;Reset droid spawn delay (spawn one immediately)
                 sta actTime,x
                 ldy actXH+ACTI_PLAYER           ;If player is right from center, shoot to right first
                 cpy #$41
