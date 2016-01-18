@@ -62,10 +62,14 @@ GS_Loop:        jsr GetLevelActorIndex
                 sta actScriptEP+2
                 stx actScriptF+2
                 ldx #(MAX_CODES)*3-1
-GS_CodeLoop:    jsr Random
+GS_CodeLoop:    if CODE_CHEAT > 0
+                lda #$00
+                else
+                jsr Random
                 and #$0f
                 cmp #$0a
                 bcs GS_CodeLoop
+                endif
                 sta codes,x
                 dex
                 bpl GS_CodeLoop

@@ -210,6 +210,8 @@ HA_EnemyDestroyed:
                 lda #PLOT_HIDEOUTAMBUSH
                 jsr ClearPlotBit
                 ldx actIndex
+                lda #HP_NONCOMBATANT
+                sta actHp,x                     ;Make sure to not allow damage now
                 lda #AIMODE_TURNTO
                 sta actAIMode,x
                 ldy #ACTI_PLAYER

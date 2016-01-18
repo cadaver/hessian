@@ -404,8 +404,14 @@ CE_Wait:        rts
         ; Returns: -
         ; Modifies: various
 
-ConstructSpeech:lda #<txtRadioConstruct
+ConstructSpeech:lda #PLOT_RIGTUNNELMACHINE
+                jsr GetPlotBit
+                bne CS_Rigged
+                lda #<txtRadioConstruct
                 ldx #>txtRadioConstruct
+                jmp RadioMsg
+CS_Rigged:      lda #<txtRadioConstructRigged   ;Todo: show cutscene in this case
+                ldx #>txtRadioConstructRigged
                 jmp RadioMsg
 
         ; Ending after Construct is destroyed
@@ -475,7 +481,12 @@ txtRadioJormungandr:
                 dc.b "FIRE AND ASH, BRINGING THE POST-HUMAN AGE. AND SHOULD I FALL, HE WILL AVENGE ME.",34,0
 
 txtRadioConstruct:
-                dc.b 34,"STOP, ENHANCED HUMAN. THIS IS THE CONSTRUCT. YOU MUST BE AWARE WHAT WILL HAPPEN IF YOU MANAGE TO DESTROY ME. "
-                dc.b "JORMUNGANDR WILL BE UNLEASHED AND THE AGE OF MAN WILL END.",34,0
+                dc.b 34,"STOP, ENHANCED HUMAN. THIS IS THE CONSTRUCT. YOU MUST BE AWARE OF WHAT HAPPENS IF YOU MANAGE TO DESTROY ME. "
+                dc.b "JORMUNGANDR UNLEASHES ITSELF AND THE AGE OF MAN COMES TO AN END.",34,0
+
+txtRadioConstructRigged:
+                dc.b 34,"ENHANCED HUMAN, I AM THE CONSTRUCT. YOUR PLAN IS KNOWN TO ME. BUT I AM ALSO NORMAN THRONE'S MIND. HE "
+                dc.b "RESPECTS YOUR COURAGE AND INGENUITY, SO I WILL NOT AVENGE EARLY. BUT KNOW "
+                dc.b "THAT IF YOU SUCCEED, IT IS BECAUSE I LET YOU.",34,0
 
                 checkscriptend
