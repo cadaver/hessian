@@ -6,6 +6,8 @@
                 org scriptCodeStart
 
                 dc.w Ending1
+                dc.w Ending2
+                dc.w Ending3
 
         ; Ending 1: Jormungandr destroyed
         ;
@@ -71,6 +73,42 @@ EndingExit:     ldx #STACKSTART
                 txs
                 jmp UM_SaveGame
 
+        ; Ending 2: Construct destroyed
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: Various
+
+Ending2:        jsr SetupTextScreen
+                lda #5
+                sta temp2
+                lda #0
+                sta temp1
+                lda #<txtEnding2
+                ldx #>txtEnding2
+                jsr PrintMultipleRows
+                lda #MUSIC_ENDING1
+                jmp EndingCommon
+
+        ; Ending 3: both destroyed
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: Various
+
+Ending3:        jsr SetupTextScreen
+                lda #5
+                sta temp2
+                lda #0
+                sta temp1
+                lda #<txtEnding3
+                ldx #>txtEnding3
+                jsr PrintMultipleRows
+                lda #MUSIC_ENDING2
+                jmp EndingCommon
+
+        ; Score/time subroutines
+
 EndingBCD:      pha
                 lsr
                 lsr
@@ -89,6 +127,17 @@ txtEnding1:     dc.b "MILITARY FAIL-DEADLY SYSTEMS ARE TRICKED",0
                 dc.b "LEADING TO A NUCLEAR STRIKE AGAINST NON-",0
                 dc.b "EXISTENT ENEMIES. A GRIM AGE OF SURVIVAL",0
                 dc.b " UNDER A BLACKENED SUN WILL NOW BEGIN..",0,0
+
+                     ;0123456789012345678901234567890123456789
+txtEnding2:     dc.b " JORMUNGANDR TRAVELS THE EARTH'S CRUST.",0
+                dc.b "VOLCANIC ERUPTIONS BLACKEN THE SUN UNDER",0
+                dc.b "HEAVY ASH CLOUDS. A GRIM AGE OF SURVIVAL",0
+                dc.b " IN THE BITTER COLD IS ABOUT TO BEGIN..",0,0
+
+                      ;0123456789012345678901234567890123456789
+txtEnding3:     dc.b "  JORMUNGANDR AND CONSTRUCT ARE NO MORE",0
+                dc.b "  MANKIND IS ONCE AGAIN FREE TO DESTROY",0
+                dc.b "       ITSELF WITHOUT OUTSIDE AID",0,0
 
 txtFinalScore:  dc.b " FINAL SCORE "
 txtScore:       dc.b "0000000",0
