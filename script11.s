@@ -218,8 +218,6 @@ MEye_CloseDoor: ldy #$1e
                 ldx actIndex
 MEye_DoorDone:  lda #$01
                 sta ULO_NoAirFlag+1             ;Cause air to be sucked away during battle
-                lda #DROID_SPAWN_DELAY
-                sta MEye_SpawnDelay+1
                 lda #ACT_SUPERCPU               ;Wait until all CPUs destroyed
                 jsr FindActor
                 ldx actIndex
@@ -280,9 +278,7 @@ MEye_DoSpawnDelay:
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveEyePhase2:  lda #DROID_SPAWN_DELAY-25
-                sta MEye_SpawnDelay+1
-                lda actHp,x
+MoveEyePhase2:  lda actHp,x
                 beq MEye_Destroy
                 lda actF1,x
                 cmp #5
@@ -482,7 +478,7 @@ txtRadioJormungandr:
                 dc.b "FIRE AND ASH, BRINGING THE POST-HUMAN AGE. AND SHOULD I FALL, HE WILL AVENGE ME.",34,0
 
 txtRadioConstruct:
-                dc.b 34,"THIS IS CONSTRUCT. YOU MUST BE AWARE WHAT WILL HAPPEN IF YOU WERE TO DESTROY ME. "
-                dc.b "JORMUNGANDR WILL BE UNLEASHED AND THE AGE OF MAN COMES TO AN END.",34,0
+                dc.b 34,"STOP, ENHANCED HUMAN. THIS IS THE CONSTRUCT. YOU MUST BE AWARE WHAT WILL HAPPEN IF YOU MANAGE TO DESTROY ME. "
+                dc.b "JORMUNGANDR WILL BE UNLEASHED AND THE AGE OF MAN WILL END.",34,0
 
                 checkscriptend

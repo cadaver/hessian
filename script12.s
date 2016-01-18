@@ -15,7 +15,8 @@
         ; Returns: -
         ; Modifies: Various
 
-Ending1:        jsr SetupTextScreen
+Ending1:        jsr ClearPanelText
+                jsr SetupTextScreen
                 lda #5
                 sta temp2
                 lda #0
