@@ -27,6 +27,7 @@ unsigned char c64name[80];
 unsigned char dosname[80];
 int interleave = 10;
 int starttrack, startsector;
+int lastblocksize;
 FILE *in;
 FILE *out;
 
@@ -88,7 +89,7 @@ int main(int argc, char **argv)
                 }
                 else
                 {
-                        printf("File %s written at track %d sector %d\n", c64name,starttrack,startsector);
+                        printf("File %s written at track %d sector %d, last block %d bytes\n", c64name,starttrack,startsector,lastblocksize);
                 }
         }
         fclose(in);
@@ -179,6 +180,7 @@ int writefile(char *dosname, char *c64name)
                 {
                         if (lasttrack > 0)
                         {
+                                lastblocksize = 254;
                                 readsector(lasttrack, lastsector);
                                 buffer[0] = 0;
                                 buffer[1] = 255; /* File ends just on the block
@@ -208,6 +210,7 @@ int writefile(char *dosname, char *c64name)
                         else
                         {
                                 /* Less than full block, file ends */
+                                lastblocksize = bytesread;
                                 buffer[0] = 0;
                                 buffer[1] = bytesread+1;
                                 writesector(track, sector);
