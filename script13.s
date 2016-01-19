@@ -28,6 +28,10 @@ InstallLaptop:  ldy #ITEM_LAPTOP
                 jsr AddQuestScore
                 lda #PLOT_DISRUPTCOMMS
                 jsr SetPlotBit
+                lda #<EP_HACKERFINAL
+                sta actScriptEP+2
+                lda #>EP_HACKERFINAL
+                sta actScriptF+2
                 lda #$00
                 sta temp4
                 lda #ITEM_LAPTOP
@@ -93,7 +97,6 @@ ILF_NotYet:     ldy lvlObjNum
                 jmp InactivateObject
 
         ; Messages
-
 
 txtRadioInstallLaptop:
                 dc.b 34,"JEFF HERE. THIS MUST BE THE AI'S LINK. LET'S GET TO WORK.",34,0

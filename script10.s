@@ -14,6 +14,7 @@
                 dc.w Hazmat
                 dc.w HazmatLeave
                 dc.w DestroyComment
+                dc.w HackerFinal
 
         ; Finish escorting Jeff to old tunnels
         ;
@@ -274,6 +275,24 @@ DestroyComment: lda #$00
                 ldx #>txtDestroyComment
                 jmp SpeakLine
 
+        ; Jeff interaction if return to lab after installing laptop
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+HackerFinal:    lda actXH+ACTI_PLAYER
+                cmp #$84
+                bcc HF_TooFar
+                jsr AddQuestScore
+                lda #$00
+                sta actScriptF+2
+                lda #<txtHackerFinal
+                ldx #>txtHackerFinal
+                ldy #ACT_HACKER
+                jmp SpeakLine
+HF_TooFar:      rts
+
         ; Messages
 
 txtEnterOldTunnels:
@@ -311,5 +330,8 @@ txtHazmat:      dc.b 34,"THE MACHINE'S GOOD TO GO? I'M READY TOO.. I THINK. ANYT
 
 txtDestroyComment:
                 dc.b 34,"JEFF'S BEING VERY BRAVE. THE PLAN'S NOT WHAT I WOULD CALL SANE, BUT LIKE HIM I SEE LITTLE CHOICE.",34,0
+
+txtHackerFinal: dc.b 34,"HEY. YOU SHOULD BE KICKING JORMUNGANDR AND CONSTRUCT ASS, NOT CHECKING ON ME. I'VE NO WORRIES HERE. WELL, "
+                dc.b "EXCEPT WHETHER YOU'LL COME BACK ALIVE. TRY TO DO THAT, RIGHT? NOW GO KICK ASS.",34,0
 
                 checkscriptend

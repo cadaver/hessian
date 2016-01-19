@@ -450,10 +450,11 @@ ESF_StoreMode:  sta actAIMode,x
         ; Returns: -
         ; Modifies: various
 
+HF_Climbing:    jmp HF_NoJump
 HackerFollow:   ldx actIndex
                 lda actF1,x             ;Climbing = normal following
                 cmp #FR_CLIMB
-                bcs HF_NoJump
+                bcs HF_Climbing
                 lda actMB,x             ;Do not follow again until landed
                 lsr
                 bcs HF_NotInAir
@@ -463,8 +464,8 @@ HackerFollow:   ldx actIndex
 HF_Landing:     lda actMoveCtrl,x       ;Clear jump control when landing
                 and #$7f-JOY_UP
                 bpl HF_StoreMoveCtrl
-HF_NotInAir:    lda levelNum            ;Try to jump over pits in service tunnels
-                cmp #$04
+HF_NotInAir:    lda ECS_LoadedCharSet+1 ;Try to jump over pits in service tunnels
+                cmp #$05
                 bne HF_NoChasmJump
 
                 ldy actYH,x             ;Get block from current position
@@ -475,8 +476,12 @@ HF_NotInAir:    lda levelNum            ;Try to jump over pits in service tunnel
                 ldy actXH,x
                 lda (zpDestLo),y
 
+                cmp #109
+                beq HF_ChasmRight
                 cmp #156
                 beq HF_ChasmRight
+                cmp #110
+                beq HF_ChasmLeft
                 cmp #157
                 bne HF_NoJump
 HF_ChasmLeft:   lda actSX,x
