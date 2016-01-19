@@ -37,7 +37,7 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
 	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak level15.pak \
 	sprcommon.pak spritem.pak sprweapon.pak sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
-	sprsmallrobots.pak sprhazards.pak spranimals.pak sprmediumrobots.pak sprguard.pak sprheavyguard.pak \
+	sprsmallrobots.pak sprhazards.pak sprhazards2.pak spranimals.pak sprmediumrobots.pak sprguard.pak sprheavyguard.pak \
 	sprcombatrobot.pak sprlargewalker.pak sprlargetank.pak sprhighwalker.pak sprhazmat.pak \
 	sprserver.pak sprsecuritychief.pak sprrotordrone.pak sprlargespider.pak sprscientist.pak sprhacker.pak
 	maked64 hessian.d64 hessian.seq HESSIAN___________HE_2A 10
@@ -530,6 +530,9 @@ sprsmallrobots.pak: spr/smallrobots.spr
 
 sprhazards.pak: spr/hazards.spr
 	pchunk2 spr/hazards.spr sprhazards.pak
+
+sprhazards2.pak: spr/hazards2.spr
+	pchunk2 spr/hazards2.spr sprhazards2.pak
 
 spranimals.pak: spr/animals.spr
 	pchunk2 spr/animals.spr spranimals.pak
