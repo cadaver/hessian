@@ -463,6 +463,10 @@ UM_NoCounter:   ldy itemIndex
                 cmp #KEY_D
                 beq UM_DropItem
                 endif
+                if PURGE_TEST > 0
+                cmp #KEY_P
+                beq UM_PurgeFile
+                endif
 UM_ControlDone: rts
 UM_Heal:        ldy #ITEM_MEDKIT
                 skip2
@@ -505,9 +509,13 @@ UM_MoveDone:    rts
 
                 if DROP_ITEM_TEST > 0
 UM_DropItem:    lda itemIndex
-                sta temp5
                 ldx #ACTI_PLAYER
-                jmp DI_HasCapacity
+                jmp DI_ItemNumber
+                endif
+
+                if PURGE_TEST > 0
+UM_PurgeFile:   jsr PurgeOldestFile
+                jmp PostLoad
                 endif
 
 UM_MoveLeft:    jsr SelectPreviousItem

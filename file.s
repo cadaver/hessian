@@ -1,31 +1,30 @@
 C_MAP           = 0
 C_BLOCKS        = 1
-C_CUTSCENE      = 2
-C_FIRSTSPR      = 3
-C_COMMON        = 3
-C_ITEM          = 4
-C_WEAPON        = 5
-C_PLAYER_BOTTOM = 6
-C_PLAYER_BOTTOM_ARMOR = 7
-C_PLAYER_TOP    = 8
-C_PLAYER_TOP_ARMOR = 9
-C_SCIENTIST     = 10
-C_SMALLROBOTS   = 11
-C_MEDIUMROBOTS  = 12
-C_COMBATROBOT   = 13
-C_HAZARDS       = 14
-C_ROTORDRONE    = 15
-C_HACKER        = 16
-C_GUARD         = 17
-C_ANIMALS       = 18
-C_LARGESPIDER   = 19
-C_LARGEWALKER   = 20
-C_HEAVYGUARD    = 21
-C_SECURITYCHIEF = 22
-C_LARGETANK     = 23
-C_HIGHWALKER    = 24
-C_SERVER        = 25
-C_HAZMAT        = 26
+C_FIRSTSPR      = 2
+C_COMMON        = 2
+C_ITEM          = 3
+C_WEAPON        = 4
+C_PLAYER_BOTTOM = 5
+C_PLAYER_BOTTOM_ARMOR = 6
+C_PLAYER_TOP    = 7
+C_PLAYER_TOP_ARMOR = 8
+C_SCIENTIST     = 9
+C_SMALLROBOTS   = 10
+C_MEDIUMROBOTS  = 11
+C_COMBATROBOT   = 12
+C_HAZARDS       = 13
+C_ROTORDRONE    = 14
+C_HACKER        = 15
+C_GUARD         = 16
+C_ANIMALS       = 17
+C_LARGESPIDER   = 18
+C_LARGEWALKER   = 19
+C_HEAVYGUARD    = 20
+C_SECURITYCHIEF = 21
+C_LARGETANK     = 22
+C_HIGHWALKER    = 23
+C_SERVER        = 24
+C_HAZMAT        = 25
 
 C_FIRSTPURGEABLE = C_PLAYER_BOTTOM
 
@@ -83,21 +82,7 @@ LFR_WaitFire:   jsr GetControls
                 bcc LFR_WaitFire
                 jmp ClearPanelText
 
-LF_NoMemory:    lda #$01                        ;No memory, purge the oldest chunkfile
-                sta zpBitBuf
-                ldx #C_FIRSTPURGEABLE
-LF_PurgeLoop:   ;ldy fileHi,x                   ;No need to check for existence, as unloaded
-                ;beq LF_PurgeSkip               ;files will have zero age
-                ldy fileAge,x
-                cpy zpBitBuf
-                bcc LF_PurgeSkip
-                sty zpBitBuf
-                txa
-LF_PurgeSkip:   inx
-                cpx #MAX_CHUNKFILES
-                bcc LF_PurgeLoop
-                tay
-                jsr PurgeFile
+LF_NoMemory:    jsr PurgeOldestFile
                 beq LF_MemLoop                  ;PurgeFile returns with A=0
 
         ; Allocate & load a chunk-file. If no memory, purge unused files
@@ -208,6 +193,28 @@ PrintHexDigit_IsNumber:
                 jsr PrintPanelChar
                 rts
                 endif
+
+        ; Remove the least recently used chunk-file from memory
+        ;
+        ; Parameters: Y file number
+        ; Returns: A=0
+        ; Modifies: A,X,loader temp vars
+
+PurgeOldestFile:lda #$01
+                sta zpBitBuf
+                lda #C_FIRSTPURGEABLE
+                tax
+LF_PurgeLoop:   ;ldy fileHi,x                   ;No need to check for existence, as unloaded
+                ;beq LF_PurgeSkip               ;files will have zero age
+                ldy fileAge,x
+                cpy zpBitBuf
+                bcc LF_PurgeSkip
+                sty zpBitBuf
+                txa
+LF_PurgeSkip:   inx
+                cpx #MAX_CHUNKFILES
+                bcc LF_PurgeLoop
+                tay
 
         ; Remove a chunk-file from memory
         ;

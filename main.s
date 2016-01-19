@@ -1,4 +1,4 @@
-SHOW_FREE_MEMORY = 0
+SHOW_FREE_MEMORY = 1
 SHOW_BATTERY = 0
 SHOW_ACTOR_TIME = 0
 SHOW_SPRITESORT_TIME = 0
@@ -7,7 +7,8 @@ SHOW_PLAYROUTINE_TIME = 0
 SHOW_LEVELUPDATE_TIME = 0
 SHOW_SPRITEDEPACK_TIME = 0
 
-DROP_ITEM_TEST  = 0                             ;Drop a copy of current item to test actor save
+DROP_ITEM_TEST  = 0                             ;Drop (D key) a copy of current item to test actor save
+PURGE_TEST      = 0                             ;Purge (P key) the oldest chunk-file to test for memory use
 AMMO_CHEAT      = 0
 ALLQUESTITEMS_CHEAT = 0
 STARTITEM_CHEAT = 0                             ;Start with weapon & parts instead of empty inventory
