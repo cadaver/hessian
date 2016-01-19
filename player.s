@@ -940,6 +940,7 @@ LoadPlayerActorVars:
                 dex
                 bpl LoadPlayerActorVars
                 inx                             ;X=0
+                stx actAIMode+ACTI_PLAYER       ;Make sure player doesn't attempt to run an AI routine
                 jsr InitActor
                 jsr SetNotPersistent
                 lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE

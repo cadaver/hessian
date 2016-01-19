@@ -41,16 +41,16 @@ randomAreaStart:
                 include file.s
                 include math.s
                 include actor.s
+                include panel.s
+                include script.s
+                include level.s
                 include physics.s
                 include player.s
-                include enemy.s
                 include weapon.s
                 include bullet.s
                 include item.s
-                include panel.s
                 include ai.s
-                include script.s
-                include level.s
+                include enemy.s
 
 randomAreaEnd:
 
