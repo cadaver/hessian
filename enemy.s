@@ -199,9 +199,7 @@ MFC_Fall:       jsr FallingMotionCommon
 
 DestroyFlyingCraft:
                 stx temp6                       ;Spawn one explosion when starts to fall
-                lda #ACTI_FIRSTNPC              ;Use any free actors
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
+                jsr GetAnyFreeActor
                 bcc DFC_NoRoom
                 jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
                 tya
@@ -495,9 +493,7 @@ DestroyRock:    lda #SFX_SHOTGUN
                 bcs RemoveRock
                 lda #-2*8
                 jsr MR_RandomizeSmallerRock
-                lda #ACTI_FIRSTNPC
-                ldy #ACTI_LASTNPC
-                jsr GetFreeActor
+                jsr GetFreeNPC
                 bcc MR_NoSpawn
                 lda #ACT_ROCK
                 jsr SpawnActor
@@ -950,9 +946,7 @@ ExplodeEnemy4_Ofs15:
                 jsr Random
                 sta temp8                       ;Initial shape
 EE_ScrapMetalLoop:
-                lda #ACTI_FIRSTNPC              ;Use any free actors
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
+                jsr GetAnyFreeActor
                 bcc EE_ScrapMetalDone
                 lda #ACT_SCRAPMETAL
                 jsr SpawnActor
@@ -1018,9 +1012,7 @@ MoveExplosionGenerator:
                 bpl MEG_NoNewExplosion
                 lda #MULTIEXPLOSION_DELAY
                 sta actFd,x
-                lda #ACTI_FIRSTNPC              ;Use any free actors
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
+                jsr GetAnyFreeActor
                 bcc MEG_NoRoom                  ;If no room, simply explode self
                 jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
                 lda actSX,x

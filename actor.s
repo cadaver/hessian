@@ -1999,6 +1999,9 @@ RA_Done:        rts                             ;actor removed on the same frame
         ; Returns: C=1 free actor found (returned in Y), C=0 no free actor
         ; Modifies: A,Y
 
+GetAnyFreeActor:lda #ACTI_FIRSTNPC              ;Use any free actors
+                ldy #ACTI_LASTNPCBULLET
+                bne GetFreeActor
 GetFreeNPC:     lda #ACTI_FIRSTNPC
                 ldy #ACTI_LASTNPC
 GetFreeActor:   sta GFA_Cmp+1

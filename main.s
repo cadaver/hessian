@@ -1,4 +1,4 @@
-SHOW_FREE_MEMORY = 0
+SHOW_FREE_MEMORY = 1
 SHOW_BATTERY = 0
 SHOW_ACTOR_TIME = 0
 SHOW_SPRITESORT_TIME = 0
@@ -72,6 +72,7 @@ randomAreaEnd:
         ; Aligned data
 
                 include aligneddata.s
+
 
         ; Dynamic allocation area begin
 

@@ -356,9 +356,7 @@ MRD_ContinueFall:
                 adc actTime,x
                 sta actTime,x
                 bcc MRD_NoExplosion
-                lda #ACTI_FIRSTNPC              ;Use any free actors
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
+                jsr GetAnyFreeActor
                 bcc MRD_NoExplosion
                 jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
                 tya

@@ -269,3 +269,31 @@ DecodeBit:      pha
                 tay
 DB_Value:       lda #$00
 SameLevel:      rts
+
+        ; Get text resource address (load if necessary)
+        ;
+        ; Parameters: A text file number, X text number
+        ; Returns: A,X address
+        ; Modifies: A,X,sprFileLo-Hi,frameLo
+
+GetTextAddress: sty frameLo
+                tay
+                lda fileHi,y
+                bne GTA_Loaded
+                jsr LoadSpriteFile              ;Ok to reuse
+GTA_Loaded:     sta sprFileHi
+                lda fileLo,y
+                sta sprFileLo
+                lda #$00
+                sta fileAge,y
+                txa
+                asl
+                tay
+                lda (sprFileLo),y
+                pha
+                iny
+                lda (sprFileLo),y
+                tax
+                pla
+                ldy frameLo
+                rts

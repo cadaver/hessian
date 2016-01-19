@@ -206,9 +206,7 @@ MJ_MinesUpDone: jmp MJ_MoveShake
 
 MJ_SpawnMines:  lda actAttackD,x
                 bne MJ_SpawnMineDelay
-                lda #ACTI_FIRSTNPC
-                ldy #ACTI_LASTNPC
-                jsr GetFreeActor
+                jsr GetFreeNPC
                 bcc MJ_NoRoomForMine
                 lda #ACT_ROLLINGMINE
                 jsr SpawnActor
@@ -244,9 +242,7 @@ MJ_Destroy:     jsr Random
                 adc actFall,x
                 sta actFall,x
                 bcc MJ_NoExplosion
-                lda #ACTI_FIRSTNPC              ;Use any free actors for explosions
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
+                jsr GetAnyFreeActor
                 bcc MJ_NoExplosion
                 inc screenPos
                 inc screenPos

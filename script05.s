@@ -158,9 +158,7 @@ RL_NoSound:     jsr Random
                 pla
                 cmp #$80
                 bcs RL_NoNewExplosion
-                lda #ACTI_FIRSTNPC              ;Use any free actors for explosions
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
+                jsr GetAnyFreeActor
                 bcc RL_NoNewExplosion
                 tya
                 tax
@@ -249,9 +247,7 @@ MLS_DyingNoFlash:
                 pla                             ;Spawn explosions randomly while retreating
                 cmp #$20
                 bcs MLS_NoDyingExplosion
-                lda #ACTI_FIRSTNPC              ;Use any free actors
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
+                jsr GetAnyFreeActor
                 bcc MLS_NoDyingExplosion
                 jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
                 tya
@@ -418,9 +414,7 @@ MLS_Explode:    lda #MUSIC_CAVES
                 sta temp7                       ;Initial base X-speed
                 lda #0
                 sta temp8                       ;Initial shape
-MLS_ChunkLoop:  lda #ACTI_FIRSTNPC              ;Use any free actors
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
+MLS_ChunkLoop:  jsr GetAnyFreeActor
                 bcc MLS_ChunkDone
                 lda #ACT_SPIDERCHUNK
                 jsr SpawnActor

@@ -105,8 +105,7 @@ S1_WaitFrame:   inc scriptVariable              ;Special case wait 1 frame (load
 S1_IntroDialogue:
                 inc scriptVariable
                 ldy #ACT_SCIENTIST1
-                lda #<txtIntroDialogue
-                ldx #>txtIntroDialogue
+                gettext 0,0
                 jmp SpeakLine
 
 S1_SetAttack:   jsr S1_LimitControl
@@ -162,8 +161,7 @@ S1_Dying:       jsr S1_LimitControl
                 lda #JOY_DOWN
                 sta actMoveCtrl,x
                 ldy #ACT_SCIENTIST1
-                lda #<txtDyingDialogue
-                ldx #>txtDyingDialogue
+                gettext 0,1
                 jmp SpeakLine
 S1_DieAgain:    inc scriptVariable
                 lda #DEATH_FLICKER_DELAY+25
@@ -225,20 +223,17 @@ S2_JumpTbl:     dc.w S2_Dialogue1
 S2_Dialogue1:   jsr AddQuestScore
                 inc scriptVariable
                 ldy #ACT_SCIENTIST2
-                lda #<txtHideoutDialogue1
-                ldx #>txtHideoutDialogue1
+                gettext 0,2
                 jmp SpeakLine
 
 S2_Dialogue2:   inc scriptVariable
                 ldy #ACT_SCIENTIST3
-                lda #<txtHideoutDialogue2
-                ldx #>txtHideoutDialogue2
+                gettext 0,3
                 jmp SpeakLine
 
 S2_Dialogue3:   inc scriptVariable
                 ldy #ACT_SCIENTIST2
-                lda #<txtHideoutDialogue3
-                ldx #>txtHideoutDialogue3
+                gettext 0,4
                 jmp SpeakLine
 
 S2_Dialogue4:   lda #ITEM_COMMGEAR
@@ -262,8 +257,7 @@ S2_Dialogue4:   lda #ITEM_COMMGEAR
                 lda #$00
                 sta actScriptF                  ;No more script exec here
                 ldy #ACT_SCIENTIST2
-                lda #<txtHideoutDialogue4
-                ldx #>txtHideoutDialogue4
+                gettext 0,5
                 jmp SpeakLine
 
         ; Radio speech for upper labs entrance
@@ -295,28 +289,6 @@ npcWpn:         dc.b $00,$00,$00
 npcOrg:         dc.b 1+ORG_GLOBAL,1+ORG_GLOBAL,4+ORG_GLOBAL
 
         ; Texts
-
-txtIntroDialogue:
-                dc.b 34,"GOOD, YOU'RE ON YOUR FEET. I'M VIKTOR - WE NEED TO REACH THE OTHERS, WHO ARE HOLED UP ON THE PARKING GARAGE BOTTOM LEVEL. FOLLOW ME.",34,0
-txtDyingDialogue:
-                dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'LL NEED A PASSCARD WE USED TO LOCK UP THIS PLACE. "
-                dc.b "WATCH OUT FOR MORE OF THOSE BASTARDS.. AND ONE FINAL THING - THE NANOBOTS RUNNING YOUR BODY DEPEND ON BATTERY POWER. "
-                dc.b "DON'T RUN OUT.",34,0
-
-txtHideoutDialogue1:
-                dc.b 34,"I SEE VIKTOR DIDN'T MAKE IT. BUT YOU DID, THAT'S WHAT COUNTS. AMOS, NANOSURGEON. SHE'S LINDA, CYBER-PSYCHOLOGIST. "
-                dc.b "YOU'VE SEEN HOW OUR CREATIONS HAVE TURNED ON US. THERE'S A TOTAL COMMS BLACKOUT. WE'RE STUCK AND HELP IS UNLIKELY. "
-                dc.b "AS THE ONLY ENHANCED PERSON IN THIS ROOM, RIGHT NOW YOU'RE OUR BEST BET.",34,0
-txtHideoutDialogue2:
-                dc.b 34,"COMMON SENSE WOULD DICTATE WE ATTEMPT TO ESCAPE. BUT THESE MACHINES' HIGHLY COORDINATED ACTIONS "
-                dc.b "SUGGEST A CENTRAL AI, WHICH I DIDN'T KNOW WE HAD DEVELOPED. "
-                dc.b "THERE MAY BE MORE THAN OUR LIVES AT STAKE.",34,0
-txtHideoutDialogue3:
-                dc.b 34,"YES. WE MUST FIND OUT THEIR ULTIMATE AIM BEYOND JUST KILLING EVERYONE. "
-                dc.b "TAKE THIS SECURITY PASS TO ACCESS THE UPPER LABS, PLUS A WIRELESS CAMERA/RADIO "
-                dc.b "SET SO WE CAN STAY IN TOUCH.",34,0
-txtHideoutDialogue4:
-                dc.b 34,"GOOD LUCK.",34,0
 
 txtRadioUpperLabsIntro:
                 dc.b 34,"AMOS HERE. YOU'RE CLOSE TO THE UPPER LABS. SEE IF YOU CAN FIND ANY CLUES. "

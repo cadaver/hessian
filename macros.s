@@ -42,3 +42,11 @@ NEXT_VAR        set NEXT_VAR + {2}
                 dc.b >{1} | $80
                 dc.b <{1}
                 endm
+
+        ; Get text resource address
+
+                mac gettext
+                lda #{1}+C_TEXT00
+                ldx #{2}
+                jsr GetTextAddress
+                endm

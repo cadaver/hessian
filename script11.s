@@ -58,9 +58,7 @@ MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phas
 MEye_HasCPUs:   lda #1
 MEye_SpawnDroid:cmp numSpawned
                 bcc MEye_Wait
-                lda #ACTI_FIRSTNPC
-                ldy #ACTI_LASTNPC
-                jsr GetFreeActor
+                jsr GetFreeNPC
                 bcc MEye_Wait
                 lda actTime,x
                 bne MEye_DecSpawnDelay
@@ -163,9 +161,7 @@ MEye_Destroy:   lda #$00
                 adc actFall,x
                 sta actFall,x
                 bcc MEye_NoExplosion
-                lda #ACTI_FIRSTNPC              ;Use any free actors for explosions
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
+                jsr GetAnyFreeActor
                 bcc MEye_NoExplosion
                 lda #$01
                 sta Irq1_Bg3+1

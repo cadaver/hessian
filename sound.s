@@ -591,4 +591,3 @@ Play_SfxEnd:    sta ntChnSfx,x
                 sta ntChnWavePos,x
                 sta ntChnWaveOld,x
                 beq Play_SfxWaveChg
-
