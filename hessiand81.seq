@@ -72,6 +72,7 @@ write sprhighwalker.pak @8:44
 write sprserver.pak @8:45
 write sprhazmat.pak @8:46
 write text00.pak @8:47
+write text01.pak @8:48
 write script00.pak @8:50
 write script01.pak @8:51
 write script02.pak @8:52

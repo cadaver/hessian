@@ -23,7 +23,6 @@ elevatorSound   = toxinDelay
                 dc.w EscortScientistsFinish
                 dc.w HackerFollow
                 dc.w HackerFollowZone
-                dc.w RadioSecurityCenter
                 dc.w CombatRobotSaboteur
                 dc.w DestroyCombatRobotSaboteur
 
@@ -278,15 +277,11 @@ RadioUpperLabsElevator:
                 lda #<EP_RADIOSECURITYPASS
                 ldx #>EP_RADIOSECURITYPASS
                 jsr SetScript
-                lda #<txtRadioUpperLabsElevator
-                ldx #>txtRadioUpperLabsElevator
-RadioSpeechCommon:
-                pha
+                gettext 1,2
+RadioMsg:       ldy #ACT_PLAYER
+                jsr SpeakLine
                 lda #SFX_RADIO
-                jsr PlaySfx
-                pla
-                ldy #ACT_PLAYER
-                jmp SpeakLine
+                jmp PlaySfx
 RSP_HasItem:
 RULE_Wait:      rts
 
@@ -304,8 +299,7 @@ RadioServicePass:
                 jsr FindItem
                 bcs RSP_HasItem
                 ldy #ACT_PLAYER
-                lda #<txtRadioServicePass
-                ldx #>txtRadioServicePass
+                gettext 1,3
                 jmp SpeakLine
 
         ; Start escort scientists sequence
@@ -583,21 +577,6 @@ HFZ_Finished:   jsr HFZ_LevelOK
                 sta actScriptF+2
 HFZ_LevelFail:  jmp StopZoneScript              ;No zone script
 
-        ; Radio speech when entering security center
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-RadioSecurityCenter:
-                lda #PLOT_ELEVATOR1             ;If lower labs already visited/completed, skip this
-                jsr GetPlotBit
-                bne RSC_Skip
-                lda #<txtRadioSecurityCenter
-                ldx #>txtRadioSecurityCenter
-                jmp RadioSpeechCommon
-RSC_Skip:       rts
-
         ; Saboteur robot
         ;
         ; Parameters: -
@@ -698,19 +677,8 @@ txtElevatorLocked:
                 textjump txtLocked
 txtEnterCode:   dc.b "ENTER CODE",0
 
-txtRadioUpperLabsElevator:
-                dc.b 34,"AMOS HERE AGAIN. YOU NEED A WAY AROUND. "
-                dc.b "THE LASER IN THE BASEMENT MIGHT CUT THROUGH THE WALL IF ITS POWER IS BOOSTED. "
-                dc.b "OUR IT SPECIALIST JEFF COULD HAVE IDEAS. HE'S GOT A PRIVATE HIDEOUT "
-                dc.b "IN THE SERVICE TUNNELS. JUST WATCH OUT, HE'S A BIT STRANGE.",34,0
-txtRadioServicePass:
-                dc.b 34,"SEARCH THE ENTRANCE OFFICES FOR THE SERVICE PASS.",34,0
 txtEscortBegin: dc.b 34,"THERE YOU ARE. THE PLAN IS THIS: YOU'LL NEED A LUNG FILTER TO SURVIVE THE TUNNELS. THE OPERATING ROOM IS ON THE LOWER LABS "
                 dc.b "RIGHT SIDE, AT THE VERY BOTTOM. LEAD THE WAY.",34,0
 txtEscortFinish:dc.b 34,"WE'D NEVER HAVE MADE IT ALONE. NOW WE NEED TO SET UP. WE'LL CALL YOU WHEN IT'S TIME.",34,0
-txtRadioSecurityCenter:
-                dc.b 34,"AMOS HERE. GOOD THINKING, THE ARMORY SHOULD HOLD POWERFUL WEAPONRY. STAY ALERT THOUGH, "
-                dc.b "ANY GUARDS INSIDE MAY THINK YOU'VE GONE ROGUE. OR THE WORSE POSSIBILITY, THAT THEY'RE SOMEHOW "
-                dc.b "COMPLICIT.",34,0
 
                 checkscriptend

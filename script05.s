@@ -496,13 +496,12 @@ MA_StartPlayerSplash:
         ; Returns: -
         ; Modifies: various
 
-RadioLowerLabs:
-                lda #SFX_RADIO
-                jsr PlaySfx
-                lda #<txtRadioLowerLabs
+RadioLowerLabs: lda #<txtRadioLowerLabs
                 ldx #>txtRadioLowerLabs
-                ldy #ACT_PLAYER
-                jmp SpeakLine
+RadioMsg:       ldy #ACT_PLAYER
+                jsr SpeakLine
+                lda #SFX_RADIO
+                jmp PlaySfx
 
         ; Radio speech when entering caves
         ;
@@ -510,12 +509,9 @@ RadioLowerLabs:
         ; Returns: -
         ; Modifies: various
 
-RadioCaves:     lda #SFX_RADIO
-                jsr PlaySfx
-                lda #<txtRadioCaves
+RadioCaves:     lda #<txtRadioCaves
                 ldx #>txtRadioCaves
-                ldy #ACT_PLAYER
-                jmp SpeakLine
+                bne RadioMsg
 
         ; Variables
 
