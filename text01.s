@@ -42,7 +42,6 @@ text1_5:        dc.b "95% HUMAN. YOU CAME FOR THAT SIGNAL AMP FOR THE LASER, RIG
 text1_6:        dc.b 34,"IT'S A MESSED UP SITUATION ALL RIGHT. BUT WITH WHAT WE'RE DOING, "
                 dc.b "IT WAS BOUND TO HAPPEN SOONER OR LATER.",34,0
 
-
 dataEnd:
 
                 rend

@@ -1,0 +1,36 @@
+                processor 6502
+                org $0000
+                
+                dc.w dataEnd
+                dc.b 5
+
+                rorg $0000
+
+                dc.w text2_0
+                dc.w text2_1
+                dc.w text2_2
+                dc.w text2_3
+                dc.w text2_4
+
+text2_0:        dc.b 34,"IT'S AMOS. EXCELLENT WORK. WITH LUCK, THESE CAVES LEAD YOU TO THE LOWER LABS. ONCE THERE, "
+                dc.b "SEE IF YOU CAN UNLOCK THE ELEVATOR. I'D TRY THE SERVER ROOM. DON'T BE ALARMED IF YOU SEE "
+                dc.b "UNUSUAL CAVE DWELLERS. SOME STRONGLY MUTAGENIC CHEMICALS MAY HAVE LEAKED.",34,0
+
+text2_1:        dc.b 34,"LINDA HERE. WE GOT JEFF TO HELP - HE MANAGED TO DECRYPT SOME OF THE MACHINES' "
+                dc.b "COMMUNICATIONS. THEIR ACTIVITY IS FOCUSED ON THE TUNNELS THAT LEAD FURTHER BELOW "
+                dc.b "FROM THE LOWER LABS. THEY'VE BUILT SOMETHING CALLED "
+                dc.b "'JORMUNGANDR.' THAT DOESN'T SOUND GOOD. THE AIR DOWN THERE IS TOXIC. "
+                dc.b "WE MUST FIGURE OUT HOW TO PROCEED. MEANWHILE, YOU JUST GET THE ELEVATOR WORKING.",34,0
+
+text2_2:        dc.b 34,"HEY. I APPRECIATE YOU CHECKING ON ME. THIS PLACE IS SECURE SO FAR. "
+                dc.b "I'VE FIGURED OUT THE AI'S APPROXIMATE LOCATION. RIGHT SIDE OF THIS "
+                dc.b "COMPLEX, UNDER THE BIO-DOME. THEN, ANOTHER THING I CAME ACROSS ARE THE SO-CALLED 'OLD TUNNELS' "
+                dc.b "WHICH ALSO BRANCH OFF FROM THE LOWER LABS. HAVEN'T SEEN MACHINE TRAFFIC FROM "
+                dc.b "THERE AT ALL. COULD BE THEIR BLIND SPOT.",34,0
+
+text2_3:        dc.b 34,"BUT GO AND TAKE CARE OF THOSE SCIENTISTS NOW. THEY'RE NOT EXACTLY SAFE.",34,0
+
+text2_4:        dc.b 34,"YOU'VE GOT THE OLD TUNNELS PASS? I THINK WE SHOULD HEAD THERE IMMEDIATELY.",34,0
+
+dataEnd:
+                rend

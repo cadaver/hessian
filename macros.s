@@ -46,7 +46,7 @@ NEXT_VAR        set NEXT_VAR + {2}
         ; Get text resource address
 
                 mac gettext
-                lda #{1}+C_TEXT00
-                ldx #{2}
+                lda #>{1}+C_TEXT00
+                ldx #<{1}
                 jsr GetTextAddress
                 endm

@@ -1,34 +1,31 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 2, early interactions and first boss
+        ; Script 2, early interactions and first bosses
+
+CHUNK_DURATION = 40
 
                 org scriptCodeStart
-
-RECYCLER_ITEM_FIRST = ITEM_PISTOL
-RECYCLER_ITEM_LAST = ITEM_ARMOR
-MAX_RECYCLER_ITEMS = 10
-RECYCLER_MOVEDELAY = 8
-txtDigits       = actLo
-txtCount        = txtDigits-1
-recyclerItemList = screen2
-recyclerSelection = menuCounter
-recyclerListLength = wpnLo
-originalItem    = wpnHi
-currentIndex    = wpnBits
 
                 dc.w GameStart
                 dc.w Scientist1
                 dc.w Scientist2
                 dc.w RadioUpperLabsEntrance
                 dc.w RadioSecurityCenter
-                dc.w RecyclingStation
                 dc.w MoveRotorDrone
                 dc.w DestroyRotorDrone
                 dc.w Hacker
                 dc.w Hacker2
-                dc.w Hacker3
-                dc.w Hacker4
+                dc.w InstallAmplifier
+                dc.w RunLaser
+                dc.w SwitchGenerator
+                dc.w SwitchLaser
+                dc.w MoveGenerator
+                dc.w MoveLargeSpider
+                dc.w OpenWall
+                dc.w MoveAcid
+                dc.w RadioCaves
+                dc.w RadioLowerLabs
 
         ; Finalize game start. Create persistent NPCs to the leveldata and randomize entry codes
         ;
@@ -125,7 +122,7 @@ S1_WaitFrame:   inc scriptVariable              ;Special case wait 1 frame (load
 S1_IntroDialogue:
                 inc scriptVariable
                 ldy #ACT_SCIENTIST1
-                gettext 0,0
+                gettext TEXT_WAREHOUSE1
                 jmp SpeakLine
 
 S1_SetAttack:   jsr S1_LimitControl
@@ -181,7 +178,7 @@ S1_Dying:       jsr S1_LimitControl
                 lda #JOY_DOWN
                 sta actMoveCtrl,x
                 ldy #ACT_SCIENTIST1
-                gettext 0,1
+                gettext TEXT_WAREHOUSE2
                 jmp SpeakLine
 S1_DieAgain:    inc scriptVariable
                 lda #DEATH_FLICKER_DELAY+25
@@ -243,17 +240,17 @@ S2_JumpTbl:     dc.w S2_Dialogue1
 S2_Dialogue1:   jsr AddQuestScore
                 inc scriptVariable
                 ldy #ACT_SCIENTIST2
-                gettext 0,2
+                gettext TEXT_PARKINGGARAGE1
                 jmp SpeakLine
 
 S2_Dialogue2:   inc scriptVariable
                 ldy #ACT_SCIENTIST3
-                gettext 0,3
+                gettext TEXT_PARKINGGARAGE2
                 jmp SpeakLine
 
 S2_Dialogue3:   inc scriptVariable
                 ldy #ACT_SCIENTIST2
-                gettext 0,4
+                gettext TEXT_PARKINGGARAGE3
                 jmp SpeakLine
 
 S2_Dialogue4:   lda #ITEM_COMMGEAR
@@ -277,7 +274,7 @@ S2_Dialogue4:   lda #ITEM_COMMGEAR
                 lda #$00
                 sta actScriptF                  ;No more script exec here
                 ldy #ACT_SCIENTIST2
-                gettext 0,5
+                gettext TEXT_PARKINGGARAGE4
                 jmp SpeakLine
 
         ; Radio speech for upper labs entrance
@@ -290,7 +287,7 @@ RadioUpperLabsEntrance:
                 ldy #ITEM_SECURITYPASS
                 jsr FindItem
                 bcc RULI_NoPass
-                gettext 1,0
+                gettext TEXT_ENTERUPPERLABS
 RadioMsg:       ldy #ACT_PLAYER
                 jsr SpeakLine
                 lda #SFX_RADIO
@@ -309,268 +306,9 @@ RadioSecurityCenter:
                 lda #PLOT_ELEVATOR1             ;If lower labs already visited/completed, skip this
                 jsr GetPlotBit
                 bne RSC_Skip
-                gettext 1,1
+                gettext TEXT_ENTERSECURITYCENTER
                 jmp RadioMsg
 RSC_Skip:       rts
-
-        ; Recycling station script routine
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-RecyclingStation:
-                ldy itemIndex
-                sty originalItem
-                ldy #RECYCLER_ITEM_FIRST
-                ldx #$00
-                stx txtDigits+3
-RS_FindItems:   cpy #ITEM_FIRST_CONSUMABLE
-                bcs RS_ItemOK
-                jsr FindItem                    ;For weapons, check that is currently held in inventory
-                bcc RS_NextItem                 ;(recycler only "sells" ammo, not weapons)
-RS_ItemOK:      lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
-                beq RS_NextItem
-                tya
-                sta recyclerItemList,x
-                inx                             ;If using "all items" cheat, the list could be exceeded
-                cpx #MAX_RECYCLER_ITEMS         ;Simply cut it in this case
-                bcs RS_ListDone
-RS_NextItem:    iny
-                cpy #RECYCLER_ITEM_LAST+1
-                bcc RS_FindItems
-RS_ListDone:    lda #$ff
-                sta recyclerItemList,x          ;Write endmark
-                sta menuMoveDelay               ;Disable controls until joystick centered
-                stx recyclerListLength
-                jsr BlankScreen
-                lda #$02
-                sta screen                      ;Set text screen mode
-                lda #$0f
-                sta scrollX
-                ldx #$00
-                stx recyclerSelection
-                stx SL_CSSScrollY+1
-                stx Irq1_Bg1+1
-RS_ClearScreenLoop:lda #$20
-                sta screen1,x
-                sta screen1+$100,x
-                sta screen1+$200,x
-                sta screen1+SCROLLROWS*40-$100,x
-                lda #$01
-                sta colors,x
-                sta colors+$100,x
-                sta colors+$200,x
-                sta colors+SCROLLROWS*40-$100,x
-                inx
-                bne RS_ClearScreenLoop
-                lda #9
-                sta temp1
-                lda #3
-                sta temp2
-                lda #<txtRecycler
-                ldx #>txtRecycler
-                jsr PrintText
-                lda #0
-                sta currentIndex
-                lda #5
-                sta temp2
-RS_PrintItemsLoop:
-                lda #10
-                sta temp1
-                ldx currentIndex
-                lda recyclerItemList,x
-                bmi RS_PrintExit
-                jsr GetItemName
-                jsr PrintText
-                lda #26
-                sta temp1
-                ldx currentIndex
-                ldy recyclerItemList,x
-                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
-                jsr ConvertDigits
-                ldx #0
-RS_FindNonZero: lda txtDigits,x
-                cmp #$30
-                bne RS_FindNonZeroFound
-                lda #$20
-                sta txtDigits,x
-                sta txtDigits-1,x
-                inx
-                bne RS_FindNonZero
-RS_FindNonZeroFound:
-                lda #"+"
-                sta txtDigits-1,x
-                lda #<txtCount
-                ldx #>txtCount
-                jsr PrintText
-                inc temp2
-                inc currentIndex
-                bne RS_PrintItemsLoop
-RS_PrintExit:   lda #<txtExit
-                ldx #>txtExit
-                jsr PrintText
-                lda #9
-                sta temp1
-                lda #17
-                sta temp2
-                lda #<txtParts
-                ldx #>txtParts
-                jsr PrintText
-                lda #23
-                sta temp1
-                lda #<txtCost
-                ldx #>txtCost
-                jsr PrintText
-RS_Redraw:      lda #$20
-RS_ArrowLastPos:sta screen1
-                lda #8
-                sta temp1
-                lda recyclerSelection
-                clc
-                adc #5
-                sta temp2
-                lda #<txtArrow
-                ldx #>txtArrow
-                jsr PrintText
-                lda zpDestLo
-                sta RS_ArrowLastPos+1
-                lda zpDestHi
-                sta RS_ArrowLastPos+2
-                lda #15
-                sta temp1
-                lda #17
-                sta temp2
-                lda invCount+ITEM_PARTS-1
-                cmp #NO_ITEM_COUNT
-                adc #$00
-                sta RS_NumParts+1
-                jsr Print3Digits
-                lda #28
-                sta temp1
-                lda #$00
-                sta reload                      ;Cancel any reloading so that ammo can be shown
-                ldx recyclerSelection
-                ldy recyclerItemList,x
-                bmi RS_ZeroCost
-                sty itemIndex
-                jsr SetPanelRedrawItemAmmo
-                lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
-RS_ZeroCost:    jsr Print3Digits
-RS_ControlLoop: jsr FinishFrame
-                jsr GetControls
-                jsr GetFireClick
-                bcs RS_Action
-                lda recyclerSelection
-                ldx recyclerListLength
-                jsr RS_Control
-                sta recyclerSelection
-                bcs RS_Redraw
-                lda keyType
-                bmi RS_ControlLoop
-RS_Exit:        ldy originalItem
-                sty itemIndex
-                jsr SetPanelRedrawItemAmmo
-                ldy lvlObjNum                   ;Allow immediate re-entry
-                jsr InactivateObject
-                jmp CenterPlayer
-RS_Action:      lda recyclerSelection
-                cmp recyclerListLength
-                bne RS_Buy
-                lda #SFX_SELECT
-                jsr PlaySfx
-                jmp RS_Exit
-RS_Buy:         ldy itemIndex
-RS_NumParts:    lda #$00
-                cmp recyclerCostTbl-RECYCLER_ITEM_FIRST,y
-                bcc RS_BuyFail
-                lda recyclerCountTbl-RECYCLER_ITEM_FIRST,y
-                tax
-                tya
-                jsr AddItem
-                bcc RS_BuyFail
-                ldy itemIndex
-                lda recyclerCostTbl-RECYCLER_ITEM_FIRST,y
-                ldy #ITEM_PARTS
-                jsr DecreaseAmmo
-                lda #SFX_EMP
-                jsr PlaySfx
-                jmp RS_Redraw
-RS_BuyFail:     lda #SFX_DAMAGE
-                jsr PlaySfx
-                jmp RS_ControlLoop
-
-        ; Print 8-bit number in A
-
-Print3Digits:   jsr ConvertDigits
-                lda #<txtDigits
-                ldx #>txtDigits
-                jmp PrintText
-
-        ; Convert 3 digits to a printable string
-
-ConvertDigits:  jsr ConvertToBCD8
-                ldx #$00
-                lda temp7
-                jsr StoreDigit
-                lda temp6
-                pha
-                lsr
-                lsr
-                lsr
-                lsr
-                jsr StoreDigit
-                pla
-StoreDigit:     and #$0f
-                ora #$30
-                sta txtDigits,x
-                inx
-                rts
-
-        ; Recycler menu control
-
-RS_Control:     tay
-                stx temp6
-                ldx menuMoveDelay
-                beq RSC_NoDelay
-                bpl RSC_Decrement
-RSC_InitialDelay:ldx joystick
-                bne RSC_ContinueDelay
-                stx menuMoveDelay
-RSC_ContinueDelay:
-                rts
-RSC_Decrement:  dec menuMoveDelay
-                rts
-RSC_NoDelay:    lda joystick
-                lsr
-                bcc RSC_NotUp
-                dey
-                bpl RSC_HasMove
-                ldy temp6
-RSC_HasMove:    lda #SFX_SELECT
-                jsr PlaySfx
-                ldx #RECYCLER_MOVEDELAY
-                lda joystick
-                cmp prevJoy
-                bne RSC_NormalDelay
-                dex
-                dex
-                dex
-RSC_NormalDelay:stx menuMoveDelay
-                sec
-                tya
-                rts
-RSC_NoMove:     clc
-                tya
-                rts
-RSC_NotUp:      lsr
-                bcc RSC_NoMove
-                iny
-                cpy temp6
-                bcc RSC_HasMove
-                beq RSC_HasMove
-                ldy #$00
-                beq RSC_HasMove
 
         ; Rotor drone boss move routine
         ;
@@ -674,7 +412,7 @@ DestroyRotorDrone:
 
 Hacker:         jsr CheckDistance
                 jsr AddQuestScore
-                gettext 1,5
+                gettext TEXT_HACKER1PERCENT
                 sta zpDestLo
                 stx zpDestHi
 H_Random:       jsr Random
@@ -686,7 +424,7 @@ H_Random:       jsr Random
                 sta (zpDestLo),y                ;Modify text resource
                 lda #<EP_HACKER2
                 sta actScriptEP+2               ;Set 2nd script
-                gettext 1,4
+                gettext TEXT_HACKER1
 H_SpeakCommon:  ldy #ACT_HACKER
                 jmp SpeakLine
 
@@ -712,100 +450,502 @@ Hacker2:        ldy #ITEM_AMPLIFIER
                 bcs H_NoItem
                 lda #$00                        ;No more scripts for now
                 sta actScriptF+2
-                gettext 1,6
-                bne H_SpeakCommon
+                gettext TEXT_HACKER2
+                jmp H_SpeakCommon
 
-        ; Hacker script routine 3 (after lower labs server room)
+        ; Switch generator script routine
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-Hacker3:        jsr CheckDistance
-                jsr AddQuestScore
-                lda #<EP_HACKER4
-                sta actScriptEP+2
-                if SKIP_PLOT > 0
-                lda #PLOT_ESCORTCOMPLETE
-                jsr SetPlotBit
-                lda #PLOT_ELEVATOR1
-                jsr SetPlotBit
-                endif
-                lda #<txtHacker3
-                ldx #>txtHacker3
-                bne H_SpeakCommon
-
-        ; Hacker script routine 4 (going to old tunnels)
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-Hacker4:        jsr CheckDistance
-                lda #PLOT_ESCORTCOMPLETE
+SwitchGenerator:lda #PLOT_GENERATOR
                 jsr GetPlotBit
-                bne H4_Ready
-                lda #$00                        ;No more scripts for now
-                sta actScriptF+2
-                lda #<txtHacker4a
-                ldx #>txtHacker4a
-                jmp H_SpeakCommon
-H4_Ready:       lda #PLOT_LOWERLABSNOAIR        ;If late in the game, the sabotage
-                jsr GetPlotBit                  ;must first be dealt with
-                bne H4_Unsafe
-                ldy #ITEM_OLDTUNNELSPASS
-                jsr FindItem
-                bcs H4_HasPass
-H4_Unsafe:      rts
-H4_HasPass:     lda #PLOT_HIDEOUTOPEN           ;Can not return to hideout
-                jsr ClearPlotBit
-                lda #<EP_HACKERFOLLOW
-                sta actScriptEP+2
-                lda #>EP_HACKERFOLLOW
-                sta actScriptF+2
-                lda #<txtHacker4b
-                ldx #>txtHacker4b
-                jmp H_SpeakCommon
+                bne SG_AlreadyOn
+                lda #PLOT_GENERATOR
+                jsr SetPlotBit
+                jsr AddQuestScore
+                lda #<txtGeneratorOn
+                ldx #>txtGeneratorOn
+                ldy #REQUIREMENT_TEXT_DURATION
+                jmp PrintPanelText
+SL_Broken:
+SG_AlreadyOn:   rts
 
-        ; Recycler tables
+        ; Switch laser script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
 
-recyclerCountTbl:
-                dc.b 10                         ;Pistol
-                dc.b 8                          ;Shotgun
-                dc.b 30                         ;Auto rifle
-                dc.b 5                          ;Sniper rifle
-                dc.b 25                         ;Minigun
-                dc.b 30                         ;Flamethrower
-                dc.b 15                         ;Laser rifle
-                dc.b 10                         ;Plasma gun
-                dc.b 1                          ;EMP generator
-                dc.b 1                          ;Grenade launcher
-                dc.b 1                          ;Bazooka
-                dc.b 0                          ;Extinguisher
-                dc.b 1                          ;Grenade
-                dc.b 1                          ;Mine
-                dc.b 1                          ;Medikit
-                dc.b 1                          ;Battery
-                dc.b 100                        ;Armor
+SwitchLaser:    lda #PLOT_GENERATOR
+                jsr GetPlotBit
+                beq SL_NoPower
+                lda lvlObjB+$2b                 ;Wall already opened?
+                bmi SL_Broken
+                ldy #$0f
+                jsr ToggleObject
+                lda #PLOT_AMPINSTALLED
+                jsr GetPlotBit
+                bne SL_IsAmplified
+                rts
+SL_NoPower:     lda #<txtNoPower
+                ldx #>txtNoPower
+SL_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
+                jmp PrintPanelText
+SL_IsAmplified: lda #$00
+                sta laserTime
+                lda limitR
+                sec
+                sbc #10
+                sta mapX
+                lda #0
+                sta blockX
+                jsr RedrawScreen
+                ldx #MENU_INTERACTION
+                jsr SetMenuMode
+                lda #<EP_RUNLASER
+                ldx #>EP_RUNLASER
+                jmp SetScript
 
-recyclerCostTbl:
-                dc.b 10                         ;Pistol
-                dc.b 15                         ;Shotgun
-                dc.b 20                         ;Auto rifle
-                dc.b 20                         ;Sniper rifle
-                dc.b 25                         ;Minigun
-                dc.b 25                         ;Flamethrower
-                dc.b 25                         ;Laser rifle
-                dc.b 25                         ;Plasma gun
-                dc.b 20                         ;EMP generator
-                dc.b 25                         ;Grenade launcher
-                dc.b 30                         ;Bazooka
-                dc.b 0                          ;Extinguisher
-                dc.b 25                         ;Grenade
-                dc.b 30                         ;Mine
-                dc.b 40                         ;Medikit
-                dc.b 40                         ;Battery
-                dc.b 50                         ;Armor
+        ; Install amplifier script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+InstallAmplifier:
+                lda lvlObjB+$0e
+                bpl IA_NotOpen
+                lda lvlObjB+$0f
+                bmi IA_IsLive
+                jsr AddQuestScore
+                lda #SFX_POWERUP
+                jsr PlaySfx
+                lda #PLOT_AMPINSTALLED
+                jsr SetPlotBit
+                ldy #ITEM_AMPLIFIER
+                jsr RemoveItem
+                lda #<txtAmpInstalled
+                ldx #>txtAmpInstalled
+                jmp SL_TextCommon
+IA_IsLive:      lda #<txtCantInstall
+                ldx #>txtCantInstall
+                jsr SL_TextCommon
+                lda #ACTI_FIRSTPLRBULLET
+                ldy #ACTI_LASTPLRBULLET
+                jsr GetFreeActor
+                bcc IA_NoEffect
+                tya
+                tax
+                lda lvlObjX+$0e
+                sta actXH,x
+                lda lvlObjY+$0e
+                and #$7f
+                sta actYH,x
+                lda #$80
+                sta actXL,x
+                lda #$40
+                sta actYL,x
+                lda #ACT_EMP
+                sta actT,x
+                jsr InitActor
+                lda #COLOR_FLICKER
+                sta actFlash,x
+                lda #8
+                sta actTime,x
+                lda #0
+                sta actBulletDmgMod-ACTI_FIRSTPLRBULLET,x
+                jsr NoInterpolation
+IA_NoEffect:    ldx #ACTI_PLAYER
+                lda #DMG_PISTOL+NOMODIFY
+                jmp DamageSelf
+IA_NotOpen:     rts
+
+        ; Laser effect continuous script routine
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RunLaser:       lda #0
+                sta scrollSX                    ;Prevent scrolling by player position
+                inc laserTime
+                lda laserTime
+                cmp #80
+                bcc RL_Animate
+                beq RL_Explode
+                cmp #110
+                bcs RL_Finish
+                rts
+RL_Animate:     and #$01
+                tay
+                lda laserColorTbl,y
+                sta Irq1_Bg3+1
+                tya
+                bne RL_NoSound
+                lda #SFX_DAMAGE
+                jmp PlaySfx
+RL_NoSound:     jsr Random
+                pha
+                and #$01
+                sta shakeScreen
+                pla
+                cmp #$80
+                bcs RL_NoNewExplosion
+                jsr GetAnyFreeActor
+                bcc RL_NoNewExplosion
+                tya
+                tax
+                lda lvlObjX+$2b
+                sta actXH,x
+                lda lvlObjY+$2b
+                and #$7f
+                sta actYH,x
+                jsr Random
+                and #$7f
+                clc
+                adc #$40
+                sta actXL,x
+                jsr Random
+                and #$3f
+                sta actYL,x
+                lda #ACT_EXPLOSION
+                sta actT,x
+                jsr InitActor
+RL_NoNewExplosion:
+                rts
+RL_Explode:     ldy #$0f
+                jsr ToggleObject
+                ldy #$2b
+                jsr ToggleObject
+                jsr AddQuestScore
+                lda #SFX_EXPLOSION
+                jmp PlaySfx
+RL_Finish:      jsr StopScript
+                jsr SetMenuMode                 ;X=0 on return
+                jmp CenterPlayer
+
+        ; Generator (screen shake) move routine
+        ;
+        ; Parameters: X actor number
+        ; Returns: -
+        ; Modifies: various
+
+MoveGenerator:  lda #PLOT_GENERATOR
+                jsr GetPlotBit
+                beq MG_NotOn
+                inc actFd,x
+                lda actFd,x
+                and #$01
+                sta shakeScreen
+                inc actTime,x
+                lda actTime,x
+                cmp #$03
+                bcc MG_NoSound
+                lda #SFX_GENERATOR
+                jsr PlaySfx
+                lda #$00
+                sta actTime,x
+MG_NoSound:
+MG_NotOn:       rts
+
+        ; Large spider boss move routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveLargeSpider:lda actHp,x
+                bne MLS_Alive
+MLS_Dying:      lda actXH,x                     ;Reached the wall?
+                cmp #$3d
+                bne MLS_DyingNoWall
+                lda actXL,x
+                cmp #$60
+                bcs MLS_DyingNoWall
+                jmp MLS_Explode
+MLS_DyingNoWall:lda #<EP_OPENWALL               ;Wall script runs until spider no longer exists, then activates the wall object
+                ldx #>EP_OPENWALL
+                jsr SetScript
+                ldx actIndex
+                lda actFd,x
+                and #$08
+                beq MLS_DyingNoFlash
+                lda #$0c
+MLS_DyingNoFlash:
+                sta actFlash,x
+                jsr Random
+                pha
+                and #$01
+                sta shakeScreen
+                pla                             ;Spawn explosions randomly while retreating
+                cmp #$20
+                bcs MLS_NoDyingExplosion
+                jsr GetAnyFreeActor
+                bcc MLS_NoDyingExplosion
+                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
+                tya
+                tax
+                jsr ExplodeActor
+                jsr Random
+                jsr MoveActorX
+                dec actYH,x
+                jsr Random
+                sta actYL,x
+                ldx actIndex
+MLS_NoDyingExplosion:
+                lda #JOY_LEFT
+                bne MLS_ForcedMoveImmediate
+
+MLS_Alive:      lda #MUSIC_CAVES+1
+                jsr PlaySong
+                ldx actIndex
+MLS_Decision:   lda actXH,x                     ;Move forward when about to hit the left wall
+                cmp #$3d
+                bne MLS_NotAtWall
+                lda #JOY_RIGHT
+MLS_ForcedMoveImmediate:
+                pha
+                lda #$00                        ;After forced move, make next random decision
+                sta actTime,x                   ;immediately
+                pla
+                bne MLS_StoreMove
+MLS_NotAtWall:  cmp #$3e                        ;Do not perform retreat when almost at the wall
+                beq MLS_NotTooClose             ;(too easy to exploit)
+                ldy #ACTI_PLAYER
+                lda actHp,y                     ;If already dead, no need
+                beq MLS_NotTooClose
+                jsr GetActorDistance            ;Get X-distance to player
+                lda temp6
+                bne MLS_NotTooClose             ;If too close, retreat
+                lda actD+ACTI_PLAYER
+                asl
+                lda #JOY_LEFT
+                bcc MLS_ForcedMoveImmediate
+                asl
+                bne MLS_ForcedMoveImmediate
+MLS_NotTooClose:dec actTime,x
+                bpl MLS_Move
+                lda actAttackD+ACTI_PLAYER      ;If player is attacking now, always attack
+                beq MLS_NoForcedAttack          ;as the next decision
+                lda #$03
+                bne MLS_ForcedMove
+MLS_NoForcedAttack:
+                jsr Random
+                and #$03
+                cmp #$02                        ;Do not attack twice in a row
+                bcc MLS_ForcedMove
+                ldy actMoveCtrl,x
+                cpy #JOY_FIRE
+                beq MLS_NoForcedAttack          ;Rerandomize in that case
+MLS_ForcedMove: tay
+                jsr Random
+                and spiderDelayAndTbl,y
+                clc
+                adc #$10
+                sta actTime,x
+                lda spiderMoveTbl,y
+MLS_StoreMove:  sta actMoveCtrl,x
+MLS_Move:       jsr MoveGeneric
+                lda actXL+ACTI_PLAYER
+                cmp actXL,x
+                lda actXH+ACTI_PLAYER           ;Override direction: always face player
+                sbc actXH,x
+                sta actD,x
+                lda actSX,x
+                jsr Asr8
+                clc
+                adc actFd,x
+                bpl MLS_NotOverNeg
+                clc
+                adc #$60
+MLS_NotOverNeg: cmp #$60
+                bcc MLS_NotOverPos
+                sbc #$60
+MLS_NotOverPos: sta actFd,x
+                lsr
+                lsr
+                lsr
+                lsr
+                lsr
+                sta actF1,x
+                lda actMoveCtrl,x               ;About to launch acid?
+                cmp #JOY_FIRE
+                bne MLS_NoAttack
+                lda #2
+                sta actF1,x
+                lda #$40                        ;Reset walking animation after attack
+                sta actFd,x
+                lda actTime,x
+                cmp #8
+                bcs MLS_NoAttack
+                cmp #4
+                bcc MLS_NoAttack
+                php
+                inc actF1,x
+                plp
+                bne MLS_NoAttack
+
+MLS_Attack:     lda #ACTI_FIRSTNPCBULLET
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc MLS_NoAttack
+                lda #SFX_SHOTGUN
+                jsr PlaySfx
+                lda #<(-9*8)
+                sta temp3
+                lda #>(-9*8)
+                sta temp4
+                lda actD,x
+                bmi MLS_AttackLeft
+MLS_AttackRight:lda #<28*8
+                sta temp1
+                lda #>28*8
+                sta temp2
+                lda #ACT_ACID
+                jsr SpawnWithOffset
+                tya
+                tax
+                jsr InitActor
+                lda #6*8+4
+                sta actSX,x
+                lda actXH,x
+                sec
+                sbc actXH+ACTI_PLAYER           ;Player is on the right -> negative
+MLS_AttackCommon:
+                asl
+                asl
+                adc #-3*8-2
+                sta actSY,x
+                ldx actIndex
+MLS_NoAttack:   rts
+
+MLS_AttackLeft: lda #<(-28*8)
+                sta temp1
+                lda #>(-28*8)
+                sta temp2
+                lda #ACT_ACID
+                jsr SpawnWithOffset
+                tya
+                tax
+                jsr InitActor
+                lda #-6*8-4
+                sta actSX,x
+                lda actXH+ACTI_PLAYER
+                sec
+                sbc actXH,x                    ;Player is on the left -> negative
+                jmp MLS_AttackCommon
+
+MLS_Explode:    lda #MUSIC_CAVES
+                jsr PlaySong
+                ldx actIndex
+                lda #-15*8
+                jsr MoveActorYNoInterpolation
+                lda #6
+                ldy #$ff
+                jsr ExplodeEnemyMultiple
+                lda #-2*8-8
+                sta temp7                       ;Initial base X-speed
+                lda #0
+                sta temp8                       ;Initial shape
+MLS_ChunkLoop:  jsr GetAnyFreeActor
+                bcc MLS_ChunkDone
+                lda #ACT_SPIDERCHUNK
+                jsr SpawnActor
+                jsr Random
+                and #$0f                        ;Randomize upward + sideways speed
+                clc
+                adc #-7*8
+                sta actSY,y
+                jsr Random
+                and #$0f
+                clc
+                adc temp7
+                sta actSX,y
+                lda temp8
+                sta actF1,y
+                inc temp8
+                lda #CHUNK_DURATION
+                sta actTime,y
+                lda temp7
+                bpl MLS_ChunkDone
+                clc
+                adc #2*8
+                sta temp7
+                bne MLS_ChunkLoop
+MLS_ChunkDone:  rts
+
+        ; Script routine for opening the wall after spider death
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+OpenWall:       lda #ACT_LARGESPIDER            ;Run either when the spider has exploded, or player exits the zone
+                jsr FindActor
+                bcs OW_HasSpider
+                ldy #7
+                jsr ActivateObject
+                jmp StopScript
+MA_NotDone:
+OW_HasSpider:   rts
+
+        ; Acid move routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveAcid:       lda actHp+ACTI_PLAYER
+                beq MA_NoPlayerCollision
+                lda #DMG_ACID
+                jsr CollideAndDamagePlayer
+                bcs MA_StartPlayerSplash
+MA_NoPlayerCollision:
+                jsr FallingMotionCommon
+                tay                             ;Any collision -> splash
+                bne MA_StartSplash
+                lda #1
+                ldy #3
+                jmp LoopingAnimation
+MA_StartSplash: lda #ACT_WATERSPLASH
+                jsr TransformActor
+MA_SplashCommon:jsr NoInterpolation
+                lda #13
+                sta actFlash,x
+                lda #SFX_SPLASH
+                jmp PlaySfx
+MA_StartPlayerSplash:
+                lda #ACT_EXPLOSION
+                jsr TransformActor
+                lda #-4*8
+                jsr MoveActorY
+                lda #2
+                sta actF1,x
+                bne MA_SplashCommon
+
+        ; Radio speech when entering caves
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RadioCaves:     gettext TEXT_ENTERCAVES
+                jmp RadioMsg
+
+        ; Radio speech shortly after entering lower labs
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RadioLowerLabs: gettext TEXT_ENTERLOWERLABS
+                jmp RadioMsg
+
+        ; Variables
+
+laserTime:      dc.b 0
 
         ; Persistent NPC table
 
@@ -816,21 +956,18 @@ npcT:           dc.b ACT_SCIENTIST2, ACT_SCIENTIST3,ACT_HACKER
 npcWpn:         dc.b $00,$00,$00
 npcOrg:         dc.b 1+ORG_GLOBAL,1+ORG_GLOBAL,4+ORG_GLOBAL
 
+        ; Other tables
+
+spiderMoveTbl:  dc.b JOY_LEFT,JOY_RIGHT,JOY_FIRE,JOY_FIRE
+spiderDelayAndTbl:
+                dc.b $1f,$1f,$07,$07
+laserColorTbl:  dc.b $0c,$0e
+
         ; Messages
 
-txtRecycler:    dc.b "PART RECYCLING STATION",0
-txtExit:        dc.b "EXIT",0
-txtCost:        dc.b "COST",0
-txtArrow:       dc.b 62,0
-
-txtHacker3:     dc.b 34,"HEY. I APPRECIATE YOU CHECKING ON ME. THIS PLACE IS SECURE SO FAR. "
-                dc.b "I'VE FIGURED OUT THE AI'S APPROXIMATE LOCATION. RIGHT SIDE OF THIS "
-                dc.b "COMPLEX, UNDER THE BIO-DOME. THEN, ANOTHER THING I CAME ACROSS ARE THE SO-CALLED 'OLD TUNNELS' "
-                dc.b "WHICH ALSO BRANCH OFF FROM THE LOWER LABS. HAVEN'T SEEN MACHINE TRAFFIC FROM "
-                dc.b "THERE AT ALL. COULD BE THEIR BLIND SPOT.",34,0
-
-txtHacker4a:    dc.b 34,"BUT GO AND TAKE CARE OF THOSE SCIENTISTS NOW. THEY'RE NOT EXACTLY SAFE.",34,0
-
-txtHacker4b:    dc.b 34,"YOU'VE GOT THE OLD TUNNELS PASS? I THINK WE SHOULD HEAD THERE IMMEDIATELY.",34,0
+txtGeneratorOn: dc.b "GENERATOR ON",0
+txtNoPower:     dc.b "NO POWER",0
+txtAmpInstalled:dc.b "AMPLIFIER INSTALLED",0
+txtCantInstall: dc.b "TURN OFF TO INSTALL",0
 
                 checkscriptend
