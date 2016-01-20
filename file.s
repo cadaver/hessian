@@ -27,6 +27,13 @@ C_HIGHWALKER    = 24
 C_SERVER        = 25
 C_HAZMAT        = 26
 C_TEXT00        = 27
+C_TEXT01        = 28
+C_TEXT02        = 29
+C_TEXT03        = 30
+C_TEXT04        = 31
+C_TEXT05        = 32
+C_TEXT06        = 33
+C_TEXT07        = 34
 
 C_FIRSTPURGEABLE = C_PLAYER_BOTTOM
 

@@ -234,13 +234,13 @@ IR_UseFastLoad: cli
 
         ; Scorepanel screen/color data (overwritten)
 
-scorePanel:     dc.b 104
+scorePanel:     dc.b 103
                 ds.b 7,32
-                dc.b 104
+                dc.b 103
                 ds.b 22,32
-                dc.b 104
+                dc.b 103
                 ds.b 7,32
-                dc.b 104
+                dc.b 103
 
                 dc.b 96
                 ds.b 7,97
@@ -253,9 +253,8 @@ scorePanel:     dc.b 104
                 dc.b 121
                 ds.b 7,122
                 dc.b 101
-                ds.b 6,97
+                ds.b 7,97
                 dc.b 102
-                dc.b 103
 
 scorePanelColors:
                 dc.b 11
