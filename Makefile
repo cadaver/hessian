@@ -31,8 +31,7 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak \
 	script00.pak script01.pak script02.pak script03.pak script04.pak script05.pak script06.pak script07.pak \
-	script08.pak script09.pak script10.pak script11.pak script12.pak script13.pak \
-	text00.pak text01.pak text02.pak \
+	text00.pak text01.pak text02.pak text03.pak text04.pak text05.pak text06.pak text07.pak \
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
@@ -233,30 +232,6 @@ script07.pak: script07.s memory.s mainsym.s
 	dasm script07.s -oscript07.bin -f3
 	pack2 script07.bin script07.pak
 
-script08.pak: script08.s memory.s mainsym.s
-	dasm script08.s -oscript08.bin -f3
-	pack2 script08.bin script08.pak
-
-script09.pak: script09.s memory.s mainsym.s
-	dasm script09.s -oscript09.bin -f3
-	pack2 script09.bin script09.pak
-
-script10.pak: script10.s memory.s mainsym.s
-	dasm script10.s -oscript10.bin -f3
-	pack2 script10.bin script10.pak
-
-script11.pak: script11.s memory.s mainsym.s
-	dasm script11.s -oscript11.bin -f3
-	pack2 script11.bin script11.pak
-
-script12.pak: script12.s memory.s mainsym.s
-	dasm script12.s -oscript12.bin -f3
-	pack2 script12.bin script12.pak
-
-script13.pak: script13.s memory.s mainsym.s
-	dasm script13.s -oscript13.bin -f3
-	pack2 script13.bin script13.pak
-
 text00.pak: text00.s
 	dasm text00.s -otext00.bin -f3
 	pchunk2 text00.bin text00.pak
@@ -268,6 +243,26 @@ text01.pak: text01.s
 text02.pak: text02.s
 	dasm text02.s -otext02.bin -f3
 	pchunk2 text02.bin text02.pak
+
+text03.pak: text03.s
+	dasm text03.s -otext03.bin -f3
+	pchunk2 text03.bin text03.pak
+
+text04.pak: text04.s
+	dasm text04.s -otext04.bin -f3
+	pchunk2 text04.bin text04.pak
+
+text05.pak: text05.s
+	dasm text05.s -otext05.bin -f3
+	pchunk2 text05.bin text05.pak
+
+text06.pak: text06.s
+	dasm text06.s -otext06.bin -f3
+	pchunk2 text06.bin text06.pak
+
+text07.pak: text07.s
+	dasm text07.s -otext07.bin -f3
+	pchunk2 text07.bin text07.pak
 
 loadermusic.bin: music/hessianmusic.d64
 	d642prg music/hessianmusic.d64 loader.bin loadermusic.bin -h

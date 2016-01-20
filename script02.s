@@ -25,7 +25,6 @@ CHUNK_DURATION = 40
                 dc.w OpenWall
                 dc.w MoveAcid
                 dc.w RadioCaves
-                dc.w RadioLowerLabs
 
         ; Finalize game start. Create persistent NPCs to the leveldata and randomize entry codes
         ;
@@ -316,7 +315,9 @@ RSC_Skip:       rts
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveRotorDrone: lda actHp,x
+MoveRotorDrone: ldy #C_ROTORDRONE               ;Ensure sprite file on the same frame as first script exec
+                jsr EnsureSpriteFile            ;so that there isn't a pause -> frame -> pause sequence
+                lda actHp,x
                 beq MRD_Fall
                 lda #MUSIC_MAINTENANCE+1        ;If alive, play the bossfight music
                 jsr PlaySong
@@ -390,7 +391,7 @@ MRD_ContinueFall:
                 jsr ExplodeActor
                 ldx actIndex
 MRD_NoExplosion:
-                rts
+ESF_InMemory:   rts
 
         ; Rotor drone boss destroy routine
         ;
@@ -403,6 +404,11 @@ DestroyRotorDrone:
                 sta actSY,x
                 lda #PLOT_HIDEOUTOPEN
                 jmp SetPlotBit
+
+EnsureSpriteFile:
+                lda fileHi,y
+                bne ESF_InMemory
+                jmp LoadSpriteFile
 
         ; Hacker script routine (initial scene in the hideout)
         ;
@@ -656,7 +662,9 @@ MG_NotOn:       rts
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveLargeSpider:lda actHp,x
+MoveLargeSpider:ldy #C_LARGESPIDER
+                jsr EnsureSpriteFile
+                lda actHp,x
                 bne MLS_Alive
 MLS_Dying:      lda actXH,x                     ;Reached the wall?
                 cmp #$3d
@@ -932,15 +940,6 @@ MA_StartPlayerSplash:
         ; Modifies: various
 
 RadioCaves:     gettext TEXT_ENTERCAVES
-                jmp RadioMsg
-
-        ; Radio speech shortly after entering lower labs
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-RadioLowerLabs: gettext TEXT_ENTERLOWERLABS
                 jmp RadioMsg
 
         ; Variables

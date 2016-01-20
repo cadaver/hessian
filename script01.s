@@ -38,6 +38,8 @@ currentIndex    = wpnBits
                 dc.w HackerFollowZone
                 dc.w CombatRobotSaboteur
                 dc.w DestroyCombatRobotSaboteur
+                dc.w Hacker3
+                dc.w Hacker4
 
         ; Health recharger script routine
         ;
@@ -589,8 +591,7 @@ EscortScientistsStart:
                 bcs ESS_WaitUntilClose
                 jsr AddQuestScore
                 ldy #ACT_SCIENTIST2
-                lda #<txtEscortBegin
-                ldx #>txtEscortBegin
+                gettext TEXT_ESCORTBEGIN
                 jsr SpeakLine
                 lda #<EP_ESCORTSCIENTISTSREFRESH
                 sta actScriptEP
@@ -703,8 +704,7 @@ ESF_Stop:       cpy #ACT_SCIENTIST3
                 sta actScriptF
                 sta actScriptF+1
                 ldy #ACT_SCIENTIST2
-                lda #<txtEscortFinish
-                ldx #>txtEscortFinish
+                gettext TEXT_ESCORTFINISH
                 jmp SpeakLine
 ESF_NoDialogue: lda #AIMODE_TURNTO
 ESF_StoreMode:  sta actAIMode,x
@@ -912,6 +912,63 @@ DestroyCombatRobotSaboteur:
                 ldx temp6
                 jmp ExplodeEnemy3_Ofs24
 
+        ; Hacker script routine 3 (after lower labs server room)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+Hacker3:        jsr CheckDistance
+                jsr AddQuestScore
+                lda #<EP_HACKER4
+                sta actScriptEP+2
+                if SKIP_PLOT > 0
+                lda #PLOT_ESCORTCOMPLETE
+                jsr SetPlotBit
+                lda #PLOT_ELEVATOR1
+                jsr SetPlotBit
+                endif
+                gettext TEXT_HACKER3
+H_SpeakCommon:  ldy #ACT_HACKER
+                jmp SpeakLine
+
+CheckDistance:  lda actXH+ACTI_PLAYER
+                cmp #$1c
+                bcc CD_Close
+                pla                             ;If far, do not return
+                pla
+CD_Close:       rts
+
+        ; Hacker script routine 4 (going to old tunnels)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+Hacker4:        jsr CheckDistance
+                lda #PLOT_ESCORTCOMPLETE
+                jsr GetPlotBit
+                bne H4_Ready
+                lda #$00                        ;No more scripts for now
+                sta actScriptF+2
+                gettext TEXT_HACKER4A
+                jmp H_SpeakCommon
+H4_Ready:       lda #PLOT_LOWERLABSNOAIR        ;If late in the game, the sabotage
+                jsr GetPlotBit                  ;must first be dealt with
+                bne H4_Unsafe
+                ldy #ITEM_OLDTUNNELSPASS
+                jsr FindItem
+                bcs H4_HasPass
+H4_Unsafe:      rts
+H4_HasPass:     lda #PLOT_HIDEOUTOPEN           ;Can not return to hideout
+                jsr ClearPlotBit
+                lda #<EP_HACKERFOLLOW
+                sta actScriptEP+2
+                lda #>EP_HACKERFOLLOW
+                sta actScriptF+2
+                gettext TEXT_HACKER4B
+                jmp H_SpeakCommon
+                
         ; Elevator tables
 
 elevatorSrcLevel:
@@ -993,9 +1050,5 @@ txtRecycler:    dc.b "PART RECYCLING STATION",0
 txtExit:        dc.b "EXIT",0
 txtCost:        dc.b "COST",0
 txtArrow:       dc.b 62,0
-
-txtEscortBegin: dc.b 34,"THERE YOU ARE. THE PLAN IS THIS: YOU'LL NEED A LUNG FILTER TO SURVIVE THE TUNNELS. THE OPERATING ROOM IS ON THE LOWER LABS "
-                dc.b "RIGHT SIDE, AT THE VERY BOTTOM. LEAD THE WAY.",34,0
-txtEscortFinish:dc.b 34,"WE'D NEVER HAVE MADE IT ALONE. NOW WE NEED TO SET UP. WE'LL CALL YOU WHEN IT'S TIME.",34,0
 
                 checkscriptend
