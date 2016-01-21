@@ -93,7 +93,7 @@ itemDefaultMaxCount:
                 dc.b 60                         ;Pistol
                 dc.b 40                         ;Shotgun
                 dc.b 120                        ;Auto rifle
-                dc.b 20                         ;Sniper rifle
+                dc.b 30                         ;Sniper rifle
                 dc.b 100                        ;Minigun
                 dc.b 120                        ;Flamethrower
                 dc.b 60                         ;Laser rifle
