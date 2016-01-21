@@ -36,7 +36,7 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
 	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak level15.pak \
-	sprcommon.pak spritem.pak sprweapon.pak sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
+	sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
 	sprsmallrobots.pak sprhazards.pak sprhazards2.pak spranimals.pak sprmediumrobots.pak sprguard.pak sprheavyguard.pak \
 	sprcombatrobot.pak sprlargewalker.pak sprlargetank.pak sprhighwalker.pak sprhazmat.pak sprserver.pak sprsecuritychief.pak \
 	sprrotordrone.pak sprlargespider.pak sprscientist.pak sprhacker.pak
@@ -170,6 +170,12 @@ main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s enemy
 	gfxconv pics/loadpic.iff loadpic.dat -r -b0 -o -nc -ns
 	gfxconv pics/loadpic.iff loadpicscr.dat -r -b0 -o -nc -nb
 	gfxconv pics/loadpic.iff loadpiccol.dat -r -b0 -o -nb -ns
+	filesplit spr/common.spr sprcommon.hdr 2 1
+	filesplit spr/common.spr sprcommon.dat 3
+	filesplit spr/item.spr spritem.hdr 2 1
+	filesplit spr/item.spr spritem.dat 3
+	filesplit spr/weapon.spr sprweapon.hdr 2 1
+	filesplit spr/weapon.spr sprweapon.dat 3
 	dasm main.s -omain.bin -smain.tbl -f3
 	symbols main.tbl mainsym.s
 	symbols main.tbl >pagecross.txt
@@ -511,15 +517,6 @@ level15.pak: bg/world15.map bg/world15.lvo bg/world15.lva
 	pack2 bg/world15.lva level15_2.pak
 	pchunk2 bg/world15.map level15_3.pak
 	filejoin level15_1.pak+level15_2.pak+level15_3.pak level15.pak
-
-sprcommon.pak: spr/common.spr
-	pchunk2 spr/common.spr sprcommon.pak
-
-spritem.pak: spr/item.spr
-	pchunk2 spr/item.spr spritem.pak
-
-sprweapon.pak: spr/weapon.spr
-	pchunk2 spr/weapon.spr sprweapon.pak
 
 sprplayert.pak: spr/playert.spr
 	pchunk2 spr/playert.spr sprplayert.pak

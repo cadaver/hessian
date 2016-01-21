@@ -154,7 +154,7 @@ AF_Skip:        dex
                 if SHOW_FREE_MEMORY > 0
                 jsr PrintFreeMem
                 endif
-                ldx fileNumObjects,y
+LF_Relocate3:   ldx fileNumObjects,y
 LF_Relocate2:   txa
                 beq LF_RelocDone
                 ldy #$00

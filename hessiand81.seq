@@ -46,9 +46,6 @@ write music09.pak @8:2a
 write music10.pak @8:2b
 write music11.pak @8:2c
 write music12.pak @8:2d
-write sprcommon.pak @8:2e
-write spritem.pak @8:2f
-write sprweapon.pak @8:30
 write sprplayerb.pak @8:31
 write sprplayerba.pak @8:32
 write sprplayert.pak @8:33

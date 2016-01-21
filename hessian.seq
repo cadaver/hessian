@@ -1,10 +1,7 @@
 options.bin 66
-sprcommon.pak 2E
-spritem.pak 2F
-sprweapon.pak 30
 script00.pak 50
-music01.pak 22
 logo.pak 5E
+music01.pak 22
 savelist.bin 65
 emptysave.bin 60
 emptysave.bin 61

@@ -73,6 +73,11 @@ randomAreaEnd:
 
                 include aligneddata.s
 
+        ; Preloaded spritefiles that will never be purged
+
+sprCommon:      incbin sprcommon.dat
+sprItem:        incbin spritem.dat
+sprWeapon:      incbin sprweapon.dat
 
         ; Dynamic allocation area begin
 

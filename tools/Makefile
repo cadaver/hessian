@@ -1,4 +1,4 @@
-all: d642prg.exe filejoin.exe gfxconv.exe gt2nt2.exe invert.exe countobj.exe pack2.exe pchunk2.exe pic2chr.exe prg2d64.exe mchunk.exe leveled.exe worlded.exe spred.exe symbols.exe ins2nt2.exe spr2txt.exe reorder.exe maked64.exe
+all: d642prg.exe filejoin.exe filesplit.exe gfxconv.exe gt2nt2.exe invert.exe countobj.exe pack2.exe pchunk2.exe pic2chr.exe prg2d64.exe mchunk.exe leveled.exe worlded.exe spred.exe symbols.exe ins2nt2.exe spr2txt.exe reorder.exe maked64.exe
 
 clean:
 	del *.exe
@@ -36,6 +36,9 @@ d642prg.exe: d642prg.c
 
 filejoin.exe: filejoin.c
 	gcc filejoin.c -ofilejoin.exe
+
+filesplit.exe: filesplit.c
+	gcc filesplit.c -ofilesplit.exe
 
 gt2nt2.exe: gt2nt2.c fileio.c
 	gcc gt2nt2.c fileio.c -ogt2nt2.exe

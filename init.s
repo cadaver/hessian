@@ -42,11 +42,6 @@ InitZP:         sta joystick,x
                 lda #$7f
                 sta ntInitSong
 
-                lda #<fileAreaStart
-                sta freeMemLo
-                lda #>fileAreaStart
-                sta freeMemHi
-
         ; Load options file
 
                 lda #F_OPTIONS                  ;This is the last file and will cache all
@@ -107,22 +102,33 @@ ISpr_ClearCacheInUse:
                 sta cacheSprFile,x
                 dex
                 bpl ISpr_ClearCacheInUse
-                ldx #MAX_CHUNKFILES-1           ;fileNumObjects & fileAge may be stored in unused parts
-                lda #$00                        ;of screen1 & screen2, so reset here
-ISpr_ResetChunkFiles:
-                sta fileNumObjects,x
-                sta fileAge,x
+
+        ; Setup memory allocation and preloaded sprites
+
+                lda #<fileAreaStart
+                sta freeMemLo
+                lda #>fileAreaStart
+                sta freeMemHi
+                ldx #2
+ISpr_Preloaded: lda preloadedLo,x
+                sta fileLo+C_COMMON,x
+                sta zpDestLo
+                sta zpBitsLo
+                lda preloadedHi,x
+                sta zpDestHi
+                sta zpBitsHi
+                sta fileHi+C_COMMON,x
+                lda preloadedNumObjects,x
+                sta fileNumObjects+C_COMMON,x
+                txa
+                clc
+                adc #C_COMMON
+                tay
+                stx temp1
+                jsr LF_Relocate3
+                ldx temp1
                 dex
-                bpl ISpr_ResetChunkFiles
-
-        ; Load resident sprites
-
-                ldy #C_COMMON
-                jsr LoadSpriteFile
-                ldy #C_ITEM
-                jsr LoadSpriteFile
-                ldy #C_WEAPON
-                jsr LoadSpriteFile
+                bpl ISpr_Preloaded
 
         ; Fade out loading music now
 
@@ -279,5 +285,14 @@ scorePanelColors:
 
 textCharsCopy:  incbin bg/scorescr.chr
                 ds.b 8,EMPTYSPRITEFRAME
+
+        ; Preloaded spritefile data
+
+preloadedLo:    dc.b <sprCommon, <sprItem, <sprWeapon
+preloadedHi:    dc.b >sprCommon, >sprItem, >sprWeapon
+preloadedNumObjects:
+                incbin sprcommon.hdr
+                incbin spritem.hdr
+                incbin sprweapon.hdr
 
                 org scriptCodeEnd
