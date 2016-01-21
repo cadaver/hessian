@@ -124,6 +124,8 @@ E_Found:        lda elevatorPlotBit,x
                 bne E_HasAccess
 E_NoAccess:     txa                             ;Only show message for the upper labs elevator, and only once
                 bne E_NoRadioMsg
+                lda lvlObjB+$2b                 ;No message if wall already opened with the laser
+                bmi E_NoRadioMsg
                 lda #PLOT_ELEVATORMSG
                 jsr GetPlotBit
                 bne E_NoRadioMsg
@@ -548,6 +550,9 @@ RadioUpperLabsElevator:
                 lda textTime
                 cmp #35
                 bcs RULE_Wait
+                ldy #ITEM_AMPLIFIER
+                jsr FindItem
+                bcs RULE_HasAmplifier
                 lda #<EP_RADIOSECURITYPASS
                 ldx #>EP_RADIOSECURITYPASS
                 jsr SetScript
@@ -558,6 +563,11 @@ RadioMsg:       ldy #ACT_PLAYER
                 jmp PlaySfx
 RSP_HasItem:
 RULE_Wait:      rts
+
+RULE_HasAmplifier:
+                jsr StopScript
+                gettext TEXT_ELEVATORLOCKEDHASAMPLIFIER
+                jmp RadioMsg
 
         ; Speech end part (search for service pass, if necessary)
         ;

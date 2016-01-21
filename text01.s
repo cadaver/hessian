@@ -2,7 +2,7 @@
                 org $0000
                 
                 dc.w dataEnd
-                dc.b 7
+                dc.b 8
 
                 rorg $0000
 
@@ -13,6 +13,7 @@
                 dc.w text1_4
                 dc.w text1_5
                 dc.w text1_6
+                dc.w text1_7
 
 text1_0:        dc.b 34,"AMOS HERE. YOU'RE CLOSE TO THE UPPER LABS. SEE IF YOU CAN FIND ANY CLUES. "
                 dc.b "IF NOT, YOU'LL HAVE TO PUSH ON TO THE HIGH-CLEARANCE LOWER LABS. "
@@ -40,6 +41,8 @@ text1_5:        dc.b "X5% HUMAN. YOU CAME FOR THAT SIGNAL AMP FOR THE LASER, RIG
 
 text1_6:        dc.b 34,"IT'S A MESSED UP SITUATION ALL RIGHT. BUT WITH WHAT WE'RE DOING, "
                 dc.b "IT WAS BOUND TO HAPPEN SOONER OR LATER.",34,0
+
+text1_7:        dc.b 34,"AMOS HERE. TRY USING THE AMPLIFIER YOU GOT ON THE LASER. BOOSTED, IT MIGHT BREACH THE WALL.",34,0
 
 dataEnd:
 
