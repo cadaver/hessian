@@ -115,6 +115,10 @@ S1_JumpTbl:     dc.w S1_WaitFrame
                 dc.w S1_DoNothing
 
 S1_WaitFrame:   inc scriptVariable              ;Special case wait 1 frame (loading)
+                ldy lvlDataActBitsStart+$04
+                lda lvlStateBits,y              ;Disable rotordrone until parking garage visited
+                and #$ff-$04
+                sta lvlStateBits,y
                 ldx #MENU_INTERACTION           ;Set interaction mode meanwhile so that player can't move away
                 jmp SetMenuMode
 
@@ -210,7 +214,9 @@ S1_LimitLeft:   and joystick
         ; Returns: -
         ; Modifies: various
 
-Scientist2:     lda actXH+ACTI_PLAYER           ;Wait until player close enough
+Scientist2:     ldy #C_SCIENTIST                ;Ensure sprite file on the same frame as first script exec
+                jsr EnsureSpriteFile
+                lda actXH+ACTI_PLAYER           ;Wait until player close enough
                 cmp #$37
                 bcc S2_Wait
                 cmp #$3c
@@ -238,6 +244,10 @@ S2_JumpTbl:     dc.w S2_Dialogue1
 
 S2_Dialogue1:   jsr AddQuestScore
                 inc scriptVariable
+                ldy lvlDataActBitsStart+$04
+                lda lvlStateBits,y              ;Enable rotordrone now
+                ora #$04
+                sta lvlStateBits,y
                 ldy #ACT_SCIENTIST2
                 gettext TEXT_PARKINGGARAGE1
                 jmp SpeakLine
@@ -532,6 +542,8 @@ InstallAmplifier:
                 jsr SetPlotBit
                 ldy #ITEM_AMPLIFIER
                 jsr RemoveItem
+                lda #$00
+                sta UM_ForceRefresh+1
                 lda #<txtAmpInstalled
                 ldx #>txtAmpInstalled
                 jmp SL_TextCommon

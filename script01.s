@@ -583,6 +583,8 @@ RadioServicePass:
         ; Modifies: various
 
 EscortScientistsStart:
+                ldy #C_SCIENTIST                ;Ensure sprite file on the same frame as first script exec
+                jsr EnsureSpriteFile
                 ldx actIndex
                 lda actXH,x
                 sec
@@ -600,7 +602,12 @@ EscortScientistsStart:
                 sta actScriptF
                 sta actScriptF+1
 ESS_WaitUntilClose:
-                rts
+ESF_InMemory:   rts
+
+EnsureSpriteFile:
+                lda fileHi,y
+                bne ESF_InMemory
+                jmp LoadSpriteFile
 
         ; Refresh escort scientists sequence (ensure they follow)
         ;

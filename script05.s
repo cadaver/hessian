@@ -105,19 +105,17 @@ EnsureSpriteFile:
 EnterBioDome:   lda #PLOT_ELEVATOR2             ;Travelled too far while the comms disruption was going on?
                 jsr GetPlotBit
                 bne EBD_TriggerEnding
-                lda #PLOT_HIDEOUTOPEN           ;Check if ambush resolved by locking the hideout
-                jsr GetPlotBit
-                beq EBD_Skip
                 lda #ACT_HACKER
                 jsr FindLevelActor
                 bcc EBD_Skip
                 sty temp1
-                lda lvlActOrg,y
+                lda lvlActOrg,y                 ;Check Jeff's location
                 cmp #$0f+ORG_GLOBAL             ;In old tunnels (=safe)?
                 beq EBD_Skip
-                cmp #$04+ORG_GLOBAL             ;Abandoned elsewhere
+                cmp #$04+ORG_GLOBAL             ;In hideout? If not, abandoned and killed offscreen
                 bne EBD_DieAbandoned
-                lda #PLOT_HIDEOUTAMBUSH
+                lda #PLOT_HIDEOUTAMBUSH         ;Hideout is unsafe if ambush unresolved
+                jsr GetPlotBit
                 bne EBD_DieAmbush
 ESF_InMemory:
 EBD_Skip:       rts
@@ -663,6 +661,8 @@ TMI_Fuel:       lda #PLOT_FUEL
 TMI_Common:     jsr TM_TextCommon
                 ldy itemIndex
                 jsr RemoveItem
+                lda #$00
+                sta UM_ForceRefresh+1
                 jsr AddQuestScore
                 lda #SFX_POWERUP
                 jsr PlaySfx

@@ -379,7 +379,6 @@ BeginAmbush:    jsr StopZoneScript
                 ldy #ITEM_BIOMETRICID
                 jsr FindItem
                 bcc BA_Skip
-                lda #
                 lda #PLOT_HIDEOUTOPEN           ;Already resolved?
                 jsr GetPlotBit
                 beq BA_Skip
@@ -816,7 +815,7 @@ ASF_DTCLoop:    lda codes+MAX_CODES*3-3,y
                 endif
                 ora #$30
                 sta (zpSrcLo),y
-                dex
+                dey
                 bpl ASF_DTCLoop
                 ldx actIndex                ;Drop EMP generator now
                 lda #ITEM_NONE
