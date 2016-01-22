@@ -25,6 +25,8 @@ CHUNK_DURATION = 40
                 dc.w OpenWall
                 dc.w MoveAcid
                 dc.w RadioCaves
+                dc.w MoveBat
+                dc.w MoveSpider
 
         ; Finalize game start. Create persistent NPCs to the leveldata and randomize entry codes
         ;
@@ -953,6 +955,58 @@ MA_StartPlayerSplash:
 
 RadioCaves:     gettext TEXT_ENTERCAVES
                 jmp RadioMsg
+
+        ; Bat movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MB_Dead:        lda #FR_DEADBATGROUND
+                sta temp1
+                jmp MR_Dead
+MoveBat:        ldy #C_ANIMALS
+                jsr EnsureSpriteFile
+                lda actHp,x
+                beq MB_Dead
+                lda #2                          ;Wings flapping acceleration up
+                cmp actF1,x                     ;or gravity acceleration down,
+                bcc MB_Gravity                  ;depending on frame
+                lda actMoveCtrl,x
+                and #JOY_UP
+                bne MB_StrongFlap
+                lda #2
+                skip2
+MB_StrongFlap:  lda #7
+                bne MB_Accel
+MB_Gravity:     lda #2
+MB_Accel:       ldy #2*8
+                jsr AccActorYNegOrPos
+                lda #$00
+                sta temp6
+                jsr MFE_NoVertAccel             ;Left/right acceleration & move
+                lda #2
+                ldy #FR_DEADBATGROUND-1
+                jmp MB_BatCommon
+
+        ; Spider movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+        
+MoveSpider:     ldy #C_ANIMALS
+                jsr EnsureSpriteFile
+                lda #FR_DEADSPIDERGROUND
+                sta temp1
+                lda actHp,x
+                bne MS_Alive
+                jmp MR_Dead
+MS_Alive:       jsr MoveGeneric
+                lda #2
+                ldy #2
+                jsr LoopingAnimation
+                jmp MS_Damage
 
         ; Variables
 

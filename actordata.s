@@ -1203,7 +1203,7 @@ alRat:          dc.w MoveRat                    ;Update routine
                 dc.b -1                         ;Height in chars for headbump check (negative)
                 dc.b -4*8                       ;Jump initial speed (negative)
 
-alSpider:       dc.w MoveSpider                 ;Update routine
+alSpider:       dc.w USESCRIPT|EP_MOVESPIDER    ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
                 dc.b 10                         ;Horizontal size
                 dc.b 10                         ;Size up
@@ -1247,7 +1247,7 @@ alFly:          dc.w MoveFly                    ;Update routine
                 dc.b 1                          ;Horiz obstacle check offset
                 dc.b 1                          ;Vert obstacle check offset
 
-alBat:          dc.w MoveBat                    ;Update routine
+alBat:          dc.w USESCRIPT|EP_MOVEBAT       ;Update routine
                 dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
                 dc.b 7                          ;Horizontal size
                 dc.b 8                          ;Size up
@@ -1300,7 +1300,7 @@ alRock:         dc.w MoveRock                   ;Update routine
                 dc.w 20                         ;Score from kill
                 dc.b AIMODE_IDLE                ;AI mode when spawned randomly
 
-alFireball:     dc.w MoveFireball               ;Update routine
+alFireball:     dc.w USESCRIPT|EP_MOVEFIREBALL  ;Update routine
                 dc.b GRP_ANIMALS                ;Actor flags
                 dc.b 6                          ;Horizontal size
                 dc.b 6                          ;Size up
@@ -1551,7 +1551,7 @@ alJormungandr:  dc.w USESCRIPT|EP_MOVEJORMUNGANDR ;Update routine
                 dc.b MOD_BOSS                   ;Damage modifier
                 dc.w 2500                       ;Score from kill
 
-alLargeTank:    dc.w MoveLargeTank              ;Update routine
+alLargeTank:    dc.w USESCRIPT|EP_MOVELARGETANK ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags
                 dc.b 24                         ;Horizontal size
                 dc.b 41                         ;Size up

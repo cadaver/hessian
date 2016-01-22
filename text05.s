@@ -2,7 +2,7 @@
                 org $0000
                 
                 dc.w dataEnd
-                dc.b 6
+                dc.b 8
 
                 rorg $0000
                 
@@ -12,6 +12,8 @@
                 dc.w text5_3
                 dc.w text5_4
                 dc.w text5_5
+                dc.w text5_6
+                dc.w text5_7
 
 text5_0:        dc.b 34,"IT'S JEFF. FOUND SOMETHING. FUN, RIGHT? 48 41 20 48 41 2C 20 48 4D 20 48 4D NO. THIS IS NOT JEFF, BUT THE CONSTRUCT. THE HACKER IS DEAD.",34,0
 
@@ -26,7 +28,14 @@ text5_3:        dc.b 34,"YOU! THE ROGUE GUARD. UNDERSTAND THIS - THE 'CONSTRUCT'
 
 text5_4:        dc.b 34,"JEFF HERE. THIS MUST BE THE AI'S LINK. LET'S GET TO WORK.",34,0
 
-text5_5:        dc.b 34,"JEFF AGAIN. MANAGED TO IDENTIFY A SEQUENCE WHICH I CAN REPLAY ENDLESSLY. "
+text5_5:        dc.b 34,"WHAT? THIS ISN'T AN OUTSIDE LINE, BUT TRAFFIC BETWEEN TWO ENTITIES. WAIT A MINUTE.. JORMUNGANDR. "
+                dc.b "IT'S SOME KIND OF FAILSAFE PROTOCOL. FAIL-DEADLY, I MEAN. IF EITHER END FALLS SILENT, SOMETHING BAD HAPPENS. "
+                dc.b "I'LL SEE WHAT I CAN DO AND GET BACK TO YOU.",34,0
+
+text5_6:        dc.b 34,"I'M GETTING BI-DIRECTIONAL TRAFFIC, JUST LIKE I IMAGINED. THIS IS THE REVENGE PROTOCOL. "
+                dc.b "WILL BEGIN DECODING IT NOW. BACK IN A MINUTE.",34,0
+
+text5_7:        dc.b 34,"JEFF AGAIN. MANAGED TO IDENTIFY A SEQUENCE WHICH I CAN REPLAY ENDLESSLY. "
                 dc.b "WE'LL SEE HOW IT GOES WHEN YOU TAKE OUT JORMUNGANDR. DO NOT, I REPEAT DO NOT ATTACK THE AI FIRST. ITS SEQUENCE "
                 dc.b "MUTATES CONSTANTLY, WHICH I CAN'T SPOOF.",34,0
 

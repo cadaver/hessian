@@ -28,6 +28,9 @@
                 dc.w TunnelMachineRun
                 dc.w RadioJormungandr
                 dc.w RadioJormungandrRun
+                dc.w DestroyPlan
+                dc.w MoveLargeTank
+                dc.w MoveFireball
 
         ; Security chief move routine
         ;
@@ -226,11 +229,9 @@ InstallLaptopWork:
                 lda #PLOT_OLDTUNNELSLAB2        ;Jeff in lab?
                 jsr GetPlotBit
                 bne ILW_VariationB
-ILW_VariationA: lda #<txtRadioInstallA
-                ldx #>txtRadioInstallA
+ILW_VariationA: gettext TEXT_RADIOSIGNALUNKNOWN
                 jmp RadioMsg
-ILW_VariationB: lda #<txtRadioInstallB
-                ldx #>txtRadioInstallB
+ILW_VariationB: gettext TEXT_RADIOSIGNALKNOWN
                 jmp RadioMsg
 
         ; Install laptop finish (while climbing to exit)
@@ -515,6 +516,7 @@ HackerFinal:    lda actXH+ACTI_PLAYER
                 gettext TEXT_HACKERFINAL
                 ldy #ACT_HACKER
                 jmp SpeakLine
+TM_Wait:
 HF_TooFar:      rts
 
         ; Tunnel machine script routine
@@ -557,7 +559,6 @@ TM_NoFuel:      lda #1
                 ldx #>txtNoFuel
 TM_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
                 jmp PrintPanelText
-TM_Wait:        rts
 
         ; Tunnel machine decision runloop
         ;
@@ -754,6 +755,75 @@ DP_SetPosCommon:
                 sta lvlStateBits,y
                 rts
 
+        ; Large tank update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveLargeTank:  ldy #C_LARGETANK
+                jsr EnsureSpriteFile
+                jsr MoveGeneric                   ;Use human movement for physics
+                jsr AttackGeneric
+                lda actSX,x                       ;Then overwrite animation
+                beq MLT_NoCenterFrame
+                eor actD,x                        ;If direction & speed don't agree, show the
+                bmi MLT_CenterFrame               ;center frame (turning)
+MLT_NoCenterFrame:
+                jsr GetAbsXSpeed
+                clc
+                adc actFd,x
+                cmp #$60
+                bcc MLT_NoWrap
+                sbc #$60
+MLT_NoWrap:     sta actFd,x
+                lsr
+                lsr
+                lsr
+                lsr
+                lsr
+                skip2
+MLT_CenterFrame:lda #3
+                sta actF1,x
+                rts
+
+        ; Fireball movement
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveFireball:   ldy #C_HIGHWALKER
+                jsr EnsureSpriteFile
+                lda actTime,x                   ;Randomize X-speed on first frame
+                bne MFB_HasRandomSpeed          ;and set upward motion
+                inc actTime,x
+                jsr Random
+                and #$0f
+                sec
+                sbc #$08
+                sta actSX,x
+                jsr Random
+                and #$0f
+                sec
+                sbc #5*8+8
+                sta actSY,x
+                lda #SFX_GRENADELAUNCHER
+                jsr PlaySfx
+MFB_HasRandomSpeed:
+                lda #DMG_FIREBALL
+                jsr CollideAndDamagePlayer
+                lda #1
+                ldy #3
+                jsr LoopingAnimation
+                lda #GRENADE_ACCEL-2
+                ldy #GRENADE_MAX_YSPEED
+                jsr AccActorY
+                lda actSX,x
+                jsr MoveActorX
+                lda actSY,x
+                jmp MoveActorY
+
         ; Tables & variables
 
 tmArrowPosTbl:  dc.b 9,14
@@ -768,15 +838,6 @@ txtBatteryInstalled:
                 dc.b "NEW BATTERY INSTALLED",0
 txtRefueled:    dc.b "REFUELED",0
 txtReady:       dc.b " STOP DRIVE",0
-
-txtRadioInstallA:
-                dc.b 34,"WHAT? THIS ISN'T AN OUTSIDE LINE, BUT TRAFFIC BETWEEN TWO ENTITIES. WAIT A MINUTE.. JORMUNGANDR. "
-                dc.b "IT'S SOME KIND OF FAILSAFE PROTOCOL. FAIL-DEADLY, I MEAN. IF EITHER END FALLS SILENT, SOMETHING BAD HAPPENS. "
-                textjump txtRadioInstallCommon
-txtRadioInstallB:
-                dc.b 34,"I'M GETTING BI-DIRECTIONAL TRAFFIC, JUST LIKE I IMAGINED. THIS IS THE REVENGE PROTOCOL. "
-txtRadioInstallCommon:
-                dc.b "I'LL SEE WHAT I CAN DO AND GET BACK TO YOU.",34,0
 
 txtRadioDestroyJeff:
                 dc.b 34,"JEFF HERE. "

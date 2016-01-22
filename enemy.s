@@ -354,26 +354,6 @@ MR_DeadGrounded:lda #$00
                 sta actF1,x
 MS_NoDamage:    rts
 
-        ; Spider movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-        
-MoveSpider:     lda #FR_DEADSPIDERGROUND
-                sta temp1
-                lda actHp,x
-                beq MR_Dead
-                jsr MoveGeneric
-                lda #2
-                ldy #2
-                jsr LoopingAnimation
-MS_Damage:      lda actFd,x
-                lsr
-                bcs MS_NoDamage                 ;Touch damage only each third frame
-                lda #DMG_SPIDER
-                jmp CollideAndDamagePlayer
-
         ; Fly movement
         ;
         ; Parameters: X actor index
@@ -402,48 +382,14 @@ MF_NoNewControls:
                 lda actFd,x
                 and #$01
                 sta actF1,x
-                jmp MS_Damage                   ;Use same damage code as spider
+MS_Damage:      lda actFd,x                     ;Common spider/fly damage code
+                lsr
+                bcs MS_NoDamage                 ;Touch damage only each third frame
+                lda #DMG_SPIDER
+                jmp CollideAndDamagePlayer
 MF_Dead:        lda #2
                 ldy #FR_DEADFLY+1
                 jmp OneShotAnimateAndRemove
-
-        ; Bat movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MB_Dead:        lda #FR_DEADBATGROUND
-                sta temp1
-                jmp MR_Dead
-MoveBat:        lda actHp,x
-                beq MB_Dead
-                lda #2                          ;Wings flapping acceleration up
-                cmp actF1,x                     ;or gravity acceleration down,
-                bcc MB_Gravity                  ;depending on frame
-                lda actMoveCtrl,x
-                and #JOY_UP
-                bne MB_StrongFlap
-                lda #2
-                skip2
-MB_StrongFlap:  lda #7
-                bne MB_Accel
-MB_Gravity:     lda #2
-MB_Accel:       ldy #2*8
-                jsr AccActorYNegOrPos
-                lda #$00
-                sta temp6
-                jsr MFE_NoVertAccel             ;Left/right acceleration & move
-                lda #2
-                ldy #FR_DEADBATGROUND-1
-MB_BatCommon:   jsr LoopingAnimation
-                ldy #ACTI_PLAYER
-                jsr GetActorDistance
-                lda temp5                       ;No damage after has flown past player
-                eor actD,x                      ;Otherwise use same damage code as spider
-                bmi MB_NoDamage
-                jmp MS_Damage
-MB_NoDamage:    rts
 
         ; Fish movement
         ;
@@ -455,7 +401,14 @@ MoveFish:       lda #CI_WATER
                 jsr MFE_CustomCharInfo
                 lda #2
                 ldy #1
-                bne MB_BatCommon
+MB_BatCommon:   jsr LoopingAnimation
+                ldy #ACTI_PLAYER
+                jsr GetActorDistance
+                lda temp5                       ;No damage after has flown past player
+                eor actD,x                      ;Otherwise use same damage code as spider
+                bmi MB_NoDamage
+                jmp MS_Damage
+MB_NoDamage:    rts
 
         ; Rock movement
         ;
@@ -528,41 +481,6 @@ MR_RandomizeSmallerRock:
                 lda #HP_ROCK                    ;Reset hitpoints if was destroyed
                 sta actHp,x
                 rts
-
-        ; Fireball movement
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveFireball:   lda actTime,x                   ;Randomize X-speed on first frame
-                bne MFB_HasRandomSpeed          ;and set upward motion
-                inc actTime,x
-                jsr Random
-                and #$0f
-                sec
-                sbc #$08
-                sta actSX,x
-                jsr Random
-                and #$0f
-                sec
-                sbc #5*8+8
-                sta actSY,x
-                lda #SFX_GRENADELAUNCHER
-                jsr PlaySfx
-MFB_HasRandomSpeed:
-                lda #DMG_FIREBALL
-                jsr CollideAndDamagePlayer
-                lda #1
-                ldy #3
-                jsr LoopingAnimation
-                lda #GRENADE_ACCEL-2
-                ldy #GRENADE_MAX_YSPEED
-                jsr AccActorY
-                lda actSX,x
-                jsr MoveActorX
-                lda actSY,x
-                jmp MoveActorY
 
         ; Steam movement
         ;
@@ -641,36 +559,6 @@ MoveRockTrap:   lda actYH,x                     ;Trigger when player is below
                 jsr SetNotPersistent            ;Disappear after triggering once
                 jmp InitActor
 MRT_NoTrigger:  rts
-
-        ; Large tank update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveLargeTank:  jsr MoveGeneric                   ;Use human movement for physics
-                jsr AttackGeneric
-                lda actSX,x                       ;Then overwrite animation
-                beq MLT_NoCenterFrame
-                eor actD,x                        ;If direction & speed don't agree, show the
-                bmi MLT_CenterFrame               ;center frame (turning)
-MLT_NoCenterFrame:
-                jsr GetAbsXSpeed
-                clc
-                adc actFd,x
-                cmp #$60
-                bcc MLT_NoWrap
-                sbc #$60
-MLT_NoWrap:     sta actFd,x
-                lsr
-                lsr
-                lsr
-                lsr
-                lsr
-                skip2
-MLT_CenterFrame:lda #3
-                sta actF1,x
-                rts
 
         ; High walker movement
         ;
