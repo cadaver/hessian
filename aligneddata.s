@@ -325,7 +325,7 @@ keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 timeMaxTbl:     dc.b 99,60,60,50
 plrDmgModifyTbl:dc.b 4,6,8,12
 
-        ; Levelobject table (not saved)
+        ; Levelobject table (not saved), also reused by the savegame-list
 
 saveList:
 lvlObjX:        ds.b MAX_LVLOBJ,0

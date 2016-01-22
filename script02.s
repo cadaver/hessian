@@ -7,7 +7,7 @@ CHUNK_DURATION = 40
 
                 org scriptCodeStart
 
-                dc.w GameStart
+                dc.w MoveSpider
                 dc.w Scientist1
                 dc.w Scientist2
                 dc.w RadioUpperLabsEntrance
@@ -26,68 +26,6 @@ CHUNK_DURATION = 40
                 dc.w MoveAcid
                 dc.w RadioCaves
                 dc.w MoveBat
-                dc.w MoveSpider
-
-        ; Finalize game start. Create persistent NPCs to the leveldata and randomize entry codes
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-GameStart:      ldx #MAX_PERSISTENTNPCS-1
-GS_Loop:        jsr GetLevelActorIndex
-                lda npcX,x
-                sta lvlActX,y
-                lda npcY,x
-                sta lvlActY,y
-                lda npcF,x
-                sta lvlActF,y
-                lda npcT,x
-                sta lvlActT,y
-                lda npcWpn,x
-                sta lvlActWpn,y
-                lda npcOrg,x
-                sta lvlActOrg,y
-                dex
-                bpl GS_Loop
-                lda #<EP_SCIENTIST2         ;Initial NPC scripts to drive the plot forward
-                ldx #>EP_SCIENTIST2
-                sta actScriptEP
-                stx actScriptF
-                if SKIP_PLOT > 0
-                if SKIP_PLOT2 > 0
-                lda #PLOT_HIDEOUTAMBUSH
-                jsr SetPlotBit
-                lda #<EP_HACKERAMBUSH
-                ldx #>EP_HACKERAMBUSH
-                else
-                lda #<EP_HACKER3
-                ldx #>EP_HACKER3
-                endif
-                else
-                lda #<EP_HACKER
-                ldx #>EP_HACKER
-                endif
-                sta actScriptEP+2
-                stx actScriptF+2
-                ldx #(MAX_CODES)*3-1
-GS_CodeLoop:    if CODE_CHEAT > 0
-                lda #$00
-                else
-                jsr Random
-                and #$0f
-                cmp #$0a
-                bcs GS_CodeLoop
-                endif
-                sta codes,x
-                dex
-                bpl GS_CodeLoop
-                lda codes+MAX_CODES*3-1         ;Make the last (nether tunnels) code initially
-                ora #$80                        ;impossible to enter, even by guessing
-                sta codes+MAX_CODES*3-1
-                jsr FindPlayerZone              ;Need to get starting level's charset so that save is named properly
-                jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
-                jmp CenterPlayer
 
         ; Scientist 1 (intro) move routine
         ;
@@ -1012,16 +950,7 @@ MS_Alive:       jsr MoveGeneric
 
 laserTime:      dc.b 0
 
-        ; Persistent NPC table
-
-npcX:           dc.b $39,$38,$17
-npcY:           dc.b $28,$28,$30
-npcF:           dc.b $30+AIMODE_TURNTO,$10+AIMODE_TURNTO,$30+AIMODE_TURNTO
-npcT:           dc.b ACT_SCIENTIST2, ACT_SCIENTIST3,ACT_HACKER
-npcWpn:         dc.b $00,$00,$00
-npcOrg:         dc.b 1+ORG_GLOBAL,1+ORG_GLOBAL,4+ORG_GLOBAL
-
-        ; Other tables
+        ; Tables
 
 spiderMoveTbl:  dc.b JOY_LEFT,JOY_RIGHT,JOY_FIRE,JOY_FIRE
 spiderDelayAndTbl:

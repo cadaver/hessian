@@ -48,7 +48,6 @@ txtInstructions3:
                 dc.b "RUNSTOP PAUSE MENU",0
                 dc.b 0
 
-
 txtMainMenu:    dc.b 0
                 dc.b $80+13,"START NEW GAME",0
                 dc.b 0
@@ -65,6 +64,42 @@ txtOptions:     dc.b $80+12,"SKILL",0
                 dc.b 0
                 dc.b $80+12,"BACK",0
 
-                if * > screen2+SCROLLROWS*40
-                    err
-                endif
+                org chars+$700
+                
+levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
+                dc.b 0+$80,levelCourtyard-levelNames
+                dc.b 1,$00,$18,levelCarPark-levelNames
+                dc.b 1+$80,levelCourtyard-levelNames
+                dc.b 2+$80,levelServiceTunnels-levelNames
+                dc.b 3+$80,levelEntrance-levelNames
+                dc.b 4+$80,levelServiceTunnels-levelNames
+                dc.b 5+$80,levelSecurityCenter-levelNames
+                dc.b 6+$80,levelUpperLabs-levelNames
+                dc.b 7+$80,levelUnderground-levelNames
+                dc.b 8+$80,levelLowerLabs-levelNames
+                dc.b 9+$80,levelSecurityCenter-levelNames
+                dc.b 10+$80,levelNetherTunnel-levelNames
+                dc.b 11,$50,$00,levelBioDome-levelNames
+                dc.b 11+$80,levelCourtyard-levelNames
+                dc.b 12+$80,levelThroneSuite-levelNames
+                dc.b 13+$80,levelServerVault-levelNames
+                dc.b 14+$80,levelUnderground-levelNames
+                dc.b 15+$80,levelOldTunnels-levelNames
+
+                org chars+$740
+
+levelNames:
+levelWarehouses:dc.b "WAREHOUSE",0
+levelCourtyard: dc.b "COURTYARD",0
+levelCarPark:   dc.b "PARKING GARAGE",0
+levelServiceTunnels:dc.b "SERVICE TUNNELS",0
+levelEntrance:  dc.b "ENTRANCE",0
+levelSecurityCenter:dc.b "SECURITY CENTER",0
+levelUpperLabs: dc.b "UPPER LABS",0
+levelUnderground:dc.b "UNDERGROUND",0
+levelLowerLabs: dc.b "LOWER LABS",0
+levelNetherTunnel:dc.b "NETHER TUNNEL",0
+levelBioDome:   dc.b "BIO-DOME",0
+levelThroneSuite:dc.b "THRONE SUITE",0
+levelServerVault:dc.b "SERVER VAULT",0
+levelOldTunnels: dc.b "OLD TUNNELS",0

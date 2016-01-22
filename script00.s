@@ -20,6 +20,8 @@ logoStart       = chars
 logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
+levelNamesTbl   = chars+$700
+levelNames      = chars+$740
 
 START_LEVEL     = $00                          ;Warehouse
 START_X         = $6680
@@ -554,9 +556,60 @@ IP_GiveAllLoop: pha
                 cmp #ITEM_LAST+1
                 bcc IP_GiveAllLoop
                 endif
-                lda #<EP_GAMESTART          ;Exec initial script to setup persistent NPC states etc.
-                ldx #>EP_GAMESTART
-                jmp ExecScript
+                ldx #$02                        ;3 persistent NPCs to initialize
+IP_NPCLoop:     jsr GetLevelActorIndex
+                lda npcX,x
+                sta lvlActX,y
+                lda npcY,x
+                sta lvlActY,y
+                lda npcF,x
+                sta lvlActF,y
+                lda npcT,x
+                sta lvlActT,y
+                lda npcWpn,x
+                sta lvlActWpn,y
+                lda npcOrg,x
+                sta lvlActOrg,y
+                dex
+                bpl IP_NPCLoop
+                lda #<EP_SCIENTIST2             ;Initial NPC scripts to drive the plot forward
+                ldx #>EP_SCIENTIST2
+                sta actScriptEP
+                stx actScriptF
+                if SKIP_PLOT > 0
+                if SKIP_PLOT2 > 0
+                lda #PLOT_HIDEOUTAMBUSH
+                jsr SetPlotBit
+                lda #<EP_HACKERAMBUSH
+                ldx #>EP_HACKERAMBUSH
+                else
+                lda #<EP_HACKER3
+                ldx #>EP_HACKER3
+                endif
+                else
+                lda #<EP_HACKER
+                ldx #>EP_HACKER
+                endif
+                sta actScriptEP+2
+                stx actScriptF+2
+                ldx #(MAX_CODES)*3-1
+IP_CodeLoop:    if CODE_CHEAT > 0
+                lda #$00
+                else
+                jsr Random
+                and #$0f
+                cmp #$0a
+                bcs IP_CodeLoop
+                endif
+                sta codes,x
+                dex
+                bpl IP_CodeLoop
+                lda codes+MAX_CODES*3-1         ;Make the last (nether tunnels) code initially
+                ora #$80                        ;impossible to enter, even by guessing
+                sta codes+MAX_CODES*3-1
+                jsr FindPlayerZone              ;Need to get starting level's charset so that save is named properly
+                jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
+                jmp CenterPlayer
 
         ; Save options if modified
 
@@ -999,40 +1052,11 @@ optionMaxValue: dc.b 3,1,1
 cheatString:    dc.b KEY_K, KEY_V, KEY_L, KEY_T
 cheatIndex:     dc.b 0
 
-levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
-                dc.b 0+$80,levelCourtyard-levelNames
-                dc.b 1,$00,$18,levelCarPark-levelNames
-                dc.b 1+$80,levelCourtyard-levelNames
-                dc.b 2+$80,levelServiceTunnels-levelNames
-                dc.b 3+$80,levelEntrance-levelNames
-                dc.b 4+$80,levelServiceTunnels-levelNames
-                dc.b 5+$80,levelSecurityCenter-levelNames
-                dc.b 6+$80,levelUpperLabs-levelNames
-                dc.b 7+$80,levelUnderground-levelNames
-                dc.b 8+$80,levelLowerLabs-levelNames
-                dc.b 9+$80,levelSecurityCenter-levelNames
-                dc.b 10+$80,levelNetherTunnel-levelNames
-                dc.b 11,$50,$00,levelBioDome-levelNames
-                dc.b 11+$80,levelCourtyard-levelNames
-                dc.b 12+$80,levelThroneSuite-levelNames
-                dc.b 13+$80,levelServerVault-levelNames
-                dc.b 14+$80,levelUnderground-levelNames
-                dc.b 15+$80,levelOldTunnels-levelNames
-
-levelNames:
-levelWarehouses:dc.b "WAREHOUSE",0
-levelCourtyard: dc.b "COURTYARD",0
-levelCarPark:   dc.b "PARKING GARAGE",0
-levelServiceTunnels:dc.b "SERVICE TUNNELS",0
-levelEntrance:  dc.b "ENTRANCE",0
-levelSecurityCenter:dc.b "SECURITY CENTER",0
-levelUpperLabs: dc.b "UPPER LABS",0
-levelUnderground:dc.b "UNDERGROUND",0
-levelLowerLabs: dc.b "LOWER LABS",0
-levelNetherTunnel:dc.b "NETHER TUNNEL",0
-levelBioDome:   dc.b "BIO-DOME",0
-levelThroneSuite:dc.b "THRONE SUITE",0
-levelServerVault:dc.b "SERVER VAULT",0
-levelOldTunnels: dc.b "OLD TUNNELS",0
+npcX:           dc.b $39,$38,$17
+npcY:           dc.b $28,$28,$30
+npcF:           dc.b $30+AIMODE_TURNTO,$10+AIMODE_TURNTO,$30+AIMODE_TURNTO
+npcT:           dc.b ACT_SCIENTIST2, ACT_SCIENTIST3,ACT_HACKER
+npcWpn:         dc.b $00,$00,$00
+npcOrg:         dc.b 1+ORG_GLOBAL,1+ORG_GLOBAL,4+ORG_GLOBAL
 
                 checkscriptend
