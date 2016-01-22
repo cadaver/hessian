@@ -387,16 +387,79 @@ actLastNavStairs = screen2+SCROLLROWS*40+96+MAX_COMPLEXACT*2
 actLastNavLadder = screen2+SCROLLROWS*40+96+MAX_COMPLEXACT*3
 actGroundCharInfo = screen2+SCROLLROWS*40+96+MAX_COMPLEXACT*4
 
-        ; Chunk-file memory allocation variables
-
-fileLo:         ds.b MAX_CHUNKFILES,0
-fileHi:         ds.b MAX_CHUNKFILES,0
-fileNumObjects: ds.b MAX_CHUNKFILES,0
-fileAge:        ds.b MAX_CHUNKFILES,0
-
         ; Remaining misc. data
 
 shiftOffsetTbl: dc.b 6,6,6
                 dc.b 0,0,0
                 dc.b 6,6,6
 healthBarPosTbl:dc.b 50,64
+
+        ; Player/world state
+
+playerStateStart:
+time:           ds.b 4,0
+score:          ds.b 3,0
+battery:        ds.b 2,0
+oxygen:         dc.b 0
+plotBits:       ds.b MAX_PLOTBITS/8,0
+actScriptF:     ds.b MAX_PERSISTENTNPCS,0
+actScriptEP:    ds.b MAX_PERSISTENTNPCS,0
+zoneScriptF:    dc.b 0
+zoneScriptEP:   dc.b 0
+codes:          ds.b MAX_CODES*3,0
+playerStateZeroEnd:
+invMag:         ds.b ITEM_LAST_MAG-ITEM_FIRST_MAG+1,0
+invCount:       ds.b ITEM_LAST-ITEM_FIRST+1,0
+lvlStateBits:   ds.b LVLDATAACTTOTALSIZE+LVLOBJTOTALSIZE,0
+playerStateEnd:
+
+                if playerStateZeroEnd-playerStateStart > 255
+                    err
+                endif
+
+        ; Not saved variables
+        ; Note: must be at least 4 and follow the player state , due to code that skips saving of time
+
+scriptVariable: dc.b 0
+codeEntry:      ds.b 3,0
+
+        ; In-memory checkpoint save
+
+saveStateStart:
+saveState:      ds.b playerStateEnd - playerStateStart,0
+saveStateZP:    ds.b playerStateZPEnd - playerStateZPStart,0
+saveLvlActX:    ds.b MAX_SAVEACT,0
+saveLvlActY:    ds.b MAX_SAVEACT,0
+saveLvlActF:    ds.b MAX_SAVEACT,0
+saveLvlActT:    ds.b MAX_SAVEACT,0
+saveLvlActWpn:  ds.b MAX_SAVEACT,0
+saveLvlActOrg:  ds.b MAX_SAVEACT,0
+saveXL:         dc.b 0
+saveXH:         dc.b 0
+saveYL:         dc.b 0
+saveYH:         dc.b 0
+saveT:          dc.b 0
+saveD:          dc.b 0
+saveHP:         dc.b 0
+saveDifficulty: dc.b 0
+saveStateEnd:
+
+saveBattery     = saveState + battery - playerStateStart
+
+        ; Level properties
+
+lvlPropertiesStart:
+lvlWaterSplashColor:
+                dc.b 0
+lvlWaterToxinDelay:
+                dc.b 0
+lvlAirToxinDelay:
+                dc.b 0
+lvlPropertiesEnd:
+
+        ; Chunk-file memory allocation variables
+
+fileLo:         ds.b MAX_CHUNKFILES,0
+fileHi:         ds.b MAX_CHUNKFILES,0
+fileNumObjects: ds.b MAX_CHUNKFILES,0
+fileAge:        ds.b MAX_CHUNKFILES,0

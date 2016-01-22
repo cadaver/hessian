@@ -1006,7 +1006,7 @@ MS_Alive:       jsr MoveGeneric
                 lda #2
                 ldy #2
                 jsr LoopingAnimation
-                jmp MS_Damage
+                jmp MF_Damage
 
         ; Variables
 

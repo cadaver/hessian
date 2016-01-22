@@ -879,9 +879,9 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
 ULO_NoRecharge:
 ULO_NoAirFlag:  lda #$00
                 beq ULO_CheckHeadUnderWater
-ULO_NoAir:      lda menuMode                    ;Do not punish player from taking time
-                cmp #MENU_DIALOGUE              ;to read dialogue
-                beq ULO_OxygenDone
+ULO_NoAir:      ;lda menuMode
+                ;cmp #MENU_DIALOGUE
+                ;beq ULO_OxygenDone
                 lda AA_ItemFlashCounter+1
                 and #$03
                 bpl ULO_OxygenDelay

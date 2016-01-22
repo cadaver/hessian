@@ -50,18 +50,6 @@ ITEM_LAST       = ITEM_COMMGEAR
 ITEM_FIRST_MAG  = ITEM_PISTOL
 ITEM_LAST_MAG   = ITEM_BAZOOKA
 
-DROP_NOTHING = $00
-DROP_MEDKIT = $81
-DROP_BATTERY = $82
-DROP_ARMOR = $84
-DROP_WEAPON = $88
-DROP_PARTS = $90
-
-MEDKIT_DROP_PROBABILITY = $20
-BATTERY_DROP_PROBABILITY = $20
-ARMOR_DROP_PROBABILITY = $20
-PARTS_DROP_PROBABILITY = $80
-
 itemMaxCount:   dc.b 0                          ;Fists
                 dc.b 0                          ;Knife
                 dc.b 0                          ;Nightstick

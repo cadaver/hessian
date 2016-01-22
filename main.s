@@ -66,10 +66,10 @@ randomAreaEnd:
                 include itemdata.s
                 include weapondata.s
                 include actordata.s
-                include text.s
                 include leveldata.s
+                include text.s
 
-        ; Aligned data
+        ; Aligned data & game state
 
                 include aligneddata.s
 

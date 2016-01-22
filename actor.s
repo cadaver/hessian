@@ -936,6 +936,11 @@ IA_Done:        rts
         ; Returns: -
         ; Modifies: A
 
+MoveActorCharUp:
+                lda #-8*8
+                skip2
+MoveActorHalfBlockUp:
+                lda #-15*8
 MoveActorYNoInterpolation:
                 jsr MoveActorY
 NoInterpolation:lda actXL,x

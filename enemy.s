@@ -352,7 +352,7 @@ MR_DeadGrounded:lda #$00
                 sta actSX,x                     ;Instant braking
                 lda temp1
                 sta actF1,x
-MS_NoDamage:    rts
+                rts
 
         ; Fly movement
         ;
@@ -382,9 +382,9 @@ MF_NoNewControls:
                 lda actFd,x
                 and #$01
                 sta actF1,x
-MS_Damage:      lda actFd,x                     ;Common spider/fly damage code
+MF_Damage:      lda actFd,x                     ;Common spider/fly/bat damage code
                 lsr
-                bcs MS_NoDamage                 ;Touch damage only each third frame
+                bcs MB_NoDamage                 ;Touch damage only each third frame
                 lda #DMG_SPIDER
                 jmp CollideAndDamagePlayer
 MF_Dead:        lda #2
@@ -404,10 +404,9 @@ MoveFish:       lda #CI_WATER
 MB_BatCommon:   jsr LoopingAnimation
                 ldy #ACTI_PLAYER
                 jsr GetActorDistance
-                lda temp5                       ;No damage after has flown past player
+                lda temp5                       ;No damage after has moved past player
                 eor actD,x                      ;Otherwise use same damage code as spider
-                bmi MB_NoDamage
-                jmp MS_Damage
+                bpl MF_Damage
 MB_NoDamage:    rts
 
         ; Rock movement
@@ -558,7 +557,6 @@ MoveRockTrap:   lda actYH,x                     ;Trigger when player is below
                 sta actT,x
                 jsr SetNotPersistent            ;Disappear after triggering once
                 jmp InitActor
-MRT_NoTrigger:  rts
 
         ; High walker movement
         ;
@@ -596,6 +594,7 @@ MHW_NoLaser:    lda actSY,y                     ;Set 22.5 angle downward speed f
 MHW_SpeedXPos:  lsr
                 sta actSY,y
 MHW_SpeedYOK:
+MRT_NoTrigger:
 MHW_NoAttack:   rts
 
         ; Turret animation routine
@@ -725,19 +724,17 @@ DAM_NoWallHit:  lda actMB,x
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-DestroyCPU:     jsr ExplodeActor
-                ldy #MAX_LVLOBJ-1
-DCPU_Search:    lda lvlObjX,y
+DestroyCPU:     ldy #MAX_LVLOBJ
+DCPU_Search:    dey
+                lda lvlObjX,y
                 cmp actXH,x
-                bne DCPU_SearchNext
+                bne DCPU_Search
                 lda lvlObjY,y
                 and #$7f
                 cmp actYH,x
-                beq DCPU_Found
-DCPU_SearchNext:dey
-                bpl DCPU_Search
-                rts
-DCPU_Found:     jmp ActivateObject
+                bne DCPU_Search
+                jsr ActivateObject              ;Note: will loop endlessly or read out of bounds if not found
+                jmp ExplodeActor
 
         ; Turn enemy into an explosion & drop item
         ;
@@ -746,8 +743,7 @@ DCPU_Found:     jmp ActivateObject
         ; Modifies: A,Y,temp vars
 
 ExplodeEnemy_Ofs8:
-                lda #-8*8
-                jsr MoveActorYNoInterpolation
+                jsr MoveActorCharUp
 ExplodeEnemy:   jsr DropItem
                 jmp ExplodeActor
 
@@ -791,17 +787,15 @@ ExplodeEnemyMultiple_CustomRadius:
         ; Modifies: A,Y,temp vars
 
 ExplodeEnemy3_Ofs24:
-                lda #-15*8
-                jsr MoveActorYNoInterpolation
+                jsr MoveActorHalfBlockUp
                 lda #3
                 sta actTime,x
                 lda #$3f
                 ldy #$ff
                 jsr ExplodeEnemyMultiple_CustomRadius
-                lda #-8*8
-                jmp MoveActorYNoInterpolation
+                jmp MoveActorCharUp
 
-                       ; Generate 2 explosions at 8 pixel radius horizontally and 15 pixel radius
+        ; Generate 2 explosions at 8 pixel radius horizontally and 15 pixel radius
         ; vertically
         ;
         ; Parameters: X actor index
@@ -809,8 +803,7 @@ ExplodeEnemy3_Ofs24:
         ; Modifies: A,Y,temp vars
 
 ExplodeEnemy2_Ofs15:
-                lda #-15*8
-                jsr MoveActorYNoInterpolation
+                jsr MoveActorHalfBlockUp
                 lda #2
                 sta actTime,x
                 lda #$3f
@@ -824,8 +817,7 @@ ExplodeEnemy2_Ofs15:
         ; Modifies: A,Y,temp vars
 
 ExplodeEnemy4_Ofs15:
-                lda #-15*8
-                jsr MoveActorYNoInterpolation
+                jsr MoveActorHalfBlockUp
                 lda #4
                 ldy #$ff
                 jsr ExplodeEnemyMultiple
@@ -871,8 +863,7 @@ EE_ScrapMetalDone:
         ; Modifies: A,Y,temp vars
 
 ExplodeEnemy4_Rising:
-                lda #-8*8
-                jsr MoveActorYNoInterpolation
+                jsr MoveActorCharUp
                 lda #4
                 ldy #$7f
                 jsr ExplodeEnemyMultiple
