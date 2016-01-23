@@ -657,6 +657,7 @@ CC_ActivateCheat:
                 sta Irq1_Bg2+1                  ;Flash logo, then restore colors via the normal fadeout code
                 sta Irq1_Bg3+1
                 sta logoFadeDir
+                dec logoFade
                 jsr WaitBottom
 CC_CheatWrong:  lda #$00
                 sta cheatIndex
