@@ -32,6 +32,7 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	music08.pak music09.pak music10.pak music11.pak music12.pak \
 	script00.pak script01.pak script02.pak script03.pak script04.pak script05.pak script06.pak script07.pak \
 	text00.pak text01.pak text02.pak text03.pak text04.pak text05.pak text06.pak text07.pak \
+	text08.pak text09.pak text10.pak text11.pak text12.pak text13.pak text14.pak text15.pak \
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
@@ -269,6 +270,38 @@ text06.pak: text06.s
 text07.pak: text07.s
 	dasm text07.s -otext07.bin -f3
 	pchunk2 text07.bin text07.pak
+
+text08.pak: text08.s
+	dasm text08.s -otext08.bin -f3
+	pchunk2 text08.bin text08.pak
+
+text09.pak: text09.s
+	dasm text09.s -otext09.bin -f3
+	pchunk2 text09.bin text09.pak
+
+text10.pak: text10.s
+	dasm text10.s -otext10.bin -f3
+	pchunk2 text10.bin text10.pak
+
+text11.pak: text11.s
+	dasm text11.s -otext11.bin -f3
+	pchunk2 text11.bin text11.pak
+
+text12.pak: text12.s
+	dasm text12.s -otext12.bin -f3
+	pchunk2 text12.bin text12.pak
+
+text13.pak: text13.s
+	dasm text13.s -otext13.bin -f3
+	pchunk2 text13.bin text13.pak
+
+text14.pak: text14.s
+	dasm text14.s -otext14.bin -f3
+	pchunk2 text14.bin text14.pak
+
+text15.pak: text15.s
+	dasm text15.s -otext15.bin -f3
+	pchunk2 text15.bin text15.pak
 
 loadermusic.bin: music/hessianmusic.d64
 	d642prg music/hessianmusic.d64 loader.bin loadermusic.bin -h

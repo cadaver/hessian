@@ -43,12 +43,12 @@ F_LEVEL         = $02
 F_CHARSET       = $12
 F_MUSIC         = $21
 F_SPRITE        = $2b
-F_SCRIPT        = $50
-F_LOGO          = $5e
-F_UPGRADE       = $5f
-F_SAVE          = $60
-F_SAVELIST      = $65
-F_OPTIONS       = $66
+F_SCRIPT        = $60
+F_LOGO          = $68
+F_UPGRADE       = $69
+F_SAVELIST      = $6a
+F_SAVE          = $6b
+F_OPTIONS       = $70
 
         ; Create a number-based file name
         ;

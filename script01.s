@@ -562,6 +562,7 @@ RadioMsg:       ldy #ACT_PLAYER
                 lda #SFX_RADIO
                 jmp PlaySfx
 RSP_HasItem:
+ESS_WaitUntilClose:
 RULE_Wait:      rts
 
 RULE_HasAmplifier:
@@ -601,9 +602,33 @@ EscortScientistsStart:
                 sbc actXH+ACTI_PLAYER
                 cmp #$04
                 bcs ESS_WaitUntilClose
+                lda scriptVariable
+                asl
+                tay
+                lda ESS_JumpTbl,y
+                sta ESS_Jump+1
+                lda ESS_JumpTbl+1,y
+                sta ESS_Jump+2
+ESS_Jump:       jmp $1000
+
+ESS_JumpTbl:    dc.w ESS_1
+                dc.w ESS_2
+                dc.w ESS_3
+
+ESS_1:          inc scriptVariable
                 jsr AddQuestScore
                 ldy #ACT_SCIENTIST2
-                gettext TEXT_ESCORTBEGIN
+                gettext TEXT_ESCORTBEGIN1
+                jmp SpeakLine
+
+ESS_2:          inc scriptVariable
+                ldy #ACT_SCIENTIST3
+                gettext TEXT_ESCORTBEGIN2
+                jmp SpeakLine
+
+ESS_3:          inc scriptVariable
+                ldy #ACT_SCIENTIST2
+                gettext TEXT_ESCORTBEGIN3
                 jsr SpeakLine
                 lda #<EP_ESCORTSCIENTISTSREFRESH
                 sta actScriptEP
@@ -611,7 +636,6 @@ EscortScientistsStart:
                 lda #>EP_ESCORTSCIENTISTSREFRESH
                 sta actScriptF
                 sta actScriptF+1
-ESS_WaitUntilClose:
 ESF_InMemory:   rts
 
 EnsureSpriteFile:
