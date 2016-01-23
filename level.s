@@ -879,9 +879,9 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
 ULO_NoRecharge:
 ULO_NoAirFlag:  lda #$00
                 beq ULO_CheckHeadUnderWater
-ULO_NoAir:      ;lda menuMode
-                ;cmp #MENU_DIALOGUE
-                ;beq ULO_OxygenDone
+ULO_NoAir:      lda menuMode
+                cmp #MENU_DIALOGUE
+                beq ULO_OxygenDone
                 lda AA_ItemFlashCounter+1
                 and #$03
                 bpl ULO_OxygenDelay
@@ -1307,7 +1307,7 @@ RCP_NoObstacle:                                 ;Fall through to CenterPlayer
         ; Returns: -
         ; Modifies: A,X,Y,temp vars
 
-CenterPlayer:   lda levelNum                    ;Scripted sucking of air in lower labs
+CenterPlayer:   lda levelNum                    ;Story-driven sucking of air in lower labs
                 cmp #$08                        ;(should really be script code, but hard to do
                 bne CP_NotLowerLabs             ;without interfering with other scripts)
                 jsr GetPlotBit
@@ -1372,7 +1372,30 @@ CP_NotOverUp:   sta mapY
                 dex
                 stx ULO_COSubY+1                ;Reset object search
                 stx CreateSplash+1              ;Disable creation of splashes during the initial update
-                jsr RedrawScreen
+                ldy #MAX_LVLOBJ-1
+CP_PreloadTrigger:
+                lda lvlObjB,y                   ;Check for triggered scripts that haven't yet fired
+                and #OBJ_TYPEBITS+OBJ_MODEBITS+OBJ_ACTIVE ;within the player's zone, and preload script
+                cmp #OBJMODE_TRIG+OBJTYPE_SCRIPT
+                bne CP_PreloadNext
+                lda lvlObjX,y
+                cmp limitL
+                bcc CP_PreloadNext
+                cmp limitR
+                bcs CP_PreloadNext
+                lda lvlObjY,y
+                and #$7f
+                cmp limitU
+                bcc CP_PreloadNext
+                cmp limitD
+                bcs CP_PreloadNext
+                ldx lvlObjDH,y
+                lda #$ff                        ;Load only
+                jsr ExecScript
+                jmp CP_PreloadDone
+CP_PreloadNext: dey
+                bpl CP_PreloadTrigger
+CP_PreloadDone: jsr RedrawScreen
                 jsr SetZoneColors
                 jsr AddAllActorsNextFrame
                 jsr AddActors

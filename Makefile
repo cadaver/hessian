@@ -30,8 +30,9 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak \
 	script00.pak script01.pak script02.pak script03.pak script04.pak script05.pak script06.pak script07.pak \
-	text00.pak text01.pak text02.pak text03.pak text04.pak text05.pak text06.pak text07.pak \
-	text08.pak text09.pak text10.pak text11.pak text12.pak text13.pak text14.pak text15.pak \
+	script08.pak script09.pak script10.pak script11.pak script12.pak script13.pak script14.pak script15.pak \
+	script16.pak script17.pak script18.pak script19.pak script20.pak script21.pak script22.pak script23.pak \
+	script24.pak script25.pak script26.pak script27.pak \
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
@@ -235,69 +236,85 @@ script07.pak: script07.s memory.s mainsym.s
 	dasm script07.s -oscript07.bin -f3
 	pack2 script07.bin script07.pak
 
-text00.pak: text00.s
-	dasm text00.s -otext00.bin -f3
-	pchunk2 text00.bin text00.pak
+script08.pak: script08.s memory.s mainsym.s
+	dasm script08.s -oscript08.bin -f3
+	pack2 script08.bin script08.pak
 
-text01.pak: text01.s
-	dasm text01.s -otext01.bin -f3
-	pchunk2 text01.bin text01.pak
+script09.pak: script09.s memory.s mainsym.s
+	dasm script09.s -oscript09.bin -f3
+	pack2 script09.bin script09.pak
 
-text02.pak: text02.s
-	dasm text02.s -otext02.bin -f3
-	pchunk2 text02.bin text02.pak
+script10.pak: script10.s memory.s mainsym.s
+	dasm script10.s -oscript10.bin -f3
+	pack2 script10.bin script10.pak
 
-text03.pak: text03.s
-	dasm text03.s -otext03.bin -f3
-	pchunk2 text03.bin text03.pak
+script11.pak: script11.s memory.s mainsym.s
+	dasm script11.s -oscript11.bin -f3
+	pack2 script11.bin script11.pak
 
-text04.pak: text04.s
-	dasm text04.s -otext04.bin -f3
-	pchunk2 text04.bin text04.pak
+script12.pak: script12.s memory.s mainsym.s
+	dasm script12.s -oscript12.bin -f3
+	pack2 script12.bin script12.pak
 
-text05.pak: text05.s
-	dasm text05.s -otext05.bin -f3
-	pchunk2 text05.bin text05.pak
+script13.pak: script13.s memory.s mainsym.s
+	dasm script13.s -oscript13.bin -f3
+	pack2 script13.bin script13.pak
 
-text06.pak: text06.s
-	dasm text06.s -otext06.bin -f3
-	pchunk2 text06.bin text06.pak
+script14.pak: script14.s memory.s mainsym.s
+	dasm script14.s -oscript14.bin -f3
+	pack2 script14.bin script14.pak
 
-text07.pak: text07.s
-	dasm text07.s -otext07.bin -f3
-	pchunk2 text07.bin text07.pak
+script15.pak: script15.s memory.s mainsym.s
+	dasm script15.s -oscript15.bin -f3
+	pack2 script15.bin script15.pak
 
-text08.pak: text08.s
-	dasm text08.s -otext08.bin -f3
-	pchunk2 text08.bin text08.pak
+script16.pak: script16.s memory.s mainsym.s
+	dasm script16.s -oscript16.bin -f3
+	pack2 script16.bin script16.pak
 
-text09.pak: text09.s
-	dasm text09.s -otext09.bin -f3
-	pchunk2 text09.bin text09.pak
+script17.pak: script17.s memory.s mainsym.s
+	dasm script17.s -oscript17.bin -f3
+	pack2 script17.bin script17.pak
 
-text10.pak: text10.s
-	dasm text10.s -otext10.bin -f3
-	pchunk2 text10.bin text10.pak
+script18.pak: script18.s memory.s mainsym.s
+	dasm script18.s -oscript18.bin -f3
+	pack2 script18.bin script18.pak
 
-text11.pak: text11.s
-	dasm text11.s -otext11.bin -f3
-	pchunk2 text11.bin text11.pak
+script19.pak: script19.s memory.s mainsym.s
+	dasm script19.s -oscript19.bin -f3
+	pack2 script19.bin script19.pak
 
-text12.pak: text12.s
-	dasm text12.s -otext12.bin -f3
-	pchunk2 text12.bin text12.pak
+script20.pak: script20.s memory.s mainsym.s
+	dasm script20.s -oscript20.bin -f3
+	pack2 script20.bin script20.pak
 
-text13.pak: text13.s
-	dasm text13.s -otext13.bin -f3
-	pchunk2 text13.bin text13.pak
+script21.pak: script21.s memory.s mainsym.s
+	dasm script21.s -oscript21.bin -f3
+	pack2 script21.bin script21.pak
 
-text14.pak: text14.s
-	dasm text14.s -otext14.bin -f3
-	pchunk2 text14.bin text14.pak
+script22.pak: script22.s memory.s mainsym.s
+	dasm script22.s -oscript22.bin -f3
+	pack2 script22.bin script22.pak
 
-text15.pak: text15.s
-	dasm text15.s -otext15.bin -f3
-	pchunk2 text15.bin text15.pak
+script23.pak: script23.s memory.s mainsym.s
+	dasm script23.s -oscript23.bin -f3
+	pack2 script23.bin script23.pak
+
+script24.pak: script24.s memory.s mainsym.s
+	dasm script24.s -oscript24.bin -f3
+	pack2 script24.bin script24.pak
+
+script25.pak: script25.s memory.s mainsym.s
+	dasm script25.s -oscript25.bin -f3
+	pack2 script25.bin script25.pak
+
+script26.pak: script26.s memory.s mainsym.s
+	dasm script26.s -oscript26.bin -f3
+	pack2 script26.bin script26.pak
+
+script27.pak: script27.s memory.s mainsym.s
+	dasm script27.s -oscript27.bin -f3
+	pack2 script27.bin script27.pak
 
 loadermusic.bin: music/hessianmusic.d64
 	d642prg music/hessianmusic.d64 loader.bin loadermusic.bin -h

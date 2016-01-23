@@ -9,12 +9,12 @@ SHOW_SPRITEDEPACK_TIME = 0
 
 DROP_ITEM_TEST  = 0                             ;Drop (D key) a copy of current item to test actor save
 PURGE_TEST      = 0                             ;Purge (P key) the oldest chunk-file to test for memory use
-AMMO_CHEAT      = 0
+AMMO_CHEAT      = 1
 ALLQUESTITEMS_CHEAT = 0
-STARTITEM_CHEAT = 0                             ;Start with weapon & parts instead of empty inventory
+STARTITEM_CHEAT = 1                             ;Start with weapon & parts instead of empty inventory
 FILTER_UPGRADE_CHEAT = 0
 UPGRADE_CHEAT   = 0
-GODMODE_CHEAT   = 0                             ;Whether health/battery cheat is on initially
+GODMODE_CHEAT   = 1                             ;Whether health/battery cheat is on initially
 CODE_CHEAT      = 0                             ;All codes all zeroes
 SKIP_PLOT       = 0                             ;Various instant jumps to late game plot sequences
 SKIP_PLOT2      = 0
@@ -58,6 +58,11 @@ randomAreaEnd:
 
                 include init.s
 
+        ; Aligned data & game state
+
+                include leveldata.s
+                include aligneddata.s
+
         ; Non-aligned data
 
                 include sounddata.s
@@ -66,12 +71,7 @@ randomAreaEnd:
                 include itemdata.s
                 include weapondata.s
                 include actordata.s
-                include leveldata.s
                 include text.s
-
-        ; Aligned data & game state
-
-                include aligneddata.s
 
         ; Preloaded spritefiles that will never be purged
 

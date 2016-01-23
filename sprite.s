@@ -23,6 +23,9 @@ SPRH_DATA       = 10
         ; Returns: A sprite file address highbyte
         ; Modifies: A,Y,temp6-temp8,loader temp vars
 
+EnsureSpriteFile:
+                lda fileHi,y
+                bne ESF_Loaded
 LoadSpriteFile: stx LSF_SaveX+1
                 tya
                 sec
@@ -39,7 +42,7 @@ LSF_NoError:    jsr PostLoad
                 sty sprFileNum                  ;PurgeChunk clears sprFileNum, restore it now
                 lda fileHi,y
 LSF_SaveX:      ldx #$00
-                rts
+ESF_Loaded:     rts
 
         ; Get and store a sprite. Cache (depack) if not cached yet.
         ;

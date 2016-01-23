@@ -387,6 +387,13 @@ actLastNavStairs = screen2+SCROLLROWS*40+96+MAX_COMPLEXACT*2
 actLastNavLadder = screen2+SCROLLROWS*40+96+MAX_COMPLEXACT*3
 actGroundCharInfo = screen2+SCROLLROWS*40+96+MAX_COMPLEXACT*4
 
+        ; Chunk-file memory allocation variables
+
+fileLo:         ds.b MAX_CHUNKFILES,0
+fileHi:         ds.b MAX_CHUNKFILES,0
+fileNumObjects: ds.b MAX_CHUNKFILES,0
+fileAge:        ds.b MAX_CHUNKFILES,0
+
         ; Remaining misc. data
 
 shiftOffsetTbl: dc.b 6,6,6
@@ -418,10 +425,21 @@ playerStateEnd:
                 endif
 
         ; Not saved variables
-        ; Note: must be at least 4 and follow the player state , due to code that skips saving of time
+        ; Note: must be at least 4 and follow the player state, due to code that skips saving of time
 
 scriptVariable: dc.b 0
 codeEntry:      ds.b 3,0
+
+        ; Level properties
+
+lvlPropertiesStart:
+lvlWaterSplashColor:
+                dc.b 0
+lvlWaterToxinDelay:
+                dc.b 0
+lvlAirToxinDelay:
+                dc.b 0
+lvlPropertiesEnd:
 
         ; In-memory checkpoint save
 
@@ -445,21 +463,3 @@ saveDifficulty: dc.b 0
 saveStateEnd:
 
 saveBattery     = saveState + battery - playerStateStart
-
-        ; Level properties
-
-lvlPropertiesStart:
-lvlWaterSplashColor:
-                dc.b 0
-lvlWaterToxinDelay:
-                dc.b 0
-lvlAirToxinDelay:
-                dc.b 0
-lvlPropertiesEnd:
-
-        ; Chunk-file memory allocation variables
-
-fileLo:         ds.b MAX_CHUNKFILES,0
-fileHi:         ds.b MAX_CHUNKFILES,0
-fileNumObjects: ds.b MAX_CHUNKFILES,0
-fileAge:        ds.b MAX_CHUNKFILES,0

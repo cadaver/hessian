@@ -49,6 +49,46 @@ NOWEAPONFRAME   = $ff
 
 RELOAD_FINISH_DELAY = 9                         ;Fixed delay before weapon can be fired after reloading
 
+NOARMOR         = $80
+
+DMG_DROWNING    = 2+NOARMOR
+DMG_FISTS       = 4
+DMG_FLAMETHROWER = 5
+DMG_MINIGUN     = 6
+DMG_KNIFE       = 6
+DMG_NIGHTSTICK  = 6
+DMG_AUTORIFLE   = 6
+DMG_BAT         = 8
+DMG_PISTOL      = 8
+DMG_LASER       = 12
+DMG_SHOTGUN     = 14                            ;Reduced by 2 per animation frame
+DMG_PLASMA      = 16
+DMG_SNIPERRIFLE = 20
+DMG_ENEMYMINE   = 32
+DMG_GRENADE     = 40
+DMG_LAUNCHERGRENADE = 48
+DMG_MINE        = 56
+DMG_BAZOOKA     = 64
+DMG_EMP         = 4+NOARMOR                    ;4 damage for 8 frames = 32 total
+DMG_FIRE        = 2+NOARMOR
+DMG_SMOKE       = 1+NOARMOR
+DMG_ANIMALBITE  = 4
+DMG_SPIDER      = 1+NOARMOR
+DMG_FLY         = 1+NOARMOR
+DMG_ROCK        = 2+NOARMOR
+DMG_FIREBALL    = 2+NOARMOR
+DMG_STEAM       = 1+NOARMOR
+DMG_ACID        = 16
+
+DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
+DMGMOD_NOORGANIC = $80                          ;No organic damage
+DMGMOD_NONONORGANIC = $08                       ;No nonorganic damage
+DMGMOD_REDUCEDNONORGANIC = $78                  ;Reduced damage to nonorganic enemies
+
+SPDTBL_NORMAL   = 0
+SPDTBL_GRENADE  = 9
+SPDTBL_LAUNCHER = 18
+
         ; Actor attack routine
         ;
         ; Parameters: X actor index
