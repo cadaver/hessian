@@ -1,4 +1,4 @@
-all: hessian.d64 hessian.d81 hessian.sid
+all: hessian.d64 hessian.sid
 
 clean:
 	-rm *.bin
@@ -8,7 +8,6 @@ clean:
 	-rm *.prg
 	-rm *.tbl
 	-rm *.d64
-	-rm *.d81
 	-rm hessian
 	-rm 0?
 	-rm 1?
@@ -43,9 +42,6 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	sprrotordrone.pak sprlargespider.pak sprscientist.pak sprhacker.pak
 	maked64 hessian.d64 hessian.seq HESSIAN___________HE_2A 10
 	reorder hessian.d64
-
-hessian.d81: hessian.d64 hessiand81.seq
-	c1541 < hessiand81.seq
 
 loader.prg: kernal.s loader.s loadsym.txt ldepacksym.txt ldepack.s boot.s macros.s memory.s
 	dasm ldepack.s -oloader.prg -sldepack.tbl -f3
