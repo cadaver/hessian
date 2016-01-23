@@ -273,9 +273,9 @@ MoveScientists: jsr StopScript
                 lda #$36
                 jsr MoveScientistSub
                 lda #<EP_ESCORTSCIENTISTSSTART
-                sta actScriptEP
+                sta actScriptEP+1
                 lda #>EP_ESCORTSCIENTISTSSTART
-                sta actScriptF
+                sta actScriptF+1
                 if SKIP_PLOT > 0
                 lda #PLOT_ESCORTCOMPLETE
                 jsr SetPlotBit
@@ -423,7 +423,9 @@ RadioConstruct2:jsr StopScript
         ; Returns: -
         ; Modifies: various
 
-BeginSurgery:   ldy #ITEM_LUNGFILTER
+BeginSurgery:   ldy #C_SCIENTIST
+                jsr EnsureSpriteFile
+                ldy #ITEM_LUNGFILTER
                 jsr FindItem
                 bcc BS_NoFilter
                 lda actXH+ACTI_PLAYER
@@ -437,6 +439,12 @@ BeginSurgery:   ldy #ITEM_LUNGFILTER
                 ldy #ACT_SCIENTIST2
                 gettext TEXT_BEGINSURGERY1
                 jmp SpeakLine
+
+EnsureSpriteFile:
+                lda fileHi,y
+                bne ESF_InMemory
+                jmp LoadSpriteFile
+ESF_InMemory:   rts
 
         ; Begin surgery script, part 2
         ;

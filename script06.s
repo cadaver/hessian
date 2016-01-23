@@ -6,6 +6,7 @@
                 org scriptCodeStart
 
                 dc.w MoveJormungandr
+                dc.w RadioHackerWarning
 
 PHASE_RISE      = 0
 PHASE_WAIT      = 1
@@ -418,7 +419,28 @@ MJ_RowsDone:    ldx actIndex
 MJ_EraseEye:    ldy MJ_OldEyePos+2
                 bpl MJ_NoOldEye
 MJ_OldEyePos:   sta $1000
+RHW_NoActor:
+RHW_HasItem:
 MJ_NoOldEye:    rts
+
+        ; Radio message when entering Jormungandr's lair without biometric ID
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RadioHackerWarning:
+                lda #ACT_HACKER
+                jsr FindLevelActor
+                bcc RHW_NoActor
+                ldy #ITEM_BIOMETRICID
+                jsr FindItem
+                bcs RHW_HasItem
+                gettext TEXT_RADIOHACKERWARNING
+                ldy #ACT_PLAYER
+                jsr SpeakLine
+                lda #SFX_RADIO
+                jmp PlaySfx
 
         ; Variables
 

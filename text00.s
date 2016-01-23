@@ -2,7 +2,7 @@
                 org $0000
                 
                 dc.w dataEnd
-                dc.b 2
+                dc.b 3
 
                 rorg $0000
 

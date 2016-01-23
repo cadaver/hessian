@@ -724,7 +724,8 @@ DAM_NoWallHit:  lda actMB,x
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-DestroyCPU:     ldy #MAX_LVLOBJ
+DestroyCPU:     jsr ExplodeActor
+                ldy #MAX_LVLOBJ
 DCPU_Search:    dey
                 lda lvlObjX,y
                 cmp actXH,x
@@ -733,8 +734,7 @@ DCPU_Search:    dey
                 and #$7f
                 cmp actYH,x
                 bne DCPU_Search
-                jsr ActivateObject              ;Note: will loop endlessly or read out of bounds if not found
-                jmp ExplodeActor
+                jmp ActivateObject              ;Note: will loop endlessly or read out of bounds if not found
 
         ; Turn enemy into an explosion & drop item
         ;

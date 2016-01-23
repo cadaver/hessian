@@ -99,6 +99,17 @@ EnsureSpriteFile:
                 bne ESF_InMemory
                 jmp LoadSpriteFile
 
+        ; Security chief speech
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+SecurityChiefSpeech:
+                ldy #ACT_SECURITYCHIEF
+                gettext TEXT_SECURITYCHIEF
+                jmp SpeakLine
+
         ; Trigger script when entering Bio-Dome
         ;
         ; Parameters: -
@@ -159,17 +170,6 @@ BioDomeEnding:  lda textTime                    ;Wait until radio message text h
                 lda #<EP_ENDING1
                 ldx #>EP_ENDING1
                 jmp ExecScript
-
-        ; Security chief speech
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-SecurityChiefSpeech:
-                ldy #ACT_SECURITYCHIEF
-                gettext TEXT_SECURITYCHIEF
-                jmp SpeakLine
 
         ; Install laptop script
         ;
@@ -495,11 +495,17 @@ HL_NoLevelActor:jmp StopScript
         ; Returns: -
         ; Modifies: various
 
-DestroyComment: lda #$00
+DestroyComment: lda scriptVariable
+                php
+                inc scriptVariable
+                plp
+                beq DC_Wait                     ;Wait until screen on
+                lda #$00
                 sta actScriptF+1                ;Stop actor script after line
                 ldy #ACT_SCIENTIST3
                 gettext TEXT_DESTROYCOMMENT
                 jmp SpeakLine
+DC_Wait:        rts
 
         ; Jeff interaction if return to lab after installing laptop
         ;

@@ -94,7 +94,7 @@ UP_IncreaseTime:
                 lda #$00
                 sta time,x
                 dex
-                bne UP_IncreaseTime
+                bpl UP_IncreaseTime
 UP_SkipTime:    ldx #$00
                 lda actHp+ACTI_PLAYER
                 lsr
