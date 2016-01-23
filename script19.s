@@ -10,7 +10,6 @@
                 dc.w EnterLab
                 dc.w HackerEnterLab
                 dc.w ScientistEnterLab
-                dc.w HackerFinal
 
         ; Escaped to old tunnels
         ;
@@ -165,25 +164,7 @@ SEL_Done:       lda #AIMODE_TURNTO
                 sty actScriptF+1                ;Stop script for now
                 ldy #ACT_SCIENTIST3
                 jmp SpeakLine
-
-        ; Jeff interaction if return to lab after installing laptop
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-HackerFinal:    lda actXH+ACTI_PLAYER
-                cmp #$84
-                bcc HF_TooFar
-                jsr AddQuestScore
-                lda #$00
-                sta actScriptF+2
-                gettext txtHackerFinal
-                ldy #ACT_HACKER
-                jmp SpeakLine
-TM_Wait:
-SEL_Wait:
-HF_TooFar:      rts
+SEL_Wait:       rts
 
         ; Messages
 
@@ -197,8 +178,5 @@ txtHackerEnterLab:
                 dc.b 34,"THE PLOT THICKENS. A SECRET LAB.",34,0
 
 txtEnterLab:    dc.b 34,"A BUNKER? I HAD NO IDEA. POSSIBLY FOR NORMAN'S EXTRA-PRIVATE WORK.",34,0
-
-txtHackerFinal: dc.b 34,"HEY. YOU SHOULD BE KICKING JORMUNGANDR AND CONSTRUCT ASS. I'VE NO WORRIES HERE. WELL, "
-                dc.b "EXCEPT WHETHER YOU'LL RETURN ALIVE. TRY TO DO THAT, RIGHT?",34,0
 
                 checkscriptend

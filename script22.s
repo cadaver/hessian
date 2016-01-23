@@ -8,6 +8,7 @@
                 dc.w InstallLaptop
                 dc.w InstallLaptopWork
                 dc.w InstallLaptopFinish
+                dc.w HackerFinal
 
         ; Install laptop script
         ;
@@ -90,6 +91,23 @@ InstallLaptopFinish:
 ILF_NotYet:     ldy lvlObjNum
                 jmp InactivateObject
 
+        ; Jeff interaction if return to lab after installing laptop
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+HackerFinal:    lda actXH+ACTI_PLAYER
+                cmp #$84
+                bcc HF_TooFar
+                jsr AddQuestScore
+                lda #$00
+                sta actScriptF+2
+                gettext txtHackerFinal
+                ldy #ACT_HACKER
+                jmp SpeakLine
+HF_TooFar:      rts
+
         ; Messages
 
 txtInstallStart:dc.b 34,"JEFF HERE. THIS MUST BE THE AI'S LINK. LET'S GET TO WORK.",34,0
@@ -106,5 +124,8 @@ txtInstallFinish:
                 dc.b 34,"JEFF AGAIN. MANAGED TO IDENTIFY A SEQUENCE WHICH I CAN REPLAY ENDLESSLY. "
                 dc.b "WE'LL SEE HOW IT GOES WHEN YOU TAKE OUT JORMUNGANDR. DO NOT, I REPEAT DO NOT ATTACK THE AI FIRST. ITS SEQUENCE "
                 dc.b "MUTATES CONSTANTLY, WHICH I CAN'T SPOOF.",34,0
+
+txtHackerFinal: dc.b 34,"HEY. YOU SHOULD BE KICKING JORMUNGANDR AND CONSTRUCT ASS. I'VE NO WORRIES HERE. WELL, "
+                dc.b "EXCEPT WHETHER YOU'LL RETURN ALIVE. TRY TO DO THAT, RIGHT? NOW GO KICK ASS ALREADY.",34,0
 
                 checkscriptend
