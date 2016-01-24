@@ -773,7 +773,7 @@ plrClimbSpeed:  dc.b INITIAL_CLIMBSPEED         ;Climbing speed
 
 alItem:         dc.w MoveItem                   ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 10                         ;Horizontal size
+                dc.b 8                          ;Horizontal size
                 dc.b 7                          ;Size up
                 dc.b 0                          ;Size down
 
