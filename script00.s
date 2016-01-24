@@ -23,9 +23,9 @@ titleTexts      = chars+608+168*2
 levelNamesTbl   = chars+$700
 levelNames      = chars+$740
 
-START_LEVEL     = $00                          ;Warehouse
-START_X         = $6680
-START_Y         = $1700
+;START_LEVEL     = $00                          ;Warehouse
+;START_X         = $6680
+;START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard
 ;START_X         = $0280
@@ -83,9 +83,9 @@ START_Y         = $1700
 ;START_X         = $4f80
 ;START_Y         = $3900
 
-;START_LEVEL     = $08                          ;Lower labs corridor
-;START_X         = $3780
-;START_Y         = $4100
+START_LEVEL     = $08                          ;Lower labs corridor
+START_X         = $3780
+START_Y         = $4100
 
 ;START_LEVEL     = $08                          ;Lower labs server room
 ;START_X         = $1f80
@@ -439,14 +439,15 @@ LoadOrSaveGameMode:
                 jmp SaveGameExec
 LoadGameExec:   lda saveSlotChoice
                 jsr GetSaveListPos
-                lda saveList,y                  ;No save at slot yet?
-                beq LoadGameLoop
+                ;lda saveList,y                  ;No save at slot yet?
+                ;beq LoadGameLoop
                 jsr OpenFile                    ;Load the savegame file (unpacked)
                 lda #<saveStateStart
                 sta zpDestLo
                 lda #>saveStateStart
                 sta zpDestHi
                 ldy #$00
+                sty saveT
 RSF_Loop:       jsr GetByte
                 bcs RSF_End
                 sta (zpDestLo),y
@@ -454,8 +455,8 @@ RSF_Loop:       jsr GetByte
                 bne RSF_Loop
                 inc zpDestHi
                 bne RSF_Loop
-RSF_End:        tay                             ;Check if load errored
-                bne LoadGameLoop
+RSF_End:        lda saveT                       ;Check if save is valid (has player actor)
+                beq LoadGameLoop
                 jsr FadeOutAll
                 jsr SaveModifiedOptions
                 lda #RCP_RESETTIME

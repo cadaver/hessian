@@ -30,7 +30,9 @@ NUMEYECOLORS    = 6
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MJ_WaitBegin:   lda actXH+ACTI_PLAYER
+MJ_WaitBegin:   ldy #C_HAZARDS2                 ;Make sure rolling mine sprites are loaded
+                jsr EnsureSpriteFile
+                lda actXH+ACTI_PLAYER
                 cmp #$f2                        ;Wait until player approaches the balcony
                 bne MJ_Done
                 ldy #$33

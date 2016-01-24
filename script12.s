@@ -142,6 +142,8 @@ MoveScientists: jsr StopScript
                 jsr FindLevelActor
                 lda #$36
                 jsr MoveScientistSub
+                lda #$00                        ;Reset Amos script if skipping parts of plot
+                sta actScriptF
                 lda #<EP_ESCORTSCIENTISTSSTART
                 ldx #>EP_ESCORTSCIENTISTSSTART
                 sta actScriptEP+1
