@@ -6,6 +6,7 @@
                 org scriptCodeStart
 
                 dc.w Scientist2
+                dc.w GarageComputer
 
         ; Scientist 2 conversation
         ;
@@ -85,6 +86,21 @@ S2_Dialogue4:   lda #ITEM_COMMGEAR
                 gettext txtParkingGarage4
                 jmp SpeakLine
 
+        ; Computer in garage script
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+GarageComputer: jsr SetupTextScreen
+                gettext txtGarageComputer
+                ldy #0
+                sty temp1
+                sty temp2
+                jsr PrintMultipleRows
+                jsr WaitForExit
+                jmp CenterPlayer
+
         ; Note: reordered to compress better
         
 txtParkingGarage4:
@@ -105,5 +121,14 @@ txtParkingGarage3:
                 dc.b "TAKE THIS SECURITY PASS TO ACCESS THE UPPER LABS, PLUS A WIRELESS CAMERA/RADIO "
                 dc.b "SET SO WE CAN STAY IN TOUCH.",34,0
 
+txtGarageComputer:
+                     ;0123456789012345678901234567890123456789
+                dc.b "SEQUENCE OF EVENTS:",0
+                dc.b " ",0
+                dc.b "1. 'HESSIAN' PROJECT CANCELLED",0
+                dc.b "2. NORMAN THRONE GOES MISSING",0
+                dc.b "3. ???",0
+                dc.b "4. MACHINES OUT OF CONTROL, KILLING",0
+                dc.b "   EVERYONE",0,0
 
                 checkscriptend
