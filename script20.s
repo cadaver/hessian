@@ -78,7 +78,11 @@ txtLabComputer: dc.b "NOTE #4",0
                 dc.b "PROTOCOL.' IF COMMUNICATION ON THE LINE",0
                 dc.b "CEASES DUE TO EITHER JORMUNGANDR OR THE",0
                 dc.b "AI BEING DISABLED, THE ONE THAT REMAINS",0
-                dc.b "WILL LAUNCH ITS ATTACK.",0,0
+                dc.b "WILL LAUNCH ITS ATTACK.",0
+                dc.b " ",0
+                dc.b "I NEED TO CONTACT RUTGER URGENTLY.",0
+                dc.b " ",0
+                dc.b "- NORMAN",0,0
 
 txtGiveLaptop2: dc.b 34,"SORRY FOR SNEAKING UP ON YOU. BUT THAT IF ANY IS EVIL. TAKE THIS LAPTOP. "
                 dc.b "IF YOU CAN FIND THE LINK, WE MIGHT BE ABLE TO TRICK THE PROTOCOL. THEN YOU CAN "
