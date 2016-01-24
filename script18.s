@@ -335,10 +335,13 @@ AfterSurgeryNoAir:
                 lda oxygen                      ;Let player notice first
                 cmp #MAX_OXYGEN-5
                 bcs ASNA_Wait
+                lda #PLOT_HIDEOUTAMBUSH         ;Radio silence if ambush
+                jsr GetPlotBit
+                bne ASNA_NoRadioMsg
                 lda #ACT_HACKER
                 jsr FindLevelActor
                 bcc ASNA_NoRadioMsg
-                lda #<EP_AFTERSURGERYNOAIRRADIO ;Radio transmission if Jeff alive
+                lda #<EP_AFTERSURGERYNOAIRRADIO ;Transmission if Jeff alive (anywhere)
                 skip2
 ASNA_NoRadioMsg:lda #<EP_AFTERSURGERYFOLLOW     ;Restore follow script again
                 sta actScriptEP+1
@@ -395,7 +398,7 @@ txtNoAir:       dc.b 34,"DO YOU NOTICE? IT'S HARDER TO BREATHE. DAMN.. IT'S THE 
 txtNoAirDie:    dc.b 34,"I CAN'T GO ON.. BUT I REMEMBER THE CODE. IT'S "
 txtCode:        dc.b "XXX. GO!",34,0
 
-txtRadioNoAir:  dc.b 34,"JEFF HERE. AS YOU CUT OFF THE AI FROM THE SUBNETS, THE SABOTAGE MUST BE PHYSICAL, SOMEWHERE "
-                dc.b "CLOSE. DON'T THINK YOU HAVE TIME TO FIX IT NOW THOUGH.",34,0
+txtRadioNoAir:  dc.b 34,"JEFF HERE. AS YOU CUT OFF THE AI FROM THE SUBNETS, THE SABOTAGE MUST BE PHYSICAL. "
+                dc.b "POSSIBLY NEAR THE TOP FLOOR WASTE PROCESSING CHAMBERS. DON'T THINK YOU HAVE TIME TO FIX IT NOW THOUGH.",34,0
 
                 checkscriptend

@@ -169,7 +169,7 @@ MoveScientistSub:
                 sta lvlActF,y
                 lda #$06+ORG_GLOBAL
                 sta lvlActOrg,y
-                rts
+RC_Skip:        rts
 
         ; Radio briefing on Construct
         ;
@@ -177,16 +177,22 @@ MoveScientistSub:
         ; Returns: -
         ; Modifies: various
 
-RadioConstruct: lda #PLOT_MOVESCIENTISTS
+RadioConstruct: lda #PLOT_MOVESCIENTISTS        ;Wait until elevator fixed
                 jsr GetPlotBit
-                beq HP_TryAgain
+                beq RC_TryAgain
+                ldy #ITEM_BIOMETRICID           ;If has the biometric ID already, ambush will have happened
+                jsr FindItem                    ;and this information is redundant
+                bcs RC_Skip
+                lda #PLOT_HIDEOUTOPEN           ;If Jeff has left the hideout, redundant / do not mess script state
+                jsr GetPlotBit
+                beq RC_Skip
                 lda #<EP_HACKER3                ;Advance Jeff script now
                 ldx #>EP_HACKER3
                 sta actScriptEP+2
                 stx actScriptF+2
                 gettext txtRadioConstruct
                 jmp RadioMsg
-HP_TryAgain:    ldy lvlObjNum
+RC_TryAgain:    ldy lvlObjNum
                 jmp InactivateObject
 
         ; Messages

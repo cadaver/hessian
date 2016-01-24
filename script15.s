@@ -54,7 +54,7 @@ ThroneChief:    lda #ITEM_BIOMETRICID           ;Todo: cutscene
                 ldx #1
                 jsr AddItem
                 jsr TP_PrintItemName
-SetupAmbush:    lda #<EP_BEGINAMBUSH            ;On next zone transition
+                lda #<EP_BEGINAMBUSH            ;On next zone transition
                 ldx #>EP_BEGINAMBUSH
                 jmp SetZoneScript
 
@@ -79,7 +79,6 @@ RadioFindFilter:jsr StopZoneScript
                 ldx #>EP_BEGINSURGERY
                 sta actScriptEP
                 stx actScriptF
-                jsr SetupAmbush
                 gettext txtRadioFindFilter
 RadioMsg:       ldy #ACT_PLAYER
                 jsr SpeakLine
@@ -102,20 +101,9 @@ BA_Skip:        rts
         ; Modifies: various
 
 BeginAmbush:    jsr StopZoneScript
-                lda #PLOT_ELEVATOR1             ;No action until elevator fixed and has the biometric ID
-                jsr GetPlotBit
-                beq BA_Skip
-                ldy #ITEM_BIOMETRICID
-                jsr FindItem
-                bcc BA_Skip
-                lda #PLOT_HIDEOUTOPEN           ;Already resolved?
-                jsr GetPlotBit
-                beq BA_Skip
-                lda #PLOT_HIDEOUTAMBUSH         ;Already happening?
-                jsr GetPlotBit
-                bne BA_Skip
                 lda #ACT_HACKER                 ;Check that Jeff is in hideout
                 jsr FindLevelActor
+                bcc BA_Skip
                 lda lvlActOrg,y
                 cmp #$04+ORG_GLOBAL
                 bne BA_Skip
@@ -162,9 +150,9 @@ txtRadioFindFilter:
 txtEscortFinish:dc.b 34,"WE'D NEVER HAVE MADE IT ALONE. NOW WE NEED TIME TO SET UP. WE'LL GIVE YOU A CALL WHEN READY.",34,0
 
 txtRadioConstruct2:
-                dc.b 34,"IT'S JEFF. SAW YOU FOUND ACCESS TO THE BIO-DOME. NASTY. IT'S POSSIBLE THE AI IS SITUATED SOMEWHERE INSIDE. "
+                dc.b 34,"IT'S JEFF. SAW YOU FOUND ACCESS TO THE BIO-DOME. NASTY. SO THE AI SHOULD BE SOMEWHERE INSIDE. "
                 dc.b "FOUND ALSO SOMETHING MORE. THERE'S A BLACKOUT TO THE OUTSIDE, RIGHT? BUT A DEDICATED LINK "
-                dc.b "WAS INSTALLED FOR THE MILITARY CONTRACT. I CAN SEE THAT THERE'S TRAFFIC ON IT, BUT CAN'T SEE WHAT WITHOUT "
+                dc.b "WAS INSTALLED FOR THE MILITARY CONTRACTS. I CAN SEE THERE'S TRAFFIC ON IT, BUT CAN'T SEE WHAT WITHOUT "
                 dc.b "PHYSICAL ACCESS. I BET IT'S THE AI. HMM.. WHAT? I'M SEEING MOVE-",34," (STATIC)",0
 
                 checkscriptend
