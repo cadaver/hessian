@@ -391,10 +391,11 @@ MH_DoAutoTurn:  lda actD,x
                 sta actD,x
 MH_ResetMoveCtrl:
                 lda #$00                        ;Reset movement until reassigned by AI
+                sta temp2
                 sta actMoveCtrl,x
                 sta actSX,x
 MH_NoAutoTurn:  lda actCtrl,x                   ;When holding fire can not initiate jump
-                and #JOY_FIRE
+                and #JOY_FIRE                   ;or operate
                 bne MH_NoNewJump
                 lda temp2
                 cmp #JOY_UP+1
@@ -437,17 +438,20 @@ MH_StartJump:   ldy #AL_JUMPSPEED
 MH_JumpNoPlayer:jsr MH_ResetGrounded
                 lda #FR_JUMP
                 jmp MH_AnimDone
-MH_NoNewJump:   lda temp2
-                ldy actF1,x                     ;If in enter stance,
+MH_NoNewJump:   ldy actF1,x                     ;If in enter stance,
                 cpy #FR_ENTER                   ;hold it as long as joy up/down held
-                bne MH_NoEnterFrame
+                bne MH_NoEnterFrame             ;but not firebuton
+                lda actCtrl,x
+                cmp #JOY_FIRE
+                bcs MH_StopEnter
                 and #JOY_DOWN|JOY_UP
                 bne MH_KeepEnterFrame
-                jmp MH_StandAnim
+MH_StopEnter:   jmp MH_StandAnim
 MH_KeepEnterFrame:
                 tya
                 jmp MH_AnimDone
-MH_NoEnterFrame:and #JOY_DOWN
+MH_NoEnterFrame:lda temp2
+                and #JOY_DOWN
                 beq MH_NoDuck
 MH_NewDuckOrRoll:
                 lda temp3

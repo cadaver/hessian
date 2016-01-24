@@ -224,9 +224,9 @@ DP_Linda:       lda #ACT_SCIENTIST3
                 ldx #>txtRadioDestroyLinda
                 jmp RadioMsg
 DP_Jeff:        lda #<EP_DESTROYCOMMENT
+                ldx #>EP_DESTROYCOMMENT
                 sta actScriptEP+1
-                lda #>EP_DESTROYCOMMENT
-                sta actScriptF+1
+                stx actScriptF+1
                 lda #ACT_HACKER
                 jsr DP_SetPosCommon
                 lda #<txtRadioDestroyJeff
@@ -245,9 +245,9 @@ DP_SetPosCommon:
                 lda #$0f+ORG_GLOBAL
                 sta lvlActOrg,y
                 lda #<EP_HAZMAT
+                ldx #>EP_HAZMAT
                 sta actScriptEP+3
-                lda #>EP_HAZMAT
-                sta actScriptF+3
+                stx actScriptF+3
                 ldy lvlDataActBitsStart+$0f
                 lda lvlStateBits,y              ;Remove the hazmat item
                 and #$fe

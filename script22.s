@@ -30,9 +30,9 @@ InstallLaptop:  ldy #ITEM_LAPTOP
                 lda #PLOT_DISRUPTCOMMS
                 jsr SetPlotBit
                 lda #<EP_HACKERFINAL
+                ldx #>EP_HACKERFINAL
                 sta actScriptEP+2
-                lda #>EP_HACKERFINAL
-                sta actScriptF+2
+                stx actScriptF+2
                 lda #$00
                 sta temp4
                 lda #ITEM_LAPTOP

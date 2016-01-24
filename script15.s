@@ -76,9 +76,9 @@ RadioFindFilter:jsr StopZoneScript
                 ldx #$00+AIMODE_TURNTO
                 jsr MoveScientistSub2
                 lda #<EP_BEGINSURGERY
+                ldx #>EP_BEGINSURGERY
                 sta actScriptEP
-                lda #>EP_BEGINSURGERY
-                sta actScriptF
+                stx actScriptF
                 jsr SetupAmbush
                 gettext txtRadioFindFilter
 RadioMsg:       ldy #ACT_PLAYER

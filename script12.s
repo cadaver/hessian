@@ -143,9 +143,9 @@ MoveScientists: jsr StopScript
                 lda #$36
                 jsr MoveScientistSub
                 lda #<EP_ESCORTSCIENTISTSSTART
+                ldx #>EP_ESCORTSCIENTISTSSTART
                 sta actScriptEP+1
-                lda #>EP_ESCORTSCIENTISTSSTART
-                sta actScriptF+1
+                stx actScriptF+1
                 if SKIP_PLOT > 0
                 lda #PLOT_ESCORTCOMPLETE
                 jsr SetPlotBit
@@ -179,9 +179,9 @@ RadioConstruct: lda #PLOT_MOVESCIENTISTS
                 jsr GetPlotBit
                 beq HP_TryAgain
                 lda #<EP_HACKER3                ;Advance Jeff script now
+                ldx #>EP_HACKER3
                 sta actScriptEP+2
-                lda #>EP_HACKER3
-                sta actScriptF+2
+                stx actScriptF+2
                 gettext txtRadioConstruct
                 jmp RadioMsg
 HP_TryAgain:    ldy lvlObjNum

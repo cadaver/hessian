@@ -91,10 +91,10 @@ BS2_3:          inc scriptVariable
 
 BS2_4:          jsr BlankScreen
                 lda #<EP_AFTERSURGERY
+                ldx #>EP_AFTERSURGERY
                 sta actScriptEP+1
-                lda #>EP_AFTERSURGERY
-                sta actScriptF+1
-                lda #0
+                stx actScriptF+1
+                lda #$00
                 sta actScriptF
                 lda #<EP_AFTERSURGERYRUN
                 ldx #>EP_AFTERSURGERYRUN

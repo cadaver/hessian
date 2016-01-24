@@ -93,9 +93,9 @@ EnterLab:       lda lvlObjB+$0c                 ;If player closed door from insi
                 lda #$10+AIMODE_IDLE
                 sta lvlActF,y
                 lda #<EP_SCIENTISTENTERLAB
+                ldx #>EP_SCIENTISTENTERLAB
                 sta actScriptEP+1
-                lda #>EP_SCIENTISTENTERLAB
-                sta actScriptF+1
+                stx actScriptF+1
                 lda #PLOT_OLDTUNNELSLAB1
                 jsr SetPlotBit
 EL_NoActor1:    lda #ACT_HACKER
@@ -117,9 +117,9 @@ EL_NoActor1:    lda #ACT_HACKER
                 lda #$00+AIMODE_IDLE
                 sta lvlActF,y
                 lda #<EP_HACKERENTERLAB
+                ldx #>EP_HACKERENTERLAB
                 sta actScriptEP+2
-                lda #>EP_HACKERENTERLAB
-                sta actScriptF+2
+                stx actScriptF+2
                 lda #PLOT_OLDTUNNELSLAB2
                 jsr SetPlotBit
 EL_NoActor2:

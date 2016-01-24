@@ -30,9 +30,9 @@ LabComputer:    lda #ACT_HACKER
                 lda #$10+AIMODE_TURNTO
                 sta lvlActF,y
                 lda #<EP_GIVELAPTOP2
+                ldx #>EP_GIVELAPTOP2
                 sta actScriptEP+2
-                lda #>EP_GIVELAPTOP2
-                sta actScriptF+2
+                stx actScriptF+2
                 lda #$00
                 sta scriptVariable
 LC_NoActor:     jsr SetupTextScreen

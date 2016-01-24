@@ -1,12 +1,14 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 13, second hacker scene (optional)
+        ; Script 13, second hacker scene (optional) + saboteur robot
 
                 org scriptCodeStart
 
                 dc.w Hacker3
                 dc.w Hacker4
+                dc.w CombatRobotSaboteur
+                dc.w DestroyCombatRobotSaboteur
 
         ; Hacker script routine 3 (after lower labs server room)
         ;
@@ -59,11 +61,74 @@ H4_Unsafe:      rts
 H4_HasPass:     lda #PLOT_HIDEOUTOPEN           ;Can not return to hideout
                 jsr ClearPlotBit
                 lda #<EP_HACKERFOLLOW
+                ldx #>EP_HACKERFOLLOW
                 sta actScriptEP+2
-                lda #>EP_HACKERFOLLOW
-                sta actScriptF+2
+                stx actScriptF+2
                 gettext txtHacker4b
                 jmp H_SpeakCommon
+
+        ; Saboteur robot
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+CombatRobotSaboteur:
+                lda #FR_ATTACK+3
+                sta actF2,x
+                lda #FR_STAND
+                sta actF1,x
+                jsr Random
+                and #$08
+                sta temp1
+                lda actXL,x
+                and #$f0
+                ora temp1
+                sta actXL,x
+                jsr Random
+                and #$1f
+                clc
+                adc actTime,x
+                sta actTime,x
+                bcc CRS_NoEffect
+                lda #ACTI_FIRSTNPCBULLET
+                ldy #ACTI_LASTNPCBULLET
+                jsr GetFreeActor
+                bcc CRS_NoEffect
+                lda #ACT_EMP
+                jsr SpawnActor
+                tya
+                tax
+                lda #8*8
+                jsr MoveActorX
+                lda #8*8
+                jsr MoveActorY
+                dec actYH,x
+                lda #COLOR_FLICKER
+                sta actFlash,x
+                lda #8
+                sta actTime,x
+                lda #0
+                sta actBulletDmgMod-ACTI_FIRSTPLRBULLET,x ;Make sure the EMP doesn't do actual damage to anyone
+                ldx actIndex
+CRS_NoEffect:   rts
+
+        ; Saboteur robot death
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+DestroyCombatRobotSaboteur:
+                lda #PLOT_LOWERLABSNOAIR        ;Make lower labs safe again
+                jsr ClearPlotBit
+                lda #$00
+                sta ULO_NoAirFlag+1
+                stx temp6
+                lda #MUSIC_MYSTERY              ;Restore original music
+                jsr PlaySong
+                ldx temp6
+                jmp ExplodeEnemy3_Ofs24
 
         ; Messages
         ; Reordered to compress better

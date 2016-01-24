@@ -20,7 +20,7 @@ EscortScientistsStart:
                 lda actXH,x
                 sec
                 sbc actXH+ACTI_PLAYER
-                cmp #$04
+                cmp #$03
                 bcs ESS_WaitUntilClose
                 lda scriptVariable
                 asl
@@ -51,11 +51,11 @@ ESS_3:          inc scriptVariable
                 gettext txtEscortStart3
                 jsr SpeakLine
                 lda #<EP_ESCORTSCIENTISTSREFRESH
+                ldx #>EP_ESCORTSCIENTISTSREFRESH
                 sta actScriptEP
+                stx actScriptF
                 sta actScriptEP+1
-                lda #>EP_ESCORTSCIENTISTSREFRESH
-                sta actScriptF
-                sta actScriptF+1
+                stx actScriptF+1
 ESS_WaitUntilClose:
                 rts
 

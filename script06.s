@@ -178,8 +178,11 @@ ESR_HasGoal:    lda #<EP_RADIOFINDFILTER
                 ldx #>EP_RADIOFINDFILTER
                 jsr SetZoneScript
                 lda #<EP_ESCORTSCIENTISTSFINISH
+                ldx #>EP_ESCORTSCIENTISTSFINISH
                 sta actScriptEP
+                stx actScriptF
                 sta actScriptEP+1
+                stx actScriptF+1
                 lda actScriptF+2
                 bne ESR_SkipJeffScript
                 lda #<EP_HACKER4                ;Reset Jeff script now that old tunnels trip is possible again
@@ -351,9 +354,9 @@ HFZ_LevelOK:    lda #ACT_HACKER
 HFZ_Finished:   jsr HFZ_LevelOK
                 jsr AddQuestScore
                 lda #<EP_HACKERFOLLOWFINISH
+                ldx #>EP_HACKERFOLLOWFINISH
                 sta actScriptEP+2
-                lda #>EP_HACKERFOLLOWFINISH
-                sta actScriptF+2
+                stx actScriptF+2
 HFZ_LevelFail:  jmp StopZoneScript              ;No zone script
 
         ; Variables
