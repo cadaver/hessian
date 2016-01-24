@@ -23,9 +23,9 @@ titleTexts      = chars+608+168*2
 levelNamesTbl   = chars+$700
 levelNames      = chars+$740
 
-;START_LEVEL     = $00                          ;Warehouse
-;START_X         = $6680
-;START_Y         = $1700
+START_LEVEL     = $00                          ;Warehouse
+START_X         = $6680
+START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard
 ;START_X         = $0280
@@ -83,9 +83,9 @@ levelNames      = chars+$740
 ;START_X         = $4f80
 ;START_Y         = $3900
 
-START_LEVEL     = $08                          ;Lower labs corridor
-START_X         = $3780
-START_Y         = $4100
+;START_LEVEL     = $08                          ;Lower labs corridor
+;START_X         = $3780
+;START_Y         = $4100
 
 ;START_LEVEL     = $08                          ;Lower labs server room
 ;START_X         = $1f80
