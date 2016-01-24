@@ -114,8 +114,11 @@ MJ_SetPhase:    sta phase
 
 MJ_Attack:      lda #1
                 sta frame
+                sta temp4
                 lda actAttackD,x
                 bne MJ_FireDelay
+                sta temp3
+                sta tgtActIndex
                 lda #<wdFlameThrower
                 sta wpnLo
                 lda #>wdFlameThrower
@@ -127,17 +130,11 @@ MJ_Attack:      lda #1
                 sta temp1
                 lda #>(-$240)
                 sta temp2
-                lda #<($100)
-                sta temp3
-                lda #>($100)
-                sta temp4
-                lda #$ff
-                sta tgtActIndex
                 lda #8
                 sta AH_FireDir+1
                 jsr AttackCustomOffset
                 ldy tgtActIndex
-                bmi MJ_FireDone
+                beq MJ_FireDone
                 lda #-60
                 sta actSX,y
                 lda phaseTime
