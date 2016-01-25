@@ -13,6 +13,7 @@
                 dc.w LowerLabsComputer6
                 dc.w LowerLabsComputer7
                 dc.w LowerLabsComputer8
+                dc.w LowerLabsComputer9
 
 LowerLabsComputer1:
                 gettext txtLowerLabsComputer1
@@ -73,19 +74,34 @@ LowerLabsComputer8:
                 gettext txtLowerLabsComputer8
                 bne DisplayCommon
 
+LowerLabsComputer9:
+                ldx #$30
+                lda #PLOT_ELEVATOR1
+                jsr GetPlotBit
+                bne LLC9_ZeroUse                ;Show zero CPU after Construct is disconnected
+                ldx #$39
+                jsr Random
+                and #$07
+                ora #$30
+                bne LLC9_Common
+LLC9_ZeroUse:   txa
+LLC9_Common:    stx txtCpuUse
+                sta txtCpuUse+1
+                gettext txtLowerLabsComputer9
+                jmp DisplayCommon
+
 txtLowerLabsComputer1:
                      ;0123456789012345678901234567890123456789
                 dc.b "ROBOT CONSTRUCTION LINE",0
                 dc.b " ",0
-                dc.b "CONSTRUCT OVERRIDE: PRIORITIZE THE",0
-                dc.b "MANUFACTURE OF JORMUNGANDR PARTS AND",0
-                dc.b "REPAIRS OR REPLACEMENTS FOR CONSTRUCTION",0
-                dc.b "ROBOTS IN MOST VITAL POSITIONS. ALL",0
-                dc.b "OTHER WORK INESSENTIAL.",0,0
+                dc.b "CONSTRUCT OVERRIDES:",0
+                dc.b "- PRIORITIZE COMPLETION OF JORMUNGANDR",0
+                dc.b "- REPAIRS ONLY TO VITAL BUILDER ROBOTS",0
+                dc.b "- ALL OTHER WORK INESSENTIAL",0,0
 
 txtLowerLabsComputer2:
                      ;0123456789012345678901234567890123456789
-                dc.b "FROM: JGRAVES",0
+                dc.b "FROM: RGRAVES",0
                 dc.b "TO: DREUTER, HSCHULTZ",0
                 dc.b " ",0
                 dc.b "I GOT AN ODD MAIL FROM NORMAN HIMSELF.",0
@@ -100,12 +116,11 @@ txtLowerLabsComputer3:
                 dc.b " ",0
                 dc.b "IT'S COME TO MY ATTENTION THAT ACCESS",0
                 dc.b "CODES HAVE BEEN SHARED ACROSS TEAMS.",0
-                dc.b "THIS IS UNACCEPTABLE, AS THE WORK WAS",0
-                dc.b "MANDATED TO BE COMPARTMENTALIZED TO THE",0
-                dc.b "STRICTEST DEGREE. THRONE GROUP WILL BE",0
-                dc.b "IN SERIOUS TROUBLE IF THIS CAUGHT IN AN",0
-                dc.b "AUDIT. DELETE THIS MESSAGE AND ENSURE",0
-                dc.b "THIS DOESN'T HAPPEN EVER AGAIN.",0,0
+                dc.b "THIS IS UNACCEPTABLE, AND THRONE GROUP",0
+                dc.b "WILL BE IN SERIOUS TROUBLE IF THIS IS",0
+                dc.b "EVER CAUUGHT IN AN AUDIT. DELETE THIS",0
+                dc.b "MESSAGE NOW AND DON'T MAKE ME REMIND",0
+                dc.b "EVER AGAIN.",0,0
 
 txtLowerLabsComputer4:
                      ;0123456789012345678901234567890123456789
@@ -115,10 +130,10 @@ txtLowerLabsComputer4:
                 dc.b "IT'S AN INTERESTING CHALLENGE TO WORK ON",0
                 dc.b "THE SUBDERMAL ARMOR WITHOUT BEING ABLE",0
                 dc.b "TO TEST IT ON LIVE SUBJECTS. SIMULATION",0
-                dc.b "IS WORKING BETTER THAN EXPECTED, THOUGH.",0
-                dc.b "COME SEE IT SOMETIME. CODE IS "
-txtArmorCode:   dc.b "XXX.",0
-                dc.b "ALSO, FUCK PIERCE.",0,0
+                dc.b "QUALITY WAS A POSITIVE SURPRISE, THOUGH.",0
+                dc.b "COME SEE IT SOMETIME, CODE IS "
+txtArmorCode:   dc.b "XXX. ALSO,",0
+                dc.b "FUCK PIERCE.",0,0
 
 txtLowerLabsComputer5:
                      ;0123456789012345678901234567890123456789
@@ -139,22 +154,21 @@ txtLowerLabsComputer6:
                 dc.b " ",0
                 dc.b "COMPARED TO YOUR WORK IT ALMOST FEELS",0
                 dc.b "LIKE I'M WORKING ON JUST A GLORIFIED CAR",0
-                dc.b "BATTERY. STILL, IT ALLOWS 2X LONGER",0
-                dc.b "ACTIVE TIME ON THE FIELD. CODE'S "
+                dc.b "BATTERY. STILL, IT ALLOWS A SOLDIER 2X",0
+                dc.b "LONGER OPERATING TIME. CODE'S "
 txtBatteryCode: dc.b "XXX IN",0
                 dc.b "CASE YOU WANT TO PAY A VISIT.",0,0
 
 txtLowerLabsComputer7:
                      ;0123456789012345678901234567890123456789
                 dc.b "FROM: NTHRONE",0
-                dc.b "TO: SJANKOVIC",0
+                dc.b "TO: BFJORD",0
                 dc.b " ",0
-                dc.b "YOUR EXPERTISE ON THE MATTERS OF ENERGY",0
-                dc.b "STORAGE HAS ALLOWED ME A BREAKTHROUGH,",0
-                dc.b "EVEN IF IT MAY BE TOO LATE TO CONVINCE",0
-                dc.b "THE MILITARY HIGHER-UPS. IN CASE I GET",0
-                dc.b "DISTRACTED BY OTHER PURSUITS, REMEMBER",0
-                dc.b "THIS NUMBER: "
+                dc.b "YOUR EXPERTISE ON METABOLISM HAS ALLOWED",0
+                dc.b "ME A BREAKTHROUGH, THOUGH IT MAY BE TOO",0
+                dc.b "LATE TO MAKE THE MILITARY HIGHER-UPS RE-",0
+                dc.b "CONSIDER. IN CASE I DON'T, REMEMBER THIS",0
+                dc.b "NUMBER: "
 txtNumber2:     dc.b "X.",0,0
 
 txtLowerLabsComputer8:
@@ -162,11 +176,16 @@ txtLowerLabsComputer8:
                 dc.b "FROM: LKNELLER",0
                 dc.b "TO: JPETERS",0
                 dc.b " ",0
-
                 dc.b "NOT EXACTLY. THE HEART'S FUNCTION IS",0
                 dc.b "COMPLETELY REPLACED ONLY IN CASE OF",0
                 dc.b "IRREVERSIBLE TRAUMA. BUT YOUR CONCERN IS",0
-                dc.b "VALID. WITHOUT POWER, THE NANOBOTS WILL",0
-                dc.b "STOP, WHICH CAN LEAD TO FATAL CLOTS.",0,0
+                dc.b "VALID. WITHOUT POWER THE BOTS CAN'T",0
+                dc.b "MOVE, WHICH CAN LEAD TO A FATAL CLOT.",0,0
+                
+txtLowerLabsComputer9:
+                dc.b "CONSTRUCT AUXILIARY PROCESSING NODE",0
+                dc.b "CPU USAGE "
+txtCpuUse:      dc.b "XX%",0,0
+
 
                 ;checkscriptend

@@ -111,7 +111,7 @@ txtLabComputer4:dc.b "FROM: HSCHULZ",0
 
                      ;0123456789012345678901234567890123456789
 txtLabComputer5:dc.b "FROM: NTHRONE",0
-                dc.b "TO: JGRAVES",0
+                dc.b "TO: RGRAVES",0
                 dc.b " ",0
                 dc.b "I BELIEVE I HAVE THE MISSING PIECE TO",0
                 dc.b "SAVE THE 'HESSIAN' PROJECT. I'M NOT",0
