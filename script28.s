@@ -1,7 +1,7 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 28, entrance computer texts #1
+        ; Script 28, entrance computer texts
 
                 org scriptCodeStart
 

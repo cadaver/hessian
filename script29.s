@@ -183,11 +183,10 @@ txtSecurityComputer2:
 txtSecurityComputer3:
                      ;0123456789012345678901234567890123456789
                 dc.b "IT SEEMS THERE'S A SITUATION. ORDERS ARE",0
-                dc.b "TO HOLD THIS STATION. THOUGHT I SAW BI-",0
-                dc.b "PEDAL ROBOTS ON THE CAMERAS. NOW THEY'RE",0
-                dc.b "BLACKED OUT. IN ANY CASE THIS IS WHAT I",0
-                dc.b "SIGNED UP FOR. I'M 100% COMBAT READY IF",0
-                dc.b "ANYONE ASKS.",0
+                dc.b "TO HOLD THIS STATION. CAMERAS SHOW JUST",0
+                dc.b "NOISE. BUT THIS IS EXACTLY WHAT I SIGNED",0
+                dc.b "UP FOR. I'M 100% COMBAT READY IF ANYONE",0
+                dc.b "ASKS.",0
                 dc.b " ",0
                 dc.b "THE PRISONER WE HAD EARLIER WAS HOODED,",0
                 dc.b "BUT I THOUGHT HE LOOKED FAMILIAR. HE'S",0
