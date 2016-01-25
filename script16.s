@@ -18,6 +18,8 @@
         ; Modifies: various
 
 HackerAmbush:   ldx actIndex
+                ldy #ACTI_PLAYER
+                jsr GetActorDistance
                 lda actF1,x
                 cmp #FR_DIE
                 bcs HA_Dying
@@ -54,8 +56,6 @@ HA_Dying:       lda #DEATH_DISAPPEAR_DELAY      ;Keep resetting the time
                 jsr FindActor
                 bcs HA_Wait                     ;Wait until enemy gone
                 ldx actIndex
-                ldy #ACTI_PLAYER
-                jsr GetActorDistance
                 lda temp6                       ;Wait until player close
                 cmp #$04
                 bcs HA_Wait
@@ -85,8 +85,6 @@ HA_EnemyDestroyed:
                 sta actHp,x                     ;Make sure to not allow damage now
                 lda #AIMODE_TURNTO
                 sta actAIMode,x
-                ldy #ACTI_PLAYER
-                jsr GetActorDistance
                 lda temp6                       ;Wait until close
                 cmp #$02
                 bcs HA_Wait
