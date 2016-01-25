@@ -42,6 +42,8 @@ OfficeComputer5:gettext txtOfficeComputer5
 
 txtLobbyComputer:
                      ;0123456789012345678901234567890123456789
+                dc.b "LOBBY AUDIO LOG",0
+                dc.b " ",0
                 dc.b "WHAT'S THAT? GUNFIRE? EXPLOSIONS?",0
                 dc.b "IT'S COMING FROM THE PARKING GARAGE.",0
                 dc.b "A TERRORIST ATTACK?",0
