@@ -15,17 +15,16 @@ menuSelection   = wpnBits
                 dc.w SecurityComputer5
                 dc.w SecurityComputer6
 
-ITComputer:     jsr SetupTextScreen
-                gettext txtITComputer
+ITComputer:     gettext txtITComputer
 DisplayCommon:  ldy #0
                 sty temp1
                 sty temp2
+                jsr SetupTextScreen
                 jsr PrintMultipleRows
                 jsr WaitForExit
                 jmp CenterPlayer
 
 SecurityComputer1:
-                jsr SetupTextScreen
                 ldx #$02
 SC1_Code:       lda codes,x
                 ora #$30
@@ -36,22 +35,18 @@ SC1_Code:       lda codes,x
                 bne DisplayCommon
 
 SecurityComputer2:
-                jsr SetupTextScreen
                 gettext txtSecurityComputer2
                 bne DisplayCommon
 
 SecurityComputer3:
-                jsr SetupTextScreen
                 gettext txtSecurityComputer3
                 bne DisplayCommon
 
 SecurityComputer4:
-                jsr SetupTextScreen
                 gettext txtSecurityComputer4
                 bne DisplayCommon
 
 SecurityComputer5:
-                jsr SetupTextScreen
                 gettext txtSecurityComputer5
                 bne DisplayCommon
 

@@ -1,3 +1,19 @@
+        ; Misc. data to pad memory use
+
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
+healthBarPosTbl:dc.b 50,64
+
+lvlPropertiesStart:
+lvlWaterSplashColor:
+                dc.b 0
+lvlWaterToxinDelay:
+                dc.b 0
+lvlAirToxinDelay:
+                dc.b 0
+lvlPropertiesEnd:
+
                 org (* + $ff) & $ff00
 
         ; Sprite cache / depacking tables
@@ -394,12 +410,13 @@ fileHi:         ds.b MAX_CHUNKFILES,0
 fileNumObjects: ds.b MAX_CHUNKFILES,0
 fileAge:        ds.b MAX_CHUNKFILES,0
 
-        ; Remaining misc. data
+        ; Gameworld & level data (not saved)
 
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
-healthBarPosTbl:dc.b 50,64
+                include bg/world.s
+
+                if LVLDATAACTTOTALSIZE+LVLOBJTOTALSIZE > 255
+                    err
+                endif
 
         ; Player/world state
 
@@ -429,17 +446,6 @@ playerStateEnd:
 
 scriptVariable: dc.b 0
 codeEntry:      ds.b 3,0
-
-        ; Level properties
-
-lvlPropertiesStart:
-lvlWaterSplashColor:
-                dc.b 0
-lvlWaterToxinDelay:
-                dc.b 0
-lvlAirToxinDelay:
-                dc.b 0
-lvlPropertiesEnd:
 
         ; In-memory checkpoint save
 

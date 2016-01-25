@@ -15,8 +15,7 @@
                 dc.w LabComputer8
                 dc.w LabComputer9
 
-LabComputer1:   jsr SetupTextScreen
-                ldx #$02
+LabComputer1:   ldx #$02
 LC1_Code:       lda codes+2*3,x
                 ora #$30
                 sta txtExoskeletonCode,x
@@ -26,12 +25,12 @@ LC1_Code:       lda codes+2*3,x
 DisplayCommon:  ldy #0
                 sty temp1
                 sty temp2
+                jsr SetupTextScreen
                 jsr PrintMultipleRows
                 jsr WaitForExit
                 jmp CenterPlayer
 
-LabComputer2:   jsr SetupTextScreen
-                ldx #$02
+LabComputer2:   ldx #$02
 LC2_Code:       lda codes+3,x
                 ora #$30
                 sta txtHealingCode,x
@@ -40,12 +39,10 @@ LC2_Code:       lda codes+3,x
                 gettext txtLabComputer2
                 bne DisplayCommon
 
-LabComputer3:   jsr SetupTextScreen
-                gettext txtLabComputer3
+LabComputer3:   gettext txtLabComputer3
                 bne DisplayCommon
 
-LabComputer4:   jsr SetupTextScreen
-                gettext txtLabComputer4
+LabComputer4:   gettext txtLabComputer4
                 bne DisplayCommon
 
 LabComputer5:   jsr SetupTextScreen
@@ -55,20 +52,16 @@ LabComputer5:   jsr SetupTextScreen
                 gettext txtLabComputer5
                 bne DisplayCommon
 
-LabComputer6:   jsr SetupTextScreen
-                gettext txtLabComputer6
+LabComputer6:   gettext txtLabComputer6
                 bne DisplayCommon
 
-LabComputer7:   jsr SetupTextScreen
-                gettext txtLabComputer7
+LabComputer7:   gettext txtLabComputer7
                 bne DisplayCommon
 
-LabComputer8:   jsr SetupTextScreen
-                gettext txtLabComputer8
+LabComputer8:   gettext txtLabComputer8
                 bne DisplayCommon
 
-LabComputer9:   jsr SetupTextScreen
-                gettext txtLabComputer9
+LabComputer9:   gettext txtLabComputer9
                 bne DisplayCommon
 
                      ;0123456789012345678901234567890123456789
@@ -81,7 +74,8 @@ txtLabComputer1:dc.b "FROM: MJONSSON",0
 txtExoskeletonCode:
                 dc.b "XXX IN",0
                 dc.b "CASE YOU WANT TO CHECK. STILL, I BELIEVE",0
-                dc.b "THIS WORK IS NEVER GOING TO BE ACCEPTED.",0,0
+                dc.b "MODIFYING SOLDIERS TO THIS EXTENT WILL",0
+                dc.b "NEVER BE ACCEPTED.",0,0
 
                      ;0123456789012345678901234567890123456789
 txtLabComputer2:dc.b "FROM: KKRUGER",0
@@ -89,7 +83,7 @@ txtLabComputer2:dc.b "FROM: KKRUGER",0
                 dc.b " ",0
                 dc.b "MY THOUGHTS AFTER WORKING ON THE FASTER",0
                 dc.b "RECOVERY UPGRADE ARE SIMILAR. THE PUBLIC",0
-                dc.b "COULD ONLY EVER SEE THIS PROJECT AS AN",0
+                dc.b "WOULD ONLY PERCEIVE THIS PROJECT AS AN",0
                 dc.b "ABOMINATION. SINCE YOU SHARED YOURS, MY",0
                 dc.b "LAB CODE IS "
 txtHealingCode: dc.b "XXX.",0,0
@@ -132,10 +126,10 @@ txtLabComputer6:dc.b "FROM: MJONSSON",0
                 dc.b " ",0
                 dc.b "ON THE SUBJECT OF NORMAN'S ABSENCE: AT",0
                 dc.b "THE COMBAT ROBOT PROJECT KICKOFF HE",0
-                dc.b "TALKED ANIMATEDLY OF THE POSSIBILITY OF",0
-                dc.b "UPLOADING A HUMAN MIND AS THE BLUEPRINT",0
-                dc.b "FOR A SUPERIOR AI. I ASSUME THIS WOULD",0
-                dc.b "BE A SOLITARY PURSUIT.",0,0
+                dc.b "SPOKE OF THE POSSIBILITY OF UPLOADING A",0
+                dc.b "HUMAN MIND AS THE BLUEPRINT FOR AN AI.",0
+                dc.b "SO RETREATING TO SOLITUDE WITH AN",0
+                dc.b "IMPOSSIBLE TASK? POSSIBLE.",0,0
 
                      ;0123456789012345678901234567890123456789
 txtLabComputer7:dc.b "IT OCCURRED TO ME THAT THE 'HESSIAN'",0
@@ -143,11 +137,11 @@ txtLabComputer7:dc.b "IT OCCURRED TO ME THAT THE 'HESSIAN'",0
                 dc.b "CLIENT: THE ILLUMINATI. I MEAN, NOT JUST",0
                 dc.b "MIND CONTROLLED ASSASSINS, BUT BATTERY-",0
                 dc.b "DEPENDENT ENHANCED ASSASSINS! JUST DENY",0
-                dc.b "THEIR DAILY CHARGE IF THEY DISOBEY OR",0
-                dc.b "PERFORM POORLY.",0,0
+                dc.b "THEM THEIR DAILY CHARGE IF THEY DISOBEY",0
+                dc.b "OR PERFORM POORLY.",0,0
 
                      ;0123456789012345678901234567890123456789
-txtLabComputer8:dc.b "THE EMP GENERATOR",0
+txtLabComputer8:dc.b "EMP GENERATOR",0
                 dc.b " ",0
                 dc.b "A PORTABLE DEFENSE OR DISCIPLINARY TOOL",0
                 dc.b "FOR WORKING WITH COMBAT ROBOTS. DUE TO",0
@@ -157,7 +151,8 @@ txtLabComputer8:dc.b "THE EMP GENERATOR",0
                      ;0123456789012345678901234567890123456789
 txtLabComputer9:dc.b "SMART MINE",0
                 dc.b " ",0
+                dc.b "MODES OF OPERATION:",0
                 dc.b "1) DETONATE ON ENEMY CONTACT",0
                 dc.b "2) FALLBACK TO TIME DELAY",0,0
 
-                ;checkscriptend
+                checkscriptend

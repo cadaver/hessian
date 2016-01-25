@@ -841,9 +841,12 @@ GetRowAddress:  lda #40
         ;
         ; Parameters: -
         ; Returns: -
-        ; Modifies: A,X
+        ; Modifies: -
 
-SetupTextScreen:jsr BlankScreen
+SetupTextScreen:pha
+                txa
+                pha
+                jsr BlankScreen
                 lda #$02
                 sta screen                      ;Set text screen mode
                 lda #$0f
@@ -863,6 +866,9 @@ STS_ClearScreenLoop:lda #$20
                 sta colors+SCROLLROWS*40-$100,x
                 inx
                 bne STS_ClearScreenLoop
+                pla
+                tax
+                pla
                 rts
 
         ; Wait for exit from a fullscreen computer display either by pressing fire or key

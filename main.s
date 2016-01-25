@@ -60,7 +60,6 @@ randomAreaEnd:
 
         ; Aligned data & game state
 
-                include leveldata.s
                 include aligneddata.s
 
         ; Non-aligned data
