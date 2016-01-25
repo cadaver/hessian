@@ -223,11 +223,17 @@ DP_Linda:       lda #ACT_SCIENTIST3
                 lda #<txtRadioDestroyLinda
                 ldx #>txtRadioDestroyLinda
                 jmp RadioMsg
-DP_Jeff:        lda #<EP_DESTROYCOMMENT
+DP_Jeff:        lda #ACT_SCIENTIST3
+                jsr FindLevelActor              ;Require old tunnels level to be sure (if player
+                bcc DP_NoComment                ;is cheating, the surgery scene could be
+                lda lvlActOrg,y                 ;skipped and this script would trigger in the
+                cmp #$0f+ORG_GLOBAL             ;wrong place)
+                bne DP_NoComment
+                lda #<EP_DESTROYCOMMENT
                 ldx #>EP_DESTROYCOMMENT
                 sta actScriptEP+1
                 stx actScriptF+1
-                lda #ACT_HACKER
+DP_NoComment:   lda #ACT_HACKER
                 jsr DP_SetPosCommon
                 lda #<txtRadioDestroyJeff
                 ldx #>txtRadioDestroyJeff
