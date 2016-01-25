@@ -82,12 +82,9 @@ SRC_Common:     jsr PrintMultipleRows
                 lda codes+MAX_CODES*3-1
                 bmi SRC_NoCode
 SRC_ShowCode:   ldx #2
-                ldy #4
 SRC_CodeLoop:   lda codes+MAX_CODES*3-3,x
                 ora #$30
-                sta screen1+7*40+26,y
-                dey
-                dey
+                sta screen1+7*40+26,x
                 dex
                 bpl SRC_CodeLoop
                 lda #PLOT_MOVESCIENTISTS
