@@ -33,6 +33,7 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	script08.pak script09.pak script10.pak script11.pak script12.pak script13.pak script14.pak script15.pak \
 	script16.pak script17.pak script18.pak script19.pak script20.pak script21.pak script22.pak script23.pak \
 	script24.pak script25.pak script26.pak script27.pak script28.pak script29.pak script30.pak script31.pak \
+	script32.pak \
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
@@ -331,6 +332,10 @@ script30.pak: script30.s memory.s mainsym.s
 script31.pak: script31.s memory.s mainsym.s
 	dasm script31.s -oscript31.bin -f3
 	pack2 script31.bin script31.pak
+
+script32.pak: script32.s memory.s mainsym.s
+	dasm script32.s -oscript32.bin -f3
+	pack2 script32.bin script32.pak
 
 loadermusic.bin: music/hessianmusic.d64
 	d642prg music/hessianmusic.d64 loader.bin loadermusic.bin -h

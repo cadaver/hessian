@@ -215,7 +215,6 @@ txtSecurityComputer6:
                 dc.b "  EXIT",0,0
 
 txtArrow:       dc.b 62,0
-
 txtClosed:      dc.b "CLOSED",0
 txtOpen:        dc.b "OPEN  ",0
 

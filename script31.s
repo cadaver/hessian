@@ -187,5 +187,4 @@ txtLowerLabsComputer9:
                 dc.b "CPU USAGE "
 txtCpuUse:      dc.b "XX%",0,0
 
-
-                ;checkscriptend
+                checkscriptend
