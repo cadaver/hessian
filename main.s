@@ -58,10 +58,6 @@ randomAreaEnd:
 
                 include init.s
 
-        ; Aligned data & game state
-
-                include aligneddata.s
-
         ; Non-aligned data
 
                 include sounddata.s
@@ -71,6 +67,10 @@ randomAreaEnd:
                 include weapondata.s
                 include actordata.s
                 include text.s
+
+        ; Aligned data & game state
+
+                include aligneddata.s
 
         ; Preloaded spritefiles that will never be purged
 
