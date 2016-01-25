@@ -130,9 +130,13 @@ BeginAmbush:    jsr StopZoneScript
         ; Returns: -
         ; Modifies: various
 
-RadioConstruct2:jsr StopScript
+RadioConstruct2:lda numTargets  ;Wait until no enemies
+                cmp #$02
+                bcs RC2_Wait
+                jsr StopScript
                 gettext txtRadioConstruct2
                 jmp RadioMsg
+RC2_Wait:       rts
 
         ; Tables
 
@@ -151,8 +155,8 @@ txtEscortFinish:dc.b 34,"WE'D NEVER HAVE MADE IT ALONE. NOW WE NEED TIME TO SET 
 
 txtRadioConstruct2:
                 dc.b 34,"IT'S JEFF. SAW YOU FOUND ACCESS TO THE BIO-DOME. NASTY. SO THE AI SHOULD BE SOMEWHERE INSIDE. "
-                dc.b "FOUND ALSO SOMETHING MORE. THERE'S A BLACKOUT TO THE OUTSIDE, RIGHT? BUT A DEDICATED LINK "
-                dc.b "WAS INSTALLED FOR THE MILITARY CONTRACTS. I CAN SEE THERE'S TRAFFIC ON IT, BUT CAN'T SEE WHAT WITHOUT "
+                dc.b "I ALSO FOUND SOMETHING ELSE. THERE'S A BLACKOUT TO THE OUTSIDE, RIGHT? BUT A DEDICATED LINK "
+                dc.b "WAS INSTALLED FOR THE MILITARY CONTRACTS. I CAN SEE THERE'S TRAFFIC, BUT CAN'T SEE WHAT WITHOUT "
                 dc.b "PHYSICAL ACCESS. I BET IT'S THE AI. HMM.. WHAT? I'M SEEING MOVE-",34," (STATIC)",0
 
                 checkscriptend
