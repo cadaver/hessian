@@ -13,37 +13,31 @@
                 dc.w OfficeComputer4
                 dc.w OfficeComputer5
 
-LobbyComputer:  jsr SetupTextScreen
-                gettext txtLobbyComputer
+LobbyComputer:  gettext txtLobbyComputer
 DisplayCommon:  ldy #0
                 sty temp1
                 sty temp2
+                jsr SetupTextScreen
                 jsr PrintMultipleRows
                 jsr WaitForExit
                 jmp CenterPlayer
 
-TheatreComputer:jsr SetupTextScreen
-                gettext txtTheatreComputer
+TheatreComputer:gettext txtTheatreComputer
                 bne DisplayCommon
 
-OfficeComputer1:jsr SetupTextScreen
-                gettext txtOfficeComputer1
+OfficeComputer1:gettext txtOfficeComputer1
                 bne DisplayCommon
 
-OfficeComputer2:jsr SetupTextScreen
-                gettext txtOfficeComputer2
+OfficeComputer2:gettext txtOfficeComputer2
                 bne DisplayCommon
 
-OfficeComputer3:jsr SetupTextScreen
-                gettext txtOfficeComputer3
+OfficeComputer3:gettext txtOfficeComputer3
                 bne DisplayCommon
 
-OfficeComputer4:jsr SetupTextScreen
-                gettext txtOfficeComputer4
+OfficeComputer4:gettext txtOfficeComputer4
                 bne DisplayCommon
 
-OfficeComputer5:jsr SetupTextScreen
-                gettext txtOfficeComputer5
+OfficeComputer5:gettext txtOfficeComputer5
                 bne DisplayCommon
 
 txtLobbyComputer:
