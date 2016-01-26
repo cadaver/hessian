@@ -81,8 +81,8 @@ txtExoskeletonCode:
 txtLabComputer2:dc.b "FROM: KKRUGER",0
                 dc.b "TO: MJONSSON",0
                 dc.b " ",0
-                dc.b "MY THOUGHTS AFTER WORKING ON THE FASTER",0
-                dc.b "RECOVERY UPGRADE ARE SIMILAR. THE PUBLIC",0
+                dc.b "MY THOUGHTS AFTER WORKING ON THE HEALING",0
+                dc.b "BOOSTER UPGRADE ARE SIMILAR. THE PUBLIC",0
                 dc.b "WOULD ONLY PERCEIVE THIS PROJECT AS AN",0
                 dc.b "ABOMINATION. SINCE YOU SHARED YOURS, MY",0
                 dc.b "LAB CODE IS "

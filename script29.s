@@ -157,12 +157,12 @@ txtSecurityComputer1:
                 dc.b "TO: BJAEGER, JPETERS",0
                 dc.b " ",0
                 dc.b "LIKE YOU SAW, RUTGER'S HEAVY SECURITY",0
-                dc.b "FORCE TESTED THE AIMING UPGRADE SUCCESS-",0
-                dc.b "FULLY. IT REQUIRES THE BASE NANOBOT",0
-                dc.b "PACKAGE, WHICH YOU MAY OBJECT TO. IN ANY",0
-                dc.b "CASE THE ENTRY CODE IS "
-txtFirearmCode: dc.b "XXX. THOUGHT IT",0
-                dc.b "WAS FAIR FOR YOU TO KNOW.",0,0
+                dc.b "FORCE TESTED THE MOTOR SKILL (AIMING)",0
+                dc.b "UPGRADE SUCCESSFULLY. THE BASE NANOBOT",0
+                dc.b "PACKAGE IS NATURALLY REQUIRED. LAB ENTRY",0
+                dc.b "CODE IS "
+txtFirearmCode: dc.b "XXX. THOUGHT IT WAS FAIR FOR YOU",0
+                dc.b "TO KNOW.",0,0
 
 txtSecurityComputer2:
                      ;0123456789012345678901234567890123456789

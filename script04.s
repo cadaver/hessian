@@ -854,14 +854,14 @@ tileConnTbl:    dc.b CONN_NONE
 sightColorTbl:  dc.b $01,$07,$0f,$0a,$08,$0a,$0f,$07
 errorColorTbl:  dc.b $0b,$09,$02,$0a
 
-txtStation:     dc.b "IMPLANT INSTALLATION STATION",0
+txtStation:     dc.b "UPGRADE INSTALLATION STATION",0
 txtConfigureExit: dc.b " CONFIGURE  EXIT",0
-txtPuzzleTitle: dc.b "IMPLANT/HOST INTERFACE",0
+txtPuzzleTitle: dc.b "UPGRADE/HOST INTERFACE",0
 txtOutputs:     dc.b "OUTPUTS   /    ANY KEY EXITS",0
 txtVictory:     dc.b "CONFIGURATION SUCCESSFUL",0
 
 txtNotConfigured:
-                dc.b "ERROR: NOT CONFIGURED",0
+                dc.b "UPGRADE NOT CONFIGURED",0
 txtInstallDone: dc.b "INSTALL COMPLETE",0
 
 txtAlreadyConfigured:

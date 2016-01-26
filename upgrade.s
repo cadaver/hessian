@@ -19,7 +19,7 @@ nameStrength:   dc.b "UPPER BODY EXOSKELETON",0
 
 nameFirearms:   dc.b "MOTOR SKILL COPROCESSOR",0
 nameArmor:      dc.b "SUBDERMAL ARMOR",0
-nameHealing:    dc.b "RECOVERY BOOSTER",0
+nameHealing:    dc.b "HEALING BOOSTER",0
 nameDrain:      dc.b "AUXILIARY BATTERY",0
 nameRecharge:   dc.b "BIOELECTRIC RECHARGER",0
 

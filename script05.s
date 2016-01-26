@@ -10,6 +10,33 @@ numberIndex     = menuCounter
                 dc.w EnterCode
                 dc.w EnterCodeLoop
 
+        ; Messages
+
+txtKeypadTbl:   dc.b <txtKeypad0
+                dc.b <txtKeypad1
+                dc.b <txtKeypad2
+                dc.b <txtKeypad3
+                dc.b <txtKeypad4
+                dc.b <txtKeypad5
+                dc.b <txtKeypad6
+                dc.b <txtKeypad7
+
+txtKeypad0:     dc.b "MOTOR SKILL"
+txtLab:         dc.b " LAB",0
+txtKeypad1:     dc.b "HEAL BOOST"
+                textjump txtLab
+txtKeypad2:     dc.b "LOWER EXO"
+                textjump txtLab
+txtKeypad3:     dc.b "AUX BATTERY"
+                textjump txtLab
+txtKeypad4:     dc.b "SUB-D ARMOR"
+                textjump txtLab
+txtKeypad5:     dc.b "UPPER EXO"
+                textjump txtLab
+txtKeypad6:     dc.b "SUITE"
+                textjump txtLab
+txtKeypad7:     dc.b "NETHER TUNNEL"
+
         ; Enter keypad code script
         ;
         ; Parameters: -
@@ -21,6 +48,13 @@ EnterCode:      lda #0
 EC_Reset:       sta codeEntry,x
                 dex
                 bpl EC_Reset
+                ldx #MAX_CODES-1
+EC_FindLoop:    lda lvlObjNum
+                cmp codeObject,x                ;All object numbers for code doors are unique, don't
+                beq EC_Found                    ;need to check level
+                dex
+                bpl EC_FindLoop
+EC_Found:       stx doorIndex
                 lda #<EP_ENTERCODELOOP
                 ldx #>EP_ENTERCODELOOP
                 jsr SetScript
@@ -33,10 +67,12 @@ EC_Reset:       sta codeEntry,x
         ; Returns: -
         ; Modifies: various
 
-EnterCodeLoop:  gettext txtEnterCode
+EnterCodeLoop:  ldx doorIndex
+                lda txtKeypadTbl,x
+                ldx #>txtKeypad0
                 jsr PrintPanelTextIndefinite
                 ldy #$00
-                ldx #20
+                ldx #25
 ECL_Redraw:     cpy numberIndex
                 beq ECL_HasDigit
                 bcs ECL_EmptyDigit
@@ -44,8 +80,8 @@ ECL_HasDigit:   lda codeEntry,y
                 ora #$30
                 skip2
 ECL_EmptyDigit: lda #"-"
-                jsr PrintPanelChar
                 inx
+                jsr PrintPanelChar
                 iny
                 cpy #3
                 bcc ECL_Redraw
@@ -81,16 +117,9 @@ ECL_Next:       jsr ECL_Sound
                 stx numberIndex
                 cpx #3
                 bcc ECL_Done
-                ldx #MAX_CODES-1
-ECL_Verify:     lda lvlObjNum
-                cmp codeObject,x                ;All object numbers for code doors are unique, don't
-                beq ECL_VerifyFound             ;need to check level
-                dex
-                bpl ECL_Verify                  ;This should never exit the loop
-ECL_VerifyFound:txa
-                sta temp1
+                lda doorIndex
                 asl
-                adc temp1
+                adc doorIndex
                 tay
                 ldx #$00
 ECL_VerifyLoop: lda codeEntry,x
@@ -104,12 +133,12 @@ ECL_VerifyLoop: lda codeEntry,x
 ECL_Finish:     jsr StopScript
                 jmp SetMenuMode                 ;X=0 on return
 
+        ; Variables
+
+doorIndex:      dc.b 0
+
         ; Code entry object numbers
 
 codeObject:     dc.b $12,$29,$27,$16,$26,$22,$08,$31
-
-        ; Messages
-
-txtEnterCode:   dc.b "ENTER CODE",0
 
                 checkscriptend
