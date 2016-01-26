@@ -879,11 +879,8 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
 ULO_NoRecharge:
 ULO_NoAirFlag:  lda #$00
                 beq ULO_CheckHeadUnderWater
-ULO_NoAir:      lda menuMode
-                cmp #MENU_DIALOGUE
-                beq ULO_OxygenDone
-                lda AA_ItemFlashCounter+1
-                and #$03
+ULO_NoAir:      lda AA_ItemFlashCounter+1
+                and #$07
                 bpl ULO_OxygenDelay
 ULO_CheckHeadUnderWater:
                 lda actF1+ACTI_PLAYER           ;Check for player losing oxygen
