@@ -334,10 +334,20 @@ ECL_EmptyDigit: lda #"-"
                 bcc ECL_Redraw
 CheckForExit:   lda joystick
                 and #JOY_DOWN
-                bne ECL_Finish
+                bne ECL_Quit
                 lda keyType
-                bpl ECL_Finish
-                jsr MenuControl
+                bmi ECL_NoKey
+                ldx #$09
+ECL_KeyLoop:    cmp digitKeyTbl,x
+                beq ECL_KeyFound
+                dex
+                bpl ECL_KeyLoop
+                bmi ECL_Quit                 ;Other key pressed = quit
+ECL_KeyFound:   txa
+                ldx numberIndex
+                sta codeEntry,x
+                bpl ECL_Next
+ECL_NoKey:      jsr MenuControl
                 ldx numberIndex
                 lsr
                 bcs ECL_MoveLeft
@@ -371,13 +381,13 @@ ECL_Next:       jsr ECL_Sound
                 ldx #$00
 ECL_VerifyLoop: lda codeEntry,x
                 cmp codes,y
-                bne ECL_Finish
+                bne ECL_Quit
                 iny
                 inx
                 cpx #$03
                 bcc ECL_VerifyLoop
                 jsr OO_RequirementOK            ;Open the door if code right
-ECL_Finish:     jsr StopScript
+ECL_Quit:       jsr StopScript
                 jmp SetMenuMode                 ;X=0 on return
 
         ; Health recharger script routine
@@ -454,6 +464,19 @@ rechargerColor: dc.b 0
         ; Code entry object numbers
 
 codeObject:     dc.b $12,$29,$27,$16,$26,$22,$08,$31
+
+        ; Code entry keycodes
+        
+digitKeyTbl:    dc.b KEY_0
+                dc.b KEY_1
+                dc.b KEY_2
+                dc.b KEY_3
+                dc.b KEY_4
+                dc.b KEY_5
+                dc.b KEY_6
+                dc.b KEY_7
+                dc.b KEY_8
+                dc.b KEY_9
 
         ; Recycler tables
 
