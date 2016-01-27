@@ -17,8 +17,7 @@ CHUNK_DURATION = 40
                 dc.w RunLaser
                 dc.w SwitchGenerator
                 dc.w SwitchLaser
-                dc.w MoveGenerator
-
+                
         ; Radio speech when entering caves
         ;
         ; Parameters: -
@@ -534,30 +533,6 @@ SL_IsAmplified: lda #$00
                 lda #<EP_RUNLASER
                 ldx #>EP_RUNLASER
                 jmp SetScript
-
-        ; Generator (screen shake) move routine
-        ;
-        ; Parameters: X actor number
-        ; Returns: -
-        ; Modifies: various
-
-MoveGenerator:  lda #PLOT_GENERATOR
-                jsr GetPlotBit
-                beq MG_NotOn
-                inc actFd,x
-                lda actFd,x
-                and #$01
-                sta shakeScreen
-                inc actTime,x
-                lda actTime,x
-                cmp #$03
-                bcc MG_NoSound
-                lda #SFX_GENERATOR
-                jsr PlaySfx
-                lda #$00
-                sta actTime,x
-MG_NoSound:
-MG_NotOn:       rts
 
         ; Variables
 

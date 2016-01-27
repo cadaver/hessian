@@ -948,6 +948,30 @@ DeathFlickerAndRemove:
 DFAR_Done:      rts
 DFAR_Remove:    jmp RemoveActor
 
+        ; Generator (screen shake) move routine
+        ;
+        ; Parameters: X actor number
+        ; Returns: -
+        ; Modifies: various
+
+MoveGenerator:  lda #PLOT_GENERATOR
+                jsr GetPlotBit
+                beq MG_NotOn
+                inc actFd,x
+                lda actFd,x
+                and #$01
+                sta shakeScreen
+                inc actTime,x
+                lda actTime,x
+                cmp #$03
+                bcc MG_NoSound
+                lda #SFX_GENERATOR
+                jsr PlaySfx
+                lda #$00
+                sta actTime,x
+MG_NoSound:
+MG_NotOn:       rts
+
         ; Initiate humanoid enemy or player death
         ;
         ; Parameters: X actor index,temp8 damage source actor or $ff if none

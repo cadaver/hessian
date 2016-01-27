@@ -214,7 +214,7 @@ DestroyComment: lda scriptVariable
 
         ; Messages
 
-txtNoAirVictory:dc.b 34,"AIR! AT LAST. THAT WAS QUICK THINKING TO HEAD THIS WAY. THANK YOU. I'LL CATCH MY BREATH FOR A WHILE.",34,0
+txtNoAirVictory:dc.b 34,"AIR! AT LAST. I OWE YOU AGAIN, THAT WAS QUICK THINKING. NOW I NEED TO CATCH MY BREATH FOR A WHILE.",34,0
 
 txtHackerFollowFinish:
                 dc.b 34,"SO THESE ARE THE OLD TUNNELS. SHOULD BE NO ROBOTS HERE. "

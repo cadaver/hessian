@@ -101,10 +101,10 @@ txtLowerLabsComputer1:
 
 txtLowerLabsComputer2:
                      ;0123456789012345678901234567890123456789
-                dc.b "NANOBOT PROGRAM?",0
+                dc.b "HESSIAN PROJECT?",0
                 dc.b " ",0
                 dc.b "I GOT AN ODD MAIL FROM NORMAN HIMSELF.",0
-                dc.b "WASN'T THE NANOBOT PROGRAM ALREADY",0
+                dc.b "WASN'T THE HESSIAN PROJECT ALREADY BEING",0
                 dc.b "CANCELLED? HE TALKED ABOUT 'SAVING' IT.",0
                 dc.b "CAN ANYONE EXPLAIN WHAT THIS IS ABOUT?",0,0
 
@@ -169,7 +169,7 @@ txtLowerLabsComputer7:
                 dc.b "NUMBER: "
 txtNumber2:     dc.b "X.",0
                 dc.b " ",0
-                dc.b "- NORMAN",0
+                dc.b "- NORMAN",0,0
 
 txtLowerLabsComputer8:
                      ;0123456789012345678901234567890123456789

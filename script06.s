@@ -27,38 +27,6 @@ currentIndex    = wpnBits
                 dc.w UseBatteryRecharger
                 dc.w RechargerEffect
 
-        ; Door names
-
-txtKeypadTbl:   dc.b <txtKeypad0
-                dc.b <txtKeypad1
-                dc.b <txtKeypad2
-                dc.b <txtKeypad3
-                dc.b <txtKeypad4
-                dc.b <txtKeypad5
-                dc.b <txtKeypad6
-                dc.b <txtKeypad7
-
-txtKeypad0:     dc.b "MOTOR SKILL"
-txtLab:         dc.b " LAB",0
-txtKeypad1:     dc.b "HEAL BOOST"
-                textjump txtLab
-txtKeypad2:     dc.b "LOWER EXO"
-                textjump txtLab
-txtKeypad3:     dc.b "AUX BATTERY"
-                textjump txtLab
-txtKeypad4:     dc.b "SUB-D ARMOR"
-                textjump txtLab
-txtKeypad5:     dc.b "UPPER EXO"
-                textjump txtLab
-txtKeypad6:     dc.b "SUITE"
-                textjump txtLab
-txtKeypad7:     dc.b "NETHER TUNNEL"
-txtKeypadEnd:
-                if txtKeypadEnd > scriptCodeStart+$100
-                err
-                endif
-
-
         ; Recycling station script routine
         ;
         ; Parameters: -
@@ -346,9 +314,9 @@ EC_Found:       stx doorIndex
         ; Returns: -
         ; Modifies: various
 
-EnterCodeLoop:  ldx doorIndex
-                lda txtKeypadTbl,x
-                ldx #>txtKeypad0
+EnterCodeLoop:  ldy doorIndex
+                lda txtKeypadTblLo,y
+                ldx txtKeypadTblHi,y
                 jsr PrintPanelTextIndefinite
                 ldy #$00
                 ldx #25
@@ -527,6 +495,26 @@ recyclerCostTbl:
                 dc.b 40                         ;Battery
                 dc.b 50                         ;Armor
 
+        ; Door name table
+
+txtKeypadTblLo: dc.b <txtKeypad0
+                dc.b <txtKeypad1
+                dc.b <txtKeypad2
+                dc.b <txtKeypad3
+                dc.b <txtKeypad4
+                dc.b <txtKeypad5
+                dc.b <txtKeypad6
+                dc.b <txtKeypad7
+
+txtKeypadTblHi: dc.b >txtKeypad0
+                dc.b >txtKeypad1
+                dc.b >txtKeypad2
+                dc.b >txtKeypad3
+                dc.b >txtKeypad4
+                dc.b >txtKeypad5
+                dc.b >txtKeypad6
+                dc.b >txtKeypad7
+
         ; Messages
 
 txtRecycler:    dc.b "PART RECYCLING STATION",0
@@ -538,6 +526,22 @@ txtHealthRecharger:
                 dc.b "HEALTH RESTORED",0
 txtBatteryRecharger:
                 dc.b "BATTERY RECHARGED",0
+
+txtKeypad0:     dc.b "MOTOR SKILL"
+txtLab:         dc.b " LAB",0
+txtKeypad1:     dc.b "HEAL BOOST"
+                textjump txtLab
+txtKeypad2:     dc.b "LOWER EXO"
+                textjump txtLab
+txtKeypad3:     dc.b "AUX BATTERY"
+                textjump txtLab
+txtKeypad4:     dc.b "SUB-D ARMOR"
+                textjump txtLab
+txtKeypad5:     dc.b "UPPER EXO"
+                textjump txtLab
+txtKeypad6:     dc.b "SUITE"
+                textjump txtLab
+txtKeypad7:     dc.b "NETHER TUNNEL",0
 
 txtRadioConstructSpeech:
                 dc.b 34,"STOP, ENHANCED HUMAN. THIS IS THE CONSTRUCT. YOU MUST BE AWARE OF WHAT HAPPENS IF YOU MANAGE TO DESTROY ME. "

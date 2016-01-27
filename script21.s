@@ -289,7 +289,7 @@ txtComputerLocked:
                 textjump txtLocked
 
 txtThroneSuiteComputer:
-                dc.b "SUITE/BIO-DOME CONTROL",0
+                dc.b "SUITE SECURITY STATION",0
                 dc.b " ",0
                 dc.b "  CAVE GATES:",0
                 dc.b "  RUTGER'S NOTES",0

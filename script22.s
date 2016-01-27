@@ -25,6 +25,7 @@ InstallLaptop:  ldy #ITEM_LAPTOP
                 lda actMB+ACTI_PLAYER
                 lsr
                 bcc IL_NoItem                   ;Wait until not jumping
+                ldy #ITEM_LAPTOP
                 jsr RemoveItem
                 jsr AddQuestScore
                 lda #PLOT_DISRUPTCOMMS
@@ -34,6 +35,7 @@ InstallLaptop:  ldy #ITEM_LAPTOP
                 sta actScriptEP+2
                 stx actScriptF+2
                 lda #$00
+                tax
                 sta temp4
                 lda #ITEM_LAPTOP
                 jsr DI_ItemNumber
@@ -125,7 +127,7 @@ txtInstallFinish:
                 dc.b "WE'LL SEE HOW IT GOES WHEN YOU TAKE OUT JORMUNGANDR. DO NOT, I REPEAT DO NOT ATTACK THE AI FIRST. ITS SEQUENCE "
                 dc.b "MUTATES CONSTANTLY, WHICH I CAN'T SPOOF.",34,0
 
-txtHackerFinal: dc.b 34,"HEY. YOU SHOULD BE KICKING JORMUNGANDR AND CONSTRUCT ASS. I'VE NO WORRIES HERE. WELL, "
-                dc.b "EXCEPT WHETHER YOU'LL RETURN ALIVE. TRY TO DO THAT, RIGHT? NOW GO KICK ASS ALREADY.",34,0
+txtHackerFinal: dc.b 34,"HEY. YOU SHOULD BE KICKING JORMUNGANDR AND CONSTRUCT ASS, AS I'VE NO WORRIES HERE. WELL, "
+                dc.b "EXCEPT WHETHER YOU'LL RETURN ALIVE. TRY TO DO THAT, OK?",34,0
 
                 checkscriptend

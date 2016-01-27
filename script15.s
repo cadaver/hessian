@@ -438,7 +438,7 @@ AfterSurgeryNoAir:
                 lda #AIMODE_TURNTO              ;so that speech bubble doesn't levitate
                 sta actAIMode,x
                 lda oxygen                      ;Let player notice first
-                cmp #MAX_OXYGEN-5
+                cmp #MAX_OXYGEN-2
                 bcs ASNA_Wait
                 lda #PLOT_HIDEOUTAMBUSH         ;Radio silence if ambush
                 jsr GetPlotBit

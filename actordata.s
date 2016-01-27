@@ -1498,7 +1498,7 @@ alSecurityChief:dc.w USESCRIPT|EP_MOVESECURITYCHIEF ;Update routine
                 dc.b $17                        ;AI offense random AND-value
                 dc.b $20                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
-                dc.b AMF_DUCK|AMF_JUMP          ;Move flags
+                dc.b AMF_DUCK                   ;Move flags
                 dc.b 4*8+4                      ;Max. movement speed
                 dc.b INITIAL_GROUNDACC-2        ;Ground movement acceleration
                 dc.b INITIAL_INAIRACC           ;In air movement acceleration
@@ -1506,7 +1506,7 @@ alSecurityChief:dc.w USESCRIPT|EP_MOVESECURITYCHIEF ;Update routine
                 dc.b 6                          ;Long jump gravity acceleration
                 dc.b INITIAL_GROUNDBRAKE        ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
-                dc.b -INITIAL_JUMPSPEED-2       ;Jump initial speed (negative)
+                ;dc.b -INITIAL_JUMPSPEED-2       ;Jump initial speed (negative)
 
 alRotorDrone:   dc.w USESCRIPT|EP_MOVEROTORDRONE ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON|AF_NOREMOVECHECK ;Actor flags
@@ -1581,7 +1581,7 @@ alArmorer:      dc.w MoveAndAttackHuman         ;Update routine
                 dc.b INITIAL_GROUNDBRAKE        ;Ground braking
                 dc.b -4                         ;Height in chars for headbump check (negative)
 
-alGenerator:    dc.w USESCRIPT|EP_MOVEGENERATOR ;Update routine
+alGenerator:    dc.w MoveGenerator              ;Update routine
                 dc.b AF_NOREMOVECHECK           ;Actor flags
                 dc.b 0                          ;Horizontal size
                 dc.b 0                          ;Size up

@@ -104,8 +104,8 @@ txtThroneChief:      ;0123456789012345678901234567890123456789
                 dc.b "A BIOMETRIC CHECK. THE ONLY IDENTITY",0
                 dc.b "THAT CAN'T BE DISABLED IS MINE. THERE-",0
                 dc.b "FORE, I OFFER MY SEVERED HAND TO ANYONE",0
-                dc.b "WHO FINDS ME. AS A RESULT I LIKELY BLEED",0
-                dc.b "TO DEATH; CONSIDER IT ATONEMENT.",0
+                dc.b "WHO FINDS ME. AS A RESULT I'LL LIKELY",0
+                dc.b "BLEED TO DEATH; CONSIDER IT ATONEMENT.",0
                 dc.b " ",0
                 dc.b "- NORMAN THRONE",0,0
 

@@ -119,10 +119,10 @@ LSC4_Down:      iny
 txtLowerSecurityComputer1:
                      ;0123456789012345678901234567890123456789
                 dc.b "RE: RE: RESEARCH LAB",0
-                dc.b
+                dc.b " ",0
                 dc.b "I BELIEVE WE WILL NOT BE TESTING THE",0
                 dc.b "UPGRADE FOR OURSELVES. BUT THANKS FOR",0
-                dc.b "CODE ANYWAY.",0,0
+                dc.b "THE CODE ANYWAY.",0,0
 
 txtLowerSecurityComputer2:
                      ;0123456789012345678901234567890123456789
