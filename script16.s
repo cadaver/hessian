@@ -90,7 +90,7 @@ txtRadioConstruct2:
 
 txtThroneChief:      ;0123456789012345678901234567890123456789
                 dc.b "I MADE A MISTAKE WHICH MAY COST THE LIFE",0
-                dc.b "OF EVERYONE ON THIS PLANET. I DIGITIZED",0
+                dc.b "OF EVERYONE ON THIS PLANET. I UPLOADED",0
                 dc.b "MY MIND TO BECOME THE INITIAL STATE FOR",0
                 dc.b "THE AI I NAMED 'THE CONSTRUCT.' I TASKED",0
                 dc.b "IT TO BUILD A PLAN TO BENEFIT MANKIND,",0
