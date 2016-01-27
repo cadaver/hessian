@@ -1,133 +1,122 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 2, parking garage conversation
+        ; Script 2, entrance texts, left side
 
                 org scriptCodeStart
 
-                dc.w Scientist2
-                dc.w GarageComputer
+                dc.w TheatreComputer
+                dc.w LobbyComputer
+                dc.w OfficeComputer1
+                dc.w OfficeComputer2
+                dc.w OfficeComputer3
+                dc.w OfficeComputer4
 
-        ; Scientist 2 conversation
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-Scientist2:     ldy #C_SCIENTIST                ;Ensure sprite file on the same frame as first script exec
-                jsr EnsureSpriteFile
-                lda actXH+ACTI_PLAYER           ;Wait until player close enough
-                cmp #$37
-                bcc S2_Wait
-                cmp #$3c
-                bcs S2_Wait
-                lda actYH+ACTI_PLAYER
-                cmp #$29
-                bcs S2_Wait
-                lda actMB+ACTI_PLAYER
-                lsr
-                bcc S2_Wait
-                lda scriptVariable
-                asl
-                tay
-                lda S2_JumpTbl,y
-                sta S2_Jump+1
-                lda S2_JumpTbl+1,y
-                sta S2_Jump+2
-S2_Jump:        jmp $0000
-S2_Wait:        rts
-
-S2_JumpTbl:     dc.w S2_Dialogue1
-                dc.w S2_Dialogue2
-                dc.w S2_Dialogue3
-                dc.w S2_Dialogue4
-
-S2_Dialogue1:   jsr AddQuestScore
-                inc scriptVariable
-                ldy lvlDataActBitsStart+$04
-                lda lvlStateBits,y              ;Enable rotordrone now
-                ora #$04
-                sta lvlStateBits,y
-                ldy #ACT_SCIENTIST2
-                gettext txtParkingGarage1
-                jmp SpeakLine
-
-S2_Dialogue2:   inc scriptVariable
-                ldy #ACT_SCIENTIST3
-                gettext txtParkingGarage2
-                jmp SpeakLine
-
-S2_Dialogue3:   inc scriptVariable
-                ldy #ACT_SCIENTIST2
-                gettext txtParkingGarage3
-                jmp SpeakLine
-
-S2_Dialogue4:   lda #ITEM_COMMGEAR
-                ldx #1
-                jsr AddItem
-                ldx actIndex
-                lda #$00
-                sta temp4
-                lda #ITEM_SECURITYPASS
-                jsr DI_ItemNumber
-                lda actD,x
-                asl
-                lda #$7f
-                adc #$00
-                ldx temp8
-                jsr MoveActorX                  ;Move item to scientist's facing direction
-                lda #-16*8
-                jsr MoveActorY
-                lda #SFX_PICKUP
-                jsr PlaySfx
-                lda #$00
-                sta actScriptF                  ;No more script exec here
-                ldy #ACT_SCIENTIST2
-                gettext txtParkingGarage4
-                jmp SpeakLine
-
-        ; Computer in garage script
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-GarageComputer: jsr SetupTextScreen
-                gettext txtGarageComputer
-                ldy #0
+TheatreComputer:gettext txtTheatreComputer
+DisplayCommon:  ldy #0
                 sty temp1
                 sty temp2
+                jsr SetupTextScreen
                 jsr PrintMultipleRows
                 jsr WaitForExit
                 jmp CenterPlayer
 
-        ; Note: reordered to compress better
-        
-txtParkingGarage4:
-                dc.b 34,"GOOD LUCK.",34,0
+LobbyComputer:  gettext txtLobbyComputer
+                bne DisplayCommon
 
-txtParkingGarage2:
-                dc.b 34,"COMMON SENSE WOULD DICTATE WE ATTEMPT TO ESCAPE. BUT THESE MACHINES' HIGHLY COORDINATED ACTIONS "
-                dc.b "SUGGEST A CENTRAL AI, WHICH I DIDN'T KNOW WE HAD DEVELOPED. "
-                dc.b "THERE MAY BE MORE THAN OUR LIVES AT STAKE.",34,0
+OfficeComputer1:gettext txtOfficeComputer1
+                bne DisplayCommon
 
-txtParkingGarage1:
-                dc.b 34,"I SEE VIKTOR DIDN'T MAKE IT. BUT YOU DID, THAT'S WHAT COUNTS. AMOS, NANOSURGEON. SHE'S LINDA, CYBER-PSYCHOLOGIST. "
-                dc.b "YOU'VE SEEN HOW OUR CREATIONS HAVE TURNED ON US. TOTAL INTERNET AND PHONE BLACKOUT. WE'RE STUCK AND HELP IS UNLIKELY. "
-                dc.b "AS THE ONLY ENHANCED PERSON IN THIS ROOM, RIGHT NOW YOU'RE OUR BEST BET.",34,0
+OfficeComputer2:gettext txtOfficeComputer2
+                bne DisplayCommon
 
-txtParkingGarage3:
-                dc.b 34,"YES. WE MUST FIND OUT THEIR ULTIMATE AIM BEYOND JUST KILLING EVERYONE. "
-                dc.b "TAKE THIS SECURITY PASS TO ACCESS THE UPPER LABS, PLUS A WIRELESS CAMERA/RADIO "
-                dc.b "SET SO WE CAN STAY IN TOUCH.",34,0
+OfficeComputer3:gettext txtOfficeComputer3
+                bne DisplayCommon
 
-txtGarageComputer:
+OfficeComputer4:gettext txtOfficeComputer4
+                bne DisplayCommon
+
+txtTheatreComputer:
                      ;0123456789012345678901234567890123456789
-                dc.b "SEQUENCE OF EVENTS:",0
+                dc.b "WHAT IS THE THRONE GROUP?",0
+                dc.b "INTERNAL PRESENTATION BY NORMAN THRONE",0
                 dc.b " ",0
-                dc.b "1. 'HESSIAN' PROJECT CANCELLED",0
-                dc.b "2. NORMAN THRONE GOES MISSING",0
-                dc.b "3. ???",0
-                dc.b "4. ROBOTS OUT OF CONTROL",0,0
+                dc.b "THRONE GROUP REPRESENTS INTELLECTUAL",0
+                dc.b "BRAVERY AND COMMITMENT TO EXCELLENCE.",0
+                dc.b "WE REJECT ANY LIMITS IN THE PURSUIT",0
+                dc.b "TO ADVANCE MANKIND.",0
+                dc.b " ",0
+                dc.b "IN AN IDEAL WORLD WE WOULD NOT HAVE TO",0
+                dc.b "CONTEND WITH MINOR DETAILS LIKE MONEY.",0
+                dc.b "BUT SINCE SUCH WORLD DOES NOT EXIST, WE",0
+                dc.b "DO THE NEXT BEST THING - CHOOSE CLIENTS",0
+                dc.b "WHO MATCH OUR VISION THE CLOSEST.",0
+                dc.b " ",0
+                dc.b "SOME ARE AFRAID OF CONCEPTS SUCH AS",0
+                dc.b "SINGULARITY, OR THE POST-HUMAN AGE. WE",0
+                dc.b "SHOULD NOT BE. IF WE MANAGE TO CREATE",0
+                dc.b "SOMETHING THAT SHAKES THE WORLD TO ITS",0
+                dc.b "CORE, WE SHOULD ONLY BE PROUD.",0,0
+                
+txtLobbyComputer:
+                     ;0123456789012345678901234567890123456789
+                dc.b "LOBBY AUDIO LOG",0
+                dc.b " ",0
+                dc.b "WHAT'S THAT? GUNFIRE? EXPLOSIONS?",0
+                dc.b "IT'S COMING FROM THE PARKING GARAGE.",0
+                dc.b "A TERRORIST ATTACK?",0
+                dc.b "SHIT. PHONE IS DEAD.",0
+                dc.b "I SEE THEM NOW. THEY'RE NOT H-",0,0
+
+txtOfficeComputer1:
+                     ;0123456789012345678901234567890123456789
+                dc.b "RE: PROJECTS",0
+                dc.b " ",0
+                dc.b "IS THERE SOMETHING I'M NOT BEING TOLD?",0
+                dc.b "I UNDERSTAND THE 'HESSIAN' MILITARY",0
+                dc.b "CONTRACT WAS AXED, WHILE THE RELATIVELY",0
+                dc.b "MINOR COMBAT ROBOT PROJECT GOES ON. I'M",0
+                dc.b "SEEING USE OF FUNDS WE SHOULDN'T BE",0
+                dc.b "CAPABLE OF SUSTAINING.",0,0
+
+txtOfficeComputer2:
+                     ;0123456789012345678901234567890123456789
+                dc.b "RE: RE: PROJECTS",0
+                dc.b " ",0
+                dc.b "YOU NEED NOT BE CONCERNED. WE ARE NOT",0
+                dc.b "OVERSPENDING. NORMAN MAY HAVE UTILIZED",0
+                dc.b "SOME OF HIS PERSONAL FUNDS JUST TO KEEP",0
+                dc.b "THINGS RUNNING SMOOTHLY. THE ROBOT",0
+                dc.b "PROJECT SHOULD SEE A MAJOR EXTENSION",0
+                dc.b "SOON. PLEASE KEEP THIS KNOWLEDGE TO",0
+                dc.B "YOURSELF FOR NOW.",0,0
+
+txtOfficeComputer3:
+                     ;0123456789012345678901234567890123456789
+                dc.b "RE: PREPARATION",0
+                dc.b " ",0
+                dc.b "I AGREE THAT WE MUST BE PREPARED. IF THE",0
+                dc.b "PROVERBIAL SHIT HITS THE FAN, VOLUNTEERS",0
+                dc.b "COULD ACCEPT THE 'HESSIAN' ENHANCEMENTS",0
+                dc.b "FOR INCREASED CHANCES OF SURVIVAL. HOW",0
+                dc.b "MUCH THAT WOULD HELP, I DON'T KNOW.",0
+                dc.b " ",0
+                dc.b "- AMOS",0,0
+
+txtOfficeComputer4:
+                     ;0123456789012345678901234567890123456789
+                dc.b "RE: PUREXO SERVICES",0
+                dc.b " ",0
+                dc.b "ON BEHALF OF THE EMPLOYEES I WOULD ASK",0
+                dc.b "FOR THE FOLLOWING DESSERTS TO BE SERVED",0
+                dc.b "MORE OFTEN DUE TO THEIR CHALLENGING",0
+                dc.b "NATURE:",0
+                dc.b " ",0
+                dc.b "BUN PUDDING",0
+                dc.b "ORANGE RICE",0
+                dc.b " ",0
+                dc.b "--",0
+                dc.b "MARY OHR",0
+                dc.b "SENIOR COORDINATOR",0,0
 
                 checkscriptend

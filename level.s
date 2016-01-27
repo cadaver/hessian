@@ -1321,9 +1321,18 @@ CP_NotLowerLabs:lda #$00
                 lda limitD
                 sbc #6
                 sta temp2
-                ldx #3
+                lda #$40
+                clc
+                adc actXL+ACTI_PLAYER
+                php
+                rol
+                rol
+                rol
+                and #$03
+                tax
+                plp
                 lda actXH+ACTI_PLAYER
-                sbc #5
+                sbc #4
                 bcc CP_OverLeft
                 cmp limitL
                 bcs CP_NotOverLeft

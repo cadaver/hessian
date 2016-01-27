@@ -1,127 +1,183 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 17, begin surgery
+        ; Script 17, lower security texts
+
+menuSelection   = wpnBits
 
                 org scriptCodeStart
 
-                dc.w BeginSurgery
-                dc.w BeginSurgery2
+                dc.w LowerSecurityComputer1
+                dc.w LowerSecurityComputer2
+                dc.w LowerSecurityComputer3
+                dc.w LowerSecurityComputer4
+                dc.w LowerSecurityComputer5
 
-        ; Begin surgery script
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-BeginSurgery:   ldy #C_SCIENTIST
-                jsr EnsureSpriteFile
-                ldy #ITEM_LUNGFILTER
-                jsr FindItem
-                bcc BS_NoFilter
-                lda actXH+ACTI_PLAYER
-                cmp #$44
-                bcs BS_NoFilter
-                jsr AddQuestScore
-                lda #<EP_BEGINSURGERY2
-                sta actScriptEP
-                lda #$00
-                sta scriptVariable
-                ldy #ACT_SCIENTIST2
-                gettext txtBeginSurgery1
-                jmp SpeakLine
-
-        ; Begin surgery script, part 2
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-BeginSurgery2:  lda actXH+ACTI_PLAYER
-                cmp #$41
-                bcs BS2_NotYet
-                lda actMB+ACTI_PLAYER
-                lsr
-                bcc BS2_NotYet
-                lda scriptVariable
-                asl
-                tay
-                lda bs2JumpTbl,y
-                sta BS2_Jump+1
-                lda bs2JumpTbl+1,y
-                sta BS2_Jump+2
-BS2_Jump:       jmp BS2_1
-
-BS2_1:          inc scriptVariable
-                ldy #ACT_SCIENTIST2
-                gettext txtBeginSurgery2
-                jmp SpeakLine
-
-BS2_2:          lda #$00                    ;Disabled controls during the delay to simplify scripting
-                sta joystick
-                lda #ACT_SCIENTIST3
-                jsr FindActor
-                lda #AIMODE_IDLE
-                sta actAIMode,x
-                lda #$80
-                sta actD,x
-                inc actTime,x
-                lda actTime,x
-                cmp #25
-                bcc BS2_2Wait
-                lda #$00
-                sta actTime,x
-                inc scriptVariable
-BS2_NotYet:
-BS_NoFilter:
-BS2_2Wait:      rts
-
-BS2_3:          inc scriptVariable
-                lda #ACT_SCIENTIST3
-                jsr FindActor
-                lda #AIMODE_TURNTO
-                sta actAIMode,x
-                lda #ITEM_EMPGENERATOR
-                sta actWpn,x
-                lda #SFX_OBJECT
-                jsr PlaySfx
-                ldy #ACT_SCIENTIST3
-                gettext txtBeginSurgery3
-                jmp SpeakLine
-
-BS2_4:          jsr BlankScreen
-                lda #<EP_AFTERSURGERY
-                ldx #>EP_AFTERSURGERY
-                sta actScriptEP+1
-                stx actScriptF+1
-                lda #$00
-                sta actScriptF
-                lda #<EP_AFTERSURGERYRUN
-                ldx #>EP_AFTERSURGERYRUN
-                jsr SetScript
-                lda #50
-                sta scriptVariable
-BS2_Delay:      jsr WaitBottom
-                dec scriptVariable
-                bne BS2_Delay
+LowerSecurityComputer1:
+                gettext txtLowerSecurityComputer1
+DisplayCommon:  ldy #0
+                sty temp1
+                sty temp2
+                jsr SetupTextScreen
+                jsr PrintMultipleRows
+                jsr WaitForExit
                 jmp CenterPlayer
 
-bs2JumpTbl:     dc.w BS2_1
-                dc.w BS2_2
-                dc.w BS2_3
-                dc.w BS2_4
+LowerSecurityComputer2:
+                gettext txtLowerSecurityComputer2
+                bne DisplayCommon
 
-        ; Messages
+LowerSecurityComputer3:
+                gettext txtLowerSecurityComputer3
+                bne DisplayCommon
 
-txtBeginSurgery1:
-                dc.b 34,"YOU GOT THE FILTER? EXCELLENT. WE'RE READY, FOR REAL THIS TIME. THIS IS A STANDARD NANO-ASSISTED "
-                dc.b "PROCEDURE WITH SOME RISK INVOLVED. THE TUNNELS BELOW SHOULD BE SURVIVABLE AFTER. "
-                dc.b "STEP TO THE OPERATING TABLE WHEN YOU WISH TO PROCEED.",34,0
+LowerSecurityComputer5:
+                gettext txtLowerSecurityComputer5
+                bne DisplayCommon
 
-txtBeginSurgery2:
-                dc.b 34,"GOOD. WE WILL BEGIN. LINDA, JUST IN CASE WE GET COMPANY, THERE SHOULD BE A WEAPON IN THE CUPBOARD.",34,0
+LowerSecurityComputer4:
+                jsr SetupTextScreen
+                lda #11
+                sta temp1
+                lda #8
+                sta temp2
+                gettext txtLowerSecurityComputer4
+                jsr PrintMultipleRows
+                lda #0
+                sta menuSelection
+LSC4_Redraw:    lda #$20
+LSC4_ArrowLastPos:
+                sta screen1+2*40
+                lda #11
+                sta temp1
+                lda menuSelection
+                clc
+                adc #10
+                sta temp2
+                lda #<txtArrow
+                ldx #>txtArrow
+                jsr PrintText
+                lda zpDestLo
+                sta LSC4_ArrowLastPos+1
+                lda zpDestHi
+                sta LSC4_ArrowLastPos+2
+                lda #21
+                sta temp1
+                lda #10
+                sta temp2
+LSC4_PrintCell: ldy temp2
+                cpy #12
+                bcs LSC4_ControlLoop
+                lda lvlObjB+$06-10,y
+                bmi LSC4_CellOpen
+LSC4_CellClosed:gettext txtClosed
+                bne LSC4_CellCommon
+LSC4_CellOpen:  gettext txtOpen
+LSC4_CellCommon:jsr PrintText
+                inc temp2
+                bne LSC4_PrintCell
+LSC4_ControlLoop:jsr FinishFrame
+                jsr GetControls
+                jsr GetFireClick
+                ldy menuSelection
+                bcs LSC4_Action
+                lda prevJoy
+                and #JOY_UP|JOY_DOWN
+                bne LSC4_ControlLoop
+                lda joystick
+                lsr
+                bcs LSC4_Up
+                lsr
+                bcs LSC4_Down
+                lda keyType
+                bmi LSC4_ControlLoop
+LSC4_Exit:      ldy lvlObjNum
+                jsr InactivateObject            ;Allow immediate re-entry
+                jmp CenterPlayer
+LSC4_Action:    lda #SFX_SELECT
+                jsr PlaySfx
+                cpy #2
+                bcs LSC4_Exit
+                tya
+                adc #$06
+                tay
+                jsr ToggleObject
+                jmp LSC4_Redraw
+LSC4_Up:        dey
+                bpl LSC4_NotOver
+                ldy #2
+LSC4_NotOver:   sty menuSelection
+                lda #SFX_SELECT
+                jsr PlaySfx
+                jmp LSC4_Redraw
+LSC4_Down:      iny
+                cpy #3
+                bcc LSC4_NotOver
+                ldy #0
+                bcs LSC4_NotOver
 
-txtBeginSurgery3:
-                dc.b 34,"GOT IT.",34,0
+txtLowerSecurityComputer1:
+                     ;0123456789012345678901234567890123456789
+                dc.b "RE: RE: RESEARCH LAB",0
+                dc.b
+                dc.b "I BELIEVE WE WILL NOT BE TESTING THE",0
+                dc.b "UPGRADE FOR OURSELVES. BUT THANKS FOR",0
+                dc.b "CODE ANYWAY.",0,0
+
+txtLowerSecurityComputer2:
+                     ;0123456789012345678901234567890123456789
+                dc.b "RE: SITUATION",0
+                dc.b " ",0
+                dc.b "IN ADDITION TO THE DANGER POSED BY THE",0
+                dc.b "ROBOTS, THE LAB VENTILATION SYSTEM COULD",0
+                dc.b "BE MANIPULATED BY THE AI. THEREFORE I",0
+                dc.b "STRONGLY SUGGEST TO HOLD POSITION. ALSO,",0
+                dc.b "CHECK THE PRISONER REGULARLY. I FORESEE",0
+                dc.b "POTENTIAL FOR SELF-HARM.",0
+                dc.b " ",0
+                dc.b "--",0
+                dc.b "RUTGER THRONE",0
+                dc.b "HEAD OF SECURITY",0,0
+
+txtLowerSecurityComputer3:
+                     ;0123456789012345678901234567890123456789
+                dc.b "NINE LEVELS OF POWER",0
+                dc.b " ",0
+                dc.b "1. STRENGTH OF MIND AND BODY",0
+                dc.b "2. DIRECTION OF POWER",0
+                dc.b "3. HARMONY WITH THE UNIVERSE",0
+                dc.b "4. HEALING OF SELF AND OTHERS",0
+                dc.b "5. PREMONITION OF DANGER",0
+                dc.b "6. KNOWING THOUGHTS OF OTHERS",0
+                dc.b "7. MASTERY OF SPACE AND TIME",0
+                dc.b "8. CONTROL OF THE ELEMENTS OF NATURE",0
+                dc.b "9. ENLIGHTENMENT",0,0
+
+txtLowerSecurityComputer4:
+                dc.b "CELL DOOR CONTROLS",0
+                dc.b " ",0
+                dc.b "  CELL 1:",0
+                dc.b "  CELL 2:",0
+                dc.b "  EXIT",0,0
+
+txtLowerSecurityComputer5:
+                     ;0123456789012345678901234567890123456789
+                dc.b "THE UPPER SECURITY GUYS THINK THEY'RE",0
+                dc.b "COMBAT READY, BUT THEY'RE JUST PUSSIES",0
+                dc.b "WHO ONLY HAVE TO HANDLE THE OCCASIONAL",0
+                dc.b "AGITATED SUIT OR DRUNK TRESPASSER. WE AT",0
+                dc.b "LEAST RISK SUFFOCATION DEEP BELOW GROUND",0
+                dc.b "EACH DAY.",0
+                dc.b " ",0
+                dc.b "RUTGER'S MEN HAVE ALL THE LATEST AND",0
+                dc.b "HEAVIEST HARDWARE, BUT I DON'T ENVY THEM",0
+                dc.b "IN THE LEAST. THE BIO-DOME EXPERIMENTAL",0
+                dc.b "LIFEFORMS KEEP THEM ON THEIR TOES EVERY",0
+                dc.b "SECOND. THEY'RE THE TRUE COMBAT READY IF",0
+                dc.b "ANY.",0,0
+
+txtArrow:       dc.b 62,0
+txtClosed:      dc.b "CLOSED",0
+txtOpen:        dc.b "OPEN  ",0
 
                 checkscriptend

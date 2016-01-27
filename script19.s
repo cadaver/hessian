@@ -10,6 +10,9 @@
                 dc.w EnterLab
                 dc.w HackerEnterLab
                 dc.w ScientistEnterLab
+                dc.w Hazmat
+                dc.w HazmatLeave
+                dc.w DestroyComment
 
         ; Escaped to old tunnels
         ;
@@ -18,24 +21,31 @@
         ; Modifies: various
 
 ReachOldTunnels:
-                ldx actIndex
-                lda actXH,x
-                cmp #$03
-                bcc ROT_Run
-                lda #AIMODE_TURNTO
-                sta actAIMode,x
-                lda actSX,x                     ;Wait for stop so that speech bubble isn't off
-                bne ROT_Wait
+                lda #$03
+                jsr MoveCommon
+                bcc ROT_Wait
                 gettext txtNoAirVictory
 ROT_SpeakAndStopScript:
                 ldy #$00
                 sty actScriptF+1                ;Stop script for now
                 ldy #ACT_SCIENTIST3
                 jmp SpeakLine
-ROT_Run:        lda #AIMODE_IDLE
+
+MoveCommon:     ldx actIndex
+                cmp actXH,x
+                bne MC_Run
+                lda #AIMODE_TURNTO
+                sta actAIMode,x
+                lda actSX,x                     ;Wait for stop so that speech bubble isn't off
+                bne MC_Wait
+                sec
+                rts
+MC_Run:         lda #AIMODE_IDLE
                 sta actAIMode,x
                 lda #JOY_RIGHT
                 sta actMoveCtrl,x
+MC_Wait:        clc
+HFF_Wait:
 ROT_Wait:       rts
 
         ; Finish escorting Jeff to old tunnels
@@ -45,26 +55,15 @@ ROT_Wait:       rts
         ; Modifies: various
 
 HackerFollowFinish:
-                ldx actIndex
-                lda actXH,x
-                cmp #$04
-                bcc HFF_Run
-                lda #AIMODE_TURNTO
-                sta actAIMode,x
-                lda actSX,x                     ;Wait for stop so that speech bubble isn't off
-                bne HFF_Wait
+                lda #$04
+                jsr MoveCommon
+                bcc HFF_Wait
                 gettext txtHackerFollowFinish
 HFF_SpeakAndStopScript:
                 ldy #$00
                 sty actScriptF+2                ;Stop script for now
                 ldy #ACT_HACKER
                 jmp SpeakLine
-HFF_Run:        lda #AIMODE_IDLE
-                sta actAIMode,x
-                lda #JOY_RIGHT
-                sta actMoveCtrl,x
-HFF_Wait:
-EL_NoActors:    rts
 
         ; Enter old tunnels lab
         ;
@@ -123,6 +122,8 @@ EL_NoActor1:    lda #ACT_HACKER
                 lda #PLOT_OLDTUNNELSLAB2
                 jsr SetPlotBit
 EL_NoActor2:
+EL_NoActors:
+SEL_Wait:
 HEL_Wait:       rts
 
         ; Jeff in lab
@@ -131,15 +132,9 @@ HEL_Wait:       rts
         ; Returns: -
         ; Modifies: various
 
-HackerEnterLab: ldx actIndex
-                lda actXH,x
-                cmp #$70
-                bcs HEL_Done
-                jmp HFF_Run
-HEL_Done:       lda #AIMODE_TURNTO
-                sta actAIMode,x
-                lda actSX,x
-                bne HEL_Wait
+HackerEnterLab: lda #$70
+                jsr MoveCommon
+                bcc HEL_Wait
                 gettext txtHackerEnterLab
                 jmp HFF_SpeakAndStopScript
 
@@ -150,21 +145,72 @@ HEL_Done:       lda #AIMODE_TURNTO
         ; Modifies: various
 
 ScientistEnterLab:
-                ldx actIndex
-                lda actXH,x
-                cmp #$71
-                bcs SEL_Done
-                jmp HFF_Run
-SEL_Done:       lda #AIMODE_TURNTO
-                sta actAIMode,x
-                lda actSX,x
-                bne SEL_Wait
+                lda #$71
+                jsr MoveCommon
+                bcc SEL_Wait
                 gettext txtEnterLab
-                ldy #$00
-                sty actScriptF+1                ;Stop script for now
-                ldy #ACT_SCIENTIST3
+                jmp ROT_SpeakAndStopScript
+
+        ; Hazmat NPC (Jeff or Linda)
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+Hazmat:         lda actXH+ACTI_PLAYER           ;Wait until player close enough
+                cmp #$63
+                bcs H_Wait
+                jsr AddQuestScore
+                lda #PLOT_RIGTUNNELMACHINE
+                jsr SetPlotBit
+                lda #$00
+                sta actScriptF+3                ;Stop actor script, but use a continuous script to walk away
+                lda #<EP_HAZMATLEAVE
+                ldx #>EP_HAZMATLEAVE
+                jsr SetScript
+                ldy #ACT_HAZMAT
+                gettext txtMachineReady
                 jmp SpeakLine
-SEL_Wait:       rts
+HL_NoExit:
+HL_Wait:
+DC_Wait:
+H_Wait:         rts
+
+        ; Hazmat NPC walks off screen
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+HazmatLeave:    lda #ACT_HAZMAT
+                jsr FindActor
+                bcc HL_NotOnScreen
+                lda textTime
+                bne HL_Wait
+                jsr MC_Run
+                jsr SetNotPersistent            ;Disappear if leave the screen
+                lda actXH,x
+                cmp #$63
+                bcc HL_NoExit
+                lda actXL,x
+                cmp #$f8
+                bcc HL_NoExit
+                jsr RemoveActor                 ;Remove without being put back to leveldata = disappear
+HL_NotOnScreen: jmp StopScript
+
+        ; Linda comments the destroy plan
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+DestroyComment: lda scriptVariable
+                php
+                inc scriptVariable
+                plp
+                beq DC_Wait                     ;Wait until screen on
+                gettext txtDestroyComment
+                jmp ROT_SpeakAndStopScript
 
         ; Messages
 
@@ -178,5 +224,13 @@ txtHackerEnterLab:
                 dc.b 34,"THE PLOT THICKENS. A SECRET LAB.",34,0
 
 txtEnterLab:    dc.b 34,"A BUNKER? I HAD NO IDEA. POSSIBLY FOR NORMAN'S EXTRA-PRIVATE WORK.",34,0
+
+txtMachineReady:dc.b 34,"THE MACHINE'S GOOD TO GO? I'M READY TOO.. I THINK. ANYTHING COULD GO WRONG, "
+                dc.b "NATURALLY. BUT THERE'S NOT MUCH CHOICE. ONCE I'M THROUGH THE WALL, JORMUNGANDR IN "
+                dc.b "SIGHT, I'LL WAIT UNTIL YOU'RE ABOUT TO DESTROY THE AI. THEN IT'S FULL SPEED AHEAD. "
+                dc.b "NOW, I BELIEVE IT'S FAREWELL. TAKE CARE, KIM.",34,0
+
+txtDestroyComment:
+                dc.b 34,"JEFF'S BEING VERY BRAVE. THE PLAN'S NOT WHAT I WOULD CALL SANE, BUT LIKE HIM I SEE LITTLE CHOICE.",34,0
 
                 checkscriptend

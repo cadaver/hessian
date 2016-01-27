@@ -1,81 +1,158 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 13, second hacker scene (optional)
+        ; Script 13, escort scientists begin & end
 
                 org scriptCodeStart
 
-                dc.w Hacker3
-                dc.w Hacker4
+                dc.w EscortScientistsStart
+                dc.w EscortScientistsFinish
+                dc.w RadioFindFilter
 
-        ; Hacker script routine 3 (after lower labs server room)
+        ; Start escort scientists sequence
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-Hacker3:        jsr CheckDistance
+EscortScientistsStart:
+                ldy #C_SCIENTIST                ;Ensure sprite file on the same frame as first script exec
+                jsr EnsureSpriteFile
+                ldx actIndex
+                lda actXH,x
+                sec
+                sbc actXH+ACTI_PLAYER
+                cmp #$03
+                bcs ESS_WaitUntilClose
+                lda scriptVariable
+                asl
+                tay
+                lda ESS_JumpTbl,y
+                sta ESS_Jump+1
+                lda ESS_JumpTbl+1,y
+                sta ESS_Jump+2
+ESS_Jump:       jmp $1000
+
+ESS_JumpTbl:    dc.w ESS_1
+                dc.w ESS_2
+                dc.w ESS_3
+
+ESS_1:          inc scriptVariable
                 jsr AddQuestScore
-                lda #<EP_HACKER4
-                sta actScriptEP+2
-                if SKIP_PLOT > 0
-                lda #PLOT_ESCORTCOMPLETE
-                jsr SetPlotBit
-                lda #PLOT_ELEVATOR1
-                jsr SetPlotBit
-                endif
-                gettext txtHacker3
-H_SpeakCommon:  ldy #ACT_HACKER
+                ldy #ACT_SCIENTIST2
+                gettext txtEscortStart1
                 jmp SpeakLine
 
-CheckDistance:  lda actXH+ACTI_PLAYER
-                cmp #$1c
-                bcc CD_Close
-                pla                             ;If far, do not return
-                pla
-CD_Close:       rts
+ESS_2:          inc scriptVariable
+                ldy #ACT_SCIENTIST3
+                gettext txtEscortStart2
+                jmp SpeakLine
 
-        ; Hacker script routine 4 (going to old tunnels)
+ESS_3:          inc scriptVariable
+                ldy #ACT_SCIENTIST2
+                gettext txtEscortStart3
+                jsr SpeakLine
+                lda #<EP_ESCORTSCIENTISTSREFRESH
+                ldx #>EP_ESCORTSCIENTISTSREFRESH
+                sta actScriptEP
+                stx actScriptF
+                sta actScriptEP+1
+                stx actScriptF+1
+ESS_WaitUntilClose:
+                rts
+
+        ; Escort scientists sequence finish
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-Hacker4:        jsr CheckDistance
-                lda #PLOT_ESCORTCOMPLETE
-                jsr GetPlotBit
-                bne H4_Ready
-                lda #$00                        ;No more scripts for now
-                sta actScriptF+2
-                gettext txtHacker4a
-                jmp H_SpeakCommon
-H4_Ready:       lda #PLOT_LOWERLABSNOAIR        ;If late in the game, the sabotage
-                jsr GetPlotBit                  ;must first be dealt with
-                bne H4_Unsafe
-                ldy #ITEM_OLDTUNNELSPASS
-                jsr FindItem
-                bcs H4_HasPass
-H4_Unsafe:      rts
-H4_HasPass:     lda #PLOT_HIDEOUTOPEN           ;Can not return to hideout
-                jsr ClearPlotBit
-                lda #<EP_HACKERFOLLOW
-                ldx #>EP_HACKERFOLLOW
-                sta actScriptEP+2
-                stx actScriptF+2
-                gettext txtHacker4b
-                jmp H_SpeakCommon
+EscortScientistsFinish:
+                ldx actIndex
+                ldy actT,x
+                lda npcBrakeTbl-ACT_FIRSTPERSISTENTNPC,y
+                jsr BrakeActorX  ;Move at slightly different speed to not look stupid
+                lda actXH,x
+                cmp npcStopPos-ACT_FIRSTPERSISTENTNPC,y
+                bcc ESF_Stop
+                lda #JOY_LEFT
+                sta actMoveCtrl,x
+                lda #AIMODE_IDLE
+                beq ESF_StoreMode
+ESF_Stop:       cpy #ACT_SCIENTIST3
+                bne ESF_NoDialogue
+                lda actSX,x
+                bne ESF_NoDialogue
+                lda #$00                        ;Stop actor script exec for now
+                sta actScriptF
+                sta actScriptF+1
+                ldy #ACT_SCIENTIST2
+                gettext txtEscortFinish
+                jmp SpeakLine
+ESF_NoDialogue: lda #AIMODE_TURNTO
+ESF_StoreMode:  sta actAIMode,x
+                rts
+
+        ; Find filter script. Also move scientists to final positions before surgery
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+RadioFindFilter:jsr StopZoneScript
+                lda #ACT_SCIENTIST3
+                jsr FindLevelActor
+                lda #$3f
+                ldx #$30+AIMODE_TURNTO
+                jsr MoveScientistSub2
+                lda #ACT_SCIENTIST2
+                jsr FindLevelActor
+                lda #$42
+                ldx #$00+AIMODE_TURNTO
+                jsr MoveScientistSub2
+                lda #<EP_BEGINSURGERY
+                ldx #>EP_BEGINSURGERY
+                sta actScriptEP
+                stx actScriptF
+                gettext txtRadioFindFilter
+RadioMsg:       ldy #ACT_PLAYER
+                jsr SpeakLine
+                lda #SFX_RADIO
+                jmp PlaySfx
+MoveScientistSub2:
+                sta lvlActX,y                   ;Set also Y & level so that this can be used as shortcut in testing
+                lda #$56
+                sta lvlActY,y
+                txa
+                sta lvlActF,y
+                lda #$08+ORG_GLOBAL
+                sta lvlActOrg,y
+BA_Skip:        rts
+
+        ; Tables
+
+npcStopPos:     dc.b $4e,$4d
+npcBrakeTbl:    dc.b 4,0
 
         ; Messages
         ; Reordered to compress better
         
-txtHacker4b:    dc.b 34,"YOU'VE GOT THE OLD TUNNELS PASS? I THINK WE SHOULD HEAD THERE IMMEDIATELY. "
-                dc.b "I'LL LOCK THE HIDEOUT, SO USE THE RECYCLER NOW IF YOU NEED.",34,0
+txtEscortStart2:dc.b 34,"NO-ONE TOOK NOTICE WHILE THE AI ORDERED HUGE SHIPMENTS TO BUILD THIS THING UNDERGROUND. "
+                dc.b "I BELIEVE IT'S RE-ENACTING THE RAGNAROK MYTH - JORMUNGANDR POISONING THE SKY. "
+                dc.b "HOW EXACTLY, I'M NOT SURE. BUT A MACHINE THAT LARGE IS A CREDIBLE THREAT. "
+                dc.b "IT'S A LOT TO ASK, BUT OUR BELIEF IS THAT YOU MUST VENTURE BELOW AND DISABLE JORMUNGANDR. THERE'S "
+                dc.b "NO KNOWING IF IT'S ALREADY READY TO ACT, SO WAITING FOR THE CAVALRY COULD BE TOO LATE.",34,0
 
-txtHacker3:     dc.b 34,"HEY. I APPRECIATE YOU CHECKING ON ME. THIS PLACE IS SECURE SO FAR, BUT I BET THE AI "
-                dc.b "IS AWARE OF IT. THERE'S SOMETHING ELSE I FOUND: THE SO-CALLED 'OLD TUNNELS' "
-                dc.b "WHICH ALSO BRANCH OFF FROM THE LOWER LABS. HAVEN'T SEEN MACHINE TRAFFIC FROM "
-                dc.b "THERE AT ALL. COULD BE THEIR BLIND SPOT, AND THEREFORE SAFE.",34,0
+txtEscortStart3:dc.b 34,"YOU'LL NEED A LUNG FILTER TO SURVIVE THE TUNNELS. THAT MEANS A SECOND SURGERY. THIS REQUIRES THE OPERATING ROOM ON THE LOWER LABS' "
+                dc.b "RIGHT SIDE, AT THE VERY BOTTOM. PLEASE LEAD THE WAY.",34,0
 
-txtHacker4a:    dc.b 34,"BUT GO AND TAKE CARE OF THOSE SCIENTISTS NOW. THEY'RE MUCH MORE EXPOSED.",34,0
+txtEscortStart1:dc.b 34,"THERE YOU ARE. I'LL LET LINDA EXPLAIN.",34,0
+
+txtRadioFindFilter:
+                dc.b 34,"LINDA HERE. WE GOT AHEAD OF OURSELVES - THERE'S NO LUNG FILTERS STORED IN HERE. AMOS IS QUITE ANGRY WITH HIMSELF. "
+                dc.b "SINCE YOU'RE MUCH BETTER SUITED TO EXPLORING, "
+                dc.b "WE'LL HAVE TO ASK YOU TO FIND ONE. THERE SHOULD BE AT LEAST ONE PACKAGE IN THE LOWER LABS SOMEWHERE.",34,0
+
+txtEscortFinish:dc.b 34,"WE'D NEVER HAVE MADE IT ALONE. NOW WE NEED TIME TO SET UP. WE'LL GIVE YOU A CALL WHEN READY.",34,0
 
                 checkscriptend

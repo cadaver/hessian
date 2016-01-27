@@ -1,154 +1,162 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 7, rechargers, saboteur robot
+        ; Script 7, upper labs computer texts
 
                 org scriptCodeStart
 
-                dc.w UseHealthRecharger
-                dc.w UseBatteryRecharger
-                dc.w RechargerEffect
-                dc.w CombatRobotSaboteur
-                dc.w DestroyCombatRobotSaboteur
+                dc.w LabComputer1
+                dc.w LabComputer2
+                dc.w LabComputer3
+                dc.w LabComputer4
+                dc.w LabComputer5
+                dc.w LabComputer6
+                dc.w LabComputer7
+                dc.w LabComputer8
+                dc.w LabComputer9
 
-        ; Health recharger script routine
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
+LabComputer1:   ldx #$02
+LC1_Code:       lda codes+2*3,x
+                ora #$30
+                sta txtExoskeletonCode,x
+                dex
+                bpl LC1_Code
+                gettext txtLabComputer1
+DisplayCommon:  ldy #0
+                sty temp1
+                sty temp2
+                jsr SetupTextScreen
+                jsr PrintMultipleRows
+                jsr WaitForExit
+                jmp CenterPlayer
 
-UseHealthRecharger:
-                lda actHp+ACTI_PLAYER
-                cmp #HP_PLAYER
-                bcs UHR_Full
-                lda #HP_PLAYER
-                sta actHp+ACTI_PLAYER
-                lda #<txtHealthRecharger
-                ldx #>txtHealthRecharger
-Recharger_Common:
-                ldy #REQUIREMENT_TEXT_DURATION
-                jsr PrintPanelText
-                lda #SFX_EMP
-                jsr PlaySfx
-                lda #$00
-                sta rechargerColor
-                lda #<EP_RECHARGEREFFECT
-                ldx #>EP_RECHARGEREFFECT
-                jmp SetScript
-UHR_Full:
-UBR_Full:       rts
+LabComputer2:   ldx #$02
+LC2_Code:       lda codes+3,x
+                ora #$30
+                sta txtHealingCode,x
+                dex
+                bpl LC2_Code
+                gettext txtLabComputer2
+                bne DisplayCommon
 
-        ; Battery recharger script routine
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
+LabComputer3:   gettext txtLabComputer3
+                bne DisplayCommon
 
-UseBatteryRecharger:
-                lda battery+1
-                cmp #MAX_BATTERY
-                bcs UBR_Full
-                lda #$00
-                sta battery
-                lda #MAX_BATTERY
-                sta battery+1
-                lda #<txtBatteryRecharger
-                ldx #>txtBatteryRecharger
-                bne Recharger_Common
+LabComputer4:   gettext txtLabComputer4
+                bne DisplayCommon
 
-        ; Recharger color effect script routine
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
+LabComputer5:   jsr SetupTextScreen
+                lda codes+6*3
+                ora #$30
+                sta txtNumber1
+                gettext txtLabComputer5
+                bne DisplayCommon
 
-RechargerEffect:
-                lda rechargerColor
-                inc rechargerColor
-                cmp #$04
-                bcs RE_End
-                lsr
-                bcs RE_Restore
-                lda Irq1_Bg3+1
-                sta Irq1_Bg1+1
-                lda #$01
-                sta Irq1_Bg3+1
-                rts
-RE_Restore:     jmp SetZoneColors
-RE_End:         jmp StopScript
+LabComputer6:   gettext txtLabComputer6
+                bne DisplayCommon
 
-        ; Saboteur robot
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
+LabComputer7:   gettext txtLabComputer7
+                bne DisplayCommon
 
-CombatRobotSaboteur:
-                lda #FR_ATTACK+3
-                sta actF2,x
-                lda #FR_STAND
-                sta actF1,x
-                jsr Random
-                and #$08
-                sta temp1
-                lda actXL,x
-                and #$f0
-                ora temp1
-                sta actXL,x
-                jsr Random
-                and #$1f
-                clc
-                adc actTime,x
-                sta actTime,x
-                bcc CRS_NoEffect
-                lda #ACTI_FIRSTNPCBULLET
-                ldy #ACTI_LASTNPCBULLET
-                jsr GetFreeActor
-                bcc CRS_NoEffect
-                lda #ACT_EMP
-                jsr SpawnActor
-                tya
-                tax
-                lda #8*8
-                jsr MoveActorX
-                lda #8*8
-                jsr MoveActorY
-                dec actYH,x
-                lda #COLOR_FLICKER
-                sta actFlash,x
-                lda #8
-                sta actTime,x
-                lda #0
-                sta actBulletDmgMod-ACTI_FIRSTPLRBULLET,x ;Make sure the EMP doesn't do actual damage to anyone
-                ldx actIndex
-CRS_NoEffect:   rts
+LabComputer8:   gettext txtLabComputer8
+                bne DisplayCommon
 
-        ; Saboteur robot death
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
+LabComputer9:   gettext txtLabComputer9
+                bne DisplayCommon
 
-DestroyCombatRobotSaboteur:
-                lda #PLOT_LOWERLABSNOAIR        ;Make lower labs safe again
-                jsr ClearPlotBit
-                lda #$00
-                sta ULO_NoAirFlag+1
-                stx temp6
-                lda #MUSIC_MYSTERY              ;Restore original music
-                jsr PlaySong
-                ldx temp6
-                jmp ExplodeEnemy3_Ofs24
+                     ;0123456789012345678901234567890123456789
+txtLabComputer1:dc.b "RE: PROGRESS",0
+                dc.b " ",0
+                dc.b "IT'S BEEN A LONG, HARD CRUNCH. THE LOWER",0
+                dc.b "EXOSKELETON UPGRADE IS AS FINALIZED AS",0
+                dc.b "IT'S GOING TO BE. THE LAB CODE IS "
+txtExoskeletonCode:
+                dc.b "XXX IN",0
+                dc.b "CASE YOU WANT TO CHECK. STILL, I BELIEVE",0
+                dc.b "MODIFYING SOLDIERS TO THIS EXTENT WILL",0
+                dc.b "NEVER BE ACCEPTED.",0,0
 
-        ; Variables
+                     ;0123456789012345678901234567890123456789
+txtLabComputer2:dc.b "RE: RE: PROGRESS",0
+                dc.b " ",0
+                dc.b "MY THOUGHTS AFTER WORKING ON THE HEALING",0
+                dc.b "BOOSTER UPGRADE ARE SIMILAR. THE PUBLIC",0
+                dc.b "WOULD ONLY PERCEIVE THIS PROJECT AS AN",0
+                dc.b "ABOMINATION. SINCE YOU SHARED YOURS, MY",0
+                dc.b "LAB CODE IS "
+txtHealingCode: dc.b "XXX.",0,0
 
-rechargerColor: dc.b 0
+                     ;0123456789012345678901234567890123456789
+txtLabComputer3:dc.b "RE: ROBOTS",0
+                dc.b " ",0
+                dc.b "WE MAY HAVE A SITUATION. DO NOT GO NEAR",0
+                dc.b "THE COMBAT ROBOT PROTOTYPES. THEY ARE",0
+                dc.b "RECEIVING COMMANDS FROM A SOURCE THAT IS",0
+                dc.b "PRESENTLY NOT UNDER OUR CONTROL. IF YOU",0
+                dc.b "CAN, SEAL THE ROBOTS OFF, THEN VACATE",0
+                dc.b "THE LABORATORIES.",0
+                dc.b " ",0
+                dc.b "--",0
+                dc.b "RUTGER THRONE",0
+                dc.b "HEAD OF SECURITY",0,0
 
-        ; Messages
+                     ;0123456789012345678901234567890123456789
+txtLabComputer4:dc.b "RE: NORMAN",0
+                dc.b " ",0
+                dc.b "I WOULD LIKE TO REMIND THAT SPECULATION",0
+                dc.b "IS SELDOM HEALTHY. NORMAN HAS STEERED",0
+                dc.b "THIS OUTFIT FOR YEARS WITH NOTHING BUT",0
+                dc.b "STELLAR RESULTS. IF HE RETREATS INTO",0
+                dc.b "PRIVACY, IT HAS TO BE FOR A GOOD REASON.",0
+                dc.b " ",0
+                dc.b "--",0
+                dc.b "KONRAD FJORD",0
+                dc.b "HEAD SCIENTIST, UPPER LABS",0,0
 
-txtHealthRecharger:
-                dc.b "HEALTH RESTORED",0
-txtBatteryRecharger:
-                dc.b "BATTERY RECHARGED",0
+                     ;0123456789012345678901234567890123456789
+txtLabComputer5:dc.b "MISSING PIECE",0
+                dc.b " ",0
+                dc.b "I BELIEVE I HAVE THE MISSING PIECE TO",0
+                dc.b "SAVE THE 'HESSIAN' PROJECT. I'M NOT",0
+                dc.b "READY TO SHARE IT YET, FOR IT MAY BE",0
+                dc.b "UNSAFE AND REQUIRE FURTHER CALIBRATION.",0
+                dc.b "FOR NOW, JUST REMEMBER THIS NUMBER: "
+txtNumber1:     dc.b "X.",0
+                dc.b " ",0
+                dc.b "- NORMAN",0,0
+
+                     ;0123456789012345678901234567890123456789
+txtLabComputer6:dc.b "RE: NORMAN",0
+                dc.b " ",0
+                dc.b "AMOS, ON NORMAN'S ABSENCE: AT THE COMBAT",0
+                dc.b "ROBOT PROJECT KICKOFF HE SPOKE OF THE",0
+                dc.b "POSSIBILITY OF UPLOADING A HUMAN MIND AS",0
+                dc.b "THE BLUEPRINT FOR AN AI. SO RETREATING",0
+                dc.b "SOLITUDE WITH THIS IMPOSSIBLE TASK IN?",0
+                dc.b "MIND POSSIBLE.",0,0
+
+                     ;0123456789012345678901234567890123456789
+txtLabComputer7:dc.b "IT OCCURRED TO ME THAT THE 'HESSIAN'",0
+                dc.b "PROJECT WOULD HAVE NEEDED A DIFFERENT",0
+                dc.b "CLIENT: THE ILLUMINATI. I MEAN, NOT JUST",0
+                dc.b "MIND CONTROLLED ASSASSINS, BUT BATTERY-",0
+                dc.b "DEPENDENT ENHANCED ASSASSINS! JUST DENY",0
+                dc.b "THEM THEIR DAILY CHARGE IF THEY DISOBEY",0
+                dc.b "OR PERFORM POORLY.",0,0
+
+                     ;0123456789012345678901234567890123456789
+txtLabComputer8:dc.b "EMP GENERATOR",0
+                dc.b " ",0
+                dc.b "A PORTABLE DEFENSE OR DISCIPLINARY TOOL",0
+                dc.b "FOR WORKING WITH COMBAT ROBOTS. DUE TO",0
+                dc.b "BATTERY DRAIN 'HESSIAN' SUBJECTS ARE",0
+                dc.b "DISCOURAGED FROM WIELDING ONE.",0,0
+
+                     ;0123456789012345678901234567890123456789
+txtLabComputer9:dc.b "SMART MINE",0
+                dc.b " ",0
+                dc.b "MODES OF OPERATION:",0
+                dc.b "1) DETONATE ON ENEMY CONTACT",0
+                dc.b "2) FALLBACK TO TIME DELAY",0,0
 
                 checkscriptend
