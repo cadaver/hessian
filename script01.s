@@ -256,6 +256,7 @@ txtGarageComputer:
                 dc.b "1. 'HESSIAN' PROJECT CANCELLED",0
                 dc.b "2. NORMAN THRONE GOES MISSING",0
                 dc.b "3. ???",0
-                dc.b "4. ROBOTS OUT OF CONTROL, KILLING STAFF",0,0
+                dc.b "4. ROBOTS OUT OF CONTROL, PERSONNEL",0
+                dc.b "   MASSACRED",0,0
 
                 checkscriptend
