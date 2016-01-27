@@ -169,7 +169,8 @@ MH_NoExtraBraking:
                 ldy #FR_DIE+1
                 bcc MH_DeathAnimDelay
 MH_DeathGrounded:
-                lda #$02
+                jsr MH_StopXSpeed               ;Immediate full stop so that the horizontal corpse
+                lda #$02                        ;doesn't slide
                 ldy #FR_DIE+2
 MH_DeathAnimDelay:
                 jsr OneShotAnimation
@@ -266,11 +267,9 @@ MH_WallFlipRight:
                 cmp temp2
                 bne MH_NoWallFlip
                 cmp #JOY_UP|JOY_RIGHT
-                jsr GetSignedHalfSpeed
-                sta actSX,x
+                jsr MH_SetSignedHalfSpeed
                 jmp MH_StartJump
-MH_NoWallFlip:  lda #$00
-                sta actSX,x
+MH_NoWallFlip:  jsr MH_StopXSpeed
 MH_NoHitWall:   lda actF1,x                     ;If roll or death animation, continue it and don't animate
                 cmp #FR_DIE                     ;jump/walk/run
                 bcs MH_AnimDone2
@@ -390,10 +389,9 @@ MH_DoAutoTurn:  lda actD,x
                 eor #$80
                 sta actD,x
 MH_ResetMoveCtrl:
-                lda #$00                        ;Reset movement until reassigned by AI
+                jsr MH_StopXSpeed
                 sta temp2
                 sta actMoveCtrl,x
-                sta actSX,x
 MH_NoAutoTurn:  lda actCtrl,x                   ;When holding fire can not initiate jump
                 and #JOY_FIRE                   ;or operate
                 bne MH_NoNewJump
@@ -560,8 +558,7 @@ MH_InitClimb:   lda #$80
                 lda actYL,x
                 and #$c0
                 sta actYL,x
-                lda #$00
-                sta actSX,x
+                jsr MH_StopXSpeed
                 sta actSY,x
                 jsr NoInterpolation
                 lda #FR_CLIMB
@@ -638,8 +635,7 @@ MH_ClimbUp:     jsr GetCharInfo4Above
                 bne MH_ClimbUpNoJump
                 lda temp2
                 cmp #JOY_RIGHT
-                jsr GetSignedHalfSpeed
-                sta actSX,x
+                jsr MH_SetSignedHalfSpeed
                 sta actD,x
                 jmp MH_StartJump
 MH_ClimbUpNoJump:
@@ -799,22 +795,21 @@ MH_ResetFall:   lda #$00
                 sta actFallL,x
                 rts
 
-        ; Get half of actor's movement speed
-        ;
-        ; Parameters: X actor number, C=1 get positive speed, C=0 negative
-        ; Returns: A speed
-        ; Modifies: A,Y
+MH_StopXSpeed:  lda #$00
+                sta actSX,x
+                rts
 
-GetSignedHalfSpeed:
+MH_SetSignedHalfSpeed:
                 ldy #AL_MOVESPEED
                 lda (actLo),y
                 php
                 lsr
                 plp
-                bcs GSHSDone
+                bcs MH_SSHSDone
                 eor #$ff
                 adc #$01
-GSHSDone:       rts
+MH_SSHSDone:    sta actSX,x
+                rts
 
         ; Play footstep sound during player movement. No-op if music is on
         ;
