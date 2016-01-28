@@ -126,39 +126,39 @@ upgrade7:       dc.w nameRecharge
                      ;0123456789012345678901234567
 descMovement:   dc.b "IMPROVED TURNS, JUMPS AND",0
                 dc.b "CLIMBING SPEED. CARRY ONE",0
-                dc.b "ONE MORE WEAPON",0,0
+                dc.b "ONE MORE WEAPON.",0,0
 
                      ;0123456789012345678901234567
 descStrength:   dc.b "IMPROVED MELEE DAMAGE. CARRY",0
                 dc.b "ONE MORE WEAPON AND MORE",0
-                dc.b "AMMUNITION",0,0
+                dc.b "AMMUNITION.",0,0
 
                      ;0123456789012345678901234567
 descFirearms:   dc.b "IMPROVED AIM (MORE FIREARM",0
                 dc.b "DAMAGE) AND REDUCED RELOAD",0
                 dc.b "TIME. AREA-BASED WEAPONS",0
-                dc.b "RECEIVE NO BENEFIT",0,0
+                dc.b "RECEIVE NO BENEFIT.",0,0
 
                      ;0123456789012345678901234567
 descArmor:      dc.b "REDUCED COMBAT DAMAGE OVER",0
                 dc.b "THE ENTIRE BODY. FALLING,",0
                 dc.b "DROWNING AND TOXIC DAMAGE",0
-                dc.b "ARE UNAFFECTED",0,0
+                dc.b "ARE UNAFFECTED.",0,0
 
                      ;0123456789012345678901234567
 descHealing:    dc.b "FASTER NANOMECHANICAL TISSUE",0
-                dc.b "REGENERATION",0,0
+                dc.b "REGENERATION.",0,0
 
                      ;0123456789012345678901234567
 descDrain:      dc.b "INCREASED TIME OF OPERATION",0
                 dc.b "BEFORE BATTERY RECHARGE IS",0
-                dc.b "REQUIRED",0,0
+                dc.b "REQUIRED.",0,0
 
                      ;0123456789012345678901234567
 descRecharge:   dc.b "CONVERTS BODY ELECTRICITY",0
                 dc.b "INTO BATTERY POWER. ADDED",0
                 dc.b "METABOLIC STRAIN MAY REDUCE",0
-                dc.b "LIFE EXPECTANCY",0,0
+                dc.b "LIFE EXPECTANCY.",0,0
 
                 if * > screen2+SCROLLROWS*40
                     err
