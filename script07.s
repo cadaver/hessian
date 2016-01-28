@@ -132,8 +132,8 @@ txtLabComputer6:dc.b "RE: NORMAN",0
                 dc.b "ROBOT PROJECT KICKOFF HE SPOKE OF THE",0
                 dc.b "POSSIBILITY OF UPLOADING A HUMAN MIND AS",0
                 dc.b "THE BLUEPRINT FOR AN AI. RETREATING TO",0
-                dc.b "SOLITUDE TO CONCENTRATE ON AN IMPOSSIBLE",0
-                dc.b "TASK? WOULD FIT HIM.",0,0
+                dc.b "SOLITUDE TO FOCUS ON AN IMPOSSIBLE TASK?",0
+                dc.b "I WOULDN'T RULE THAT OUT.",0,0
 
                      ;0123456789012345678901234567890123456789
 txtLabComputer7:dc.b "IT OCCURRED TO ME THAT THE 'HESSIAN'",0
