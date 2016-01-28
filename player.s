@@ -46,10 +46,10 @@ LOW_BATTERY     = MAX_BATTERY*2/7
 LOW_HEALTH      = HP_PLAYER*2/7
 
 DRAIN_WALK      = 3                             ;At footstep sound, 6 per anim. cycle
-DRAIN_SWIM      = 24                            ;When animation wraps
+DRAIN_SHOOT     = 6
 DRAIN_CLIMB     = 6                             ;At footstep sound, 12 per anim. cycle
-DRAIN_ASSISTEDAIM = 16
 DRAIN_JUMP      = 16
+DRAIN_SWIM      = 18                            ;When animation wraps
 DRAIN_ROLL      = 20
 DRAIN_MELEE     = 20
 DRAIN_HEAL      = 96
@@ -429,8 +429,8 @@ MH_StartJump:   ldy #AL_JUMPSPEED
                 sta actSY,x
                 txa
                 bne MH_JumpNoPlayer
-                ldy #DRAIN_JUMP
-                jsr DrainBatteryDoubleMovement
+                lda #DRAIN_JUMP
+                jsr DrainBatteryMultiplier
                 lda #SFX_JUMP
                 jsr PlayMovementSound
 MH_JumpNoPlayer:jsr MH_ResetGrounded
@@ -469,8 +469,8 @@ MH_StartRoll:   lda #$00
                 sta actFd,x
                 txa
                 bne MH_RollNoPlayer
-                ldy #DRAIN_ROLL
-                jsr DrainBatteryDoubleMovement
+                lda #DRAIN_ROLL
+                jsr DrainBatteryMultiplier
                 lda #SFX_ROLL
                 jsr PlayMovementSound
 MH_RollNoPlayer:lda #FR_ROLL
@@ -542,8 +542,8 @@ MH_NoWalkAnimWrap:
                 cmp #$02
                 bne MH_NoWalkFootstep
                 jsr PlayFootstep
-                ldy #DRAIN_WALK
-                jsr DrainBatteryDoubleMovement ;Drain battery at each footstep
+                lda #DRAIN_WALK
+                jsr DrainBatteryMultiplier ;Drain battery at each footstep
 MH_NoWalkFootstep:
                 pla
 MH_AnimDone:    sta actF1,x
@@ -671,8 +671,8 @@ MH_ClimbAnimDown:
                 bne MH_ClimbNotPlayer
                 bcc MH_ClimbNoSound
                 jsr PlayFootstep
-                ldy #DRAIN_CLIMB
-                jsr DrainBatteryDoubleMovement
+                lda #DRAIN_CLIMB
+                jsr DrainBatteryMultiplier
 MH_ClimbNoSound:
 MH_ClimbNotPlayer:
                 jmp NoInterpolation
@@ -775,8 +775,8 @@ MH_NotSwimmingUp:
                 adc #$00
                 cmp #FR_SWIM+4
                 bcc MH_SwimAnimDone
-                ldy #DRAIN_SWIM
-                jsr DrainBattery                ;Drain battery when the animation wraps
+                lda #DRAIN_SWIM
+                jsr DrainBatteryMultiplier      ;Drain battery when the animation wraps
                 lda #FR_SWIM                    ;Assumes only the player will swim
 MH_SwimAnimDone:jmp MH_AnimDone
 
@@ -844,27 +844,15 @@ CreateSplash:   lda #ACTI_FIRSTEFFECT
                 lda #SFX_SPLASH
 PMS_DoPlay:     jmp PlaySfx
 
-        ; Drain battery charge, double if specified upgrade bit is on
-        ;
-        ; Parameters: A upgrade bitmask, Y amount of drain
-        ; Returns: -
-        ; Modifies: A
-
-DrainBatteryDoubleMovement:
-                lda #UPG_MOVEMENT
-DrainBatteryDouble:
-                and upgrade
-                cmp #$01
-                tya
-                bcc DrainBattery
-                asl
-
         ; Drain battery charge
         ;
         ; Parameters: A amount of drain
         ; Returns: -
-        ; Modifies: A
+        ; Modifies: A,Y (DrainBatteryMultiplier)
 
+DrainBatteryMultiplier:
+                ldy #$08
+                jsr ModifyDamage
 DrainBattery:   lsr                             ;Replaced by CLC if no battery upgrade
 DrainBatteryRound:
                 if GODMODE_CHEAT = 0
@@ -953,8 +941,21 @@ LoadPlayerActorVars:
 
 ApplyUpgrades:  lda upgrade
                 sta temp6
+                ldx #1
+                and #UPG_MOVEMENT+UPG_STRENGTH+UPG_FIREARMS+UPG_ARMOR+UPG_HEALING
+AU_CountMultiplier:                             ;Count upgrades for battery drain multiplier
+                lsr
+                bcc AU_NoMultiplier
+                inx
+AU_NoMultiplier:bne AU_CountMultiplier
+                txa
+                asl
+                asl
+                asl
+                sta DrainBatteryMultiplier+1
                 ldx #C_PLAYER_BOTTOM
                 ldy #C_PLAYER_TOP
+                lda temp6
                 and #UPG_MOVEMENT               ;Movement upgrade turns lower part armored
                 beq AU_NoBottomArmor
                 inx

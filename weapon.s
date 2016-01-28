@@ -432,6 +432,8 @@ AH_NoFlicker:   ldx actIndex                    ;If player, decrement ammo (unle
                 lda wpnBits
                 and #WDB_MELEE
                 bne AH_PlayerMeleeAttack
+                lda #DRAIN_SHOOT
+                jsr DrainBatteryMultiplier
                 ldy itemIndex
                 if AMMO_CHEAT = 0
                 jsr DecreaseAmmoOne
@@ -441,15 +443,10 @@ AH_NoFlicker:   ldx actIndex                    ;If player, decrement ammo (unle
                 bne AH_NoPlayerBonus
 AH_PlayerFirearmBonus:
                 ldy #NO_MODIFY
-                cpy #NO_MODIFY
-                beq AH_NoPlayerBonus
-                lda #DRAIN_ASSISTEDAIM          ;Assisted aiming (damage bonus) drains battery
-                jsr DrainBattery
-                jmp AH_PlayerBonusCommon
+                bpl AH_PlayerBonusCommon
 AH_PlayerMeleeAttack:
-                lda #UPG_STRENGTH
-                ldy #DRAIN_MELEE
-                jsr DrainBatteryDouble
+                lda #DRAIN_MELEE
+                jsr DrainBatteryMultiplier
 AH_PlayerMeleeBonus:
                 ldy #NO_MODIFY
                 cpy #NO_MODIFY

@@ -861,7 +861,7 @@ ULO_PlayerAlive:cmp #HP_PLAYER
                 lda healTimer
 ULO_HealingRate:adc #INITIAL_HEALTIMER-1        ;C=1 here
                 bcc ULO_NoHealing2
-                lda #DRAIN_HEAL
+                lda #DRAIN_HEAL                 ;This is never multiplied
                 jsr DrainBattery
                 inc actHp+ACTI_PLAYER
                 lda #HEALTIMER_RESET            ;Heal faster after first unit
