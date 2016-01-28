@@ -942,8 +942,8 @@ LoadPlayerActorVars:
 ApplyUpgrades:  lda upgrade
                 sta temp6
                 ldx #2                          ;Base consumption 2*4 = 8
-                and #UPG_MOVEMENT+UPG_STRENGTH+UPG_FIREARMS+UPG_ARMOR+UPG_HEALING+UPG_TOXINFILTER
-AU_CountMultiplier:                             ;Count upgrades for battery drain multiplier
+                and #$ff-UPG_RECHARGE
+AU_CountMultiplier:                             ;Count upgrades (except recharge) for battery drain multiplier
                 lsr
                 bcc AU_NoMultiplier
                 inx

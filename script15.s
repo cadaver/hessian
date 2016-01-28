@@ -321,6 +321,8 @@ ASZ_AlreadySet: rts
         ; Modifies: various
 
 AfterSurgeryZone:
+                lda #$00                        ;As there may be dialogue + enemies at the same time,
+                sta UA_SpawnDelay+1             ;reset spawncount to make sure it's as improbable as possible
                 lda levelNum
                 cmp #$0f                        ;Reached old tunnels?
                 beq ASZ_Survived
@@ -331,9 +333,7 @@ AfterSurgeryZone:
                 lda #PLOT_LOWERLABSNOAIR
                 jsr GetPlotBit
                 bne ASZ_AlreadySet
-                lda #$00
-                sta UA_SpawnDelay+1             ;Wait a bit before next dialogue, ensure
-                lda #<EP_AFTERSURGERYNOAIR      ;no enemy spawn in the meanwhile
+                lda #<EP_AFTERSURGERYNOAIR
                 sta actScriptEP+1
                 if SKIP_PLOT > 0
                 lda #PLOT_ELEVATOR1
