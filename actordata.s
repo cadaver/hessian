@@ -1565,7 +1565,7 @@ alArmorer:      dc.w MoveAndAttackHuman         ;Update routine
                 dc.b 0                          ;Size down
                 dc.w HumanDeath                 ;Destroy routine
                 dc.b HP_ARMORER                 ;Initial health
-                dc.b MOD_BOSS                   ;Damage modifier
+                dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 250                        ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
                 dc.b DROP_WEAPON                ;Itemdrop type or item override
