@@ -25,6 +25,9 @@ tmChoice        = menuCounter
 
 TunnelMachine:  lda scriptF                     ;If the destroy plan script running,
                 bne TM_Wait                     ;do not exec this script yet
+                lda #PLOT_RIGTUNNELMACHINE
+                jsr GetPlotBit
+                bne TM_AlreadyRigged
                 lda #PLOT_BATTERY
                 jsr GetPlotBit
                 beq TM_NoBattery
@@ -40,22 +43,34 @@ TunnelMachine:  lda scriptF                     ;If the destroy plan script runn
                 jsr SetScript
                 ldx #MENU_INTERACTION
                 jsr SetMenuMode
-                lda #<txtReady
-                ldx #>txtReady
+                gettext txtReady
                 jsr PrintPanelTextIndefinite
                 jmp TMR_RedrawNoSound
-TM_NoBattery:   lda #<txtNoBattery
-                ldx #>txtNoBattery
+TM_NoBattery:   gettext txtNoBattery
                 bne TM_TextCommon
 TM_NoFuel:      lda #1
                 sta shakeScreen
                 lda #SFX_GENERATOR
                 jsr PlaySfx
-                lda #<txtNoFuel
-                ldx #>txtNoFuel
+                gettext txtNoFuel
 TM_TextCommon:  ldy #REQUIREMENT_TEXT_DURATION
                 jmp PrintPanelText
 TM_Wait:        rts
+TM_AlreadyRigged:
+                ldy lvlObjNum
+                lda lvlObjB,y                   ;Note: this isn't stored to game state,
+                and #$ff-OBJMODE_MANUAL         ;so after loading a save this line
+                sta lvlObjB,y                   ;would be spoken again
+                lda #$ff
+                sta lvlObjNum
+                gettext txtAlreadyRigged
+                jsr PrintPanelTextIndefinite
+                ldx #ACTI_PLAYER
+                jsr SL_ExplicitActor
+                tya
+                tax
+                lda #-8*8                       ;Move speech bubble slightly higher to
+                jmp MoveActorY                  ;denote it comes from inside the machine
 
         ; Tunnel machine decision runloop
         ;
@@ -149,13 +164,11 @@ TunnelMachineItems:
                 bne TMI_Fuel
 TMI_Battery:    lda #PLOT_BATTERY
                 jsr SetPlotBit
-                lda #<txtBatteryInstalled
-                ldx #>txtBatteryInstalled
+                gettext txtBatteryInstalled
                 bne TMI_Common
 TMI_Fuel:       lda #PLOT_FUEL
                 jsr SetPlotBit
-                lda #<txtRefueled
-                ldx #>txtRefueled
+                gettext txtRefueled
 TMI_Common:     jsr TM_TextCommon
                 ldy itemIndex
                 jsr RemoveItem
@@ -372,9 +385,9 @@ txtRadioDestroyLinda:
 
 txtRadioDestroyCommon:
                 dc.b "DON'T START THE MACHINE YET. IF I LOAD IT WITH "
-                dc.b "EXPLOSIVES FROM THE RECYCLER, MAYBE I CAN DESTROY JORMUNGANDR AS YOU DEAL WITH THE AI. "
+                dc.b "EXPLOSIVES FROM THE RECYCLER, MAYBE I CAN DESTROY JORMUNGANDR JUST AS YOU TAKE OUT THE AI. "
                 dc.b "A HAZMAT SUIT SHOULD ALLOW ME TO SURVIVE LONG ENOUGH. "
-                dc.b "THE DOOR IN THE UPPER STORAGE LEADS BACK HERE. I'LL BE WAITING.",34,0
+                dc.b "THE DOOR IN THE UPPER STORAGE LEADS BACK TO THE LAB. I'LL BE WAITING.",34,0
 
 txtRadioJormungandr:
                 dc.b 34,"GREETINGS SEMI-HUMAN. I AM JORMUNGANDR. I RESIDE BEYOND THE DEAD END IN FRONT OF YOU. "
@@ -387,5 +400,8 @@ txtRadioHackerWarning:
                 dc.b "LINK IS ACTIVE, THOUGH ALL OTHER OUTSIDE LINES ARE DOWN. HAS TO BE THE AI. "
                 dc.b "THE SCARIEST OPTION WOULD BE THAT IT HAS WORMED ITS WAY INTO "
                 dc.b "NUCLEAR LAUNCH SYSTEMS OR SOMETHING. BUT NO. THAT CAN'T HAPPEN IN REALITY.",34,0
+
+txtAlreadyRigged:
+                dc.b 34,"I'M RIGGING THE EXPLOSIVES! YOU GO AHEAD TO THE AI!",34,0
 
                 checkscriptend

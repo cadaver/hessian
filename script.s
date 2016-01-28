@@ -249,6 +249,7 @@ SpeakLine:      sty SL_ActT+1
 SL_ActT:        lda #$00
                 jsr FindActor
                 bcc SL_NoSpeechBubble
+SL_ExplicitActor:
                 lda #ACTI_FIRSTEFFECT
                 ldy #ACTI_LASTEFFECT
                 jsr GetFreeActor
