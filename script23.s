@@ -300,7 +300,6 @@ EndingCommon:   ldx #$00                        ;Kill sound effects so the music
                 jsr PrintMultipleRows
                 jsr WaitForExit
                 jsr SetupTextScreen
-                jsr FadeMusicEnd
                 ldx #STACKSTART
                 txs
                 jmp UM_SaveGame
@@ -381,7 +380,7 @@ EB_Loop:        lda temp1
 
 FadeMusic:      lda fastLoadMode
                 beq FM_Done                     ;Using fallback loader, no fade as there already are screen-blanking pauses
-FadeMusicEnd:   lda PS_CurrentSong+1
+                lda PS_CurrentSong+1
                 beq FM_Done                     ;No fade if game music off
 FM_Loop:        lda Play_MasterVol+1
                 beq FM_Done

@@ -881,16 +881,6 @@ FadeOutAll:     lda fastLoadMode                ;No fade if using fallback loade
                 beq FOT_Done
                 lda #-1
                 sta logoFadeDir
-                sta textFadeDir
-FOA_FadeDelay:  lda #$05
-                sta musicFadeDelay
-FOA_Wait:       lda Play_MasterVol+1
-                beq FOT_Done
-                jsr Update
-                dec musicFadeDelay
-                bne FOA_Wait
-                dec Play_MasterVol+1
-                bpl FOA_FadeDelay
 
         ; Fade text only
 
