@@ -409,7 +409,7 @@ charset07.pak: charset07.s memory.s bg/world07.blk bg/world07.chi bg/world07.chc
 	pchunk2 bg/world07.blk charset07_2.pak
 	filejoin charset07_1.pak+charset07_2.pak charset07.pak
 
-charset08.pak: charset08.s memory.s bg/world08.blk bg/world08.chi bg/world08.chc bg/world08.chr
+charset08.pak: charset08.s memory.s bg/world08.blk bg/world08.chi bg/world08.chc bg/world08.chr mainsym.s
 	dasm charset08.s -ocharset08_1.bin -f3
 	pack2 charset08_1.bin charset08_1.pak
 	pchunk2 bg/world08.blk charset08_2.pak
