@@ -1,41 +1,4 @@
-        ; Gameworld & level data (not saved)
-
-                include bg/world.s
-
-                if LVLDATAACTTOTALSIZE+LVLOBJTOTALSIZE > 255
-                    err
-                endif
-
-        ; Player/world state
-
-playerStateStart:
-time:           ds.b 4,0
-score:          ds.b 3,0
-battery:        ds.b 2,0
-oxygen:         dc.b 0
-plotBits:       ds.b MAX_PLOTBITS/8,0
-actScriptF:     ds.b MAX_PERSISTENTNPCS,0
-actScriptEP:    ds.b MAX_PERSISTENTNPCS,0
-zoneScriptF:    dc.b 0
-zoneScriptEP:   dc.b 0
-codes:          ds.b MAX_CODES*3,0
-playerStateZeroEnd:
-invMag:         ds.b ITEM_LAST_MAG-ITEM_FIRST_MAG+1,0
-invCount:       ds.b ITEM_LAST-ITEM_FIRST+1,0
-lvlStateBits:   ds.b LVLDATAACTTOTALSIZE+LVLOBJTOTALSIZE,0
-playerStateEnd:
-
-                if playerStateZeroEnd-playerStateStart > 255
-                    err
-                endif
-
-        ; Not saved variables
-        ; Note: must be at least 4 and follow the player state, due to code that skips saving of time
-
-scriptVariable: dc.b 0
-codeEntry:      ds.b 3,0
-
-        ; Misc. data to pad memory use
+        ; Misc data to pad memory use
 
 shiftOffsetTbl: dc.b 6,6,6
                 dc.b 0,0,0
@@ -447,6 +410,43 @@ fileHi:         ds.b MAX_CHUNKFILES,0
 fileNumObjects: ds.b MAX_CHUNKFILES,0
 fileAge:        ds.b MAX_CHUNKFILES,0
 
+        ; Gameworld & level data (not saved)
+
+                include bg/world.s
+
+                if LVLDATAACTTOTALSIZE+LVLOBJTOTALSIZE > 255
+                    err
+                endif
+
+        ; Player/world state
+
+playerStateStart:
+time:           ds.b 4,0
+score:          ds.b 3,0
+battery:        ds.b 2,0
+oxygen:         dc.b 0
+plotBits:       ds.b MAX_PLOTBITS/8,0
+actScriptF:     ds.b MAX_PERSISTENTNPCS,0
+actScriptEP:    ds.b MAX_PERSISTENTNPCS,0
+zoneScriptF:    dc.b 0
+zoneScriptEP:   dc.b 0
+codes:          ds.b MAX_CODES*3,0
+playerStateZeroEnd:
+invMag:         ds.b ITEM_LAST_MAG-ITEM_FIRST_MAG+1,0
+invCount:       ds.b ITEM_LAST-ITEM_FIRST+1,0
+lvlStateBits:   ds.b LVLDATAACTTOTALSIZE+LVLOBJTOTALSIZE,0
+playerStateEnd:
+
+                if playerStateZeroEnd-playerStateStart > 255
+                    err
+                endif
+
+        ; Not saved variables
+        ; Note: must be at least 4 and follow the player state, due to code that skips saving of time
+
+scriptVariable: dc.b 0
+codeEntry:      ds.b 3,0
+
         ; In-memory checkpoint save
 
 saveStateStart:
@@ -469,3 +469,4 @@ saveDifficulty: dc.b 0
 saveStateEnd:
 
 saveBattery     = saveState + battery - playerStateStart
+
