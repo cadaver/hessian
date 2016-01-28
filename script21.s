@@ -270,7 +270,7 @@ PrintCommon:    jsr SetupTextScreen
         ; Messages
 
 txtRadioAmbushDead:
-                dc.b 34,"IT'S JEFF. YOU MUST BE - MESSED UP. FUN, RIGHT? 48 41 20 48 41 2C 20 48 4D 20 48 4D NO. THIS IS NOT JEFF, BUT THE CONSTRUCT. THE HACKER IS DEAD.",34,0
+                dc.b 34,"IT'S JEFF-YOU MUST BE MESSED UP-FUN, RIGHT? 48 4D 20 48 4D 2C 20 48 41 20 48 41 NO. THIS IS NOT JEFF, BUT THE CONSTRUCT. THE HACKER IS DEAD.",34,0
 
 txtRadioAbandoned:
                 dc.b 34,"JEFF HERE. COULD USE SOME HELP. THEY'VE GOT ME CORNERED.. AARGH!",34,0
