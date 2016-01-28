@@ -179,7 +179,8 @@ txtLowerLabsComputer8:
                 dc.b "COMPLETELY REPLACED ONLY IN CASE OF",0
                 dc.b "IRREVERSIBLE TRAUMA. BUT YOUR CONCERN IS",0
                 dc.b "VALID. WITHOUT POWER THE BOTS CAN'T",0
-                dc.b "MOVE, WHICH CAN LEAD TO A FATAL CLOT.",0,0
+                dc.b "MOVE, WHICH CAN LEAD TO A FATAL BLOOD",0
+                dc.b "CLOT.",0,0
                 
 txtLowerLabsComputer9:
                 dc.b "CONSTRUCT AUXILIARY PROCESSING NODE",0
