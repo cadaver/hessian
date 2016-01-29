@@ -345,6 +345,9 @@ GBO_ShiftLoop:  asl temp1                       ;Convert screen coords back to m
 AttackCustomOffset:
                 ldx actIndex                    ;Check whether to use player or NPC bullet actor
                 beq AH_IsPlayer                 ;indices
+                lda menuMode                    ;No enemy attacks in dialogue
+                cmp #MENU_DIALOGUE
+                beq AH_CannotFire
                 lda #ACTI_FIRSTNPCBULLET
                 ldy #ACTI_LASTNPCBULLET
                 bne AH_IsNpc

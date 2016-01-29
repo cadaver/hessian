@@ -139,9 +139,10 @@ AS_1:           jsr AfterSurgeryRun             ;Ensure player position right wh
                 lda upgrade
                 ora #UPG_TOXINFILTER
                 sta upgrade                     ;Has the filter upgrade now
+                jsr ApplyUpgrades               ;Update the battery consumption rate
                 lda #HP_PLAYER                  ;Always full HP + at least minimal battery, as there will
-                sta actHp+ACTI_PLAYER           ;be battery drain
-                lda battery+1
+                sta actHp+ACTI_PLAYER           ;be battery drain & possible damage depending on combat
+                lda battery+1                   ;randomizing
                 cmp #LOW_BATTERY
                 bcs AS_1BatteryOK
                 lda #LOW_BATTERY

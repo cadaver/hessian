@@ -1,8 +1,3 @@
-        ; Misc data to pad memory use
-
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
 healthBarPosTbl:dc.b 50,64
 
 lvlPropertiesStart:
@@ -409,6 +404,12 @@ fileLo:         ds.b MAX_CHUNKFILES,0
 fileHi:         ds.b MAX_CHUNKFILES,0
 fileNumObjects: ds.b MAX_CHUNKFILES,0
 fileAge:        ds.b MAX_CHUNKFILES,0
+
+        ; Remaining data
+
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
 
         ; Gameworld & level data (not saved)
 
