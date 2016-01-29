@@ -362,7 +362,8 @@ actYL:          ds.b MAX_ACT,0
 actYH:          ds.b MAX_ACT,0
 actT:           ds.b MAX_ACT,0
 actD:           ds.b MAX_ACT,0
-actHp:          ds.b MAX_ACT,0
+actHp:          dc.b HP_PLAYER
+                ds.b MAX_ACT-1,0
 actLvlDataOrg:  ds.b MAX_PERSISTENTACT,0
 actF1:          ds.b MAX_ACT,0
 actFd:          ds.b MAX_ACT,0
@@ -424,8 +425,8 @@ shiftOffsetTbl: dc.b 6,6,6
 playerStateStart:
 time:           ds.b 4,0
 score:          ds.b 3,0
-battery:        ds.b 2,0
-oxygen:         dc.b 0
+battery:        dc.b 0,MAX_BATTERY
+oxygen:         dc.b MAX_OXYGEN
 plotBits:       ds.b MAX_PLOTBITS/8,0
 actScriptF:     ds.b MAX_PERSISTENTNPCS,0
 actScriptEP:    ds.b MAX_PERSISTENTNPCS,0

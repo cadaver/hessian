@@ -68,12 +68,7 @@ LoadOptionsDone:
 
         ;Initialize the sprite multiplexing system
 
-InitSprites:    lda #$00
-                sta newFrame
-                sta firstSortSpr
-                lda #$ff
-                sta sprFileNum
-                ldx #MAX_SPR
+InitSprites:    ldx #MAX_SPR
                 lda #$01
                 sta temp1
 ISpr_Loop:      txa
@@ -102,6 +97,7 @@ ISpr_ClearCacheInUse:
                 sta cacheSprFile,x
                 dex
                 bpl ISpr_ClearCacheInUse
+                sta sprFileNum
 
         ; Setup memory allocation and preloaded sprites
 
@@ -147,11 +143,16 @@ FadeMusicDelay: jsr WaitBottom
 
 InitVideo:      jsr WaitBottom
                 lda #$00                        ;Blank screen
+                sta newFrame
+                sta firstSortSpr
+                sta screen
                 sta $d011
                 sta $d01b                       ;Sprites on top of BG
                 sta $d01d                       ;Sprite X-expand off
                 sta $d017                       ;Sprite Y-expand off
-                sta screen
+                sta $d026                       ;Set sprite multicolors
+                lda #$0a
+                sta $d025
                 lda #$ff                        ;Set all sprites multicolor
                 sta $d01c
                 sta $d001
@@ -166,9 +167,6 @@ InitVideo:      jsr WaitBottom
                 jsr WaitBottom                  ;(some C64's need to "warm up" sprites
                 ldx #$00                        ;to avoid one frame flash when they're
                 stx $d015                       ;actually used for the first time)
-                stx $d026                       ;Set sprite multicolors
-                lda #$0a
-                sta $d025
 IVid_CopyTextChars:
                 lda textCharsCopy,x
                 sta textChars+$100,x
@@ -192,13 +190,7 @@ IVid_InitScorePanel:
                 sta colors+PANELROW*40+40,x
                 dex
                 bpl IVid_InitScorePanel
-                lda #HP_PLAYER                  ;Init health & fists item immediately
-                sta actHp+ACTI_PLAYER           ;even before starting the game so that
-                lda #MAX_BATTERY                ;the panel looks nice
-                sta battery+1
-                lda #MAX_OXYGEN
-                sta oxygen
-                lda #ITEM_FISTS
+                lda #ITEM_FISTS                 ;Show fists even before game start
                 sta itemIndex
 
         ; Initialize raster IRQs
