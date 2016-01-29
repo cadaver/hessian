@@ -22,6 +22,10 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtBattery
                 dc.b <txtArmor
                 dc.b <txtParts
+                dc.b <txtAmplifier
+                dc.b <txtTruckBattery
+                dc.b <txtFuelCan
+                dc.b <txtLungFilter
                 dc.b <txtWarehousePass
                 dc.b <txtItPass
                 dc.b <txtServicePass
@@ -33,12 +37,8 @@ itemNameLo:     dc.b <txtFists
                 dc.b <txtServerVaultPass
                 dc.b <txtOldTunnelsPass
                 dc.b <txtBiometricId
-                dc.b <txtAmplifier
-                dc.b <txtTruckBattery
-                dc.b <txtFuelCan
-                dc.b <txtLungFilter
-                dc.b <txtLaptop
                 dc.b <txtCommGear
+                dc.b <txtLaptop
                 dc.b <txtHazmatSuit
 
 itemNameHi:     dc.b >txtFists
@@ -63,6 +63,10 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtBattery
                 dc.b >txtArmor
                 dc.b >txtParts
+                dc.b >txtAmplifier
+                dc.b >txtTruckBattery
+                dc.b >txtFuelCan
+                dc.b >txtLungFilter
                 dc.b >txtWarehousePass
                 dc.b >txtItPass
                 dc.b >txtServicePass
@@ -74,12 +78,8 @@ itemNameHi:     dc.b >txtFists
                 dc.b >txtServerVaultPass
                 dc.b >txtOldTunnelsPass
                 dc.b >txtBiometricId
-                dc.b >txtAmplifier
-                dc.b >txtTruckBattery
-                dc.b >txtFuelCan
-                dc.b >txtLungFilter
-                dc.b >txtLaptop
                 dc.b >txtCommGear
+                dc.b >txtLaptop
                 dc.b >txtHazmatSuit
 
 txtFists:       dc.b "FISTS",0

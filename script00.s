@@ -548,7 +548,7 @@ IP_InitInventory:
                 sec                             ;Load first level's actors from disk
                 jsr CreatePlayerActor
                 if ALLQUESTITEMS_CHEAT > 0
-                lda #ITEM_WAREHOUSEPASS
+                lda #ITEM_FIRST_IMPORTANT
 IP_GiveAllLoop: pha
                 ldx #1
                 jsr AddItem
