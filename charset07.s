@@ -6,7 +6,15 @@
                 org lvlCodeStart
 
 UpdateLevel:    inc animDelay
+                lda Irq1_Bg3+1
+                cmp #$0c
+                bne SkipColorAnim
                 lda animDelay
+                and #$1f
+                tax
+                lda colorTbl,x
+                sta Irq1_Bg2+1
+SkipColorAnim:  lda animDelay
                 and #$07
                 bne SkipMonitor
                 ldx #$00
@@ -33,6 +41,11 @@ EmptyRow:       lda #$ff
                 sta chars+216*8+7
                 sta chars+217*8+7
                 rts
+
+
+colorTbl:       dc.b 2,2,2,2,8,2,8,2,8,8,8,8,12,8,12,8
+                dc.b 12,12,12,12,8,12,8,12,8,8,8,8,2,8,2,8
+
 
 animDelay:      dc.b 0
 randomIndex:    dc.b 0
