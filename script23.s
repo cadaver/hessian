@@ -32,14 +32,14 @@ MoveEyePhase1:  lda actT+ACTI_PLAYER            ;No action in the ending interlu
                 lda lvlObjB+$1e                 ;Close door immediately once player moves or fires
                 bpl MEye_DoorDone
                 lda actXL+ACTI_PLAYER
-                bpl MEye_CloseDoor
-                cmp #$88
+                cmp #$c0
                 bcs MEye_CloseDoor
-                lda actF2+ACTI_PLAYER
-                cmp #FR_PREPARE
-                bcs MEye_CloseDoor
+                lda actAttackD+ACTI_PLAYER
+                bne MEye_CloseDoor
 MEye_Wait2:     rts
-MEye_CloseDoor: ldy #$1e
+MEye_CloseDoor: lda #MUSIC_ASSAULT+1
+                jsr PlaySong
+                ldy #$1e
                 jsr InactivateObject
                 ldx actIndex
 MEye_DoorDone:  lda #$01
@@ -219,7 +219,7 @@ DE_DestroyDroids:
 DE_Skip:        dex
                 bne DE_DestroyDroids
 DE_RestX:       ldx #$00
-                rts
+CE_Wait:        rts
 
         ; Ending after Construct is destroyed
         ;
@@ -230,19 +230,18 @@ DE_RestX:       ldx #$00
 ConstructEnding:lda #ACT_EXPLOSION              ;Wait for final explosion to vanish
                 jsr FindActor
                 bcs CE_Wait
-                ldx #>EP_ENDING2                ;Check plot state for which ending
-                lda #PLOT_ELEVATOR2
-                jsr GetPlotBit
-                bne CE_Ending3
-                lda #PLOT_RIGTUNNELMACHINE
-                jsr GetPlotBit
-                bne CE_Ending3
-                lda #<EP_ENDING2
-                skip2
-CE_Ending3:     lda #<EP_ENDING3
+                jsr FadeMusic
+                jsr ClearPanelText
+                jsr BlankScreen
+                lda #PLOT_DISRUPTCOMMS          ;Jormungandr already destroyed?
+                jsr GetPlotBit                  ;If not, show interlude
+                bne CE_NoInterlude
+                lda #<EP_JORMUNGANDRINTERLUDE
+                ldx #>EP_JORMUNGANDRINTERLUDE
                 jmp ExecScript
-DP_Wait:
-CE_Wait:        rts
+CE_NoInterlude: lda #<EP_ENDING3
+                ldx #>EP_ENDING3
+                jmp ExecScript
 
         ; Ending 1: Jormungandr destroyed
         ;
@@ -250,14 +249,24 @@ CE_Wait:        rts
         ; Returns: -
         ; Modifies: Various
 
-Ending1:        lda #13                         ;Show the server vault final room
+Ending1:        lda #$00
+                sta actT+ACTI_PLAYER
+                sta blockX
+                sta blockY
                 ldx #$3c
+                stx mapX
+                stx actXH+ACTI_PLAYER
                 ldy #$31
-                jsr ShowLevelXY
-                lda #MUSIC_SILENCE
-                jsr PlaySong
-                lda #0
+                sty mapY
+                sty actYH+ACTI_PLAYER
+                lda #13
+                jsr ChangeLevel
+                jsr FindPlayerZone
+                jsr RedrawAndAddActors
+                jsr SL_NewMapPos
+                lda #$00
                 sta interludeTime
+                jsr PlaySong
 E1_InterludeLoop:
                 jsr DrawActors
                 jsr AddActors
@@ -276,9 +285,6 @@ E1_InterludeLoop:
                 jmp E1_InterludeLoop
 E1_InterludeDone:
                 jsr SetupTextScreen
-                lda #<2500                      ;Fade & textscreen setup already done in Jormungandr code
-                ldy #>2500
-                jsr EndingBonus
                 lda #5
                 sta temp2
                 lda #0
@@ -286,6 +292,10 @@ E1_InterludeDone:
                 lda #<txtEnding1
                 ldx #>txtEnding1
                 jsr PrintMultipleRows
+DestructionEndingCommon:
+                lda #<2500
+                ldy #>2500
+                jsr EndingBonus
                 lda #MUSIC_ENDING1
 EndingCommon:   ldx #$00                        ;Kill sound effects so the music will play properly
                 stx ntChnSfx
@@ -293,7 +303,6 @@ EndingCommon:   ldx #$00                        ;Kill sound effects so the music
                 stx ntChnSfx+14
                 jsr PlaySong
                 jsr StopScript
-                jsr ClearPanelText
                 lda score
                 ldx score+1
                 ldy score+2
@@ -340,8 +349,7 @@ EndingCommon:   ldx #$00                        ;Kill sound effects so the music
         ; Returns: -
         ; Modifies: Various
 
-Ending2:        jsr FadeMusic
-                jsr SetupTextScreen
+Ending2:        jsr SetupTextScreen
                 lda #<2500
                 ldy #>2500
                 jsr EndingBonus
@@ -352,8 +360,7 @@ Ending2:        jsr FadeMusic
                 lda #<txtEnding2
                 ldx #>txtEnding2
                 jsr PrintMultipleRows
-                lda #MUSIC_ENDING1
-                jmp EndingCommon
+                jmp DestructionEndingCommon
 
         ; Ending 3: both destroyed
         ;
@@ -361,11 +368,7 @@ Ending2:        jsr FadeMusic
         ; Returns: -
         ; Modifies: Various
 
-Ending3:        jsr FadeMusic
-                jsr SetupTextScreen
-                lda #<3750
-                ldy #>3750
-                jsr EndingBonus
+Ending3:        jsr SetupTextScreen
                 lda #5
                 sta temp2
                 lda #0
@@ -373,6 +376,9 @@ Ending3:        jsr FadeMusic
                 lda #<txtEnding3
                 ldx #>txtEnding3
                 jsr PrintMultipleRows
+                lda #<3750
+                ldy #>3750
+                jsr EndingBonus
                 lda #MUSIC_ENDING2
                 jmp EndingCommon
 
@@ -421,26 +427,6 @@ FM_Delay:       jsr WaitBottom
                 bne FM_Delay
                 beq FM_Loop
 FM_Done:        rts
-
-        ; Show a specific room without the player actor
-
-ShowLevelXY:    pha
-                lda #$00
-                sta actT+ACTI_PLAYER
-                sta blockX
-                sta blockY
-                stx mapX
-                stx actXH+ACTI_PLAYER
-                sty mapY
-                sty actYH+ACTI_PLAYER
-                pla
-                jsr ChangeLevel
-                jsr FindPlayerZone
-                jsr RedrawScreen
-                jsr SetZoneColors
-                jsr AddAllActorsNextFrame
-                jsr AddActors
-                jmp SL_NewMapPos
 
         ; Final server room droid spawn positions
 

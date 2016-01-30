@@ -821,6 +821,7 @@ ExplodeEnemy4_Ofs15:
                 lda #4
                 ldy #$ff
                 jsr ExplodeEnemyMultiple
+EE_SpawnScrapMetal:
                 lda #-2*8-8
                 sta temp7                       ;Initial base X-speed
                 jsr Random

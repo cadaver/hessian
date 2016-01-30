@@ -1401,12 +1401,8 @@ CP_PreloadTrigger:
                 jmp CP_PreloadDone
 CP_PreloadNext: dey
                 bpl CP_PreloadTrigger
-CP_PreloadDone: jsr RedrawScreen
-                jsr SetZoneColors
-                jsr AddAllActorsNextFrame
-                jsr AddActors
-                jsr UpdateActors                ;Update actors once first to make sure
-                                                ;e.g. weapons are shown correctly
+CP_PreloadDone: jsr RedrawAndAddActors
+                jsr UpdateActors
                 lda #ACTI_FIRSTEFFECT
                 sta CreateSplash+1              ;Now can allow again
 

@@ -6,6 +6,7 @@
                 org scriptCodeStart
 
                 dc.w MoveJormungandr
+                dc.w JormungandrInterlude
 
 PHASE_RISE      = 0
 PHASE_WAIT      = 1
@@ -30,31 +31,6 @@ NUMEYECOLORS    = 6
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MJ_WaitBegin:   ldy #C_HAZARDS2                 ;Make sure rolling mine sprites are loaded
-                jsr EnsureSpriteFile
-                lda actXH+ACTI_PLAYER
-                cmp #$f2                        ;Wait until player approaches the balcony
-                bne MJ_Done
-                ldy #$33
-                jsr InactivateObject
-                lda #MUSIC_NETHER+1
-                jsr PlaySong
-                ldx actIndex
-                lda #LOWPOS*4                   ;Init Jormungandr vertical screen position
-                sta screenPos
-                lda #$ff
-                sta lastScreenPos
-                sta lastFrame
-                lda #HP_JORMUNGANDR             ;Init health now
-                sta actHp,x
-                lda #PHASE_RISE
-                sta frame
-                sta decision
-                sta eyeColor
-                sta MJ_OldEyePos+2
-                jsr MJ_SetPhase
-MJ_Done:        rts
-
 MoveJormungandr:lda lvlObjB+$33
                 bmi MJ_WaitBegin
                 jsr MJ_Redraw
@@ -75,6 +51,30 @@ MJ_Shake:       jsr Random                      ;Screen shake in all phases
                 lda phaseJumpHi,y
                 sta MJ_PhaseJump+2
 MJ_PhaseJump:   jmp $0000
+
+MJ_WaitBegin:   ldy #C_HAZARDS2                 ;Make sure rolling mine sprites are loaded
+                jsr EnsureSpriteFile
+                lda actXH+ACTI_PLAYER
+                cmp #$f2                        ;Wait until player approaches the balcony
+                bne MJ_WaitDone
+                ldy #$33
+                jsr InactivateObject
+                lda #MUSIC_NETHER+1
+                jsr PlaySong
+                ldx actIndex
+MJ_InitRise:    lda #LOWPOS*4                   ;Init Jormungandr vertical screen position
+                sta screenPos
+                lda #$ff
+                sta lastScreenPos
+                sta lastFrame
+                lda #HP_JORMUNGANDR             ;Init health now
+                sta actHp,x
+                lda #PHASE_RISE
+                sta frame
+                sta decision
+                sta eyeColor
+                sta MJ_OldEyePos+2
+                jmp MJ_SetPhase
 
 MJ_Rise:        lda #HP_JORMUNGANDR             ;Keep resetting health to max. during
                 sta actHp,x                     ;initial rise
@@ -168,7 +168,7 @@ MJ_DoMineAttackNext:
                 ldy #PHASE_MINESDOWN
 MJ_DoFlameAttackNext:
                 sty MJ_HasDecision+1
-MJ_HasDecision: lda #PHASE_ATTACK
+MJ_HasDecision: lda #PHASE_MINESDOWN
                 cmp #PHASE_MINESDOWN
                 bne MJ_NoEyeAnim
                 ldy phaseTime                   ;If going to do mine attack,
@@ -183,10 +183,13 @@ MJ_NoEyeAnim:   ldy #60
 
 MJ_MinesDown:   lda #$00                        ;Reset mine phase accumulator
                 sta decision
+                lda actT+ACTI_PLAYER            ;If this is the end interlude, no spawning, just go down
+                beq MJ_EndInterludeNoMines
                 jsr MJ_SpawnMines
                 lda screenPos
                 cmp #HEADLOWPOS*4
                 bcs MJ_MinesDownWait
+MJ_EndInterludeNoMines:
                 inc screenPos
                 jmp MJ_MoveShake
 MJ_MinesDownWait:
@@ -278,8 +281,9 @@ MJ_DestroyDone: ldx actIndex
                 jmp PlaySong
 MJ_TriggerEnding:
                 jsr FadeMusic
-                jsr SetupTextScreen
-                lda #<EP_ENDING1
+MJ_EndingCommon:jsr BlankScreen
+                jsr ClearPanelText
+MJ_EndingEP:    lda #<EP_ENDING1                ;Proceed to Jormungandr ending
                 ldx #>EP_ENDING1
                 jmp ExecScript
 
@@ -323,12 +327,10 @@ MJ_MakeActorPos:asl
                 adc frameActorYLOfs,y
                 sta actYL,x                     ;Set actor position based on screen position
                 lda temp2
-                ;adc frameActorYHOfs,y
                 adc #$73
                 sta actYH,x
                 lda frameActorXL,y
                 sta actXL,x
-                ;lda frameActorXH,y
                 lda #$f7
                 sta actXH,x
                 lda #$08
@@ -425,6 +427,83 @@ RHW_NoActor:
 RHW_HasItem:
 MJ_NoOldEye:    rts
 
+        ; Jormungandr rise/destroy interlude
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+JormungandrInterlude:
+                lda #$00
+                sta actT+ACTI_PLAYER
+                sta blockX
+                sta scrollSX
+                sta scrollSY
+                lda #$02
+                sta blockY
+                ldx #$f0
+                stx mapX
+                stx actXH+ACTI_PLAYER
+                ldy #$71
+                sty mapY
+                sty actYH+ACTI_PLAYER
+                lda #10
+                jsr ChangeLevel
+                jsr FindPlayerZone
+                jsr RedrawAndAddActors
+                lda #PLOT_RIGTUNNELMACHINE      ;Is this the simultaneous destruction ending, or Jormungandr's revenge?
+                jsr GetPlotBit
+                php
+                beq JI_SetHealth
+                lda #$00
+                jsr JI_SpawnScrapMetal
+                lda #$ff
+                jsr JI_SpawnScrapMetal
+                lda #MUSIC_SILENCE              ;Play the silence tune so that explosions can be heard
+                jsr PlaySong
+                lda #<EP_ENDING3
+                bpl JI_BeginLoop
+JI_SetHealth:   lda #ACT_JORMUNGANDR
+                jsr FindActor
+                inc actHp,x
+                lda #PHASE_WAITDECISION
+                sta phase
+                inc phaseTime
+                lda #<EP_ENDING2
+JI_BeginLoop:   sta MJ_EndingEP+1
+                jsr MJ_NeedRedraw               ;Draw Jormungandr immediately
+JI_Loop:        jsr ScrollLogic
+                jsr DrawActors
+                jsr AddActors
+                jsr FinishFrame
+                jsr UpdateActors
+                jsr FinishFrame
+                lda screenPos                   ;Wait until fully descended
+                cmp #LOWPOS*4-2
+                bcc JI_Loop
+                jmp MJ_EndingCommon
+
+JI_SpawnScrapMetal:
+                pha
+                jsr GetAnyFreeActor
+                tya
+                tax
+                lda #$f5
+                sta actXH,x
+                lda #$74
+                sta actYH,x
+                pla
+                sta actXL,x
+                sta actYL,x
+                lda #$05
+                sta actTime,x
+                lda #$ff
+                sta actSX,x
+                sta actSY,x
+                lda #ACT_EXPLOSIONGENERATOR
+                sta actT,x
+                jmp EE_SpawnScrapMetal
+
         ; Music fade subroutine
 
 FadeMusic:      lda fastLoadMode
@@ -476,9 +555,7 @@ frameTblHi:     dc.b >frame0,>frame1
 frameEyePosLo:  dc.b <247,<286
 frameEyePosHi:  dc.b >247,>286
 frameActorYLOfs:dc.b $40,$80
-;frameActorYHOfs:dc.b $73,$73                        ;Depends on Jormungandr's lair position on the game map
 frameActorXL:   dc.b $40,$00
-;frameActorXH:   dc.b $f7,$f7                        ;Depends on Jormungandr's lair position on the game map
 
 hitColorTbl:    dc.b $01,$0e
 

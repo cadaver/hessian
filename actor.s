@@ -499,6 +499,10 @@ AA_Paused:      rts
         ; Returns: -
         ; Modifies: A,X,Y,temp regs
 
+RedrawAndAddActors:
+                jsr RedrawScreen
+                jsr SetZoneColors
+                jsr AddAllActorsNextFrame
 AddActors:      lda menuMode
                 cmp #MENU_PAUSE
                 bcs AA_Paused
