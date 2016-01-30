@@ -25,7 +25,9 @@ DROID_SPAWN_DELAY = 4*25
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MoveEyePhase1:  ldy #C_SMALLROBOTS              ;Ensure droid sprites are loaded to avoid pause later
+MoveEyePhase1:  lda actT+ACTI_PLAYER            ;No action in the ending interlude (no player)
+                beq MEye_Wait2
+                ldy #C_SMALLROBOTS              ;Ensure droid sprites are loaded to avoid pause later
                 jsr EnsureSpriteFile
                 lda lvlObjB+$1e                 ;Close door immediately once player moves or fires
                 bpl MEye_DoorDone
@@ -49,8 +51,7 @@ MEye_DoorDone:  lda #$01
 MEye_GotoPhase2:lda numSpawned                  ;Wait until all droids from phase1 destroyed
                 cmp #2
                 bcs MEye_Wait
-                inc actT,x                      ;Move to visible eye stage
-                jsr InitActor
+MEye_Show:      inc actT,x                      ;Move to visible eye stage
                 lda #5                          ;Descend animation
                 sta actF1,x
                 jmp InitActor
@@ -129,7 +130,9 @@ MEye_FireRightFirst:
                 sta actFallL,x
                 lda #EYE_MOVE_TIME*2            ;Some delay before firing initially
                 sta actFall,X
-MEye_Turret:    dec actFall,x                   ;Read firing controls from table with delay
+MEye_Turret:    lda actT+ACTI_PLAYER            ;No firing in the ending interlude (no player)
+                beq MEye_NoPlayer
+                dec actFall,x                   ;Read firing controls from table with delay
                 bmi MEye_NextMove
                 lda actFall,x
                 cmp #EYE_FIRE_TIME
@@ -181,7 +184,7 @@ MEye_Destroy:   lda #$00
                 tax
                 jsr ExplodeActor                ;Play explosion sound & init animation
                 ldx actIndex
-                rts
+MEye_NoPlayer:  rts
 MEye_NoExplosion:
                 jsr SetZoneColors
                 inc actTime,x
@@ -247,7 +250,33 @@ CE_Wait:        rts
         ; Returns: -
         ; Modifies: Various
 
-Ending1:        lda #<2500                      ;Fade & textscreen setup already done in Jormungandr code
+Ending1:        lda #13                         ;Show the server vault final room
+                ldx #$3c
+                ldy #$31
+                jsr ShowLevelXY
+                lda #MUSIC_SILENCE
+                jsr PlaySong
+                lda #0
+                sta interludeTime
+E1_InterludeLoop:
+                jsr DrawActors
+                jsr AddActors
+                jsr FinishFrame
+                jsr UpdateActors
+                jsr FinishFrame
+                inc interludeTime
+                lda interludeTime
+                cmp #100
+                bcs E1_InterludeDone
+                cmp #25
+                bne E1_InterludeLoop
+                lda #ACT_EYEINVISIBLE           ;Show the eye descending after some delay
+                jsr FindActor
+                jsr MEye_Show
+                jmp E1_InterludeLoop
+E1_InterludeDone:
+                jsr SetupTextScreen
+                lda #<2500                      ;Fade & textscreen setup already done in Jormungandr code
                 ldy #>2500
                 jsr EndingBonus
                 lda #5
@@ -299,6 +328,7 @@ EndingCommon:   ldx #$00                        ;Kill sound effects so the music
                 ldx #>txtFinalScore
                 jsr PrintMultipleRows
                 jsr WaitForExit
+                jsr FadeMusicEnd
                 jsr SetupTextScreen
                 ldx #STACKSTART
                 txs
@@ -380,7 +410,7 @@ EB_Loop:        lda temp1
 
 FadeMusic:      lda fastLoadMode
                 beq FM_Done                     ;Using fallback loader, no fade as there already are screen-blanking pauses
-                lda PS_CurrentSong+1
+FadeMusicEnd:   lda PS_CurrentSong+1
                 beq FM_Done                     ;No fade if game music off
 FM_Loop:        lda Play_MasterVol+1
                 beq FM_Done
@@ -391,6 +421,26 @@ FM_Delay:       jsr WaitBottom
                 bne FM_Delay
                 beq FM_Loop
 FM_Done:        rts
+
+        ; Show a specific room without the player actor
+
+ShowLevelXY:    pha
+                lda #$00
+                sta actT+ACTI_PLAYER
+                sta blockX
+                sta blockY
+                stx mapX
+                stx actXH+ACTI_PLAYER
+                sty mapY
+                sty actYH+ACTI_PLAYER
+                pla
+                jsr ChangeLevel
+                jsr FindPlayerZone
+                jsr RedrawScreen
+                jsr SetZoneColors
+                jsr AddAllActorsNextFrame
+                jsr AddActors
+                jmp SL_NewMapPos
 
         ; Final server room droid spawn positions
 
@@ -416,11 +466,15 @@ eyeFrameTbl:    dc.b 2,1,0,1,2,3,4,3
 
 explYTbl:       dc.b $31,$32,$33,$34,$35,$36,$33,$34
 
+        ; Variables
+        
+interludeTime:  dc.b 0
+
         ; Placeholder ending texts
 
                      ;0123456789012345678901234567890123456789
-txtEnding1:     dc.b "MILITARY FAIL-DEADLY SYSTEMS ARE TRICKED",0
-                dc.b "  TO LAUNCH AN ALL-OUT NUCLEAR STRIKE.",0
+txtEnding1:     dc.b "  THE CONSTRUCT HACKS AUTOMATED SECOND",0
+                dc.b "STRIKE SYSTEMS TO ATTACK RANDOM TARGETS.",0
                 dc.b " RETALIATIONS FOLLOW. UNDER A BLACKENED",0
                 dc.b "  SUN, A GRIM AGE OF SURVIVAL BEGINS..",0,0
 

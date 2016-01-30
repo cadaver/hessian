@@ -108,7 +108,7 @@ BS2_4:          jsr BlankScreen
                 jsr SetScript
                 lda #50
                 sta scriptVariable
-BS2_Delay:      jsr WaitBottom
+BS2_Delay:      jsr WaitBottom                  ;Todo: cutscene here (?)
                 dec scriptVariable
                 bne BS2_Delay
                 jmp CenterPlayer
@@ -134,6 +134,8 @@ AfterSurgery:   lda scriptVariable
 AS_Jump:        jmp $0000
 
 AS_1:           jsr AfterSurgeryRun             ;Ensure player position right when the screen turns on
+                ldy #C_HIGHWALKER
+                jsr EnsureSpriteFile            ;Preload
                 ldy #ITEM_LUNGFILTER
                 jsr RemoveItem
                 lda upgrade
