@@ -155,17 +155,14 @@ InitVideo:      jsr WaitBottom
                 sta $d025
                 lda #$ff                        ;Set all sprites multicolor
                 sta $d01c
-                sta $d001
-                sta $d003
-                sta $d005
-                sta $d007
-                sta $d009
-                sta $d00b
-                sta $d00d
-                sta $d00f
+                ldx #$10
+IVid_SpriteY:   dex
+                dex
+                sta $d001,x                     ;Set all sprites on & to the bottom
+                bne IVid_SpriteY
                 sta $d015                       ;All sprites on and to the bottom
                 jsr WaitBottom                  ;(some C64's need to "warm up" sprites
-                ldx #$00                        ;to avoid one frame flash when they're
+                                                ;to avoid one frame flash when they're
                 stx $d015                       ;actually used for the first time)
 IVid_CopyTextChars:
                 lda textCharsCopy,x
