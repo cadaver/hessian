@@ -113,7 +113,7 @@ EP_THRONECHIEF = $1000
 EP_BEGINAMBUSH  = $1001
 EP_RADIOCONSTRUCT2 = $1002
 EP_HACKERAMBUSH = $1003
-EP_GIVELAPTOP = $1004
+EP_GIVELAPTOP   = $1004
 
 EP_LOWERSECURITYCOMPUTER1 = $1100
 EP_LOWERSECURITYCOMPUTER2 = $1101
@@ -182,6 +182,10 @@ PLOT_OLDTUNNELSLAB1 = $0c                   ;Linda reached old tunnels lab
 PLOT_OLDTUNNELSLAB2 = $0d                   ;Jeff reached old tunnels lab
 PLOT_HIDEOUTAMBUSH = $0e                    ;Robot ambush to Jeff's hideout ongoing
 PLOT_RIGTUNNELMACHINE = $0f                 ;Tunnel machine prepared with explosives for simultaneous destruction
+
+CUTSCENE_INTRO = $00
+CUTSCENE_THRONECHIEF = $01
+CUTSCENE_TUNNELMACHINE = $02
 
 SPEECHBUBBLEOFFSET = -40*8
 

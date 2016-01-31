@@ -134,23 +134,15 @@ TMR_Finish:     jsr StopScript
                 jmp SetMenuMode                 ;X=0 on return
 TMR_Drive:      jsr AddQuestScore
                 jsr TMR_Finish
-                lda #$00
-                sta tmTime1                     ;TODO: replace with cutscene
+                jsr RemoveLevelActors
+                ldy #$32
+                ldx #ACTI_PLAYER
+                jsr SetActorAtObject
                 jsr BlankScreen
-TMR_BreakWallLoop:
-                jsr WaitBottom
-                jsr Random
-                cmp #$40
-                bcs TMR_BreakWallNoSound
-                lda #$00
-                sta PSfx_LastSfx+1
-                lda #SFX_EXPLOSION
-                jsr PlaySfx
-TMR_BreakWallNoSound:
-                inc tmTime1
-                bpl TMR_BreakWallLoop
-                lda #$32
-                jmp ULO_EnterDoorDest
+                lda #<EP_SHOWCUTSCENE
+                ldx #>EP_SHOWCUTSCENE
+                ldy #CUTSCENE_TUNNELMACHINE
+                jmp ExecScriptParam
 
         ; Tunnel machine item installation script routines
         ;

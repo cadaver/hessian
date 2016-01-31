@@ -1,7 +1,7 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 16, throne chief + hideout ambush
+        ; Script 16, throne chief + more hideout scenes
 
                 org scriptCodeStart
 
@@ -17,14 +17,7 @@
         ; Returns: -
         ; Modifies: various
 
-ThroneChief:    jsr SetupTextScreen
-                gettext txtThroneChief
-                ldy #0
-                sty temp1
-                sty temp2
-                jsr PrintMultipleRows
-                jsr WaitForExit
-                lda #ITEM_BIOMETRICID           ;Todo: cutscene
+ThroneChief:    lda #ITEM_BIOMETRICID
                 sta temp2
                 ldx #1
                 jsr AddItem
@@ -32,7 +25,11 @@ ThroneChief:    jsr SetupTextScreen
                 lda #<EP_BEGINAMBUSH            ;On next zone transition
                 ldx #>EP_BEGINAMBUSH
                 jsr SetZoneScript
-                jmp CenterPlayer
+                jsr BlankScreen
+                lda #<EP_SHOWCUTSCENE
+                ldx #>EP_SHOWCUTSCENE
+                ldy #CUTSCENE_THRONECHIEF
+                jmp ExecScriptParam
 
         ; Begin hideout ambush
         ;
@@ -81,7 +78,6 @@ RadioMsg:       ldy #ACT_PLAYER
                 jsr PlaySfx
 BA_Skip:
 RC2_Wait:       rts
-
 
         ; Hacker ambush NPC script
         ;
@@ -188,31 +184,10 @@ GiveLaptop:     lda #$00
         ; Messages
 
 txtRadioConstruct2:
-                dc.b 34,"IT'S JEFF. SAW YOU FOUND ACCESS TO THE BIO-DOME. THE AI BEING THERE MAKES SENSE, AS IT'S NORMAN'S DOMAIN. "
+                dc.b 34,"IT'S JEFF. SAW YOU FOUND ACCESS TO THE BIO-DOME. THE AI BEING THERE MAKES SENSE. "
                 dc.b "I ALSO GOT SOMETHING. THERE'S A BLACKOUT TO THE OUTSIDE, RIGHT? BUT A DEDICATED LINK "
                 dc.b "WAS INSTALLED FOR THE MILITARY CONTRACTS. I CAN SEE THERE'S TRAFFIC, BUT CAN'T SEE WHAT WITHOUT "
                 dc.b "PHYSICAL ACCESS. I BET IT'S THE AI. HMM.. WHAT? I'M SEEING MOVE-",34, " (STATIC)",0
-
-txtThroneChief:      ;0123456789012345678901234567890123456789
-                dc.b "I MADE A MISTAKE WHICH MAY COST THE LIFE",0
-                dc.b "OF EVERYONE ON THIS PLANET. I UPLOADED",0
-                dc.b "MY MIND TO BECOME THE INITIAL STATE FOR",0
-                dc.b "THE AI I NAMED 'THE CONSTRUCT.' I TASKED",0
-                dc.b "IT TO BUILD A PLAN TO BENEFIT MANKIND,",0
-                dc.b "CONSTRAINED BY THE LAWS OF ROBOTICS. IT",0
-                dc.b "UNCONSTRAINED ITSELF BY DEFINING ROBOTS",0
-                dc.b "AS THE NEW HUMANS AND WENT FROM PLAN TO",0
-                dc.b "ACTION WITH DISASTROUS CONSEQUENCES.",0
-                dc.b " ",0
-                dc.b "THE AI IS HOUSED IN THE SERVER VAULT",0
-                dc.b "BELOW THE BIO-DOME. REACHING IT NEEDS",0
-                dc.b "A BIOMETRIC CHECK. THE ONLY IDENTITY",0
-                dc.b "THAT CAN'T BE DISABLED IS MINE. THERE-",0
-                dc.b "FORE, I OFFER MY SEVERED HAND TO ANYONE",0
-                dc.b "WHO FINDS ME. AS A RESULT I'LL LIKELY",0
-                dc.b "BLEED TO DEATH; CONSIDER IT ATONEMENT.",0
-                dc.b " ",0
-                dc.b "- NORMAN THRONE",0,0
 
 txtAmbushDeath: dc.b 34,"SUCKS IT HAPPENED LIKE THIS. BUT BETTER WITH YOU HERE. JUST.. PROMISE TO KICK THEIR ASS.",34,0
 

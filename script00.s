@@ -94,6 +94,10 @@ START_Y         = $1700
 ;START_X         = $1f80
 ;START_Y         = $5300
 
+;START_LEVEL     = $09                          ;Lower labs security center
+;START_X         = $2680
+;START_Y         = $5000
+
 ;START_LEVEL     = $08                          ;Lower labs, old tunnels entrance
 ;START_X         = $6780
 ;START_Y         = $4a00
@@ -276,8 +280,7 @@ TitleTextsLoop: jsr UpdateCheckCheat
                 bcc TitleNextPage
                 bcs TitleTexts
 
-EnterMainMenu:  lda #SFX_SELECT
-                jsr PlaySfx
+EnterMainMenu:  jsr PlaySelectSfx
 
         ; Main menu
 
@@ -303,8 +306,7 @@ MainMenuLoop:   lda #11
                 jsr TitlePageDelayInteractive
                 bcc MainMenuLoop
                 jmp TitleTexts                  ;Page delay expired, return to title
-MainMenuSelect: lda #SFX_SELECT
-                jsr PlaySfx
+MainMenuSelect: jsr PlaySelectSfx
                 ldx mainMenuChoice
                 lda mainMenuJumpTblLo,x
                 sta MainMenuJump+1
@@ -362,11 +364,9 @@ OptionsSelect:  ldx optionsMenuChoice
                 bcs OptionsNotOver
                 lda #$00
                 sta difficulty,x
-OptionsNotOver: lda #SFX_SELECT
-                jsr PlaySfx
+OptionsNotOver: jsr PlaySelectSfx
                 jmp RefreshOptions
-OptionsGoBack:  lda #SFX_SELECT
-                jsr PlaySfx
+OptionsGoBack:  jsr PlaySelectSfx
                 jmp MainMenu
 
         ; Load/save game
@@ -401,8 +401,7 @@ LoadGameLoop:   lda #6
                 sta saveSlotChoice
                 jsr GetFireClick
                 bcc LoadGameLoop
-                lda #SFX_SELECT
-                jsr PlaySfx
+                jsr PlaySelectSfx
                 lda saveSlotChoice
                 cmp #MAX_SAVES
                 bcs LoadGameCancel              ;Cancel load/save (TODO: save needs confirm step as data will be lost)
@@ -587,7 +586,7 @@ IP_CodeLoop:    if CODE_CHEAT > 0
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
                 lda #<EP_SHOWCUTSCENE
                 ldx #>EP_SHOWCUTSCENE
-                ldy #$00
+                ldy #CUTSCENE_INTRO
                 jmp ExecScriptParam             ;Show intro cutscene
 
         ; Save options if modified
@@ -795,8 +794,7 @@ TMC_NoDelay:    lda joystick
                 dey
                 bpl TMC_HasMove
                 ldy temp6
-TMC_HasMove:    lda #SFX_SELECT
-                jsr PlaySfx
+TMC_HasMove:    jsr PlaySelectSfx
                 ldx #TITLE_MOVEDELAY
                 lda joystick
                 cmp prevJoy
@@ -964,6 +962,11 @@ PTBCD1_NoAnd:   ora #$30
                 inx
                 rts
 
+        ; Play select effect
+
+PlaySelectSfx:  lda #SFX_SELECT
+                jmp PlaySfx
+
         ; Setup split screen display for title or cutscene
 
 SetupSplitScreen:
@@ -1036,7 +1039,6 @@ ShowCutscene:   jsr SetupSplitScreen
                 ldx #>(colors+20-CUTSCENE_SIZEX/2)
                 jsr DrawCutsceneChars
                 lda screen2
-                bmi SC_NoMusic
                 jsr PlaySong
 SC_NoMusic:     lda screen2+1                   ;Set picture multicolors
                 sta Irq1_Bg2+1
@@ -1060,14 +1062,32 @@ SC_WaitLoop:    jsr Update
                 bmi SC_WaitLoop
 SC_FadePage:    lda textFadeDir
                 bmi SC_WaitLoop                 ;Aleady fading
-                lda #SFX_SELECT
-                jsr PlaySfx
+                jsr PlaySelectSfx
                 lda #-1
                 sta textFadeDir
                 bmi SC_WaitLoop
 SC_NextPage:    inc titlePage
                 bne SC_PageLoop
-SC_PagesDone:   jsr FindPlayerZone
+SC_PagesDone:   ldx #$00
+SC_DissolveFrameLoop:
+                jsr WaitBottom
+                ldy #>chars
+SC_DissolveHiByte:
+                sty SC_DissolveSta+2
+                clc
+SC_DissolveLoop:lda #$00
+SC_DissolveSta: sta chars,x
+                txa
+                adc #8
+                tax
+                bcc SC_DissolveLoop
+                iny
+                cpy #>screen2
+                bcc SC_DissolveHiByte
+                inx
+                cpx #$08
+                bcc SC_DissolveFrameLoop
+                jsr FindPlayerZone
                 jmp CenterPlayer
 
         ; Variables

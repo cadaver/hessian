@@ -40,7 +40,7 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	sprsmallrobots.pak sprhazards.pak sprhazards2.pak spranimals.pak sprmediumrobots.pak sprguard.pak sprheavyguard.pak \
 	sprcombatrobot.pak sprlargewalker.pak sprlargetank.pak sprhighwalker.pak sprhazmat.pak sprserver.pak sprsecuritychief.pak \
 	sprrotordrone.pak sprlargespider.pak sprscientist.pak sprhacker.pak \
-	cutscene1.pak
+	cutscene1.pak cutscene2.pak cutscene3.pak
 	maked64 hessian.d64 hessian.seq HESSIAN___________HE_2A 10
 	reorder hessian.d64
 
@@ -209,6 +209,18 @@ cutscene1.pak: pics/cutscene1.iff cutscene1.s mainsym.s
 	pic2chr pics/cutscene1.iff cutscene1scr.dat -m11 -n12 -x28 -y11 -t
 	dasm cutscene1.s -ocutscene1.bin -f3
 	pack2 cutscene1.bin cutscene1.pak
+
+cutscene2.pak: pics/cutscene2.iff cutscene2.s mainsym.s
+	pic2chr pics/cutscene2.iff cutscene2.chr -m11 -n12 -x28 -y11 -c -s
+	pic2chr pics/cutscene2.iff cutscene2scr.dat -m11 -n12 -x28 -y11 -t
+	dasm cutscene2.s -ocutscene2.bin -f3
+	pack2 cutscene2.bin cutscene2.pak
+
+cutscene3.pak: pics/cutscene3.iff cutscene3.s mainsym.s
+	pic2chr pics/cutscene3.iff cutscene3.chr -m11 -n12 -x28 -y11 -c -s
+	pic2chr pics/cutscene3.iff cutscene3scr.dat -m11 -n12 -x28 -y11 -t
+	dasm cutscene3.s -ocutscene3.bin -f3
+	pack2 cutscene3.bin cutscene3.pak
 
 script00.pak: script00.s memory.s mainsym.s
 	dasm script00.s -oscript00.bin -f3
