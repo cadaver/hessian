@@ -7,7 +7,6 @@
 
                 dc.w ThroneChief
                 dc.w BeginAmbush
-                dc.w RadioConstruct2
                 dc.w HackerAmbush
                 dc.w GiveLaptop
 
@@ -22,27 +21,26 @@ ThroneChief:    lda #ITEM_BIOMETRICID
                 ldx #1
                 jsr AddItem
                 jsr TP_PrintItemName
-                lda #<EP_BEGINAMBUSH            ;On next zone transition
+                lda #ACT_HACKER                 ;Check that Jeff is in hideout
+                jsr FindLevelActor
+                lda lvlActOrg,y
+                cmp #$04+ORG_GLOBAL
+                bne TC_SkipAmbush               ;If not, no ambush
+                lda #<EP_BEGINAMBUSH
                 ldx #>EP_BEGINAMBUSH
-                jsr SetZoneScript
-                jsr BlankScreen
-                lda #<EP_SHOWCUTSCENE
+                jsr SetScript
+TC_SkipAmbush:  lda #<EP_SHOWCUTSCENE
                 ldx #>EP_SHOWCUTSCENE
                 ldy #CUTSCENE_THRONECHIEF
                 jmp ExecScriptParam
 
-        ; Begin hideout ambush
+        ; Begin hideout ambush + second Construct briefing
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-BeginAmbush:    jsr StopZoneScript
-                lda #ACT_HACKER                 ;Check that Jeff is in hideout
-                jsr FindLevelActor
-                lda lvlActOrg,y
-                cmp #$04+ORG_GLOBAL
-                bne BA_Skip
+BeginAmbush:    jsr StopScript
                 lda #PLOT_HIDEOUTAMBUSH
                 jsr SetPlotBit
                 ldy lvlDataActBitsStart+$04     ;Enable ambush enemies now
@@ -57,27 +55,11 @@ BeginAmbush:    jsr StopZoneScript
                 ldx #>EP_HACKERAMBUSH
                 sta actScriptEP+2
                 stx actScriptF+2
-                lda #<EP_RADIOCONSTRUCT2
-                ldx #>EP_RADIOCONSTRUCT2
-                jmp SetScript
-
-        ; Radio briefing on Construct, part 2 (when ambush begins)
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-RadioConstruct2:lda numTargets  ;Wait until no enemies
-                cmp #$02
-                bcs RC2_Wait
-                jsr StopScript
                 gettext txtRadioConstruct2
 RadioMsg:       ldy #ACT_PLAYER
                 jsr SpeakLine
                 lda #SFX_RADIO
-                jsr PlaySfx
-BA_Skip:
-RC2_Wait:       rts
+                jmp PlaySfx
 
         ; Hacker ambush NPC script
         ;
@@ -186,8 +168,8 @@ GiveLaptop:     lda #$00
 txtRadioConstruct2:
                 dc.b 34,"IT'S JEFF. SAW YOU FOUND ACCESS TO THE BIO-DOME. THE AI BEING THERE MAKES SENSE. "
                 dc.b "I ALSO GOT SOMETHING. THERE'S A BLACKOUT TO THE OUTSIDE, RIGHT? BUT A DEDICATED LINK "
-                dc.b "WAS INSTALLED FOR THE MILITARY CONTRACTS. I CAN SEE THERE'S TRAFFIC, BUT CAN'T SEE WHAT WITHOUT "
-                dc.b "PHYSICAL ACCESS. I BET IT'S THE AI. HMM.. WHAT? I'M SEEING MOVE-",34, " (STATIC)",0
+                dc.b "WAS INSTALLED FOR THE MILITARY CONTRACTS. THERE'S TRAFFIC, BUT I CAN'T SEE WHAT WITHOUT "
+                dc.b "PHYSICAL ACCESS. I BET IT'S THE AI. WHAT? I'M SEEING MOVE-",34, " (STATIC)",0
 
 txtAmbushDeath: dc.b 34,"SUCKS IT HAPPENED LIKE THIS. BUT BETTER WITH YOU HERE. JUST.. PROMISE TO KICK THEIR ASS.",34,0
 

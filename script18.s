@@ -138,7 +138,6 @@ TMR_Drive:      jsr AddQuestScore
                 ldy #$32
                 ldx #ACTI_PLAYER
                 jsr SetActorAtObject
-                jsr BlankScreen
                 lda #<EP_SHOWCUTSCENE
                 ldx #>EP_SHOWCUTSCENE
                 ldy #CUTSCENE_TUNNELMACHINE

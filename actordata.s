@@ -780,14 +780,14 @@ alItem:         dc.w MoveItem                   ;Update routine
 alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 4                          ;Horizontal size
-                dc.b 4                          ;Size up
-                dc.b 4                          ;Size down
+                dc.b 3                          ;Size up
+                dc.b 3                          ;Size down
 
 alLargeMeleeHit:dc.w MoveMeleeHit               ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
                 dc.b 7                          ;Horizontal size
-                dc.b 4                          ;Size up
-                dc.b 4                          ;Size down
+                dc.b 3                          ;Size up
+                dc.b 3                          ;Size down
 
 alPowder:       dc.w MovePowder                 ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags

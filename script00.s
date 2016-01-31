@@ -1018,10 +1018,11 @@ DC_Loop:        lda (zpSrcLo),y
                 rts
 
         ; Show cutscene
-        
+
 ShowCutscene:   jsr SetupSplitScreen
                 sta titlePage                   ;A=0 on return
                 sta logoFadeDir
+                sta actSX+ACTI_PLAYER           ;Stop player after cutscene
                 lda ES_ParamY+1
                 ldx #F_CUTSCENE
                 jsr MakeFileName
