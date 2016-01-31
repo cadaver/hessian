@@ -1069,26 +1069,7 @@ SC_FadePage:    lda textFadeDir
                 bmi SC_WaitLoop
 SC_NextPage:    inc titlePage
                 bne SC_PageLoop
-SC_PagesDone:   ldx #$00
-SC_DissolveFrameLoop:
-                jsr WaitBottom
-                ldy #>chars
-SC_DissolveHiByte:
-                sty SC_DissolveSta+2
-                clc
-SC_DissolveLoop:lda #$00
-SC_DissolveSta: sta chars,x
-                txa
-                adc #8
-                tax
-                bcc SC_DissolveLoop
-                iny
-                cpy #>screen2
-                bcc SC_DissolveHiByte
-                inx
-                cpx #$08
-                bcc SC_DissolveFrameLoop
-                jsr FindPlayerZone
+SC_PagesDone:   jsr FindPlayerZone
                 jmp CenterPlayer
 
         ; Variables

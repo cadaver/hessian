@@ -13,8 +13,8 @@
                 org screen2
 
                 dc.b MUSIC_MYSTERY              ;Song to play
-                dc.b 11                         ;Multicolors
-                dc.b 12
+                dc.b 6                          ;Multicolors
+                dc.b 14
                 dc.w page1                      ;Pages to display (0 = end)
                 dc.w page2
                 dc.w 0
@@ -29,10 +29,10 @@ page1:               ;0123456789012345678901234567890123456789
                 dc.b 0
 
 page2:          dc.b 0
-                dc.b "WHAT SHE REMEMBERS: COMBAT ROBOT PROTO-",0
-                dc.b "TYPES OPENING FIRE ON STAFF, EVERYTHING",0
-                dc.b "TURNING BLACK AS ROUNDS HAMMER INTO HER",0
-                dc.b "CHEST, THEN THE WORDS: ",34,"NEED ARTIFICIAL",0
+                dc.b "SHE REMEMBERS COMBAT ROBOT PROTOTYPES",0
+                dc.b "OPENING FIRE ON STAFF, EVERYTHING GOING",0
+                dc.b "BLACK AS ROUNDS HAMMER INTO HER CHEST,",0
+                dc.b "THEN A DISTANT VOICE: ",34,"NEED ARTIFICIAL",0
                 dc.b "CIRCULATION .. NANOBOT INFUSION NOW!",34,0
                 dc.b 0
 
