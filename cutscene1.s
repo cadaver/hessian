@@ -24,7 +24,7 @@ page1:               ;0123456789012345678901234567890123456789
                 dc.b "KIM, A SECURITY GUARD WORKING THE NIGHT",0
                 dc.b "SHIFT AT THRONE GROUP SCIENCE COMPLEX",0
                 dc.b "WAKES UP INSIDE A CARGO CONTAINER WHICH",0
-                dc.b "HAS BEEN CONVERTED TO AN IMPROVISED",0
+                dc.b "HAS BEEN CONVERTED INTO AN IMPROVISED",0
                 dc.b "EMERGENCY OPERATING ROOM.",0
                 dc.b 0
 
