@@ -1,15 +1,5 @@
 healthBarPosTbl:dc.b 50,64
-
-        ; Level properties
-        
-lvlPropertiesStart:
-lvlWaterSplashColor:
-                dc.b 0
-lvlWaterToxinDelay:
-                dc.b 0
-lvlAirToxinDelay:
-                dc.b 0
-lvlPropertiesEnd:
+timeMaxTbl:     dc.b 99,60,60,50
 
                 org (* + $ff) & $ff00
 
@@ -335,8 +325,18 @@ sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
 
 keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
-timeMaxTbl:     dc.b 99,60,60,50
-plrDmgModifyTbl:dc.b 4,6,8,12
+plrDmgModifyTbl:dc.b 4,6,8,12,16
+
+        ; Level properties
+        
+lvlPropertiesStart:
+lvlWaterSplashColor:
+                dc.b 0
+lvlWaterToxinDelay:
+                dc.b 0
+lvlAirToxinDelay:
+                dc.b 0
+lvlPropertiesEnd:
 
         ; Levelobject table (not saved), also reused by the savegame-list
 
