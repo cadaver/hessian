@@ -204,9 +204,9 @@ upgrade.pak: spr/sight.spr bg/upgrade.chr upgrade.s
 	dasm upgrade.s -oupgrade.bin -f3
 	pack2 upgrade.bin upgrade.pak
 
-cutscene1.pak: pics/cutscene1.iff cutscene1.s
-	pic2chr pics/cutscene1.iff cutscene1.chr -m11 -n12 -x30 -y12 -c -s
-	pic2chr pics/cutscene1.iff cutscene1scr.dat -m11 -n12 -x30 -y12 -t
+cutscene1.pak: pics/cutscene1.iff cutscene1.s mainsym.s
+	pic2chr pics/cutscene1.iff cutscene1.chr -m11 -n12 -x28 -y11 -c -s
+	pic2chr pics/cutscene1.iff cutscene1scr.dat -m11 -n12 -x28 -y11 -t
 	dasm cutscene1.s -ocutscene1.bin -f3
 	pack2 cutscene1.bin cutscene1.pak
 

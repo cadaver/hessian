@@ -57,10 +57,6 @@ LoadOptions:    jsr GetByte
                 bcc LoadOptions
 LoadOptionsDone:
 
-        ; Initialize scrolling
-
-                jsr InitScroll
-
         ; Initialize panel text printing
 
                 lda #9
@@ -144,7 +140,7 @@ FadeMusicDelay: jsr WaitBottom
         ; Initialize video registers and screen memory
 
 InitVideo:      jsr WaitBottom
-                lda #$00                        ;Blank screen
+                jsr InitScroll
                 sta newFrame
                 sta firstSortSpr
                 sta screen

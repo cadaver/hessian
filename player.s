@@ -916,7 +916,7 @@ RCP_ClearActorLoop:
                 ldy #ACTI_PLAYER
                 sty scriptVariable              ;Reset per-zone script variable
                 sty UA_SpawnDelay+1             ;Reset enemy spawning delay counter
-                jsr GFA_Found
+                jsr GFA_Found                   ;Reset player's actor variables
                 ldx #6
                 ldy #6*MAX_ACT
 LoadPlayerActorVars:

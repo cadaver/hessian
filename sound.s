@@ -38,9 +38,7 @@ FIRST_INGAME_SONG   = MUSIC_MYSTERY
         ; Returns: -
         ; Modifies: A,X,Y,loader temp vars
 
-RestartSong:    lda #$00
-PlaySong:       sta RestartSong+1
-                cmp #FIRST_INGAME_SONG          ;If title/intro/outro music, always play even if music off
+PlaySong:       cmp #FIRST_INGAME_SONG          ;If title/intro/outro music, always play even if music off
                 bcc PS_MusicOn
                 ldx musicMode                   ;If music off, always select silence tune
                 bne PS_MusicOn

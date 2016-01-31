@@ -1,14 +1,11 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 23, cutscenes & endsequence
+        ; Script 23, endsequence
 
                 org scriptCodeStart
 
-                dc.w ShowCutscene
                 dc.w EndSequence
-
-ShowCutscene:   jmp CenterPlayer
 
 EndSequence:    jsr SetupTextScreen
                 lda #5

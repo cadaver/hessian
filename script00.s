@@ -1,7 +1,7 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 0, title screen & game start/load/save
+        ; Script 0, title screen, game start/load/save, show cutscenes
 
 LOGOSTARTROW    = 1
 TEXTSTARTROW    = 12
@@ -15,6 +15,9 @@ TITLE_MOVEDELAY = 8
 TITLE_PAGEDELAY = 564
 
 CHEATSTRING_LENGTH = 4
+
+CUTSCENE_SIZEX  = 28
+CUTSCENE_SIZEY  = 11
 
 logoStart       = chars
 logoScreen      = chars+608
@@ -150,62 +153,35 @@ START_Y         = $1700
                 org scriptCodeStart
 
                 dc.w TitleScreen
+                dc.w ShowCutscene
 
-TitleScreen:    jsr BlankScreen
-                lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE ;Redraw all
-                sta panelUpdateFlags
-                jsr ClearPanelText
-                jsr InitScroll                  ;Make sure no scrolling
-                lda #1
-                sta logoFadeDir
+        ; Title screen code
 
-        ; Load logo chars & clear screen
+TitleScreen:    jsr StopScript
+                stx menuMode                    ;Reset in-game menu mode (X=0 on return)
 
-                jsr StopScript
-                stx Irq1_Bg1+1                  ;X = 0 on return
-                stx Irq1_Bg2+1
-                stx Irq1_Bg3+1
-                stx menuMode                    ;Reset in-game menu mode
-                stx armorMsgTime                ;Reset armor message if any
-                dex
-                stx ECS_LoadedCharSet+1         ;Mark game charset destroyed (X=$ff)
+        ; Load logo chars & title texts
+
+                jsr SetupSplitScreen
                 lda #F_LOGO
                 jsr MakeFileName_Direct
                 lda #<logoStart
                 ldx #>logoStart
                 jsr LoadFileRetry
 
-                lda #$03
-                sta screen                      ;Set split screen mode
-                lda #$0f
-                sta scrollX
-                ldx #$00
-                stx SL_CSSScrollY+1
-ClearScreenLoop:lda #$20
-                sta screen1,x
-                sta screen1+$100,x
-                sta screen1+$200,x
-                sta screen1+SCROLLROWS*40-$100,x
-                lda #$00
-                sta colors,x
-                sta colors+$100,x
-                sta colors+$200,x
-                sta colors+SCROLLROWS*40-$100,x
-                inx
-                bne ClearScreenLoop
-
         ; Print logo to screen
 
-                ldx #23
-PrintLogoLoop:
-M               set 0
-                repeat 7
-                lda logoScreen+M*24,x
-                sta screen1+M*40+8+LOGOSTARTROW*40,x
-M               set M+1
-                repend
-                dex
-                bpl PrintLogoLoop
+                lda #<logoScreen
+                ldx #>logoScreen
+                sta zpSrcLo
+                stx zpSrcHi
+                lda #<(screen1+8+LOGOSTARTROW*40)
+                ldx #>(screen1+8+LOGOSTARTROW*40)
+                sta zpDestLo
+                stx zpDestHi
+                lda #24
+                ldx #7
+                jsr DrawChars
                 lda #MUSIC_TITLE
                 jsr PlaySong
 
@@ -289,7 +265,7 @@ TitleNextPage:  sta titlePage
                 lda titleTexts,y
                 ldx titleTexts+1,y
                 jsr PrintPage
-TitleTextsLoop: jsr Update
+TitleTextsLoop: jsr UpdateCheckCheat
                 jsr GetFireClick
                 bcs EnterMainMenu
                 jsr TitlePageDelay
@@ -317,7 +293,7 @@ MainMenuLoop:   lda #11
                 ldx #5
                 ldy #TEXTSTARTROW+1
                 jsr DrawChoiceArrow
-                jsr Update
+                jsr UpdateCheckCheat
                 lda mainMenuChoice
                 ldx #2
                 jsr TitleMenuControl
@@ -365,7 +341,7 @@ OptionsLoop:    lda #10
                 ldx #7
                 ldy #TEXTSTARTROW
                 jsr DrawChoiceArrow
-                jsr Update
+                jsr UpdateCheckCheat
                 lda optionsMenuChoice
                 ldx #3
                 jsr TitleMenuControl
@@ -388,7 +364,6 @@ OptionsSelect:  ldx optionsMenuChoice
                 sta difficulty,x
 OptionsNotOver: lda #SFX_SELECT
                 jsr PlaySfx
-                jsr RestartSong
                 jmp RefreshOptions
 OptionsGoBack:  lda #SFX_SELECT
                 jsr PlaySfx
@@ -419,7 +394,7 @@ LoadGameLoop:   lda #6
                 ldx #MAX_SAVES+1
                 ldy #TEXTSTARTROW+2
                 jsr DrawChoiceArrow
-                jsr Update
+                jsr UpdateCheckCheat
                 lda saveSlotChoice
                 ldx #MAX_SAVES
                 jsr TitleMenuControl
@@ -610,7 +585,10 @@ IP_CodeLoop:    if CODE_CHEAT > 0
                 sta codes+MAX_CODES*3-1
                 jsr FindPlayerZone              ;Need to get starting level's charset so that save is named properly
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
-                jmp CenterPlayer
+                lda #<EP_SHOWCUTSCENE
+                ldx #>EP_SHOWCUTSCENE
+                ldy #$00
+                jmp ExecScriptParam             ;Show intro cutscene
 
         ; Save options if modified
 
@@ -630,16 +608,10 @@ SaveModifiedOptions:
                 sta optionsModified
 SMC_NoChange:   rts
 
-        ; Update controls, text & logo fade
+        ; Check for cheat string, then fall through to update
 
-Update:         jsr Random                      ;Make game different according to delay
-                jsr FinishFrame
-                jsr GetControls
-                jsr WaitBottom
-
-        ; Check for cheat string (on the title text loop)
-
-CheckCheat:     lda keyType
+UpdateCheckCheat: 
+                lda keyType
                 bmi CC_NoCheat
                 ldx cheatIndex
                 cmp cheatString,x
@@ -664,6 +636,12 @@ CC_CheatWrong:  lda #$00
                 sta cheatIndex
 CC_NoCheat:
 
+        ; Update controls, text & logo fade
+
+Update:         jsr Random                      ;Make game different according to delay
+                jsr FinishFrame
+                jsr GetControls
+                jsr WaitBottom
                 lda textFadeDir
                 beq UC_TextDone
                 clc
@@ -807,9 +785,9 @@ GetSaveDescription:
 TitleMenuControl:
                 tay
                 stx temp6
-                ldx moveDelay
+                ldx menuCounter
                 beq TMC_NoDelay
-                dec moveDelay
+                dec menuCounter
                 rts
 TMC_NoDelay:    lda joystick
                 lsr
@@ -826,7 +804,7 @@ TMC_HasMove:    lda #SFX_SELECT
                 dex
                 dex
                 dex
-TMC_NormalDelay:stx moveDelay
+TMC_NormalDelay:stx menuCounter
 TMC_NoMove:     tya
                 rts
 TMC_NotUp:      lsr
@@ -867,8 +845,10 @@ TitleRowLoop:   jsr PrintTextCenterContinue
 
         ; Reset title delay, set text to fade in
 
-ResetPage:      lda #1
-                sta textFadeDir
+ResetPage:      ldx #0
+                stx textFade
+                inx
+                stx textFadeDir
 ResetTitlePageDelay:
                 lda #0
                 sta titlePageDelayLo
@@ -894,15 +874,11 @@ FOT_Wait:       lda textFade
         ; Clear text rows
 
 ClearText:      lda #$20
-                ldx #39
-ClearTextLoop:
-M               set 0
-                repeat NUMTEXTROWS
-                sta screen1+TEXTSTARTROW*40+M*40,x
-M               set M+1
-                repend
+                ldx #160
+ClearTextLoop:  sta screen1+TEXTSTARTROW*40-1,x
+                sta screen1+TEXTSTARTROW*40+159,x
                 dex
-                bpl ClearTextLoop
+                bne ClearTextLoop
                 rts
 
         ; Print on/off texts for the options
@@ -988,12 +964,118 @@ PTBCD1_NoAnd:   ora #$30
                 inx
                 rts
 
+        ; Setup split screen display for title or cutscene
+
+SetupSplitScreen:
+                jsr SetupTextScreen
+                jsr ClearPanelText
+                lda #$03
+                sta screen                      ;Set split screen mode
+                lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE ;Redraw all
+                sta panelUpdateFlags
+                lda #$00
+                sta Irq1_Bg1+1
+                sta Irq1_Bg2+1
+                sta Irq1_Bg3+1
+                sta armorMsgTime                ;Reset armor message if any
+                tax
+ClearColorsLoop:sta colors,x                    ;Set colors for the picture area to all black
+                sta colors+$100,x
+                sta colors+$200,x
+                sta colors+SCROLLROWS*40-$100,x
+                inx
+                bne ClearColorsLoop
+                dex
+                stx ECS_LoadedCharSet+1         ;Mark game charset destroyed (X=$ff)
+                rts
+
+        ; Draw chars to screen or colorscreen
+
+DrawCutsceneChars:
+                sta zpDestLo
+                stx zpDestHi
+                lda #CUTSCENE_SIZEX
+                ldx #CUTSCENE_SIZEY
+DrawChars:      sta temp1                       ;Chars per row
+                stx temp2                       ;Row counter
+DC_RowLoop:     ldy #$00
+DC_Loop:        lda (zpSrcLo),y
+                sta (zpDestLo),y
+                iny
+                cpy temp1
+                bcc DC_Loop
+                tya
+                ldx #zpSrcLo
+                jsr Add8
+                lda #40
+                ldx #zpDestLo
+                jsr Add8
+                dec temp2
+                bne DC_RowLoop
+                rts
+
+        ; Show cutscene
+        
+ShowCutscene:   jsr SetupSplitScreen
+                sta titlePage                   ;A=0 on return
+                sta logoFadeDir
+                lda ES_ParamY+1
+                ldx #F_CUTSCENE
+                jsr MakeFileName
+                lda #<lvlCodeStart
+                ldx #>lvlCodeStart
+                jsr LoadFileRetry
+                lda #<lvlCodeStart
+                ldx #>lvlCodeStart
+                sta zpSrcLo
+                stx zpSrcHi
+                lda #<(screen1+20-CUTSCENE_SIZEX/2)
+                ldx #>(screen1+20-CUTSCENE_SIZEX/2)
+                jsr DrawCutsceneChars
+                lda #<(colors+20-CUTSCENE_SIZEX/2)
+                ldx #>(colors+20-CUTSCENE_SIZEX/2)
+                jsr DrawCutsceneChars
+                lda screen2
+                bmi SC_NoMusic
+                jsr PlaySong
+SC_NoMusic:     lda screen2+1                   ;Set picture multicolors
+                sta Irq1_Bg2+1
+                lda screen2+2
+                sta Irq1_Bg3+1
+SC_PageLoop:    jsr ClearText
+                lda titlePage
+                asl
+                tay
+                lda screen2+3,y
+                ldx screen2+4,y
+                beq SC_PagesDone
+                jsr PrintPage
+SC_WaitLoop:    jsr Update
+                lda textFade
+                beq SC_NextPage
+                jsr GetFireClick
+                bcs SC_FadePage
+                lda keyType
+                bpl SC_FadePage
+                bmi SC_WaitLoop
+SC_FadePage:    lda textFadeDir
+                bmi SC_WaitLoop                 ;Aleady fading
+                lda #SFX_SELECT
+                jsr PlaySfx
+                lda #-1
+                sta textFadeDir
+                bmi SC_WaitLoop
+SC_NextPage:    inc titlePage
+                bne SC_PageLoop
+SC_PagesDone:   jsr FindPlayerZone
+                jmp CenterPlayer
+
+        ; Variables
+
 logoFade:       dc.b 0
 textFade:       dc.b 0
-logoFadeDir:    dc.b 0
+logoFadeDir:    dc.b 1
 textFadeDir:    dc.b 0
-musicFadeDelay: dc.b 0
-moveDelay:      dc.b 0
 titlePage:      dc.b 0
 titlePageDelayLo:
                 dc.b 0
@@ -1002,8 +1084,10 @@ titlePageDelayHi:
 mainMenuChoice: dc.b 0
 optionsMenuChoice:
                 dc.b 0
-
 optionsModified: dc.b 0
+cheatIndex:     dc.b 0
+
+        ; Tables / data
 
 difficultyTxtLo:dc.b <txtCasual, <txtEasy, <txtMedium, <txtHard, <txtInsane
 difficultyTxtHi:dc.b >txtCasual, >txtEasy, >txtMedium, >txtHard, >txtInsane
@@ -1043,7 +1127,6 @@ textFadeTbl:    dc.b $00,$06,$03,$01
 optionMaxValue: dc.b MAX_DIFFICULTY,1,1
 
 cheatString:    dc.b KEY_K, KEY_V, KEY_L, KEY_T
-cheatIndex:     dc.b 0
 
 npcX:           dc.b $39,$38,$17
 npcY:           dc.b $28,$28,$30

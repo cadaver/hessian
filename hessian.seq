@@ -8,6 +8,7 @@ emptysave.bin 6B
 emptysave.bin 6C
 emptysave.bin 6D
 emptysave.bin 6E
+cutscene1.pak 5E
 level00.pak 02
 charset00.pak 12
 level01.pak 03
@@ -99,5 +100,4 @@ script22.pak 5A
 script23.pak 5B
 music02.pak 23
 music03.pak 24
-cutscene1.pak 5F
 main.pak 01

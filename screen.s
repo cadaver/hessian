@@ -1025,17 +1025,17 @@ RS_NotOver:     ldy temp7
         ; Reset & center scrolling
         ;
         ; Parameters: -
-        ; Returns: -
+        ; Returns: A=0
         ; Modifies: A
 
-InitScroll:     lda #$00
+InitScroll:     lda #$04
+                sta scrollX
+                sta scrollY
+                lda #$00
                 sta scrollSX
                 sta scrollSY
                 sta scrCounter
                 sta scrAdd
-                lda #$04
-                sta scrollX
-                sta scrollY
                 rts
 
         ; Update block outside the current zone. No need to update on screen, but must find out
