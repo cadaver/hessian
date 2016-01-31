@@ -106,7 +106,25 @@ PS_SameMusicFile:
                 pla
                 and #$03
                 sta ntInitSong
+FS_Done:
 PS_Done:        rts
+
+        ; Fade music. A new song must be initialized after this to be able to play sound effects.
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: A,X
+
+FadeSong:       lda PS_CurrentSong+1
+                beq FS_Done                     ;No fade if game music off
+FS_Loop:        lda ntMasterVol
+                beq FS_Done
+                dec ntMasterVol
+                ldx #$06
+FS_Delay:       jsr WaitBottom
+                dex
+                bne FS_Delay
+                beq FS_Loop
 
         ; Play a sound effect, with priority (higher memory address has precedence)
 
@@ -173,7 +191,7 @@ Play_InitLoop:  sta ntChnPattPos-1,x
                 ldx #$07
                 jsr Play_InitChn
                 ldx #$0f
-                stx Play_MasterVol+1
+                stx ntMasterVol
                 dex
 Play_InitChn:
 Play_SongTblP2: lda $1000,y
@@ -228,7 +246,7 @@ Play_StoreCutoff:
                 sta $d416
 Play_FiltDone:
 Play_FiltType:  lda #$00
-Play_MasterVol: ora #$0f
+                ora ntMasterVol
                 sta $d418
 
         ;Channel execution

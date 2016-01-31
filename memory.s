@@ -179,6 +179,7 @@ palFlag         = freeMemLo
                 var ntFiltPos
                 var ntFiltTime
                 var ntFiltCutoff
+                var ntMasterVol
 
                 checkvarbase $100
 

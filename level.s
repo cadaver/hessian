@@ -133,7 +133,7 @@ LL_SetLevelObjectsActive:
                 and #OBJ_TYPEBITS
                 cmp #OBJTYPE_REVEAL             ;If this is a weapon closet, make sure items at it are revealed
                 bne LL_NoReveal
-                jsr AO_Reveal
+                jsr AO_RevealSub
 LL_NoReveal:    jsr AnimateObjectActivation     ;Animate if necessary
                 tya
                 tax
@@ -644,9 +644,9 @@ AO_Toggle:      lda lvlObjDL,y
 
         ; Reveal actors (weapon closet)
 
-AO_Reveal:      lda lvlObjX,y
-                sta AO_RevealXCmp+1
-                lda lvlObjY,y
+AO_Reveal:      jsr AO_RevealSub
+                jmp AddAllActors                ;Add all actors now to reveal the object(s) immediately
+AO_RevealSub:   lda lvlObjY,y
                 ora #$80                        ;Check for hidden bit
                 sta AO_RevealYCmp+1
                 ldx #MAX_LVLACT-1
@@ -659,15 +659,14 @@ AO_RevealLoop:  lda lvlActT,x
                 bne AO_RevealNext
 AO_RevealLevelOK:
                 lda lvlActX,x
-AO_RevealXCmp:  cmp #$00
+                cmp lvlObjX,y
                 bne AO_RevealNext
                 lda lvlActY,x
 AO_RevealYCmp:  cmp #$00
                 bne AO_RevealNext
 AO_DoReveal:    and #$7f
                 sta lvlActY,x
-                jsr AddAllActorsNextFrame       ;Hack: add all actors next frame
-AO_RevealNext:  dex                             ;to reveal the item as quickly as possible
+AO_RevealNext:  dex
                 bpl AO_RevealLoop
                 rts
 
@@ -879,7 +878,7 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
 ULO_NoRecharge:
 ULO_NoAirFlag:  lda #$00
                 beq ULO_CheckHeadUnderWater
-ULO_NoAir:      lda AA_ItemFlashCounter+1
+ULO_NoAir:      lda UA_ItemFlashCounter+1
                 and #$07
                 bpl ULO_OxygenDelay
 ULO_CheckHeadUnderWater:
@@ -894,7 +893,7 @@ ULO_CheckHeadUnderWater:
 ULO_OxygenDelay:bne ULO_OxygenDone
                 lda oxygen
                 bne ULO_DecreaseOxygen
-                lda AA_ItemFlashCounter+1
+                lda UA_ItemFlashCounter+1
                 and #$07
                 bne ULO_OxygenDone
                 jsr ULO_DoDrowningDamage
@@ -915,7 +914,7 @@ ULO_AirToxinFlag:
                 lda #$00                        ;Flashing screen effect for toxic air (as in Fist II)
                 bpl ULO_NoAirDamage
                 ldy #ZONEH_BG1
-                lda AA_ItemFlashCounter+1
+                lda UA_ItemFlashCounter+1
                 and #$01
                 beq ULO_ToxinEffectColor
                 lda (zoneLo),y
@@ -1124,10 +1123,10 @@ ULO_NoEnter:    lda lvlObjB,y                   ;If not a door / not operating, 
                 and #OBJ_MODEBITS+OBJ_ACTIVE
                 cmp #OBJMODE_TRIG
                 bne ULO_NoTrigger
-                lda lvlObjY,y                   ;If animating, play sound
-                bpl ULO_TriggerNoSound
-                lda #SFX_OBJECT
-                jsr PlaySfx
+                ;lda lvlObjY,y                  ;If animating, play sound
+                ;bpl ULO_TriggerNoSound         ;(removed for code size optimization: all triggers in Hessian
+                ;lda #SFX_OBJECT                ;are for story purposes only, not physical objects)
+                ;jsr PlaySfx
 ULO_TriggerNoSound:
                 jmp ActivateObject
 ULO_NoTrigger:  txa

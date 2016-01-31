@@ -1,7 +1,7 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 14, Jormungandr bossfight
+        ; Script 14, Jormungandr bossfight & interlude
 
                 org scriptCodeStart
 
@@ -226,12 +226,11 @@ MJ_SpawnMines:  lda actAttackD,x
                 lda #SFX_SHOTGUN
                 jsr PlaySfx
                 ldx actIndex
-                lda #40
+                lda #41
                 sta actAttackD,x
-MJ_NoRoomForMine:
-                rts
 MJ_SpawnMineDelay:
                 dec actAttackD,x
+MJ_NoRoomForMine:
                 rts
 
 MJ_Destroy:     jsr Random
@@ -268,8 +267,7 @@ MJ_Destroy:     jsr Random
                 ldx actIndex
                 rts
 MJ_NoExplosion: jmp SetZoneColors
-MJ_DestroyDone: ldx actIndex
-                jsr RemoveActor
+MJ_DestroyDone: jsr RemoveActor
                 lda #PLOT_DISRUPTCOMMS          ;Communication disrupted?
                 jsr GetPlotBit
                 beq MJ_TriggerEnding            ;If not, game ends now
@@ -280,11 +278,11 @@ MJ_DestroyDone: ldx actIndex
                 lda #MUSIC_NETHER
                 jmp PlaySong
 MJ_TriggerEnding:
-                jsr FadeMusic
-MJ_EndingCommon:jsr BlankScreen
+                jsr FadeSong
                 jsr ClearPanelText
-MJ_EndingEP:    lda #<EP_ENDING1                ;Proceed to Jormungandr ending
-                ldx #>EP_ENDING1
+                jsr BlankScreen
+                lda #<EP_CONSTRUCTINTERLUDE
+                ldx #>EP_CONSTRUCTINTERLUDE
                 jmp ExecScript
 
 MJ_GetOffsetSub:jsr Random
@@ -427,7 +425,7 @@ RHW_NoActor:
 RHW_HasItem:
 MJ_NoOldEye:    rts
 
-        ; Jormungandr rise/destroy interlude
+        ; Jormungandr attack/destroy interlude
         ;
         ; Parameters: -
         ; Returns: -
@@ -453,7 +451,6 @@ JormungandrInterlude:
                 jsr RedrawAndAddActors
                 lda #PLOT_RIGTUNNELMACHINE      ;Is this the simultaneous destruction ending, or Jormungandr's revenge?
                 jsr GetPlotBit
-                php
                 beq JI_SetHealth
                 lda #$00
                 jsr JI_SpawnScrapMetal
@@ -461,27 +458,33 @@ JormungandrInterlude:
                 jsr JI_SpawnScrapMetal
                 lda #MUSIC_SILENCE              ;Play the silence tune so that explosions can be heard
                 jsr PlaySong
-                lda #<EP_ENDING3
+                lda #$02                        ;Ending 3
                 bpl JI_BeginLoop
 JI_SetHealth:   lda #ACT_JORMUNGANDR
                 jsr FindActor
                 inc actHp,x
                 lda #PHASE_WAITDECISION
                 sta phase
-                inc phaseTime
-                lda #<EP_ENDING2
-JI_BeginLoop:   sta MJ_EndingEP+1
+                lda #$01                        ;Ending 2
+                sta phaseTime                   ;Set phasetime nonzero so that the attack type isn't randomized
+JI_BeginLoop:   pha
+                lda #4
+                sta screenPos
                 jsr MJ_NeedRedraw               ;Draw Jormungandr immediately
 JI_Loop:        jsr ScrollLogic
                 jsr DrawActors
-                jsr AddActors
                 jsr FinishFrame
                 jsr UpdateActors
                 jsr FinishFrame
                 lda screenPos                   ;Wait until fully descended
                 cmp #LOWPOS*4-2
                 bcc JI_Loop
-                jmp MJ_EndingCommon
+                jsr BlankScreen
+                pla
+                tay
+                lda #<EP_ENDSEQUENCE            ;Now run the actual endsequence
+                ldx #>EP_ENDSEQUENCE
+                jmp ExecScriptParam
 
 JI_SpawnScrapMetal:
                 pha
@@ -503,22 +506,6 @@ JI_SpawnScrapMetal:
                 lda #ACT_EXPLOSIONGENERATOR
                 sta actT,x
                 jmp EE_SpawnScrapMetal
-
-        ; Music fade subroutine
-
-FadeMusic:      lda fastLoadMode
-                beq FM_Done                     ;Using fallback loader, no fade as there already are screen-blanking pauses
-FadeMusicEnd:   lda PS_CurrentSong+1
-                beq FM_Done                     ;No fade if game music off
-FM_Loop:        lda Play_MasterVol+1
-                beq FM_Done
-                dec Play_MasterVol+1
-                ldx #$06
-FM_Delay:       jsr WaitBottom
-                dex
-                bne FM_Delay
-                beq FM_Loop
-FM_Done:        rts
 
         ; Variables
 

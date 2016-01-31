@@ -10,6 +10,7 @@
                 dc.w LabComputer1
                 dc.w LabComputer2
                 dc.w LabComputer3
+                dc.w HackerFinal
 
         ; Lab computer note #4
         ;
@@ -87,7 +88,7 @@ GiveLaptop2:    lda scriptVariable
                 bne GiveLaptop2b
                 inc scriptVariable
                 gettext txtGiveLaptop2
-                ldy #ACT_HACKER
+H_SpeakCommon:  ldy #ACT_HACKER
                 jmp SpeakLine
 GiveLaptop2b:   lda #SFX_PICKUP
                 jsr PlaySfx
@@ -96,7 +97,23 @@ GiveLaptop2b:   lda #SFX_PICKUP
                 jsr AddItem
                 lda #0
                 sta actScriptF+2
+HF_TooFar:
 SEL_Wait:       rts
+
+        ; Jeff interaction if return to lab after installing laptop
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
+
+HackerFinal:    lda actXH+ACTI_PLAYER
+                cmp #$84
+                bcc HF_TooFar
+                jsr AddQuestScore
+                lda #$00
+                sta actScriptF+2
+                gettext txtHackerFinal
+                bne H_SpeakCommon
 
         ; Messages
 
@@ -163,5 +180,8 @@ txtGiveLaptop2: dc.b 34,"SORRY FOR SNEAKING UP ON YOU. BUT THAT IF ANY IS EVIL. 
                 dc.b "IF YOU CAN FIND THE LINK, WE MIGHT BE ABLE TO TRICK THE PROTOCOL. THEN YOU CAN "
                 dc.b "SAFELY BLAST THEM BOTH TO HELL. OF COURSE.. "
                 dc.b "ANY TAMPERING COULD ALREADY TRIGGER ARMAGEDDON.",34,0
+
+txtHackerFinal: dc.b 34,"HEY. YOU SHOULD BE KICKING JORMUNGANDR AND CONSTRUCT ASS, AS I'VE NO WORRIES HERE. WELL, "
+                dc.b "EXCEPT WHETHER YOU'LL RETURN ALIVE. TRY TO DO THAT, OK?",34,0
 
                 checkscriptend

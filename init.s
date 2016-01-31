@@ -41,6 +41,8 @@ InitZP:         sta joystick,x
                 sta ntFiltTime
                 lda #$7f
                 sta ntInitSong
+                lda #$0f
+                sta ntMasterVol
 
         ; Load options file
 
@@ -173,18 +175,10 @@ IVid_CopyTextChars:
                 sta textChars+$300,x
                 inx
                 bne IVid_CopyTextChars
-                ldx #39
+                ldx #79
 IVid_InitScorePanel:
-                lda #$20
-                sta panelScreen+PANELROW*40-40,x
-                lda scorePanel,x
-                sta panelScreen+PANELROW*40,x
                 lda scorePanelColors,x
                 sta colors+PANELROW*40,x
-                lda scorePanel+40,x
-                sta panelScreen+PANELROW*40+40,x
-                lda scorePanelColors+40,x
-                sta colors+PANELROW*40+40,x
                 dex
                 bpl IVid_InitScorePanel
                 lda #ITEM_FISTS                 ;Show fists even before game start
@@ -227,16 +221,37 @@ IR_UseFastLoad: cli
                 ldy #$00
                 jmp ExecScriptParam
 
-        ; Scorepanel screen/color data (overwritten)
+        ; Scorepanel color data (overwritten)
 
-scorePanel:     dc.b 103
+scorePanelColors:
+                dc.b 11
+                ds.b 7,1
+                dc.b 11
+                ds.b 22,1
+                dc.b 11
+                ds.b 7,1
+                dc.b 11
+                ds.b 9,11
+                dc.b 8
+                ds.b 7,15
+                dc.b 11
+                ds.b 4,1
+                dc.b 11
+                dc.b 8
+                ds.b 7,15
+                ds.b 9,11
+
+        ; Scorepanel chars & scorepanel screen data (overwritten)
+
+textCharsCopy:  incbin bg/scorescr.chr
+                ds.b 40,32
+                dc.b 103
                 ds.b 7,32
                 dc.b 103
                 ds.b 22,32
                 dc.b 103
                 ds.b 7,32
                 dc.b 103
-
                 dc.b 96
                 ds.b 7,97
                 dc.b 98
@@ -250,29 +265,7 @@ scorePanel:     dc.b 103
                 dc.b 101
                 ds.b 7,97
                 dc.b 102
-
-scorePanelColors:
-                dc.b 11
-                ds.b 7,1
-                dc.b 11
-                ds.b 22,1
-                dc.b 11
-                ds.b 7,1
-                dc.b 11
-
-                ds.b 9,11
-                dc.b 8
-                ds.b 7,15
-                dc.b 11
-                ds.b 4,1
-                dc.b 11
-                dc.b 8
-                ds.b 7,15
-                ds.b 9,11
-
-        ; Scorepanel chars (overwritten)
-
-textCharsCopy:  incbin bg/scorescr.chr
+                incbin bg/healthbar.chr
                 ds.b 8,EMPTYSPRITEFRAME
 
         ; Preloaded spritefile data

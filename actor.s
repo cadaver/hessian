@@ -463,6 +463,7 @@ DA_NormalLoop:  tay
                 sta temp6
                 bcc DA_NormalLoop
 DA_HumanNoWeapon:
+AA_Paused:
                 rts
 
 DA_Direct:      ldy #ADD_BASEFRAME
@@ -479,19 +480,6 @@ DA_NormalFlipLeft:
                 ldx sprIndex
                 bpl DA_NormalLast
 
-        ; Set all actors to be added on screen. Used on level transitions
-        ;
-        ; Parameters: -
-        ; Returns: A=0
-        ; Modifies: A
-
-AddAllActorsNextFrame:
-                lda #MAX_LVLACT
-                sta AA_EndCmp+1
-                lda #$00
-                sta AA_Start+1
-AA_Paused:      rts
-
         ; Add actors to screen and perform other miscellaneous tasks, like spawners and navigation AI
         ; Do nothing if game paused
         ;
@@ -502,35 +490,13 @@ AA_Paused:      rts
 RedrawAndAddActors:
                 jsr RedrawScreen
                 jsr SetZoneColors
-                jsr AddAllActorsNextFrame
+AddAllActors:   lda #MAX_LVLACT
+                sta AA_EndCmp+1
+                lda #$00
+                sta AA_Start+1
 AddActors:      lda menuMode
                 cmp #MENU_PAUSE
                 bcs AA_Paused
-
-        ; Flash actors such as items, and H & B letters if health/battery low
-
-F               inc AA_ItemFlashCounter+1
-AA_ItemFlashCounter:                            ;Get color override for items + object marker
-                lda #$00
-                lsr
-                lsr
-                and #$03
-                tax
-                lda itemFlashTbl,x
-                sta FlashActor+1
-                ora #$08
-                tax
-                ldy actHp+ACTI_PLAYER           ;Flash the H & B letters if health or battery low
-                cpy #LOW_HEALTH+1
-                bcc AA_FlashHealth
-                lda #$08
-AA_FlashHealth: sta colors+PANELROW*40+49
-                txa
-                ldy battery+1
-                cpy #LOW_BATTERY+1
-                bcc AA_FlashBattery
-                lda #$08
-AA_FlashBattery:sta colors+PANELROW*40+63
 
         ; Get screen border map coordinates for adding/removing actors
 
@@ -813,6 +779,28 @@ UpdateActors:   ldx #$00
                 lda menuMode
                 cmp #MENU_PAUSE
                 bcs UA_Paused
+                inc UA_ItemFlashCounter+1
+UA_ItemFlashCounter:                            ;Get color override for items + object marker
+                lda #$00
+                lsr
+                lsr
+                and #$03
+                tax
+                lda itemFlashTbl,x
+                sta FlashActor+1
+                ora #$08
+                tax
+                ldy actHp+ACTI_PLAYER           ;Flash the H & B letters if health or battery low
+                cpy #LOW_HEALTH+1
+                bcc UA_FlashHealth
+                lda #$08
+UA_FlashHealth: sta colors+PANELROW*40+49
+                txa
+                ldy battery+1
+                cpy #LOW_BATTERY+1
+                bcc UA_FlashBattery
+                lda #$08
+UA_FlashBattery:sta colors+PANELROW*40+63
 UA_Scroll:      ldy #ZONEH_BG3
                 lda (zoneLo),y
                 bmi UA_NoPlayerScroll           ;Scroll-disabled zone?

@@ -1,5 +1,7 @@
 healthBarPosTbl:dc.b 50,64
 
+        ; Level properties
+        
 lvlPropertiesStart:
 lvlWaterSplashColor:
                 dc.b 0

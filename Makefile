@@ -39,7 +39,8 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
 	sprsmallrobots.pak sprhazards.pak sprhazards2.pak spranimals.pak sprmediumrobots.pak sprguard.pak sprheavyguard.pak \
 	sprcombatrobot.pak sprlargewalker.pak sprlargetank.pak sprhighwalker.pak sprhazmat.pak sprserver.pak sprsecuritychief.pak \
-	sprrotordrone.pak sprlargespider.pak sprscientist.pak sprhacker.pak
+	sprrotordrone.pak sprlargespider.pak sprscientist.pak sprhacker.pak \
+	cutscene1.pak
 	maked64 hessian.d64 hessian.seq HESSIAN___________HE_2A 10
 	reorder hessian.d64
 
@@ -156,7 +157,7 @@ sfx/radio.sfx: sfx/radio.ins
 
 main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s enemy.s file.s init.s input.s item.s itemdata.s level.s \
 	macros.s main.s math.s memory.s panel.s paneldata.s physics.s player.s raster.s screen.s script.s \
-	sound.s sounddata.s sprite.s text.s weapon.s weapondata.s loader.prg bg/scorescr.chr bg/world.s sfx/pistol.sfx sfx/shotgun.sfx \
+	sound.s sounddata.s sprite.s text.s weapon.s weapondata.s loader.prg bg/scorescr.chr bg/healthbar.chr bg/world.s sfx/pistol.sfx sfx/shotgun.sfx \
 	sfx/autorifle.sfx sfx/sniperrifle.sfx sfx/minigun.sfx sfx/explosion.sfx sfx/throw.sfx sfx/melee.sfx sfx/punch.sfx sfx/reload.sfx \
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
 	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/heavymelee.sfx \
@@ -198,10 +199,16 @@ logo.pak: pics/logo.iff logo.s
 	pic2chr pics/logo.iff logoscr.dat -m14 -n15 -x24 -y7 -t
 	dasm logo.s -ologo.bin -f3
 	pack2 logo.bin logo.pak
-	
+
 upgrade.pak: spr/sight.spr bg/upgrade.chr upgrade.s
 	dasm upgrade.s -oupgrade.bin -f3
 	pack2 upgrade.bin upgrade.pak
+
+cutscene1.pak: pics/cutscene1.iff cutscene1.s
+	pic2chr pics/cutscene1.iff cutscene1.chr -m11 -n12 -x30 -y12 -c -s
+	pic2chr pics/cutscene1.iff cutscene1scr.dat -m11 -n12 -x30 -y12 -t
+	dasm cutscene1.s -ocutscene1.bin -f3
+	pack2 cutscene1.bin cutscene1.pak
 
 script00.pak: script00.s memory.s mainsym.s
 	dasm script00.s -oscript00.bin -f3

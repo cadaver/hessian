@@ -231,7 +231,7 @@ AS_5:           lda #ACT_HIGHWALKER
                 cmp #8
                 bcc AS_5RunRight
                 bcs AS_5RunLeft
-AS_5Shake:      lda AA_ItemFlashCounter+1       ;Shake screen until walker visibly onscreen
+AS_5Shake:      lda UA_ItemFlashCounter+1       ;Shake screen until walker visibly onscreen
                 asl
                 and #$02
                 sta shakeScreen

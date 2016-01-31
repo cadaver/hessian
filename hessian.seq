@@ -1,6 +1,6 @@
 options.bin 6F
 script00.pak 44
-logo.pak 67
+logo.pak 5C
 music01.pak 22
 savelist.bin 69
 emptysave.bin 6A
@@ -77,7 +77,7 @@ script01.pak 45
 script02.pak 46
 script03.pak 47
 script04.pak 48
-upgrade.pak 68
+upgrade.pak 5D
 script05.pak 49
 script06.pak 4A
 script07.pak 4B
@@ -99,4 +99,5 @@ script22.pak 5A
 script23.pak 5B
 music02.pak 23
 music03.pak 24
+cutscene1.pak 5F
 main.pak 01
