@@ -13,8 +13,8 @@
                 org screen2
 
                 dc.b MUSIC_HIDEOUT+1            ;Song to play
-                dc.b 11                         ;Multicolors
-                dc.b 12
+                dc.b 6                         ;Multicolors
+                dc.b 14
                 dc.w page1                      ;Pages to display (0 = end)
                 dc.w page2
                 dc.w page3
