@@ -29,7 +29,7 @@ page1:               ;0123456789012345678901234567890123456789
                 dc.b 0
 
 page2:          dc.b 0
-                dc.b "SHE REMEMBERS COMBAT ROBOT PROTOTYPES",0
+                dc.b "SHE REMEMBERS SOMEONE - OR SOMETHING -",0
                 dc.b "OPENING FIRE ON STAFF, EVERYTHING GOING",0
                 dc.b "BLACK AS ROUNDS HAMMER INTO HER CHEST,",0
                 dc.b "THEN A DISTANT VOICE: ",34,"NEED ARTIFICIAL",0

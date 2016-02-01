@@ -3,7 +3,7 @@
 
         ; Script 0, title screen, game start/load/save, show cutscenes
 
-LOGOSTARTROW    = 1
+LOGOSTARTROW    = 2
 TEXTSTARTROW    = 12
 NUMTEXTROWS     = 8
 NUMTITLEPAGES   = 4
