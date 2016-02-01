@@ -23,5 +23,5 @@ page1:               ;0123456789012345678901234567890123456789
                 dc.b "COLLAPSED WALL. KIM DARES NOT TO LET GO",0
                 dc.b "IN CASE IT WOULD GET STUCK, AND PUSHES",0
                 dc.b "ON UNTIL THERE'S LIGHT AHEAD. TOO LATE",0
-                dc.b "TO BRAKE, THE MACHINE ROLLS DOWNHILL..",0
+                dc.b "TO BRAKE, THE MACHINE ENTERS FREEFALL..",0
                 dc.b 0
