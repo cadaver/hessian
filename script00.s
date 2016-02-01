@@ -1,7 +1,7 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 0, title screen, game start/load/save, show cutscenes
+        ; Script 0, title screen, game start/load/save
 
 LOGOSTARTROW    = 2
 TEXTSTARTROW    = 12
@@ -16,9 +16,6 @@ TITLE_PAGEDELAY = 564
 
 CHEATSTRING_LENGTH = 4
 
-CUTSCENE_SIZEX  = 28
-CUTSCENE_SIZEY  = 11
-
 logoStart       = chars
 logoScreen      = chars+608
 logoColors      = chars+608+168
@@ -26,9 +23,13 @@ titleTexts      = chars+608+168*2
 levelNamesTbl   = chars+$700
 levelNames      = chars+$740
 
-START_LEVEL     = $00                          ;Warehouse
-START_X         = $6680
-START_Y         = $1700
+START_LEVEL     = $00                          ;Warehouse container (proper startlocation)
+START_X         = $6900
+START_Y         = $1b00
+
+;START_LEVEL     = $00                          ;Warehouse
+;START_X         = $6680
+;START_Y         = $1700
 
 ;START_LEVEL     = $01                          ;Courtyard
 ;START_X         = $0280
@@ -157,7 +158,6 @@ START_Y         = $1700
                 org scriptCodeStart
 
                 dc.w TitleScreen
-                dc.w ShowCutscene
 
         ; Title screen code
 
@@ -583,10 +583,9 @@ IP_CodeLoop:    if CODE_CHEAT > 0
                 ora #$80                        ;impossible to enter, even by guessing
                 sta codes+MAX_CODES*3-1
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
-                lda #<EP_SHOWCUTSCENE
-                ldx #>EP_SHOWCUTSCENE
-                ldy #CUTSCENE_INTRO
-                jmp ExecScriptParam             ;Show intro cutscene
+                lda #<EP_INTROCUTSCENE
+                ldx #>EP_INTROCUTSCENE
+                jmp ExecScript
 
         ; Save options if modified
 
@@ -852,7 +851,7 @@ ResetTitlePageDelay:
                 sta titlePageDelayHi
 FOT_Done:       rts
 
-        ; Fade logo, text & music
+        ; Fade logo & text
 
 FadeOutAll:     lda fastLoadMode                ;No fade if using fallback loader
                 beq FOT_Done
@@ -966,7 +965,7 @@ PTBCD1_NoAnd:   ora #$30
 PlaySelectSfx:  lda #SFX_SELECT
                 jmp PlaySfx
 
-        ; Setup split screen display for title or cutscene
+        ; Setup split screen display
 
 SetupSplitScreen:
                 jsr SetupTextScreen
@@ -980,6 +979,7 @@ SetupSplitScreen:
                 sta Irq1_Bg2+1
                 sta Irq1_Bg3+1
                 sta armorMsgTime                ;Reset armor message if any
+                sta shakeScreen                 ;Clear screen shake from any scripts
                 tax
 ClearColorsLoop:sta colors,x                    ;Set colors for the picture area to all black
                 sta colors+$100,x
@@ -993,11 +993,6 @@ ClearColorsLoop:sta colors,x                    ;Set colors for the picture area
 
         ; Draw chars to screen or colorscreen
 
-DrawCutsceneChars:
-                sta zpDestLo
-                stx zpDestHi
-                lda #CUTSCENE_SIZEX
-                ldx #CUTSCENE_SIZEY
 DrawChars:      sta temp1                       ;Chars per row
                 stx temp2                       ;Row counter
 DC_RowLoop:     ldy #$00
@@ -1015,61 +1010,6 @@ DC_Loop:        lda (zpSrcLo),y
                 dec temp2
                 bne DC_RowLoop
                 rts
-
-        ; Show cutscene
-
-ShowCutscene:   jsr SetupSplitScreen
-                sta titlePage                   ;A=0 on return
-                sta logoFadeDir
-                sta actSX+ACTI_PLAYER           ;Stop player after cutscene
-                lda ES_ParamY+1
-                ldx #F_CUTSCENE
-                jsr MakeFileName
-                lda #<lvlCodeStart
-                ldx #>lvlCodeStart
-                jsr LoadFileRetry
-                lda #<lvlCodeStart
-                ldx #>lvlCodeStart
-                sta zpSrcLo
-                stx zpSrcHi
-                lda #<(screen1+20-CUTSCENE_SIZEX/2)
-                ldx #>(screen1+20-CUTSCENE_SIZEX/2)
-                jsr DrawCutsceneChars
-                lda #<(colors+20-CUTSCENE_SIZEX/2)
-                ldx #>(colors+20-CUTSCENE_SIZEX/2)
-                jsr DrawCutsceneChars
-                lda screen2
-                jsr PlaySong
-SC_NoMusic:     lda screen2+1                   ;Set picture multicolors
-                sta Irq1_Bg2+1
-                lda screen2+2
-                sta Irq1_Bg3+1
-SC_PageLoop:    jsr ClearText
-                lda titlePage
-                asl
-                tay
-                lda screen2+3,y
-                ldx screen2+4,y
-                beq SC_PagesDone
-                jsr PrintPage
-SC_WaitLoop:    jsr Update
-                lda textFade
-                beq SC_NextPage
-                jsr GetFireClick
-                bcs SC_FadePage
-                lda keyType
-                bpl SC_FadePage
-                bmi SC_WaitLoop
-SC_FadePage:    lda textFadeDir
-                bmi SC_WaitLoop                 ;Aleady fading
-                jsr PlaySelectSfx
-                lda #-1
-                sta textFadeDir
-                bmi SC_WaitLoop
-SC_NextPage:    inc titlePage
-                bne SC_PageLoop
-SC_PagesDone:   jsr FindPlayerZone
-                jmp CenterPlayer
 
         ; Variables
 

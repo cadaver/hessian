@@ -1,7 +1,7 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 16, throne chief + more hideout scenes
+        ; Script 16, throne chief + hideout ambush
 
                 org scriptCodeStart
 
@@ -29,10 +29,7 @@ ThroneChief:    lda #ITEM_BIOMETRICID
                 lda #<EP_BEGINAMBUSH
                 ldx #>EP_BEGINAMBUSH
                 jsr SetScript
-TC_SkipAmbush:  lda #<EP_SHOWCUTSCENE
-                ldx #>EP_SHOWCUTSCENE
-                ldy #CUTSCENE_THRONECHIEF
-                jmp ExecScriptParam
+TC_SkipAmbush:  rts
 
         ; Begin hideout ambush + second Construct briefing
         ;

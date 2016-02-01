@@ -774,96 +774,15 @@ UA_Paused:      stx scrollSX                    ;Stop scrolling when paused & on
                 stx scrollSY
                 jmp InterpolateActors
 
+UA_Remove:      jsr RemoveLevelActor
+                beq UA_Next
+
 UpdateActors:   ldx #$00
                 stx shakeScreen
                 lda menuMode
                 cmp #MENU_PAUSE
                 bcs UA_Paused
-                inc UA_ItemFlashCounter+1
-UA_ItemFlashCounter:                            ;Get color override for items + object marker
-                lda #$00
-                lsr
-                lsr
-                and #$03
-                tax
-                lda itemFlashTbl,x
-                sta FlashActor+1
-                ora #$08
-                tax
-                ldy actHp+ACTI_PLAYER           ;Flash the H & B letters if health or battery low
-                cpy #LOW_HEALTH+1
-                bcc UA_FlashHealth
-                lda #$08
-UA_FlashHealth: sta colors+PANELROW*40+49
-                txa
-                ldy battery+1
-                cpy #LOW_BATTERY+1
-                bcc UA_FlashBattery
-                lda #$08
-UA_FlashBattery:sta colors+PANELROW*40+63
-UA_Scroll:      ldy #ZONEH_BG3
-                lda (zoneLo),y
-                bmi UA_NoPlayerScroll           ;Scroll-disabled zone?
-UA_ScrollHorizontal:
-                ldy #$00
-                lda actXL+ACTI_PLAYER
-                rol
-                rol
-                rol
-                and #$03
-                sec
-                sbc SL_CSSBlockX+1
-                and #$03
-                sta zpSrcLo
-                lda actXH+ACTI_PLAYER
-                sbc SL_CSSMapX+1
-                asl
-                asl
-                ora zpSrcLo
-                cmp #SCRCENTER_X-1
-                bcs UA_NotLeft1
-                dey
-UA_NotLeft1:    cmp #SCRCENTER_X
-                bcs UA_NotLeft2
-                dey
-UA_NotLeft2:    cmp #SCRCENTER_X+1
-                bcc UA_NotRight1
-                iny
-UA_NotRight1:   cmp #SCRCENTER_X+2
-                bcc UA_NotRight2
-                iny
-UA_NotRight2:   sty scrollSX
-UA_ScrollVertical:
-                ldy #$00
-                lda actYL+ACTI_PLAYER
-                rol
-                rol
-                rol
-                and #$03
-                sec
-                sbc SL_CSSBlockY+1
-                and #$03
-                sta zpSrcLo
-                lda actYH+ACTI_PLAYER
-                sbc SL_CSSMapY+1
-                asl
-                asl
-                ora zpSrcLo
-                cmp #SCRCENTER_Y-2
-                bcs UA_NotUp1
-                dey
-UA_NotUp1:      cmp #SCRCENTER_Y
-                bcs UA_NotUp2
-                dey
-UA_NotUp2:      cmp #SCRCENTER_Y+1
-                bcc UA_NotDown1
-                iny
-UA_NotDown1:    cmp #SCRCENTER_Y+3
-                bcc UA_NotDown2
-                iny
-UA_NotDown2:    sty scrollSY
-UA_NoPlayerScroll:
-                ldx #MAX_ACT-1
+UA_Scroll:      ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex
@@ -909,10 +828,28 @@ UA_Next:        if SHOW_ACTOR_TIME > 0
                 endif
                 dex
                 bpl UA_Loop
-                bmi InterpolateActors
-
-UA_Remove:      jsr RemoveLevelActor
-                beq UA_Next
+UA_AllDone:     inc UA_ItemFlashCounter+1
+UA_ItemFlashCounter:                            ;Get color override for items + object marker
+                lda #$00
+                lsr
+                lsr
+                and #$03
+                tax
+                lda itemFlashTbl,x
+                sta FlashActor+1
+                ora #$08
+                tax
+                ldy actHp+ACTI_PLAYER           ;Flash the H & B letters if health or battery low
+                cpy #LOW_HEALTH+1
+                bcc UA_FlashHealth
+                lda #$08
+UA_FlashHealth: sta colors+PANELROW*40+49
+                txa
+                ldy battery+1
+                cpy #LOW_BATTERY+1
+                bcc UA_FlashBattery
+                lda #$08
+UA_FlashBattery:sta colors+PANELROW*40+63
 
         ; Interpolate actors' movement each second frame
 

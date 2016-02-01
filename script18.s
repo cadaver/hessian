@@ -138,10 +138,7 @@ TMR_Drive:      jsr AddQuestScore
                 ldy #$32
                 ldx #ACTI_PLAYER
                 jsr SetActorAtObject
-                lda #<EP_SHOWCUTSCENE
-                ldx #>EP_SHOWCUTSCENE
-                ldy #CUTSCENE_TUNNELMACHINE
-                jmp ExecScriptParam
+                jmp CenterPlayer
 
         ; Tunnel machine item installation script routines
         ;

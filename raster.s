@@ -328,12 +328,13 @@ Irq6_LevelUpdate:
 Irq6_NoLevelUpdate:
                 lda #<Irq1                      ;Back to screen top interrupt
                 ldx #>Irq1
-                ldy #IRQ1_LINE
+Irq6_Irq1Pos:   ldy #IRQ1_LINE
                 jmp SetNextIrq
 
         ; Raster interrupt 5. Text screen split
 
 Irq5:           jsr StartIrq
+Irq5_ScreenValue:
                 lda #TEXTSCR_D018
                 sta $d018
                 jmp Irq2_AllDone

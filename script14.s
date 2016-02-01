@@ -1,599 +1,135 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 14, Jormungandr bossfight & interlude
+        ; Script 14, parking garage conversation
 
                 org scriptCodeStart
 
-                dc.w MoveJormungandr
-                dc.w JormungandrInterlude
+                dc.w Scientist2
+                dc.w GarageComputer
 
-PHASE_RISE      = 0
-PHASE_WAIT      = 1
-PHASE_ATTACK    = 2
-PHASE_WAITDECISION = 3
-PHASE_MINESDOWN = 4
-PHASE_MINESUP   = 5
-
-JORMUNGANDR_YSIZE = 21
-JORMUNGANDR_XSIZE = 20
-JORMUNGANDR_OFFSETX = 18
-
-LOWPOS          = 23
-HEADLOWPOS      = 11
-HIGHPOS         = 1
-
-NUMEYECOLORS    = 6
-
-        ; Jormungandr update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveJormungandr:lda lvlObjB+$33
-                bmi MJ_WaitBegin
-                jsr MJ_Redraw
-                lda actHp,x
-                bne MJ_Alive
-                jmp MJ_Destroy
-MJ_Alive:       ldy actFlash,x                  ;Hit
-                cpy #COLOR_ONETIMEFLASH
-                bcc MJ_Shake
-                lda hitColorTbl-COLOR_ONETIMEFLASH,y
-                sta Irq1_Bg3+1
-MJ_Shake:       jsr Random                      ;Screen shake in all phases
-                and #$01
-                sta shakeScreen
-                ldy phase
-                lda phaseJumpLo,y
-                sta MJ_PhaseJump+1
-                lda phaseJumpHi,y
-                sta MJ_PhaseJump+2
-MJ_PhaseJump:   jmp $0000
-
-MJ_WaitBegin:   ldy #C_HAZARDS2                 ;Make sure rolling mine sprites are loaded
-                jsr EnsureSpriteFile
-                lda actXH+ACTI_PLAYER
-                cmp #$f2                        ;Wait until player approaches the balcony
-                bne MJ_WaitDone
-                ldy #$33
-                jsr InactivateObject
-                lda #MUSIC_NETHER+1
-                jsr PlaySong
-                ldx actIndex
-MJ_InitRise:    lda #LOWPOS*4                   ;Init Jormungandr vertical screen position
-                sta screenPos
-                lda #$ff
-                sta lastScreenPos
-                sta lastFrame
-                lda #HP_JORMUNGANDR             ;Init health now
-                sta actHp,x
-                lda #PHASE_RISE
-                sta frame
-                sta decision
-                sta eyeColor
-                sta MJ_OldEyePos+2
-                jmp MJ_SetPhase
-
-MJ_Rise:        lda #HP_JORMUNGANDR             ;Keep resetting health to max. during
-                sta actHp,x                     ;initial rise
-                dec screenPos
-                lda screenPos
-                cmp #HIGHPOS*4
-                bne MJ_RiseDone
-                lda #PHASE_WAIT
-                jsr MJ_SetPhase
-MJ_RiseDone:
-MJ_MoveShake:   ldy screenPos                   ;When Jormungandr moves, use the
-                tya                             ;shaking effect to smooth scrolling
-                and #$02
-                eor #$02
-                sta shakeScreen
-MJ_AttackDone:
-MJ_WaitDone:    rts
-
-MJ_Wait:        lda eyeColor                    ;Restore white eye color now
-                beq MJ_NormalEyeColor
-                dec eyeColor
-MJ_NormalEyeColor:
-                lda #0
-                sta frame
-                lda #5
-                sta actAttackD,x                ;Minor fire delay in next phase
-                lda #PHASE_ATTACK
-                ldy #60
-MJ_WaitNextPhase:
-                inc phaseTime
-                cpy phaseTime
-                bne MJ_WaitDone
-MJ_SetPhase:    sta phase
-                lda #$00
-                sta phaseTime
-                rts
-
-MJ_Attack:      lda #1
-                sta frame
-                sta temp4
-                lda actAttackD,x
-                bne MJ_FireDelay
-                sta temp3
-                sta tgtActIndex
-                lda #<wdFlameThrower
-                sta wpnLo
-                lda #>wdFlameThrower
-                sta wpnHi
-                ldy #WD_BITS
-                lda (wpnLo),y
-                sta wpnBits
-                lda #<(-$240)
-                sta temp1
-                lda #>(-$240)
-                sta temp2
-                lda #8
-                sta AH_FireDir+1
-                jsr AttackCustomOffset
-                ldy tgtActIndex
-                beq MJ_FireDone
-                lda #-60
-                sta actSX,y
-                lda phaseTime
-                lsr
-                and #$0f
-                tax
-                lda fireWaveTbl,x           ;Custom firing angle
-                sta actSY,y
-                ldx actIndex
-                jmp MJ_FireDone
-MJ_FireDelay:   dec actAttackD,x
-MJ_FireDone:    lda #PHASE_WAITDECISION
-                ldy #100
-                jmp MJ_WaitNextPhase
-
-MJ_WaitDecision:lda #0
-                sta frame
-                lda #5
-                sta actAttackD,x                ;Minor fire delay in next phase
-                lda phaseTime
-                bne MJ_HasDecision
-                ldy #PHASE_ATTACK
-                jsr Random
-                and #$7f
-                adc #$30
-                adc decision
-                bcs MJ_DoMineAttackNext
-                sta decision
-                bpl MJ_DoFlameAttackNext
-MJ_DoMineAttackNext:
-                ldy #PHASE_MINESDOWN
-MJ_DoFlameAttackNext:
-                sty MJ_HasDecision+1
-MJ_HasDecision: lda #PHASE_MINESDOWN
-                cmp #PHASE_MINESDOWN
-                bne MJ_NoEyeAnim
-                ldy phaseTime                   ;If going to do mine attack,
-                cpy #25                         ;darken eye after one second
-                bcc MJ_NoEyeAnim
-                ldy eyeColor                    ;Darken eye now
-                cpy #NUMEYECOLORS-1
-                bcs MJ_NoEyeAnim
-                inc eyeColor
-MJ_NoEyeAnim:   ldy #60
-                jmp MJ_WaitNextPhase
-
-MJ_MinesDown:   lda #$00                        ;Reset mine phase accumulator
-                sta decision
-                lda actT+ACTI_PLAYER            ;If this is the end interlude, no spawning, just go down
-                beq MJ_EndInterludeNoMines
-                jsr MJ_SpawnMines
-                lda screenPos
-                cmp #HEADLOWPOS*4
-                bcs MJ_MinesDownWait
-MJ_EndInterludeNoMines:
-                inc screenPos
-                jmp MJ_MoveShake
-MJ_MinesDownWait:
-                lda #PHASE_MINESUP
-                ldy #25
-                jmp MJ_WaitNextPhase
-
-MJ_MinesUp:     jsr MJ_SpawnMines
-                dec screenPos
-                lda screenPos
-                cmp #HIGHPOS*4
-                bne MJ_MinesUpDone
-                lda #PHASE_WAIT                 ;Always flame at least once after mines
-                jsr MJ_SetPhase
-MJ_MinesUpDone: jmp MJ_MoveShake
-
-MJ_SpawnMines:  lda actAttackD,x
-                bne MJ_SpawnMineDelay
-                jsr GetFreeNPC
-                bcc MJ_NoRoomForMine
-                lda #ACT_ROLLINGMINE
-                jsr SpawnActor
-                tya
-                tax
-                jsr InitActor
-                lda #-12*8
-                sta actSY,x
-                lda #-8*8
-                sta actSX,x
-                lda #$80
-                sta actD,x                      ;Head left
-                lda #AIMODE_BERZERK
-                sta actAIMode,x
-                lda #SFX_SHOTGUN
-                jsr PlaySfx
-                ldx actIndex
-                lda #41
-                sta actAttackD,x
-MJ_SpawnMineDelay:
-                dec actAttackD,x
-MJ_NoRoomForMine:
-                rts
-
-MJ_Destroy:     jsr Random
-                pha
-                and #$03
-                sta shakeScreen
-                pla
-                clc
-                and #$7f
-                adc actFall,x
-                sta actFall,x
-                bcc MJ_NoExplosion
-                jsr GetAnyFreeActor
-                bcc MJ_NoExplosion
-                inc screenPos
-                inc screenPos
-                lda screenPos
-                cmp #LOWPOS*4
-                bcs MJ_DestroyDone
-                lda #$01
-                sta Irq1_Bg3+1
-                lda #$0e
-                sta Irq1_Bg2+1
-                jsr MJ_GetOffsetSub
-                lda temp1
-                sta temp3
-                lda temp2
-                sta temp4
-                jsr MJ_GetOffsetSub
-                jsr SpawnWithOffset
-                tya
-                tax
-                jsr ExplodeActor                ;Play explosion sound & init animation
-                ldx actIndex
-                rts
-MJ_NoExplosion: jmp SetZoneColors
-MJ_DestroyDone: jsr RemoveActor
-                lda #PLOT_DISRUPTCOMMS          ;Communication disrupted?
-                jsr GetPlotBit
-                beq MJ_TriggerEnding            ;If not, game ends now
-                ldy #$33                        ;Exit door opens
-                jsr ActivateObject
-                lda #PLOT_ELEVATOR2             ;Elevator usable now
-                jsr SetPlotBit
-                lda #MUSIC_NETHER
-                jmp PlaySong
-MJ_TriggerEnding:
-                jsr FadeSong
-                jsr ClearPanelText
-                jsr BlankScreen
-                lda #<EP_CONSTRUCTINTERLUDE
-                ldx #>EP_CONSTRUCTINTERLUDE
-                jmp ExecScript
-
-MJ_GetOffsetSub:jsr Random
-                pha
-                sec
-                sbc #15*8
-                sta temp1
-                pla
-                and #$01
-                sbc #$00
-                sta temp2
-MJ_NoRedraw:    rts
-
-MJ_Redraw:      lda screenPos
-                lsr
-                lsr
-                sta temp1
-                cmp lastScreenPos
-                bne MJ_NeedRedraw
-                lda frame
-                cmp lastFrame
-                bne MJ_NeedRedraw
-                lda lastScreenPos               ;Do not redraw eye color if it's clipped to bottom
-                cmp #HEADLOWPOS                 ;(would cause glitch in blank char which is supposed to
-                bcs MJ_NoRedraw                 ;have black color)
-                ldy eyeColor
-                lda eyeColorTbl,y
-                jmp MJ_EraseEye
-MJ_NeedRedraw:  lda #$00
-                sta temp2
-                lda temp1
-                ldy #6
-MJ_MakeActorPos:asl
-                rol temp2
-                dey
-                bne MJ_MakeActorPos
-                and #$c0
-                ldy frame
-                clc
-                adc frameActorYLOfs,y
-                sta actYL,x                     ;Set actor position based on screen position
-                lda temp2
-                adc #$73
-                sta actYH,x
-                lda frameActorXL,y
-                sta actXL,x
-                lda #$f7
-                sta actXH,x
-                lda #$08
-                jsr MJ_EraseEye
-                lda oldHornsPos
-                sta zpDestLo
-                cmp #<(screen2+SCROLLROWS*40)   ;Erase the old horns from the top row
-                lda oldHornsPos+1               ;in case moved down
-                bpl MJ_NoOldPos
-                sta zpDestHi
-                sbc #>(screen2+SCROLLROWS*40)
-                bpl MJ_NoOldPos
-                ldy #10
-                lda #$00
-                sta (zpDestLo),y
-                iny
-                sta (zpDestLo),y
-MJ_NoOldPos:    ldy frame
-                sty lastFrame
-                lda frameTblLo,y
-                sta zpSrcLo
-                lda frameTblHi,y
-                sta zpSrcHi
-                lda temp1
-                sta lastScreenPos
-                ldy #40
-                ldx #<zpDestLo
-                jsr MulU
-                lda #JORMUNGANDR_OFFSETX
-                jsr Add8
-                ldy lastFrame
-                lda zpDestLo
-                clc
-                adc frameEyePosLo,y
-                sta MJ_EyePos+1
-                lda zpDestHi
-                adc frameEyePosHi,y
-                ora #>colors
-                sta MJ_EyePos+2                 ;Calculate & draw new eye color,
-                lda MJ_EyePos+1                 ;if it's not outside screen
-                cmp #<(colors+SCROLLROWS*40)
-                lda MJ_EyePos+2
-                sbc #>(colors+SCROLLROWS*40)
-                bpl MJ_NoNewEye
-                ldy eyeColor
-                lda eyeColorTbl,y
-MJ_EyePos:      sta $1000
-                lda MJ_EyePos+1
-                sta MJ_OldEyePos+1
-                lda MJ_EyePos+2
-                sta MJ_OldEyePos+2
-MJ_NoNewEye:    lda zpDestHi
-                ora #>screen2
-                sta zpDestHi
-                sta oldHornsPos+1               ;Remember last position of the top row (horns)
-                lda zpDestLo
-                sta oldHornsPos
-                lda #JORMUNGANDR_YSIZE
-                sta zpLenLo
-MJ_RowLoop:     lda zpDestLo
-                cmp #<(screen2+SCROLLROWS*40)
-                lda zpDestHi
-                sbc #>(screen2+SCROLLROWS*40)
-                bmi MJ_RowsNotDone
-                jmp MJ_RowsDone
-MJ_RowsNotDone: ldy #0
-                repeat JORMUNGANDR_XSIZE
-                lda (zpSrcLo),y
-                sta (zpDestLo),y
-                iny
-                repend
-                tya
-                clc
-                adc zpSrcLo
-                sta zpSrcLo
-                bcc MJ_NoSrcOver
-                inc zpSrcHi
-                clc
-MJ_NoSrcOver:   lda zpDestLo
-                adc #40
-                sta zpDestLo
-                bcc MJ_NoDestOver
-                inc zpDestHi
-MJ_NoDestOver:  dec zpLenLo
-                beq MJ_RowsDone
-                jmp MJ_RowLoop
-MJ_RowsDone:    ldx actIndex
-                rts
-
-MJ_EraseEye:    ldy MJ_OldEyePos+2
-                bpl MJ_NoOldEye
-MJ_OldEyePos:   sta $1000
-RHW_NoActor:
-RHW_HasItem:
-MJ_NoOldEye:    rts
-
-        ; Jormungandr attack/destroy interlude
+        ; Scientist 2 conversation
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-JormungandrInterlude:
-                lda #$00
-                sta actT+ACTI_PLAYER
-                sta blockX
-                sta scrollSX
-                sta scrollSY
-                lda #$02
-                sta blockY
-                ldx #$f0
-                stx mapX
-                stx actXH+ACTI_PLAYER
-                ldy #$71
-                sty mapY
-                sty actYH+ACTI_PLAYER
-                lda #10
-                jsr ChangeLevel
-                jsr FindPlayerZone
-                jsr RedrawAndAddActors
-                lda #PLOT_RIGTUNNELMACHINE      ;Is this the simultaneous destruction ending, or Jormungandr's revenge?
-                jsr GetPlotBit
-                beq JI_SetHealth
-                lda #$00
-                jsr JI_SpawnScrapMetal
-                lda #$ff
-                jsr JI_SpawnScrapMetal
-                lda #MUSIC_SILENCE              ;Play the silence tune so that explosions can be heard
-                jsr PlaySong
-                lda #$02                        ;Ending 3
-                bpl JI_BeginLoop
-JI_SetHealth:   lda #ACT_JORMUNGANDR
-                jsr FindActor
-                inc actHp,x
-                lda #PHASE_WAITDECISION
-                sta phase
-                lda #$01                        ;Ending 2
-                sta phaseTime                   ;Set phasetime nonzero so that the attack type isn't randomized
-JI_BeginLoop:   pha
-                lda #4
-                sta screenPos
-                jsr MJ_NeedRedraw               ;Draw Jormungandr immediately
-JI_Loop:        jsr ScrollLogic
-                jsr DrawActors
-                jsr FinishFrame
-                jsr UpdateActors
-                jsr FinishFrame
-                lda screenPos                   ;Wait until fully descended
-                cmp #LOWPOS*4-2
-                bcc JI_Loop
-                jsr BlankScreen
-                pla
+Scientist2:     ldy #C_SCIENTIST                ;Ensure sprite file on the same frame as first script exec
+                jsr EnsureSpriteFile
+                lda actXH+ACTI_PLAYER           ;Wait until player close enough
+                cmp #$37
+                bcc S2_Wait
+                cmp #$3c
+                bcs S2_Wait
+                lda actYH+ACTI_PLAYER
+                cmp #$29
+                bcs S2_Wait
+                lda actMB+ACTI_PLAYER
+                lsr
+                bcc S2_Wait
+                lda scriptVariable
+                asl
                 tay
-                lda #<EP_ENDSEQUENCE            ;Now run the actual endsequence
-                ldx #>EP_ENDSEQUENCE
-                jmp ExecScriptParam
+                lda S2_JumpTbl,y
+                sta S2_Jump+1
+                lda S2_JumpTbl+1,y
+                sta S2_Jump+2
+S2_Jump:        jmp $0000
+S2_Wait:        rts
 
-JI_SpawnScrapMetal:
-                pha
-                jsr GetAnyFreeActor
-                tya
-                tax
-                lda #$f5
-                sta actXH,x
-                lda #$74
-                sta actYH,x
-                pla
-                sta actXL,x
-                sta actYL,x
-                lda #$05
-                sta actTime,x
-                lda #$ff
-                sta actSX,x
-                sta actSY,x
-                lda #ACT_EXPLOSIONGENERATOR
-                sta actT,x
-                jmp EE_SpawnScrapMetal
+S2_JumpTbl:     dc.w S2_Dialogue1
+                dc.w S2_Dialogue2
+                dc.w S2_Dialogue3
+                dc.w S2_Dialogue4
 
-        ; Variables
+S2_Dialogue1:   jsr AddQuestScore
+                inc scriptVariable
+                ldy lvlDataActBitsStart+$04
+                lda lvlStateBits,y              ;Enable rotordrone now
+                ora #$04
+                sta lvlStateBits,y
+                ldy #ACT_SCIENTIST2
+                gettext txtParkingGarage1
+                jmp SpeakLine
 
-screenPos:      dc.b 0
-lastScreenPos:  dc.b 0
-frame:          dc.b 0
-lastFrame:      dc.b 0
-phase:          dc.b 0
-phaseTime:      dc.b 0
-decision:       dc.b 0
-eyeColor:       dc.b 0
-oldHornsPos:    dc.w 0
+S2_Dialogue2:   inc scriptVariable
+                ldy #ACT_SCIENTIST3
+                gettext txtParkingGarage2
+                jmp SpeakLine
 
-        ; Phase jumptable
+S2_Dialogue3:   inc scriptVariable
+                ldy #ACT_SCIENTIST2
+                gettext txtParkingGarage3
+                jmp SpeakLine
 
-phaseJumpLo:    dc.b <MJ_Rise
-                dc.b <MJ_Wait
-                dc.b <MJ_Attack
-                dc.b <MJ_WaitDecision
-                dc.b <MJ_MinesDown
-                dc.b <MJ_MinesUp
+S2_Dialogue4:   lda #ITEM_COMMGEAR
+                ldx #1
+                jsr AddItem
+                ldx actIndex
+                lda #$00
+                sta temp4
+                lda #ITEM_SECURITYPASS
+                jsr DI_ItemNumber
+                lda actD,x
+                asl
+                lda #$7f
+                adc #$00
+                ldx temp8
+                jsr MoveActorX                  ;Move item to scientist's facing direction
+                lda #-16*8
+                jsr MoveActorY
+                lda #SFX_PICKUP
+                jsr PlaySfx
+                lda #$00
+                sta actScriptF                  ;No more script exec here
+                ldy #ACT_SCIENTIST2
+                gettext txtParkingGarage4
+                jmp SpeakLine
 
-phaseJumpHi:    dc.b >MJ_Rise
-                dc.b >MJ_Wait
-                dc.b >MJ_Attack
-                dc.b >MJ_WaitDecision
-                dc.b >MJ_MinesDown
-                dc.b >MJ_MinesUp
+        ; Computer in garage script
+        ;
+        ; Parameters: -
+        ; Returns: -
+        ; Modifies: various
 
-        ; Frame related data
+GarageComputer: jsr SetupTextScreen
+                gettext txtGarageComputer
+                ldy #0
+                sty temp1
+                sty temp2
+                jsr PrintMultipleRows
+                jsr WaitForExit
+                jmp CenterPlayer
 
-frameTblLo:     dc.b <frame0,<frame1
-frameTblHi:     dc.b >frame0,>frame1
-frameEyePosLo:  dc.b <247,<286
-frameEyePosHi:  dc.b >247,>286
-frameActorYLOfs:dc.b $40,$80
-frameActorXL:   dc.b $40,$00
+        ; Messages
 
-hitColorTbl:    dc.b $01,$0e
+txtParkingGarage1:
+                dc.b 34,"I SEE VIKTOR DIDN'T MAKE IT. BUT YOU DID, THAT'S WHAT COUNTS. AMOS, NANOSURGEON. SHE'S LINDA, CYBER-PSYCHOLOGIST. "
+                dc.b "YOU'VE SEEN HOW OUR CREATIONS HAVE TURNED ON US. TOTAL INTERNET AND PHONE BLACKOUT. WE'RE STUCK AND HELP IS UNLIKELY. "
+                dc.b "AS THE ONLY ENHANCED PERSON IN THIS ROOM, RIGHT NOW YOU'RE OUR BEST BET.",34,0
 
-fireWaveTbl:    dc.b 3,6,9,12,15,18,21,24,21,18,15,12,9,6,3,0
+txtParkingGarage2:
+                dc.b 34,"COMMON SENSE WOULD DICTATE WE ATTEMPT TO ESCAPE. BUT THESE MACHINES' HIGHLY COORDINATED ACTIONS "
+                dc.b "SUGGEST A CENTRAL AI, WHICH I DIDN'T KNOW WE HAD DEVELOPED. "
+                dc.b "THERE MAY BE MORE THAN OUR LIVES AT STAKE.",34,0
 
-eyeColorTbl:    dc.b $09,$0f,$0f,$0f,$0f,$0a
+txtParkingGarage3:
+                dc.b 34,"YES. WE MUST FIND OUT THEIR ULTIMATE AIM BEYOND JUST KILLING EVERYONE. "
+                dc.b "TAKE THIS SECURITY PASS TO ACCESS THE UPPER LABS, PLUS A WIRELESS CAMERA/RADIO "
+                dc.b "SET SO WE CAN STAY IN TOUCH.",34,0
 
-        ; Char graphics
+txtParkingGarage4:
+                dc.b 34,"GOOD LUCK.",34,0
 
-frame0:         dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$d1,$d2,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$d3,$d4,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$4c,$4d,$4e,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$4f,$50,$51,$52,$5b,$5c,$5d,$5e,$67,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$49,$53,$54,$55,$56,$5f,$60,$61,$62,$68,$69,$6a,$00
-                dc.b $00,$00,$00,$00,$00,$00,$4a,$4b,$57,$58,$59,$5a,$63,$64,$65,$66,$00,$6b,$6c,$00
-                dc.b $00,$00,$00,$00,$6d,$6e,$6f,$70,$7d,$7e,$7f,$fe,$87,$88,$89,$8a,$00,$00,$97,$00
-                dc.b $00,$00,$6d,$a0,$71,$72,$73,$f7,$80,$81,$82,$fe,$8b,$8c,$8d,$8e,$00,$98,$99,$00
-                dc.b $00,$a1,$a2,$a3,$75,$76,$77,$78,$83,$84,$85,$86,$8f,$90,$91,$92,$9a,$9b,$9c,$00
-                dc.b $00,$a4,$a5,$a6,$79,$7a,$7b,$7c,$fe,$fe,$fe,$fe,$93,$94,$95,$96,$9d,$9e,$9f,$00
-                dc.b $00,$a7,$a8,$a9,$ab,$ac,$fe,$ad,$b6,$78,$b7,$b8,$bc,$bd,$be,$bf,$c7,$c8,$c9,$00
-                dc.b $00,$00,$00,$aa,$ae,$af,$b0,$b1,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca,$cb,$00,$00
-                dc.b $00,$00,$00,$00,$00,$b2,$b3,$6a,$00,$00,$00,$bb,$c1,$fe,$fe,$c2,$cc,$cd,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$b4,$b5,$00,$00,$00,$74,$c3,$c4,$c5,$c6,$ce,$9d,$6a,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$cf,$fe,$fe,$fe,$fe,$bf,$c7,$d0,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca,$cb,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$bb,$c1,$fe,$fe,$c2,$cc,$cd,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$74,$c3,$c4,$c5,$c6,$ce,$9d,$6a
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$cf,$fe,$fe,$fe,$fe,$bf,$c7,$d0
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca,$cb
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$bb,$c1,$fe,$fe,$c2,$cc,$cd
-
-frame1:         dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$d1,$d2,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$d3,$d4,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$4c,$4d,$4e,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$4f,$50,$51,$52,$5b,$5c,$5d,$5e,$67,$00,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$00,$49,$53,$54,$55,$56,$5f,$60,$61,$62,$68,$69,$6a,$00,$00
-                dc.b $00,$00,$00,$00,$00,$4a,$4b,$57,$58,$59,$5a,$63,$64,$65,$66,$00,$6b,$6c,$00,$00
-                dc.b $00,$00,$00,$6d,$6e,$6f,$70,$7d,$7e,$7f,$fe,$87,$88,$89,$8a,$00,$00,$97,$00,$00
-                dc.b $00,$6d,$a0,$71,$72,$73,$f7,$80,$81,$82,$fe,$8b,$8c,$8d,$8e,$00,$98,$99,$00,$00
-                dc.b $a1,$a2,$a3,$75,$76,$77,$78,$83,$84,$85,$86,$8f,$90,$91,$92,$9a,$9b,$9c,$00,$00
-                dc.b $a4,$a5,$a6,$79,$7a,$7b,$7c,$fe,$fe,$fe,$fe,$93,$94,$95,$96,$9d,$9e,$9f,$00,$00
-                dc.b $a7,$a8,$a9,$ab,$ac,$fe,$ad,$b6,$78,$b7,$b8,$bc,$bd,$be,$bf,$c7,$c8,$c9,$00,$00
-                dc.b $00,$00,$aa,$ae,$af,$b0,$b1,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca,$cb,$00,$00,$00
-                dc.b $00,$00,$00,$00,$b2,$b3,$6a,$00,$00,$00,$bb,$c1,$fe,$fe,$c2,$cc,$ff,$00,$00,$00
-                dc.b $00,$00,$00,$00,$00,$b4,$b5,$00,$00,$00,$74,$c3,$fe,$c4,$c5,$c6,$ce,$9d,$6a,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$cf,$fe,$fe,$fe,$fe,$bf,$c7,$d0,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca,$cb,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$bb,$c1,$fe,$fe,$c2,$cc,$cd,$00
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$74,$c3,$c4,$c5,$c6,$ce,$9d,$6a
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$cf,$fe,$fe,$fe,$fe,$bf,$c7,$d0
-                dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$b9,$ba,$fe,$c0,$fe,$fe,$ca,$cb
+txtGarageComputer:
+                     ;0123456789012345678901234567890123456789
+                dc.b "SEQUENCE OF EVENTS:",0
+                dc.b " ",0
+                dc.b "1. 'HESSIAN' PROJECT CANCELLED",0
+                dc.b "2. NORMAN GOES MISSING",0
+                dc.b "3. ???",0
+                dc.b "4. LOSS OF OUTSIDE CONNECTIVITY",0
+                dc.b "5. COMBAT ROBOTS ATTACK PERSONEL,",0
+                dc.b "   CONTROL OVER THEM LOST",0,0
 
                 checkscriptend

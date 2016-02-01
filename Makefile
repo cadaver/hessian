@@ -32,6 +32,7 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	script00.pak script01.pak script02.pak script03.pak script04.pak script05.pak script06.pak script07.pak \
 	script08.pak script09.pak script10.pak script11.pak script12.pak script13.pak script14.pak script15.pak \
 	script16.pak script17.pak script18.pak script19.pak script20.pak script21.pak script22.pak script23.pak \
+	script24.pak \
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
@@ -39,8 +40,7 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
 	sprsmallrobots.pak sprhazards.pak sprhazards2.pak spranimals.pak sprmediumrobots.pak sprguard.pak sprheavyguard.pak \
 	sprcombatrobot.pak sprlargewalker.pak sprlargetank.pak sprhighwalker.pak sprhazmat.pak sprserver.pak sprsecuritychief.pak \
-	sprrotordrone.pak sprlargespider.pak sprscientist.pak sprhacker.pak \
-	cutscene1.pak cutscene2.pak cutscene3.pak
+	sprrotordrone.pak sprlargespider.pak sprscientist.pak sprhacker.pak
 	maked64 hessian.d64 hessian.seq HESSIAN___________HE_2A 10
 	reorder hessian.d64
 
@@ -204,24 +204,6 @@ upgrade.pak: spr/sight.spr bg/upgrade.chr upgrade.s
 	dasm upgrade.s -oupgrade.bin -f3
 	pack2 upgrade.bin upgrade.pak
 
-cutscene1.pak: pics/cutscene1.iff cutscene1.s mainsym.s
-	pic2chr pics/cutscene1.iff cutscene1.chr -m11 -n12 -x28 -y11 -c -s
-	pic2chr pics/cutscene1.iff cutscene1scr.dat -m11 -n12 -x28 -y11 -t
-	dasm cutscene1.s -ocutscene1.bin -f3
-	pack2 cutscene1.bin cutscene1.pak
-
-cutscene2.pak: pics/cutscene2.iff cutscene2.s mainsym.s
-	pic2chr pics/cutscene2.iff cutscene2.chr -m11 -n12 -x28 -y11 -c -s
-	pic2chr pics/cutscene2.iff cutscene2scr.dat -m11 -n12 -x28 -y11 -t
-	dasm cutscene2.s -ocutscene2.bin -f3
-	pack2 cutscene2.bin cutscene2.pak
-
-cutscene3.pak: pics/cutscene3.iff cutscene3.s mainsym.s
-	pic2chr pics/cutscene3.iff cutscene3.chr -m11 -n12 -x28 -y11 -c -s
-	pic2chr pics/cutscene3.iff cutscene3scr.dat -m11 -n12 -x28 -y11 -t
-	dasm cutscene3.s -ocutscene3.bin -f3
-	pack2 cutscene3.bin cutscene3.pak
-
 script00.pak: script00.s memory.s mainsym.s
 	dasm script00.s -oscript00.bin -f3
 	pack2 script00.bin script00.pak
@@ -317,6 +299,10 @@ script22.pak: script22.s memory.s mainsym.s
 script23.pak: script23.s memory.s mainsym.s
 	dasm script23.s -oscript23.bin -f3
 	pack2 script23.bin script23.pak
+
+script24.pak: script24.s memory.s mainsym.s
+	dasm script24.s -oscript24.bin -f3
+	pack2 script24.bin script24.pak
 
 loadermusic.bin: music/hessianmusic.d64
 	d642prg music/hessianmusic.d64 loader.bin loadermusic.bin -h

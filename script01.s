@@ -1,13 +1,12 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 1, intro conversations
+        ; Script 1, intro cutscene & conversation
 
                 org scriptCodeStart
 
                 dc.w Scientist1
-                dc.w Scientist2
-                dc.w GarageComputer
+                dc.w IntroCutscene
 
         ; Scientist 1 (intro) move routine & conversation
         ;
@@ -130,98 +129,140 @@ S1_LimitLeft:   and joystick
                 sta joystick
                 rts
 
-        ; Scientist 2 conversation
+        ; Intro cutscene (text display at top of screen)
         ;
-        ; Parameters: -
+        ; Parameters: X actor number
         ; Returns: -
         ; Modifies: various
 
-Scientist2:     ldy #C_SCIENTIST                ;Ensure sprite file on the same frame as first script exec
-                jsr EnsureSpriteFile
-                lda actXH+ACTI_PLAYER           ;Wait until player close enough
-                cmp #$37
-                bcc S2_Wait
-                cmp #$3c
-                bcs S2_Wait
-                lda actYH+ACTI_PLAYER
-                cmp #$29
-                bcs S2_Wait
-                lda actMB+ACTI_PLAYER
-                lsr
-                bcc S2_Wait
-                lda scriptVariable
+IntroCutscene:  jsr FindPlayerZone
+                lda #MUSIC_MYSTERY
+                jsr PlaySong
+                lda #$01                        ;Redraw manually to avoid the update performed by CenterPlayer
+                sta blockX                      ;which would cause a small glitch in the player positioning
+                lda #$02
+                sta blockY
+                lda #$64
+                sta mapX
+                lda #$16
+                sta mapY
+                jsr RedrawAndAddActors
+                lda #$00                        ;Same Y-scroll as textscreen
+                sta scrollY
+                sta page
+                sta textFade
+                jsr SL_NewMapPos
+                jsr IC_SetPlayerPosition
+                jsr DrawActors                  ;Draw actors once to ensure sprites have been loaded
+                jsr IC_InitTextDisplay
+IC_Loop:        lda textFade
+                bne IC_NoNextPage
+                lda page
+                cmp #2
+                bcs IC_BeginGame
                 asl
                 tay
-                lda S2_JumpTbl,y
-                sta S2_Jump+1
-                lda S2_JumpTbl+1,y
-                sta S2_Jump+2
-S2_Jump:        jmp $0000
-S2_Wait:        rts
-
-S2_JumpTbl:     dc.w S2_Dialogue1
-                dc.w S2_Dialogue2
-                dc.w S2_Dialogue3
-                dc.w S2_Dialogue4
-
-S2_Dialogue1:   jsr AddQuestScore
-                inc scriptVariable
-                ldy lvlDataActBitsStart+$04
-                lda lvlStateBits,y              ;Enable rotordrone now
-                ora #$04
-                sta lvlStateBits,y
-                ldy #ACT_SCIENTIST2
-                gettext txtParkingGarage1
-                jmp SpeakLine
-
-S2_Dialogue2:   inc scriptVariable
-                ldy #ACT_SCIENTIST3
-                gettext txtParkingGarage2
-                jmp SpeakLine
-
-S2_Dialogue3:   inc scriptVariable
-                ldy #ACT_SCIENTIST2
-                gettext txtParkingGarage3
-                jmp SpeakLine
-
-S2_Dialogue4:   lda #ITEM_COMMGEAR
-                ldx #1
-                jsr AddItem
-                ldx actIndex
-                lda #$00
-                sta temp4
-                lda #ITEM_SECURITYPASS
-                jsr DI_ItemNumber
-                lda actD,x
-                asl
-                lda #$7f
-                adc #$00
-                ldx temp8
-                jsr MoveActorX                  ;Move item to scientist's facing direction
-                lda #-16*8
-                jsr MoveActorY
-                lda #SFX_PICKUP
-                jsr PlaySfx
-                lda #$00
-                sta actScriptF                  ;No more script exec here
-                ldy #ACT_SCIENTIST2
-                gettext txtParkingGarage4
-                jmp SpeakLine
-
-        ; Computer in garage script
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-GarageComputer: jsr SetupTextScreen
-                gettext txtGarageComputer
+                lda pageTbl,y
+                sta zpSrcLo
+                lda pageTbl+1,y
+                sta zpSrcHi
                 ldy #0
-                sty temp1
-                sty temp2
-                jsr PrintMultipleRows
-                jsr WaitForExit
-                jmp CenterPlayer
+IC_PrintText:   lda (zpSrcLo),y
+                sta panelScreen,y
+                iny
+                cpy #5*40
+                bne IC_PrintText
+                inc page
+                lda #1
+                sta textFadeDir
+IC_NoNextPage:  jsr IC_Update
+                jmp IC_Loop
+IC_BeginGame:   lda #FR_JUMP+1
+                sta actF1+ACTI_PLAYER
+                sta actF2+ACTI_PLAYER
+                jsr WaitBottom
+                jsr IC_StopTextDisplay
+                jmp StartMainLoop
+
+IC_SetPlayerPosition:
+                lda #$00
+                sta actD+ACTI_PLAYER
+                sta actSY+ACTI_PLAYER
+                sta actMB+ACTI_PLAYER
+                lda #FR_DIE
+                sta actF1+ACTI_PLAYER
+                lda #FR_STAND
+                sta actF2+ACTI_PLAYER
+                lda #$b8
+                sta actYL+ACTI_PLAYER
+                lda #$1a
+                sta actYH+ACTI_PLAYER
+                rts
+
+IC_Update:      jsr FinishFrame
+                jsr GetControls
+                lda textFadeDir
+                beq IC_TextDone
+                clc
+                adc textFade
+                sta textFade
+                bpl IC_TextNotOverLow
+                inc textFade
+                beq IC_StopTextFade
+IC_TextNotOverLow:
+                cmp #12
+                bcc IC_TextNotOverHigh
+IC_StopTextFade:lda #0
+                sta textFadeDir
+IC_TextNotOverHigh:
+                lda textFade
+                lsr
+                lsr
+                tay
+                lda textFadeTbl,y
+                ldx #5*40
+                jsr IC_SetTextColor
+IC_TextDone:    jsr GetFireClick
+                bcs IC_StartPageFade
+                lda keyType
+                bmi IC_NoPageFade
+IC_StartPageFade:
+                lda #-1
+                sta textFadeDir
+IC_NoPageFade:  rts
+
+IC_InitTextDisplay:
+                jsr WaitBottom
+                ldx #6*40
+                lda #$00
+                jsr IC_SetTextColor
+                lda #54+5*8+1
+                sta Irq6_Irq1Pos+1              ;Show text in the top of screen
+                sta Irq6_LevelUpdate+1          ;Allow level animation
+                rts
+
+IC_StopTextDisplay:
+                jsr WaitBottom
+                ldx #6*40
+                lda #$00
+                jsr IC_SetTextColor
+                lda #IRQ1_LINE
+                sta Irq6_Irq1Pos+1
+                jmp PostLoad
+
+IC_SetTextColor:sta colors-1,x
+                dex
+                bne IC_SetTextColor
+                rts
+
+        ; Tables / variables
+
+page:           dc.b 0
+textFade:       dc.b 0
+textFadeDir:    dc.b 0
+textFadeTbl:    dc.b $00,$06,$03,$01
+pageTbl:        dc.w page1
+                dc.w page2
 
         ; Messages
 
@@ -231,33 +272,17 @@ txtIntro2:      dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'L
                 dc.b "WATCH OUT FOR MORE OF THOSE BASTARDS.. AND ONE FINAL THING - THE NANOBOTS RUNNING YOUR BODY DEPEND ON BATTERY POWER. "
                 dc.b "DON'T RUN OUT.",34,0
 
-txtParkingGarage1:
-                dc.b 34,"I SEE VIKTOR DIDN'T MAKE IT. BUT YOU DID, THAT'S WHAT COUNTS. AMOS, NANOSURGEON. SHE'S LINDA, CYBER-PSYCHOLOGIST. "
-                dc.b "YOU'VE SEEN HOW OUR CREATIONS HAVE TURNED ON US. TOTAL INTERNET AND PHONE BLACKOUT. WE'RE STUCK AND HELP IS UNLIKELY. "
-                dc.b "AS THE ONLY ENHANCED PERSON IN THIS ROOM, RIGHT NOW YOU'RE OUR BEST BET.",34,0
+page1:               ;0123456789012345678901234567890123456789
+                dc.b "KIM, A SECURITY GUARD WORKING THE NIGHT "
+                dc.b " SHIFT AT THRONE GROUP SCIENCE COMPLEX  "
+                dc.b "WAKES UP INSIDE A CARGO CONTAINER WHICH "
+                dc.b " HAS BEEN CONVERTED INTO AN IMPROVISED  "
+                dc.b "       EMERGENCY OPERATING ROOM.        "
 
-txtParkingGarage2:
-                dc.b 34,"COMMON SENSE WOULD DICTATE WE ATTEMPT TO ESCAPE. BUT THESE MACHINES' HIGHLY COORDINATED ACTIONS "
-                dc.b "SUGGEST A CENTRAL AI, WHICH I DIDN'T KNOW WE HAD DEVELOPED. "
-                dc.b "THERE MAY BE MORE THAN OUR LIVES AT STAKE.",34,0
-
-txtParkingGarage3:
-                dc.b 34,"YES. WE MUST FIND OUT THEIR ULTIMATE AIM BEYOND JUST KILLING EVERYONE. "
-                dc.b "TAKE THIS SECURITY PASS TO ACCESS THE UPPER LABS, PLUS A WIRELESS CAMERA/RADIO "
-                dc.b "SET SO WE CAN STAY IN TOUCH.",34,0
-
-txtParkingGarage4:
-                dc.b 34,"GOOD LUCK.",34,0
-
-txtGarageComputer:
-                     ;0123456789012345678901234567890123456789
-                dc.b "SEQUENCE OF EVENTS:",0
-                dc.b " ",0
-                dc.b "1. 'HESSIAN' PROJECT CANCELLED",0
-                dc.b "2. NORMAN THRONE GOES MISSING",0
-                dc.b "3. ???",0
-                dc.b "4. LOSS OF OUTSIDE CONNECTIVITY",0
-                dc.b "5. COMBAT ROBOTS ATTACK PERSONEL,",0
-                dc.b "   CONTROL OVER THEM LOST",0,0
+page2:          dc.b "SHE REMEMBERS MULTIPLE HOSTILES OPENING "
+                dc.b "FIRE ON THE STAFF, EVERYTHING FADING TO "
+                dc.b " BLACK AS ROUNDS HAMMER INTO HER CHEST  "
+                dc.b " AND FINALLY A VOICE: ",34,"NEED ARTIFICIAL  "
+                dc.b " CIRCULATION .. NANOBOT INFUSION NOW!",34,"  "
 
                 checkscriptend

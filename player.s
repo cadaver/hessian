@@ -71,7 +71,69 @@ UPG_TOXINFILTER = 128
         ; Returns: -
         ; Modifies: A,Y,temp1-temp8,loader temp vars
 
-MovePlayer:     ldy #$00
+MovePlayer:     ldy #ZONEH_BG3
+                lda (zoneLo),y
+                bmi MP_NoPlayerScroll           ;Scroll-disabled zone?
+MP_ScrollHorizontal:
+                ldy #$00
+                lda actXL+ACTI_PLAYER
+                rol
+                rol
+                rol
+                and #$03
+                sec
+                sbc SL_CSSBlockX+1
+                and #$03
+                sta zpSrcLo
+                lda actXH+ACTI_PLAYER
+                sbc SL_CSSMapX+1
+                asl
+                asl
+                ora zpSrcLo
+                cmp #SCRCENTER_X-1
+                bcs MP_NotLeft1
+                dey
+MP_NotLeft1:    cmp #SCRCENTER_X
+                bcs MP_NotLeft2
+                dey
+MP_NotLeft2:    cmp #SCRCENTER_X+1
+                bcc MP_NotRight1
+                iny
+MP_NotRight1:   cmp #SCRCENTER_X+2
+                bcc MP_NotRight2
+                iny
+MP_NotRight2:   sty scrollSX
+MP_ScrollVertical:
+                ldy #$00
+                lda actYL+ACTI_PLAYER
+                rol
+                rol
+                rol
+                and #$03
+                sec
+                sbc SL_CSSBlockY+1
+                and #$03
+                sta zpSrcLo
+                lda actYH+ACTI_PLAYER
+                sbc SL_CSSMapY+1
+                asl
+                asl
+                ora zpSrcLo
+                cmp #SCRCENTER_Y-2
+                bcs MP_NotUp1
+                dey
+MP_NotUp1:      cmp #SCRCENTER_Y
+                bcs MP_NotUp2
+                dey
+MP_NotUp2:      cmp #SCRCENTER_Y+1
+                bcc MP_NotDown1
+                iny
+MP_NotDown1:    cmp #SCRCENTER_Y+3
+                bcc MP_NotDown2
+                iny
+MP_NotDown2:    sty scrollSY
+MP_NoPlayerScroll:
+                ldy #$00
                 cpy menuMode                    ;When in inventory / dialogue / interaction, no new controls
                 bne MP_SetWeapon
                 ldy actF1+ACTI_PLAYER
