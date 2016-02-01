@@ -26,13 +26,14 @@ clean:
 	-rm e?
 	-rm f?
 
-hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.bin logo.pak upgrade.pak \
+hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.bin \
 	music00.pak music01.pak music02.pak music03.pak music04.pak music05.pak music06.pak music07.pak \
 	music08.pak music09.pak music10.pak music11.pak music12.pak \
 	script00.pak script01.pak script02.pak script03.pak script04.pak script05.pak script06.pak script07.pak \
 	script08.pak script09.pak script10.pak script11.pak script12.pak script13.pak script14.pak script15.pak \
 	script16.pak script17.pak script18.pak script19.pak script20.pak script21.pak script22.pak script23.pak \
 	script24.pak \
+	logo.pak upgrade.pak letter.pak \
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
 	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
@@ -203,6 +204,10 @@ logo.pak: pics/logo.iff logo.s
 upgrade.pak: spr/sight.spr bg/upgrade.chr upgrade.s
 	dasm upgrade.s -oupgrade.bin -f3
 	pack2 upgrade.bin upgrade.pak
+
+letter.pak: bg/letter.chr letter.s mainsym.s
+	dasm letter.s -oletter.bin -f3
+	pack2 letter.bin letter.pak
 
 script00.pak: script00.s memory.s mainsym.s
 	dasm script00.s -oscript00.bin -f3

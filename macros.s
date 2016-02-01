@@ -35,12 +35,6 @@ NEXT_VAR        set NEXT_VAR + {2}
                     err
                 endif
                 endm
-                
-                mac checkcutsceneend
-                if * > screen2+SCROLLROWS*40
-                    err
-                endif
-                endm
 
         ; Text jump. Game texts need to be located between $0000-$7fff to use
 

@@ -23,7 +23,7 @@ titleTexts      = chars+608+168*2
 levelNamesTbl   = chars+$700
 levelNames      = chars+$740
 
-START_LEVEL     = $00                          ;Warehouse container (proper startlocation)
+START_LEVEL     = $00                          ;Warehouse container (proper start location)
 START_X         = $6900
 START_Y         = $1b00
 
@@ -98,6 +98,10 @@ START_Y         = $1b00
 ;START_LEVEL     = $09                          ;Lower labs security center
 ;START_X         = $2680
 ;START_Y         = $5000
+
+;START_LEVEL     = $09                          ;Lower labs security center cell
+;START_X         = $0480
+;START_Y         = $4800
 
 ;START_LEVEL     = $08                          ;Lower labs, old tunnels entrance
 ;START_X         = $6780
@@ -583,9 +587,14 @@ IP_CodeLoop:    if CODE_CHEAT > 0
                 ora #$80                        ;impossible to enter, even by guessing
                 sta codes+MAX_CODES*3-1
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
-                lda #<EP_INTROCUTSCENE
+                if START_LEVEL = $00 && START_Y = $1b00
+                lda #<EP_INTROCUTSCENE          ;Intro works right only in the official start location
                 ldx #>EP_INTROCUTSCENE
                 jmp ExecScript
+                else
+                jsr FindPlayerZone
+                jmp CenterPlayer
+                endif
 
         ; Save options if modified
 

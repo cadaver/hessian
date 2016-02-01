@@ -29,7 +29,20 @@ ThroneChief:    lda #ITEM_BIOMETRICID
                 lda #<EP_BEGINAMBUSH
                 ldx #>EP_BEGINAMBUSH
                 jsr SetScript
-TC_SkipAmbush:  rts
+TC_SkipAmbush:  jsr BlankScreen
+                lda #F_LETTER
+                jsr MakeFileName_Direct
+                lda #<chars
+                ldx #>chars
+                jsr LoadFileRetry
+                jsr chars+$300                  ;Show letter and wait for fire/keypress
+                jsr FindPlayerZone              ;Reload level charset
+                lda actMB+ACTI_PLAYER           ;If player on ground, stop completely
+                lsr
+                bcc TC_NotGrounded
+                lda #$00
+                sta actSX+ACTI_PLAYER
+TC_NotGrounded: jmp CenterPlayer
 
         ; Begin hideout ambush + second Construct briefing
         ;
