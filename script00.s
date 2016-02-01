@@ -582,7 +582,6 @@ IP_CodeLoop:    if CODE_CHEAT > 0
                 lda codes+MAX_CODES*3-1         ;Make the last (nether tunnels) code initially
                 ora #$80                        ;impossible to enter, even by guessing
                 sta codes+MAX_CODES*3-1
-                jsr FindPlayerZone              ;Need to get starting level's charset so that save is named properly
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
                 lda #<EP_SHOWCUTSCENE
                 ldx #>EP_SHOWCUTSCENE
