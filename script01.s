@@ -135,7 +135,8 @@ S1_LimitLeft:   and joystick
         ; Returns: -
         ; Modifies: various
 
-IntroCutscene:  jsr FindPlayerZone
+IntroCutscene:  lda #MUSIC_MYSTERY
+                jsr PlaySong
                 lda #$01                        ;Redraw manually to avoid the update performed by CenterPlayer
                 sta blockX                      ;which would cause a small glitch in the player positioning
                 lda #$02
@@ -152,8 +153,6 @@ IntroCutscene:  jsr FindPlayerZone
                 jsr SL_NewMapPos
                 jsr IC_SetPlayerPosition
                 jsr DrawActors                  ;Draw actors once to ensure sprites have been loaded
-                lda #MUSIC_MYSTERY
-                jsr PlaySong
                 jsr IC_InitTextDisplay
 IC_Loop:        lda textFade
                 bne IC_NoNextPage

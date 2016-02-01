@@ -10,6 +10,7 @@ emptysave.bin 6D
 emptysave.bin 6E
 level00.pak 02
 charset00.pak 12
+script01.pak 45
 level01.pak 03
 level11.pak 0D
 charset01.pak 13
@@ -73,7 +74,6 @@ sprhighwalker.pak 41
 sprserver.pak 42
 sprhazmat.pak 43
 music00.pak 21
-script01.pak 45
 script02.pak 46
 script03.pak 47
 script04.pak 48

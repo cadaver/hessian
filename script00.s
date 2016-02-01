@@ -587,12 +587,12 @@ IP_CodeLoop:    if CODE_CHEAT > 0
                 ora #$80                        ;impossible to enter, even by guessing
                 sta codes+MAX_CODES*3-1
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
+                jsr FindPlayerZone
                 if START_LEVEL = $00 && START_Y = $1b00
                 lda #<EP_INTROCUTSCENE          ;Intro works right only in the official start location
                 ldx #>EP_INTROCUTSCENE
                 jmp ExecScript
                 else
-                jsr FindPlayerZone
                 jmp CenterPlayer
                 endif
 
