@@ -136,8 +136,6 @@ S1_LimitLeft:   and joystick
         ; Modifies: various
 
 IntroCutscene:  jsr FindPlayerZone
-                lda #MUSIC_MYSTERY
-                jsr PlaySong
                 lda #$01                        ;Redraw manually to avoid the update performed by CenterPlayer
                 sta blockX                      ;which would cause a small glitch in the player positioning
                 lda #$02
@@ -154,6 +152,8 @@ IntroCutscene:  jsr FindPlayerZone
                 jsr SL_NewMapPos
                 jsr IC_SetPlayerPosition
                 jsr DrawActors                  ;Draw actors once to ensure sprites have been loaded
+                lda #MUSIC_MYSTERY
+                jsr PlaySong
                 jsr IC_InitTextDisplay
 IC_Loop:        lda textFade
                 bne IC_NoNextPage
@@ -221,7 +221,10 @@ IC_TextNotOverHigh:
                 tay
                 lda textFadeTbl,y
                 ldx #5*40
-                jsr IC_SetTextColor
+IC_SetTextColor:sta colors-1,x
+                dex
+                bne IC_SetTextColor
+                rts
 IC_TextDone:    jsr GetFireClick
                 bcs IC_StartPageFade
                 lda keyType
@@ -249,11 +252,6 @@ IC_StopTextDisplay:
                 lda #IRQ1_LINE
                 sta Irq6_Irq1Pos+1
                 jmp PostLoad
-
-IC_SetTextColor:sta colors-1,x
-                dex
-                bne IC_SetTextColor
-                rts
 
         ; Tables / variables
 
