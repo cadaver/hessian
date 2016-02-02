@@ -83,15 +83,8 @@ TunnelMachineRun:
                 lda tmTime1
                 and #$01
                 sta shakeScreen
-                inc tmTime2
-                lda tmTime2
-                cmp #3
-                bcc TMR_NoSound
-                lda #$00
-                sta tmTime2
-                lda #SFX_GENERATOR
-                jsr PlaySfx
-TMR_NoSound:    lda joystick
+                jsr TMR_Sound
+                lda joystick
                 and #JOY_DOWN
                 bne TMR_Finish
                 lda keyType
@@ -135,10 +128,23 @@ TMR_Finish:     jsr StopScript
 TMR_Drive:      jsr AddQuestScore
                 jsr TMR_Finish
                 jsr RemoveLevelActors
+                jsr DriveTunnelMachine
+                inc $d025                       ;Restore sprite multicolor
                 ldy #$32
                 ldx #ACTI_PLAYER
                 jsr SetActorAtObject
+                jsr FindPlayerZone
                 jmp CenterPlayer
+
+TMR_Sound:      inc tmTime2
+                lda tmTime2
+                cmp #3
+                bcc TMR_NoSound
+                lda #$00
+                sta tmTime2
+                lda #SFX_GENERATOR
+                jsr PlaySfx
+TMR_NoSound:    rts
 
         ; Tunnel machine item installation script routines
         ;
@@ -349,11 +355,152 @@ RadioHackerWarning:
 RHW_NoActor:
 RHW_HasItem:    rts
 
+        ; Drive tunnel machine -sequence
+
+DriveTunnelMachine:
+                jsr BlankScreen
+                lda #$01                        ;Fixed position & screen number for redraw
+                sta blockX
+                lda #$03
+                sta blockY
+                lda #$aa
+                sta mapX
+                sta actXH+ACTI_PLAYER
+                lda #$75
+                sta mapY
+                lda #$77
+                sta actYH+ACTI_PLAYER
+                lda #$00
+                sta scrollOffset
+                ldy #$80                        ;Clear charinfo so that scrap will not stick to the machine
+DTM_ClearCharInfo:
+                sta charInfo,y
+                iny
+                bne DTM_ClearCharInfo
+                jsr FindPlayerZone
+                jsr RedrawScreen
+                lda #$02                        ;Empty some chars of the machine to make it look nicer
+                sta screen2+10*40+17
+                sta screen2+16*40+15
+                sta screen2+16*40+13
+                sta screen2+16*40+21
+                sta screen2+16*40+23
+                sta actXH+ACTI_PLAYER           ;Move player out of view now
+                ldx #$ff
+                stx ECS_LoadedCharSet+1         ;Mark game charset destroyed
+                jsr SetZoneColors
+                lda #$00
+                sta scrollOffset
+                sta tmTime1
+                dec $d025
+DTM_Loop:
+DTM_RedrawBG:   lda scrollOffset
+                lsr
+                sta temp1
+                ldx #$00
+DTM_RedrawLoop: lda screen2+$100,x
+                jsr DTM_GetTunnelChar
+                sta screen2+$100,x
+                tay
+                lda charColors,y
+                sta colors+$100,x
+                lda screen2+$200,x
+                jsr DTM_GetTunnelChar
+                sta screen2+$200,x
+                tay
+                lda charColors,y
+                sta colors+$200,x
+                inx
+                bne DTM_RedrawLoop
+                ldy chars+151*8
+                ldx #$00
+DTM_ScrollChar: lda chars+151*8+1,x
+                sta chars+151*8,x
+                inx
+                cpx #7
+                bcc DTM_ScrollChar
+                sty chars+151*8+7
+                inc scrollOffset
+                jsr SL_CalcSprSub
+                jsr DrawActors
+                jsr FinishFrame
+                ldx #MAX_ACT-1
+DTM_MoveScrap:  lda actT,x
+                beq DTM_MoveNext
+                jsr BounceMotion
+                lda actYH,x                     ;Remove scrap that falls on "floor"
+                cmp #$7a
+                bcc DTM_MoveNext
+                lda #$00
+                sta actT,x
+DTM_MoveNext:   dex
+                bne DTM_MoveScrap
+                jsr InterpolateActors
+                jsr FinishFrame
+                jsr TMR_Sound
+                jsr Random
+                tay
+                and #$03
+                sta shakeScreen
+                cpy #$40
+                bcs DTM_NoSpawn
+                jsr GetAnyFreeActor
+                bcc DTM_NoSpawn
+                lda #ACT_SCRAPMETAL
+                sta actT,y
+                jsr Random
+                and #$7f
+                sta actYL,y
+                and #$03
+                sta actF1,y
+                lda #$b0
+                sta actXH,y
+                sta actXL,y
+                lda #$79
+                sta actYH,y
+                lda #$0b
+                sta actFlash,y
+                jsr Random
+                and #$07
+                adc #-3*8
+                sta actSX,y
+                jsr Random
+                and #$0f
+                adc #-4*8
+                sta actSY,y
+DTM_NoSpawn:    inc tmTime1
+                bmi DTM_Finish
+                jmp DTM_Loop
+DTM_Finish:     ldx #10
+                jsr DTM_DelayLoop
+                lda #SFX_EXPLOSION
+                jsr PlaySfx
+DTM_Delay:      jsr BlankScreen
+                ldx #25
+DTM_DelayLoop:  jsr WaitBottom
+                dex
+                bpl DTM_DelayLoop
+                rts
+DTM_GetTunnelChar:
+                beq DTM_GTCDone
+                cmp #25
+                bcs DTM_GTCDone
+                txa
+                adc temp1
+                tay
+                lda txtRadioDestroyCommon,y
+                and #$0f
+                tay
+                lda rockTbl,y
+DTM_GTCDone:    rts
+
         ; Tables & variables
 
 tmArrowPosTbl:  dc.b 9,14
 tmTime1:        dc.b 0
 tmTime2:        dc.b 0
+scrollOffset:   dc.b 0
+rockTbl:        dc.b 3,5,7,9,10,11,13,17,20,5,9,10,11,17,13,7
 
         ; Messages
 
