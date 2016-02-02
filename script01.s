@@ -152,7 +152,7 @@ IntroCutscene:  lda #MUSIC_MYSTERY
                 sta textFade
                 jsr SL_NewMapPos
                 jsr IC_SetPlayerPosition
-                jsr DrawActors                  ;Draw actors once to ensure sprites have been loaded
+                jsr DrawActors
                 jsr IC_InitTextDisplay
 IC_Loop:        lda textFade
                 bne IC_NoNextPage
@@ -162,15 +162,8 @@ IC_Loop:        lda textFade
                 asl
                 tay
                 lda pageTbl,y
-                sta zpSrcLo
-                lda pageTbl+1,y
-                sta zpSrcHi
-                ldy #0
-IC_PrintText:   lda (zpSrcLo),y
-                sta panelScreen,y
-                iny
-                cpy #5*40
-                bne IC_PrintText
+                ldx pageTbl+1,y
+                jsr PrintPage
                 inc page
                 lda #1
                 sta textFadeDir
@@ -220,9 +213,12 @@ IC_TextNotOverHigh:
                 tay
                 lda textFadeTbl,y
                 ldx #5*40
-IC_SetTextColor:sta colors-1,x
+IC_SetTextColor:pha
+                jsr WaitBottom
+                pla
+IC_STCLoop:     sta colors-1,x
                 dex
-                bne IC_SetTextColor
+                bne IC_STCLoop
                 rts
 IC_TextDone:    jsr GetFireClick
                 bcs IC_StartPageFade
@@ -234,23 +230,57 @@ IC_StartPageFade:
 IC_NoPageFade:  rts
 
 IC_InitTextDisplay:
-                jsr WaitBottom
+                lda #<textSplit
+                sta Irq5_Get+1
+                lda #>textSplit
+                sta Irq5_Get+2
                 ldx #6*40
                 lda #$00
                 jsr IC_SetTextColor
-                lda #54+5*8+1
-                sta Irq6_Irq1Pos+1              ;Show text in the top of screen
-                sta Irq6_LevelUpdate+1          ;Allow level animation
+                ldx #39
+                lda #32
+IC_SetEmptyRow: sta screen1+5*40,x              ;Set row below the text empty to hide the split
+                dex
+                bpl IC_SetEmptyRow
+                inc Irq6_LevelUpdate+1          ;Allow level animation
+                inc Irq6_SplitMode+1            ;Start split mode
                 rts
 
 IC_StopTextDisplay:
-                jsr WaitBottom
                 ldx #6*40
                 lda #$00
                 jsr IC_SetTextColor
-                lda #IRQ1_LINE
-                sta Irq6_Irq1Pos+1
-                jmp PostLoad
+                sta Irq6_SplitMode+1            ;End split mode
+                rts
+
+PrintTextCenterContinue:
+                lda #20
+                sta temp1
+                ldy #$00
+PTC_Loop:       lda (zpSrcLo),y
+                bmi PTC_SetAbsolute
+                beq PTC_Continue
+                iny
+                lda (zpSrcLo),y
+                beq PTC_Continue
+                iny
+                dec temp1
+                bpl PTC_Loop
+PTC_SetAbsolute:and #$7f
+                sta temp1
+                jsr PT_Done                     ;Skip the negative byte, then print normally
+PTC_Continue:   jmp PT_Continue
+
+PrintPage:      ldy #$00
+                sty temp2
+                sta zpSrcLo
+                stx zpSrcHi
+PP_Loop:        jsr PrintTextCenterContinue
+                inc temp2
+                lda temp2
+                cmp #$05
+                bcc PP_Loop
+                rts
 
         ; Tables / variables
 
@@ -261,6 +291,9 @@ textFadeTbl:    dc.b $00,$06,$03,$01
 pageTbl:        dc.w page1
                 dc.w page2
 
+textSplit:      dc.b $18,TEXTSCR_D018           ;Show screen1 with text charset
+                dc.b 54+5*8+1                   ;Resume gamescreen below
+
         ; Messages
 
 txtIntro1:      dc.b 34,"GOOD, YOU'RE ON YOUR FEET. I'M VIKTOR - WE NEED TO REACH THE OTHERS, WHO ARE HOLED UP ON THE PARKING GARAGE BOTTOM LEVEL. FOLLOW ME.",34,0
@@ -270,16 +303,16 @@ txtIntro2:      dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'L
                 dc.b "DON'T RUN OUT.",34,0
 
 page1:               ;0123456789012345678901234567890123456789
-                dc.b "KIM, A SECURITY GUARD WORKING THE NIGHT "
-                dc.b " SHIFT AT THRONE GROUP SCIENCE COMPLEX  "
-                dc.b "WAKES UP INSIDE A CARGO CONTAINER WHICH "
-                dc.b " HAS BEEN CONVERTED INTO AN IMPROVISED  "
-                dc.b "       EMERGENCY OPERATING ROOM.        "
+                dc.b "KIM, A SECURITY GUARD WORKING THE NIGHT",0
+                dc.b "SHIFT AT THRONE GROUP SCIENCE COMPLEX",0
+                dc.b "WAKES UP INSIDE A CARGO CONTAINER WHICH",0
+                dc.b "HAS BEEN CONVERTED INTO AN IMPROVISED",0
+                dc.b "EMERGENCY OPERATING ROOM.",0
 
-page2:          dc.b "SHE REMEMBERS MULTIPLE HOSTILES OPENING "
-                dc.b "FIRE ON THE STAFF, EVERYTHING FADING TO "
-                dc.b " BLACK AS ROUNDS HAMMER INTO HER CHEST  "
-                dc.b " AND FINALLY A VOICE: ",34,"NEED ARTIFICIAL  "
-                dc.b " CIRCULATION .. NANOBOT INFUSION NOW!",34,"  "
+page2:          dc.b "SHE REMEMBERS MULTIPLE HOSTILES OPENING",0
+                dc.b "FIRE ON THE STAFF, EVERYTHING FADING TO",0
+                dc.b "BLACK AS ROUNDS HAMMER INTO HER CHEST",0
+                dc.b "AND FINALLY A VOICE: ",34,"NEED ARTIFICIAL",0
+                dc.b "CIRCULATION .. NANOBOT INFUSION NOW!",34,0
 
                 checkscriptend

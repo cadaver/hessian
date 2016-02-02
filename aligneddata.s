@@ -1,6 +1,3 @@
-healthBarPosTbl:dc.b 50,64
-timeMaxTbl:     dc.b 99,60,60,50
-
                 org (* + $ff) & $ff00
 
         ; Sprite cache / depacking tables
@@ -124,7 +121,8 @@ colorJumpTblLo: dc.b <SW_ShiftColorsUp
                 dc.b <SW_ShiftColorsDown
                 dc.b <SW_ShiftColorsDown
 
-d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,TEXTSCR_D018,GAMESCR1_D018+1
+rockSizeTbl:    dc.b 9,7,5
+rockDamageTbl:  dc.b DMG_ROCK,DMG_ROCK-1,0
 
                 org nextSliceTbl+$c0+21
                 dc.b $c0+22,$c0+23,$c0+42
@@ -140,13 +138,8 @@ colorJumpTblHi: dc.b >SW_ShiftColorsUp
                 dc.b >SW_ShiftColorsDown
                 dc.b >SW_ShiftColorsDown
 
-targetListAndTbl:
-                dc.b 0                          ;1 potential targets
-                dc.b 1                          ;2 potential targets
-                dc.b 3                          ;3 potential targets
-                dc.b 3                          ;4 potential targets
-                dc.b 7                          ;5 potential targets
-                dc.b 7                          ;6 potential targets
+healthBarPosTbl:dc.b 50,64
+timeMaxTbl:     dc.b 99,60,60,50
 
                 org nextSliceTbl+$c0+42
                 dc.b $c0+43,$c0+44,0
@@ -413,6 +406,7 @@ fileAge:        ds.b MAX_CHUNKFILES,0
 shiftOffsetTbl: dc.b 6,6,6
                 dc.b 0,0,0
                 dc.b 6,6,6
+d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,TEXTSCR_D018
 
         ; Gameworld & level data (not saved)
 

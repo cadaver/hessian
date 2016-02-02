@@ -640,7 +640,6 @@ CL_NotOver:     stx CL_Current+1
                 beq CL_Done
                 ldy actAITarget,x
                 bmi CL_Done
-                ldy numTargets
                 jsr PickTargetSub               ;Check if another target is closer
                 cmp actAITarget,x
                 beq CL_NoBetterTarget

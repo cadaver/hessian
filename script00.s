@@ -8,6 +8,8 @@ TEXTSTARTROW    = 12
 NUMTEXTROWS     = 8
 NUMTITLEPAGES   = 4
 
+TEXTSPLIT_LINE  = 143
+
 LOAD_GAME       = 0
 SAVE_GAME       = 1
 
@@ -633,8 +635,8 @@ CC_ActivateCheat:
                 eor #$69^$a9
                 sta DrainBatteryRound
                 lda #$01
-                sta Irq1_Bg2+1                  ;Flash logo, then restore colors via the normal fadeout code
-                sta Irq1_Bg3+1
+                sta bgCol2+1                  ;Flash logo, then restore colors via the normal fadeout code
+                sta bgCol3+1
                 sta logoFadeDir
                 dec logoFade
                 jsr WaitBottom
@@ -693,9 +695,9 @@ UC_LogoNotOverHigh:
                 lsr
                 tax
                 lda logoFadeBg2Tbl,x
-                sta Irq1_Bg2+1
+                sta bgCol2+1
                 lda logoFadeBg3Tbl,x
-                sta Irq1_Bg3+1
+                sta bgCol3+1
                 lda logoFade
                 asl
                 and #$f8
@@ -840,8 +842,8 @@ TPD_Done:       rts
 
 PrintPage:      ldy #TEXTSTARTROW
                 sty temp2
-                jsr PrintTextCenter
-                inc temp2
+                sta zpSrcLo
+                stx zpSrcHi
 TitleRowLoop:   jsr PrintTextCenterContinue
                 inc temp2
                 lda temp2
@@ -858,14 +860,18 @@ ResetTitlePageDelay:
                 lda #0
                 sta titlePageDelayLo
                 sta titlePageDelayHi
-FOT_Done:       rts
+                rts
 
         ; Fade logo & text
 
 FadeOutAll:     lda fastLoadMode                ;No fade if using fallback loader
-                beq FOT_Done
+                beq FOA_Done
                 lda #-1
                 sta logoFadeDir
+                jsr FadeOutText
+FOA_Done:       jsr BlankScreen
+                stx Irq6_SplitMode+1            ;End split mode (X=$00 on return)
+FOT_Done:       rts
 
         ; Fade text only
 
@@ -979,14 +985,9 @@ PlaySelectSfx:  lda #SFX_SELECT
 SetupSplitScreen:
                 jsr SetupTextScreen
                 jsr ClearPanelText
-                lda #$03
-                sta screen                      ;Set split screen mode
                 lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE ;Redraw all
                 sta panelUpdateFlags
                 lda #$00
-                sta Irq1_Bg1+1
-                sta Irq1_Bg2+1
-                sta Irq1_Bg3+1
                 sta armorMsgTime                ;Reset armor message if any
                 sta shakeScreen                 ;Clear screen shake from any scripts
                 tax
@@ -996,8 +997,13 @@ ClearColorsLoop:sta colors,x                    ;Set colors for the picture area
                 sta colors+SCROLLROWS*40-$100,x
                 inx
                 bne ClearColorsLoop
+                lda #<textSplitData
+                sta Irq5_Get+1
+                lda #>textSplitData
+                sta Irq5_Get+2
                 dex
                 stx ECS_LoadedCharSet+1         ;Mark game charset destroyed (X=$ff)
+                stx Irq6_SplitMode+1
                 rts
 
         ; Draw chars to screen or colorscreen
@@ -1084,5 +1090,12 @@ npcF:           dc.b $30+AIMODE_TURNTO,$10+AIMODE_TURNTO,$30+AIMODE_TURNTO
 npcT:           dc.b ACT_SCIENTIST2, ACT_SCIENTIST3,ACT_HACKER
 npcWpn:         dc.b $00,$00,$00
 npcOrg:         dc.b 1+ORG_GLOBAL,1+ORG_GLOBAL,4+ORG_GLOBAL
+
+textSplitData:  dc.b $15,$00                            ;Make sure sprites off
+                dc.b $18,GAMESCR1_D018                  ;Use game charset
+bgCol1:         dc.b $21,$00                            ;Logo colors
+bgCol2:         dc.b $22,$00
+bgCol3:         dc.b $23,$00
+                dc.b TEXTSPLIT_LINE                     ;Resume text screen here
 
                 checkscriptend

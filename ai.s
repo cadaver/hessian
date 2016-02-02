@@ -569,9 +569,7 @@ FT_Invalidate:  lda #NOTARGET
 FT_StoreTarget: sta actAITarget,x
 FT_NoTarget:    clc
                 rts
-FT_PickNew:     ldy numTargets
-                beq FT_NoTarget
-                jsr PickTargetSub
+FT_PickNew:     jsr PickTargetSub
                 tay
                 lda actFlags,x                  ;Must not be in same group
                 eor actFlags,y
@@ -666,11 +664,14 @@ GAD_DiagonalUp: and #AB_DIAGONALUP
                 lda #JOY_UP|JOY_FIRE
                 bne GAD_DiagonalCommon
 
-PickTargetSub:  jsr Random
-                and targetListAndTbl-1,y
-                cmp numTargets
-                bcc FT_PickTargetOK
+PickTargetSub:  lda numTargets
+                beq PTS_NoTargets               ;Return player actor index in case no targets
+                jsr Random
+                and #$07
+PTS_Loop:       cmp numTargets
+                bcc PTS_TargetOK
                 sbc numTargets
-FT_PickTargetOK:tay
+                bcs PTS_Loop
+PTS_TargetOK:   tay
                 lda targetList,y
-                rts
+PTS_NoTargets:  rts

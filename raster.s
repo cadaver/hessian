@@ -1,7 +1,6 @@
 IRQ1_LINE       = MIN_SPRY-12
 IRQ3_LINE       = SCROLLROWS*8+44
 IRQ4_LINE       = IRQ3_LINE+8
-IRQ5_LINE       = 143
 IRQ6_LINE       = 248
 
 PANEL_BG2       = $0b
@@ -10,6 +9,16 @@ PANEL_BG3       = $0c
 TEXT_BG1        = $00
 TEXT_BG2        = $0b
 TEXT_BG3        = $0c
+
+        ; IRQ common startup code
+
+StartIrq:       cld
+                sta irqSaveA
+                stx irqSaveX
+                sty irqSaveY
+                lda #$35                        ;Ensure IO memory is available
+                sta $01
+                rts
 
         ; Blank the gamescreen and turn off sprites
         ; (return to normal display by calling UpdateFrame)
@@ -66,6 +75,8 @@ Irq3_Delay:     dex
 
         ; Raster interrupt 1. Show game screen
 
+Irq1_NoSprites: jmp Irq2_AllDone
+
 Irq1:           jsr StartIrq
                 ldx #$00                        ;Reset frame update
                 stx newFrame
@@ -104,15 +115,7 @@ Irq1_NoScreenFrameChange:
                 stx $d030                       ;C128 back to 1MHz
 Irq1_D015:      lda #$00
                 sta $d015
-                bne Irq1_HasSprites
-Irq1_NoSprites: cpy #GAMESCR1_D018+1            ;Use split mode?
-                beq Irq1_SetupTextscreenSplit
-                jmp Irq2_AllDone
-Irq1_SetupTextscreenSplit:
-                lda #<Irq5
-                ldx #>Irq5
-                ldy #IRQ5_LINE
-                jmp SetNextIrq
+                beq Irq1_NoSprites
 Irq1_HasSprites:lda #<Irq2                      ;Set up the sprite display IRQ
                 sta $fffe
                 lda #>Irq2
@@ -326,25 +329,29 @@ Irq6_LevelUpdate:
                 dec $d020
                 endif
 Irq6_NoLevelUpdate:
-                lda #<Irq1                      ;Back to screen top interrupt
+                ldy #IRQ1_LINE
+Irq6_SplitMode: lda #$00                        ;Check for split mode instead of normal IRQ1
+                bne Irq6_BeginSplit
+Irq5_End:       lda #<Irq1                      ;Back to screen top interrupt
                 ldx #>Irq1
-Irq6_Irq1Pos:   ldy #IRQ1_LINE
+Irq6_NextIrqCommon:
                 jmp SetNextIrq
+Irq6_BeginSplit:
+                lda #<Irq5
+                ldx #>Irq5
+                bne Irq6_NextIrqCommon
 
-        ; Raster interrupt 5. Text screen split
+        ; Raster interrupt 5. Generic raster split engine
 
 Irq5:           jsr StartIrq
-Irq5_ScreenValue:
-                lda #TEXTSCR_D018
-                sta $d018
-                jmp Irq2_AllDone
-
-        ; IRQ common startup code
-
-StartIrq:       cld
-                sta irqSaveA
-                stx irqSaveX
-                sty irqSaveY
-                lda #$35                        ;Ensure IO memory is available
-                sta $01
+                ldx #$00                        ;Always sprites off first
+Irq5_Loop:      jsr Irq5_Get                    ;Register index or endmark + split pos
+                tay
+                cpy #$40
+                bcs Irq5_End                    ;Execute IRQ1 at the chosen position after end
+                jsr Irq5_Get
+                sta $d000,y
+                bcc Irq5_Loop
+Irq5_Get:       lda $1000,x
+                inx
                 rts

@@ -23,11 +23,6 @@ humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5
 
 tankSizeAddTbl: dc.b 2,0,6,8
 
-        ; Falling rock properties based on size
-        
-rockSizeTbl:    dc.b 9,7,5
-rockDamageTbl:  dc.b DMG_ROCK,DMG_ROCK-1,0
-
         ; Turret firing ctrl + frame table
 
 turretFrameTbl:

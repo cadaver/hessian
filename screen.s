@@ -448,7 +448,7 @@ UF_WaitDone:    lda scrollX                     ;Copy scrolling and screen numbe
                 ldx screen
                 lda d018Tbl,x
                 sta Irq1_Screen+1
-                cpx #$02                        ;If textscreen or split mode, do not show sprites
+                cpx #$02                        ;If textscreen, do not show sprites
                 bcc UF_ShowSprites
                 lda #$00
                 beq UF_NoSprites2
