@@ -253,32 +253,13 @@ IC_StopTextDisplay:
                 sta Irq6_SplitMode+1            ;End split mode
                 rts
 
-PrintTextCenterContinue:
-                lda #20
-                sta temp1
-                ldy #$00
-PTC_Loop:       lda (zpSrcLo),y
-                bmi PTC_SetAbsolute
-                beq PTC_Continue
-                iny
-                lda (zpSrcLo),y
-                beq PTC_Continue
-                iny
-                dec temp1
-                bpl PTC_Loop
-PTC_SetAbsolute:and #$7f
-                sta temp1
-                jsr PT_Done                     ;Skip the negative byte, then print normally
-PTC_Continue:   jmp PT_Continue
-
 PrintPage:      ldy #$00
-                sty temp2
                 sta zpSrcLo
                 stx zpSrcHi
-PP_Loop:        jsr PrintTextCenterContinue
-                inc temp2
-                lda temp2
-                cmp #$05
+PP_Loop:        lda (zpSrcLo),y
+                sta screen1,y
+                iny
+                cpy #5*40
                 bcc PP_Loop
                 rts
 
@@ -303,16 +284,16 @@ txtIntro2:      dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'L
                 dc.b "DON'T RUN OUT.",34,0
 
 page1:               ;0123456789012345678901234567890123456789
-                dc.b "KIM, A SECURITY GUARD WORKING THE NIGHT",0
-                dc.b "SHIFT AT THRONE GROUP SCIENCE COMPLEX",0
-                dc.b "WAKES UP INSIDE A CARGO CONTAINER WHICH",0
-                dc.b "HAS BEEN CONVERTED INTO AN IMPROVISED",0
-                dc.b "EMERGENCY OPERATING ROOM.",0
+                dc.b " KIM, A SECURITY GUARD WORKING THE NIGHT"
+                dc.b "  SHIFT AT THRONE GROUP SCIENCE COMPLEX "
+                dc.b " WAKES UP INSIDE A CARGO CONTAINER WHICH"
+                dc.b "  HAS BEEN CONVERTED INTO AN IMPROVISED "
+                dc.b "        EMERGENCY OPERATING ROOM.       "
 
-page2:          dc.b "SHE REMEMBERS MULTIPLE HOSTILES OPENING",0
-                dc.b "FIRE ON THE STAFF, EVERYTHING FADING TO",0
-                dc.b "BLACK AS ROUNDS HAMMER INTO HER CHEST",0
-                dc.b "AND FINALLY A VOICE: ",34,"NEED ARTIFICIAL",0
-                dc.b "CIRCULATION .. NANOBOT INFUSION NOW!",34,0
+page2:          dc.b " SHE REMEMBERS MULTIPLE HOSTILES OPENING"
+                dc.b " FIRE ON THE STAFF, EVERYTHING FADING TO"
+                dc.b "  BLACK AS ROUNDS HAMMER INTO HER CHEST "
+                dc.b "  AND FINALLY A VOICE: ",34,"NEED ARTIFICIAL "
+                dc.b "  CIRCULATION .. NANOBOT INFUSION NOW!",34,"  "
 
                 checkscriptend
