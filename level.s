@@ -1233,7 +1233,6 @@ ULO_NoZoneScript:
                 ldy #ZONEH_BG1
                 lda (zoneLo),y                  ;Check for save-disabled zone
                 bmi CenterPlayer
-ULO_SaveAndCenter:
                 jsr SaveCheckpoint              ;Save checkpoint now
                 bmi CenterPlayer                ;N=1 upon returning
 

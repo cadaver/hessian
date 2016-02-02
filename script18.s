@@ -6,6 +6,7 @@
                 org scriptCodeStart
 
 driveTime       = menuCounter
+scrollOffset    = wpnBits
 
                 dc.w TunnelMachine
                 dc.w TunnelMachineItems
@@ -130,21 +131,17 @@ TMR_Drive:      jsr AddQuestScore
                 jsr RemoveLevelActors
                 jsr DriveTunnelMachine
                 inc $d025                       ;Restore sprite multicolor
-                ldy #$32
-                ldx #ACTI_PLAYER
-                jsr SetActorAtObject
-                inc actYH+ACTI_PLAYER           ;Position on ground
-                jsr FindPlayerZone
-                jmp ULO_SaveAndCenter
+                lda #$32
+                jmp ULO_EnterDoorDest           ;Enter the next zone
 
 TMR_Sound:      inc tmSoundTime
                 lda tmSoundTime
                 cmp #3
                 bcc TMR_NoSound
-                lda #$00
-                sta tmSoundTime
                 lda #SFX_GENERATOR
                 jsr PlaySfx
+                lda #$00
+                sta tmSoundTime
 TMR_NoSound:    rts
 
         ; Tunnel machine item installation script routines
@@ -371,13 +368,6 @@ DriveTunnelMachine:
                 sta mapY
                 lda #$77
                 sta actYH+ACTI_PLAYER
-                lda #$00
-                sta scrollOffset
-                ldy #$80                        ;Clear charinfo so that scrap will not stick to the machine
-DTM_ClearCharInfo:
-                sta charInfo,y
-                iny
-                bne DTM_ClearCharInfo
                 jsr FindPlayerZone
                 jsr RedrawScreen
                 lda #$02                        ;Empty some chars of the machine to make it look nicer
@@ -386,46 +376,55 @@ DTM_ClearCharInfo:
                 sta screen2+16*40+13
                 sta screen2+16*40+21
                 sta screen2+16*40+23
-                ldx #$ff
+                lda #$00
+                sta screen2+9*40+26            ;Make the end of the tunnel being dug slightly round
+                sta screen2+16*40+26
+                sta scrollOffset
+                tax                             ;Clear charinfo so that scrap will not stick to the machine
+DTM_ClearCharInfo:
+                sta charInfo,x
+                inx
+                bne DTM_ClearCharInfo
+                dex
                 stx ECS_LoadedCharSet+1         ;Mark game charset destroyed
                 stx actXH+ACTI_PLAYER           ;Move player out of view
                 jsr SetZoneColors
-                lda #$00
-                sta scrollOffset
-                sta driveTime
                 dec $d025                       ;Brown multicolor for the scrap sprites
+                lda #6*25
+                sta driveTime
 DTM_Loop:
 DTM_RedrawBG:   lda scrollOffset
+                inc scrollOffset
                 lsr
                 sta temp1
                 ldx #$00
 DTM_RedrawLoop: lda screen2+$100,x
+                beq DTM_RedrawSkip1
                 jsr DTM_GetTunnelChar
                 sta screen2+$100,x
                 tay
                 lda charColors,y
                 sta colors+$100,x
-                lda screen2+$200,x
+DTM_RedrawSkip1:lda screen2+$200,x
+                beq DTM_RedrawSkip2
                 jsr DTM_GetTunnelChar
                 sta screen2+$200,x
                 tay
                 lda charColors,y
                 sta colors+$200,x
-                inx
+DTM_RedrawSkip2:inx
                 bne DTM_RedrawLoop
                 ldy chars+151*8
-                ldx #$00
-DTM_ScrollChar: lda chars+151*8+1,x
+DTM_ScrollChar: lda chars+151*8+1,x             ;Rotating cutter animation
                 sta chars+151*8,x
                 inx
                 cpx #7
                 bcc DTM_ScrollChar
                 sty chars+151*8+7
-                inc scrollOffset
                 jsr SL_CalcSprSub
                 jsr DrawActors
                 jsr FinishFrame
-                ldx #MAX_ACT-1
+                ldx #ACTI_LASTNPC
 DTM_MoveScrap:  lda actT,x
                 beq DTM_MoveNext
                 jsr BounceMotion
@@ -469,13 +468,20 @@ DTM_MoveNext:   dex
                 and #$0f
                 adc #-4*8
                 sta actSY,y
-DTM_NoSpawn:    inc driveTime
-                bmi DTM_Finish
+DTM_NoSpawn:    dec driveTime
+                beq DTM_Finish
                 jmp DTM_Loop
-DTM_Finish:     ldx #10
-                jsr DTM_DelayLoop
-                lda #SFX_EXPLOSION
+DTM_Finish:     jsr BlankScreen
+                ldy #8
+DTM_ExplLoop:   lda #SFX_EXPLOSION
                 jsr PlaySfx
+                inc PSfx_LastSfx+1              ;Allow playing the same sound again
+                jsr Random
+                and #$07
+                tax
+                jsr DTM_DelayLoop
+                dey
+                bne DTM_ExplLoop
 DTM_Delay:      jsr BlankScreen
                 ldx #25
 DTM_DelayLoop:  jsr WaitBottom
@@ -483,7 +489,6 @@ DTM_DelayLoop:  jsr WaitBottom
                 bpl DTM_DelayLoop
                 rts
 DTM_GetTunnelChar:
-                beq DTM_GTCDone
                 cmp #25
                 bcs DTM_GTCDone
                 txa
@@ -497,7 +502,6 @@ DTM_GTCDone:    rts
 
 tmArrowPosTbl:  dc.b 9,14
 tmSoundTime:    dc.b 0
-scrollOffset:   dc.b 0
 rockTbl:        dc.b 5,9,4,13,17,20,3,5,10,7,11,20,13,3,5,13
                 dc.b 7,3,5,10,17,11,9,8,13,17,10,7,11,20,21,9
 
