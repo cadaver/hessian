@@ -5,6 +5,8 @@
 
                 org scriptCodeStart
 
+driveTime       = menuCounter
+
                 dc.w TunnelMachine
                 dc.w TunnelMachineItems
                 dc.w TunnelMachineRun
@@ -35,8 +37,7 @@ TunnelMachine:  lda scriptF                     ;If the destroy plan script runn
                 jsr GetPlotBit
                 beq TM_NoFuel
                 lda #$00
-                sta tmTime1
-                sta tmTime2
+                sta tmSoundTime
                 sta tmChoice
                 lda #<EP_TUNNELMACHINERUN
                 ldx #>EP_TUNNELMACHINERUN
@@ -79,8 +80,7 @@ TM_AlreadyRigged:
         ; Modifies: various
 
 TunnelMachineRun:
-                inc tmTime1
-                lda tmTime1
+                lda UA_ItemFlashCounter+1
                 and #$01
                 sta shakeScreen
                 jsr TMR_Sound
@@ -133,15 +133,16 @@ TMR_Drive:      jsr AddQuestScore
                 ldy #$32
                 ldx #ACTI_PLAYER
                 jsr SetActorAtObject
+                inc actYH+ACTI_PLAYER           ;Position on ground
                 jsr FindPlayerZone
-                jmp CenterPlayer
+                jmp ULO_SaveAndCenter
 
-TMR_Sound:      inc tmTime2
-                lda tmTime2
+TMR_Sound:      inc tmSoundTime
+                lda tmSoundTime
                 cmp #3
                 bcc TMR_NoSound
                 lda #$00
-                sta tmTime2
+                sta tmSoundTime
                 lda #SFX_GENERATOR
                 jsr PlaySfx
 TMR_NoSound:    rts
@@ -391,8 +392,8 @@ DTM_ClearCharInfo:
                 jsr SetZoneColors
                 lda #$00
                 sta scrollOffset
-                sta tmTime1
-                dec $d025
+                sta driveTime
+                dec $d025                       ;Brown multicolor for the scrap sprites
 DTM_Loop:
 DTM_RedrawBG:   lda scrollOffset
                 lsr
@@ -468,7 +469,7 @@ DTM_MoveNext:   dex
                 and #$0f
                 adc #-4*8
                 sta actSY,y
-DTM_NoSpawn:    inc tmTime1
+DTM_NoSpawn:    inc driveTime
                 bmi DTM_Finish
                 jmp DTM_Loop
 DTM_Finish:     ldx #10
@@ -495,8 +496,7 @@ DTM_GTCDone:    rts
         ; Tables & variables
 
 tmArrowPosTbl:  dc.b 9,14
-tmTime1:        dc.b 0
-tmTime2:        dc.b 0
+tmSoundTime:    dc.b 0
 scrollOffset:   dc.b 0
 rockTbl:        dc.b 5,9,4,13,17,20,3,5,10,7,11,20,13,3,5,13
                 dc.b 7,3,5,10,17,11,9,8,13,17,10,7,11,20,21,9
