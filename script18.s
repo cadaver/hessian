@@ -385,9 +385,9 @@ DTM_ClearCharInfo:
                 sta screen2+16*40+13
                 sta screen2+16*40+21
                 sta screen2+16*40+23
-                sta actXH+ACTI_PLAYER           ;Move player out of view now
                 ldx #$ff
                 stx ECS_LoadedCharSet+1         ;Mark game charset destroyed
+                stx actXH+ACTI_PLAYER           ;Move player out of view
                 jsr SetZoneColors
                 lda #$00
                 sta scrollOffset
@@ -444,7 +444,7 @@ DTM_MoveNext:   dex
                 sta shakeScreen
                 cpy #$40
                 bcs DTM_NoSpawn
-                jsr GetAnyFreeActor
+                jsr GetFreeNPC
                 bcc DTM_NoSpawn
                 lda #ACT_SCRAPMETAL
                 sta actT,y
@@ -487,9 +487,7 @@ DTM_GetTunnelChar:
                 bcs DTM_GTCDone
                 txa
                 adc temp1
-                tay
-                lda txtRadioDestroyCommon,y
-                and #$0f
+                and #$1f
                 tay
                 lda rockTbl,y
 DTM_GTCDone:    rts
@@ -500,7 +498,8 @@ tmArrowPosTbl:  dc.b 9,14
 tmTime1:        dc.b 0
 tmTime2:        dc.b 0
 scrollOffset:   dc.b 0
-rockTbl:        dc.b 3,5,7,9,10,11,13,17,20,5,9,10,11,17,13,7
+rockTbl:        dc.b 5,9,4,13,17,20,3,5,10,7,11,20,13,3,5,13
+                dc.b 7,3,5,10,17,11,9,8,13,17,10,7,11,20,21,9
 
         ; Messages
 
