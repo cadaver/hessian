@@ -70,7 +70,7 @@ DMG_LAUNCHERGRENADE = 48
 DMG_MINE        = 56
 DMG_BAZOOKA     = 64
 DMG_EMP         = 4+NOARMOR                    ;4 damage for 8 frames = 32 total
-DMG_FIRE        = 2
+DMG_FIRE        = 2+NOARMOR
 DMG_SMOKE       = 1+NOARMOR
 DMG_ANIMALBITE  = 4
 DMG_SPIDER      = 1+NOARMOR

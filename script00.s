@@ -1045,10 +1045,9 @@ cheatIndex:     dc.b 0
 
         ; Tables / data
 
-difficultyTxtLo:dc.b <txtCasual, <txtEasy, <txtMedium, <txtHard, <txtInsane
-difficultyTxtHi:dc.b >txtCasual, >txtEasy, >txtMedium, >txtHard, >txtInsane
+difficultyTxtLo:dc.b <txtEasy, <txtMedium, <txtHard, <txtInsane
+difficultyTxtHi:dc.b >txtEasy, >txtMedium, >txtHard, >txtInsane
 
-txtCasual:      dc.b "CASUAL",0
 txtEasy:        dc.b "EASY  ",0
 txtMedium:      dc.b "MEDIUM",0
 txtHard:        dc.b "HARD  ",0

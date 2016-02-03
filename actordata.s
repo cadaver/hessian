@@ -42,13 +42,6 @@ ceilingTurretOfs:
                 dc.b JOY_LEFT|JOY_FIRE,4
                 dc.b 0
 
-        ; Flying enemy freemove directions
-
-flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP
-                dc.b JOY_LEFT|JOY_UP
-                dc.b JOY_RIGHT|JOY_DOWN
-                dc.b JOY_LEFT|JOY_DOWN
-
         ; Actor display data
 
 adMeleeHit      = $0000                         ;Invisible

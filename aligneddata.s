@@ -1,3 +1,7 @@
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
+                
                 org (* + $ff) & $ff00
 
         ; Sprite cache / depacking tables
@@ -318,18 +322,8 @@ sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
 
 keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
-plrDmgModifyTbl:dc.b 4,6,8,12,16
-
-        ; Level properties
-        
-lvlPropertiesStart:
-lvlWaterSplashColor:
-                dc.b 0
-lvlWaterToxinDelay:
-                dc.b 0
-lvlAirToxinDelay:
-                dc.b 0
-lvlPropertiesEnd:
+plrDmgModifyTbl:dc.b 4,8,12,16
+flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP,JOY_LEFT|JOY_UP,JOY_RIGHT|JOY_DOWN,JOY_LEFT|JOY_DOWN
 
         ; Levelobject table (not saved), also reused by the savegame-list
 
@@ -403,9 +397,6 @@ fileAge:        ds.b MAX_CHUNKFILES,0
 
         ; Remaining data
 
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
 d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,TEXTSCR_D018
 
         ; Gameworld & level data (not saved)
@@ -415,6 +406,17 @@ d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,TEXTSCR_D018
                 if LVLDATAACTTOTALSIZE+LVLOBJTOTALSIZE > 255
                     err
                 endif
+
+        ; Level properties
+        
+lvlPropertiesStart:
+lvlWaterSplashColor:
+                dc.b 0
+lvlWaterToxinDelay:
+                dc.b 0
+lvlAirToxinDelay:
+                dc.b 0
+lvlPropertiesEnd:
 
         ; Player/world state
 
