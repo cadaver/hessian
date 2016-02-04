@@ -267,22 +267,17 @@ RSC_NotUp:      lsr
                 ldy #$00
                 beq RSC_HasMove
 
-        ; Construct speaks (todo: replace with cutscene)
+        ; Construct speaks
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-ConstructSpeech:lda #PLOT_RIGTUNNELMACHINE
-                jsr GetPlotBit
-                bne CS_Rigged
-                gettext txtRadioConstructSpeech
+ConstructSpeech:gettext txtRadioConstructSpeech
 RadioMsg:       ldy #ACT_PLAYER
                 jsr SpeakLine
                 lda #SFX_RADIO
                 jmp PlaySfx
-CS_Rigged:      gettext txtRadioConstructSpeechRigged
-                jmp RadioMsg
 
         ; Enter keypad code script
         ;
@@ -569,10 +564,5 @@ txtKeypad7:     dc.b "NETHER TUNNEL",0
 txtRadioConstructSpeech:
                 dc.b 34,"STOP, ENHANCED HUMAN. THIS IS THE CONSTRUCT. YOU MUST BE AWARE OF WHAT HAPPENS IF YOU MANAGE TO DESTROY ME. "
                 dc.b "JORMUNGANDR AWAKENS AND THE AGE OF MAN COMES TO AN END.",34,0
-
-txtRadioConstructSpeechRigged:
-                dc.b 34,"ENHANCED HUMAN, I AM THE CONSTRUCT. YOUR PLAN IS KNOWN TO ME. BUT I AM ALSO NORMAN THRONE'S MIND. HE "
-                dc.b "RESPECTS YOUR COURAGE AND INGENUITY, SO I WILL NOT AVENGE EARLY. BUT KNOW "
-                dc.b "THAT IF YOU SUCCEED, IT IS BECAUSE I LET YOU.",34,0
 
                 checkscriptend

@@ -26,6 +26,7 @@ C_LARGETANK     = 23
 C_HIGHWALKER    = 24
 C_SERVER        = 25
 C_HAZMAT        = 26
+C_ENDING        = 27
 
 C_FIRSTPURGEABLE = C_PLAYER_BOTTOM
 
@@ -33,15 +34,15 @@ F_LOADER        = $00
 F_MAIN          = $01
 F_LEVEL         = $02
 F_CHARSET       = $12
-F_MUSIC         = $21
-F_SPRITE        = $2b
-F_SCRIPT        = $44
-F_LOGO          = $5d
-F_UPGRADE       = $5e
-F_LETTER        = $5f
-F_SAVELIST      = $69
-F_SAVE          = $6a
-F_OPTIONS       = $6f
+F_MUSIC         = $22
+F_SPRITE        = $2c
+F_SCRIPT        = $46
+F_LOGO          = $5f
+F_UPGRADE       = $60
+F_LETTER        = $61
+F_SAVELIST      = $62
+F_SAVE          = $63
+F_OPTIONS       = $68
 
         ; Create a number-based file name
         ;

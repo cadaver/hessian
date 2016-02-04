@@ -35,7 +35,7 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	script24.pak \
 	logo.pak upgrade.pak letter.pak \
 	charset00.pak charset01.pak charset02.pak charset03.pak charset04.pak charset05.pak charset06.pak charset07.pak \
-	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak \
+	charset08.pak charset09.pak charset10.pak charset11.pak charset12.pak charset13.pak charset14.pak charset15.pak \
 	level00.pak level01.pak level02.pak level03.pak level04.pak level05.pak level06.pak level07.pak level08.pak \
 	level09.pak level10.pak level11.pak level12.pak level13.pak level14.pak level15.pak \
 	sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
@@ -460,6 +460,12 @@ charset14.pak: charset14.s memory.s bg/world14.blk bg/world14.chi bg/world14.chc
 	pack2 charset14_1.bin charset14_1.pak
 	pchunk2 bg/world14.blk charset14_2.pak
 	filejoin charset14_1.pak+charset14_2.pak charset14.pak
+
+charset15.pak: charset15.s memory.s bg/world15.blk bg/world15.chi bg/world15.chc bg/world15.chr
+	dasm charset15.s -ocharset15_1.bin -f3
+	pack2 charset15_1.bin charset15_1.pak
+	pchunk2 bg/world15.blk charset15_2.pak
+	filejoin charset15_1.pak+charset15_2.pak charset15.pak
 
 level00.pak: bg/world00.map bg/world00.lvo bg/world00.lva
 	pack2 bg/world00.lvo level00_1.pak

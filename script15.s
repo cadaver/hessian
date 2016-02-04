@@ -108,7 +108,7 @@ BS2_4:          jsr BlankScreen
                 jsr SetScript
                 lda #50
                 sta scriptVariable
-BS2_Delay:      jsr WaitBottom                  ;Todo: cutscene here (?)
+BS2_Delay:      jsr WaitBottom
                 dec scriptVariable
                 bne BS2_Delay
                 jmp CenterPlayer
