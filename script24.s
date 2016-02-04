@@ -90,6 +90,7 @@ UpdateJump:     jsr $1000
 FinishEnding:   jsr SetupTextScreen
                 jsr FadeSong
                 lda #$00
+                sta textFade
                 sta $d01b                       ;Sprites on top of BG again
                 jsr UTC_ScoreScreen
                 lda #MUSIC_OFFICES+1
@@ -282,9 +283,9 @@ CC_ScreenColors:
                 lda colors+$200,x
                 jsr ConvertColor
                 sta colors+$200,x
-                lda colors+22*SCROLLROWS-$100,x
+                lda colors+SCROLLROWS*40-$100,x
                 jsr ConvertColor
-                sta colors+22*SCROLLROWS-$100,x
+                sta colors+SCROLLROWS*40-$100,x
                 inx
                 bne CC_ScreenColors
 CC_CharColors:  lda charColors,x
@@ -448,7 +449,7 @@ UpdateTextColor:lda textFade
                 ldy screen
                 cpy #$02
                 beq UTC_ScoreScreen
-                ldx #35
+                ldx #34
 UTC_Loop:       sta colors+40,x
                 sta colors+80,x
                 sta colors+120,x
@@ -573,7 +574,7 @@ textFadeTbl:    dc.b 6,3,1
 missileColorTbl:dc.b 1,7
 skyFlashTbl:    dc.b 10,2,9
 groundFlashTbl: dc.b 7,10,8
-groundFlashTbl2:dc.b 1,7,12
+groundFlashTbl2:dc.b 1,15,12
 
 textFade:       dc.b 0
 textFadeDir:    dc.b 0
