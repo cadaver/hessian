@@ -8,7 +8,7 @@ TEXTSTARTROW    = 12
 NUMTEXTROWS     = 8
 NUMTITLEPAGES   = 4
 
-TEXTSPLIT_LINE  = 143
+TEXTSPLIT_LINE  = 142
 
 LOAD_GAME       = 0
 SAVE_GAME       = 1
@@ -590,12 +590,19 @@ IP_CodeLoop:    if CODE_CHEAT > 0
                 sta codes+MAX_CODES*3-1
                 jsr SaveCheckpoint              ;Save first in-memory checkpoint immediately
                 jsr FindPlayerZone
+                if ENDING_TEST > 0
+                lda #<EP_ENDSEQUENCE
+                ldx #>EP_ENDSEQUENCE
+                ldy #ENDING_TEST-1
+                jmp ExecScript
+                else
                 if START_LEVEL = $00 && START_Y = $1b00
                 lda #<EP_INTROCUTSCENE          ;Intro works right only in the official start location
                 ldx #>EP_INTROCUTSCENE
                 jmp ExecScript
                 else
                 jmp CenterPlayer
+                endif
                 endif
 
         ; Save options if modified
@@ -1095,6 +1102,7 @@ textSplitData:  dc.b $15,$00                            ;Make sure sprites off
 bgCol1:         dc.b $21,$00                            ;Logo colors
 bgCol2:         dc.b $22,$00
 bgCol3:         dc.b $23,$00
+                dc.b $11,$14                            ;Y-scrolling
                 dc.b TEXTSPLIT_LINE                     ;Resume text screen here
 
                 checkscriptend

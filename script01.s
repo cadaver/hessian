@@ -157,7 +157,7 @@ IntroCutscene:  lda #MUSIC_MYSTERY
 IC_Loop:        lda textFade
                 bne IC_NoNextPage
                 lda page
-                cmp #2
+                cmp #3
                 bcs IC_BeginGame
                 asl
                 tay
@@ -212,7 +212,7 @@ IC_TextNotOverHigh:
                 lsr
                 tay
                 lda textFadeTbl,y
-                ldx #5*40
+                ldx #3*40
 IC_SetTextColor:pha
                 jsr WaitBottom
                 pla
@@ -239,7 +239,7 @@ IC_InitTextDisplay:
                 jsr IC_SetTextColor
                 ldx #39
                 lda #32
-IC_SetEmptyRow: sta screen1+5*40,x              ;Set row below the text empty to hide the split
+IC_SetEmptyRow: sta screen1+3*40,x              ;Set row below the text empty to hide the split
                 dex
                 bpl IC_SetEmptyRow
                 inc Irq6_LevelUpdate+1          ;Allow level animation
@@ -259,7 +259,7 @@ PrintPage:      ldy #$00
 PP_Loop:        lda (zpSrcLo),y
                 sta screen1,y
                 iny
-                cpy #5*40
+                cpy #3*40
                 bcc PP_Loop
                 rts
 
@@ -271,9 +271,10 @@ textFadeDir:    dc.b 0
 textFadeTbl:    dc.b $00,$06,$03,$01
 pageTbl:        dc.w page1
                 dc.w page2
+                dc.w page3
 
 textSplit:      dc.b $18,TEXTSCR_D018           ;Show screen1 with text charset
-                dc.b 54+5*8+1                   ;Resume gamescreen below
+                dc.b 54+3*8+1                   ;Resume gamescreen below
 
         ; Messages
 
@@ -284,16 +285,16 @@ txtIntro2:      dc.b 34,"ARGH, I'M NO GOOD TO GO ON. SEARCH THE UPSTAIRS - YOU'L
                 dc.b "DON'T RUN OUT.",34,0
 
 page1:               ;0123456789012345678901234567890123456789
-                dc.b " KIM, A SECURITY GUARD WORKING THE NIGHT"
-                dc.b "  SHIFT AT THRONE GROUP SCIENCE COMPLEX "
-                dc.b " WAKES UP INSIDE A CARGO CONTAINER WHICH"
-                dc.b "  HAS BEEN CONVERTED INTO AN IMPROVISED "
-                dc.b "        EMERGENCY OPERATING ROOM.       "
+                dc.b " KIM, A NIGHT SECURITY GUARD WORKING AT "
+                dc.b "THRONE GROUP SCIENCE COMPLEX WAKES UP IN"
+                dc.b " AN IMPROVISED EMERGENCY OPERATING ROOM."
 
 page2:          dc.b " SHE REMEMBERS MULTIPLE HOSTILES OPENING"
                 dc.b " FIRE ON THE STAFF, EVERYTHING FADING TO"
-                dc.b "  BLACK AS ROUNDS HAMMER INTO HER CHEST "
-                dc.b "  AND FINALLY A VOICE: ",34,"NEED ARTIFICIAL "
-                dc.b "  CIRCULATION .. NANOBOT INFUSION NOW!",34,"  "
+                dc.b " BLACK AS ROUNDS HAMMER INTO HER CHEST.."
+
+page3:          dc.b "  AND FINALLY VOICES: ",34,"MASSIVE TRAUMA.. "
+                dc.b "  NEED ARTIFICIAL CIRCULATION.. PREPARE "
+                dc.b "        THE NANOBOT INFUSION NOW!",34,"      "
 
                 checkscriptend
