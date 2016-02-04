@@ -21,7 +21,7 @@ SPRH_DATA       = 10
         ;
         ; Parameters: Y sprite file number
         ; Returns: A sprite file address highbyte
-        ; Modifies: A,Y,temp6-temp8,loader temp vars
+        ; Modifies: A,temp6-temp8,loader temp vars
 
 EnsureSpriteFile:
                 lda fileHi,y
@@ -39,8 +39,6 @@ LSF_Retry:      jsr LoadAllocFile
                 bpl LSF_Retry
 LSF_NoError:    jsr PostLoad
                 ldy temp6                       ;LoadAllocFile puts chunk number to temp6
-                sty sprFileNum                  ;PurgeChunk clears sprFileNum, restore it now
-                lda fileHi,y
 LSF_SaveX:      ldx #$00
 ESF_Loaded:     rts
 

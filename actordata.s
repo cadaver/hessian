@@ -125,6 +125,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adHacker
                 dc.b <adHazmat
                 dc.b <adCombatRobot
+                dc.b <adEndingSprites
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -199,6 +200,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adHacker
                 dc.b >adHazmat
                 dc.b >adCombatRobot
+                dc.b >adEndingSprites
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -584,6 +586,10 @@ adHazmat:       dc.b HUMANOID                   ;Number of sprites
                 dc.b 0                          ;Upper part base index into the frametable
                 dc.b 39                         ;Upper part left frame add
 
+adEndingSprites:dc.b ONESPRITEDIRECT            ;Number of sprites
+                dc.b C_ENDING                   ;Spritefile number
+                dc.b 0                          ;Base spritenumber
+
         ; Actor logic data
 
 actLogicTblLo:  dc.b <alPlayer
@@ -651,7 +657,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alAcid
                 dc.b <alScrapMetal
                 dc.b <alArmorer
-                dc.b <alThroneChief
+                dc.b <alDoNothing
                 dc.b <alMediumWalker
                 dc.b <alScientist1
                 dc.b <alScientist23
@@ -659,6 +665,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alHacker
                 dc.b <alScientist23
                 dc.b <alCombatRobotSaboteur
+                dc.b <alDoNothing
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -725,7 +732,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alAcid
                 dc.b >alScrapMetal
                 dc.b >alArmorer
-                dc.b >alThroneChief
+                dc.b >alDoNothing
                 dc.b >alMediumWalker
                 dc.b >alScientist1
                 dc.b >alScientist23
@@ -733,6 +740,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alHacker
                 dc.b >alScientist23
                 dc.b >alCombatRobotSaboteur
+                dc.b >alDoNothing
 
 alPlayer:       dc.w MovePlayer                 ;Update routine
                 dc.b GRP_HEROES|AF_ORGANIC|AF_NOREMOVECHECK|AF_INITONLYSIZE ;Actor flags
@@ -1577,8 +1585,8 @@ alGenerator:    dc.w MoveGenerator              ;Update routine
                 dc.w RemoveActor                ;Destroy routine
                 dc.b 0                          ;Initial health
 
-alThroneChief:  dc.w DoNothing                  ;Update routine
-                dc.b AF_INITONLYSIZE            ;Actor flags
+alDoNothing:    dc.w DoNothing                  ;Update routine
+                dc.b AF_INITONLYSIZE|AF_NOREMOVECHECK            ;Actor flags
                 
 alMediumWalker: dc.w MoveWalker                 ;Update routine
                 dc.b GRP_ENEMIES|AF_NOWEAPON    ;Actor flags

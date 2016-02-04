@@ -1,7 +1,3 @@
-shiftOffsetTbl: dc.b 6,6,6
-                dc.b 0,0,0
-                dc.b 6,6,6
-                
                 org (* + $ff) & $ff00
 
         ; Sprite cache / depacking tables
@@ -398,6 +394,9 @@ fileAge:        ds.b MAX_CHUNKFILES,0
         ; Remaining data
 
 d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,TEXTSCR_D018
+shiftOffsetTbl: dc.b 6,6,6
+                dc.b 0,0,0
+                dc.b 6,6,6
 
         ; Gameworld & level data (not saved)
 

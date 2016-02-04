@@ -189,6 +189,7 @@ ACT_SCIENTIST3 = 70
 ACT_HACKER      = 71
 ACT_HAZMAT      = 72
 ACT_COMBATROBOTSABOTEUR = 73
+ACT_ENDINGSPRITES = 74
 
 ACT_FIRSTPERSISTENTNPC = ACT_SCIENTIST2
 
@@ -369,7 +370,6 @@ DrawActorSub_NoColor:
                 lda (actLo),y
                 cmp sprFileNum
                 beq DA_SameSprFile
-                sta sprFileNum                  ;Store spritefilenumber, needed in caching
                 tay
                 lda fileHi,y
                 bne DA_SprFileLoaded
@@ -378,6 +378,7 @@ DA_SprFileLoaded:
                 sta sprFileHi
                 lda fileLo,y
                 sta sprFileLo
+                sty sprFileNum
 DA_SameSprFile: ldy #AD_NUMSPRITES              ;Get number of sprites / humanoid flag
                 clc
                 lda (actLo),y
@@ -414,7 +415,6 @@ DA_HumanRight1: ldy #ADH_BASEINDEX
                 lda (actLo),y
                 cmp sprFileNum
                 beq DA_SameSprFile2
-                sta sprFileNum
                 tay
                 lda fileHi,y
                 bne DA_SprFileLoaded2
@@ -423,6 +423,7 @@ DA_SprFileLoaded2:
                 sta sprFileHi
                 lda fileLo,y
                 sta sprFileLo
+                sty sprFileNum
 DA_SameSprFile2:lda temp5
                 jsr GetAndStoreSprite
 DA_HumanWpnF:   lda #$00
@@ -781,7 +782,7 @@ UpdateActors:   ldx #$00
                 lda menuMode
                 cmp #MENU_PAUSE
                 bcs UA_Paused
-UA_Scroll:      ldx #MAX_ACT-1
+UA_NoShakeReset:ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex

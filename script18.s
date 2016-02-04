@@ -399,14 +399,12 @@ DTM_RedrawBG:   lda scrollOffset
                 sta temp1
                 ldx #$00
 DTM_RedrawLoop: lda screen2+$100,x
-                beq DTM_RedrawSkip1
                 jsr DTM_GetTunnelChar
                 sta screen2+$100,x
                 tay
                 lda charColors,y
                 sta colors+$100,x
 DTM_RedrawSkip1:lda screen2+$200,x
-                beq DTM_RedrawSkip2
                 jsr DTM_GetTunnelChar
                 sta screen2+$200,x
                 tay
@@ -489,6 +487,7 @@ DTM_DelayLoop:  jsr WaitBottom
                 bpl DTM_DelayLoop
                 rts
 DTM_GetTunnelChar:
+                beq DTM_GTCDone
                 cmp #25
                 bcs DTM_GTCDone
                 txa

@@ -594,7 +594,7 @@ IP_CodeLoop:    if CODE_CHEAT > 0
                 lda #<EP_ENDSEQUENCE
                 ldx #>EP_ENDSEQUENCE
                 ldy #ENDING_TEST-1
-                jmp ExecScript
+                jmp ExecScriptParam
                 else
                 if START_LEVEL = $00 && START_Y = $1b00
                 lda #<EP_INTROCUTSCENE          ;Intro works right only in the official start location

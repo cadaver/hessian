@@ -41,7 +41,7 @@ hessian.d64: hessian.seq loader.prg main.pak options.bin emptysave.bin savelist.
 	sprplayert.pak sprplayerb.pak sprplayerta.pak sprplayerba.pak \
 	sprsmallrobots.pak sprhazards.pak sprhazards2.pak spranimals.pak sprmediumrobots.pak sprguard.pak sprheavyguard.pak \
 	sprcombatrobot.pak sprlargewalker.pak sprlargetank.pak sprhighwalker.pak sprhazmat.pak sprserver.pak sprsecuritychief.pak \
-	sprrotordrone.pak sprlargespider.pak sprscientist.pak sprhacker.pak
+	sprrotordrone.pak sprlargespider.pak sprscientist.pak sprhacker.pak sprending.pak
 	maked64 hessian.d64 hessian.seq HESSIAN___________HE_2A 10
 	reorder hessian.d64
 
@@ -628,3 +628,6 @@ sprhacker.pak: spr/hacker.spr
 
 sprhazmat.pak: spr/hazmat.spr
 	pchunk2 spr/hazmat.spr sprhazmat.pak
+
+sprending.pak: spr/ending.spr
+	pchunk2 spr/ending.spr sprending.pak

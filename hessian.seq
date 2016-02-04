@@ -17,7 +17,6 @@ charset01.pak 13
 charset03.pak 15
 charset13.pak 1F
 level02.pak 04
-charset15.pak 21
 level04.pak 06
 level15.pak 11
 charset05.pak 17
@@ -74,7 +73,6 @@ sprlargetank.pak 41
 sprhighwalker.pak 42
 sprserver.pak 43
 sprhazmat.pak 44
-sprending.pak 45
 music00.pak 22
 script02.pak 48
 script03.pak 49
@@ -101,6 +99,8 @@ script21.pak 5B
 script22.pak 5C
 script23.pak 5D
 script24.pak 5E
+charset15.pak 21
+sprending.pak 45
 music02.pak 24
 music03.pak 25
 main.pak 01
