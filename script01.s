@@ -295,6 +295,6 @@ page2:          dc.b " SHE REMEMBERS MULTIPLE HOSTILES OPENING"
 
 page3:          dc.b "  AND FINALLY VOICES: ",34,"MASSIVE TRAUMA.. "
                 dc.b "  NEED ARTIFICIAL CIRCULATION.. PREPARE "
-                dc.b "        THE NANOBOT INFUSION NOW!",34,"      "
+                dc.b "       THE NANOBOT INJECTION NOW!",34,"      "
 
                 checkscriptend
