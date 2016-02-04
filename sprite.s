@@ -39,6 +39,7 @@ LSF_Retry:      jsr LoadAllocFile
                 bpl LSF_Retry
 LSF_NoError:    jsr PostLoad
                 ldy temp6                       ;LoadAllocFile puts chunk number to temp6
+                lda fileHi,y
 LSF_SaveX:      ldx #$00
 ESF_Loaded:     rts
 
