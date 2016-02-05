@@ -72,6 +72,7 @@ FrameLoop:      ldy #$01
                 sty scrollSX
                 jsr ScrollLogic
                 jsr DrawActors
+                jsr AddActors                   ;Need to update actor removal limits
                 jsr FinishFrame
                 jsr GetControls
                 jsr ScrollLogic
@@ -97,6 +98,8 @@ InitEnding1:    lda #$02                        ;Use red/yellow for text fade
                 ldx #$07
                 sta textFadeTbl
                 stx textFadeTbl+1
+                ldy #C_ENDING
+                jsr EnsureSpriteFile
                 ldy #ACTI_FIRSTITEM
                 jsr InitEndingActor
                 lda #$c0                        ;Missile start pos.
@@ -111,10 +114,9 @@ InitEnding1:    lda #$02                        ;Use red/yellow for text fade
                 sta actF1,x
                 jmp InitDestructionCommon
 
-InitEnding2:
-InitDestructionCommon:
-                ldy #C_ENDING
+InitEnding2:    ldy #C_HAZARDS
                 jsr EnsureSpriteFile
+InitDestructionCommon:
                 lda #MUSIC_ENDING1
                 jmp PlaySong
 
@@ -123,9 +125,11 @@ InitVictory:    lda #MUSIC_ENDING2
 
         ; Ending frame update routines
 
+        ; Ending 1
+
 UpdateEnding1:  ldx #ACTI_FIRSTITEM
                 lda actT,x
-                beq UMC_UpdateMushroom
+                beq UE1_UpdateMushroom
                 lda UA_ItemFlashCounter+1
                 and #$01
                 tay
@@ -137,41 +141,41 @@ UpdateEnding1:  ldx #ACTI_FIRSTITEM
                 jsr MoveActorY
                 lda actYH,x
                 cmp #$26
-                bcc UMC_NoExplode
+                bcc UE1_NoExplode
                 lda actYL,x
                 cmp #$40
-                bcc UMC_NoExplode
-UMC_Explode:    jsr RemoveActor
-                jmp UMC_LargeFlash
-UMC_NoExplode:  rts
+                bcc UE1_NoExplode
+UE1_Explode:    jsr RemoveActor
+                jmp UE1_LargeFlash
+UE1_NoExplode:  rts
 
-UMC_EndFlash:   lda #$00
+UE1_EndFlash:   lda #$00
                 sta shakeScreen
                 lda temp1
                 and #$01
                 ora #$02
                 tay
-UMC_SetFlashColors:
+UE1_SetFlashColors:
                 lda skyFlashTbl,y
                 sta Irq1_Bg1+1
                 lda groundFlashTbl,y
                 sta Irq1_Bg2+1
                 lda groundFlashTbl2,y
-UMC_SetBg3:     sta Irq1_Bg3+1
+UE1_SetBg3:     sta Irq1_Bg3+1
                 rts
 
-UMC_UpdateMushroom:
+UE1_UpdateMushroom:
                 lda pageNum                 ;Only flashing (no shake) once text is on
-                bpl UMC_EndFlash
+                bpl UE1_EndFlash
                 inc endingTime
                 lda endingTime
                 cmp #25
-                beq UMC_CreateMushroom
-                bcs UMC_AnimateMushroom
-UMC_LargeFlash: cmp #$01
-                bne UMC_NoColorConvert
+                beq UE1_CreateMushroom
+                bcs UE1_AnimateMushroom
+UE1_LargeFlash: cmp #$01
+                bne UE1_NoColorConvert
                 jsr ConvertScreenAndCharColors
-UMC_NoColorConvert:
+UE1_NoColorConvert:
                 lda temp1
                 and #$03
                 sta shakeScreen
@@ -180,11 +184,11 @@ UMC_NoColorConvert:
                 lda missileColorTbl,y
                 sta Irq1_Bg1+1
                 sta Irq1_Bg2+1
-                bpl UMC_SetBg3
-UMC_CreateMushroom:
+                bpl UE1_SetBg3
+UE1_CreateMushroom:
                 lda #ACTI_FIRSTITEM+1
                 sta temp1
-UMC_CreateMushroomLoop:
+UE1_CreateMushroomLoop:
                 ldy temp1
                 jsr InitEndingActor
                 lda mushroomXL-ACTI_FIRSTITEM-1,x
@@ -199,8 +203,8 @@ UMC_CreateMushroomLoop:
                 sta actF1,x
                 inc temp1
                 cpx #ACTI_FIRSTITEM+9
-                bcc UMC_CreateMushroomLoop
-UMC_AnimateMushroom:
+                bcc UE1_CreateMushroomLoop
+UE1_AnimateMushroom:
                 lda actF1+ACTI_FIRSTITEM+1
                 cmp #4*3
                 php
@@ -209,38 +213,186 @@ UMC_AnimateMushroom:
                 sta shakeScreen
                 tay
                 plp
-                bcc UMC_BrightFlash
+                bcc UE1_BrightFlash
                 iny
-UMC_BrightFlash:jsr UMC_SetFlashColors
+UE1_BrightFlash:jsr UE1_SetFlashColors
                 ldy endingTime
                 cpy #39
-                bcs UMC_NextMushroomFrame
+                bcs UE1_NextMushroomFrame
                 rts
-UMC_NextMushroomFrame:
+UE1_NextMushroomFrame:
                 ldx #ACTI_FIRSTITEM+1
                 lda actF1,x
                 cmp #7*3
-                bcs UMC_MushroomLastFrame
+                bcs UE1_MushroomLastFrame
                 ldy #26
                 sty endingTime
-UMC_AnimateLoop:lda actF1,x
+UE1_AnimateLoop:lda actF1,x
                 clc
                 adc #$03
                 sta actF1,x
                 inx
                 cpx #ACTI_FIRSTITEM+10
-                bcc UMC_AnimateLoop
-UMC_NoTextYet:  rts
-UMC_MushroomLastFrame:
+                bcc UE1_AnimateLoop
+UE1_NoTextYet:  rts
+UE1_MushroomLastFrame:
                 cpy #50                        ;Small extra delay before text
-                bcc UMC_NoTextYet
-                lda #$00
+                bcc UE1_NoTextYet
+UE1_ShowText:   lda #$00
                 sta pageNum                     ;Allow text printing now
+UE2_WaitScroll: rts
+
+        ; Ending 2
+
+UE2_ShowText:   lda #$ff
+                sta endingTime2
+                jmp UE1_ShowText
+UE2_Done:       lda temp1
+                and #$1f
+                adc endingTime
+                sta endingTime
+                bcc UE2_NoNewSmoke
+                jsr GetAnyFreeActor
+                bcc UE2_NoNewSmoke
+                lda #ACT_SMOKECLOUD
+                sta actT,y
+                tya
+                tax
+                jsr InitActor
+                lda temp1
+                sta actXL,x
+                lda #$c0
+                sta actYL,x
+                lda temp1
+                and #$01
+                clc
+                adc #$03
+                sta actXH,x
+                lda #$27
+                sta actYH,x
+                lda #$40
+                sta actFlash,x
+UE2_NoNewSmoke: lda temp1
+                cmp #$04
+                bcs UE2_NoNewFlash
+                lda #$02
+                sta endingTime2
+UE2_NoNewFlash: lda endingTime2
+                bmi UE2_NoFlash
+                dec endingTime2
+                ora #$04
+                tay
+                jmp UE1_SetFlashColors
+UE2_NoFlash:    rts
+
+
+UpdateEnding2:  lda scrollCSY                   ;Wait until scrolling stopped
+                bne UE2_WaitScroll
+                lda pageNum                     ;Showing text?
+                bpl UE2_Done
+                lda temp1
+                ldx endingTime2
+                and collapseShakeTbl,x
+                sta shakeScreen
+                cpx #14
+                bcs UE2_ShowText                ;Collapsed enough?
+                lda collapseShakeTbl,x
+                asl
+                asl
+                asl
+                asl
+                cmp temp1
+                bcc UE2_NoNewExplosion
+                jsr GetAnyFreeActor
+                bcc UE2_NoNewExplosion
+                lda #ACT_EXPLOSION
+                sta actT,y
+                tya
+                tax
+                jsr InitActor
+                lda temp1
+                sta actXL,x
+                and #$03
+                clc
+                adc #$02
+                sta actXH,x
+                lda #8*8
+                jsr MoveActorX
+                jsr Random
+                and #$3f
+                adc #$60
+                sta actYL,x
+                lda #$27
+                sta actYH,x
+                lda #$40
+                sta actFlash,x
+UE2_NoNewExplosion:
+                inc endingTime
+                lda endingTime
+                cmp #$08
+                bcs UE2_DoCollapse
+                rts
+UE2_DoCollapse: lda #$00
+                sta endingTime
+                inc endingTime2
+                ldx #20
+UE2_OpenChasm:  lda chasmCharTbl-1,x
+                sta screen1+16*40+4,x
+                lda #$08
+                sta colors+16*40+4,x
+                dex
+                bne UE2_OpenChasm
+                lda #10
+                sta temp1
+                lda #<(screen1+14*40+4)
+                sta zpSrcLo
+                lda #>(screen1+14*40+4)
+                sta zpSrcHi
+                lda #<(screen1+15*40+4)
+                sta zpDestLo
+                sta zpBitsLo
+                lda #>(screen1+15*40+4)
+                sta zpDestHi
+                lda #>(colors+15*40+4)
+                sta zpBitsHi
+UE2_CollapseRowLoop:
+                ldy #20
+UE2_CollapseColumn:
+                lda (zpSrcLo),y
+                cmp #12
+                bcs UE2_EmptyOK
+                ldx temp1
+                cpx #8
+                bcc UE2_EmptyOK
+                lda emptyCharTbl-8,x
+UE2_EmptyOK:    sta (zpDestLo),y
+                tax
+                lda charColors,x
+                sta (zpBitsLo),y
+                dey
+                bne UE2_CollapseColumn
+                lda zpSrcLo
+                sec
+                sbc #40
+                sta zpSrcLo
+                bcs UE2_CNotOver1
+                sec
+                dec zpSrcHi
+UE2_CNotOver1:  lda zpDestLo
+                sbc #40
+                sta zpDestLo
+                sta zpBitsLo
+                bcs UE2_CNotOver2
+                dec zpDestHi
+                dec zpBitsHi
+UE2_CNotOver2:  dec temp1
+                bne UE2_CollapseRowLoop
                 rts
 
-UpdateEnding2:
+
+
+
 UpdateVictory:
-                clc
                 rts
 
         ; Convert char color to postnuclear
@@ -463,7 +615,7 @@ txtEnding1:     dc.b " HACKED 2ND STRIKE SYSTEMS ATTACK",0
                 dc.b "AT RANDOM. RETALIATIONS ENSUE, AND",0
                 dc.b "     A NUCLEAR WINTER BEGINS.",0,0
 
-txtEnding2:     dc.b "JORMUNGANDR TRAVERSES THE CRUST.",0
+txtEnding2:     dc.b " JORMUNGANDR TRAVERSES THE CRUST.",0
                 dc.b "MASSIVE VOLCANIC ERUPTIONS BLACKEN",0
                 dc.b "THE SUN, AND A NEW ICE AGE BEGINS.",0,0
 
@@ -503,17 +655,23 @@ mushroomYH:     dc.b >MUSHROOMBASEY, >MUSHROOMBASEY, >MUSHROOMBASEY
 mushroomF:      dc.b 0,1,2,24,25,26,48,49,50
 
 textFadeTbl:    dc.b 6,3,1
-skyFlashTbl:    dc.b 10,2,9,2
+skyFlashTbl:    dc.b 10,2,9,2,6,11,3
 missileColorTbl:
-groundFlashTbl: dc.b 7,10,8,10
-groundFlashTbl2:dc.b 1,7,12,15
-
+groundFlashTbl: dc.b 7,10,8,10,11,12,3
+groundFlashTbl2:dc.b 1,7,12,15,12,15,1
+emptyCharTbl:   dc.b 11,2,5
+chasmCharTbl:   dc.b 110,105,106,107,108,106,107,105,108
+                dc.b 106,105,106,107,105,106,108,107,108,105,111
+collapseShakeTbl:
+                dc.b $03,$03,$03,$03,$03,$02,$02,$02,$02,$02,$01,$01,$01,$01
 convertColorTbl:dc.b 0,1,2,3,4,5,6,7,8,9,15,9,15,15,15,9
+
 
 textFade:       dc.b 0
 textFadeDir:    dc.b 0
 endingNum:      dc.b 0
 endingTime:     dc.b 0
+endingTime2:    dc.b 0
 pageDelay:      dc.b 0
 pageNum:        dc.b $ff
 
