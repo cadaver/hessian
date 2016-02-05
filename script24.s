@@ -125,7 +125,7 @@ InitVictory:    lda #MUSIC_ENDING2
 UpdateEnding1:  ldx #ACTI_FIRSTITEM
                 lda actT,x
                 beq UMC_UpdateMushroom
-                lda temp1
+                lda UA_ItemFlashCounter+1
                 and #$01
                 tay
                 lda missileColorTbl,y
@@ -137,6 +137,9 @@ UpdateEnding1:  ldx #ACTI_FIRSTITEM
                 lda actYH,x
                 cmp #$26
                 bcc UMC_NoExplode
+                lda actYL,x
+                cmp #$40
+                bcc UMC_NoExplode
 UMC_Explode:    jsr RemoveActor
                 jmp UMC_LargeFlash
 UMC_NoExplode:  rts
@@ -147,7 +150,14 @@ UMC_EndFlash:   lda #$00
                 and #$01
                 ora #$02
                 tay
-                jmp UMC_SetFlashColors
+UMC_SetFlashColors:
+                lda skyFlashTbl,y
+                sta Irq1_Bg1+1
+                lda groundFlashTbl,y
+                sta Irq1_Bg2+1
+                lda groundFlashTbl2,y
+UMC_SetBg3:     sta Irq1_Bg3+1
+                rts
 
 UMC_UpdateMushroom:
                 lda pageNum                 ;Only flashing (no shake) once text is on
@@ -169,8 +179,7 @@ UMC_NoColorConvert:
                 lda missileColorTbl,y
                 sta Irq1_Bg1+1
                 sta Irq1_Bg2+1
-                sta Irq1_Bg3+1
-                rts
+                bpl UMC_SetBg3
 UMC_CreateMushroom:
                 lda #ACTI_FIRSTITEM+1
                 sta temp1
@@ -203,7 +212,7 @@ UMC_AnimateMushroom:
                 iny
 UMC_BrightFlash:jsr UMC_SetFlashColors
                 ldy endingTime
-                cpy #37
+                cpy #39
                 bcs UMC_NextMushroomFrame
                 rts
 UMC_NextMushroomFrame:
@@ -222,19 +231,10 @@ UMC_AnimateLoop:lda actF1,x
                 bcc UMC_AnimateLoop
 UMC_NoTextYet:  rts
 UMC_MushroomLastFrame:
-                cpy #50                         ;Extra wait before printing text
+                cpy #50                        ;Small extra delay before text
                 bcc UMC_NoTextYet
                 lda #$00
                 sta pageNum                     ;Allow text printing now
-                rts
-
-UMC_SetFlashColors:
-                lda skyFlashTbl,y
-                sta Irq1_Bg1+1
-                lda groundFlashTbl,y
-                sta Irq1_Bg2+1
-                lda groundFlashTbl2,y
-                sta Irq1_Bg3+1
                 rts
 
 UpdateEnding2:
@@ -243,7 +243,7 @@ UpdateVictory:
                 rts
 
         ; Convert char color to postnuclear
-        
+
 ConvertScreenAndCharColors:
                 ldx #$00
 CC_ScreenColors:lda colors+SCROLLROWS*40-$300,x
@@ -335,9 +335,21 @@ StoreDigit:     ora #$30
 
         ; Ending text update
 
-UpdateText:     lda textFade
+UpdateText:     lda textFadeDir
                 bne FadeText
-                lda #1
+                lda textFade
+                beq NextPage
+                lda UA_ItemFlashCounter+1
+                and #$03
+                bne NoNextPageYet
+                inc pageDelay
+                lda pageDelay
+                cmp #270/4
+                bcc NoNextPageYet
+                dec textFadeDir                 ;Fade out text & switch page after a set time
+NoNextPageYet:  rts
+
+NextPage:       lda #1
                 sta textFadeDir
                 sta temp2
                 sta pageDelay
@@ -353,13 +365,8 @@ UpdateText:     lda textFade
                 bcc EPM_PageNotOver
                 ldy #$00
 EPM_PageNotOver:sty pageNum
-                ldx #34
-                lda #$a0
-EPM_Clear:      sta screen1+40,x                ;Clear first before printing
-                sta screen1+80,x
-                sta screen1+120,x
-                dex
-                bpl EPM_Clear
+                lda textFadeTbl
+                jsr UpdateTextColor
 EPM_RowLoop:    ldy temp2
                 jsr GetRowAddress
                 lda temp1
@@ -380,17 +387,22 @@ EP_Done:        iny
                 inc temp2
                 bne EPM_RowLoop
 
-FadeText:       ldy #$00
-                lda textFadeDir
-                beq FT_NoFade
-                clc
+FadeText:       clc
                 adc textFade
                 bmi FT_OverNeg
                 cmp #2*2
                 bcc FT_NotOverPos
                 lda #2*2
-                skip2
-FT_OverNeg:     lda #0
+                bcs FT_StopFade
+FT_OverNeg:     ldx #34
+                lda #$a0
+FT_Clear:       sta screen1+40,x                ;Clear text when fade is complete
+                sta screen1+80,x
+                sta screen1+120,x
+                dex
+                bpl FT_Clear
+                lda #0
+FT_StopFade:    ldy #0
                 sty textFadeDir
 FT_NotOverPos:  sta textFade
 UpdateTextColor:lda textFade
@@ -404,12 +416,6 @@ UTC_Loop:       sta colors+40,x
                 dex
                 bpl UTC_Loop
 FT_DelayNotExceeded:
-                rts
-FT_NoFade:      inc pageDelay
-                lda pageDelay
-                cmp #250
-                bcc FT_DelayNotExceeded
-                dec textFadeDir                 ;Fade out text & switch page after a set time
                 rts
 
 endingTxtTblLo: dc.b <txtEnding1
@@ -496,8 +502,8 @@ mushroomYH:     dc.b >MUSHROOMBASEY, >MUSHROOMBASEY, >MUSHROOMBASEY
 mushroomF:      dc.b 0,1,2,24,25,26,48,49,50
 
 textFadeTbl:    dc.b 6,3,1
-missileColorTbl:dc.b 1,7
 skyFlashTbl:    dc.b 10,2,9,2
+missileColorTbl:
 groundFlashTbl: dc.b 7,10,8,10
 groundFlashTbl2:dc.b 1,7,12,15
 
