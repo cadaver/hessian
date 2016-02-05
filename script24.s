@@ -460,7 +460,7 @@ textPageTblHi:  dc.b >txtEnding1
 textPosTbl:     dc.b 1,9,8
 
 txtEnding1:     dc.b " HACKED 2ND STRIKE SYSTEMS ATTACK",0
-                dc.b "IN RANDOM. RETALIATIONS ENSUE, AND",0
+                dc.b "AT RANDOM. RETALIATIONS ENSUE, AND",0
                 dc.b "     A NUCLEAR WINTER BEGINS.",0,0
 
 txtEnding2:     dc.b "JORMUNGANDR TRAVERSES THE CRUST.",0
