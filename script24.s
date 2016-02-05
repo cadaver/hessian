@@ -5,23 +5,27 @@
 
 NUM_PAGES = 3
 
+endingTime      = menuCounter
+endingTime2     = menuMoveDelay
+
                 org scriptCodeStart
 
                 dc.w EndSequence
 
 EndSequence:    ldx #STACKSTART
                 txs
-                sty endingNum
+                sty EndingNum+1
                 cpy #2
                 bcc NoSurvivors
-                lda #ACT_HACKER
-                jsr FindLevelActor
-                bcs HaveSurvivors
-                lda #ACT_SCIENTIST3
-                jsr FindLevelActor
-                bcc NoSurvivors
-HaveSurvivors:  inc endingNum
-NoSurvivors:    ldx endingNum
+;                lda #ACT_HACKER
+;                jsr FindLevelActor
+;                bcs HaveSurvivors
+;                lda #ACT_SCIENTIST3
+;                jsr FindLevelActor
+;                bcc NoSurvivors
+;HaveSurvivors:  inc EndingNum+1
+NoSurvivors:
+EndingNum:      ldx #$00
                 lda endingUpdateTblLo,x
                 sta UpdateJump+1
                 lda endingUpdateTblHi,x
@@ -40,8 +44,10 @@ NoSurvivors:    ldx endingNum
                 lda #$02
                 jsr ChangeLevel
                 lda #$00
-                sta actXH+ACTI_PLAYER
+                sta actXH+ACTI_PLAYER           ;Remove player to not disturb (die by falling into nothingness)
                 sta mapX
+                sta endingTime
+                sta endingTime2
                 lda #$01
                 sta blockX
                 sta blockY
@@ -61,8 +67,8 @@ CopyChars:      lda textChars+$100,x            ;Copy text chars to be able to s
                 sta chars+$500,x
                 lda textChars+$200,x
                 sta chars+$600,x
-                lda textChars+$300,x
-                sta chars+$700,x
+                ;lda textChars+$300,x
+                ;sta chars+$700,x
                 inx
                 bne CopyChars
 InitJump:       jsr $1000
@@ -143,7 +149,7 @@ UpdateEnding1:  ldx #ACTI_FIRSTITEM
                 cmp #$26
                 bcc UE1_NoExplode
                 lda actYL,x
-                cmp #$40
+                cmp #$60
                 bcc UE1_NoExplode
 UE1_Explode:    jsr RemoveActor
                 jmp UE1_LargeFlash
@@ -439,7 +445,7 @@ EndingBonus:    sta temp1
                 lda plrDmgModifyTbl,y
                 lsr
                 lsr
-                ldy endingNum
+                ldy EndingNum+1
                 cpy #$02
                 adc #$00                        ;If victory ending, add 50000 more
                 tax
@@ -663,15 +669,12 @@ emptyCharTbl:   dc.b 11,2,5
 chasmCharTbl:   dc.b 110,105,106,107,108,106,107,105,108
                 dc.b 106,105,106,107,105,106,108,107,108,105,111
 collapseShakeTbl:
-                dc.b $03,$03,$03,$03,$03,$02,$02,$02,$02,$02,$01,$01,$01,$01,$01,$01
+                dc.b $03,$03,$03,$03,$03,$02,$02,$02,$02,$02,$01,$01,$01,$01,$01,$00
 convertColorTbl:dc.b 0,1,2,3,4,5,6,7,8,9,15,9,15,15,15,9
 
 
 textFade:       dc.b 0
 textFadeDir:    dc.b 0
-endingNum:      dc.b 0
-endingTime:     dc.b 0
-endingTime2:    dc.b 0
 pageDelay:      dc.b 0
 pageNum:        dc.b $ff
 
