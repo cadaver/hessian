@@ -91,7 +91,6 @@ FinishEnding:   jsr SetupTextScreen
                 jsr FadeSong
                 lda #$00
                 sta textFade
-                sta $d01b                       ;Sprites on top of BG again
                 jsr UTC_ScoreScreen
                 lda #MUSIC_OFFICES+1
                 jsr PlaySong
@@ -194,8 +193,6 @@ UMC_NoColorConvert:
                 sta Irq1_Bg3+1
                 rts
 UMC_CreateMushroom:
-                lda #$ff
-                sta $d01b               ;Mushroom behind BG (fence)
                 lda #ACTI_FIRSTITEM+1
                 sta temp1
 UMC_CreateMushroomLoop:
