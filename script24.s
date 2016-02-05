@@ -124,8 +124,9 @@ InitEnding1:    lda #$02                        ;Use red/yellow for text fade
                 jsr SetFadeTable
                 ldy #ACTI_FIRSTITEM
                 jsr InitEndingActor
-                lda #$00
+                lda #$80                        ;Missile start pos.
                 sta actXL,x
+                lda #$00
                 sta actYL,x
                 lda #$fe
                 sta actXH,x
@@ -160,7 +161,7 @@ UpdateEnding1:  ldx #ACTI_FIRSTITEM
                 lda #6*8
                 jsr MoveActorY
                 lda actYH,x
-                cmp #$27
+                cmp #$26
                 bcc UMC_NoExplode
 UMC_Explode:    jsr RemoveActor
                 jmp UMC_LargeFlash
@@ -553,7 +554,7 @@ txtDifficulties:dc.b "EASY  "
                 dc.b "INSANE"
 
 MUSHROOMBASEX = $0680
-MUSHROOMBASEY = $2588
+MUSHROOMBASEY = $24b0
 
 mushroomXL:     dc.b <MUSHROOMBASEX, <(MUSHROOMBASEX+24*8), <(MUSHROOMBASEX+48*8)
                 dc.b <MUSHROOMBASEX, <(MUSHROOMBASEX+24*8), <(MUSHROOMBASEX+48*8)
@@ -574,7 +575,7 @@ textFadeTbl:    dc.b 6,3,1
 missileColorTbl:dc.b 1,7
 skyFlashTbl:    dc.b 10,2,9
 groundFlashTbl: dc.b 7,10,8
-groundFlashTbl2:dc.b 1,15,12
+groundFlashTbl2:dc.b 1,7,12
 
 textFade:       dc.b 0
 textFadeDir:    dc.b 0
