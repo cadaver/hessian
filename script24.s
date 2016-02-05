@@ -3,6 +3,8 @@
 
         ; Script 24, endsequence
 
+NUM_PAGES = 3
+
                 org scriptCodeStart
 
                 dc.w EndSequence
@@ -25,14 +27,16 @@ NoSurvivors:    ldx endingNum
                 lda endingUpdateTblHi,x
                 sta UpdateJump+2
                 lda endingTxtTblLo,x
-                sta EndingTextLo+1
+                sta textPageTblLo
                 lda endingTxtTblHi,x
-                sta EndingTextHi+1
+                sta textPageTblHi
                 lda endingInitTblLo,x
                 sta InitJump+1
                 lda endingInitTblHi,x
                 sta InitJump+2
+                jsr EndingBonus
                 jsr RemoveLevelActors
+                jsr StopScript
                 lda #$02
                 jsr ChangeLevel
                 lda #$00
@@ -52,8 +56,6 @@ NoSurvivors:    ldx endingNum
                 stx ntChnSfx
                 stx ntChnSfx+7
                 stx ntChnSfx+14
-                stx endingTime
-                stx endingText
                 stx actT+ACTI_PLAYER            ;Remove player
 CopyChars:      lda textChars+$100,x            ;Copy text chars to be able to show text & level graphics mixed
                 sta chars+$500,x
@@ -63,8 +65,6 @@ CopyChars:      lda textChars+$100,x            ;Copy text chars to be able to s
                 sta chars+$700,x
                 inx
                 bne CopyChars
-                jsr StopScript
-                jsr ConvertTime
 InitJump:       jsr $1000
 FrameLoop:      ldy #$01
                 sty scrollSY
@@ -75,55 +75,30 @@ FrameLoop:      ldy #$01
                 jsr FinishFrame
                 jsr GetControls
                 jsr ScrollLogic
+                jsr Random                      ;Common per-frame random number
+                sta temp1
 UpdateJump:     jsr $1000
                 jsr UA_NoShakeReset
                 jsr FinishFrame
-                lda endingText
-                beq FrameLoop
-                jsr FadeText
-                jsr FadeText
-                jsr GetFireClick
+                lda pageNum
+                bmi FrameLoop
+                jsr UpdateText
+NoFadeOut:      jsr GetFireClick
                 bcs FinishEnding
                 lda keyType
-                bpl FinishEnding
                 bmi FrameLoop
-FinishEnding:   jsr SetupTextScreen
-                jsr FadeSong
-                lda #$00
-                sta textFade
-                jsr UTC_ScoreScreen
-                lda #MUSIC_OFFICES+1
-                jsr PlaySong
-                jsr EndingBonus
-                jsr ConvertScore
-                lda #9
-                sta temp1
-                lda #6
-                sta temp2
-                lda saveDifficulty
-                and #$01
-                clc
-                adc #<txtFinalScore
-                ldx #>txtFinalScore
-                jsr PrintMultipleRows
-                lda #$06                        ;Restore normal fadetable
-                ldx #$03
-                jsr SetFadeTable
-                jsr FadeTextIn
-                jsr WaitForExit
-                jsr FadeTextOut
-                jsr BlankScreen
-                jsr FadeSong
+FinishEnding:   jsr FadeSong
                 jmp UM_SaveGame
 
-        ; Ending init
-        
+        ; Ending init routines
+
 InitEnding1:    lda #$02                        ;Use red/yellow for text fade
                 ldx #$07
-                jsr SetFadeTable
+                sta textFadeTbl
+                stx textFadeTbl+1
                 ldy #ACTI_FIRSTITEM
                 jsr InitEndingActor
-                lda #$80                        ;Missile start pos.
+                lda #$c0                        ;Missile start pos.
                 sta actXL,x
                 lda #$00
                 sta actYL,x
@@ -145,12 +120,12 @@ InitDestructionCommon:
 InitVictory:    lda #MUSIC_ENDING2
                 jmp PlaySong
 
-        ; Ending frame update
+        ; Ending frame update routines
 
 UpdateEnding1:  ldx #ACTI_FIRSTITEM
                 lda actT,x
                 beq UMC_UpdateMushroom
-                jsr Random
+                lda temp1
                 and #$01
                 tay
                 lda missileColorTbl,y
@@ -167,12 +142,16 @@ UMC_Explode:    jsr RemoveActor
 UMC_NoExplode:  rts
 
 UMC_EndFlash:   lda #$00
-                sta endingTime
-                jmp UMC_AnimateMushroom
+                sta shakeScreen
+                lda temp1
+                and #$01
+                ora #$02
+                tay
+                jmp UMC_SetFlashColors
 
 UMC_UpdateMushroom:
-                lda endingText          ;Only flashing once text is on
-                bne UMC_EndFlash
+                lda pageNum                 ;Only flashing (no shake) once text is on
+                bpl UMC_EndFlash
                 inc endingTime
                 lda endingTime
                 cmp #25
@@ -182,7 +161,7 @@ UMC_LargeFlash: cmp #$01
                 bne UMC_NoColorConvert
                 jsr ConvertScreenAndCharColors
 UMC_NoColorConvert:
-                jsr Random
+                lda temp1
                 and #$03
                 sta shakeScreen
                 lsr
@@ -215,15 +194,9 @@ UMC_AnimateMushroom:
                 lda actF1+ACTI_FIRSTITEM+1
                 cmp #4*3
                 php
-                jsr Random
-                tay
+                lda temp1
                 and #$01
-                ora endingText
-                eor #$01
                 sta shakeScreen
-                tya
-                lsr
-                and #$01
                 tay
                 plp
                 bcc UMC_BrightFlash
@@ -251,7 +224,9 @@ UMC_NoTextYet:  rts
 UMC_MushroomLastFrame:
                 cpy #50                         ;Extra wait before printing text
                 bcc UMC_NoTextYet
-                jmp PrintEndingText
+                lda #$00
+                sta pageNum                     ;Allow text printing now
+                rts
 
 UMC_SetFlashColors:
                 lda skyFlashTbl,y
@@ -271,16 +246,12 @@ UpdateVictory:
         
 ConvertScreenAndCharColors:
                 ldx #$00
-CC_ScreenColors:
-                lda colors,x
+CC_ScreenColors:lda colors+SCROLLROWS*40-$300,x
                 jsr ConvertColor
-                sta colors,x
-                lda colors+$100,x
+                sta colors+SCROLLROWS*40-$300,x
+                lda colors+SCROLLROWS*40-$200,x
                 jsr ConvertColor
-                sta colors+$100,x
-                lda colors+$200,x
-                jsr ConvertColor
-                sta colors+$200,x
+                sta colors+SCROLLROWS*40-$200,x
                 lda colors+SCROLLROWS*40-$100,x
                 jsr ConvertColor
                 sta colors+SCROLLROWS*40-$100,x
@@ -294,10 +265,9 @@ CC_CharColors:  lda charColors,x
                 rts
 
 ConvertColor:   and #$0f
-                cmp #$0b
-                bne CC_Done
-                lda #$09
-CC_Done:        rts
+                tay
+                lda convertColorTbl,y
+                rts
 
         ; Init actor for ending (index = Y)
 
@@ -308,9 +278,24 @@ InitEndingActor:jsr GFA_Found
                 sta actT,x              ;Missile
                 jmp InitActor
 
-        ; Score/time subroutines
+        ; Ending bonus calculation + prepare the final score / final time texts
 
-ConvertScore:   lda score
+EndingBonus:    sta temp1
+                sty temp2
+                ldy saveDifficulty
+                lda plrDmgModifyTbl,y
+                lsr
+                lsr
+                ldy endingNum
+                cpy #$02
+                adc #$00                        ;If victory ending, add 50000 more
+                tax
+EB_Loop:        lda #<5000
+                ldy #>5000
+                jsr AddScore
+                dex
+                bne EB_Loop
+                lda score
                 ldx score+1
                 ldy score+2
                 jsr ConvertToBCD24
@@ -320,9 +305,8 @@ ConvertScore:   lda score
                 lda temp7
                 jsr EndingBCD
                 lda temp6
-                jmp EndingBCD
-
-ConvertTime:    ldx #txtTime-txtScore
+                jsr EndingBCD
+                ldx #txtTime-txtScore
                 lda time
                 jsr ConvertToBCD8
                 lda temp6
@@ -349,73 +333,40 @@ StoreDigit:     ora #$30
                 inx
                 rts
 
-        ; Ending bonus subroutine
+        ; Ending text update
 
-EndingBonus:    sta temp1
-                sty temp2
-                ldy saveDifficulty
-                lda plrDmgModifyTbl,y
-                lsr
-                lsr
-                ldy endingNum
-                cpy #$02
-                adc #$00                        ;If not destruction ending, add 50000 more
-                tax
-EB_Loop:        lda #<5000
-                ldy #>5000
-                jsr AddScore
-                dex
-                bne EB_Loop
-                lda saveDifficulty
-                asl
-                adc saveDifficulty
-                asl
-                tax
-                ldy #$00
-EB_CopyDifficultyText:
-                lda txtDifficulties,x
-                sta txtDifficulty,y
-                inx
-                iny
-                cpy #$06
-                bcc EB_CopyDifficultyText
-                rts
-
-        ; Delay subroutine
-
-Delay:          jsr WaitBottom
-                dex
-                bne Delay
-                rts
-
-        ; Text print, using chars $80 ->
-
-PrintEndingText:lda #0
-                sta textFade
+UpdateText:     lda textFade
+                bne FadeText
                 lda #1
                 sta textFadeDir
-                sta endingText
-                jsr UpdateTextColor
-EndingTextLo:   lda #$00
-EndingTextHi:   ldx #$00
-EndingPrintMultiple:
-                ldy #1
-                sty temp1
-                sty temp2
+                sta temp2
+                sta pageDelay
+                ldy pageNum
+                lda textPosTbl,y
+                sta temp1
+                lda textPageTblLo,y
+                ldx textPageTblHi,y
                 sta zpSrcLo
                 stx zpSrcHi
-EPM_Loop:       jsr EP_Continue
-                inc temp2
+                iny
+                cpy #NUM_PAGES
+                bcc EPM_PageNotOver
                 ldy #$00
-                lda (zpSrcLo),y
-                bne EPM_Loop
-                rts
-
-EP_Continue:    ldy temp2
+EPM_PageNotOver:sty pageNum
+                ldx #34
+                lda #$a0
+EPM_Clear:      sta screen1+40,x                ;Clear first before printing
+                sta screen1+80,x
+                sta screen1+120,x
+                dex
+                bpl EPM_Clear
+EPM_RowLoop:    ldy temp2
                 jsr GetRowAddress
                 lda temp1
                 jsr Add8
-EP_Back:        ldy #$00
+                ldy #$00
+                lda (zpSrcLo),y
+                beq FadeText                    ;Set initial colors after printing
 EP_Loop:        lda (zpSrcLo),y
                 beq EP_Done
                 ora #$80
@@ -425,63 +376,40 @@ EP_Loop:        lda (zpSrcLo),y
 EP_Done:        iny
                 tya
                 ldx #zpSrcLo
-                jmp Add8
+                jsr Add8
+                inc temp2
+                bne EPM_RowLoop
 
-        ; Set colors of text area
-
-FadeText:       lda textFade
+FadeText:       ldy #$00
+                lda textFadeDir
+                beq FT_NoFade
                 clc
-                adc textFadeDir
+                adc textFade
                 bmi FT_OverNeg
-                cmp #4*2
+                cmp #2*2
                 bcc FT_NotOverPos
-                lda #4*2
+                lda #2*2
                 skip2
 FT_OverNeg:     lda #0
+                sty textFadeDir
 FT_NotOverPos:  sta textFade
 UpdateTextColor:lda textFade
                 lsr
-                lsr
                 tax
                 lda textFadeTbl,x
-                ldy screen
-                cpy #$02
-                beq UTC_ScoreScreen
                 ldx #34
 UTC_Loop:       sta colors+40,x
                 sta colors+80,x
                 sta colors+120,x
                 dex
                 bpl UTC_Loop
+FT_DelayNotExceeded:
                 rts
-UTC_ScoreScreen:ldx #$00
-UTC_Loop2:      sta colors+$c0,x
-                sta colors+$1c0,x
-                inx
-                bne UTC_Loop2
-                rts
-
-        ; Blocking fades (for time display)
-
-FadeTextIn:     lda #1
-                sta textFadeDir
-FTI_Loop:       jsr FinishFrame
-                jsr FadeText
-                lda textFade
-                cmp #4*2
-                bcc FTI_Loop
-                rts
-
-FadeTextOut:    lda #-1
-                sta textFadeDir
-FTO_Loop:       jsr FinishFrame
-                jsr FadeText
-                lda textFade
-                bne FTO_Loop
-                rts
-
-SetFadeTable:   sta textFadeTbl
-                stx textFadeTbl+1
+FT_NoFade:      inc pageDelay
+                lda pageDelay
+                cmp #250
+                bcc FT_DelayNotExceeded
+                dec textFadeDir                 ;Fade out text & switch page after a set time
                 rts
 
 endingTxtTblLo: dc.b <txtEnding1
@@ -516,6 +444,14 @@ endingUpdateTblHi:
                 dc.b >UpdateVictory
                 dc.b >UpdateVictory
 
+textPageTblLo:  dc.b <txtEnding1
+                dc.b <txtFinalScore
+                dc.b <txtThanks
+textPageTblHi:  dc.b >txtEnding1
+                dc.b >txtFinalScore
+                dc.b >txtThanks
+textPosTbl:     dc.b 1,8,7
+
 txtEnding1:     dc.b " HACKED 2ND STRIKE SYSTEMS ATTACK",0
                 dc.b "IN RANDOM. RETALIATIONS ENSUE, AND",0
                 dc.b "     A NUCLEAR WINTER BEGINS.",0,0
@@ -532,25 +468,17 @@ txtEnding3b:    dc.b "THE CONSTRUCT IS NO MORE. THE ONLY",0
                 dc.b "WITNESSES TO THE INCIDENT DECIDE TO",0
                 dc.b "DISAPPEAR TO AVOID DETENTION..",0,0
 
-txtFinalScore:  dc.b "  COMPLETED ON "
-txtDifficulty:  dc.b "XXXXXX",0
-                dc.b " ",0
-                dc.b " ",0
-                dc.b " FINAL SCORE "
+txtFinalScore:  dc.b "FINAL SCORE "
 txtScore:       dc.b "0000000",0
                 dc.b " ",0
-                dc.b "  FINAL TIME "
-txtTime:        dc.b "0:00:00",0
-                dc.b " ",0
+                dc.b " FINAL TIME "
+txtTime:        dc.b "0:00:00",0,0
+
+txtThanks:      dc.b " THE END OF ",34,"HESSIAN",34,0
                 dc.b " ",0
                 dc.b "THANK YOU FOR PLAYING!",0,0
 
-txtDifficulties:dc.b "EASY  "
-                dc.b "MEDIUM"
-                dc.b "HARD  "
-                dc.b "INSANE"
-
-MUSHROOMBASEX = $0680
+MUSHROOMBASEX = $06c0
 MUSHROOMBASEY = $24b0
 
 mushroomXL:     dc.b <MUSHROOMBASEX, <(MUSHROOMBASEX+24*8), <(MUSHROOMBASEX+48*8)
@@ -567,17 +495,19 @@ mushroomYH:     dc.b >MUSHROOMBASEY, >MUSHROOMBASEY, >MUSHROOMBASEY
                 dc.b >(MUSHROOMBASEY+42*8), >(MUSHROOMBASEY+42*8), >(MUSHROOMBASEY+42*8)
 mushroomF:      dc.b 0,1,2,24,25,26,48,49,50
 
-
 textFadeTbl:    dc.b 6,3,1
 missileColorTbl:dc.b 1,7
-skyFlashTbl:    dc.b 10,2,9
-groundFlashTbl: dc.b 7,10,8
-groundFlashTbl2:dc.b 1,7,12
+skyFlashTbl:    dc.b 10,2,9,2
+groundFlashTbl: dc.b 7,10,8,10
+groundFlashTbl2:dc.b 1,7,12,15
+
+convertColorTbl:dc.b 0,1,2,3,4,5,6,7,8,9,15,9,15,15,15,9
 
 textFade:       dc.b 0
 textFadeDir:    dc.b 0
 endingNum:      dc.b 0
 endingTime:     dc.b 0
-endingText:     dc.b 0
+pageDelay:      dc.b 0
+pageNum:        dc.b $ff
 
                 checkscriptend
