@@ -294,7 +294,7 @@ UpdateEnding2:  lda scrollCSY                   ;Wait until scrolling stopped
                 ldx endingTime2
                 and collapseShakeTbl,x
                 sta shakeScreen
-                cpx #14
+                cpx #16
                 bcs UE2_ShowText                ;Collapsed enough?
                 lda collapseShakeTbl,x
                 asl
@@ -663,7 +663,7 @@ emptyCharTbl:   dc.b 11,2,5
 chasmCharTbl:   dc.b 110,105,106,107,108,106,107,105,108
                 dc.b 106,105,106,107,105,106,108,107,108,105,111
 collapseShakeTbl:
-                dc.b $03,$03,$03,$03,$03,$02,$02,$02,$02,$02,$01,$01,$01,$01
+                dc.b $03,$03,$03,$03,$03,$02,$02,$02,$02,$02,$01,$01,$01,$01,$01,$01
 convertColorTbl:dc.b 0,1,2,3,4,5,6,7,8,9,15,9,15,15,15,9
 
 
