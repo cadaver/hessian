@@ -88,6 +88,7 @@ NoFadeOut:      jsr GetFireClick
                 lda keyType
                 bmi FrameLoop
 FinishEnding:   jsr FadeSong
+                jsr BlankScreen
                 jmp UM_SaveGame
 
         ; Ending init routines
@@ -456,7 +457,7 @@ textPageTblLo:  dc.b <txtEnding1
 textPageTblHi:  dc.b >txtEnding1
                 dc.b >txtFinalScore
                 dc.b >txtThanks
-textPosTbl:     dc.b 1,8,7
+textPosTbl:     dc.b 1,9,8
 
 txtEnding1:     dc.b " HACKED 2ND STRIKE SYSTEMS ATTACK",0
                 dc.b "IN RANDOM. RETALIATIONS ENSUE, AND",0
@@ -477,12 +478,12 @@ txtEnding3b:    dc.b "THE CONSTRUCT IS NO MORE. THE ONLY",0
 txtFinalScore:  dc.b "FINAL SCORE "
 txtScore:       dc.b "0000000",0
                 dc.b " ",0
-                dc.b " FINAL TIME "
+                dc.b " GAME TIME "
 txtTime:        dc.b "0:00:00",0,0
 
-txtThanks:      dc.b " THE END OF ",34,"HESSIAN",34,0
+txtThanks:      dc.b "THANK YOU FOR PLAYING",0
                 dc.b " ",0
-                dc.b "THANK YOU FOR PLAYING!",0,0
+                dc.b " PRESS FIRE TO GO ON",0,0
 
 MUSHROOMBASEX = $06c0
 MUSHROOMBASEY = $24b0
