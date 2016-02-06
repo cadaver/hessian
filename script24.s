@@ -120,14 +120,7 @@ InitEnding3:    ldy #C_SCIENTIST
                 jsr EnsureSpriteFile
                 ldy #C_HACKER
                 jsr EnsureSpriteFile
-                lda upgrade
-                asl
-                bpl IE3_NoRecharge
-                lda #<txtEnding3b               ;Different message with recharge upgrade
-                sta textPageTblLo
-                lda #>txtEnding3b
-                sta textPageTblHi
-IE3_NoRecharge: lda #MENU_INTERACTION           ;Prevent player joystick controls
+                lda #MENU_INTERACTION           ;Prevent player joystick controls
                 sta menuMode
                 lda #$ff
                 sta lvlObjNum
@@ -267,6 +260,7 @@ UE1_MushroomLastFrame:
 UE1_ShowText:   lda #$00
                 sta shakeScreen
                 sta pageNum                     ;Allow text printing now
+                jsr SetPanelRedrawScore         ;Redraw score when printing first page
 UE2_WaitScroll: rts
 
         ; Ending 2
@@ -557,16 +551,31 @@ InitEndingActor:jsr GFA_Found
         ; Ending bonus calculation + prepare the final score / final time texts
 
 EndingBonus:    ldy saveDifficulty
-                lda plrDmgModifyTbl,y
+                lda plrDmgModifyTbl,y           ;Bonus from difficulty
                 lsr
                 lsr
-                ldy ES_ParamY+1
-                cpy #$02
-                adc #$00                        ;If victory ending, add 50000 more
                 tax
-EB_Loop:        lda #<5000
-                ldy #>5000
+                lda ES_ParamY+1                 ;Victory ending additional bonus
+                cmp #$02
+                bne EB_Loop
+                inx
+                lda upgrade
+                asl
+                bpl EB_NoRecharge
+                inx
+                lda #<txtEnding3b               ;Different message & additional bonus for recharge upgrade
+                sta textPageTblLo
+                lda #>txtEnding3b
+                sta textPageTblHi
+EB_NoRecharge:  lda #ACT_SCIENTIST3             ;Surviving NPCs additional bonus
+                jsr EB_CheckNPC
+                lda #ACT_HACKER
+                jsr EB_CheckNPC
+EB_Loop:        lda #<2500
+                ldy #>2500
                 jsr AddScore
+                lda #$00                        ;Do not redraw score yet
+                sta panelUpdateFlags
                 dex
                 bne EB_Loop
                 lda score
@@ -606,6 +615,11 @@ StoreDigit:     ora #$30
                 sta txtScore,x
                 inx
                 rts
+
+EB_CheckNPC:    jsr FLA_NotOnScreen             ;Use this entrypoint to not disturb X
+                bcc EB_NoNPC
+                inx
+EB_NoNPC:       rts
 
         ; Ending text update
 
