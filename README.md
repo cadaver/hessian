@@ -1,6 +1,7 @@
 # Hessian
 
-Multidirectionally scrolling sideview action / adventure game for the Commodore 64. Will be strongly similar to the Metal Warrior series. Work in progress, check only at your own risk!
+Multidirectionally scrolling sideview action / adventure game for the Commodore 64. Strongly similar to the Metal Warrior series. Check the code only at your own risk, as
+it will contain gameplay and story spoilers!
 
 Technical details:
 
@@ -13,13 +14,9 @@ Technical details:
 - Loader based on the CovertBitops Loader V2.24 (1541/1581/FD/HD/IDE64)
 - Exomizer2 compression
 
-You take the role of Kim, a low-level security guard at a Throne Group
-science complex, during the worst night shift of her life. This involves
-the Group's inventions spiraling out of control thanks to the megalomaniacal
-visions of the head scientist Norman Throne, ad-hoc lifesaving nanomechanical
-surgical procedures that grant Kim superior strength and recovery capability,
-but also the constant dependence on battery power, lots of guns used against
-enemies both robotic and human, and an impending apocalypse.
+"Kim, a night security guard working at Throne Group Science Complex wakes up in an improvised emergency operating room.
+She remembers multiple hostiles opening fire on the staff, everything fading to black as rounds hammer into her chest..
+and finally voices: 'Massive trauma.. need artificial circulation.. prepare the nanobot injection now!'"
 
 See also [CovertBitops homepage](http://cadaver.homeftp.net).
 
