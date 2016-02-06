@@ -6,6 +6,7 @@
                 incbin logoscr.dat
 
 titlePageTbl:   dc.w txtPressFire
+                dc.w txtAdditionalCredits
                 dc.w txtInstructions
                 dc.w txtInstructions2
                 dc.w txtInstructions3
@@ -19,6 +20,15 @@ txtPressFire:   dc.b "A COVERT BITOPS PRODUCTION IN 2016",0
                 dc.b "MUSIC: LASSE __RNI & PETER NAGY-MIKLOS",0
                 dc.b 0
                 dc.b "PRESS FIRE FOR MENU",0
+
+txtAdditionalCredits:
+                dc.b 0
+                dc.b "ADDITIONAL LOADER CODE: PER OLOFSSON,",0
+                dc.b 0
+                dc.b "WOLFRANG SANG, CHRISTOPH THELEN",0
+                dc.b 0
+                dc.b "EXOMIZER COMPRESSOR: MAGNUS LIND",0
+                dc.b 0
 
 txtInstructions:
                 dc.b "USE JOYSTICK IN PORT 2 FOR CONTROL",0
@@ -64,7 +74,7 @@ txtOptions:     dc.b $80+12,"SKILL",0
                 dc.b 0
                 dc.b $80+12,"BACK",0
 
-                org chars+$700
+                org screen2
                 
 levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
                 dc.b 0+$80,levelCourtyard-levelNames
@@ -86,7 +96,7 @@ levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
                 dc.b 14+$80,levelUnderground-levelNames
                 dc.b 15+$80,levelOldTunnels-levelNames
 
-                org chars+$740
+                org screen2+$40
 
 levelNames:
 levelWarehouses:dc.b "WAREHOUSE",0
