@@ -182,7 +182,24 @@ UE1_UpdateMushroom:
                 bcs UE1_AnimateMushroom
 UE1_LargeFlash: cmp #$01
                 bne UE1_NoColorConvert
-                jsr ConvertScreenAndCharColors
+ConvertScreenAndCharColors:
+                ldx #$00
+CC_ScreenColors:lda colors+SCROLLROWS*40-$300,x
+                jsr ConvertColor
+                sta colors+SCROLLROWS*40-$300,x
+                lda colors+SCROLLROWS*40-$200,x
+                jsr ConvertColor
+                sta colors+SCROLLROWS*40-$200,x
+                lda colors+SCROLLROWS*40-$100,x
+                jsr ConvertColor
+                sta colors+SCROLLROWS*40-$100,x
+                inx
+                bne CC_ScreenColors
+CC_CharColors:  lda charColors,x
+                jsr ConvertColor
+                sta charColors,x
+                inx
+                bpl CC_CharColors
 UE1_NoColorConvert:
                 lda temp1
                 and #$03
@@ -254,7 +271,7 @@ UE2_WaitScroll: rts
 
 UE2_ShowText:   lda #$ff
                 sta endingTime2
-                jmp UE1_ShowText
+                bne UE1_ShowText
 UE2_Done:       lda temp1
                 and #$1f
                 adc endingTime
@@ -394,29 +411,51 @@ UE2_CNotOver1:  lda zpDestLo
                 dec zpBitsHi
 UE2_CNotOver2:  dec temp1
                 bne UE2_CollapseRowLoop
-UE3_HasText:
+UE3_SunDone:
 UE3_WaitScroll: rts
 
         ; Ending 3
 
+UE3_HasText:    lda endingTime2
+                cmp #$60+$80
+                bcs UE3_SunDone
+                inc endingTime2
+                sbc #$60
+                bcc UE3_SunDone
+                lsr
+                lsr
+                lsr
+                lsr
+                lsr
+                tax
+                lda sunColorTbl,x
+                sta Irq1_Bg3+1
+                ldy sunFrameTbl,x
+                ldx #3
+UE3_DrawSun:    tya
+                dey
+                sta screen1+11*40+28,x
+                sta UE3_GetCharColor+1
+UE3_GetCharColor:
+                lda charColors
+                sta colors+11*40+28,x
+                dex
+                bpl UE3_DrawSun
+                rts
+
 UpdateEnding3:  lda scrollCSY
                 bne UE3_WaitScroll
-                lda #ACT_SCIENTIST3                         ;Check NPC distances and stop when close enough
-                jsr FindActor
-                bcc UE3_NoDistCheck1
+                lda #ACT_SCIENTIST3             ;Check NPC distances and stop when close enough
                 jsr UE3_DistCheck
-UE3_NoDistCheck1:
                 lda #ACT_HACKER
                 jsr FindActor
-                bcc UE3_NoDistCheck2
                 jsr UE3_DistCheck
-UE3_NoDistCheck2:
                 lda pageNum
                 bpl UE3_HasText
                 lda actT+ACTI_PLAYER
                 bne UE3_HasPlayer
                 lda #ACT_PLAYER
-                sta actT+ACTI_PLAYER                        ;Reactivate player actor
+                sta actT+ACTI_PLAYER            ;Reactivate player actor
                 lda #$00
                 sta actXL+ACTI_PLAYER
                 sta actXH+ACTI_PLAYER
@@ -425,7 +464,7 @@ UE3_NoDistCheck2:
                 sta actYL+ACTI_PLAYER
                 lda #$28
                 sta actYH+ACTI_PLAYER
-                lda #4*8                                    ;Same speed regardless of upgrade
+                lda #4*8                        ;Same speed regardless of upgrade
                 sta actSX+ACTI_PLAYER
                 rts
 UE3_HasPlayer:  inc endingTime
@@ -481,7 +520,9 @@ UE3_CheckJeff:  lda #ACT_HACKER
                 sta lvlActF,y
                 jmp UE3_NPCCommon
 
-UE3_DistCheck:  ldy #ACTI_PLAYER
+UE3_DistCheck:  jsr FindActor
+                bcc UE3_NoDist
+                ldy #ACTI_PLAYER
                 jsr GetActorDistance
                 lda temp6
                 cmp #2
@@ -490,32 +531,17 @@ UE3_DistCheck:  ldy #ACTI_PLAYER
                 sta actAIMode,x
 UE3_NoDist:     rts
 
-
-        ; Convert char color to postnuclear
-
-ConvertScreenAndCharColors:
-                ldx #$00
-CC_ScreenColors:lda colors+SCROLLROWS*40-$300,x
-                jsr ConvertColor
-                sta colors+SCROLLROWS*40-$300,x
-                lda colors+SCROLLROWS*40-$200,x
-                jsr ConvertColor
-                sta colors+SCROLLROWS*40-$200,x
-                lda colors+SCROLLROWS*40-$100,x
-                jsr ConvertColor
-                sta colors+SCROLLROWS*40-$100,x
-                inx
-                bne CC_ScreenColors
-CC_CharColors:  lda charColors,x
-                jsr ConvertColor
-                sta charColors,x
-                inx
-                bpl CC_CharColors
-                rts
+        ; Mushroom cloud color conversion subroutine
 
 ConvertColor:   and #$0f
-                tay
-                lda convertColorTbl,y
+                cmp #$0b
+                beq CC_Cyan
+                cmp #$0d
+                beq CC_Green
+                rts
+CC_Cyan:        lda #$09
+                rts
+CC_Green:       lda #$0f
                 rts
 
         ; Init actor for ending (index = Y)
@@ -529,9 +555,7 @@ InitEndingActor:jsr GFA_Found
 
         ; Ending bonus calculation + prepare the final score / final time texts
 
-EndingBonus:    sta temp1
-                sty temp2
-                ldy saveDifficulty
+EndingBonus:    ldy saveDifficulty
                 lda plrDmgModifyTbl,y
                 lsr
                 lsr
@@ -548,7 +572,7 @@ EB_Loop:        lda #<5000
                 ldx score+1
                 ldy score+2
                 jsr ConvertToBCD24
-                ldx #0
+                ldx #$00
                 lda temp8
                 jsr EndingBCD
                 lda temp7
@@ -713,9 +737,9 @@ txtEnding3:     dc.b "THE BATTLE OVER, KIM CONSIDERS HER",0
                 dc.b " OPTIONS. STAY AS A MILITARY TEST",0
                 dc.b "  SUBJECT? OR RUN, BUT HOW FAR?",0,0
 
-txtEnding3b:    dc.b "THE BATTLE OVER, KIM THINKS OF THE",0
-                dc.b " FUTURE AS THE ONLY SELF-CHARGING",0
-                dc.b "  ",34,"HESSIAN",34," SUBJECT IN EXISTENCE.",0,0
+txtEnding3b:    dc.b " THE BATTLE OVER, KIM MEDITATES ON",0
+                dc.b "  HER FUTURE AS THE ONLY ",34,"HESSIAN",34,0
+                dc.b "   SUBJECT ABLE TO SELF-RECHARGE.",0,0
 
 txtFinalScore:  dc.b "FINAL SCORE "
 txtScore:       dc.b "0000000",0
@@ -754,8 +778,8 @@ chasmCharTbl:   dc.b 110,105,106,107,108,106,107,105,108
                 dc.b 106,105,106,107,105,106,108,107,108,105,111
 collapseShakeTbl:
                 dc.b $03,$03,$03,$03,$03,$02,$02,$02,$02,$02,$01,$01,$01,$01,$01,$00
-convertColorTbl:dc.b 0,1,2,3,4,5,6,7,8,9,15,9,15,15,15,9
-
+sunFrameTbl:    dc.b 115,119,123,127
+sunColorTbl:    dc.b 12,12,12,10
 
 textFade:       dc.b 0
 textFadeDir:    dc.b 0
