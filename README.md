@@ -22,7 +22,7 @@ See also [CovertBitops homepage](http://cadaver.homeftp.net).
 
 ## Code license
 
-Program code (.s files) & build scripts are licensed under the MIT license:
+Program code (.s files excluding story/dialogue text), tool code & build scripts are licensed under the MIT license:
 
 Copyright (c) 2007-2015 Lasse Öörni
 
