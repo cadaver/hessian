@@ -25,7 +25,7 @@ txtAdditionalCredits:
                 dc.b 0
                 dc.b "ADDITIONAL LOADER CODE: PER OLOFSSON,",0
                 dc.b 0
-                dc.b "WOLFRANG SANG, CHRISTOPH THELEN",0
+                dc.b "WOLFRAM SANG, CHRISTOPH THELEN",0
                 dc.b 0
                 dc.b "EXOMIZER COMPRESSOR: MAGNUS LIND",0
                 dc.b 0
