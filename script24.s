@@ -412,32 +412,7 @@ UE3_WaitScroll: rts
 
         ; Ending 3
 
-UE3_HasText:    lda endingTime2
-                cmp #$60+$80
-                bcs UE3_SunDone
-                inc endingTime2
-                sbc #$60
-                bcc UE3_SunDone
-                lsr
-                lsr
-                lsr
-                lsr
-                lsr
-                tax
-                lda sunColorTbl,x
-                sta Irq1_Bg3+1
-                ldy sunFrameTbl,x
-                ldx #3
-UE3_DrawSun:    tya
-                dey
-                sta screen1+11*40+28,x
-                sta UE3_GetCharColor+1
-UE3_GetCharColor:
-                lda charColors
-                sta colors+11*40+28,x
-                dex
-                bpl UE3_DrawSun
-                rts
+UE3_HasText:    rts
 
 UpdateEnding3:  lda scrollCSY
                 bne UE3_WaitScroll
@@ -571,8 +546,8 @@ EB_NoRecharge:  lda #ACT_SCIENTIST3             ;Surviving NPCs additional bonus
                 jsr EB_CheckNPC
                 lda #ACT_HACKER
                 jsr EB_CheckNPC
-EB_Loop:        lda #<2500
-                ldy #>2500
+EB_Loop:        lda #<5000
+                ldy #>5000
                 jsr AddScore
                 lda #$00                        ;Do not redraw score yet
                 sta panelUpdateFlags
@@ -789,8 +764,6 @@ chasmCharTbl:   dc.b 110,105,106,107,108,106,107,105,108
                 dc.b 106,105,106,107,105,106,108,107,108,105,111
 collapseShakeTbl:
                 dc.b $03,$03,$03,$03,$02,$02,$02,$02,$02,$01,$01,$01,$01,$01,$00,$00
-sunFrameTbl:    dc.b 115,119,123,127
-sunColorTbl:    dc.b 12,12,12,10
 
 textFade:       dc.b 0
 textFadeDir:    dc.b 0
