@@ -33,5 +33,5 @@ txtEnding3:     dc.b "THE BATTLE OVER, KIM CONSIDERS HER",0
                 org chars+$480
 
 txtEnding3b:    dc.b " THE BATTLE OVER, KIM MEDITATES ON",0
-                dc.b "  HER FUTURE AS THE ONLY ",34,"HESSIAN",34,0
+                dc.b "  HER FUTURE AS THE ONLY 'HESSIAN'",0
                 dc.b "   SUBJECT ABLE TO SELF-RECHARGE.",0,0
