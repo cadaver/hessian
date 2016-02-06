@@ -7,14 +7,16 @@ NUM_PAGES = 3
 
 endingTime      = menuCounter
 endingTime2     = menuMoveDelay
+txtEnding1      = charInfo+$80
+txtEnding2      = charColors+$80
+txtEnding3      = chars+$400
+txtEnding3b     = chars+$480
 
                 org scriptCodeStart
 
                 dc.w EndSequence
 
-EndSequence:    ldx #STACKSTART
-                txs
-                lda endingUpdateTblLo,y
+EndSequence:    lda endingUpdateTblLo,y
                 sta UpdateJump+1
                 lda endingUpdateTblHi,y
                 sta UpdateJump+2
@@ -73,14 +75,15 @@ FrameLoop:      ldy #$01
                 sta temp1
 UpdateJump:     jsr $1000
                 jsr UA_NoShakeReset
-                jsr FinishFrame
                 lda pageNum
-                bmi FrameLoop
+                bmi NoTextUpdate
                 jsr UpdateText
-NoFadeOut:      jsr GetFireClick
+                jsr GetFireClick
                 bcs FinishEnding
                 lda keyType
-                bmi FrameLoop
+                bpl FinishEnding
+NoTextUpdate:   jsr FinishFrame
+                jmp FrameLoop
 FinishEnding:   jsr FadeSong
                 jsr BlankScreen
                 jmp UM_SaveGame
@@ -157,9 +160,7 @@ UE1_Explode:    jsr RemoveActor
                 jmp UE1_LargeFlash
 UE1_NoExplode:  rts
 
-UE1_EndFlash:   lda #$00
-                sta shakeScreen
-                lda temp1
+UE1_EndFlash:   lda temp1
                 and #$01
                 ora #$02
                 tay
@@ -264,6 +265,7 @@ UE1_MushroomLastFrame:
                 cpy #50                        ;Small extra delay before text
                 bcc UE1_NoTextYet
 UE1_ShowText:   lda #$00
+                sta shakeScreen
                 sta pageNum                     ;Allow text printing now
 UE2_WaitScroll: rts
 
@@ -321,11 +323,11 @@ UpdateEnding2:  lda scrollCSY                   ;Wait until scrolling stopped
                 cpx #16
                 bcs UE2_ShowText                ;Collapsed enough?
                 lda collapseShakeTbl,x
-                asl
-                asl
-                asl
-                asl
-                cmp temp1
+UE2_ExplosionCounter:
+                adc #$00
+                cmp #$08
+                and #$07
+                sta UE2_ExplosionCounter+1
                 bcc UE2_NoNewExplosion
                 jsr GetAnyFreeActor
                 bcc UE2_NoNewExplosion
@@ -501,10 +503,13 @@ UE3_CheckLinda: lda #ACT_SCIENTIST3                         ;Check which NPC's a
                 lda #$02+ORG_GLOBAL
                 sta lvlActOrg,y
                 lda #$00
-                sta lvlActX,y
-                lda #AIMODE_FOLLOW+$80+$10
+                tax                                         ;Facing right
+UE3_NPCCommon:  sta lvlActX,y
+                txa
+                sta lvlActWpn,y
+                lda #AIMODE_FOLLOW+$80
                 sta lvlActF,y
-UE3_NPCCommon:  lda #$28
+                lda #$28
                 sta lvlActY,y
                 rts
 UE3_CheckJeff:  lda #ACT_HACKER
@@ -512,13 +517,9 @@ UE3_CheckJeff:  lda #ACT_HACKER
                 bcc UE3_NoNPC
                 lda #$02+ORG_GLOBAL
                 sta lvlActOrg,y
-                lda #$80                                    ;Facing left
-                sta lvlActWpn,y
-                lda #$09
-                sta lvlActX,y
-                lda #AIMODE_FOLLOW+$80+$30
-                sta lvlActF,y
-                jmp UE3_NPCCommon
+                lda #$0a
+                ldx #$80                                    ;Facing left
+                bne UE3_NPCCommon
 
 UE3_DistCheck:  jsr FindActor
                 bcc UE3_NoDist
@@ -638,8 +639,14 @@ NextPage:       lda #1
                 bcc EPM_PageNotOver
                 ldy #$00
 EPM_PageNotOver:sty pageNum
-                lda textFadeTbl
-                jsr UpdateTextColor
+                ldx #3*40-1
+EPM_StoreBackground:
+                lda screen1+40,x
+                sta screen2,x
+                lda colors+40,x
+                sta screen2+120,x
+                dex
+                bpl EPM_StoreBackground
 EPM_RowLoop:    ldy temp2
                 jsr GetRowAddress
                 lda temp1
@@ -649,9 +656,11 @@ EPM_RowLoop:    ldy temp2
                 beq FadeText                    ;Set initial colors after printing
 EP_Loop:        lda (zpSrcLo),y
                 beq EP_Done
+                cmp #$20
+                beq EP_Skip                     ;Do not overwrite background with space
                 ora #$80
                 sta (zpDestLo),y
-                iny
+EP_Skip:        iny
                 bne EP_Loop
 EP_Done:        iny
                 tya
@@ -667,13 +676,15 @@ FadeText:       clc
                 bcc FT_NotOverPos
                 lda #2*2
                 bcs FT_StopFade
-FT_OverNeg:     ldx #34
-                lda #$a0
-FT_Clear:       sta screen1+40,x                ;Clear text when fade is complete
-                sta screen1+80,x
-                sta screen1+120,x
+FT_OverNeg:     ldx #$09
+                ldx #3*40-1
+FT_RestoreBackground:                           ;Restore background beneath text when fadeout complete
+                lda screen2,x
+                sta screen1+40,x
+                lda screen2+120,x
+                sta colors+40,x
                 dex
-                bpl FT_Clear
+                bpl FT_RestoreBackground
                 lda #0
 FT_StopFade:    ldy #0
                 sty textFadeDir
@@ -682,11 +693,11 @@ UpdateTextColor:lda textFade
                 lsr
                 tax
                 lda textFadeTbl,x
-                ldx #34
-UTC_Loop:       sta colors+40,x
-                sta colors+80,x
-                sta colors+120,x
-                dex
+                ldx #3*40-1
+UTC_Loop:       ldy screen1+40,x                ;Only update text chars and leave background alone
+                bpl UTC_Skip
+                sta colors+40,x
+UTC_Skip:       dex
                 bpl UTC_Loop
 FT_DelayNotExceeded:
                 rts
@@ -725,21 +736,7 @@ textPageTblHi:  dc.b >txtEnding1
                 dc.b >txtThanks
 textPosTbl:     dc.b 1,9,8
 
-txtEnding1:     dc.b " HACKED 2ND STRIKE SYSTEMS ATTACK",0
-                dc.b "AT RANDOM. RETALIATIONS ENSUE, AND",0
-                dc.b "     A NUCLEAR WINTER BEGINS.",0,0
 
-txtEnding2:     dc.b " JORMUNGANDR TRAVERSES THE CRUST.",0
-                dc.b "MASSIVE VOLCANIC ERUPTIONS BLACKEN",0
-                dc.b "THE SUN, AND A NEW ICE AGE BEGINS.",0,0
-
-txtEnding3:     dc.b "THE BATTLE OVER, KIM CONSIDERS HER",0
-                dc.b " OPTIONS. STAY AS A MILITARY TEST",0
-                dc.b "  SUBJECT? OR RUN, BUT HOW FAR?",0,0
-
-txtEnding3b:    dc.b " THE BATTLE OVER, KIM MEDITATES ON",0
-                dc.b "  HER FUTURE AS THE ONLY ",34,"HESSIAN",34,0
-                dc.b "   SUBJECT ABLE TO SELF-RECHARGE.",0,0
 
 txtFinalScore:  dc.b "FINAL SCORE "
 txtScore:       dc.b "0000000",0
@@ -777,7 +774,7 @@ emptyCharTbl:   dc.b 11,2,5
 chasmCharTbl:   dc.b 110,105,106,107,108,106,107,105,108
                 dc.b 106,105,106,107,105,106,108,107,108,105,111
 collapseShakeTbl:
-                dc.b $03,$03,$03,$03,$03,$02,$02,$02,$02,$02,$01,$01,$01,$01,$01,$00
+                dc.b $03,$03,$03,$03,$02,$02,$02,$02,$02,$01,$01,$01,$01,$01,$00,$00
 sunFrameTbl:    dc.b 115,119,123,127
 sunColorTbl:    dc.b 12,12,12,10
 

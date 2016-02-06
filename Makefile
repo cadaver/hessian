@@ -462,6 +462,9 @@ charset14.pak: charset14.s memory.s bg/world14.blk bg/world14.chi bg/world14.chc
 	filejoin charset14_1.pak+charset14_2.pak charset14.pak
 
 charset15.pak: charset15.s memory.s bg/world15.blk bg/world15.chi bg/world15.chc bg/world15.chr
+	filesplit bg/world15.chi world15half.chi 0 128
+	filesplit bg/world15.chc world15half.chc 0 128
+	filesplit bg/world15.chr world15half.chr 0 1024
 	dasm charset15.s -ocharset15_1.bin -f3
 	pack2 charset15_1.bin charset15_1.pak
 	pchunk2 bg/world15.blk charset15_2.pak
