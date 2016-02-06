@@ -25,9 +25,9 @@ titleTexts      = chars+608+168*2
 levelNamesTbl   = chars+$700
 levelNames      = chars+$740
 
-START_LEVEL     = $00                          ;Warehouse container (proper start location)
-START_X         = $6900
-START_Y         = $1b00
+;START_LEVEL     = $00                          ;Warehouse container (proper start location)
+;START_X         = $6900
+;START_Y         = $1b00
 
 ;START_LEVEL     = $00                          ;Warehouse
 ;START_X         = $6680
@@ -137,9 +137,9 @@ START_Y         = $1b00
 ;START_X          = $0180
 ;START_Y          = $2300
 
-;START_LEVEL      = $0d                         ;Next to final server room
-;START_X          = $3a80
-;START_Y          = $3500
+START_LEVEL      = $0d                         ;Next to final server room
+START_X          = $3a80
+START_Y          = $3500
 
 ;START_LEVEL     = $0e                          ;Second cave
 ;START_X         = $1d80
@@ -168,7 +168,7 @@ START_Y         = $1b00
         ; Title screen code
 
 TitleScreen:    jsr StopScript
-                stx menuMode                    ;Reset in-game menu mode (X=0 on return)
+                jsr SetMenuMode                 ;Reset in-game menu mode (X=0 on return)
 
         ; Load logo chars & title texts
 
