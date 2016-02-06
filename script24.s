@@ -14,29 +14,17 @@ endingTime2     = menuMoveDelay
 
 EndSequence:    ldx #STACKSTART
                 txs
-                sty EndingNum+1
-                cpy #2
-                bcc NoSurvivors
-;                lda #ACT_HACKER
-;                jsr FindLevelActor
-;                bcs HaveSurvivors
-;                lda #ACT_SCIENTIST3
-;                jsr FindLevelActor
-;                bcc NoSurvivors
-;HaveSurvivors:  inc EndingNum+1
-NoSurvivors:
-EndingNum:      ldx #$00
-                lda endingUpdateTblLo,x
+                lda endingUpdateTblLo,y
                 sta UpdateJump+1
-                lda endingUpdateTblHi,x
+                lda endingUpdateTblHi,y
                 sta UpdateJump+2
-                lda endingTxtTblLo,x
+                lda endingTxtTblLo,y
                 sta textPageTblLo
-                lda endingTxtTblHi,x
+                lda endingTxtTblHi,y
                 sta textPageTblHi
-                lda endingInitTblLo,x
+                lda endingInitTblLo,y
                 sta InitJump+1
-                lda endingInitTblHi,x
+                lda endingInitTblHi,y
                 sta InitJump+2
                 jsr EndingBonus
                 jsr RemoveLevelActors
@@ -45,6 +33,7 @@ EndingNum:      ldx #$00
                 jsr ChangeLevel
                 lda #$00
                 sta actXH+ACTI_PLAYER           ;Remove player to not disturb (die by falling into nothingness)
+                sta actT+ACTI_PLAYER
                 sta mapX
                 sta endingTime
                 sta endingTime2
@@ -67,8 +56,6 @@ CopyChars:      lda textChars+$100,x            ;Copy text chars to be able to s
                 sta chars+$500,x
                 lda textChars+$200,x
                 sta chars+$600,x
-                ;lda textChars+$300,x
-                ;sta chars+$700,x
                 inx
                 bne CopyChars
 InitJump:       jsr $1000
@@ -126,7 +113,22 @@ InitDestructionCommon:
                 lda #MUSIC_ENDING1
                 jmp PlaySong
 
-InitVictory:    lda #MUSIC_ENDING2
+InitEnding3:    ldy #C_SCIENTIST
+                jsr EnsureSpriteFile
+                ldy #C_HACKER
+                jsr EnsureSpriteFile
+                lda upgrade
+                asl
+                bpl IE3_NoRecharge
+                lda #<txtEnding3b               ;Different message with recharge upgrade
+                sta textPageTblLo
+                lda #>txtEnding3b
+                sta textPageTblHi
+IE3_NoRecharge: lda #MENU_INTERACTION           ;Prevent player joystick controls
+                sta menuMode
+                lda #$ff
+                sta lvlObjNum
+                lda #MUSIC_ENDING2
                 jmp PlaySong
 
         ; Ending frame update routines
@@ -291,7 +293,6 @@ UE2_NoNewFlash: lda endingTime2
                 jmp UE1_SetFlashColors
 UE2_NoFlash:    rts
 
-
 UpdateEnding2:  lda scrollCSY                   ;Wait until scrolling stopped
                 bne UE2_WaitScroll
                 lda pageNum                     ;Showing text?
@@ -393,13 +394,102 @@ UE2_CNotOver1:  lda zpDestLo
                 dec zpBitsHi
 UE2_CNotOver2:  dec temp1
                 bne UE2_CollapseRowLoop
+UE3_HasText:
+UE3_WaitScroll: rts
+
+        ; Ending 3
+
+UpdateEnding3:  lda scrollCSY
+                bne UE3_WaitScroll
+                lda #ACT_SCIENTIST3                         ;Check NPC distances and stop when close enough
+                jsr FindActor
+                bcc UE3_NoDistCheck1
+                jsr UE3_DistCheck
+UE3_NoDistCheck1:
+                lda #ACT_HACKER
+                jsr FindActor
+                bcc UE3_NoDistCheck2
+                jsr UE3_DistCheck
+UE3_NoDistCheck2:
+                lda pageNum
+                bpl UE3_HasText
+                lda actT+ACTI_PLAYER
+                bne UE3_HasPlayer
+                lda #ACT_PLAYER
+                sta actT+ACTI_PLAYER                        ;Reactivate player actor
+                lda #$00
+                sta actXL+ACTI_PLAYER
+                sta actXH+ACTI_PLAYER
+                jsr UE3_SetPlayerFrame
+                lda #$80
+                sta actYL+ACTI_PLAYER
+                lda #$28
+                sta actYH+ACTI_PLAYER
+                lda #4*8                                    ;Same speed regardless of upgrade
+                sta actSX+ACTI_PLAYER
                 rts
-
-
-
-
-UpdateVictory:
+UE3_HasPlayer:  inc endingTime
+                lda endingTime
+                cmp #39
+                bcc UE3_Walk
+                cmp #40+20
+                beq UE3_CheckLinda
+                cmp #40+25
+                bcc UE3_Wait
+                cmp #40+55
+                beq UE3_CheckJeff
+                cmp #40+70
+                bcc UE3_Look
+                jmp UE1_ShowText
+UE3_Look:       lda #FR_ENTER
+                jsr UE3_SetPlayerFrame
+                lda #JOY_UP
+UE3_SetPlayerControls:
+                sta actCtrl+ACTI_PLAYER
+                sta actMoveCtrl+ACTI_PLAYER
                 rts
+UE3_SetPlayerFrame:
+                sta actF1+ACTI_PLAYER
+                sta actF2+ACTI_PLAYER
+UE3_NoNPC:      rts
+UE3_Walk:       lda #JOY_RIGHT
+                bne UE3_SetPlayerControls
+UE3_Wait:       lda #$00
+                beq UE3_SetPlayerControls
+UE3_CheckLinda: lda #ACT_SCIENTIST3                         ;Check which NPC's alive
+                jsr FindLevelActor
+                bcc UE3_NoNPC
+                lda #$02+ORG_GLOBAL
+                sta lvlActOrg,y
+                lda #$00
+                sta lvlActX,y
+                lda #AIMODE_FOLLOW+$80+$10
+                sta lvlActF,y
+UE3_NPCCommon:  lda #$28
+                sta lvlActY,y
+                rts
+UE3_CheckJeff:  lda #ACT_HACKER
+                jsr FindLevelActor
+                bcc UE3_NoNPC
+                lda #$02+ORG_GLOBAL
+                sta lvlActOrg,y
+                lda #$80                                    ;Facing left
+                sta lvlActWpn,y
+                lda #$09
+                sta lvlActX,y
+                lda #AIMODE_FOLLOW+$80+$30
+                sta lvlActF,y
+                jmp UE3_NPCCommon
+
+UE3_DistCheck:  ldy #ACTI_PLAYER
+                jsr GetActorDistance
+                lda temp6
+                cmp #2
+                bcs UE3_NoDist
+                lda #AIMODE_TURNTO
+                sta actAIMode,x
+UE3_NoDist:     rts
+
 
         ; Convert char color to postnuclear
 
@@ -445,7 +535,7 @@ EndingBonus:    sta temp1
                 lda plrDmgModifyTbl,y
                 lsr
                 lsr
-                ldy EndingNum+1
+                ldy ES_ParamY+1
                 cpy #$02
                 adc #$00                        ;If victory ending, add 50000 more
                 tax
@@ -579,35 +669,29 @@ FT_DelayNotExceeded:
 
 endingTxtTblLo: dc.b <txtEnding1
                 dc.b <txtEnding2
-                dc.b <txtEnding3a
-                dc.b <txtEnding3b
+                dc.b <txtEnding3
 
 endingTxtTblHi: dc.b >txtEnding1
                 dc.b >txtEnding2
-                dc.b >txtEnding3a
-                dc.b >txtEnding3b
+                dc.b >txtEnding3
 
 endingInitTblLo:dc.b <InitEnding1
                 dc.b <InitEnding2
-                dc.b <InitVictory
-                dc.b <InitVictory
+                dc.b <InitEnding3
 
 endingInitTblHi:dc.b >InitEnding1
                 dc.b >InitEnding2
-                dc.b >InitVictory
-                dc.b >InitVictory
+                dc.b >InitEnding3
 
 endingUpdateTblLo:
                 dc.b <UpdateEnding1
                 dc.b <UpdateEnding2
-                dc.b <UpdateVictory
-                dc.b <UpdateVictory
+                dc.b <UpdateEnding3
 
 endingUpdateTblHi:
                 dc.b >UpdateEnding1
                 dc.b >UpdateEnding2
-                dc.b >UpdateVictory
-                dc.b >UpdateVictory
+                dc.b >UpdateEnding3
 
 textPageTblLo:  dc.b <txtEnding1
                 dc.b <txtFinalScore
@@ -625,13 +709,13 @@ txtEnding2:     dc.b " JORMUNGANDR TRAVERSES THE CRUST.",0
                 dc.b "MASSIVE VOLCANIC ERUPTIONS BLACKEN",0
                 dc.b "THE SUN, AND A NEW ICE AGE BEGINS.",0,0
 
-txtEnding3a:    dc.b "THE CONSTRUCT IS NO MORE. ALONE,",0
-                dc.b "KIM PONDERS JORMUNGANDR'S WORDS -",0
-                dc.b "IS SHE MORE MACHINE THAN HUMAN NOW?",0,0
+txtEnding3:     dc.b "THE BATTLE OVER, KIM CONSIDERS HER",0
+                dc.b " OPTIONS. STAY AS A MILITARY TEST",0
+                dc.b "  SUBJECT? OR RUN, BUT HOW FAR?",0,0
 
-txtEnding3b:    dc.b "THE CONSTRUCT IS NO MORE. THE ONLY",0
-                dc.b "WITNESSES TO THE INCIDENT DECIDE TO",0
-                dc.b "DISAPPEAR TO AVOID DETENTION..",0,0
+txtEnding3b:    dc.b "THE BATTLE OVER, KIM THINKS OF THE",0
+                dc.b " FUTURE AS THE ONLY SELF-CHARGING",0
+                dc.b "  ",34,"HESSIAN",34," SUBJECT IN EXISTENCE.",0,0
 
 txtFinalScore:  dc.b "FINAL SCORE "
 txtScore:       dc.b "0000000",0

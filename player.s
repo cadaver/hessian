@@ -129,8 +129,7 @@ MP_NotDown1:    cmp #SCRCENTER_Y+3
                 iny
 MP_NotDown2:    sty scrollSY
 MP_NoPlayerScroll:
-                ldy #$00
-                cpy menuMode                    ;When in inventory / dialogue / interaction, no new controls
+                lda menuMode                    ;No new controls in inventory / interaction / dialogue
                 bne MP_SetWeapon
                 ldy actF1+ACTI_PLAYER
                 cpy #FR_DUCK+1
