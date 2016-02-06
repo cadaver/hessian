@@ -126,6 +126,7 @@ actDispTblLo:   dc.b <adPlayer
                 dc.b <adHazmat
                 dc.b <adCombatRobot
                 dc.b <adEndingSprites
+                dc.b <adRotorDrone
 
 actDispTblHi:   dc.b >adPlayer
                 dc.b >adItem
@@ -201,6 +202,7 @@ actDispTblHi:   dc.b >adPlayer
                 dc.b >adHazmat
                 dc.b >adCombatRobot
                 dc.b >adEndingSprites
+                dc.b >adRotorDrone
 
 adPlayer:       dc.b HUMANOID                   ;Number of sprites
 adPlayerBottomSprFile:
@@ -666,6 +668,7 @@ actLogicTblLo:  dc.b <alPlayer
                 dc.b <alScientist23
                 dc.b <alCombatRobotSaboteur
                 dc.b <alDoNothing
+                dc.b <alDoNothing
 
 actLogicTblHi:  dc.b >alPlayer
                 dc.b >alItem
@@ -740,6 +743,7 @@ actLogicTblHi:  dc.b >alPlayer
                 dc.b >alHacker
                 dc.b >alScientist23
                 dc.b >alCombatRobotSaboteur
+                dc.b >alDoNothing
                 dc.b >alDoNothing
 
 alPlayer:       dc.w MovePlayer                 ;Update routine

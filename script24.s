@@ -68,7 +68,7 @@ FrameLoop:      ldy #$01
                 jsr ScrollLogic
                 jsr DrawActors
                 jsr AddActors                   ;Need to update actor removal limits
-                jsr FinishFrame
+                jsr EndingFinishFrame
                 jsr GetControls
                 jsr ScrollLogic
                 jsr Random                      ;Common per-frame random number
@@ -82,11 +82,19 @@ UpdateJump:     jsr $1000
                 bcs FinishEnding
                 lda keyType
                 bpl FinishEnding
-NoTextUpdate:   jsr FinishFrame
+NoTextUpdate:   jsr EndingFinishFrame
                 jmp FrameLoop
 FinishEnding:   jsr FadeSong
                 jsr BlankScreen
                 jmp UM_SaveGame
+
+EndingFinishFrame:
+                jsr FinishFrame                 ;Special case: when sun is rising, flash between
+                lda Irq1_Bg3+1                  ;colors $0c & $0a
+                bpl EFF_NoFlash
+                eor #$06
+                sta Irq1_Bg3+1
+EFF_NoFlash:    rts
 
         ; Ending init routines
 
@@ -116,9 +124,7 @@ InitDestructionCommon:
                 lda #MUSIC_ENDING1
                 jmp PlaySong
 
-InitEnding3:    ldy #C_SCIENTIST
-                jsr EnsureSpriteFile
-                ldy #C_HACKER
+InitEnding3:    ldy #C_ROTORDRONE               ;Contains sunrise sprites
                 jsr EnsureSpriteFile
                 lda #MENU_INTERACTION           ;Prevent player joystick controls
                 sta menuMode
@@ -412,7 +418,42 @@ UE3_WaitScroll: rts
 
         ; Ending 3
 
-UE3_HasText:    rts
+UE3_HasText:    lda sunFrame
+                cmp #12
+                bcc UE3_SunDone2
+                inc endingTime2
+                lda endingTime2
+                cmp #$b0
+                bcc UE3_SunDone
+                lda actT+ACTI_FIRSTITEM
+                bne UE3_SunExists
+                ldy #ACTI_FIRSTITEM
+                jsr InitEndingActor
+                lda #ACT_ENDINGSPRITES2
+                sta actT,x
+                lda #$c8
+                sta actXL,x
+                lda #$78
+                sta actYL,x
+                lda #$07
+                sta actXH,x
+                lda #$26
+                sta actYH,x
+UE3_SunExists:  lda sunFrame                    ;Misuse the rotordrone boss definition
+                sta adRotorDroneFrames
+                ora #$80
+                sta adRotorDroneFrames+1
+                cmp #19+$80
+                bcs UE3_NoBrighten
+                lda #$8a
+                sta Irq1_Bg3+1
+UE3_NoBrighten: lda #$b0-25
+                sta endingTime2
+                dec sunFrame
+                rts
+UE3_SunDone2:   lda #$0a
+                sta Irq1_Bg3+1
+                rts
 
 UpdateEnding3:  lda scrollCSY
                 bne UE3_WaitScroll
@@ -589,12 +630,19 @@ StoreOneDigit:  and #$0f
 StoreDigit:     ora #$30
                 sta txtScore,x
                 inx
-                rts
+EB_NoNPC:       rts
 
-EB_CheckNPC:    jsr FLA_NotOnScreen             ;Use this entrypoint to not disturb X
+EB_CheckNPC:    sta temp1
+                jsr FLA_NotOnScreen             ;Use this entrypoint to not disturb X
                 bcc EB_NoNPC
                 inx
-EB_NoNPC:       rts
+                lda temp1
+                cmp #ACT_SCIENTIST3
+                beq EB_PreloadNPC1
+                ldy #C_HACKER
+                skip2
+EB_PreloadNPC1: ldy #C_SCIENTIST               ;Also preload sprites if will be used in the cutscene
+                jmp EnsureSpriteFile
 
         ; Ending text update
 
@@ -728,8 +776,6 @@ textPageTblHi:  dc.b >txtEnding1
                 dc.b >txtThanks
 textPosTbl:     dc.b 1,9,8
 
-
-
 txtFinalScore:  dc.b "FINAL SCORE "
 txtScore:       dc.b "0000000",0
                 dc.b " ",0
@@ -772,5 +818,6 @@ textFade:       dc.b 0
 textFadeDir:    dc.b 0
 pageDelay:      dc.b 0
 pageNum:        dc.b $ff
+sunFrame:       dc.b 22
 
                 checkscriptend
