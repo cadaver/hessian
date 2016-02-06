@@ -160,9 +160,10 @@ UE1_Explode:    jsr RemoveActor
 UE1_NoExplode:  rts
 
 UE1_EndFlash:   lda temp1
-                and #$01
-                ora #$02
-                tay
+                cmp #$40                    ;Random red flashes
+                ldy #$02
+                bcs UE1_SetFlashColors
+                iny
 UE1_SetFlashColors:
                 lda skyFlashTbl,y
                 sta Irq1_Bg1+1
@@ -392,12 +393,15 @@ UE2_CollapseRowLoop:
                 ldy #20
 UE2_CollapseColumn:
                 lda (zpSrcLo),y
-                cmp #12
+                cmp #18
                 bcs UE2_EmptyOK
                 ldx temp1
                 cpx #8
                 bcc UE2_EmptyOK
-                lda emptyCharTbl-8,x
+                tya
+                adc emptyCharOffsetTbl-8,x      ;C=1, add one more
+                tax
+                lda emptyCharTbl,x
 UE2_EmptyOK:    sta (zpDestLo),y
                 tax
                 lda charColors,x
@@ -467,7 +471,6 @@ UpdateEnding3:  lda scrollCSY
                 lda #ACT_SCIENTIST3             ;Check NPC distances and stop when close enough
                 jsr UE3_DistCheck
                 lda #ACT_HACKER
-                jsr FindActor
                 jsr UE3_DistCheck
                 lda pageNum
                 bpl UE3_HasText
@@ -804,9 +807,13 @@ skyFlashTbl:    dc.b 10,2,9,2,6,11,3
 missileColorTbl:
 groundFlashTbl: dc.b 7,10,8,10,11,12,3
 groundFlashTbl2:dc.b 1,7,12,15,12,15,1
-emptyCharTbl:   dc.b 11,2,5
-chasmCharTbl:   dc.b 110,105,106,107,108,106,107,105,108
-                dc.b 106,105,106,107,105,106,108,107,108,105,111
+emptyCharOffsetTbl:
+                dc.b 0-2,20-2,40-2
+emptyCharTbl:   dc.b 4,4,4,4,16,4,4,4,4,4,16,4,4,4,4,4,16,4,4,4
+                dc.b 3,3,3,3,2, 3,3,3,3,3,2, 3,3,3,3,3,2, 3,3,3
+                dc.b 8,8,8,8,8, 8,8,8,8,8,8, 8,8,8,8,8,8, 8,8,8
+chasmCharTbl:   dc.b 118,114,115,116,117,115,116,114,117
+                dc.b 115,114,115,116,114,115,117,116,117,114,119
 collapseShakeTbl:
                 dc.b $03,$03,$03,$03,$02,$02,$02,$02,$02,$01,$01,$01,$01,$01,$00,$00
 
