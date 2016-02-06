@@ -22,7 +22,7 @@ txtEnding2:     dc.b " JORMUNGANDR TRAVERSES THE CRUST.",0
                 dc.b "THE SUN, AND A NEW ICE AGE BEGINS.",0,0
 
                 org chars
-                incbin world15opt.chr
+                incbin world15half.chr
 
                 org chars+$400
 
