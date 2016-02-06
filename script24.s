@@ -259,6 +259,7 @@ UE1_AnimateLoop:lda actF1,x
                 inx
                 cpx #ACTI_FIRSTITEM+10
                 bcc UE1_AnimateLoop
+UE2_WaitScroll:
 UE1_NoTextYet:  rts
 UE1_MushroomLastFrame:
                 cpy #50                        ;Small extra delay before text
@@ -266,8 +267,14 @@ UE1_MushroomLastFrame:
 UE1_ShowText:   lda #$00
                 sta shakeScreen
                 sta pageNum                     ;Allow text printing now
-                jsr SetPanelRedrawScore         ;Redraw score when printing first page
-UE2_WaitScroll: rts
+                ldx #3*40-1
+StoreBackground:lda screen1+40,x                ;Store background behind text to screen2 first
+                sta screen2,x
+                lda colors+40,x
+                sta screen2+120,x
+                dex
+                bpl StoreBackground
+                jmp SetPanelRedrawScore         ;Redraw score when printing first page
 
         ; Ending 2
 
@@ -481,14 +488,14 @@ UpdateEnding3:  lda scrollCSY
                 rts
 UE3_HasPlayer:  inc endingTime
                 lda endingTime
-                cmp #39
-                bcc UE3_Walk
-                cmp #40+20
-                beq UE3_CheckLinda
                 cmp #40+25
-                bcc UE3_Wait
+                beq UE3_CheckLinda
                 cmp #40+55
                 beq UE3_CheckJeff
+                cmp #39
+                bcc UE3_Walk
+                cmp #40+15
+                bcc UE3_Wait
                 cmp #40+70
                 bcc UE3_Look
                 jmp UE1_ShowText
@@ -651,8 +658,6 @@ UpdateText:     lda $d012                       ;Wait until raster below the tex
                 bcc UpdateText
                 lda textFadeDir
                 bne FadeText
-                lda textFade
-                beq NextPage
                 lda UA_ItemFlashCounter+1
                 and #$03
                 bne NoNextPageYet
@@ -663,7 +668,39 @@ UpdateText:     lda $d012                       ;Wait until raster below the tex
                 dec textFadeDir                 ;Fade out text & switch page after a set time
 NoNextPageYet:  rts
 
-NextPage:       lda #1
+FadeText:       clc
+                adc textFade
+                bmi NextPage
+                cmp #2*2
+                bcc FT_NotOverPos
+                lda #2*2
+                ldy #0
+                sty textFadeDir
+FT_NotOverPos:  sta textFade
+UpdateTextColor:lda textFade
+                lsr
+                tax
+                lda textFadeTbl,x
+                ldx #3*40-1
+UTC_Loop:       ldy screen1+40,x                ;Only update text chars and leave background alone
+                bpl UTC_Skip
+                sta colors+40,x
+UTC_Skip:       dex
+                bpl UTC_Loop
+FT_DelayNotExceeded:
+                rts
+
+NextPage:       ldx #3*40-1
+RestoreBackground:                           ;Restore background beneath text when fadeout complete
+                lda screen2,x
+                sta screen1+40,x
+                lda screen2+120,x
+                sta colors+40,x
+                dex
+                bpl RestoreBackground
+                lda #0
+                sta textFade
+                lda #1
                 sta textFadeDir
                 sta temp2
                 sta pageDelay
@@ -679,21 +716,13 @@ NextPage:       lda #1
                 bcc EPM_PageNotOver
                 ldy #$00
 EPM_PageNotOver:sty pageNum
-                ldx #3*40-1
-EPM_StoreBackground:
-                lda screen1+40,x
-                sta screen2,x
-                lda colors+40,x
-                sta screen2+120,x
-                dex
-                bpl EPM_StoreBackground
 EPM_RowLoop:    ldy temp2
                 jsr GetRowAddress
                 lda temp1
                 jsr Add8
                 ldy #$00
                 lda (zpSrcLo),y
-                beq FadeText                    ;Set initial colors after printing
+                beq UpdateTextColor             ;Set initial colors after printing
 EP_Loop:        lda (zpSrcLo),y
                 beq EP_Done
                 cmp #$20
@@ -708,39 +737,6 @@ EP_Done:        iny
                 jsr Add8
                 inc temp2
                 bne EPM_RowLoop
-
-FadeText:       clc
-                adc textFade
-                bmi FT_OverNeg
-                cmp #2*2
-                bcc FT_NotOverPos
-                lda #2*2
-                bcs FT_StopFade
-FT_OverNeg:     ldx #$09
-                ldx #3*40-1
-FT_RestoreBackground:                           ;Restore background beneath text when fadeout complete
-                lda screen2,x
-                sta screen1+40,x
-                lda screen2+120,x
-                sta colors+40,x
-                dex
-                bpl FT_RestoreBackground
-                lda #0
-FT_StopFade:    ldy #0
-                sty textFadeDir
-FT_NotOverPos:  sta textFade
-UpdateTextColor:lda textFade
-                lsr
-                tax
-                lda textFadeTbl,x
-                ldx #3*40-1
-UTC_Loop:       ldy screen1+40,x                ;Only update text chars and leave background alone
-                bpl UTC_Skip
-                sta colors+40,x
-UTC_Skip:       dex
-                bpl UTC_Loop
-FT_DelayNotExceeded:
-                rts
 
 endingTxtTblLo: dc.b <txtEnding1
                 dc.b <txtEnding2
@@ -774,7 +770,7 @@ textPageTblLo:  dc.b <txtEnding1
 textPageTblHi:  dc.b >txtEnding1
                 dc.b >txtFinalScore
                 dc.b >txtThanks
-textPosTbl:     dc.b 1,9,8
+textPosTbl:     dc.b 1,9,7
 
 txtFinalScore:  dc.b "FINAL SCORE "
 txtScore:       dc.b "0000000",0
@@ -782,9 +778,9 @@ txtScore:       dc.b "0000000",0
                 dc.b " GAME TIME "
 txtTime:        dc.b "0:00:00",0,0
 
-txtThanks:      dc.b "THANK YOU FOR PLAYING",0
+txtThanks:      dc.b "THANK YOU FOR PLAYING!",0
                 dc.b " ",0
-                dc.b " PRESS FIRE TO GO ON",0,0
+                dc.b "  PRESS FIRE TO EXIT",0,0
 
 MUSHROOMBASEX = $06c0
 MUSHROOMBASEY = $24b0
@@ -815,7 +811,7 @@ collapseShakeTbl:
                 dc.b $03,$03,$03,$03,$02,$02,$02,$02,$02,$01,$01,$01,$01,$01,$00,$00
 
 textFade:       dc.b 0
-textFadeDir:    dc.b 0
+textFadeDir:    dc.b -1
 pageDelay:      dc.b 0
 pageNum:        dc.b $ff
 sunFrame:       dc.b 22
