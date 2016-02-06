@@ -598,7 +598,10 @@ EB_NoNPC:       rts
 
         ; Ending text update
 
-UpdateText:     lda textFadeDir
+UpdateText:     lda $d012                       ;Wait until raster below the text
+                cmp #54+4*8
+                bcc UpdateText
+                lda textFadeDir
                 bne FadeText
                 lda textFade
                 beq NextPage
