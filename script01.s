@@ -146,8 +146,7 @@ IntroCutscene:  lda #MUSIC_MYSTERY
                 lda #$16
                 sta mapY
                 jsr RedrawAndAddActors
-                lda #$00                        ;Same Y-scroll as textscreen
-                sta scrollY
+                lda #$00
                 sta page
                 sta textFade
                 jsr SL_NewMapPos
@@ -216,7 +215,7 @@ IC_TextNotOverHigh:
 IC_SetTextColor:pha
                 jsr WaitBottom
                 pla
-IC_STCLoop:     sta colors-1,x
+IC_STCLoop:     sta colors+40-1,x
                 dex
                 bne IC_STCLoop
                 rts
@@ -239,7 +238,7 @@ IC_InitTextDisplay:
                 jsr IC_SetTextColor
                 ldx #39
                 lda #32
-IC_SetEmptyRow: sta screen1+3*40,x              ;Set row below the text empty to hide the split
+IC_SetEmptyRow: sta screen1+4*40,x              ;Set row below the text empty to hide the split
                 dex
                 bpl IC_SetEmptyRow
                 inc Irq6_LevelUpdate+1          ;Allow level animation
@@ -257,7 +256,7 @@ PrintPage:      ldy #$00
                 sta zpSrcLo
                 stx zpSrcHi
 PP_Loop:        lda (zpSrcLo),y
-                sta screen1,y
+                sta screen1+40,y
                 iny
                 cpy #3*40
                 bcc PP_Loop
@@ -274,7 +273,8 @@ pageTbl:        dc.w page1
                 dc.w page3
 
 textSplit:      dc.b $18,TEXTSCR_D018           ;Show screen1 with text charset
-                dc.b 54+3*8+1                   ;Resume gamescreen below
+                dc.b $11,$13                    ;Use same Y-scroll as game
+                dc.b 50+4*8+1                   ;Resume gamescreen below
 
         ; Messages
 
