@@ -25,8 +25,10 @@ LabComputer4:   lda #ACT_HACKER
                 cmp #$0f+ORG_GLOBAL
                 bne LC_NoActor
                 lda lvlActX,y
-                cmp #$70
-                bne LC_NoActor
+                cmp #$6e
+                bcc LC_NoActor
+                cmp #$78
+                bcs LC_NoActor
                 lda #$88
                 sta lvlActX,y
                 lda #$48
