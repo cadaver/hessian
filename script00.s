@@ -608,6 +608,9 @@ IP_CodeLoop:    if CODE_CHEAT > 0
         ; Save options if modified
 
 SaveModifiedOptions:
+                ldx difficulty                  ;Set player's difficulty damage scaling now
+                lda plrDmgModifyTbl,x
+                sta DA_DmgDifficultyMod+1
                 lda optionsModified
                 beq SMC_NoChange
                 lda #F_OPTIONS
@@ -635,8 +638,11 @@ UpdateCheckCheat:
                 cpx #CHEATSTRING_LENGTH-1
                 bcc CC_NoCheat
 CC_ActivateCheat:
+                lda DA_ResetRecharge
+                eor #$86^$a9
+                sta DA_ResetRecharge
                 lda DA_ResetRecharge+1          ;Disable player damage & battery drain
-                eor #healTimer^temp7
+                eor #healTimer^$80
                 sta DA_ResetRecharge+1
                 lda DrainBatteryRound
                 eor #$69^$a9

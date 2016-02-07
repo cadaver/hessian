@@ -1640,18 +1640,23 @@ ATD_NoModify:   ldx tgtActIndex
         ; Returns: -
         ; Modifies: A,Y,temp7-temp8,zpSrcLo,possibly other temp registers
 
-DamageActor:    sta temp7
-                sty temp8
-                tay
-                bpl DA_UseModify                ;Unmodified damage (drowning, falling)
-                and #$7f                        ;will not involve player's armor
-                bpl DA_SkipModify
-DA_UseModify:   txa
-                bne DA_NoPlayerArmor
-                ldy #ITEM_ARMOR
-                lda invCount-1,y                ;Check player armor
-                bmi DA_NoPlayerArmor
-                pha
+DamageActor:    sty temp8
+                cpx #ACTI_PLAYER
+                bne DA_NotPlayer
+DA_ResetRecharge:
+                if GODMODE_CHEAT = 0
+                stx healTimer                   ;If player hit, reset healing timer
+                else
+                lda #$80                        ;Cheat = always zero unmodified damage
+                endif
+                tay                             ;Skip difficulty scaling & armor for unmodified damage
+                bmi DA_Unmodified
+DA_DmgDifficultyMod:
+                ldy #NO_MODIFY
+                jsr ModifyDamage
+                ldy invCount-1+ITEM_ARMOR       ;Player has armor?
+                bmi DA_NotPlayer
+                sta temp7
                 lda #8                          ;Round the armor strength reduction to next 5
 DA_NextMultiplyOf5:
                 cmp temp7
@@ -1659,10 +1664,11 @@ DA_NextMultiplyOf5:
                 adc #5
                 bcc DA_NextMultiplyOf5
 DA_ReduceOK:    sbc #3
+                ldy #ITEM_ARMOR
                 jsr DecreaseAmmo
                 lda #ARMOR_TEXT_DURATION        ;Show decreased armor level in the status
                 sta armorMsgTime                ;panel center (same as oxygen meter)
-                pla
+                lda invCount-1+ITEM_ARMOR
                 cmp temp7                       ;Can reduce damage fully, or partially?
                 bcc DA_NotFullReduce
                 lda temp7
@@ -1671,27 +1677,21 @@ DA_NotFullReduce:
                 eor #$ff
                 sec
                 adc temp7
-                sta temp7
-DA_NoPlayerArmor:
-                jsr GetActorLogicData
+DA_NotPlayer:   tay                             ;Note: this check is redundant for player
+                bmi DA_Unmodified
+                pha
+                jsr GetActorLogicData           ;Common damage modify for all actors
                 ldy #AL_DMGMODIFY
                 lda (actLo),y
                 tay
-                lda temp7
+                pla
                 jsr ModifyDamage
-DA_SkipModify:  sta temp7
-                txa
-                bne DA_NotPlayer
-DA_ResetRecharge:
-                if GODMODE_CHEAT = 0
-                stx healTimer                   ;If player hit, reset healing timer
-                else
-                stx temp7
-                endif
-DA_NotPlayer:   lda actHp,x                     ;First check that there is health
+DA_Unmodified:  and #$7f
+                sta temp7
+                lda actHp,x                     ;First check that there is health
                 beq DA_Done                     ;(prevent destroy being called multiple times)
                 sec
-DA_Sub:         sbc temp7
+                sbc temp7
                 bcs DA_NotDead
                 lda #$00
 DA_NotDead:     sta actHp,x

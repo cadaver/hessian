@@ -1074,10 +1074,7 @@ AU_NoFirearms:  stx AH_PlayerFirearmBonus+1
                 lda #NO_MODIFY                  ;modifier
                 bcc AU_NoArmor
                 lda #UPGRADE_DAMAGE_MODIFY
-AU_NoArmor:     ldx difficulty                  ;Finally modify with difficulty level
-                ldy plrDmgModifyTbl,x
-                jsr ModifyDamage
-                sta plrDmgModify
+AU_NoArmor:     sta plrDmgModify
                 lsr temp6                       ;Check healing speed
                 lda #INITIAL_HEALTIMER-1        ;Healing code has C=1 while adding, so subtract 1 here
                 bcc AU_NoHealing
