@@ -862,7 +862,7 @@ txtVictory:     dc.b "CONFIGURATION SUCCESSFUL",0
 
 txtNotConfigured:
                 dc.b "UPGRADE NOT CONFIGURED",0
-txtInstallDone: dc.b "INSTALL COMPLETE",0
+txtInstallDone: dc.b "UPGRADE INSTALLED",0
 
 txtAlreadyConfigured:
                 dc.b "READY TO INSTALL",0
