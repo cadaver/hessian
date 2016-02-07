@@ -411,8 +411,9 @@ IA_IsLive:      lda #<txtCantInstall
                 sta actBulletDmgMod-ACTI_FIRSTPLRBULLET,x
                 jsr NoInterpolation
 IA_NoEffect:    ldx #ACTI_PLAYER
-                lda #DMG_PISTOL+NOARMOR
-                jmp DamageSelf
+                lda #DMG_PISTOL+NODMGMODIFY
+                ldy #NODAMAGESRC
+                jmp DamageActor
 IA_NotOpen:     rts
 
         ; Laser effect continuous script routine

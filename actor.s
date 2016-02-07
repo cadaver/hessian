@@ -1651,11 +1651,15 @@ DA_ResetRecharge:
                 endif
                 tay                             ;Skip difficulty scaling & armor for unmodified damage
                 bmi DA_Unmodified
+                cmp #DMG_ARMOR_THRESHOLD        ;If the original damage is below threshold
+                php                             ;(continuous such as steam, fire etc.) do not involve armor
 DA_DmgDifficultyMod:
                 ldy #NO_MODIFY
                 jsr ModifyDamage
+                plp
+                bcc DA_NoPlayerArmor
                 ldy invCount-1+ITEM_ARMOR       ;Player has armor?
-                bmi DA_NotPlayer
+                bmi DA_NoPlayerArmor
                 sta temp7
                 lda #8                          ;Round the armor strength reduction to next 5
 DA_NextMultiplyOf5:
@@ -1678,7 +1682,8 @@ DA_NotFullReduce:
                 sec
                 adc temp7
 DA_NotPlayer:   tay                             ;Note: this check is redundant for player
-                bmi DA_Unmodified
+                bmi DA_Unmodified               ;when coming from the code above
+DA_NoPlayerArmor:
                 pha
                 jsr GetActorLogicData           ;Common damage modify for all actors
                 ldy #AL_DMGMODIFY

@@ -49,9 +49,9 @@ NOWEAPONFRAME   = $ff
 
 RELOAD_FINISH_DELAY = 9                         ;Fixed delay before weapon can be fired after reloading
 
-NOARMOR         = $80
+NODMGMODIFY     = $80
 
-DMG_DROWNING    = 2+NOARMOR
+DMG_DROWNING    = 2+NODMGMODIFY
 DMG_FISTS       = 4
 DMG_FLAMETHROWER = 5
 DMG_MINIGUN     = 6
@@ -69,16 +69,18 @@ DMG_GRENADE     = 40
 DMG_LAUNCHERGRENADE = 48
 DMG_MINE        = 56
 DMG_BAZOOKA     = 64
-DMG_EMP         = 4+NOARMOR                    ;4 damage for 8 frames = 32 total
-DMG_FIRE        = 2+NOARMOR
-DMG_SMOKE       = 1+NOARMOR
+DMG_EMP         = 4+NODMGMODIFY                    ;4 damage for 8 frames = 32 total
+DMG_FIRE        = 2
+DMG_SMOKE       = 1
 DMG_ANIMALBITE  = 4
-DMG_SPIDER      = 1+NOARMOR
-DMG_FLY         = 1+NOARMOR
-DMG_ROCK        = 2+NOARMOR
-DMG_FIREBALL    = 2+NOARMOR
-DMG_STEAM       = 1+NOARMOR
+DMG_SPIDER      = 1
+DMG_FLY         = 1
+DMG_ROCK        = 2
+DMG_FIREBALL    = 2
+DMG_STEAM       = 1
 DMG_ACID        = 16
+
+DMG_ARMOR_THRESHOLD = 4
 
 DMGMOD_EQUAL    = $88                           ;Equal damage to nonorganic / organic
 DMGMOD_NOORGANIC = $80                          ;No organic damage
