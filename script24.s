@@ -594,7 +594,15 @@ EndingBonus:    ldx saveDifficulty
                 sta textPageTblLo+9
                 lda #>txtEnding3_2b
                 sta textPageTblHi+9
-EB_NoRecharge:  lda #ACT_SCIENTIST3             ;Surviving NPCs additional bonus
+EB_NoRecharge:  lda #PLOT_RIGTUNNELMACHINE      ;Special case: if Linda was prepared to blow herself up
+                jsr GetPlotBit                  ;but the communication sabotage was used instead,
+                bne EB_NoHazmat                 ;revert the transformation
+                lda #ACT_HAZMAT                 ;(cannot be Jeff, as if player reaches the 2nd cave
+                jsr FLA_NotOnScreen             ;while Jeff is in hazmat suit, the sabotage cannot be
+                bcc EB_NoHazmat                 ;performed)
+                lda #ACT_SCIENTIST3
+                sta lvlActT,y
+EB_NoHazmat:    lda #ACT_SCIENTIST3             ;Surviving NPCs additional bonus
                 jsr EB_CheckNPC
                 lda #ACT_HACKER
                 jsr EB_CheckNPC
