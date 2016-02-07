@@ -126,26 +126,26 @@ EL_NoActors:
 SEL_Wait:
 HEL_Wait:       rts
 
-        ; Jeff in lab
+        ; Jeff enters lab
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
-HackerEnterLab: lda #$70
+HackerEnterLab: lda #$72
                 jsr MoveCommon
                 bcc HEL_Wait
                 gettext txtHackerEnterLab
                 jmp HFF_SpeakAndStopScript
 
-        ; Linda in lab
+        ; Linda enters lab
         ;
         ; Parameters: -
         ; Returns: -
         ; Modifies: various
 
 ScientistEnterLab:
-                lda #$71
+                lda #$73
                 jsr MoveCommon
                 bcc SEL_Wait
                 gettext txtEnterLab
