@@ -10,7 +10,8 @@ endingTime2     = menuMoveDelay
 txtEnding1      = charInfo+$80
 txtEnding2      = charColors+$80
 txtEnding3      = chars+$400
-txtEnding3b     = chars+$480
+txtEnding3_2a   = chars+$480
+txtEnding3_2b   = chars+$700
 
                 org scriptCodeStart
 
@@ -20,14 +21,14 @@ EndSequence:    lda endingUpdateTblLo,y
                 sta UpdateJump+1
                 lda endingUpdateTblHi,y
                 sta UpdateJump+2
-                lda endingTxtTblLo,y
-                sta textPageTblLo
-                lda endingTxtTblHi,y
-                sta textPageTblHi
                 lda endingInitTblLo,y
                 sta InitJump+1
                 lda endingInitTblHi,y
                 sta InitJump+2
+                tya
+                asl
+                asl
+                sta EPM_BasePage+1
                 jsr EndingBonus
                 jsr RemoveLevelActors
                 jsr StopScript
@@ -47,7 +48,6 @@ EndSequence:    lda endingUpdateTblLo,y
                 sta mapY
                 jsr FindPlayerZone              ;Load charset
                 jsr RedrawScreen
-                jsr SL_NewMapPos
                 jsr SetZoneColors
                 ldx #$00                        ;Kill sound effects so the music will play properly
                 stx ntChnSfx
@@ -130,6 +130,7 @@ InitEnding3:    ldy #C_ROTORDRONE               ;Contains sunrise sprites
                 sta menuMode
                 lda #$ff
                 sta lvlObjNum
+                inc EPM_NumPageCmp+1            ;One more text page
                 lda #MUSIC_ENDING2
                 jmp PlaySong
 
@@ -393,7 +394,7 @@ UE2_CollapseRowLoop:
                 ldy #20
 UE2_CollapseColumn:
                 lda (zpSrcLo),y
-                cmp #18
+                cmp #33
                 bcs UE2_EmptyOK
                 ldx temp1
                 cpx #8
@@ -576,23 +577,22 @@ InitEndingActor:jsr GFA_Found
 
         ; Ending bonus calculation + prepare the final score / final time texts
 
-EndingBonus:    ldy saveDifficulty
-                lda plrDmgModifyTbl,y           ;Bonus from difficulty
+EndingBonus:    ldx saveDifficulty
+                lda plrDmgModifyTbl,x           ;Bonus from difficulty
                 lsr
                 lsr
                 tax
-                lda ES_ParamY+1                 ;Victory ending additional bonus
-                cmp #$02
+                cpy #$02                        ;Victory ending?
                 bne EB_Loop
                 inx
                 lda upgrade
                 asl
                 bpl EB_NoRecharge
                 inx
-                lda #<txtEnding3b               ;Different message & additional bonus for recharge upgrade
-                sta textPageTblLo
-                lda #>txtEnding3b
-                sta textPageTblHi
+                lda #<txtEnding3_2b             ;Different message & additional bonus for recharge upgrade
+                sta textPageTblLo+9
+                lda #>txtEnding3_2b
+                sta textPageTblHi+9
 EB_NoRecharge:  lda #ACT_SCIENTIST3             ;Surviving NPCs additional bonus
                 jsr EB_CheckNPC
                 lda #ACT_HACKER
@@ -707,15 +707,19 @@ RestoreBackground:                           ;Restore background beneath text wh
                 sta textFadeDir
                 sta temp2
                 sta pageDelay
-                ldy pageNum
+EPM_BasePage:   lda #$00
+                clc
+                adc pageNum
+                tay
                 lda textPosTbl,y
                 sta temp1
                 lda textPageTblLo,y
                 ldx textPageTblHi,y
                 sta zpSrcLo
                 stx zpSrcHi
+                ldy pageNum
                 iny
-                cpy #NUM_PAGES
+EPM_NumPageCmp: cpy #NUM_PAGES
                 bcc EPM_PageNotOver
                 ldy #$00
 EPM_PageNotOver:sty pageNum
@@ -741,14 +745,6 @@ EP_Done:        iny
                 inc temp2
                 bne EPM_RowLoop
 
-endingTxtTblLo: dc.b <txtEnding1
-                dc.b <txtEnding2
-                dc.b <txtEnding3
-
-endingTxtTblHi: dc.b >txtEnding1
-                dc.b >txtEnding2
-                dc.b >txtEnding3
-
 endingInitTblLo:dc.b <InitEnding1
                 dc.b <InitEnding2
                 dc.b <InitEnding3
@@ -770,10 +766,30 @@ endingUpdateTblHi:
 textPageTblLo:  dc.b <txtEnding1
                 dc.b <txtFinalScore
                 dc.b <txtThanks
+                dc.b 0
+                dc.b <txtEnding2
+                dc.b <txtFinalScore
+                dc.b <txtThanks
+                dc.b 0
+                dc.b <txtEnding3
+                dc.b <txtEnding3_2a
+                dc.b <txtFinalScore
+                dc.b <txtThanks
+
 textPageTblHi:  dc.b >txtEnding1
                 dc.b >txtFinalScore
                 dc.b >txtThanks
-textPosTbl:     dc.b 1,9,7
+                dc.b 0
+                dc.b >txtEnding2
+                dc.b >txtFinalScore
+                dc.b >txtThanks
+                dc.b 0
+                dc.b >txtEnding3
+                dc.b >txtEnding3_2a
+                dc.b >txtFinalScore
+                dc.b >txtThanks
+
+textPosTbl:     dc.b 1,9,7,0,1,9,7,0,1,1,9,7
 
 txtFinalScore:  dc.b "FINAL SCORE "
 txtScore:       dc.b "0000000",0
