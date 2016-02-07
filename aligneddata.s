@@ -407,7 +407,7 @@ shiftOffsetTbl: dc.b 6,6,6
                 endif
 
         ; Level properties
-        
+
 lvlPropertiesStart:
 lvlWaterSplashColor:
                 dc.b 0
@@ -467,5 +467,5 @@ saveHP:         dc.b 0
 saveDifficulty: dc.b 0
 saveStateEnd:
 
-saveBattery     = saveState + battery - playerStateStart
+saveBattery     = saveState + (battery - playerStateStart)
 
