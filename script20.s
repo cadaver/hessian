@@ -139,7 +139,7 @@ txtNote2:            ;0123456789012345678901234567890123456789
                 dc.b "AS A SECURITY PRECAUTION.",0
                 dc.b " ",0
                 dc.b "I GAVE IT A QUESTION TO PONDER: HOW TO",0
-                dc.b "FUTURE-PROOF MANKIND?",0
+                dc.b "SECURE THE FUTURE OF MANKIND?",0
                 textjump txtNormanSignature
 
 txtNote3:            ;0123456789012345678901234567890123456789
