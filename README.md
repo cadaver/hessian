@@ -24,7 +24,7 @@ See also [CovertBitops homepage](http://cadaver.homeftp.net).
 
 Program code (.s files excluding story/dialogue text), tool code & build scripts are licensed under the MIT license:
 
-Copyright (c) 2007-2015 Lasse Öörni
+Copyright (c) 2007-2016 Lasse Öörni
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
