@@ -149,10 +149,12 @@ MoveScientists: jsr StopScript
                 sta actScriptEP+1
                 stx actScriptF+1
                 if SKIP_PLOT > 0
+                lda #$00
+                sta actScriptF+1
                 lda #PLOT_ESCORTCOMPLETE
                 jsr SetPlotBit
-                lda #<EP_FINDFILTER
-                ldx #>EP_FINDFILTER
+                lda #<EP_RADIOFINDFILTER
+                ldx #>EP_RADIOFINDFILTER
                 jmp ExecScript
                 endif
                 gettext txtRadioMoveScientists

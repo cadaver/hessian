@@ -468,9 +468,10 @@ ASNA_Wait:      rts
 AfterSurgeryNoAirDie:
                 ldx actIndex
                 jsr SetNotPersistent
-                lda #JOY_DOWN
-                sta actMoveCtrl,x
-                jmp DeathFlickerAndRemove
+                lda #$00
+                sta actHp,x
+                lda #FR_DIE+2
+                jmp MH_AnimDone
 
         ; Jeff's radio transmission about the air shortage
         ;
@@ -507,7 +508,7 @@ txtNoAirDie:    dc.b 34,"I CAN'T GO ON.. BUT I REMEMBER THE CODE. IT'S "
 txtCode:        dc.b "XXX. GO!",34,0
 
 txtRadioNoAir:  dc.b 34,"JEFF HERE. AS YOU CUT OFF THE AI FROM THE SUBNETS, THE SABOTAGE MUST BE PHYSICAL. "
-                dc.b "POSSIBLY NEAR THE TOP FLOOR WASTE PROCESSING CHAMBERS. DON'T THINK YOU HAVE TIME TO FIX IT NOW THOUGH.",34,0
+                dc.b "POSSIBLY NEAR THE TOP FLOOR WASTE CHAMBERS. DON'T THINK YOU HAVE TIME FOR IT NOW.",34,0
 
 txtBeginSurgery1:
                 dc.b 34,"YOU GOT THE FILTER? EXCELLENT. WE'RE READY, FOR REAL THIS TIME. THIS IS A STANDARD NANO-ASSISTED "

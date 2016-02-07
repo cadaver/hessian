@@ -97,8 +97,7 @@ S1_Dying:       jsr S1_LimitControl
                 sta actD,x
                 inc actHp,x                     ;Halt dying for now to speak
                 lda #FR_DUCK+1
-                sta actF1,x
-                sta actF2,x
+                jsr MH_AnimDone
                 lda #JOY_DOWN
                 sta actMoveCtrl,x
                 ldy #ACT_SCIENTIST1
@@ -108,8 +107,7 @@ S1_DieAgain:    inc scriptVariable
                 lda #DEATH_FLICKER_DELAY+25
                 sta actTime,x
                 lda #FR_DIE+2
-                sta actF1,x
-                sta actF2,x
+                jsr MH_AnimDone
                 dec actHp,x
                 lda #$00
                 sta temp4
