@@ -394,12 +394,13 @@ UE2_CollapseRowLoop:
                 ldy #20
 UE2_CollapseColumn:
                 lda (zpSrcLo),y
-                cmp #33
+                cmp #36
                 bcs UE2_EmptyOK
                 ldx temp1
                 cpx #8
                 bcc UE2_EmptyOK
                 tya
+                and #$03
                 adc emptyCharOffsetTbl-8,x      ;C=1, add one more
                 tax
                 lda emptyCharTbl,x
@@ -824,10 +825,10 @@ missileColorTbl:
 groundFlashTbl: dc.b 7,10,8,10,11,12,3
 groundFlashTbl2:dc.b 1,7,12,15,12,15,1
 emptyCharOffsetTbl:
-                dc.b 0-2,20-2,40-2
-emptyCharTbl:   dc.b 4,4,4,4,16,4,4,4,4,4,16,4,4,4,4,4,16,4,4,4
-                dc.b 3,3,3,3,2, 3,3,3,3,3,2, 3,3,3,3,3,2, 3,3,3
-                dc.b 8,8,8,8,8, 8,8,8,8,8,8, 8,8,8,8,8,8, 8,8,8
+                dc.b 0-1,4-1,8-1
+emptyCharTbl:   dc.b 16,4,4,4
+                dc.b 2,3,3,3
+                dc.b 7,8,8,8
 chasmCharTbl:   dc.b 118,114,115,116,117,115,116,114,117
                 dc.b 115,114,115,116,114,115,117,116,117,114,119
 collapseShakeTbl:

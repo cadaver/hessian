@@ -34,7 +34,7 @@ txtEnding3:     dc.b " THE THRONE GROUP SCIENCE COMPLEX",0
 
 txtEnding3_2a:  dc.b " KIM CONSIDERS HER OPTIONS: STAY,",0
                 dc.b " AND RISK INDEFINITE DETENTION BY",0
-                dc.b "  THE MILITARY? OR RUN, HOW FAR?",0,0
+                dc.b "THE MILITARY? OR RUN, BUT HOW FAR?",0,0
 
                 org chars+$700
 
