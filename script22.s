@@ -315,7 +315,7 @@ ConstructEnding:lda #ACT_EXPLOSION              ;Wait for final explosion to van
                 jsr FadeSong
                 jsr ClearPanelText
                 jsr BlankScreen
-                lda #PLOT_DISRUPTCOMMS          ;Jormungandr already destroyed?
+                lda #PLOT_ELEVATOR2             ;Jormungandr already destroyed?
                 jsr GetPlotBit                  ;If not, show interlude
                 bne CE_NoInterlude
                 lda #<EP_JORMUNGANDRINTERLUDE
