@@ -4,7 +4,7 @@ WORLDSIZEBLOCKS = 32190
 
 WORLDSIZESCREENS = 704
 
-LVLDATAACTTOTALSIZE = 72
+LVLDATAACTTOTALSIZE = 71
 
 LVLOBJTOTALSIZE = 28
 
@@ -18,32 +18,32 @@ lvlDataActBitsStart:
                 dc.b 23
                 dc.b 29
                 dc.b 32
-                dc.b 42
-                dc.b 44
-                dc.b 51
-                dc.b 57
-                dc.b 60
-                dc.b 65
-                dc.b 69
+                dc.b 41
+                dc.b 43
+                dc.b 50
+                dc.b 56
+                dc.b 59
+                dc.b 64
+                dc.b 68
 lvlObjBitsStart:
+                dc.b 71
                 dc.b 72
                 dc.b 73
                 dc.b 74
-                dc.b 75
-                dc.b 77
-                dc.b 79
-                dc.b 81
+                dc.b 76
+                dc.b 78
+                dc.b 80
+                dc.b 83
                 dc.b 84
-                dc.b 85
+                dc.b 87
                 dc.b 88
-                dc.b 89
+                dc.b 91
                 dc.b 92
                 dc.b 93
-                dc.b 94
+                dc.b 96
                 dc.b 97
-                dc.b 98
 lvlObjBitsEnd:
-                dc.b 100
+                dc.b 99
 lvlLimitL:
                 dc.b 0
                 dc.b 18
