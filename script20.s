@@ -179,7 +179,7 @@ txtNormanSignature:
                 dc.b " ",0
                 dc.b "- NORMAN",0,0
 
-txtGiveLaptop2: dc.b 34,"SORRY FOR SNEAKING UP ON YOU. BUT THAT IF ANY IS EVIL. TAKE THIS LAPTOP. "
+txtGiveLaptop2: dc.b 34,"SORRY FOR SNEAKING UP ON YOU, BUT THAT IF ANYTHING IS EVIL. TAKE THIS LAPTOP. "
                 dc.b "IF YOU CAN FIND THE LINK, WE MIGHT BE ABLE TO TRICK THE PROTOCOL. THEN YOU CAN "
                 dc.b "SAFELY BLAST THEM BOTH TO HELL. OF COURSE.. "
                 dc.b "ANY TAMPERING COULD ALREADY TRIGGER ARMAGEDDON.",34,0
