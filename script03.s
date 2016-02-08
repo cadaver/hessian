@@ -172,7 +172,7 @@ txtITComputer:
                 dc.b "  ONE SHOULD HAVE BEEN WORKING",0
                 dc.b "- PERIODIC SHORT NETWORK OUTAGES CAUSED",0
                 dc.b "  BY ROUTER OVERLOAD, ORIGIN INSIDE THE",0
-                dc.b "  FACILITY",0
+                dc.b "  COMPLEX",0
                 dc.b " ",0
                 dc.b "ANYONE WHO REALLY NEEDS TO SEE ME SHOULD",0
                 dc.b "KNOW THE WAY. BOTTOM FLOOR, FAR LEFT.",0
