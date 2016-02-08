@@ -357,6 +357,8 @@ RHW_HasItem:    rts
 
 DriveTunnelMachine:
                 jsr BlankScreen
+                ldy #C_HIGHWALKER               ;Load high walker + fireball sprites for the lava cave
+                jsr EnsureSpriteFile
                 lda #$01                        ;Fixed position & screen number for redraw
                 sta blockX
                 lda #$03
