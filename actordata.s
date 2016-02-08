@@ -1063,7 +1063,7 @@ alSmokeCloud:   dc.w MoveSmokeCloud              ;Update routine
                 dc.b 0                          ;Size down
 
 alRat:          dc.w MoveRat                    ;Update routine
-                dc.b GRP_ANIMALS|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
+                dc.b GRP_ENEMIES|AF_NOWEAPON|AF_ORGANIC    ;Actor flags
                 dc.b 8                          ;Horizontal size
                 dc.b 8                          ;Size up
                 dc.b 2                          ;Size down
