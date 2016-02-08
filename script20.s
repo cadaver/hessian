@@ -173,7 +173,8 @@ txtNote4:       dc.b "NOTE #4",0
                 dc.b "ITS ATTACK.",0
                 dc.b " ",0
                 dc.b "IT'S ALSO TAKEN CONTROL OF THE MILITARY",0
-                dc.b "LINE. I NEED TO CONTACT RUTGER URGENTLY.",0
+                dc.b "LINE AND INSTALLED EMP SHIELDING. I NEED",0
+                dc.b "TO CONTACT RUTGER URGENTLY.",0
 txtNormanSignature:
                 dc.b " ",0
                 dc.b "- NORMAN",0,0
