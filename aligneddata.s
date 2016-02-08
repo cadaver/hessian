@@ -397,6 +397,7 @@ d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,TEXTSCR_D018
 shiftOffsetTbl: dc.b 6,6,6
                 dc.b 0,0,0
                 dc.b 6,6,6
+tankSizeAddTbl: dc.b 2,0,6,8
 
         ; Gameworld & level data (not saved)
 

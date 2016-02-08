@@ -338,9 +338,11 @@ MoveEMP:        lda actTime,x                   ;TODO: should possibly not manip
                 bne MEMP_ColorDone
 MEMP_Restore:   jsr SetZoneColors
 MEMP_ColorDone: jsr RadiusDamage
+                lda actBulletDmgMod-ACTI_FIRSTPLRBULLET,x ;If used for visual effect only, do not cause battery damage
+                beq MEMP_NoDrain
                 lda #DRAIN_EMP                  ;EMP also damages player battery charge
                 jsr DrainBattery
-                lda actSX,x
+MEMP_NoDrain:   lda actSX,x
                 jsr MoveActorX
                 lda #1
                 ldy #3

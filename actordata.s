@@ -19,10 +19,6 @@ humanLowerFrTbl:dc.b $80+0,$80+1,$80+2,$80+3,$80+4,$80+1,$80+2,$80+3,$80+4,$80+5
                 dc.b 2,1,0
                 dc.b $80+2,$80+1,$80+0
 
-        ; Tank size add based on animation
-
-tankSizeAddTbl: dc.b 2,0,6,8
-
         ; Turret firing ctrl + frame table
 
 turretFrameTbl:
