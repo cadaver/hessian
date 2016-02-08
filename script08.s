@@ -393,6 +393,6 @@ txtRadioServicePass:
                 dc.b 34,"SEARCH THE ENTRANCE OFFICES FOR THE SERVICE PASS.",34,0
 
 txtRadioElevatorLockedHasAmplifier:
-                dc.b 34,"AMOS HERE. TRY USING THE AMPLIFIER YOU GOT ON THE LASER. BOOSTED, IT MIGHT BREACH THE WALL.",34,0
+                dc.b 34,"AMOS HERE. TRY TO INSTALL THE AMPLIFIER TO THE LASER. BOOSTED, IT MIGHT BREACH THE WALL.",34,0
 
                 checkscriptend
