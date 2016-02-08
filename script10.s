@@ -116,7 +116,7 @@ txtLowerLabsComputer3:
                 dc.b "CODES HAVE BEEN SHARED ACROSS TEAMS.",0
                 dc.b "THIS IS UNACCEPTABLE, AND THRONE GROUP",0
                 dc.b "WILL BE IN SERIOUS TROUBLE IF THIS IS",0
-                dc.b "EVER CAUUGHT IN AN AUDIT. DELETE THIS",0
+                dc.b "EVER CAUGHT IN AN AUDIT. DELETE THIS",0
                 dc.b "MESSAGE NOW AND DON'T MAKE ME REMIND",0
                 dc.b "EVER AGAIN.",0
                 dc.b " ",0
