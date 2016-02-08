@@ -251,9 +251,10 @@ AI_Fail:        clc                             ;Maximum ammo already, fail pick
                 rts
 AI_HasRoomForAmmo:
                 adc zpSrcHi
+                bcs AI_CountWrapped
                 cmp itemMaxCount-1,y
                 bcc AI_AmmoNotExceeded
-                lda itemMaxCount-1,y
+AI_CountWrapped:lda itemMaxCount-1,y
 AI_AmmoNotExceeded:
                 sta invCount-1,y
                 jmp AI_Success

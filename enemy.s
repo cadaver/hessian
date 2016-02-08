@@ -348,8 +348,7 @@ MoveRat:        lda #FR_DEADRATGROUND
 MR_Dead:        jsr DeadAnimalMotion
                 bcs MR_DeadGrounded
                 rts
-MR_DeadGrounded:lda #$00
-                sta actSX,x                     ;Instant braking
+MR_DeadGrounded:jsr MH_StopXSpeed
                 lda temp1
                 sta actF1,x
                 rts
@@ -712,8 +711,7 @@ DeadAnimalMotion:
                 pla
 DAM_NoWater:    and #MB_HITWALL
                 beq DAM_NoWallHit
-                lda #$00
-                sta actSX,x
+                jsr MH_StopXSpeed
 DAM_NoWallHit:  lda actMB,x
                 lsr
                 rts
