@@ -1226,9 +1226,9 @@ ULO_FinePositionLoop:                           ;Fineposition player to ground a
                 jsr GetCharInfo
                 and #CI_GROUND
                 beq ULO_FinePositionLoop
-                ldx zoneScriptF
-                beq ULO_NoZoneScript
-                lda zoneScriptEP
+                ldx zoneScriptF                 ;Exec zone change script if defined
+                beq ULO_NoZoneScript            ;Note: save must be performed after, as the zone script
+                lda zoneScriptEP                ;is not executed again on checkpoint restore
                 jsr ExecScript
 ULO_NoZoneScript:
                 ldy #ZONEH_BG1
