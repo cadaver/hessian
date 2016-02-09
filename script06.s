@@ -34,6 +34,7 @@ currentIndex    = wpnBits
         ; Modifies: various
 
 RecyclingStation:
+                jsr SetupTextScreen
                 ldy itemIndex
                 sty originalItem
                 ldy #RECYCLER_ITEM_FIRST
@@ -57,7 +58,6 @@ RS_ListDone:    lda #$ff
                 sta recyclerItemList,x          ;Write endmark
                 sta menuMoveDelay               ;Disable controls until joystick centered
                 stx recyclerListLength
-                jsr SetupTextScreen
                 lda #9
                 sta temp1
                 lda #3
