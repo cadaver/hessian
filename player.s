@@ -437,7 +437,7 @@ MH_OnGround:    ldy actFall,x                   ;Forced duck after falling?
 MH_CheckWallRight:
                 lda #-3
                 jsr GetCharInfoXYOffset         ;Check that the wall is possible to scale
-                and #CI_OBSTACLE|CI_SHELF       ;Do not jump to nonnavigable ledge, which could
+                and #CI_OBSTACLE|CI_NOPATH      ;Do not jump to nonnavigable ledge, which could
                 bne MH_NoAutoScale              ;lead to a drop
                 jmp MH_StartJump
 MH_NoAutoScale: lda actAIHelp,x
