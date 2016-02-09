@@ -734,6 +734,58 @@ DCPU_Search:    dey
                 bne DCPU_Search
                 jmp ActivateObject              ;Note: will loop endlessly or read out of bounds if not found
 
+        ; Rising explosion generator
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveExplosionGeneratorRising:
+                lda #-4*8
+                jsr MoveActorY
+
+        ; Explosion generator update routine
+        ;
+        ; Parameters: X actor index
+        ; Returns: -
+        ; Modifies: A,Y,temp1-temp8,loader temp vars
+
+MoveExplosionGenerator:
+                dec actFd,x
+                bpl MEG_NoNewExplosion
+                lda #MULTIEXPLOSION_DELAY
+                sta actFd,x
+                jsr GetAnyFreeActor
+                bcc MEG_NoRoom                  ;If no room, simply explode self
+                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
+                lda actSX,x
+                sta temp1
+                lda actSY,x
+                sta temp2
+                tya
+                tax
+                jsr ExplodeActor                ;Play explosion sound & init animation
+                lda temp1
+                jsr MEG_GetOffset
+                jsr MoveActorX
+                lda temp2
+                jsr MEG_GetOffset
+                jsr MoveActorY
+                ldx actIndex
+                dec actTime,x
+                bne MEG_NotLastExplosion
+                jmp RemoveActor
+MEG_GetOffset:  sta temp3
+                lsr
+                sta temp4
+                jsr Random
+                and temp3
+                sec
+                sbc temp4
+MEG_NotLastExplosion:
+MEG_NoNewExplosion:
+                rts
+
         ; Turn enemy into an explosion & drop item
         ;
         ; Parameters: X actor index
@@ -743,7 +795,7 @@ DCPU_Search:    dey
 ExplodeEnemy_Ofs8:
                 jsr MoveActorCharUp
 ExplodeEnemy:   jsr DropItem
-                jmp ExplodeActor
+MEG_NoRoom:     jmp ExplodeActor
 
         ; Generate 2 explosions at 8 pixel radius
         ;
@@ -868,59 +920,6 @@ ExplodeEnemy4_Rising:
                 jsr ExplodeEnemyMultiple
                 lda #ACT_EXPLOSIONGENERATORRISING
                 jmp TransformActor
-
-        ; Rising explosion generator
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveExplosionGeneratorRising:
-                lda #-4*8
-                jsr MoveActorY
-
-        ; Explosion generator update routine
-        ;
-        ; Parameters: X actor index
-        ; Returns: -
-        ; Modifies: A,Y,temp1-temp8,loader temp vars
-
-MoveExplosionGenerator:
-                dec actFd,x
-                bpl MEG_NoNewExplosion
-                lda #MULTIEXPLOSION_DELAY
-                sta actFd,x
-                jsr GetAnyFreeActor
-                bcc MEG_NoRoom                  ;If no room, simply explode self
-                jsr SpawnActor                  ;Actor type undefined at this point, will be initialized below
-                lda actSX,x
-                sta temp1
-                lda actSY,x
-                sta temp2
-                tya
-                tax
-                jsr ExplodeActor                ;Play explosion sound & init animation
-                lda temp1
-                jsr MEG_GetOffset
-                jsr MoveActorX
-                lda temp2
-                jsr MEG_GetOffset
-                jsr MoveActorY
-                ldx actIndex
-                dec actTime,x
-                bne MEG_NotLastExplosion
-                jmp RemoveActor
-MEG_NoRoom:     jmp ExplodeActor
-MEG_GetOffset:  sta temp3
-                lsr
-                sta temp4
-                jsr Random
-                and temp3
-                sec
-                sbc temp4
-MEG_NotLastExplosion:
-MEG_NoNewExplosion:
-                rts
 
         ; Scrap metal movement
         ;
