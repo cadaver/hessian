@@ -342,7 +342,7 @@ FNL_Loop:       cpx levelNum                ;Current level is always excluded
                 lda temp5                   ;Note: if there's ambiguity in bounds
                 cmp lvlLimitL,x             ;the first matching level number is used
                 bcc FNL_Next
-                cmp lvlLimitR,x             
+                cmp lvlLimitR,x
                 bcs FNL_Next
                 lda temp2                   ;Y coordinates are always just blocks
                 cmp lvlLimitU,x
@@ -851,8 +851,7 @@ ULO_AutoDeactOK:lda #$ff
 
 ULO_NoAutoDeact:ldx #ACTI_PLAYER
                 lda actHp+ACTI_PLAYER           ;Heal if not dead and not yet at full health
-                bne ULO_PlayerAlive
-                jmp ULO_OxygenDone
+                beq ULO_OxygenDone
 ULO_PlayerAlive:cmp #HP_PLAYER
                 bcs ULO_NoHealing
                 lda battery+1                   ;No healing if low battery
@@ -872,11 +871,13 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
                 lda UA_ItemFlashCounter+1
                 and #$3f
                 bne ULO_NoRecharge
-                sta battery
-                lda battery+1
-                cmp #MAX_BATTERY
-                bcs ULO_NoRecharge
-                inc battery+1
+                ldy battery+1
+                iny
+                cpy #MAX_BATTERY
+                bcc ULO_NotMaxed
+                ldy #MAX_BATTERY
+                sta battery                     ;A=0
+ULO_NotMaxed:   sty battery+1
 ULO_NoRecharge: lda #$07
 ULO_NoAirFlag:  ldy #$00
                 bne ULO_OxygenDelay
