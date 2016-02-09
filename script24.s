@@ -495,7 +495,7 @@ UE3_HasPlayer:  inc endingTime
                 lda endingTime
                 cmp #40+25
                 beq UE3_CheckLinda
-                cmp #40+55
+                cmp #40+60
                 beq UE3_CheckJeff
                 cmp #39
                 bcc UE3_Walk
@@ -598,14 +598,14 @@ EB_NoRecharge:  lda #PLOT_RIGTUNNELMACHINE      ;Special case: if Linda was prep
                 jsr GetPlotBit                  ;but the communication sabotage was used instead,
                 bne EB_NoHazmat                 ;revert the transformation
                 lda #ACT_HAZMAT                 ;(cannot be Jeff, as if player reaches the 2nd cave
-                jsr FLA_NotOnScreen             ;while Jeff is in hazmat suit, the sabotage cannot be
+                jsr SafeCheckNPC                ;while Jeff is in hazmat suit, the sabotage cannot be
                 bcc EB_NoHazmat                 ;performed)
                 lda #ACT_SCIENTIST3
                 sta lvlActT,y
 EB_NoHazmat:    lda #ACT_SCIENTIST3             ;Surviving NPCs additional bonus
-                jsr EB_CheckNPC
+                jsr EB_CheckNPCBonus
                 lda #ACT_HACKER
-                jsr EB_CheckNPC
+                jsr EB_CheckNPCBonus
 EB_Loop:        lda #<5000
                 ldy #>5000
                 jsr AddScore
@@ -651,8 +651,9 @@ StoreDigit:     ora #$30
                 inx
 EB_NoNPC:       rts
 
-EB_CheckNPC:    sta temp1
-                jsr FLA_NotOnScreen             ;Use this entrypoint to not disturb X
+EB_CheckNPCBonus:
+                sta temp1
+                jsr SafeCheckNPC                ;Use this entrypoint to not disturb X
                 bcc EB_NoNPC
                 inx
                 lda temp1
@@ -662,6 +663,9 @@ EB_CheckNPC:    sta temp1
                 skip2
 EB_PreloadNPC1: ldy #C_SCIENTIST               ;Also preload sprites if will be used in the cutscene
                 jmp EnsureSpriteFile
+
+SafeCheckNPC:   sta FLA_Cmp+1
+                jmp FLA_NotOnScreen
 
         ; Ending text update
 
