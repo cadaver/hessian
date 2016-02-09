@@ -307,17 +307,10 @@ Irq4_Irq6Jump:  lda #<Irq6
                 ldy #IRQ6_LINE
                 jmp SetNextIrq
 
-        ;Raster interrupt 6. Enable SCPU/C128 turbo if no loading, do levelupdate. On plain C64
+        ;Raster interrupt 6. Enable SCPU/C128 turbo if no loading or split, do levelupdate. On plain C64
         ;jumps directly here from interrupt 4.
 
 Irq6:           jsr StartIrq
-                ldx fileOpen
-                bne Irq6_NoTurbo
-                inx
-Irq6_EnableTurbo:
-                stx $d07b                       ;SCPU turbo mode & C128 2MHz mode enable
-                stx $d030
-Irq6_NoTurbo:
 Irq6_LevelUpdate:
                 lda #$00                        ;Animate level background?
                 beq Irq6_NoLevelUpdate
@@ -330,8 +323,14 @@ Irq6_LevelUpdate:
                 endif
 Irq6_NoLevelUpdate:
                 ldy #IRQ1_LINE
-Irq6_SplitMode: lda #$00                        ;Check for split mode instead of normal IRQ1
+Irq6_SplitMode: ldx #$00                        ;Check for split mode instead of normal IRQ1
                 bne Irq6_BeginSplit
+Irq6_CheckTurbo:ldx fileOpen
+                bne Irq6_NoTurbo
+                inx
+                stx $d07b                       ;SCPU turbo mode & C128 2MHz mode enable
+                stx $d030
+Irq6_NoTurbo:
 Irq5_End:       lda #<Irq1                      ;Back to screen top interrupt
                 ldx #>Irq1
 Irq6_NextIrqCommon:
