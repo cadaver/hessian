@@ -321,4 +321,4 @@ DecodeBit:      pha
                 lsr
                 tay
 DB_Value:       lda #$00
-SameLevel:      rts
+                rts

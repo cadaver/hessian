@@ -44,7 +44,6 @@ randomAreaStart:
                 include actor.s
                 include panel.s
                 include script.s
-                include level.s
                 include physics.s
                 include player.s
                 include weapon.s
@@ -52,7 +51,8 @@ randomAreaStart:
                 include item.s
                 include ai.s
                 include enemy.s
-
+                include level.s
+                
 randomAreaEnd:
 
         ; Disposable init part, overwritten by loadable script code
