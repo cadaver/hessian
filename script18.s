@@ -414,13 +414,13 @@ DTM_RedrawSkip1:lda screen2+$200,x
                 sta colors+$200,x
 DTM_RedrawSkip2:inx
                 bne DTM_RedrawLoop
-                ldy chars+151*8
-DTM_ScrollChar: lda chars+151*8+1,x             ;Rotating cutter animation
-                sta chars+151*8,x
+                ldy chars+148*8
+DTM_ScrollChar: lda chars+148*8+1,x             ;Rotating cutter animation
+                sta chars+148*8,x
                 inx
                 cpx #7
                 bcc DTM_ScrollChar
-                sty chars+151*8+7
+                sty chars+148*8+7
                 jsr SL_CalcSprSub
                 jsr DrawActors
                 jsr FinishFrame
