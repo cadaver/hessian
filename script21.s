@@ -150,7 +150,7 @@ BioDomeEnding:  lda textTime                    ;Wait until radio message text h
                 lda #<EP_ENDSEQUENCE
                 ldx #>EP_ENDSEQUENCE
                 ldy #$00                        ;Ending 1
-                jmp ExecScript
+                jmp ExecScriptParam
 
         ; Throne Suite computer
         ;
@@ -288,7 +288,7 @@ txtSecurityChief:
                 dc.b "THAT'S ONE MORE REASON TO MAKE SURE YOU DON'T LEAVE THIS ROOM ALIVE.",34,0
 
 txtComputerLocked:
-                dc.b "COMPUTER "
+                dc.b "TERMINAL "
                 textjump txtLocked
 
 txtThroneSuiteComputer:
