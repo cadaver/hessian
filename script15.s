@@ -376,11 +376,14 @@ AfterSurgeryFollow:
                 lda actXH,x             ;Scripted jump to access the old tunnels
                 cmp #$65
                 bne ASF_NoJump
+                lda actYL,x             ;Must be at top of block
+                bne ASF_NoJump
                 lda actYH,x
                 cmp #$4a
                 bne ASF_NoJump
-                lda actSX,x
-                bmi ASF_NoJump
+                lda actSX,x             ;Must be going right at max. speed
+                cmp #4*8
+                bne ASF_NoJump
                 lda #AIMODE_IDLE
                 sta actAIMode,x
                 lda #JOY_RIGHT|JOY_UP  ;Jump as far as possible

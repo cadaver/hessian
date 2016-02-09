@@ -280,11 +280,14 @@ HF_NoChasmJump: lda levelNum
                 lda actXH,x             ;Scripted jump to access the old tunnels
                 cmp #$65                ;(in level8)
                 bne HF_NoJump
+                lda actYL,x             ;Must be at top of block
+                bne HF_NoJump
                 lda actYH,x
                 cmp #$4a
                 bne HF_NoJump
-                lda actSX,x
-                bmi HF_NoJump
+                lda actSX,x             ;Must be going right at max. speed
+                cmp #4*8
+                bne HF_NoJump
 HF_DoJump:      lda actMoveCtrl,x
                 ora #JOY_UP  ;Jump as far as possible
 HF_StoreMoveCtrl:
@@ -298,34 +301,37 @@ HF_NoJump:      lda #ACT_FIRE           ;If standing next to a fire, put it out
                 txa
                 tay
                 ldx actIndex
-                lda actYH,y
-                cmp actYH,x
+                jsr GetActorDistance
+                lda temp8               ;Y-dist must be zero
                 bne HF_NoFire
-                lda actXH,y
-                sbc actXH,x             ;C=1
-                cmp #$01
-                beq HF_FireRight
-                cmp #$ff
-                bne HF_NoFire
-HF_FireLeft:    lda actXL,x
-                bmi HF_NoFire           ;Must be standing at block left edge
-                lda #JOY_FIRE|JOY_DOWN|JOY_LEFT
-HF_FireCommon:  pha
+                lda temp6
+                cmp #$02
+                bcs HF_NoFire           ;Too far away
+                cmp #$01                ;If 1 block distance, go next to it
+                bcc HF_FireXDistOK
+                tya
+                bcs HF_SetFollowTarget
+HF_FireXDistOK: lda temp5               ;Check direction
+                bpl HF_FireRight
+HF_FireLeft:    lda #JOY_FIRE|JOY_LEFT
+                skip2
+HF_FireRight:   lda #JOY_FIRE|JOY_RIGHT
+HF_FireCommon:  ldy temp7               ;If fire is not above, aim down
+                bmi HF_FireAbove
+                ora #JOY_DOWN
+HF_FireAbove:   pha
                 lda #ITEM_EXTINGUISHER
                 sta actWpn,x
                 pla
                 sta actCtrl,x
                 lda #$00
                 beq HF_StoreMoveCtrl
-HF_FireRight:   lda actXL,x             ;Must be standing at block right edge
-                bpl HF_NoFire
-                lda #JOY_FIRE|JOY_DOWN|JOY_RIGHT
-                bne HF_FireCommon
 HF_NoFire:      ldx actIndex
+                lda #ACTI_PLAYER
+HF_SetFollowTarget:
+                sta actAITarget,x
                 lda #AIMODE_FOLLOW
                 sta actAIMode,x
-                lda #ACTI_PLAYER
-                sta actAITarget,x
                 lda #$00
                 sta actWpn,x
                 sta actCtrl,x
