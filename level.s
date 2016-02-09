@@ -876,12 +876,9 @@ ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
                 bne ULO_NoRecharge
                 inc battery+1
 
-ULO_NoRecharge:
-ULO_NoAirFlag:  lda #$00
-                beq ULO_CheckHeadUnderWater
-ULO_NoAir:      lda UA_ItemFlashCounter+1
-                and #$07
-                bpl ULO_OxygenDelay
+ULO_NoRecharge: lda #$07
+ULO_NoAirFlag:  ldy #$00
+                bne ULO_OxygenDelay
 ULO_CheckHeadUnderWater:
                 lda actF1+ACTI_PLAYER           ;Check for player losing oxygen
                 cmp #FR_SWIM                    ;(must be swimming & head under water)
@@ -890,26 +887,27 @@ ULO_CheckHeadUnderWater:
                 jsr GetCharInfoOffset
                 and #CI_WATER|CI_OBSTACLE
                 beq ULO_RestoreOxygen
-                lda actFd+ACTI_PLAYER
-ULO_OxygenDelay:bne ULO_OxygenDone
+                lda #$03                        ;Swimming oxygen drain is faster than "no air zone" drain
+ULO_OxygenDelay:and UA_ItemFlashCounter+1
+                bne ULO_OxygenDone
                 lda oxygen
-                bne ULO_DecreaseOxygen
-                lda UA_ItemFlashCounter+1
+                beq ULO_OutOfOxygen
+                dec oxygen
+                jmp ULO_OxygenDone
+ULO_OutOfOxygen:lda UA_ItemFlashCounter+1       ;Separate drowning damage delay counting (always same)
                 and #$07
                 bne ULO_OxygenDone
                 jsr ULO_DoDrowningDamage
                 jmp ULO_OxygenDone
 ULO_RestoreOxygen:
-                lda oxygen
-                cmp #MAX_OXYGEN-1
-                beq ULO_RestoreOne
-                bcs ULO_OxygenDone
-ULO_RestoreTwo: inc oxygen
-ULO_RestoreOne: inc oxygen
-                bne ULO_OxygenDone
-ULO_DecreaseOxygen:
-                dec oxygen
-
+                ldy oxygen
+                iny
+                iny
+                cpy #MAX_OXYGEN
+                bcc ULO_RestoreNotOver
+                ldy #MAX_OXYGEN
+ULO_RestoreNotOver:
+                sty oxygen
 ULO_OxygenDone:
 ULO_AirToxinFlag:
                 lda #$00                        ;Flashing screen effect for toxic air (as in Fist II)
