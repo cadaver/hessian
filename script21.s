@@ -147,8 +147,9 @@ BioDomeEnding:  lda textTime                    ;Wait until radio message text h
                 bne EBD_AlreadyTriggered
                 jsr FadeSong
                 jsr BlankScreen
-                lda #<EP_CONSTRUCTINTERLUDE
-                ldx #>EP_CONSTRUCTINTERLUDE
+                lda #<EP_ENDSEQUENCE
+                ldx #>EP_ENDSEQUENCE
+                ldy #$00                        ;Ending 1
                 jmp ExecScript
 
         ; Throne Suite computer
