@@ -38,8 +38,6 @@ ceilingTurretOfs:
                 dc.b JOY_LEFT|JOY_FIRE,4
                 dc.b 0
 
-tankSizeAddTbl: dc.b 2,0,6,8
-
         ; Actor display data
 
 adMeleeHit      = $0000                         ;Invisible

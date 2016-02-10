@@ -413,7 +413,7 @@ attackTbl:      dc.b AIM_NONE                   ;None
                 dc.b AIM_NONE                   ;Right+Left+Up
                 dc.b AIM_NONE                   ;Right+Left+Down
                 dc.b AIM_NONE                   ;Right+Left+Up+Down
-
+tankSizeAddTbl: dc.b 2,0,6,8
 
         ; Gameworld & level data (not saved)
 
