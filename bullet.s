@@ -322,6 +322,7 @@ MM_NoSound:     jsr FallingMotionCommon
                 beq MM_InAir
                 cmp #MB_HITWALL
                 bcs MM_HitWall
+                lda #$02
                 jsr BrakeActorX
                 jmp MGrn_CheckCollision
 MM_HitWall:     jmp MH_StopXSpeed

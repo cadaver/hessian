@@ -41,9 +41,9 @@ randomAreaStart:
                 include input.s
                 include file.s
                 include math.s
-                include actor.s
                 include panel.s
                 include script.s
+                include actor.s
                 include physics.s
                 include player.s
                 include weapon.s
