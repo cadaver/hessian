@@ -711,7 +711,31 @@ StorePlayerActorVars:
                 bcs SCP_NoDifficulty
                 sta saveDifficulty
 SCP_NoDifficulty:
-                ldy #MAX_SAVEACT                ;Clear actor save table first
+                ldx #playerStateZPEnd-playerStateZPStart
+SCP_ZPState:    lda playerStateZPStart-1,x      ;Copy player ZP variables
+                sta saveStateZP-1,x
+                dex
+                bne SCP_ZPState
+                lda #<playerStateStart
+                sta zpSrcLo
+                lda #>playerStateStart
+                sta zpSrcHi
+                lda #<saveState
+                ldx #>saveState
+                jsr SaveState_CopyMemory        ;Copy rest of variables
+                lda saveHP                      ;Ensure minimum health & battery level when saving
+                cmp #LOW_HEALTH
+                bcs SCP_HealthOK
+                lda #LOW_HEALTH
+                sta saveHP
+SCP_HealthOK:   lda #$00
+                ldx saveBattery+1
+                cpx #LOW_BATTERY
+                bcs SCP_BatteryOK
+                ldx #LOW_BATTERY
+                stx saveBattery+1
+                sta saveBattery
+SCP_BatteryOK:  ldy #MAX_SAVEACT                ;Clear actor save table
 SCP_ClearSaveLoop:
                 sta saveLvlActT-1,y
                 dey
@@ -747,31 +771,7 @@ SCP_SaveItemsNotOver:
                 cpx levelActorIndex             ;Exit when wrapped
                 bne SCP_SaveItemsLoop
 SCP_SaveItemsDone:
-                ldx #playerStateZPEnd-playerStateZPStart
-SCP_ZPState:    lda playerStateZPStart-1,x      ;Copy player ZP variables
-                sta saveStateZP-1,x
-                dex
-                bne SCP_ZPState
-                lda #<playerStateStart
-                sta zpSrcLo
-                lda #>playerStateStart
-                sta zpSrcHi
-                lda #<saveState
-                ldx #>saveState
-                jsr SaveState_CopyMemory        ;Copy rest of variables
-                lda saveHP                      ;Ensure minimum health & battery level when saving
-                cmp #LOW_HEALTH
-                bcs SCP_HealthOK
-                lda #LOW_HEALTH
-                sta saveHP
-SCP_HealthOK:   lda #$00
-                ldx saveBattery+1
-                cpx #LOW_BATTERY
-                bcs SCP_BatteryOK
-                ldx #LOW_BATTERY
-                stx saveBattery+1
-                sta saveBattery
-SCP_BatteryOK:  rts
+                rts
 
 SaveActorSub:   lda lvlActX,x
                 sta saveLvlActX,y
