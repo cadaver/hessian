@@ -1,33 +1,14 @@
-        ; Weapon/attack tables
-
-attackTbl:      dc.b AIM_NONE                   ;None
-                dc.b AIM_UP                     ;Up
-                dc.b AIM_DOWN                   ;Down
-                dc.b AIM_NONE                   ;Up+Down
-                dc.b AIM_HORIZONTAL             ;Left
-                dc.b AIM_DIAGONALUP             ;Left+Up
-                dc.b AIM_DIAGONALDOWN           ;Left+Down
-                dc.b AIM_NONE                   ;Left+Up+Down
-                dc.b AIM_HORIZONTAL             ;Right
-                dc.b AIM_DIAGONALUP             ;Right+Up
-                dc.b AIM_DIAGONALDOWN           ;Right+Down
-                dc.b AIM_NONE                   ;Right+Up+Down
-                dc.b AIM_NONE                   ;Right+Left
-                dc.b AIM_NONE                   ;Right+Left+Up
-                dc.b AIM_NONE                   ;Right+Left+Down
-                dc.b AIM_NONE                   ;Right+Left+Up+Down
-
 bulletXSpdTbl:  dc.b 0,6,8,6,0                  ;Normal bullets
                 dc.b 0,-6,-8,-6,0
-                dc.b 8,8,8,0                    ;Thrown grenade
-                dc.b 0,-8,-8,-8
+                dc.b 8,8,8,0                    ;Thrown grenade / mine
+                dc.b 0,-8,-8,-8,0
                 dc.b 0,7,8,7,0                  ;Launcher grenade
                 dc.b 0,-7,-8,-7
 
 bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
                 dc.b -8,-6,0,6,8
-                dc.b -7,-4,-1,0                 ;Thrown grenade
-                dc.b 0,-7,-4,-1
+                dc.b -7,-4,-1,0                 ;Thrown grenade / mine
+                dc.b 0,-7,-4,-1,0
                 dc.b -8,-7,-3,2,0               ;Launcher grenade
                 dc.b -8,-7,-3,2
 
@@ -375,7 +356,7 @@ wdMine:         dc.b WDB_NOWEAPONSPRITE|WDB_THROW|WDB_NOSKILLBONUS ;Weapon bits
                 dc.b DMG_MINE                   ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 79                         ;Bullet time duration
-                dc.b 2                          ;Bullet speed in pixels
+                dc.b 3                          ;Bullet speed in pixels
                 dc.b SPDTBL_GRENADE             ;Bullet speed table offset
                 dc.b SFX_MELEE                  ;Sound effect
 

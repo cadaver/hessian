@@ -397,7 +397,23 @@ d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,TEXTSCR_D018
 shiftOffsetTbl: dc.b 6,6,6
                 dc.b 0,0,0
                 dc.b 6,6,6
-tankSizeAddTbl: dc.b 2,0,6,8
+attackTbl:      dc.b AIM_NONE                   ;None
+                dc.b AIM_UP                     ;Up
+                dc.b AIM_DOWN                   ;Down
+                dc.b AIM_NONE                   ;Up+Down
+                dc.b AIM_HORIZONTAL             ;Left
+                dc.b AIM_DIAGONALUP             ;Left+Up
+                dc.b AIM_DIAGONALDOWN           ;Left+Down
+                dc.b AIM_NONE                   ;Left+Up+Down
+                dc.b AIM_HORIZONTAL             ;Right
+                dc.b AIM_DIAGONALUP             ;Right+Up
+                dc.b AIM_DIAGONALDOWN           ;Right+Down
+                dc.b AIM_NONE                   ;Right+Up+Down
+                dc.b AIM_NONE                   ;Right+Left
+                dc.b AIM_NONE                   ;Right+Left+Up
+                dc.b AIM_NONE                   ;Right+Left+Down
+                dc.b AIM_NONE                   ;Right+Left+Up+Down
+
 
         ; Gameworld & level data (not saved)
 

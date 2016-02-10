@@ -289,7 +289,7 @@ TransformBullet:sta actT,x
                 sta actF1,x
                 sta actFd,x
 MGrn_NoExplosion:
-                rts
+MM_InAir:       rts
 
         ; Grenade update routine
         ;
@@ -316,11 +316,15 @@ MoveMine:       lda #7
                 bne MM_NoSound
                 lda #SFX_PICKUP
                 jsr PlaySfx
-MM_NoSound:     lda actMB,x
-                lsr
+MM_NoSound:     jsr FallingMotionCommon
+                lda actMB,x
+                and #MB_GROUNDED|MB_HITWALL
                 beq MM_InAir
+                cmp #MB_HITWALL
+                bcs MM_HitWall
+                jsr BrakeActorX
                 jmp MGrn_CheckCollision
-MM_InAir:       jmp FallingMotionCommon
+MM_HitWall:     jmp MH_StopXSpeed
 
         ; EMP blast update routine
         ;

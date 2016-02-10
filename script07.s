@@ -131,9 +131,9 @@ txtLabComputer6:dc.b "RE: NORMAN",0
                 dc.b "AMOS, ON NORMAN'S ABSENCE: AT THE COMBAT",0
                 dc.b "ROBOT PROJECT KICKOFF HE SPOKE OF THE",0
                 dc.b "POSSIBILITY OF UPLOADING A HUMAN MIND AS",0
-                dc.b "THE BLUEPRINT FOR AN AI. RETREATING TO",0
-                dc.b "SOLITUDE TO FOCUS ON AN IMPOSSIBLE TASK?",0
-                dc.b "I WOULDN'T RULE THAT OUT.",0,0
+                dc.b "THE BLUEPRINT FOR AN AI. SO WORKING IN",0
+                dc.b "SOLITUDE ON AN IMPOSSIBLE TASK? WOULDN'T",0
+                dc.b "RULE THAT OUT.",0,0
 
                      ;0123456789012345678901234567890123456789
 txtLabComputer7:dc.b "IT OCCURRED TO ME THAT THE 'HESSIAN'",0
@@ -153,7 +153,7 @@ txtLabComputer8:dc.b "EMP GENERATOR",0
                 dc.b "DISCOURAGED FROM WIELDING ONE.",0,0
 
                      ;0123456789012345678901234567890123456789
-txtLabComputer9:dc.b "SMART MINE",0
+txtLabComputer9:dc.b "LOW-FRICTION SMART MINE",0
                 dc.b " ",0
                 dc.b "MODES OF OPERATION:",0
                 dc.b "1) DETONATE ON ENEMY CONTACT",0

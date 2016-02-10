@@ -19,12 +19,11 @@ IsPAL:          lda $d030                       ;Enable extra IRQ for turbo swit
                 bne UseTurbo
                 lda $d0bc
                 bpl UseTurbo
-NoTurbo:        lda #$4c
-                sta Irq4_Irq6Jump
-                lda #<Irq6_LevelUpdate
-                sta Irq4_Irq6Jump+1
-                lda #>Irq6_LevelUpdate
-                sta Irq4_Irq6Jump+2
+NoTurbo:        ldx #$02
+NoTurboCopyLoop:lda NoTurboCode,x
+                sta Irq4_Irq6Jump,x
+                dex
+                bpl NoTurboCopyLoop
 UseTurbo:
 
         ; Initialize zeropage variables
@@ -214,6 +213,8 @@ IR_UseFastLoad: cli
                 ldx #>EP_TITLE
                 ldy #$00
                 jmp ExecScriptParam
+
+NoTurboCode:    jmp Irq6_LevelUpdate
 
         ; Scorepanel color data (overwritten)
 

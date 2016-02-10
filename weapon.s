@@ -89,7 +89,7 @@ DMGMOD_REDUCEDNONORGANIC = $78                  ;Reduced damage to nonorganic en
 
 SPDTBL_NORMAL   = 0
 SPDTBL_GRENADE  = 9
-SPDTBL_LAUNCHER = 18
+SPDTBL_LAUNCHER = 19
 
         ; Actor attack routine
         ;
