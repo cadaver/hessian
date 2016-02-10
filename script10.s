@@ -83,10 +83,13 @@ LowerLabsComputer9:
                 jsr Random
                 and #$07
                 ora #$30
+                ldy #"%"
                 bne LLC9_Common
-LLC9_ZeroUse:   txa
+LLC9_ZeroUse:   lda #"%"
+                ldy #$20
 LLC9_Common:    stx txtCpuUse
                 sta txtCpuUse+1
+                sty txtCpuUse+2
                 gettext txtLowerLabsComputer9
                 jmp DisplayCommon
 
@@ -185,6 +188,6 @@ txtLowerLabsComputer8:
 txtLowerLabsComputer9:
                 dc.b "CONSTRUCT AUXILIARY PROCESSING NODE",0
                 dc.b "CPU USAGE "
-txtCpuUse:      dc.b "XX%",0,0
+txtCpuUse:      dc.b "XXX",0,0
 
                 checkscriptend
