@@ -69,29 +69,38 @@ ESS_WaitUntilClose:
 
 EscortScientistsFinish:
                 ldx actIndex
-                ldy actT,x
-                lda npcBrakeTbl-ACT_FIRSTPERSISTENTNPC,y
-                jsr BrakeActorX  ;Move at slightly different speed to not look stupid
+                lda actT,x
+                cmp #ACT_SCIENTIST3
+                beq ESF_Follow
                 lda actXH,x
-                cmp npcStopPos-ACT_FIRSTPERSISTENTNPC,y
+                cmp #$4d
                 bcc ESF_Stop
                 lda #JOY_LEFT
                 sta actMoveCtrl,x
                 lda #AIMODE_IDLE
                 beq ESF_StoreMode
-ESF_Stop:       cpy #ACT_SCIENTIST3
-                bne ESF_NoDialogue
-                lda actSX,x
-                bne ESF_NoDialogue
+ESF_Stop:       lda actSX,x
+                bne ESF_NoDialogueYet
                 lda #$00                        ;Stop actor script exec for now
                 sta actScriptF
                 sta actScriptF+1
                 ldy #ACT_SCIENTIST2
                 gettext txtEscortFinish
                 jmp SpeakLine
-ESF_NoDialogue: lda #AIMODE_TURNTO
+ESF_NoDialogueYet:
+                lda #AIMODE_TURNTO
 ESF_StoreMode:  sta actAIMode,x
                 rts
+ESF_Follow:     lda actXH,x
+                cmp #$4e
+                bcc ESF_NoDialogueYet
+                lda #ACT_SCIENTIST2
+                jsr FindActor
+                txa
+                ldx actIndex
+                sta actAITarget,x
+                lda #AIMODE_FOLLOW
+                bne ESF_StoreMode
 
         ; Find filter script. Also move scientists to final positions before surgery
         ;
@@ -114,6 +123,8 @@ RadioFindFilter:jsr StopZoneScript
                 ldx #>EP_BEGINSURGERY
                 sta actScriptEP
                 stx actScriptF
+                lda #$00
+                sta actScriptF+1                ;Reset both actor scripts in case player exited early
                 gettext txtRadioFindFilter
 RadioMsg:       ldy #ACT_PLAYER
                 jsr SpeakLine
@@ -128,11 +139,6 @@ MoveScientistSub2:
                 lda #$08+ORG_GLOBAL
                 sta lvlActOrg,y
 BA_Skip:        rts
-
-        ; Tables
-
-npcStopPos:     dc.b $4e,$4d
-npcBrakeTbl:    dc.b 4,0
 
         ; Messages
         ; Reordered to compress better
