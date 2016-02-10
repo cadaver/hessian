@@ -392,7 +392,7 @@ DTM_ClearCharInfo:
                 stx actXH+ACTI_PLAYER           ;Move player out of view
                 jsr SetZoneColors
                 dec $d025                       ;Brown multicolor for the scrap sprites
-                lda #6*25
+                lda #5*25
                 sta driveTime
 DTM_Loop:
 DTM_RedrawBG:   lda scrollOffset
@@ -435,7 +435,7 @@ DTM_MoveScrap:  lda actT,x
                 sta actT,x
 DTM_MoveNext:   dex
                 bne DTM_MoveScrap
-                jsr InterpolateActors
+                jsr UA_AllDone                  ;Flash H & B letters and interpolate, but actor update was done manually
                 jsr FinishFrame
                 jsr TMR_Sound
                 jsr Random
