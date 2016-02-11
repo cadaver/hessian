@@ -170,9 +170,29 @@ START_Y         = $1b00
 TitleScreen:    jsr StopScript
                 jsr SetMenuMode                 ;Reset in-game menu mode (X=0 on return)
 
-        ; Load logo chars & title texts
+        ; Setup split mode, load logo chars & title texts
 
-                jsr SetupSplitScreen
+                jsr SetupTextScreen
+                jsr ClearPanelText
+                lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE ;Redraw all
+                sta panelUpdateFlags
+                lda #$00
+                sta armorMsgTime                ;Reset armor message if any
+                sta shakeScreen                 ;Clear screen shake from any scripts
+                tax
+ClearColorsLoop:sta colors,x                    ;Set colors for the picture area to all black
+                sta colors+$100,x
+                sta colors+$200,x
+                sta colors+SCROLLROWS*40-$100,x
+                inx
+                bne ClearColorsLoop
+                lda #<textSplitData
+                sta Irq5_Get+1
+                lda #>textSplitData
+                sta Irq5_Get+2
+                dex
+                stx ECS_LoadedCharSet+1         ;Mark game charset destroyed (X=$ff)
+                stx Irq6_SplitMode+1            ;Enable split IRQ mode
                 lda #F_LOGO
                 jsr MakeFileName_Direct
                 lda #<logoStart
@@ -181,17 +201,29 @@ TitleScreen:    jsr StopScript
 
         ; Print logo to screen
 
-                lda #<logoScreen
-                ldx #>logoScreen
-                sta zpSrcLo
-                stx zpSrcHi
                 lda #<(screen1+8+LOGOSTARTROW*40)
                 ldx #>(screen1+8+LOGOSTARTROW*40)
                 sta zpDestLo
                 stx zpDestHi
                 lda #24
                 ldx #7
-                jsr DrawChars
+                sta temp1                       ;Chars per row
+                stx temp2                       ;Row counter
+                ldx #$00
+DC_RowLoop:     ldy #$00
+DC_Loop:        lda logoScreen,x
+                sta (zpDestLo),y
+                inx
+                iny
+                cpy temp1
+                bcc DC_Loop
+                stx temp3
+                lda #40
+                ldx #zpDestLo
+                jsr Add8
+                ldx temp3
+                dec temp2
+                bne DC_RowLoop
                 lda #MUSIC_TITLE
                 jsr PlaySong
 
@@ -362,15 +394,14 @@ OptionsLoop:    lda #10
 OptionsSelect:  ldx optionsMenuChoice
                 cpx #3
                 bcs OptionsGoBack
-                lda #$01
+                lda difficulty,x
+                adc #$01                        ;C=0
                 sta optionsModified
-                inc difficulty,x
-                lda optionMaxValue,x
-                cmp difficulty,x
-                bcs OptionsNotOver
+                cmp optionMaxValue,x
+                bcc OptionsNotOver
                 lda #$00
-                sta difficulty,x
-OptionsNotOver: jsr PlaySelectSfx
+OptionsNotOver: sta difficulty,x
+                jsr PlaySelectSfx
                 jmp RefreshOptions
 OptionsGoBack:  jsr PlaySelectSfx
                 jmp MainMenu
@@ -993,52 +1024,6 @@ PTBCD1_NoAnd:   ora #$30
 PlaySelectSfx:  lda #SFX_SELECT
                 jmp PlaySfx
 
-        ; Setup split screen display
-
-SetupSplitScreen:
-                jsr SetupTextScreen
-                jsr ClearPanelText
-                lda #REDRAW_ITEM+REDRAW_AMMO+REDRAW_SCORE ;Redraw all
-                sta panelUpdateFlags
-                lda #$00
-                sta armorMsgTime                ;Reset armor message if any
-                sta shakeScreen                 ;Clear screen shake from any scripts
-                tax
-ClearColorsLoop:sta colors,x                    ;Set colors for the picture area to all black
-                sta colors+$100,x
-                sta colors+$200,x
-                sta colors+SCROLLROWS*40-$100,x
-                inx
-                bne ClearColorsLoop
-                lda #<textSplitData
-                sta Irq5_Get+1
-                lda #>textSplitData
-                sta Irq5_Get+2
-                dex
-                stx ECS_LoadedCharSet+1         ;Mark game charset destroyed (X=$ff)
-                stx Irq6_SplitMode+1
-                rts
-
-        ; Draw chars to screen or colorscreen
-
-DrawChars:      sta temp1                       ;Chars per row
-                stx temp2                       ;Row counter
-DC_RowLoop:     ldy #$00
-DC_Loop:        lda (zpSrcLo),y
-                sta (zpDestLo),y
-                iny
-                cpy temp1
-                bcc DC_Loop
-                tya
-                ldx #zpSrcLo
-                jsr Add8
-                lda #40
-                ldx #zpDestLo
-                jsr Add8
-                dec temp2
-                bne DC_RowLoop
-                rts
-
         ; Variables
 
 logoFade:       dc.b 0
@@ -1053,7 +1038,7 @@ titlePageDelayHi:
 mainMenuChoice: dc.b 0
 optionsMenuChoice:
                 dc.b 0
-optionsModified: dc.b 0
+optionsModified:dc.b 0
 cheatIndex:     dc.b 0
 
         ; Tables / data
@@ -1092,7 +1077,7 @@ logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
 
 textFadeTbl:    dc.b $00,$06,$03,$01
 
-optionMaxValue: dc.b MAX_DIFFICULTY,1,1
+optionMaxValue: dc.b MAX_DIFFICULTY+1,2,2
 
 cheatString:    dc.b KEY_K, KEY_V, KEY_L, KEY_T
 
