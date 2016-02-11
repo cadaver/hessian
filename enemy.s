@@ -1035,7 +1035,11 @@ HD_NoDamageSource:
 DropItem:       lda #$00
                 sta temp4
                 jsr Random                      ;Common random number
-                sta temp6
+                ldy battery+1                   ;When player is in serious trouble (out of battery)
+                cpy #LOW_BATTERY+1              ;make the drops more probable
+                bcs DI_BatteryOK
+                lsr
+DI_BatteryOK:   sta temp6
                 ldy #AL_DROPITEMTYPE
                 lda (actLo),y
                 beq DI_NoItem

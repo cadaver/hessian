@@ -12,8 +12,6 @@ bulletYSpdTbl:  dc.b -8,-6,0,6,8                ;Normal bullets
                 dc.b -8,-7,-3,2,0               ;Launcher grenade
                 dc.b -8,-7,-3,2
 
-fromHipFrameTbl:dc.b FR_WALK+4,FR_WALK+2,FR_WALK
-
         ; Weapon data
 
 wpnTblLo:       dc.b <wdFists
