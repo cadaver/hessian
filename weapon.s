@@ -61,6 +61,7 @@ DMG_AUTORIFLE   = 6
 DMG_BAT         = 7
 DMG_PISTOL      = 8
 DMG_LASER       = 12
+DMG_ACID        = 14
 DMG_SHOTGUN     = 14                            ;Reduced by 2 per animation frame
 DMG_PLASMA      = 16
 DMG_SNIPERRIFLE = 20
@@ -78,7 +79,6 @@ DMG_FLY         = 1
 DMG_ROCK        = 2
 DMG_FIREBALL    = 2
 DMG_STEAM       = 1
-DMG_ACID        = 16
 
 DMG_ARMOR_THRESHOLD = 4
 
