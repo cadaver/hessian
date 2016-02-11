@@ -1515,7 +1515,7 @@ alRotorDrone:   dc.w USESCRIPT|EP_MOVEROTORDRONE ;Update routine
                 dc.w 1000                       ;Score from kill
                 dc.b AIMODE_FLYER               ;AI mode when spawned randomly
                 dc.b DROP_NOTHING               ;Itemdrop type or item override
-                dc.b $1f                        ;AI offense AND-value
+                dc.b $0b                        ;AI offense AND-value
                 dc.b $10                        ;AI defense probability
                 dc.b AB_HORIZONTAL|AB_DIAGONALDOWN|AB_DOWN ;Attack directions
                 dc.b 3*8                        ;Horiz max movement speed
