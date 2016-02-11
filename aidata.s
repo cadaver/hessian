@@ -95,7 +95,7 @@ spawnTypeTbl:   dc.b ACT_SMALLWALKER            ;0
                 dc.b ACT_HEAVYGUARD             ;34
                 dc.b ACT_SMALLTANK              ;35
 
-spawnWpnTbl:    dc.b ITEM_AUTORIFLE             ;0
+spawnWpnTbl:    dc.b ITEM_PISTOL                ;0
                 dc.b ITEM_PISTOL|SPAWN_AIR      ;1
                 dc.b ITEM_NIGHTSTICK            ;2
                 dc.b ITEM_PISTOL                ;3
