@@ -915,6 +915,12 @@ FadeOutAll:     lda fastLoadMode                ;No fade if using fallback loade
                 jsr FadeOutText
 FOA_Done:       jsr BlankScreen
                 stx Irq6_SplitMode+1            ;End split mode (X=$00 on return)
+                sei
+                lda #<Irq1                      ;Make sure irq1 is the next to display to prevent
+                sta $fffe                       ;garbage with Kernal mode loader
+                lda #>Irq1
+                sta $ffff
+                cli
 FOT_Done:       rts
 
         ; Fade text only
