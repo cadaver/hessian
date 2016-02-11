@@ -36,10 +36,6 @@ S1_JumpTbl:     dc.w S1_WaitFrame
                 dc.w S1_DoNothing
 
 S1_WaitFrame:   inc scriptVariable              ;Special case wait 1 frame (loading)
-                ldy lvlDataActBitsStart+$04
-                lda lvlStateBits,y              ;Disable rotordrone until parking garage visited
-                and #$ff-$04
-                sta lvlStateBits,y
                 ldx #MENU_INTERACTION           ;Set interaction mode meanwhile so that player can't move away
                 jmp SetMenuMode
 

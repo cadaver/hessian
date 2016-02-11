@@ -44,10 +44,6 @@ S2_JumpTbl:     dc.w S2_Dialogue1
 
 S2_Dialogue1:   jsr AddQuestScore
                 inc scriptVariable
-                ldy lvlDataActBitsStart+$04
-                lda lvlStateBits,y              ;Enable rotordrone now
-                ora #$04
-                sta lvlStateBits,y
                 ldy #ACT_SCIENTIST2
                 gettext txtParkingGarage1
                 jmp SpeakLine
