@@ -868,16 +868,17 @@ ULO_NoHealing2: sta healTimer
 ULO_NoHealing:  lda upgrade                     ;Check battery auto-recharge
                 asl
                 bpl ULO_NoRecharge
-                lda UA_ItemFlashCounter+1
-                and #$3f
-                bne ULO_NoRecharge
-                ldy battery+1
-                iny
-                cpy #MAX_BATTERY
-                bcc ULO_NotMaxed
-                ldy #MAX_BATTERY
-                sta battery                     ;A=0
-ULO_NotMaxed:   sty battery+1
+                ldy #$02                        ;Restore 2 units per frame
+ULO_RechargeLoop:
+                lda battery+1
+                cmp #MAX_BATTERY
+                bcs ULO_NoRecharge
+                inc battery
+                bne ULO_RechargeNoMSB
+                inc battery+1
+ULO_RechargeNoMSB:
+                dey
+                bne ULO_RechargeLoop
 ULO_NoRecharge: lda #$07
 ULO_NoAirFlag:  ldy #$00
                 bne ULO_OxygenDelay
