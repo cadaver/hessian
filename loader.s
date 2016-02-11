@@ -6,9 +6,6 @@
 
 RETRIES         = 5             ;Retries when reading a sector
 
-IRQ_SPEED       = $20           ;$1c07 (head movement speed)
-                                ;Safe range $20-$28+ (Graham)
-
 MW_LENGTH       = 32            ;Bytes in one M-W command
 
 LOAD_KERNAL     = $00           ;Load using Kernal and do not allow interrupts
@@ -184,13 +181,7 @@ IL_CopySlowLoad:lda ilSlowLoadStart-1,x         ;Copy slowload file routines
                 jmp IL_Done
 
 IL_FastLoadOK:  sta fastLoadMode                ;Use non-Kernal IRQ loading
-                txa                             ;1541?
-                beq IL_Is1541
-                lda #>DrvMain_Not1541           ;If not, skip the $1c07 write
-                sta iflMEString                 ;on loader init
-                lda #<DrvMain_Not1541
-                sta iflMEString+1
-IL_Is1541:      lda ilDirTrkLo,x                ;Patch directory
+                lda ilDirTrkLo,x                ;Patch directory
                 sta DrvDirTrk+1-drvStart+driveCode
                 lda ilDirTrkHi,x
                 sta DrvDirTrk+2-drvStart+driveCode
@@ -620,10 +611,7 @@ il1MHzEnd:
 driveCode:
                 rorg drvStart
 
-DrvMain:        lda #IRQ_SPEED                  ;Speed up the controller a bit
-                sta $1c07                       ;(1541 only)
-DrvMain_Not1541:
-                ldx #$00
+DrvMain:        ldx #$00
                 txa
 DrvResetCache:  sta drvFileTrk,x                ;Clear dir cache
                 inx
