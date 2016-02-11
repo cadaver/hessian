@@ -113,3 +113,13 @@ levelBioDome:   dc.b "BIO-DOME",0
 levelThroneSuite:dc.b "THRONE SUITE",0
 levelServerVault:dc.b "SERVER VAULT",0
 levelOldTunnels: dc.b "OLD TUNNELS",0
+
+                org screen2+$100
+
+txtCancel:      dc.b "CANCEL",0
+
+                org screen2+$108
+
+txtEndWithoutSaving:
+                dc.b "ABANDON GAME",0
+

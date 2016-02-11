@@ -24,6 +24,8 @@ logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
 levelNamesTbl   = screen2
 levelNames      = screen2+$40
+txtCancel       = screen2+$100
+txtEndWithoutSaving = screen2+$108
 
 START_LEVEL     = $00                          ;Warehouse container (proper start location)
 START_X         = $6900
@@ -799,7 +801,11 @@ SaveDone:       inc temp2
                 sta temp1
                 lda #<txtCancel
                 ldx #>txtCancel
-                jmp PrintText
+                ldy LoadOrSaveGameMode+1
+                beq ScanLoad
+                lda #<txtEndWithoutSaving
+                ldx #>txtEndWithoutSaving
+ScanLoad:       jmp PrintText
 GetSaveDescription:
                 lda #<saveList
                 adc temp8                       ;Level name
@@ -1030,6 +1036,19 @@ PTBCD1_NoAnd:   ora #$30
 PlaySelectSfx:  lda #SFX_SELECT
                 jmp PlaySfx
 
+        ; Texts
+
+txtEasy:        dc.b "EASY  ",0
+txtMedium:      dc.b "MEDIUM",0
+txtHard:        dc.b "HARD  ",0
+txtInsane:      dc.b "INSANE",0
+txtOn:          dc.b "ON ",0
+txtOff:         dc.b "OFF",0
+txtLoadSlot:    dc.b "LOAD GAME FROM",0
+txtSaveSlot:    dc.b "SAVE GAME TO",0
+txtEmpty:       dc.b "EMPTY SLOT",0
+txtTime:        dc.b ":::::::",0
+
         ; Variables
 
 logoFade:       dc.b 0
@@ -1052,18 +1071,6 @@ cheatIndex:     dc.b 0
 difficultyTxtLo:dc.b <txtEasy, <txtMedium, <txtHard, <txtInsane
 difficultyTxtHi:dc.b >txtEasy, >txtMedium, >txtHard, >txtInsane
 
-txtEasy:        dc.b "EASY  ",0
-txtMedium:      dc.b "MEDIUM",0
-txtHard:        dc.b "HARD  ",0
-txtInsane:      dc.b "INSANE",0
-txtOn:          dc.b "ON ",0
-txtOff:         dc.b "OFF",0
-txtLoadSlot:    dc.b "LOAD GAME FROM",0
-txtSaveSlot:    dc.b "SAVE GAME TO",0
-txtEmpty:       dc.b "EMPTY SLOT",0
-txtCancel:      dc.b "CANCEL",0
-txtTime:        dc.b "0:00:00",0
-
 mainMenuJumpTblLo:
                 dc.b <StartNewGame
                 dc.b <LoadGame
@@ -1074,14 +1081,13 @@ mainMenuJumpTblHi:
                 dc.b >LoadGame
                 dc.b >Options
 
+textFadeTbl:    dc.b $00,$06,$03,$01
 logoFadeBg2Tbl: dc.b $00,$00,$06,$0e
 logoFadeBg3Tbl: dc.b $00,$06,$0e,$03
 logoFadeCharTbl:dc.b $08,$08,$08,$08,$08,$08,$08,$08
                 dc.b $08,$0e,$08,$08,$08,$08,$08,$08
                 dc.b $08,$0b,$08,$0e,$08,$08,$08,$0b
                 dc.b $08,$09,$0a,$0b,$0c,$0d,$0e,$0f
-
-textFadeTbl:    dc.b $00,$06,$03,$01
 
 optionMaxValue: dc.b MAX_DIFFICULTY+1,2,2
 
