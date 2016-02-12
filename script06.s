@@ -481,7 +481,7 @@ recyclerCountTbl:
                 dc.b 30                         ;Auto rifle
                 dc.b 5                          ;Sniper rifle
                 dc.b 25                         ;Minigun
-                dc.b 30                         ;Flamethrower
+                dc.b 60                         ;Flamethrower
                 dc.b 15                         ;Laser rifle
                 dc.b 10                         ;Plasma gun
                 dc.b 1                          ;EMP generator
@@ -500,7 +500,7 @@ recyclerCostTbl:
                 dc.b 25                         ;Auto rifle
                 dc.b 25                         ;Sniper rifle
                 dc.b 25                         ;Minigun
-                dc.b 25                         ;Flamethrower
+                dc.b 30                         ;Flamethrower
                 dc.b 30                         ;Laser rifle
                 dc.b 30                         ;Plasma gun
                 dc.b 20                         ;EMP generator

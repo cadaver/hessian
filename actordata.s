@@ -1491,7 +1491,7 @@ alSecurityChief:dc.w USESCRIPT|EP_MOVESECURITYCHIEF ;Update routine
                 dc.w 2000                       ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
                 dc.b ITEM_VAULTPASS             ;Itemdrop type or item override
-                dc.b $17                        ;AI offense random AND-value
+                dc.b $0f                        ;AI offense random AND-value
                 dc.b $20                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
                 dc.b AMF_DUCK                   ;Move flags
