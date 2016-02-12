@@ -44,13 +44,13 @@ randomAreaStart:
                 include panel.s
                 include script.s
                 include actor.s
+                include ai.s
                 include physics.s
                 include player.s
-                include weapon.s
-                include bullet.s
-                include item.s
-                include ai.s
                 include enemy.s
+                include bullet.s
+                include weapon.s
+                include item.s
                 include level.s
                 
 randomAreaEnd:

@@ -436,4 +436,5 @@ UI_Reload:      jsr GetMagazineSize
                 cmp invCount-1,y
                 bcs UI_DontReload
                 dec reload
+SameLevel:
 UI_DontReload:  rts

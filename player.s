@@ -334,23 +334,13 @@ MH_NoHitWall:   lda actF1,x                     ;If roll or death animation, con
                 lda temp1
                 lsr
                 bcc MH_InAir
+MH_PlayerStartFall:
                 jmp MH_OnGround
-
-MH_JumpAnim:    ldy #FR_JUMP+1
-                lda actSY,x
-                bpl MH_JumpAnimDown
-MH_JumpAnimUp:  cmp #-1*8
-                bcs MH_JumpAnimDone
-                dey
-                bcc MH_JumpAnimDone
-MH_JumpAnimDown:cmp #2*8
-                bcc MH_JumpAnimDone
-                iny
-MH_JumpAnimDone:tya
-MH_AnimDone2:   jmp MH_AnimDone
 
 MH_InAir:       and #MB_STARTFALLING/2
                 beq MH_OkToFall
+                txa                             ;One frame of ground controls for player to allow late jumps
+                beq MH_PlayerStartFall
                 jsr MH_ResetFall                ;Make sure unapplied fall distance isn't carried over
                 lda actAIHelp,x                 ;Check AI reactions to falling off a ledge
                 bpl MH_NoDropDown
@@ -372,7 +362,21 @@ MH_NoDropDown:  lda actAIHelp,x                 ;Check autoturn or stop
 MH_DoAutoStop:  jmp MH_ResetMoveCtrl
 MH_OkToFall:    lda temp3                       ;AI's will never grab ladders, so if enemy has no falldamage
                 and #AMF_FALLDAMAGE             ;can also skip the grabbing code
-                beq MH_JumpAnim
+                bne MH_UpdateFallCounter
+MH_JumpAnim:    ldy #FR_JUMP+1
+                lda actSY,x
+                bpl MH_JumpAnimDown
+MH_JumpAnimUp:  cmp #-1*8
+                bcs MH_JumpAnimDone
+                dey
+                skip2
+MH_JumpAnimDown:cmp #3*8
+                bcc MH_JumpAnimDone
+                iny
+MH_JumpAnimDone:tya
+MH_AnimDone2:   jmp MH_AnimDone
+
+MH_UpdateFallCounter:
                 lda actSY,x
                 bmi MH_CheckGrab
 MH_IncFall:     asl
@@ -383,15 +387,12 @@ MH_IncFall:     asl
                 bcs MH_CheckGrab2
 MH_CheckGrab:   cmp #-2*8                       ;Do not grab when moving up fast
                 bcc MH_JumpAnim
-MH_CheckGrab2:  lda temp2
-                and #JOY_UP
-                beq MH_JumpAnim
-                lda actCtrl,x                   ;If fire is held, do not grab ladder
-                and #JOY_FIRE
+MH_CheckGrab2:  txa                             ;Only player will grab ladders
                 bne MH_JumpAnim
-                lda temp3
-                and #AMF_CLIMB
-                beq MH_JumpAnim
+                lda actCtrl,x                   ;Do not grab if fire held
+                and #JOY_UP|JOY_FIRE
+                cmp #JOY_UP
+                bne MH_JumpAnim
                 jsr GetCharInfo4Above
                 and #CI_CLIMB
                 beq MH_JumpAnim

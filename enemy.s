@@ -1179,5 +1179,4 @@ DI_NotInInventory:
                 cmp itemMaxCount-1,y
                 rts
 DI_Exceeded:    lda #$ff
-SameLevel:
 DLP_NoItem:     rts
