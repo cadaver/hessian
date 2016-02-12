@@ -550,7 +550,11 @@ UE3_DistCheck:  jsr FindActor
                 lda temp6
                 cmp #2
                 bcs UE3_NoDist
-                lda #AIMODE_TURNTO
+                cmp #1
+                bcc UE3_Stop
+                lda #7
+                jmp BrakeActorX
+UE3_Stop:       lda #AIMODE_TURNTO
                 sta actAIMode,x
 UE3_NoDist:     rts
 
