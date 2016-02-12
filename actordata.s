@@ -1308,7 +1308,7 @@ alCombatRobot:  dc.w MoveAndAttackHuman         ;Update routine
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 65                         ;Score from kill
                 dc.b AIMODE_MOVER               ;AI mode when spawned randomly
-                dc.b DROP_WEAPON|DROP_BATTERY   ;Itemdrop type or item override
+                dc.b DROP_WEAPON|DROP_BATTERY|DROP_PARTS ;Itemdrop type or item override
                 dc.b $0f                        ;AI offense random AND-value
                 dc.b $18                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
@@ -1334,7 +1334,7 @@ alCombatRobotFast:
                 dc.b NO_MODIFY                  ;Damage modifier
                 dc.w 125                        ;Score from kill
                 dc.b AIMODE_BERZERK             ;AI mode when spawned randomly
-                dc.b DROP_WEAPON|DROP_BATTERY   ;Itemdrop type or item override
+                dc.b DROP_WEAPON|DROP_BATTERY|DROP_PARTS ;Itemdrop type or item override
                 dc.b $13                        ;AI offense random AND-value
                 dc.b $20                        ;AI defense probability
                 dc.b AB_ALL                     ;Attack directions
