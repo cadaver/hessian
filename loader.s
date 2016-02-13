@@ -16,8 +16,6 @@ tablBi          = depackBuffer
 tablLo          = depackBuffer + 52
 tablHi          = depackBuffer + 104
 
-drvIdDrv0       = $12           ;Disk drive ID (1541 only)
-drvId           = $16           ;Disk ID (1541 only)
 drvFileTrk      = $0300
 drvFileSct      = $0380
 drvBuf          = $0400         ;Sector data buffer

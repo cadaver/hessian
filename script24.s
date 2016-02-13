@@ -806,12 +806,12 @@ textPageTblHi:  dc.b >txtEnding1
                 dc.b >txtFinalScore
                 dc.b >txtThanks
 
-textPosTbl:     dc.b 1,9,7,0,1,9,7,0,1,1,9,7
+textPosTbl:     dc.b 2,10,9,0,2,10,9,0,2,2,10,9
 
 txtFinalScore:  dc.b "FINAL SCORE "
 txtScore:       dc.b "0000000",0
                 dc.b " ",0
-                dc.b " GAME TIME "
+                dc.b " FINAL TIME "
 txtTime:        dc.b "0:00:00",0,0
 
 txtThanks:      dc.b "THANK YOU FOR PLAYING!",0

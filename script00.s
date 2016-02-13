@@ -119,7 +119,7 @@ START_Y         = $1b00
 ;START_X         = $0080
 ;START_Y         = $5600
 
-;START_LEVEL     = $0a                          ;Nether tunnel, next to the machine
+;START_LEVEL     = $0a                          ;Nether tunnel, next to the tunnel machine
 ;START_X         = $a580
 ;START_Y         = $7400
 
