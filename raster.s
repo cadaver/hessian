@@ -30,7 +30,7 @@ StartIrq:       cld
 BlankScreen:    jsr WaitBottom
                 lda #$57
                 sta Irq1_ScrollY+1
-BS_Common:      ldx #$00
+                ldx #$00
                 stx Irq1_D015+1
                 stx Irq1_MaxSprY+1
                 stx Irq6_LevelUpdate+1          ;Disable level animation by default
