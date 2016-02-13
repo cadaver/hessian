@@ -33,7 +33,7 @@ txtEnding3:     dc.b "THE AI INCIDENT AT THE THRONE GROUP",0
                 org chars+$480
 
 txtEnding3_2a:  dc.b "KIM CONSIDERS HER OPTIONS: STAY AND",0
-                dc.b " RISK INDEFINITE MILITARY CUSTODY.",0
+                dc.b " RISK INDEFINITE MILITARY CUSTODY?",0
                 dc.b "  OR RUN AWAY UNTIL OUT OF POWER?",0,0
 
                 org chars+$700

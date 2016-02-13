@@ -1014,13 +1014,12 @@ AU_NoMultiplier:bne AU_CountMultiplier
                 ldx #C_PLAYER_BOTTOM
                 ldy #C_PLAYER_TOP
                 lda temp6
-                and #UPG_MOVEMENT               ;Movement upgrade turns lower part armored
-                beq AU_NoBottomArmor
+                lsr                             ;Movement upgrade turns lower part armored
+                bcc AU_NoBottomArmor
                 inx
 AU_NoBottomArmor:
-                lda temp6
-                and #UPG_STRENGTH               ;Strength upgrade turns upper part armored
-                beq AU_NoTopArmor
+                lsr                             ;Strength upgrade turns upper part armored
+                bcc AU_NoTopArmor
                 iny
 AU_NoTopArmor:  stx adPlayerBottomSprFile
                 sty adPlayerTopSprFile
