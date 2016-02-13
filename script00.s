@@ -641,8 +641,10 @@ IP_CodeLoop:    if CODE_CHEAT > 0
         ; Save options if modified
 
 SaveModifiedOptions:
-                ldx difficulty                  ;Set player's difficulty damage scaling now
-                lda plrDmgModifyTbl,x
+                lda difficulty                  ;Set player's difficulty damage scaling now
+                asl                             ;Easy = 4 (half), Normal = 8 (unmodified) etc.
+                asl
+                adc #$04
                 sta DA_DmgDifficultyMod+1
                 lda optionsModified
                 beq SMC_NoChange

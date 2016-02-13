@@ -582,11 +582,8 @@ InitEndingActor:jsr GFA_Found
 
         ; Ending bonus calculation + prepare the final score / final time texts
 
-EndingBonus:    ldx saveDifficulty
-                lda plrDmgModifyTbl,x           ;Bonus from difficulty
-                lsr
-                lsr
-                tax
+EndingBonus:    ldx saveDifficulty              ;Bonus from lowest difficulty used during game
+                inx
                 cpy #$02                        ;Victory ending?
                 bne EB_Loop
                 inx

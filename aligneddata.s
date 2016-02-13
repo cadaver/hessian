@@ -317,9 +317,22 @@ sortSprY:       ds.b MAX_SPR*2,0
 sortSprF:       ds.b MAX_SPR*2,0
 sortSprC:       ds.b MAX_SPR*2,0
 
-keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
-plrDmgModifyTbl:dc.b 4,8,12,16
-flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP,JOY_LEFT|JOY_UP,JOY_RIGHT|JOY_DOWN,JOY_LEFT|JOY_DOWN
+attackTbl:      dc.b AIM_NONE                   ;None
+                dc.b AIM_UP                     ;Up
+                dc.b AIM_DOWN                   ;Down
+                dc.b AIM_NONE                   ;Up+Down
+                dc.b AIM_HORIZONTAL             ;Left
+                dc.b AIM_DIAGONALUP             ;Left+Up
+                dc.b AIM_DIAGONALDOWN           ;Left+Down
+                dc.b AIM_NONE                   ;Left+Up+Down
+                dc.b AIM_HORIZONTAL             ;Right
+                dc.b AIM_DIAGONALUP             ;Right+Up
+                dc.b AIM_DIAGONALDOWN           ;Right+Down
+                dc.b AIM_NONE                   ;Right+Up+Down
+                dc.b AIM_NONE                   ;Right+Left
+                dc.b AIM_NONE                   ;Right+Left+Up
+                dc.b AIM_NONE                   ;Right+Left+Down
+                dc.b AIM_NONE                   ;Right+Left+Up+Down
 
         ; Levelobject table (not saved), also reused by the savegame-list
 
@@ -393,26 +406,12 @@ fileAge:        ds.b MAX_CHUNKFILES,0
 
         ; Remaining data
 
-d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,TEXTSCR_D018
 shiftOffsetTbl: dc.b 6,6,6
                 dc.b 0,0,0
                 dc.b 6,6,6
-attackTbl:      dc.b AIM_NONE                   ;None
-                dc.b AIM_UP                     ;Up
-                dc.b AIM_DOWN                   ;Down
-                dc.b AIM_NONE                   ;Up+Down
-                dc.b AIM_HORIZONTAL             ;Left
-                dc.b AIM_DIAGONALUP             ;Left+Up
-                dc.b AIM_DIAGONALDOWN           ;Left+Down
-                dc.b AIM_NONE                   ;Left+Up+Down
-                dc.b AIM_HORIZONTAL             ;Right
-                dc.b AIM_DIAGONALUP             ;Right+Up
-                dc.b AIM_DIAGONALDOWN           ;Right+Down
-                dc.b AIM_NONE                   ;Right+Up+Down
-                dc.b AIM_NONE                   ;Right+Left
-                dc.b AIM_NONE                   ;Right+Left+Up
-                dc.b AIM_NONE                   ;Right+Left+Down
-                dc.b AIM_NONE                   ;Right+Left+Up+Down
+keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
+flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP,JOY_LEFT|JOY_UP,JOY_RIGHT|JOY_DOWN,JOY_LEFT|JOY_DOWN
+d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,TEXTSCR_D018
 
         ; Gameworld & level data (not saved)
 
