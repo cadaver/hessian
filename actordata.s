@@ -37,7 +37,6 @@ ceilingTurretOfs:
                 dc.b JOY_LEFT|JOY_DOWN|JOY_FIRE,3
                 dc.b JOY_LEFT|JOY_FIRE,4
                 dc.b 0
-tankSizeAddTbl: dc.b 2,0,6,8
 
         ; Actor display data
 

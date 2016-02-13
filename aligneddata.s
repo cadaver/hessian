@@ -411,6 +411,7 @@ shiftOffsetTbl: dc.b 6,6,6
                 dc.b 6,6,6
 keyRowBit:      dc.b $fe,$fd,$fb,$f7,$ef,$df,$bf,$7f
 flyerDirTbl:    dc.b JOY_RIGHT|JOY_UP,JOY_LEFT|JOY_UP,JOY_RIGHT|JOY_DOWN,JOY_LEFT|JOY_DOWN
+tankSizeAddTbl: dc.b 2,0,6,8
 d018Tbl:        dc.b GAMESCR1_D018,GAMESCR2_D018,TEXTSCR_D018
 
         ; Gameworld & level data (not saved)

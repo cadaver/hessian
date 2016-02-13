@@ -246,8 +246,11 @@ Irq2_SprIrqDone:
                 tax
                 lda sprIrqJumpTbl,x             ;Get the correct jump address
                 sta Irq2_SprJump+1
+                lda fileOpen
+                beq Irq2_SprIrqDoneNoLoad
+                dey
+Irq2_SprIrqDoneNoLoad:
                 tya
-                sta $d012
                 sec
                 sbc #$03                        ;Already late from the next IRQ?
                 cmp $d012
@@ -264,18 +267,22 @@ Irq2_Direct:
 Irq2_SprIndex:  ldx #$00
 Irq2_SprJump:   jmp Irq2_Spr0
 
-Irq2_AllDone:   lda #IRQ3_LINE-1
-                tay
+Irq2_AllDone:   ldy #IRQ3_LINE-1
+                lda fileOpen
+                beq Irq2_AllDoneNoLoad
+                dey
+Irq2_AllDoneNoLoad:
+                tya
                 sec
                 sbc #$03
                 cmp $d012                       ;Late from the scorepanel IRQ?
                 bcc Irq2_LatePanel
                 lda #<Irq3
                 ldx #>Irq3
-SetNextIrq:     sty $d012
-                sta $fffe
+SetNextIrq:     sta $fffe
                 stx $ffff
 SetNextIrqNoAddress:
+                sty $d012
                 dec $d019                       ;Acknowledge raster IRQ
                 lda irqSave01
                 sta $01                         ;Restore $01 value
