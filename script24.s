@@ -32,7 +32,8 @@ EndSequence:    lda endingUpdateTblLo,y
                 jsr StopScript
                 lda #$02
                 jsr ChangeLevel
-                lda #$00
+                lda #$00                        ;Reset possible screen shake from interludes
+                sta shakeScreen
                 sta actXH+ACTI_PLAYER           ;Remove player to not disturb (die by falling into nothingness)
                 sta actT+ACTI_PLAYER
                 sta mapX
@@ -496,7 +497,7 @@ UE3_HasPlayer:  lda endingTime
                 beq UE3_CheckLinda
                 cmp #55+50
                 beq UE3_CheckJeff
-                cmp #55-2
+                cmp #55-1
                 bcc UE3_Walk
                 cmp #55+15
                 bcc UE3_Wait
