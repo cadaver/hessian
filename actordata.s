@@ -1411,7 +1411,7 @@ alEyeInvisible: dc.w USESCRIPT|EP_MOVEEYESTAGE1 ;Update routine
                 dc.b 0                          ;Initial health
 
 alEye:          dc.w USESCRIPT|EP_MOVEEYESTAGE2 ;Update routine
-                dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON ;Actor flags
+                dc.b GRP_ENEMIES|AF_NOREMOVECHECK|AF_NOWEAPON|AF_ORGANIC ;Actor flags
                 dc.b 12                         ;Horizontal size
                 dc.b 0                          ;Size up
                 dc.b 0                          ;Size down

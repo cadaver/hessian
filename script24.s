@@ -5,8 +5,6 @@
 
 NUM_PAGES = 3
 
-endingTime      = menuCounter
-endingTime2     = menuMoveDelay
 txtEnding1      = charInfo+$80
 txtEnding2      = charColors+$80
 txtEnding3      = chars+$400
@@ -38,8 +36,6 @@ EndSequence:    lda endingUpdateTblLo,y
                 sta actXH+ACTI_PLAYER           ;Remove player to not disturb (die by falling into nothingness)
                 sta actT+ACTI_PLAYER
                 sta mapX
-                sta endingTime
-                sta endingTime2
                 lda #$01
                 sta blockX
                 sta blockY
@@ -852,5 +848,7 @@ textFadeDir:    dc.b -1
 pageDelay:      dc.b 0
 pageNum:        dc.b $ff
 sunFrame:       dc.b 22
+endingTime:     dc.b 0
+endingTime2:    dc.b 0
 
                 checkscriptend
