@@ -472,6 +472,10 @@ UpdateEnding3:  lda scrollCSY
                 jsr UE3_DistCheck
                 lda pageNum
                 bpl UE3_HasText
+                inc endingTime
+                lda endingTime
+                cmp #15
+                bcc UE3_WaitPlayer
                 lda actT+ACTI_PLAYER
                 bne UE3_HasPlayer
                 lda #ACT_PLAYER
@@ -486,18 +490,17 @@ UpdateEnding3:  lda scrollCSY
                 sta actYH+ACTI_PLAYER
                 lda #4*8                        ;Same speed regardless of upgrade
                 sta actSX+ACTI_PLAYER
-                rts
-UE3_HasPlayer:  inc endingTime
-                lda endingTime
-                cmp #40+25
+UE3_WaitPlayer: rts
+UE3_HasPlayer:  lda endingTime
+                cmp #55+20
                 beq UE3_CheckLinda
-                cmp #40+60
+                cmp #55+50
                 beq UE3_CheckJeff
-                cmp #39
+                cmp #55-2
                 bcc UE3_Walk
-                cmp #40+15
+                cmp #55+15
                 bcc UE3_Wait
-                cmp #40+70
+                cmp #55+70
                 bcc UE3_Look
                 jmp UE1_ShowText
 UE3_Look:       lda #FR_ENTER
