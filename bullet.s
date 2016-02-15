@@ -30,7 +30,7 @@ MP_GetNextTarget:
                 lda #COLOR_FLICKER
                 sta actFlash,y
                 lda actTime,y                   ;Reduce fire "oxygen level"
-                adc #EXTINGUISH_ADD-1
+                adc #EXTINGUISH_ADD-1           ;C=1 here
                 sta actTime,y
                 jmp RemoveActor
 MP_Done:        jmp MoveBullet_NoCollision

@@ -246,10 +246,6 @@ Irq2_SprIrqDone:
                 tax
                 lda sprIrqJumpTbl,x             ;Get the correct jump address
                 sta Irq2_SprJump+1
-                lda fileOpen
-                beq Irq2_SprIrqDoneNoLoad
-                dey
-Irq2_SprIrqDoneNoLoad:
                 tya
                 sec
                 sbc #$03                        ;Already late from the next IRQ?
