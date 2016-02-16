@@ -524,7 +524,7 @@ IP_InitInventory:
                 jsr AddItem
                 if STARTITEM_CHEAT > 0
                 lda #ITEM_MINIGUN
-                ldx #50
+                ldx #100
                 jsr AddItem
                 endif
                 lda #START_LEVEL
