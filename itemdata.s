@@ -55,7 +55,7 @@ itemDefaultPickup:
                 dc.b 25                         ;Minigun
                 dc.b 30                         ;Flamethrower
                 dc.b 7                          ;Laser rifle
-                dc.b 5                          ;Plasma gun
+                dc.b 6                          ;Plasma gun
                 dc.b 1                          ;EMP generator
                 dc.b 3                          ;Grenade launcher
                 dc.b 2                          ;Bazooka
