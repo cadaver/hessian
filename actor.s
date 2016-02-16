@@ -529,14 +529,11 @@ GAB_RightOK2:   sta AA_RightCheck+1
                 adc #$01
                 sta UA_RARightCheck+1
                 lda SL_CSSMapY+1
-                tay
-                beq GAB_TopOK1
-                dey
-GAB_TopOK1:     sty UA_RATopCheck+1
-                cpy limitU
+GAB_TopOK1:     cmp limitU
                 bcs GAB_TopOK2
-                ldy limitU
-GAB_TopOK2:     sty AA_TopCheck+1
+                lda limitU
+GAB_TopOK2:     sta AA_TopCheck+1
+                lda SL_CSSMapY+1
                 clc
                 adc #ADDACTOR_BOTTOM_LIMIT
                 bpl GAB_BottomOK1
@@ -802,8 +799,8 @@ UA_RALeftCheck: cmp #$00
                 bcc UA_Remove
 UA_RARightCheck:cmp #$00
                 bcs UA_Remove
-                lda actYH,x
-UA_RATopCheck:  cmp #$00
+                lda actYH,x                     ;Note: use mapY as the top remove border, as the zone
+                cmp SL_CSSMapY+1                ;may not be a full screen tall
                 bcc UA_Remove
 UA_RABottomCheck:
                 cmp #$00
