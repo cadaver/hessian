@@ -179,7 +179,13 @@ IL_CopySlowLoad:lda ilSlowLoadStart-1,x         ;Copy slowload file routines
                 jmp IL_Done
 
 IL_FastLoadOK:  sta fastLoadMode                ;Use non-Kernal IRQ loading
-                lda ilDirTrkLo,x                ;Patch directory
+                txa
+                bne IL_Not1541                  ;On 1541, patch out the flush ($a2) job call
+                lda #$ea
+                sta DrvFlushJsr-drvStart+driveCode
+                sta DrvFlushJsr-drvStart+driveCode+1
+                sta DrvFlushJsr-drvStart+driveCode+2
+IL_Not1541:     lda ilDirTrkLo,x                ;Patch directory
                 sta DrvDirTrk+1-drvStart+driveCode
                 lda ilDirTrkHi,x
                 sta DrvDirTrk+2-drvStart+driveCode
@@ -813,6 +819,8 @@ DrvSaveSector:  ldy #$90
                 bne DrvSaveSectorLoop
 DrvSaveFinish:  jsr DrvGetSaveByte              ;Make sure all bytes are received
                 bcc DrvSaveFinish
+DrvFlush:       ldy #$a2                        ;Flush buffers (1581 and CMD drives)
+DrvFlushJsr:    jsr DrvDoJob
                 jmp DrvLoop
 
 DrvReadSector:
