@@ -497,7 +497,7 @@ MH_JumpNoPlayer:jsr MH_ResetGrounded
                 jmp MH_AnimDone
 MH_NoNewJump:   ldy actF1,x                     ;If in enter stance,
                 cpy #FR_ENTER                   ;hold it as long as joy up/down held
-                bne MH_NoEnterFrame             ;but not firebuton
+                bne MH_NoEnterFrame             ;but not firebutton
                 lda actCtrl,x
                 cmp #JOY_FIRE
                 bcs MH_StopEnter
