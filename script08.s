@@ -349,8 +349,13 @@ HackerFollowZone:
                 lda levelNum
                 cmp #$0f                        ;Success condition
                 beq HFZ_Finished
-                cmp #$0a                        ;Do not go to nether tunnel
-                beq HFZ_LevelFail
+                cmp #$08
+                bne HFZ_NotLowerLabs
+                lda actYH+ACTI_PLAYER           ;In lower labs do not follow to the lowest level rooms (e.g. surgery room, nether tunnel entrance)
+                cmp #$55
+                bcc HFZ_LevelOK
+                bcs HFZ_LevelFail
+HFZ_NotLowerLabs:
                 lsr
                 bcc HFZ_LevelOK
                 cmp #$02                        ;Do go to odd-numbered levels 5,7,9,11 (caves, security centers, 2nd courtyard)

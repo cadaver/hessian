@@ -199,7 +199,15 @@ AS_4:           lda #ACT_HIGHWALKER
                 sta lvlActWpn,y
                 lda #$08+ORG_GLOBAL
                 sta lvlActOrg,y                 ;Create saboteur enemy
-                inc scriptVariable
+                lda #ACT_HACKER
+                jsr FindLevelActor
+                bcc AS_4NoHacker
+                lda lvlActOrg,y                 ;If Jeff was led to lower labs, he's killed offscreen now
+                cmp #$08+ORG_GLOBAL
+                bne AS_4NoHacker
+                lda #$00
+                sta lvlActT,y
+AS_4NoHacker:   inc scriptVariable
                 lda #ACT_SCIENTIST2
                 jsr FindActor
                 lda #AIMODE_IDLE
