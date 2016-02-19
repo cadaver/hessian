@@ -86,5 +86,5 @@ lightTbl:       dc.b %00010001
 
                 org charsetLoadProperties
                 dc.b 5                          ;Water splash color override
-                dc.b 10                         ;Water toxicity delay counter ($80=not affected by filter)
+                dc.b 10+$80                     ;Water toxicity delay counter ($80=not affected by filter)
                 dc.b 30                         ;Air toxicity delay counter
