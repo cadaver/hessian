@@ -163,7 +163,8 @@ main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s enemy
 	sfx/cockfast.sfx sfx/cockshotgun.sfx sfx/powerup.sfx sfx/select.sfx sfx/pickup.sfx sfx/damage.sfx sfx/death.sfx \
 	sfx/flamer.sfx sfx/reloadflamer.sfx sfx/launcher.sfx sfx/bazooka.sfx sfx/reloadbazooka.sfx sfx/heavymelee.sfx \
 	sfx/emp.sfx sfx/laser.sfx sfx/plasma.sfx sfx/splash.sfx sfx/object.sfx sfx/footstep.sfx sfx/roll.sfx sfx/jump.sfx \
-	sfx/animaldeath.sfx sfx/generator.sfx sfx/radio.sfx pics/covert.iff pics/loadpic.iff loadermusic.bin
+	sfx/animaldeath.sfx sfx/generator.sfx sfx/radio.sfx pics/covert.iff pics/loadpic.iff loadermusic.bin \
+	spr/common.spr spr/item.spr spr/weapon.spr
 	pic2chr pics/covert.iff covert.chr -b11 -m12 -n13 -c -s -x30 -y4
 	pic2chr pics/covert.iff covertscr.dat -b11 -m12 -n13 -x30 -y4 -t -c
 	gfxconv pics/loadpic.iff loadpic.dat -r -b0 -o -nc -ns
