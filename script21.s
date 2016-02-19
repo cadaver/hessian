@@ -10,8 +10,6 @@ menuSelection   = wpnBits
                 dc.w MoveSecurityChief
                 dc.w DestroySecurityChief
                 dc.w SecurityChiefSpeech
-                dc.w EnterBioDome
-                dc.w BioDomeEnding
                 dc.w ThroneSuiteComputer
                 dc.w GuardHouseComputer
 
@@ -87,70 +85,6 @@ SecurityChiefSpeech:
                 ldy #ACT_SECURITYCHIEF
                 gettext txtSecurityChief
                 jmp SpeakLine
-
-        ; Trigger script when entering Bio-Dome
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-EnterBioDome:   lda #PLOT_ELEVATOR2             ;Travelled too far while the comms disruption was going on?
-                jsr GetPlotBit
-                bne EBD_TriggerEnding
-                lda #ACT_HACKER
-                jsr FindLevelActor
-                bcc EBD_Skip
-                sty temp1
-                lda lvlActOrg,y                 ;Check Jeff's location
-                cmp #$0f+ORG_GLOBAL             ;In old tunnels (=safe)?
-                beq EBD_Skip
-                cmp #$04+ORG_GLOBAL             ;In hideout? If not, abandoned and killed offscreen
-                bne EBD_DieAbandoned
-                lda #PLOT_HIDEOUTAMBUSH         ;Hideout is unsafe if ambush unresolved
-                jsr GetPlotBit
-                bne EBD_DieAmbush
-ESF_InMemory:
-EBD_Skip:       rts
-EBD_DieAmbush:  jsr EBD_KillHackerCommon
-                gettext txtRadioAmbushDead
-RadioMsg:       ldy #ACT_PLAYER
-                jsr SpeakLine
-                lda #SFX_RADIO
-                jmp PlaySfx
-
-EBD_DieAbandoned:
-                jsr EBD_KillHackerCommon
-                gettext txtRadioAbandoned
-                jmp RadioMsg
-EBD_KillHackerCommon:
-                ldy temp1
-                lda #ACT_NONE
-                sta lvlActT,y                   ;Just remove from gameworld
-EBD_AlreadyTriggered:
-                rts
-EBD_TriggerEnding:
-                lda scriptF
-                bne EBD_AlreadyTriggered
-                lda #<EP_BIODOMEENDING
-                ldx #>EP_BIODOMEENDING
-                jsr SetScript
-                gettext txtRadioBioDomeTriggerEnd
-                jmp RadioMsg
-
-        ; Biodome trigger ending
-        ;
-        ; Parameters: -
-        ; Returns: -
-        ; Modifies: various
-
-BioDomeEnding:  lda textTime                    ;Wait until radio message text has been read
-                bne EBD_AlreadyTriggered
-                jsr FadeSong
-                jsr BlankScreen
-                lda #<EP_ENDSEQUENCE
-                ldx #>EP_ENDSEQUENCE
-                ldy #$00                        ;Ending 1
-                jmp ExecScriptParam
 
         ; Throne Suite computer
         ;
@@ -271,15 +205,6 @@ PrintCommon:    jsr SetupTextScreen
                 jmp WaitForExit
 
         ; Messages
-
-txtRadioAmbushDead:
-                dc.b 34,"IT'S JEFF-YOU MUST BE MESSED UP 48 4D 20 48 4D 2C 48 41 20 48 41 THIS IS THE CONSTRUCT. THE HACKER IS DEAD.",34,0
-
-txtRadioAbandoned:
-                dc.b 34,"JEFF HERE. COULD USE SOME HELP. THEY'VE GOT ME CORNERED.. AARG-",34, " (GUNFIRE)",0
-
-txtRadioBioDomeTriggerEnd:
-                dc.b 34,"KIM, IT'S JEFF.. THE NETWORK JUST LIT UP LIKE NEVER BEFORE. I THINK THE AI FOUND OUT. WE'RE SCREWED..",34,0
 
 txtSecurityChief:
                 dc.b 34,"YOU! THE ROGUE GUARD. UNDERSTAND THIS - THE 'CONSTRUCT' REPRESENTS NORMAN'S UNFILTERED GENIUS. "

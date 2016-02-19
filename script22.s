@@ -1,7 +1,7 @@
                 include macros.s
                 include mainsym.s
 
-        ; Script 22, second cave + Constuct bossfight
+        ; Script 22, second cave + Construct bossfight
 
                 org scriptCodeStart
 
