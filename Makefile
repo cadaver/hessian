@@ -167,9 +167,9 @@ main.pak: intro.s actor.s actordata.s ai.s aidata.s aligneddata.s bullet.s enemy
 	spr/common.spr spr/item.spr spr/weapon.spr
 	pic2chr pics/covert.iff covert.chr -b11 -m12 -n13 -c -s -x30 -y4
 	pic2chr pics/covert.iff covertscr.dat -b11 -m12 -n13 -x30 -y4 -t -c
-	gfxconv pics/loadpic.iff loadpic.dat -r -b0 -o -nc -ns
-	gfxconv pics/loadpic.iff loadpicscr.dat -r -b0 -o -nc -nb
-	gfxconv pics/loadpic.iff loadpiccol.dat -r -b0 -o -nb -ns
+	gfxconv pics/loadpic.iff loadpic.dat -r -b0 -o -nc -ns -p
+	gfxconv pics/loadpic.iff loadpicscr.dat -r -b0 -o -nc -nb -p
+	gfxconv pics/loadpic.iff loadpiccol.dat -r -b0 -o -nb -ns -p
 	filesplit spr/common.spr sprcommon.hdr 2 1
 	filesplit spr/common.spr sprcommon.dat 3
 	filesplit spr/item.spr spritem.hdr 2 1

@@ -51,6 +51,8 @@ int rawsave = 0;
 int nobitmap = 0;
 int noscreen = 0;
 int nocolors = 0;
+int optimizescreen = 0;
+int colororder[16];
 
 int main(int argc, char **argv)
 {
@@ -69,6 +71,7 @@ int main(int argc, char **argv)
            "/r   Raw save (no .PRG start address included)\n"
            "/o   Optimal save (do not align bitmap & screen data to page boundary)\n"
            "/c   Save color data before bitmap\n"
+           "/p   Optimize screen & color data for RLE-compression\n"
            "/nb  Do not save bitmap\n"
            "/ns  Do not save screendata\n"
            "/nc  Do not save colors\n");
@@ -116,6 +119,10 @@ int main(int argc, char **argv)
 
         case 'r':
         rawsave = 1;
+        break;
+
+        case 'p':
+        optimizescreen = 1;
         break;
 
         case 'c':
@@ -192,7 +199,7 @@ int main(int argc, char **argv)
   handle = fopen(destname, "wb");
   if (!handle)
   {
-    printf("cmd happened!\n");
+    printf("Could not open destination!\n");
     return 1;
   }
   if (process())
@@ -208,9 +215,11 @@ int main(int argc, char **argv)
 
 void countcolors(void)
 {
-  int biggest = 0;
-
-  for (c = 0; c < 16; c++) coloruse[c] = 0;
+  for (c = 0; c < 16; c++)
+  {
+    coloruse[c] = 0;
+    colororder[c] = c;
+  }
 
   for (y = 0; y < sc.sizey; y++)
   {
@@ -222,13 +231,22 @@ void countcolors(void)
   }
   for (c = 0; c < 16; c++)
   {
-    if (coloruse[c] > biggest)
+    int d;
+    for (d = c+1; d < 16; d++)
     {
-      bgcol = c;
-      biggest = coloruse[c];
+      if (coloruse[colororder[d]] > coloruse[colororder[c]])
+      {
+        int temp = colororder[c];
+        colororder[c] = colororder[d];
+        colororder[d] = temp;
+      }
     }
   }
-  if (forcebgcol != -1) bgcol = forcebgcol & 15;
+
+  if (forcebgcol != -1)
+    bgcol = forcebgcol & 15;
+  else
+    bgcol = colororder[0];
 }
 
 int process(void)
@@ -270,27 +288,14 @@ int process(void)
 
       for (c = 0; c < 16; c++)
       {
-        if (coloruse[c] > 0)
+        int col = colororder[c];
+        if (coloruse[col] > 0)
         {
-          if (color[0]==-1)
-          {
-            color[0] = c;
-          }
-          else
-          {
-            if (color[1]==-1)
-            {
-              color[1] = c;
-            }
-            else
-            {
-              if (color[2]==-1)
-              {
-                color[2] = c;
-              }
-            }
-          }
-
+          int pref = c%3;
+          if (color[pref]==-1) color[pref] = col;
+          else if (color[2]==-1) color[2] = col;
+          else if (color[1]==-1) color[1] = col;
+          else if (color[0]==-1) color[0] = col;
           t++;
           if (t==3) break;
         }
@@ -325,6 +330,20 @@ int process(void)
         }
         *pixptr++ = value;
       }
+    }
+  }
+
+  if (optimizescreen && bgcol == 0)
+  {
+    int last = 0;
+    for (c = 1; c < 1024; ++c)
+    {
+      if ((screenbuf[c] & 0xf) == 0)
+        screenbuf[c] |= (screenbuf[c-1] & 0xf);
+      if ((screenbuf[c] & 0xf0) == 0)
+        screenbuf[c] |= (screenbuf[c-1] & 0xf0);
+      if (colorbuf[c] == 0)
+        colorbuf[c] = colorbuf[c-1];
     }
   }
 
