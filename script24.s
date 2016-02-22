@@ -50,7 +50,6 @@ EndSequence:    lda endingUpdateTblLo,y
                 stx ntChnSfx
                 stx ntChnSfx+7
                 stx ntChnSfx+14
-                stx actT+ACTI_PLAYER            ;Remove player
 CopyChars:      lda textChars+$100,x            ;Copy text chars to be able to show text & level graphics mixed
                 sta chars+$500,x
                 lda textChars+$200,x
