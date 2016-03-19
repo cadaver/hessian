@@ -84,9 +84,9 @@ upgrade4:       dc.w nameArmor
                 dc.b %00111111
                 dc.b bl,bl,TL,HO,BR,bl,VE,bl,VE,bl,BL,HO,TR
                 dc.b PS,HO,SR,HO,SV,HO,SD,HO,SD,HO,SV,HO,AM
-                dc.b bl,bl,VE,TL,HO,HO,SL,AM,SR,HO,HO,TR,VE
-                dc.b bl,AM,SR,CR,HO,HO,SL,bl,SR,HO,HO,CR,SL
-                dc.b bl,bl,VE,BL,HO,HO,SL,AM,SR,HO,HO,BR,VE
+                dc.b bl,bl,VE,TL,HO,HO,SL,AM,SR,HO,HO,TR,bl
+                dc.b bl,AM,SR,CR,HO,HO,SL,bl,SR,HO,HO,SL,HO
+                dc.b bl,bl,VE,BL,HO,HO,SL,AM,SR,HO,HO,BR,bl
                 dc.b PS,HO,SR,HO,SV,HO,SU,HO,SU,HO,SV,HO,AM
                 dc.b bl,bl,BL,HO,TR,bl,VE,bl,VE,bl,TL,HO,BR
 
