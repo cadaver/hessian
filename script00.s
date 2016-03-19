@@ -22,10 +22,10 @@ logoStart       = chars
 logoScreen      = chars+608
 logoColors      = chars+608+168
 titleTexts      = chars+608+168*2
-levelNamesTbl   = screen2
-levelNames      = screen2+$40
-txtCancel       = screen2+$100
-txtEndWithoutSaving = screen2+$108
+txtCancel       = screen2-$18
+txtEndWithoutSaving = screen2-$10
+levelNames      = screen2
+levelNamesTbl   = screen2+$100
 
 START_LEVEL     = $00                          ;Warehouse container (proper start location)
 START_X         = $6900

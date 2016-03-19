@@ -74,8 +74,35 @@ txtOptions:     dc.b $80+12,"SKILL",0
                 dc.b 0
                 dc.b $80+12,"BACK",0
 
+                org screen2-$18
+
+txtCancel:      dc.b "CANCEL",0
+
+                org screen2-$10
+
+txtEndWithoutSaving:
+                dc.b "ABANDON GAME",0
+
                 org screen2
-                
+       
+levelNames:
+levelWarehouses:dc.b "WAREHOUSE",0
+levelCourtyard: dc.b "COURTYARD",0
+levelCarPark:   dc.b "PARKING GARAGE",0
+levelServiceTunnels:dc.b "SERVICE TUNNELS",0
+levelEntrance:  dc.b "ENTRANCE",0
+levelSecurityCenter:dc.b "SECURITY CENTER",0
+levelUpperLabs: dc.b "UPPER LABS",0
+levelUnderground:dc.b "UNDERGROUND",0
+levelLowerLabs: dc.b "LOWER LABS",0
+levelNetherTunnel:dc.b "NETHER TUNNEL",0
+levelBioDome:   dc.b "BIO-DOME",0
+levelThroneSuite:dc.b "THRONE SUITE",0
+levelServerVault:dc.b "SERVER VAULT",0
+levelOldTunnels: dc.b "OLD TUNNELS",0
+
+                org screen2+$100
+
 levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
                 dc.b 0+$80,levelCourtyard-levelNames
                 dc.b 1,$00,$18,levelCarPark-levelNames
@@ -96,30 +123,4 @@ levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
                 dc.b 14+$80,levelUnderground-levelNames
                 dc.b 15+$80,levelOldTunnels-levelNames
 
-                org screen2+$40
-
-levelNames:
-levelWarehouses:dc.b "WAREHOUSE",0
-levelCourtyard: dc.b "COURTYARD",0
-levelCarPark:   dc.b "PARKING GARAGE",0
-levelServiceTunnels:dc.b "SERVICE TUNNELS",0
-levelEntrance:  dc.b "ENTRANCE",0
-levelSecurityCenter:dc.b "SECURITY CENTER",0
-levelUpperLabs: dc.b "UPPER LABS",0
-levelUnderground:dc.b "UNDERGROUND",0
-levelLowerLabs: dc.b "LOWER LABS",0
-levelNetherTunnel:dc.b "NETHER TUNNEL",0
-levelBioDome:   dc.b "BIO-DOME",0
-levelThroneSuite:dc.b "THRONE SUITE",0
-levelServerVault:dc.b "SERVER VAULT",0
-levelOldTunnels: dc.b "OLD TUNNELS",0
-
-                org screen2+$100
-
-txtCancel:      dc.b "CANCEL",0
-
-                org screen2+$108
-
-txtEndWithoutSaving:
-                dc.b "ABANDON GAME",0
 

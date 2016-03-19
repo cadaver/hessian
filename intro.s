@@ -2,7 +2,7 @@
                 include mainsym.s
 
                 org introStart
-                ds.b 1024,$71                   ;Blank char
+                ds.b 1024,$72                   ;Blank char
 
                 org $f000
                 incbin covert.chr
