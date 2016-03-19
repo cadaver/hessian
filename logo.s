@@ -74,16 +74,16 @@ txtOptions:     dc.b $80+12,"SKILL",0
                 dc.b 0
                 dc.b $80+12,"BACK",0
 
-                org screen2-$18
+                org screen2-$118
 
 txtCancel:      dc.b "CANCEL",0
 
-                org screen2-$10
+                org screen2-$110
 
 txtEndWithoutSaving:
                 dc.b "ABANDON GAME",0
 
-                org screen2
+                org screen2-$100
        
 levelNames:
 levelWarehouses:dc.b "WAREHOUSE",0
@@ -101,7 +101,7 @@ levelThroneSuite:dc.b "THRONE SUITE",0
 levelServerVault:dc.b "SERVER VAULT",0
 levelOldTunnels: dc.b "OLD TUNNELS",0
 
-                org screen2+$100
+                org screen2
 
 levelNamesTbl:  dc.b 0,$28,$00,levelWarehouses-levelNames
                 dc.b 0+$80,levelCourtyard-levelNames
