@@ -611,7 +611,21 @@ SW_ShiftColorsUpTopInx:
 SW_ShiftColorsUpTopCpx:
                 cpx #$00
                 bne SW_ShiftColorsUpTopLoop
-                jsr SW_DrawColorsUp
+SW_DrawColorsUp:ldy #12
+SW_DrawColorsUpLoop:
+                ldx screen1,y
+                lda charColors,x
+                sta colors,y
+SW_DrawColorsUpLdx2:
+                ldx screen1+13,y
+                lda charColors,x
+                sta colors+13,y
+SW_DrawColorsUpLdx3:
+                ldx screen1+26,y
+                lda charColors,x
+                sta colors+26,y
+                dey
+                bpl SW_DrawColorsUpLoop
                 ldx temp1
                 ldy colorSideTbl-3,x
                 jsr SW_DrawColorsHorizTop
@@ -789,7 +803,23 @@ SW_ShiftColorsDownBottomCpx:
                 ldx temp1
                 ldy colorSideTbl-3,x
                 jsr SW_DrawColorsHorizBottom
-                jmp SW_DrawColorsDown
+SW_DrawColorsDown:
+                ldy #12
+SW_DrawColorsDownLoop:
+                ldx screen1+SCROLLROWS*40-40,y
+                lda charColors,x
+                sta colors+SCROLLROWS*40-40,y
+SW_DrawColorsDownLdx2:
+                ldx screen1+SCROLLROWS*40-40+13,y
+                lda charColors,x
+                sta colors+SCROLLROWS*40-40+13,y
+SW_DrawColorsDownLdx3:
+                ldx screen1+SCROLLROWS*40-40+26,y
+                lda charColors,x
+                sta colors+SCROLLROWS*40-40+26,y
+                dey
+                bpl SW_DrawColorsDownLoop
+                rts
 
 SW_DrawColorsHorizTop:
                 bmi SW_DCHT_Skip
@@ -825,41 +855,6 @@ SW_DCHT2_Loop:  ldx screen2+40,y
                 tay
                 cpy #5*40
                 bcc SW_DCHT2_Loop
-                rts
-
-SW_DrawColorsUp:ldy #12
-SW_DrawColorsUpLoop:
-                ldx screen1,y
-                lda charColors,x
-                sta colors,y
-SW_DrawColorsUpLdx2:
-                ldx screen1+13,y
-                lda charColors,x
-                sta colors+13,y
-SW_DrawColorsUpLdx3:
-                ldx screen1+26,y
-                lda charColors,x
-                sta colors+26,y
-                dey
-                bpl SW_DrawColorsUpLoop
-                rts
-
-SW_DrawColorsDown:
-                ldy #12
-SW_DrawColorsDownLoop:
-                ldx screen1+SCROLLROWS*40-40,y
-                lda charColors,x
-                sta colors+SCROLLROWS*40-40,y
-SW_DrawColorsDownLdx2:
-                ldx screen1+SCROLLROWS*40-40+13,y
-                lda charColors,x
-                sta colors+SCROLLROWS*40-40+13,y
-SW_DrawColorsDownLdx3:
-                ldx screen1+SCROLLROWS*40-40+26,y
-                lda charColors,x
-                sta colors+SCROLLROWS*40-40+26,y
-                dey
-                bpl SW_DrawColorsDownLoop
                 rts
 
         ; New blocks drawing routines
