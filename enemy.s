@@ -838,7 +838,6 @@ ExplodeEnemy3_Ofs24:
                 jsr MoveActorHalfBlockUp
                 lda #3
                 ldy #$ff
-                jsr ExplodeEnemyMultiple
                 jsr EEM_SetCustomXRadius
                 jmp MoveActorCharUp
 
@@ -853,8 +852,8 @@ ExplodeEnemy2_Ofs15:
                 jsr MoveActorHalfBlockUp
                 lda #2
                 ldy #$7f
-                jsr ExplodeEnemyMultiple
 EEM_SetCustomXRadius:
+                jsr ExplodeEnemyMultiple
                 lda #$3f
                 sta actSX,x
                 rts
