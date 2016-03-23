@@ -484,4 +484,4 @@ saveDifficulty: dc.b 0
 saveStateEnd:
 
 saveBattery     = saveState + (battery - playerStateStart)
-
+saveOxygen      = saveState + (oxygen - playerStateStart)

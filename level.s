@@ -723,10 +723,13 @@ SCP_ZPState:    lda playerStateZPStart-1,x      ;Copy player ZP variables
                 lda #<saveState
                 ldx #>saveState
                 jsr SaveState_CopyMemory        ;Copy rest of variables
-                lda saveHP                      ;Ensure minimum health & battery level when saving
-                cmp #LOW_HEALTH
-                bcs SCP_HealthOK
-                lda #LOW_HEALTH
+                lda #LOW_OXYGEN                 ;Ensure minimum oxygen,health,battery
+                cmp saveOxygen                  ;at save time
+                bcc SCP_OxygenOK
+                sta saveOxygen
+SCP_OxygenOK:   lda #LOW_HEALTH
+                cmp saveHP
+                bcc SCP_HealthOK
                 sta saveHP
 SCP_HealthOK:   lda #$00
                 ldx saveBattery+1

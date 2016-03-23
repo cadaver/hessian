@@ -158,8 +158,13 @@ txtSecurityComputer1:
                 dc.b "UPGRADE SUCCESSFULLY. THE BASE NANOBOT",0
                 dc.b "PACKAGE IS NATURALLY REQUIRED. LAB ENTRY",0
                 dc.b "CODE IS "
-txtFirearmCode: dc.b "XXX. THOUGHT IT WAS FAIR FOR YOU",0
-                dc.b "TO KNOW.",0,0
+txtFirearmCode: dc.b "XXX IF YOU WANT TO GIVE IT A GO.",0
+                dc.b " ",0
+                dc.b "AS IT'S NOT PRODUCTION-READY YET, MANUAL",0
+                dc.b "CONFIGURATION OF THE UPGRADE IS NEEDED.",0
+                dc.b "ENSURE SIGNAL FLOW TO EACH EXIT, BUT",0
+                dc.b "DON'T LET IT LEAK. USE THE ROUND SIGNAL",0
+                dc.b "BOOSTERS WHERE NECESSARY.",0,0
 
 txtSecurityComputer2:
                      ;0123456789012345678901234567890123456789

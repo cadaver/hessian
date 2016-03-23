@@ -821,9 +821,7 @@ ExplodeEnemy2_8:lda #2
 ExplodeEnemyMultiple:
                 sta actTime,x
                 tya
-ExplodeEnemyMultiple_CustomRadius:
                 sta actSX,x
-                tya
                 sta actSY,x
                 jsr DropItem
                 lda #ACT_EXPLOSIONGENERATOR
@@ -839,10 +837,9 @@ ExplodeEnemyMultiple_CustomRadius:
 ExplodeEnemy3_Ofs24:
                 jsr MoveActorHalfBlockUp
                 lda #3
-                sta actTime,x
-                lda #$3f
                 ldy #$ff
-                jsr ExplodeEnemyMultiple_CustomRadius
+                jsr ExplodeEnemyMultiple
+                jsr EEM_SetCustomXRadius
                 jmp MoveActorCharUp
 
         ; Generate 2 explosions at 8 pixel radius horizontally and 15 pixel radius
@@ -855,10 +852,12 @@ ExplodeEnemy3_Ofs24:
 ExplodeEnemy2_Ofs15:
                 jsr MoveActorHalfBlockUp
                 lda #2
-                sta actTime,x
-                lda #$3f
                 ldy #$7f
-                bne ExplodeEnemyMultiple_CustomRadius
+                jsr ExplodeEnemyMultiple
+EEM_SetCustomXRadius:
+                lda #$3f
+                sta actSX,x
+                rts
 
         ; Generate 4 explosions at 32 pixel radius and spawn 3 pieces of scrap metal
         ;

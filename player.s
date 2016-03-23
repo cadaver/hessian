@@ -41,6 +41,7 @@ MAX_BATTERY     = 56
 MAX_DIFFICULTY  = 3
 LOW_BATTERY     = MAX_BATTERY*2/7
 LOW_HEALTH      = HP_PLAYER*2/7
+LOW_OXYGEN      = MAX_OXYGEN/4
 
 DRAIN_WALK      = 3                             ;At footstep sound, 6 per anim. cycle
 DRAIN_SHOOT     = 6
