@@ -125,7 +125,7 @@ txtGarageComputer:
                 dc.b "2. NORMAN GOES MISSING",0
                 dc.b "3. ???",0
                 dc.b "4. LOSS OF OUTSIDE CONNECTIVITY",0
-                dc.b "5. COMBAT ROBOTS ATTACK PERSONEL,",0
+                dc.b "5. COMBAT ROBOTS ATTACK PERSONNEL,",0
                 dc.b "   CONTROL OVER THEM LOST",0,0
 
                 checkscriptend
