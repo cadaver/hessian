@@ -67,8 +67,10 @@ int main(int argc, char **argv)
 void sortdirentries(void)
 {
     unsigned char direntry[128][32];
+    unsigned char nonumberdirentry[128][32];
     int track = 18;
     int sector = 1;
+    int nonumberentries = 0;
     int entries = 0;
     memset(direntry, 0, 128*32);
 
@@ -80,17 +82,21 @@ void sortdirentries(void)
         {
             if (buffer[c] == 0x82)
             {
-                int filenumber = 0; // The boot file is not 2-letter, put it first
-                if (buffer[c+5] == 0xa0)
+                if (buffer[c+5] == 0xa0 && buffer[c+3] >= 0x30 && buffer[c+3] <= 0x39)
                 {
-                    filenumber = (buffer[c+3] - 0x30) * 16;
+                    int filenumber = (buffer[c+3] - 0x30) * 16;
                     if (buffer[c+4] < 0x40)
                         filenumber |= (buffer[c+4]-0x30);
                     else
                         filenumber |= (buffer[c+4]-0x41+0xa);
-                    filenumber++;
+                    if (filenumber < 128)
+                        memcpy(&direntry[filenumber][0], &buffer[c], 32);
                 }
-                memcpy(&direntry[filenumber][0], &buffer[c], 32);
+                else
+                {
+                    memcpy(&nonumberdirentry[nonumberentries][0], &buffer[c], 32);
+                    ++nonumberentries;
+                }
             }
         }
         if (buffer[0])
@@ -114,10 +120,23 @@ void sortdirentries(void)
         {
             if (buffer[c] == 0x82)
             {
-                while (!direntry[entries][0])
+                if (nonumberentries)
+                {
+                    memcpy(&buffer[c], &nonumberdirentry[entries][0], 32);
                     ++entries;
-                memcpy(&buffer[c], &direntry[entries][0], 32);
-                ++entries;
+                    if (entries >= nonumberentries)
+                    {
+                        entries = 0;
+                        nonumberentries = 0;
+                    }
+                }
+                else
+                {
+                    while (!direntry[entries][0])
+                        ++entries;
+                    memcpy(&buffer[c], &direntry[entries][0], 32);
+                    ++entries;
+                }
             }
         }
         writesector(track, sector);

@@ -25,6 +25,7 @@ unsigned char diskname[23];
 unsigned char commandbuf[80];
 unsigned char c64name[80];
 unsigned char dosname[80];
+int diskinterleave = 10;
 int interleave = 10;
 int starttrack, startsector;
 int lastblocksize;
@@ -49,8 +50,8 @@ int main(int argc, char **argv)
         if (argc < 3)
         {
                 printf("Usage: maked64 <diskimage> <commandfile> [diskname] [interleave]\n"
-                       "       Commandfile contains <DOS-name> <C64-name>-pairs. Use _ to represent\n"
-                       "       space in C64-names and in the diskname.\n");
+                       "       Commandfile contains <DOS-name> <C64-name> [interleave] rows.\n"
+                       "       Use _ to represent space in C64-names and in the diskname.\n");
                 return 1;
         }
         /* Make diskname */
@@ -65,7 +66,7 @@ int main(int argc, char **argv)
                 else ch = 0x20;
                 diskname[c] = ch;
         }
-        if (argc > 4) sscanf(argv[4], "%d", &interleave);
+        if (argc > 4) sscanf(argv[4], "%d", &diskinterleave);
 
         /* Init image */
         makesectortable();
@@ -82,7 +83,11 @@ int main(int argc, char **argv)
         /* Write files to image one by one */
         while(fgets(commandbuf, 80, in))
         {
-                sscanf(commandbuf, "%s %s", &dosname[0], &c64name[0]);
+                interleave = 0;
+                sscanf(commandbuf, "%s %s %d", &dosname[0], &c64name[0], &interleave);
+                if (!interleave)
+                    interleave = diskinterleave;
+
                 if (!writefile(dosname, c64name))
                 {
                         printf("Error writing file %s\n", c64name);
