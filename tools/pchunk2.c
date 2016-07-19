@@ -8,7 +8,11 @@ int main(int argc, char **argv)
   FILE *in;
   FILE *out;
   char cmd[256];
-  if (argc < 3) printf("Invokes exomizer2 (forward mode + literals) pchunk2 <infile> <outfile> - invokes exomizer2 (forward + literals), output with chunkfile header & custom shortened exomizer header\n");
+  if (argc < 3)
+  {
+    printf("Invokes exomizer2.08 (forward mode + no literal sequences + max.sequence 255 bytes), output with chunkfile header & custom shortened exomizer header\nUsage: pchunk2 <infile> <outfile>\n");
+    return 1;
+  }
   in = fopen(argv[1], "rb");
   if (!in) return 1;
   out = fopen("temp.bin", "wb");
@@ -25,7 +29,7 @@ int main(int argc, char **argv)
   fclose(in);
   fclose(out);
   
-  sprintf(cmd, "exomizer2 level -f -o%s %s@0", "temp2.bin", "temp.bin");
+  sprintf(cmd, "exomizer208 level -M255 -c -f -o%s %s@0", "temp2.bin", "temp.bin");
   val = system(cmd);
   if (val > 0) return val;
 
