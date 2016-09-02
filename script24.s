@@ -485,6 +485,8 @@ UpdateEnding3:  lda scrollCSY
                 sta actXH+ACTI_PLAYER
                 sta actD+ACTI_PLAYER
                 sta actFlash+ACTI_PLAYER
+                sta actFall+ACTI_PLAYER
+                sta actSY+ACTI_PLAYER
                 jsr UE3_SetPlayerFrame
                 lda #$80
                 sta actYL+ACTI_PLAYER

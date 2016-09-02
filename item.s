@@ -198,7 +198,7 @@ GetMagazineSize:lda #$00
         ; Modifies: A,Y
 
 SelectNextItem: ldy itemIndex
-                cpy lastItemIndex
+SNI_HasIndex:   cpy lastItemIndex
                 bcs SNI_Fail
 SNI_Loop:       iny
                 jsr FindItem
@@ -274,13 +274,12 @@ AI_MaxWeaponsCount:
                 ldy itemIndex                   ;Swap with current weapon. If fists selected,
                 cpy #ITEM_FISTS                 ;select first droppable weapon first
                 bne AI_NotUsingFists
-                jsr SelectNextItem              ;New index to Y
+AI_RetrySwap:   jsr SNI_HasIndex                ;New index to Y
 AI_NotUsingFists:
-                cpy #ITEM_FIRST_CONSUMABLE
+                cpy #ITEM_FIRST_CONSUMABLE      ;If consumable selected, select first weapon instead
                 bcc AI_CanBeSwapped
-AI_CannotBeSwapped:
-                clc                             ;If a consumable or quest item selected, cannot swap
-                rts
+                ldy #ITEM_FISTS
+                bpl AI_RetrySwap
 AI_CanBeSwapped:sty zpBitsLo
                 lda invCount-1,y
                 sta zpBitsHi
