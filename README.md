@@ -18,7 +18,7 @@ Technical details:
 She remembers multiple hostiles opening fire on the staff, everything fading to black as rounds hammer into her chest..
 and finally voices: 'Massive trauma.. need artificial circulation.. prepare the nanobot injection now!'"
 
-See also [CovertBitops homepage](http://cadaver.homeftp.net).
+See also [CovertBitops homepage](http://cadaver.github.io).
 
 ## Code license
 
