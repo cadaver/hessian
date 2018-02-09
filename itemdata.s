@@ -48,14 +48,14 @@ itemDefaultPickup:
                 dc.b 1                          ;Knife
                 dc.b 1                          ;Nightstick
                 dc.b 1                          ;Bat
-                dc.b 6                          ;Pistol
-                dc.b 4                          ;Shotgun
-                dc.b 10                         ;Auto rifle
-                dc.b 3                          ;Sniper rifle
+                dc.b 7                          ;Pistol
+                dc.b 5                          ;Shotgun
+                dc.b 15                         ;Auto rifle
+                dc.b 5                          ;Sniper rifle
                 dc.b 25                         ;Minigun
                 dc.b 30                         ;Flamethrower
-                dc.b 7                          ;Laser rifle
-                dc.b 6                          ;Plasma gun
+                dc.b 8                          ;Laser rifle
+                dc.b 7                          ;Plasma gun
                 dc.b 1                          ;EMP generator
                 dc.b 3                          ;Grenade launcher
                 dc.b 2                          ;Bazooka

@@ -132,21 +132,17 @@ MP_NotDown2:    sty scrollSY
 MP_NoPlayerScroll:
                 lda menuMode                    ;No new controls in inventory / interaction / dialogue
                 bne MP_SetWeapon
+                lda joystick
                 ldy actF1+ACTI_PLAYER
-                cpy #FR_DUCK+1
-                bne MP_NoDuckFirePrevent
-                lda actCtrl,x
-                cmp #JOY_DOWN                   ;Prevent fire+down immediately after ducking
-                bne MP_NoDuckFirePrevent        ;(need to release down direction first)
-                lda joystick
+                cpy #FR_DUCK+1                  ;Turn ducking down+fire to left+fire or right+fire, depending on dir
+                bne MP_NoDuckFireCtrl
                 cmp #JOY_DOWN+JOY_FIRE
-                bne MP_NoDuckFirePrevent
-                ldy #$ff-JOY_FIRE
-                bne MP_StoreControlMask
-MP_NoDuckFirePrevent:
-                lda joystick
-                cmp #JOY_DOWN+JOY_FIRE
-                beq MP_ControlMask
+                bne MP_NoDuckFireCtrl
+                lda #JOY_FIRE+JOY_RIGHT
+                ldy actD
+                bpl MP_NoDuckFireCtrl
+                eor #JOY_LEFT|JOY_RIGHT
+MP_NoDuckFireCtrl:
                 ldy #$ff
 MP_StoreControlMask:
                 sty MP_ControlMask+1

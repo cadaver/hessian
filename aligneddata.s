@@ -1,3 +1,5 @@
+alignedDataStart:
+
                 org (* + $ff) & $ff00
 
         ; Sprite cache / depacking tables

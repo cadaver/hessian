@@ -60,6 +60,7 @@ MoveSmallSplash:ldy #2
         ; Modifies: A,Y
 
 MoveExplosion:  ldy #4
+OneShotAnimateAndRemoveDelay1:
                 lda #1
 OneShotAnimateAndRemove:
                 jsr OneShotAnimation
@@ -349,9 +350,8 @@ MEMP_ColorDone: jsr RadiusDamage
                 jsr DrainBattery
 MEMP_NoDrain:   lda actSX,x
                 jsr MoveActorX
-                lda #1
                 ldy #3
-                jmp OneShotAnimateAndRemove
+                jmp OneShotAnimateAndRemoveDelay1
 
         ; Check bullet collisions and optionally apply damage
         ;
@@ -399,7 +399,13 @@ MEMP_NoAnim:    rts
 RadiusDamage:   ldy #ACTI_LASTNPC
 RD_Loop:        lda actHp,y                     ;Skip if bystander or already dead
                 beq RD_Next
-                jsr CheckActorCollision
+                tya
+                bne RD_NotPlayer                ;Skip radius damage to player from own weapons
+                cpx #ACTI_FIRSTPLRBULLET
+                bcc RD_NotPlayer
+                cpx #ACTI_FIRSTNPCBULLET
+                bcc RD_Next
+RD_NotPlayer:   jsr CheckActorCollision
                 bcc RD_Next
                 sty tgtActIndex
                 jsr ApplyTargetDamage
