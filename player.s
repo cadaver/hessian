@@ -72,7 +72,6 @@ MovePlayer:     ldy #ZONEH_BG3
                 lda (zoneLo),y
                 bmi MP_NoPlayerScroll           ;Scroll-disabled zone?
 MP_ScrollHorizontal:
-                ldy #$00
                 lda actXL+ACTI_PLAYER
                 rol
                 rol
@@ -87,19 +86,15 @@ MP_ScrollHorizontal:
                 asl
                 asl
                 ora zpSrcLo
+                ldy #-2
                 cmp #SCRCENTER_X-1
-                bcs MP_NotLeft1
-                dey
-MP_NotLeft1:    cmp #SCRCENTER_X
-                bcs MP_NotLeft2
-                dey
-MP_NotLeft2:    cmp #SCRCENTER_X+1
-                bcc MP_NotRight1
-                iny
-MP_NotRight1:   cmp #SCRCENTER_X+2
-                bcc MP_NotRight2
-                iny
-MP_NotRight2:   sty scrollSX
+                bcc MP_ScrollXOK
+                ldy #2
+                cmp #SCRCENTER_X+2
+                bcs MP_ScrollXOK
+                sbc #SCRCENTER_X-1
+                tay
+MP_ScrollXOK:   sty scrollSX
 MP_ScrollVertical:
                 ldy #$00
                 lda actYL+ACTI_PLAYER

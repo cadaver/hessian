@@ -882,7 +882,9 @@ ULO_RechargeLoop:
 ULO_RechargeNoMSB:
                 dey
                 bne ULO_RechargeLoop
-ULO_NoRecharge: lda #$07
+ULO_NoRecharge: lda menuMode                    ;Deactivate "no air zone" oxygen drain during conversation
+                bne ULO_CheckHeadUnderWater
+                lda #$07
 ULO_NoAirFlag:  ldy #$00
                 bne ULO_OxygenDelay
 ULO_CheckHeadUnderWater:
