@@ -235,6 +235,15 @@ AH_NotPlayer:   lda actCtrl,x
                 sta actD,x
 AH_NoTurn2:     lda actCtrl,x
 AH_NoTurn:      and #JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT
+                cmp #JOY_DOWN                   ;Turn DOWN attack into horizontal when player ducks
+                bne AH_NoPlayerDuckFire         
+                cpx #ACTI_PLAYER
+                bne AH_NoPlayerDuckFire
+                ldy actF1+ACTI_PLAYER
+                cpy #FR_DUCK+1
+                bne AH_NoPlayerDuckFire
+                lda #JOY_RIGHT
+AH_NoPlayerDuckFire:
                 tay
                 lda attackTbl,y
                 bmi AH_NoAttack2

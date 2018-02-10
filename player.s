@@ -128,20 +128,6 @@ MP_NoPlayerScroll:
                 lda menuMode                    ;No new controls in inventory / interaction / dialogue
                 bne MP_SetWeapon
                 lda joystick
-                ldy actF1+ACTI_PLAYER
-                cpy #FR_DUCK+1                  ;Turn ducking down+fire to left+fire or right+fire, depending on dir
-                bne MP_NoDuckFireCtrl
-                cmp #JOY_DOWN+JOY_FIRE
-                bne MP_NoDuckFireCtrl
-                lda #JOY_FIRE+JOY_RIGHT
-                ldy actD
-                bpl MP_NoDuckFireCtrl
-                eor #JOY_LEFT|JOY_RIGHT
-MP_NoDuckFireCtrl:
-                ldy #$ff
-MP_StoreControlMask:
-                sty MP_ControlMask+1
-MP_ControlMask: and #$ff
                 sta actCtrl+ACTI_PLAYER
                 cmp #JOY_FIRE
                 bcc MP_NewMoveCtrl
