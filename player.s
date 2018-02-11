@@ -494,12 +494,19 @@ MH_NewDuckOrRoll:
                 beq MH_NoNewRoll
                 lda temp1                       ;Can't roll in water
                 bmi MH_NoNewRoll
-                lda temp2                       ;To initiate a roll, must push the
-                cmp actPrevCtrl,x               ;joystick diagonally down
-                beq MH_NoNewRoll
-                and #JOY_LEFT|JOY_RIGHT
-                beq MH_NoNewRoll
-                lda actD,x                      ;If changed direction while ducking, no roll
+                lda temp2
+                cmp #JOY_DOWN
+                beq MH_NoNewRoll                ;Must be diagonal control to roll
+                cmp actPrevCtrl,x
+                beq MH_RollPrevCtrlSame
+MH_RollPrevCtrlDifferent:
+                cpy #FR_DUCK+1                  ;If ducking, prevctrl must be different
+                beq MH_RollDirCheck
+                bne MH_NoDuck
+MH_RollPrevCtrlSame:
+                cpy #FR_DUCK+1                  ;If not ducking, prevctrl must be same (debounced input)
+                beq MH_NoNewRoll                ;to reduce accidental rolls
+MH_RollDirCheck:lda actD,x                      ;If changed direction while ducking, no roll
 MH_OldDir:      eor #$00
                 bmi MH_NoNewRoll
 MH_StartRoll:   lda #$00
