@@ -8,6 +8,7 @@ V1.1:
 V1.2:
 
 - More ammo dropped by enemies
+- Minor increase to range of melee attacks
 - Duck-fire by simply pressing fire+down
 - No oxygen drain during conversations
 - No splash damage from own explosive weapons

@@ -775,13 +775,13 @@ alItem:         dc.w MoveItem                   ;Update routine
 
 alMeleeHit:     dc.w MoveMeleeHit               ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 4                          ;Horizontal size
+                dc.b 5                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
 
 alLargeMeleeHit:dc.w MoveMeleeHit               ;Update routine
                 dc.b AF_INITONLYSIZE            ;Actor flags
-                dc.b 7                          ;Horizontal size
+                dc.b 8                          ;Horizontal size
                 dc.b 3                          ;Size up
                 dc.b 3                          ;Size down
 
