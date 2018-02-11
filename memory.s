@@ -194,8 +194,8 @@ cacheSprAge     = $02a7
 targetList      = $02a7+MAX_CACHESPRITES
 
 exomizerCodeStart = $0334
-loaderCodeStart = $0500
-loaderCodeEnd   = $0534
+loaderCodeStart = $04fc
+loaderCodeEnd   = $0530
 
 videoBank       = $c000
 emptySprite     = $d000

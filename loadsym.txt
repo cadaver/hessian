@@ -11,3 +11,5 @@ FL_MaxSprY
 fastLoadMode
 ntscFlag
 fileNumber
+FastLoadEnd
+SlowLoadEnd

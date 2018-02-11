@@ -825,7 +825,7 @@ ExplodeEnemyMultiple:
                 sta actSY,x
                 jsr DropItem
                 lda #ACT_EXPLOSIONGENERATOR
-                jmp TransformBullet
+                jmp TransformActor
 
         ; Generate 3 explosions at 8 pixel radius horizontally and 32 pixel radius
         ; vertically
@@ -904,18 +904,19 @@ EE_ScrapMetalLoop:
 EE_ScrapMetalDone:
                 rts
 
-        ; Generate 4 explosions at 15 pixel radius horizontally, rising
-        ; vertically
+        ; Generate 4 explosions at 15 pixel radius horizontally, rising vertically
+        ; + also spawn metal pieces
         ;
         ; Parameters: X actor index
         ; Returns: -
         ; Modifies: A,Y,temp vars
 
 ExplodeEnemy4_Rising:
-                jsr MoveActorCharUp
-                lda #4
-                ldy #$7f
-                jsr ExplodeEnemyMultiple
+                jsr ExplodeEnemy4_Ofs15
+                lda #8*8                        ;Move back down to prevent explosions rising too high
+                jsr MoveActorY
+                lsr actSX,x
+                lsr actSY,x
                 lda #ACT_EXPLOSIONGENERATORRISING
                 jmp TransformActor
 

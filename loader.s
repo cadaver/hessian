@@ -287,10 +287,21 @@ PrepareKernalIO:inc fileOpen                    ;Set fileopen indicator, raster 
                 lsr
                 dex
                 jsr CFN_Sub
-SL_StopIrqJsr:  jsr StopIrqDummy
+                stx $d07a                       ;SCPU to slow mode
+                stx $d030                       ;C128 back to 1MHz mode
+                lda fastLoadMode                ;In fake-IRQload mode IRQs continue,
+                bne KernalOnFast                ;so no setup necessary
+                lda $d01a                       ;If raster IRQs not yet active, no
+                lsr                             ;setup necessary (loading picture)
+                bcc KernalOnFast
+                jsr WaitBottom
+                jsr SilenceSID
+                sta $d01a                       ;Raster IRQs off
+                sta $d015                       ;Sprites off
+                sta $d011                       ;Blank screen
 KernalOnFast:   lda #$36
                 sta $01
-StopIrqDummy:   rts
+                rts
 
 SetFileName:    lda #$02
                 ldx #<fileName

@@ -186,7 +186,7 @@ MProj_LargeSplash:
                 lda #SFX_SPLASH
                 jsr PlaySfx
                 lda #ACT_WATERSPLASH
-MProj_SplashOK: jsr TransformBullet
+MProj_SplashOK: jsr TransformActor
 FixSplashPosition:
                 lda lvlWaterSplashColor         ;Color override
                 sta actFlash,x
@@ -284,8 +284,7 @@ ExplodeActor:   lda #SFX_EXPLOSION
                 jsr PlaySfx
 ExplodeActorQuiet:
                 lda #ACT_EXPLOSION
-TransformActor:
-TransformBullet:sta actT,x
+TransformActor: sta actT,x
                 lda #$00
                 sta actF1,x
                 sta actFd,x
