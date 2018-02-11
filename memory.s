@@ -153,7 +153,7 @@ STACKSTART      = $7f
 
 playerStateZPStart = levelNum
 playerStateZPEnd = toxinDelay+1
-palFlag         = freeMemLo
+ntscFlag         = freeMemLo
 
                 varrange sprOrder,MAX_SPR+1
                 varrange sprY,MAX_SPR+1

@@ -10,8 +10,8 @@ scriptCodeEnd   = scriptCodeStart+SCRIPTAREASIZE
 
 InitAll:        ldx #STACKSTART
                 txs
-                lda palFlag
-                bne IsPAL
+                lda ntscFlag
+                beq IsPAL
                 lda #60                         ;Compensate game clock speed for NTSC
                 sta timeMaxTbl+3                ;(otherwise no compensation)
 IsPAL:          lda $d030                       ;Enable extra IRQ for turbo switching for C128 & SCPU

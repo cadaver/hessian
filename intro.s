@@ -13,9 +13,6 @@
 LOGO_FADE_FRAMES = 4
 
                 jsr WaitBottom
-                lda $dd00
-                and #$fc
-                sta $dd00
                 lda #$bc
                 sta $d018
                 lda #$18

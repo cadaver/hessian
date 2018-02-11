@@ -43,52 +43,6 @@ tablHi          = depackBuffer + 104
 ;   used to endorse or promote products derived from this software without
 ;   specific prior written permission.
 
-; -------------------------------------------------------------------
-; get bits (29 bytes)
-;
-; args:
-;   x = number of bits to get
-; returns:
-;   a = #bits_lo
-;   x = #0
-;   c = 0
-;   z = 1
-;   zpBitsHi = #bits_hi
-; notes:
-;   y is untouched
-; -------------------------------------------------------------------
-get_bits:
-  lda #$00
-  sta zpBitsHi
-  cpx #$01
-  bcc bits_done
-bits_next:
-  lsr zpBitBuf
-  bne bits_ok
-  pha
-  stx loadTempReg
-  jsr GetByte
-  ldx loadTempReg
-  bcs loaderror3
-  sec
-  ror
-  sta zpBitBuf
-  pla
-bits_ok:
-  rol
-  rol zpBitsHi
-  dex
-  bne bits_next
-bits_done:
-  rts
-
-loaderror3:
-  pla
-  pla
-  pla
-loaderror:
-  rts
-
         ; Load file packed with Exomizer 2 forward mode
         ;
         ; Parameters: A,X load address, fileNumber
@@ -98,13 +52,13 @@ loaderror:
 LoadFile:       sta zpDestLo
                 stx zpDestHi
                 jsr OpenFile
-
+Depack:
 ; -------------------------------------------------------------------
 ; init zeropage, x and y regs.
 ;
 init_zp:
   jsr GetByte
-  ;bcs loaderror  ;Error will be caught later
+  bcs loaderror ;Error checking only done here, since drivecode will retry endlessly
   sta zpBitBuf
   ldy #0
 
@@ -154,7 +108,6 @@ getgamma:
   lsr zpBitBuf
   bne norefill
   jsr GetByte
-  bcs loaderror
   sec
   ror
   sta zpBitBuf
@@ -165,7 +118,6 @@ norefill:
 
 literal:
   jsr GetByte
-  ;bcs loaderror ;Error will be caught later
   sta (zpDestLo),y
   inc zpDestLo
   bne begin
@@ -173,6 +125,9 @@ inchi:
   inc zpDestHi
   bne begin
 
+loaderror:
+  rts
+  
 sequence:
   cpy #$11
   beq eof   ; gamma = 17   : end of file
@@ -238,6 +193,44 @@ copy_next:
 
 eof:
   clc
+  rts
+
+; -------------------------------------------------------------------
+; get bits (29 bytes)
+;
+; args:
+;   x = number of bits to get
+; returns:
+;   a = #bits_lo
+;   x = #0
+;   c = 0
+;   z = 1
+;   zpBitsHi = #bits_hi
+; notes:
+;   y is untouched
+; -------------------------------------------------------------------
+get_bits:
+  lda #$00
+  sta zpBitsHi
+  cpx #$01
+  bcc bits_done
+bits_next:
+  lsr zpBitBuf
+  bne bits_ok
+  pha
+  stx loadTempReg
+  jsr GetByte
+  ldx loadTempReg
+  sec
+  ror
+  sta zpBitBuf
+  pla
+bits_ok:
+  rol
+  rol zpBitsHi
+  dex
+  bne bits_next
+bits_done:
   rts
 
 tablBit:        dc.b 2,4,4                      ;Exomizer static tables
