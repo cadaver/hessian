@@ -10,7 +10,6 @@ V1.2:
 - More ammo dropped by enemies
 - Minor increase to range of melee attacks
 - Duck-fire by simply pressing fire+down
-- No oxygen drain during conversations
 - No splash damage from own explosive weapons
 - Roll maneuver needs input for 2 frames before initiating, to reduce possibility of mistake
 - Improved explosion of the high walker enemy
