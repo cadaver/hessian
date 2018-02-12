@@ -11,6 +11,6 @@ V1.2:
 - Minor increase to range of melee attacks
 - Duck-fire by simply pressing fire+down
 - No splash damage from own explosive weapons
-- Roll maneuver needs input for 2 frames before initiating, to reduce possibility of mistake
+- Roll maneuver needs longer input before initiating
 - Improved explosion of the high walker enemy
 - Improved fastloader from Steel Ranger

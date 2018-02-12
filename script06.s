@@ -507,8 +507,8 @@ recyclerCostTbl:
                 dc.b 20                         ;Grenade launcher
                 dc.b 25                         ;Bazooka
                 dc.b 0                          ;Extinguisher
-                dc.b 20                         ;Grenade
-                dc.b 25                         ;Mine
+                dc.b 25                         ;Grenade
+                dc.b 30                         ;Mine
                 dc.b 40                         ;Medikit
                 dc.b 40                         ;Battery
                 dc.b 50                         ;Armor
