@@ -1836,9 +1836,9 @@ AS_CheckBackground:
                 tax
                 lda actXH,x
                 clc
-                adc #$02
+                adc #$03
                 sbc actXH+ACTI_PLAYER           ;C=0 here (subtracts one more)
-                cmp #$03
+                cmp #$05
                 bcs AS_PlayerDistOK             ;Do not spawn close to player (check both X & Y)
                 lda actYH,x
                 adc #$02                        ;C=0 here

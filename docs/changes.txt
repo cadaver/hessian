@@ -12,5 +12,6 @@ V1.2:
 - Duck-fire by simply pressing fire+down
 - No splash damage from own explosive weapons
 - Roll maneuver needs longer input before initiating
+- Ensure enemies don't spawn close to player at corridor ends
 - Improved explosion of the high walker enemy
 - Improved fastloader from Steel Ranger
