@@ -780,7 +780,10 @@ UpdateActors:   ldx #$00
                 lda menuMode
                 cmp #MENU_PAUSE
                 bcs UA_Paused
-UA_NoShakeReset:ldx #MAX_ACT-1
+UA_NoShakeReset:lda wdMinigunDamage             ;Hack: fluctuate minigun damage between 5 & 6
+                eor #$03
+                sta wdMinigunDamage
+                ldx #MAX_ACT-1
 UA_Loop:        ldy actT,x
                 beq UA_Next
 UA_NotZero:     stx actIndex
@@ -1227,16 +1230,11 @@ LoopingAnimation:
                 sta actF1,x
 LA_NotOver:     rts
 
-        ; Get char collision info from 1 block above or below actor's pos (optimized)
+        ; Get char collision info from 1 block above actor's pos (optimized)
         ;
         ; Parameters: X actor index
         ; Returns: A charinfo
         ; Modifies: A,Y,loader temp vars
-
-GetCharInfo4Below:
-                ldy actYH,x
-                iny
-                jmp GCI_Common
 
 GetCharInfo4Above:
                 ldy actYH,x

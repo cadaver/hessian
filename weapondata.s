@@ -193,7 +193,7 @@ wdMinigun:      dc.b WDB_BULLETDIRFRAME|WDB_LOCKANIMATION|WDB_FIREFROMHIP|WDB_FL
                 dc.b AIM_DIAGONALDOWN+1         ;First invalid aim direction
                 dc.b 2                          ;Attack delay
                 dc.b ACT_RIFLEBULLET            ;Bullet actor type
-                dc.b DMG_MINIGUN                ;Bullet damage
+wdMinigunDamage:dc.b DMG_MINIGUN                ;Bullet damage
                 dc.b DMGMOD_EQUAL               ;Damage modifier nonorganic/organic
                 dc.b 14                         ;Bullet time duration
                 dc.b 15                         ;Bullet speed in pixels
