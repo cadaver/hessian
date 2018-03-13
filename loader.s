@@ -697,88 +697,6 @@ drvRuntimeEnd:
                     err
                 endif
 
-DrvBuildSendTbl:txa                             ;Build high nybble send table
-                lsr                             ;May overwrite init drivecode
-                lsr
-                lsr
-                lsr
-                tay
-                lda drvSendTbl,y
-                sta drvSendTblHigh,x
-                inx
-                bne DrvBuildSendTbl
-                rts
-
-DrvDetect:      sei
-                ldy #$01
-DrvIdLda:       lda $fea0                       ;Recognize drive family
-                ldx #$03                        ;(from Dreamload)
-DrvIdLoop:      cmp drvFamily-1,x
-                beq DrvFFound
-                dex                             ;If unrecognized, assume 1541
-                bne DrvIdLoop
-                beq DrvIdFound
-DrvFFound:      lda #<(drvIdByte-1)
-                sta DrvIdLoop+1
-                lda drvIdLocLo-1,x
-                sta DrvIdLda+1
-                lda drvIdLocHi-1,x
-                sta DrvIdLda+2
-                dey
-                bpl DrvIdLda
-DrvIdFound:     lda drvJobTrkLo,x                ;Patch job track/sector
-                sta DrvReadTrk+1
-                clc
-                adc #$01
-                sta DrvReadSct+1
-                lda drvJobTrkHi,x
-                sta DrvReadTrk+2
-                adc #$00
-                sta DrvReadSct+2
-                txa
-                bne DrvNot1541
-                lda #$2c                        ;On 1541, patch out the flush ($a2) job call
-                sta DrvFlushJsr
-                lda #$7a                        ;Set data direction so that can compare against $1800 being zero
-                sta $1802
-                ldy #Drv1MHzSendEnd-Drv1MHzSend ;And finally copy 1MHz transfer code
-Drv1MHzCopy:    lda Drv1MHzSend,y
-                sta Drv2MHzSend,y
-                dey
-                bpl Drv1MHzCopy
-                bmi DrvDetectDone
-DrvNot1541:     lda drvDirTrkLo-1,x             ;Patch directory track/sector
-                sta DrvDirTrk+1
-                lda drvDirTrkHi-1,x
-                sta DrvDirTrk+2
-                lda drvDirSctLo-1,x
-                sta DrvDirSct+1
-                lda drvDirSctHi-1,x
-                sta DrvDirSct+2
-                lda drvExecLo-1,x               ;Patch job exec address
-                sta DrvExecJsr+1
-                lda drvExecHi-1,x
-                sta DrvExecJsr+2
-                lda drvLedBit-1,x               ;Patch drive led accesses
-                sta DrvLed+1
-                lda drvLedAdrHi-1,x
-                sta DrvLedAcc0+2
-                sta DrvLedAcc1+2
-                lda #$60                        ;Patch exit jump as RTS
-                sta DrvExitJump
-                lda drv1800Lo-1,x               ;Patch $1800 accesses
-                sta DrvPatch1800Lo+1
-                lda drv1800Hi-1,x
-                sta DrvPatch1800Hi+1
-                ldy #10
-DrvPatch1800Loop:
-                ldx drv1800Ofs,y
-DrvPatch1800Lo: lda #$00
-                sta DrvMain+1,x
-DrvPatch1800Hi: lda #$00
-                sta DrvMain+2,x
-                dey
-                bpl DrvPatch1800Loop
 DrvDetectDone:  jsr DrvNoData                   ;DATA low while building the decodetable / caching directory to signal C64
 DrvDirTrk:      ldx drv1541DirTrk
 DrvDirSct:      lda drv1541DirSct               ;Read disk directory
@@ -814,11 +732,98 @@ DrvSkipFile:    tya
                 lda drvBuf+1                    ;Go to next directory block, until no
                 ldx drvBuf                      ;more directory blocks
                 bne DrvDirLoop
-                lda #>(DrvMain-1)               ;Push drive mainloop address
+DrvBuildSendTbl:txa                             ;Build high nybble send table
+                lsr                             ;May overwrite init drivecode
+                lsr
+                lsr
+                lsr
+                tay
+                lda drvSendTbl,y
+                sta drvSendTblHigh,x
+                inx
+                bne DrvBuildSendTbl
+                jmp DrvMain
+
+DrvDetect:      sei
+                ldy #$01
+DrvIdLda:       lda $fea0                       ;Recognize drive family
+                ldx #$03                        ;(from Dreamload)
+DrvIdLoop:      cmp drvFamily-1,x
+                beq DrvFFound
+                dex                             ;If unrecognized, assume 1541
+                bne DrvIdLoop
+                beq DrvIdFound
+DrvFFound:      lda #<(drvIdByte-1)
+                sta DrvIdLoop+1
+                lda drvIdLocLo-1,x
+                sta DrvIdLda+1
+                lda drvIdLocHi-1,x
+                sta DrvIdLda+2
+                dey
+                bpl DrvIdLda
+DrvIdFound:     lda drvJobTrkLo,x                ;Patch job track/sector
+                sta DrvReadTrk+1
+                clc
+                adc #$01
+                sta DrvReadSct+1
+                lda drvJobTrkHi,x
+                sta DrvReadTrk+2
+                adc #$00
+                sta DrvReadSct+2
+                txa
+                bne DrvNot1541
+                lda #$2c                        ;On 1541/1571, patch out the flush ($a2) job call
+                sta DrvFlushJsr
+                lda #$7a                        ;Set data direction so that can compare against $1800 being zero
+                sta $1802
+                lda $e5c6
+                cmp #$37
+                bne DrvNot1571                  ;Recognize 1571 as a subtype
+                jsr DrvNoData                   ;Set DATA=low already here, as $904e takes a long time and we would be too late for C64
+                lda #>(DrvDetectDone-1)
                 pha
-                lda #<(DrvMain-1)
+                lda #<(DrvDetectDone-1)
                 pha
-                jmp DrvBuildSendTbl             ;X=0 for DrvBuildSendTbl
+                jmp $904e                       ;Enable 2Mhz mode, overwrites buffer at $700
+DrvNot1571:     ldy #Drv1MHzSendEnd-Drv1MHzSend ;For non-1571, copy 1MHz transfer code
+Drv1MHzCopy:    lda Drv1MHzSend,y
+                sta Drv2MHzSend,y
+                dey
+                bpl Drv1MHzCopy
+                bmi DrvDetectDone2
+DrvNot1541:     lda drvDirTrkLo-1,x             ;Patch directory track/sector
+                sta DrvDirTrk+1
+                lda drvDirTrkHi-1,x
+                sta DrvDirTrk+2
+                lda drvDirSctLo-1,x
+                sta DrvDirSct+1
+                lda drvDirSctHi-1,x
+                sta DrvDirSct+2
+                lda drvExecLo-1,x               ;Patch job exec address
+                sta DrvExecJsr+1
+                lda drvExecHi-1,x
+                sta DrvExecJsr+2
+                lda drvLedBit-1,x               ;Patch drive led accesses
+                sta DrvLed+1
+                lda drvLedAdrHi-1,x
+                sta DrvLedAcc0+2
+                sta DrvLedAcc1+2
+                lda #$60                        ;Patch exit jump as RTS
+                sta DrvExitJump
+                lda drv1800Lo-1,x               ;Patch $1800 accesses
+                sta DrvPatch1800Lo+1
+                lda drv1800Hi-1,x
+                sta DrvPatch1800Hi+1
+                ldy #10
+DrvPatch1800Loop:
+                ldx drv1800Ofs,y
+DrvPatch1800Lo: lda #$00
+                sta DrvMain+1,x
+DrvPatch1800Hi: lda #$00
+                sta DrvMain+2,x
+                dey
+                bpl DrvPatch1800Loop
+DrvDetectDone2: jmp DrvDetectDone
 
         ; 1MHz transfer routine
 
