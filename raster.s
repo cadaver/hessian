@@ -92,11 +92,11 @@ Irq1_ScrollY:   lda #$57
                 sta $d011
 Irq1_Screen:    ldy #GAMESCR1_D018
                 sty $d018
-Irq1_Bg1:       lda #$06
+Irq1_Bg1:       lda #$00
                 sta $d021
-Irq1_Bg2:       lda #$0b
+Irq1_Bg2:       lda #$00
                 sta $d022
-Irq1_Bg3:       lda #$0c
+Irq1_Bg3:       lda #$00
                 sta $d023
 Irq1_ScreenFrame:
                 lda #$00                        ;Ensure sprite frames are loaded to the
